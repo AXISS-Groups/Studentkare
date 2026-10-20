@@ -17,7 +17,8 @@ import type { RoutePath } from '../../lib/utils/workflowRouting';
  * without it, every partner type gets the item.
  */
 /** `label` is the English name (stable for keys and tests); `labelKey` is what the sidebar shows, in the chosen language. */
-export interface VendorNavItem { label: string; labelKey: MessageKey; icon: SkIconName; route?: RoutePath; activeFor?: RoutePath[]; vendorOnly?: boolean; kinds?: PartnerKind[] }
+/** `shortcut`: a second way into a page another item owns; it opens that page but is never the current item. */
+export interface VendorNavItem { label: string; labelKey: MessageKey; icon: SkIconName; route?: RoutePath; activeFor?: RoutePath[]; vendorOnly?: boolean; kinds?: PartnerKind[]; shortcut?: boolean }
 export interface VendorNavGroup { title: string; titleKey: MessageKey; items: VendorNavItem[] }
 
 const PHARMACY: PartnerKind[] = ['PHARMACY'];
@@ -47,7 +48,12 @@ export const VENDOR_NAVIGATION: VendorNavGroup[] = [
       { label: 'Sample queue', labelKey: 'partner.vcon.nav.sampleQueue', icon: 'flask', route: 'lab-queue', activeFor: ['vendor-lab-queue'], kinds: LAB },
       { label: 'Run sheet', labelKey: 'partner.vcon.nav.runSheet', icon: 'truck', route: 'run-sheet', activeFor: ['lab-collection'], kinds: LAB },
       { label: 'Cold chain', labelKey: 'partner.vcon.nav.coldChain', icon: 'asterisk', route: 'cold-chain', activeFor: ['lab-cold-chain'], kinds: LAB },
-      { label: 'Camp intake', labelKey: 'partner.vcon.nav.campIntake', icon: 'alert-triangle-2', route: 'camp-intake', activeFor: ['vendor-camp-intake'], kinds: LAB },
+      // The board's "Release results" slot. A lab files reports and a doctor releases them, so
+      // the partner's entry is "Lab reports" and opens the live lab desk (as the Home tool does).
+      // A shortcut: it never takes the white pill from Sample queue, which owns that page.
+      { label: 'Lab reports', labelKey: 'partner.vhome.home.tool.labReports', icon: 'file', route: 'lab-queue', kinds: LAB, shortcut: true },
+      // Camp fast mode (the staff app board) opens from Camp intake and keeps it lit.
+      { label: 'Camp intake', labelKey: 'partner.vcon.nav.campIntake', icon: 'alert-triangle-2', route: 'camp-intake', activeFor: ['vendor-camp-intake', 'camp-fast'], kinds: LAB },
     ],
   },
   {
@@ -63,5 +69,6 @@ export const VENDOR_NAVIGATION: VendorNavGroup[] = [
 ];
 
 export function isVendorNavActive(item: VendorNavItem, route: RoutePath): boolean {
+  if (item.shortcut) return false;
   return item.route === route || (item.activeFor?.includes(route) ?? false);
 }

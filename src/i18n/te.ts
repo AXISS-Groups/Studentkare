@@ -22,6 +22,7 @@ import { wellnessTe } from './areas/wellness';
 import { consoleTe } from './areas/console';
 import { phoneboardsTe } from './areas/phoneboards';
 import { clinicianWorkTe } from './areas/clinicianWork';
+import { partnerConsoleTe } from './areas/partnerConsole';
 
 /**
  * తెలుగు — machine-assisted first draft, NOT yet reviewed by a native speaker
@@ -841,4 +842,5 @@ export const te: Catalog = {
   ...consoleTe,
   ...phoneboardsTe,
   ...clinicianWorkTe,
+  ...partnerConsoleTe,
 };

@@ -51,7 +51,8 @@ describe('WorkspaceScreen vendor routing', () => {
 
   it('renders VendorConsoleScreen when route is console or performance even with unauthenticated session', async () => {
     render(<WorkspaceScreen route="console" />);
-    expect(await screen.findByRole('heading', { level: 1, name: 'Fulfilment queue' })).toBeInTheDocument();
+    // Signed out, the queue can't be read: the page says so rather than showing sample orders.
+    expect(await screen.findByRole('heading', { level: 1, name: /fulfilment queue/i })).toBeInTheDocument();
   });
 
   it('renders VendorSettlementScreen when route is settlement even with unauthenticated session', async () => {

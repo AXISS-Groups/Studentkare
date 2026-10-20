@@ -1,486 +1,357 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Icon, Icon3d } from '@/design-system/icons';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { Icon } from '@/design-system/icons';
+import { SkButton, StatusPill, Toast } from '@/design-system/primitives';
+import type { SkTone } from '@/design-system/primitives';
 import { ConsoleTopbar } from '@/design-system/console-shell/ConsoleShell';
 import toolsArt from '../../assets/image-6f6766.jpg';
 import { useAuth } from '../../data/contexts/AuthContext';
+import { money } from '../../data/types/workflowTypes';
+import type { PartnerKind } from '../../data/types/workflowTypes';
 import { navigate, RoutePath } from '../../lib/utils/workflowRouting';
 import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
-import '../../theme/styles/vendorHome.css';
 import { useEffectivePartnerKind } from './partnerPreview';
 import { partnerInitials } from './partnerAccess';
-import type { PartnerKind } from '../../data/types/workflowTypes';
+import { countRequests, countRxReviews, loadRequests, updateRequest } from '@/features/partner/partnerApi';
+import type { PartnerRequest, RequestStatus } from '@/features/partner/partnerApi';
+import { PartnerError, PartnerEmpty, PartnerKpis, PartnerLoading, PartnerPage, shortRef, usePartnerLoad } from '@/features/partner/PartnerPage';
+import './vendor-home.css';
 
 export type ProviderType = 'pharmacy' | 'lab' | 'clinic' | 'wellness';
-export type ViewState = 'data' | 'loading' | 'empty' | 'error';
+
+/**
+ * VendorHome — the partner's home (design page 6, Tier 3, SK-115).
+ *
+ * Wired to the partner's own order lines (`GET /work/requests`, scoped to this
+ * partner by the server) and, for a pharmacy, the size of the Rx review queue
+ * (only its totals). The newest request waiting for a decision is the banner;
+ * Accept and Decline call `PATCH /work/requests/{id}`. Figures no endpoint
+ * reports (accept rate, lab turnaround, rooms free…) show "—" with "Not
+ * connected", never a sample number. No timer: the server sets no deadline.
+ *
+ * Student names never show here (only an order reference), and the provider
+ * type is the one a super admin assigned: there is no switch.
+ */
+
+export interface HomeData {
+  /** Newest lines first, at most five. */
+  recent: PartnerRequest[];
+  /** Every line for this partner, any state (server total). */
+  total: number;
+  /** Server totals per state. */
+  counts: Record<'REQUESTED' | 'ACCEPTED' | 'DISPATCHED', number>;
+  /** Newest line waiting for Accept / Decline. */
+  newest: PartnerRequest | null;
+  /** Prescriptions waiting for this pharmacy's pharmacist; null when not reported. */
+  rxWaiting: number | null;
+}
+
+export type HomeSource = (kind: ProviderType, signal: AbortSignal) => Promise<HomeData>;
+
+export const liveHomeSource: HomeSource = async (kind, signal) => {
+  const [recent, waiting, accepted, dispatched, rxWaiting] = await Promise.all([
+    loadRequests({ limit: 5 }, signal),
+    loadRequests({ status: 'REQUESTED', limit: 1 }, signal),
+    countRequests('ACCEPTED', signal),
+    countRequests('DISPATCHED', signal),
+    // A figure, not a gate: if the queue can't be read the tile says "—".
+    kind === 'pharmacy' ? countRxReviews(signal).catch(() => null) : Promise.resolve(null),
+  ]);
+  return {
+    recent: recent.items,
+    total: recent.total,
+    counts: { REQUESTED: waiting.total, ACCEPTED: accepted, DISPATCHED: dispatched },
+    newest: waiting.items[0] ?? null,
+    rxWaiting,
+  };
+};
+
+type KpiId = 'new' | 'rxToReview' | 'outForDelivery' | 'acceptRate' | 'booked' | 'toCollect' | 'toRelease' | 'tat' | 'doctorsOn' | 'noShow' | 'waitlist' | 'attendance';
+
+/** The four tiles per provider type, in the board's order. */
+const KPIS: Record<ProviderType, KpiId[]> = {
+  pharmacy: ['new', 'rxToReview', 'outForDelivery', 'acceptRate'],
+  lab: ['new', 'toCollect', 'toRelease', 'tat'],
+  clinic: ['new', 'booked', 'doctorsOn', 'noShow'],
+  wellness: ['new', 'booked', 'waitlist', 'attendance'],
+};
+
+function kpiValue(id: KpiId, data: HomeData): number | null {
+  switch (id) {
+    case 'new': return data.counts.REQUESTED;
+    case 'rxToReview': return data.rxWaiting;
+    case 'outForDelivery': return data.counts.DISPATCHED;
+    case 'booked': return data.counts.ACCEPTED;
+    default: return null;
+  }
+}
+
+/** A tool tile: label/meta keys are `partner.vhome.home.tool.<id>` / `…<id>Meta`; no route = not built yet. */
+interface Tool { id: string; route?: RoutePath }
+
+const TOOLS: Record<ProviderType, Tool[]> = {
+  pharmacy: [
+    { id: 'orders', route: 'orders' },
+    { id: 'rxReview', route: 'rx-review' },
+    { id: 'substitutions', route: 'substitutions' },
+    { id: 'catalogue', route: 'catalogue' },
+    { id: 'handover', route: 'handover' },
+  ],
+  lab: [
+    { id: 'runSheet', route: 'run-sheet' },
+    { id: 'sampleQueue', route: 'lab-queue' },
+    { id: 'coldChain', route: 'cold-chain' },
+    { id: 'labReports', route: 'lab-queue' },
+    { id: 'campIntake', route: 'camp-intake' },
+  ],
+  clinic: [
+    { id: 'bookings', route: 'orders' },
+    { id: 'doctorsRooms' },
+    { id: 'slots' },
+    { id: 'settlement', route: 'settlement' },
+    { id: 'staff', route: 'partner-staff' },
+  ],
+  wellness: [
+    { id: 'checkIn', route: 'scan-verify' },
+    { id: 'timetable' },
+    { id: 'coaches', route: 'partner-staff' },
+    { id: 'settlement', route: 'settlement' },
+    { id: 'workshops' },
+  ],
+};
+
+const PROVIDER_FOR_KIND: Record<PartnerKind, ProviderType> = { PHARMACY: 'pharmacy', LAB: 'lab', CLINIC: 'clinic', WELLNESS: 'wellness' };
+
+const STATE: Record<RequestStatus, { key: MessageKey; tone: SkTone }> = {
+  REQUESTED: { key: 'pc.state.new', tone: 'attention' },
+  ACCEPTED: { key: 'pc.state.accepted', tone: 'action' },
+  DISPATCHED: { key: 'pc.state.out', tone: 'positive' },
+  COMPLETED: { key: 'pc.state.delivered', tone: 'neutral' },
+  DECLINED: { key: 'pc.state.declined', tone: 'neutral' },
+};
 
 export interface VendorHomeScreenProps {
-  initialViewState?: ViewState;
   initialProviderType?: ProviderType;
+  source?: HomeSource;
   onNavigate?: (route: RoutePath) => void;
   _onNavigate?: (route: string) => void;
   onLogout?: () => void;
   onSwitchRole?: (role: 'student' | 'admin' | 'vendor') => void;
 }
 
-/** A tool tile: its label/meta keys are `partner.vhome.home.tool.<id>` and `…<id>Meta`. */
-interface ToolItem {
-  id: string;
-  actionKey: string;
-}
-
-/**
- * What changes per provider type. There is no live partner data source yet,
- * so the console shows the shape of the day (KPI labels, queue, tools) with
- * honest "not connected" values — never sample businesses, orders or counts.
- */
-interface ProviderData {
-  kpis: [string, string, string, string];
-  tools: ToolItem[];
-}
-
-const PROVIDER_CONFIG: Record<ProviderType, ProviderData> = {
-  pharmacy: {
-    kpis: ['new', 'rxToReview', 'outForDelivery', 'acceptRate'],
-    tools: [
-      { id: 'orders', actionKey: 'orders' },
-      { id: 'rxReview', actionKey: 'rx-review' },
-      { id: 'substitutions', actionKey: 'substitutions' },
-      { id: 'catalogue', actionKey: 'catalogue' },
-      { id: 'handover', actionKey: 'handover' },
-    ],
-  },
-  lab: {
-    kpis: ['toCollect', 'inTransit', 'toRelease', 'tat'],
-    tools: [
-      { id: 'runSheet', actionKey: 'run-sheet' },
-      { id: 'sampleQueue', actionKey: 'lab-queue' },
-      { id: 'coldChain', actionKey: 'cold-chain' },
-      { id: 'labReports', actionKey: 'lab-reports' },
-      { id: 'campIntake', actionKey: 'camp-intake' },
-    ],
-  },
-  clinic: {
-    kpis: ['today', 'doctorsOn', 'roomsFree', 'noShow'],
-    tools: [
-      { id: 'doctorsRooms', actionKey: 'doctors-rooms' },
-      { id: 'slots', actionKey: 'slots' },
-      { id: 'bookings', actionKey: 'orders' },
-      { id: 'settlement', actionKey: 'settlement' },
-      { id: 'staff', actionKey: 'staff' },
-    ],
-  },
-  wellness: {
-    kpis: ['sessionsToday', 'booked', 'waitlist', 'attendance'],
-    tools: [
-      { id: 'timetable', actionKey: 'timetable' },
-      { id: 'checkIn', actionKey: 'scan-verify' },
-      { id: 'coaches', actionKey: 'staff' },
-      { id: 'settlement', actionKey: 'settlement' },
-      { id: 'workshops', actionKey: 'workshops' },
-    ],
-  },
-};
-
-const PROVIDER_FOR_KIND: Record<PartnerKind, ProviderType> = { PHARMACY: 'pharmacy', LAB: 'lab', CLINIC: 'clinic', WELLNESS: 'wellness' };
-
-export function VendorHomeScreen({ initialViewState, initialProviderType, onNavigate, _onNavigate, onLogout, onSwitchRole }: VendorHomeScreenProps) {
+export function VendorHomeScreen({ initialProviderType, source = liveHomeSource, onNavigate, _onNavigate, onLogout, onSwitchRole }: VendorHomeScreenProps) {
   const { user, logout } = useAuth();
   const t = useT();
 
-  // The dashboard follows the partner type a super admin assigned; there is no switch.
-  // `initialProviderType` is for tests and previews only.
+  // The type a super admin assigned (or the dev-only preview); `initialProviderType` is for tests.
   const assignedKind = useEffectivePartnerKind(user);
   const providerType: ProviderType | null = initialProviderType ?? (assignedKind ? PROVIDER_FOR_KIND[assignedKind] : null);
-  const [viewState, setViewState] = useState<ViewState>(initialViewState || 'data');
-
-  useEffect(() => {
-    if (initialViewState) {
-      setViewState(initialViewState);
-    }
-  }, [initialViewState]);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
-  const profileMenuRef = useRef<HTMLDivElement>(null);
-  const toastTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const currentData = PROVIDER_CONFIG[providerType ?? 'pharmacy'];
-  // The partner's own account, never a sample business or licence number.
   const accountName = user?.fullName?.trim() || t('partner.vhome.home.accountFallback');
-  const typeLabel = t(`partner.vhome.home.type.${providerType ?? 'pharmacy'}` as MessageKey);
 
-  // Click outside to close profile dropdown
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target as Node)) {
-        setProfileMenuOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  const load = useCallback((signal: AbortSignal) => source(providerType ?? 'pharmacy', signal), [source, providerType]);
+  const home = usePartnerLoad<HomeData>(providerType ? load : null);
+  const [toast, setToast] = useState<string | null>(null);
+  const [deciding, setDeciding] = useState<'ACCEPTED' | 'DECLINED' | null>(null);
 
-  const showToast = (msg: string) => {
-    setToastMessage(msg);
-    if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
-    toastTimeoutRef.current = setTimeout(() => {
-      setToastMessage(null);
-    }, 2600);
-  };
-
-  // No partner data source is wired to this console yet, so "try again"
-  // simply returns to the (honestly empty) dashboard — it never claims a refresh.
-  const handleRetryError = () => {
-    setViewState('data');
-  };
-
-  // One navigation per click: calling both the router callback and the global
-  // navigate() pushed two history entries, so Back appeared to do nothing.
-  const doNavigate = (target: RoutePath) => {
+  const go = (target: RoutePath) => {
     if (_onNavigate) _onNavigate(target);
     if (onNavigate) onNavigate(target);
     else navigate(target);
   };
 
-  const handleToolAction = (actionKey: string) => {
-    if (actionKey === 'substitutions') {
-      doNavigate('substitutions' as RoutePath);
-      return;
-    }
-    if (actionKey === 'handover') {
-      doNavigate('handover' as RoutePath);
-      return;
-    }
-    if (actionKey === 'returns') {
-      doNavigate('returns' as RoutePath);
-      return;
-    }
-    if (actionKey === 'run-sheet') {
-      doNavigate('run-sheet' as RoutePath);
-      return;
-    }
-    if (actionKey === 'camp-intake') {
-      doNavigate('camp-intake' as RoutePath);
-      return;
-    }
-    if (actionKey === 'reorder') {
-      doNavigate('reorder' as RoutePath);
-      return;
-    }
-    if (actionKey === 'cold-chain') {
-      doNavigate('cold-chain' as RoutePath);
-      return;
-    }
-    if (actionKey === 'lab-queue' || actionKey === 'lab-reports') {
-      doNavigate('lab-queue');
-      return;
-    }
-    if (actionKey === 'rx-review') {
-      doNavigate('rx-review' as RoutePath);
-      return;
-    }
-    if (actionKey === 'orders' || actionKey === 'dispense') {
-      doNavigate('orders' as RoutePath);
-      return;
-    }
-    if (actionKey === 'catalogue') {
-      doNavigate('catalogue' as RoutePath);
-      return;
-    }
-    if (actionKey === 'scan-verify') {
-      doNavigate('scan-verify' as RoutePath);
-      return;
-    }
-    if (actionKey === 'workshops') {
-      doNavigate('campus-wellness' as RoutePath);
-      return;
-    }
-    // Nothing opens for the remaining tools yet — say so rather than pretend.
-    showToast(t('partner.vhome.home.notAvailable'));
-  };
-
-  const handleSignOut = () => {
-    if (onLogout) {
-      onLogout();
-    } else {
-      logout();
+  const decide = async (line: PartnerRequest, status: 'ACCEPTED' | 'DECLINED') => {
+    setDeciding(status);
+    try {
+      await updateRequest(line.id, status);
+      setToast(t(status === 'ACCEPTED' ? 'pc.home.accepted' : 'pc.home.declined'));
+      home.reload();
+    } catch (error) {
+      setToast(error instanceof Error && error.message ? error.message : t('pc.home.decideFailed'));
+    } finally {
+      setDeciding(null);
     }
   };
 
-  // Fail closed: with no assigned type there is no dashboard to show, and no tools.
+  const topbar = (
+    <ConsoleTopbar
+      className="vh-topbar"
+      title={t('partner.vhome.home.header')}
+      search={{ label: t('console.searchSoon') }}
+      notifications={{ label: t('console.notifications'), onClick: () => setToast(t('partner.vhome.home.notificationsOff')) }}
+      account={<AccountMenu name={accountName} email={user?.email} typeLabel={providerType ? t(`partner.vhome.home.type.${providerType}` as MessageKey) : ''} onSwitchRole={onSwitchRole} onSignOut={() => (onLogout ? onLogout() : logout())} />}
+    />
+  );
+
+  // Fail closed: with no assigned type there is no dashboard and no tools.
   if (providerType === null) {
     return (
-      <div className="sk-vendor-home">
-        <div className="sk-vendor-content-wrapper">
-          <main className="sk-vendor-main">
-            <div className="sk-vendor-empty-wrap">
-              <div className="sk-vendor-empty-card" role="status">
-                <h1 className="sk-vendor-empty-title">Your partner account isn’t set up yet.</h1>
-                <span className="sk-vendor-empty-desc">
-                  Studentkare sets whether you are a pharmacy, lab, clinic or wellness centre when your account is onboarded. Your tools appear here once that is done — contact your Studentkare partner manager.
-                </span>
-              </div>
-            </div>
-          </main>
-        </div>
+      <div className="vh-root">
+        {topbar}
+        <PartnerPage>
+          <PartnerEmpty icon3d="cart-alt--p3" title={t('pc.home.unassignedTitle')} body={t('pc.home.unassignedBody')} />
+        </PartnerPage>
       </div>
     );
   }
 
-  return (
-    <div className="sk-vendor-home">
-      {/* ================= Main Content Wrapper ================= */}
-      <div className="sk-vendor-content-wrapper">
-        {/* The shared console top bar (ConsoleTopbar), as on the VendorHome board. No 2FA chip:
-            the session does not report 2FA, and an unsourced claim is not shown. Notifications
-            are not wired to a feed yet, so there is no unread dot. */}
-        <ConsoleTopbar
-          className="sk-vendor-header"
-          title={t('partner.vhome.home.header')}
-          search={{ label: t('partner.vhome.home.search'), value: searchQuery, onChange: setSearchQuery }}
-          notifications={{ label: t('partner.vhome.home.notifications'), onClick: () => showToast(t('partner.vhome.home.notificationsOff')) }}
-          account={(
-            <div style={{ position: 'relative' }} ref={profileMenuRef}>
-              <button
-                type="button"
-                className="sk-vendor-profile-btn"
-                onClick={() => setProfileMenuOpen(!profileMenuOpen)}
-                aria-expanded={profileMenuOpen}
-                aria-label={t('partner.vhome.home.accountMenu')}
-              >
-                <span className="sk-vendor-profile-avatar" aria-hidden="true">{partnerInitials(accountName)}</span>
-                <div className="sk-vendor-profile-info">
-                  <span className="sk-vendor-profile-name">{accountName}</span>
-                  <span className="sk-vendor-profile-sub">{typeLabel}</span>
-                </div>
-              </button>
+  const data = home.data;
+  let body: React.ReactNode;
+  if (home.status === 'loading' && !data) {
+    body = <PartnerLoading label={t('console.loading', { title: accountName })} />;
+  } else if (home.status === 'error' || !data) {
+    body = <PartnerError title={t('pc.home.errorTitle', { name: accountName })} reference={t('pc.home.ref')} detail={home.error || undefined} onRetry={home.reload} onHelp={() => go('support')} />;
+  } else if (data.total === 0 && !data.rxWaiting) {
+    body = <PartnerEmpty icon3d="cart-alt--p3" title={t('pc.home.emptyTitle', { name: accountName })} body={t('pc.home.emptyBody')} action={{ label: t('partner.vhome.home.emptyCta'), onSelect: () => go('catalogue') }} />;
+  } else {
+    body = (
+      <>
+        <div className="pc-head">
+          <div className="pc-head__titles">
+            <h1 className="pc-title">{accountName}</h1>
+            <p className="pc-sub">{t('pc.home.sub')}</p>
+          </div>
+          <span className="vh-type" aria-label={t('pc.home.typeLabel', { type: t(`partner.vhome.home.type.${providerType}` as MessageKey) })}>
+            <span className="vh-type__on">{t(`partner.vhome.home.type.${providerType}` as MessageKey)}</span>
+          </span>
+        </div>
 
-              {/* Profile Dropdown */}
-              {profileMenuOpen && (
-                <div className="sk-vendor-profile-menu" role="menu">
-                  <div style={{ padding: '6px 12px 10px', borderBottom: '1px solid var(--sk-color-rule-soft)' }}>
-                    <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--sk-color-text)' }}>
-                      {accountName}
-                    </div>
-                    {user?.email && <div style={{ fontSize: 11, color: 'var(--sk-color-text-3)' }}>{user.email}</div>}
-                  </div>
+        {data.newest ? <NewWork line={data.newest} busy={deciding} onDecide={(status) => { if (data.newest) void decide(data.newest, status); }} /> : null}
 
-                  {onSwitchRole && (
-                    <>
-                      <button
-                        type="button"
-                        className="sk-vendor-menu-item"
-                        role="menuitem"
-                        onClick={() => {
-                          setProfileMenuOpen(false);
-                          onSwitchRole('student');
-                        }}
-                      >
-                        <Icon name="graduation-cap" size={15} color="var(--sk-color-action)" />
-                        <span>{t('partner.vhome.home.switchStudent')}</span>
-                      </button>
-                      <button
-                        type="button"
-                        className="sk-vendor-menu-item"
-                        role="menuitem"
-                        onClick={() => {
-                          setProfileMenuOpen(false);
-                          onSwitchRole('admin');
-                        }}
-                      >
-                        <Icon name="shield-2" size={15} color="var(--sk-color-action)" />
-                        <span>{t('partner.vhome.home.switchAdmin')}</span>
-                      </button>
-                    </>
-                  )}
-
-                  <button
-                    type="button"
-                    className="sk-vendor-menu-item is-danger"
-                    role="menuitem"
-                    onClick={() => {
-                      setProfileMenuOpen(false);
-                      handleSignOut();
-                    }}
-                  >
-                    <Icon name="log-out" size={15} color="var(--sk-color-danger)" />
-                    <span>{t('partner.vhome.nav.signOut')}</span>
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
+        <PartnerKpis
+          label={t('pc.home.kpisLabel')}
+          items={KPIS[providerType].map((id) => {
+            const value = kpiValue(id, data);
+            return { id, label: t(`partner.vhome.home.kpi.${id}` as MessageKey), value: value === null ? null : value.toLocaleString('en-IN'), meta: t(`pc.home.kpiMeta.${id}` as MessageKey) };
+          })}
         />
 
-        {/* Dashboard Main Canvas */}
-        <main className="sk-vendor-main">
-          {/* View State: DATA */}
-          {viewState === 'data' && (
-            <>
-              {/* Hero: the signed-in account. The provider type is assigned by a super admin, not chosen here. */}
-              <div className="sk-vendor-hero-row">
-                <div className="sk-vendor-hero-title-group">
-                  <h1 className="sk-vendor-hero-title">{accountName}</h1>
-                  <span className="sk-vendor-hero-sub">{t(`partner.vhome.home.sub.${providerType}` as MessageKey)}</span>
-                </div>
-              </div>
-
-              {/* 4 KPI Cards — no data source yet, so no numbers */}
-              <div className="sk-vendor-kpi-grid">
-                {currentData.kpis.map((kpi) => (
-                  <div key={kpi} className="sk-vendor-kpi-card">
-                    <span className="sk-vendor-kpi-label">{t(`partner.vhome.home.kpi.${kpi}` as MessageKey)}</span>
-                    <span className="sk-vendor-kpi-value sk-vendor-mono">—</span>
-                    <span className="sk-vendor-kpi-meta">{t('partner.vhome.home.kpiNotConnected')}</span>
-                  </div>
-                ))}
-              </div>
-
-              {/* 2-Column Section: Queue & Tools */}
-              <div className="sk-vendor-columns">
-                {/* Left Column: Orders / Samples Queue */}
-                <section className="sk-vendor-panel-left" aria-labelledby="queue-heading">
-                  <div className="sk-vendor-panel-header">
-                    <div className="sk-vendor-panel-title-wrap">
-                      <span id="queue-heading" className="sk-vendor-panel-title">
-                        {t(`partner.vhome.home.queue.${providerType}` as MessageKey)}
-                      </span>
-                      <span className="sk-vendor-panel-sub">{t(`partner.vhome.home.queueSub.${providerType}` as MessageKey)}</span>
-                    </div>
-                  </div>
-
-                  <div className="sk-vendor-queue-list">
-                    <div style={{ padding: '36px 16px', textAlign: 'center', color: 'var(--sk-color-text-3)', fontSize: 13.5 }}>
-                      {searchQuery.trim()
-                        ? t('partner.vhome.home.queueNoMatch', { query: searchQuery.trim() })
-                        : t('partner.vhome.home.queueNotConnected')}
-                    </div>
-                  </div>
-                </section>
-
-                {/* Right Column: Your Tools */}
-                <section className="sk-vendor-panel-right" aria-labelledby="tools-heading">
-                  <div className="sk-vendor-panel-header">
-                    <div className="sk-vendor-panel-title-wrap">
-                      <span id="tools-heading" className="sk-vendor-panel-title">
-                        {t('partner.vhome.home.toolsTitle')}
-                      </span>
-                      <span className="sk-vendor-panel-sub">{t('partner.vhome.home.toolsSub')}</span>
-                    </div>
-                  </div>
-
-                  {/* Canvas art for the tools panel (design/assets/image-6f6766.jpg); decorative. */}
-                  <img className="sk-vendor-tools-art" src={toolsArt} alt="" />
-
-                  <div className="sk-vendor-tools-list">
-                    {currentData.tools.map((tool) => (
-                      <button
-                        key={tool.id}
-                        type="button"
-                        className="sk-vendor-tool-link"
-                        onClick={() => handleToolAction(tool.actionKey)}
-                        style={{ minHeight: 44, width: '100%', textAlign: 'left', font: 'inherit' }}
-                      >
-                        <span className="sk-vendor-tool-sphere" aria-hidden="true" />
-                        <span className="sk-vendor-tool-info">
-                          <span className="sk-vendor-tool-name">{t(`partner.vhome.home.tool.${tool.id}` as MessageKey)}</span>
-                          <span className="sk-vendor-tool-desc">{t(`partner.vhome.home.tool.${tool.id}Meta` as MessageKey)}</span>
-                        </span>
-                        <Icon name="arrow-right" size={16} color="var(--sk-color-text-3)" />
-                      </button>
-                    ))}
-                  </div>
-                </section>
-              </div>
-            </>
-          )}
-
-          {/* View State: LOADING SKELETON */}
-          {viewState === 'loading' && (
-            <div className="sk-vendor-loading-wrap" aria-busy="true" aria-label={t('partner.vhome.home.loading')}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                  <span className="sk-vendor-skel" style={{ width: 280, height: 26, display: 'block' }} />
-                  <span className="sk-vendor-skel" style={{ width: 420, height: 14, display: 'block' }} />
-                </div>
-                <span className="sk-vendor-skel" style={{ width: 220, height: 40, display: 'block' }} />
-              </div>
-
-              <div className="sk-vendor-kpi-grid">
-                {[1, 2, 3, 4].map((k) => (
-                  <span key={k} className="sk-vendor-skel" style={{ width: '100%', height: 108, display: 'block' }} />
-                ))}
-              </div>
-
-              <div className="sk-vendor-columns">
-                <div style={{ flex: 1.6, display: 'flex', flexDirection: 'column', gap: 10 }}>
-                  {[1, 2, 3, 4, 5].map((k) => (
-                    <span key={k} className="sk-vendor-skel" style={{ width: '100%', height: 54, display: 'block' }} />
-                  ))}
-                </div>
-                <span className="sk-vendor-skel" style={{ flex: 1, height: 380, display: 'block' }} />
-              </div>
+        <div className="vh-columns">
+          <section className="pc-panel vh-queue" aria-labelledby="vh-queue-title">
+            <div>
+              <h2 id="vh-queue-title" className="pc-panel__title">{t('pc.home.queueTitle')}</h2>
+              <p className="pc-panel__sub">{t('partner.vhome.home.queueSub.pharmacy')}</p>
             </div>
-          )}
+            {data.recent.length ? (
+              <ul className="vh-rows">
+                {data.recent.map((line) => (
+                  <li key={line.id} className="vh-row">
+                    <span className="vh-row__id">{shortRef(line.orderId)}</span>
+                    <span className="vh-row__what">{t('pc.lineWhat', { name: line.name, qty: line.quantity })}</span>
+                    <span className="vh-row__meta">{deliveryMeta(line, t)}</span>
+                    <StatusPill tone={STATE[line.status].tone} className="vh-row__state">{t(STATE[line.status].key)}</StatusPill>
+                  </li>
+                ))}
+              </ul>
+            ) : <p className="pc-muted">{t('pc.home.queueEmpty')}</p>}
+            {data.total > data.recent.length ? (
+              <button type="button" className="pc-link-btn vh-more" onClick={() => go('performance')}>{t('pc.home.queueAll', { count: data.total })}</button>
+            ) : null}
+          </section>
 
-          {/* View State: EMPTY */}
-          {viewState === 'empty' && (
-            <div className="sk-vendor-empty-wrap">
-              <div className="sk-vendor-empty-card">
-                <Icon3d name="cart-alt--p3" size={96} />
-                <span className="sk-vendor-empty-title">{t('partner.vhome.home.emptyTitle')}</span>
-                <span className="sk-vendor-empty-desc">
-                  {t('partner.vhome.home.emptyDesc')}
-                </span>
-                <button
-                  type="button"
-                  className="sk-vendor-empty-btn"
-                  onClick={() => handleToolAction('catalogue')}
-                >
-                  {t('partner.vhome.home.emptyCta')}
-                </button>
-              </div>
+          <section className="pc-panel vh-tools" aria-labelledby="vh-tools-title">
+            <div>
+              <h2 id="vh-tools-title" className="pc-panel__title">{t('partner.vhome.home.toolsTitle')}</h2>
+              <p className="pc-panel__sub">{t('partner.vhome.home.toolsSub')}</p>
             </div>
-          )}
-
-          {/* View State: ERROR */}
-          {viewState === 'error' && (
-            <div className="sk-vendor-error-wrap">
-              <div className="sk-vendor-error-card" role="alert">
-                <div className="sk-vendor-error-icon" aria-hidden="true">
-                  <Icon name="alert-triangle" size={30} color="var(--sk-color-danger)" />
-                </div>
-                <span className="sk-vendor-error-title">{t('partner.vhome.home.errorTitle')}</span>
-                <span className="sk-vendor-error-desc">
-                  {t('partner.vhome.home.errorDesc')}
-                </span>
-                <div className="sk-vendor-error-actions">
-                  <button type="button" className="sk-vendor-error-retry" onClick={handleRetryError}>
-                    {t('common.tryAgain')}
-                  </button>
+            {/* The board's art for the tools panel (design/assets/image-6f6766.jpg); decorative. */}
+            <img className="vh-tools__art" src={toolsArt} alt="" />
+            <ul className="vh-tool-list">
+              {TOOLS[providerType].map((tool) => (
+                <li key={tool.id}>
                   <button
                     type="button"
-                    className="sk-vendor-error-help"
-                    onClick={() => showToast(t('partner.vhome.nav.helpToast'))}
+                    className={`vh-tool${tool.route ? '' : ' is-unavailable'}`}
+                    aria-disabled={tool.route ? undefined : true}
+                    onClick={() => (tool.route ? go(tool.route) : setToast(t('console.notAvailable')))}
                   >
-                    {t('partner.vhome.nav.help')}
+                    <span className="vh-tool__tile" aria-hidden="true" />
+                    <span className="vh-tool__text">
+                      <span className="vh-tool__name">{t(`partner.vhome.home.tool.${tool.id}` as MessageKey)}</span>
+                      <span className="vh-tool__meta">{tool.route ? t(`partner.vhome.home.tool.${tool.id}Meta` as MessageKey) : t('console.notAvailable')}</span>
+                    </span>
+                    <Icon name="arrow-right" size={16} />
                   </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-        </main>
-      </div>
-
-      {/* Floating Action Toast Notification */}
-      {toastMessage && (
-        <div className="sk-vendor-toast" role="status" aria-live="polite">
-          <Icon name="check-2" size={18} color="var(--sk-color-positive)" />
-          <span>{toastMessage}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
         </div>
-      )}
+      </>
+    );
+  }
+
+  return (
+    <div className="vh-root">
+      {topbar}
+      <PartnerPage>{body}</PartnerPage>
+      <Toast message={toast} onDone={() => setToast(null)} />
+    </div>
+  );
+}
+
+function deliveryMeta(line: PartnerRequest, t: ReturnType<typeof useT>): string {
+  const parts: string[] = [];
+  const delivery = line.delivery;
+  if (delivery?.mode === 'pickup') parts.push(t('pc.delivery.pickup'));
+  else if (delivery?.mode === 'delivery') parts.push(delivery.city ? t('pc.delivery.to', { city: delivery.city }) : t('pc.delivery.delivery'));
+  if (line.requestedSlot) parts.push(line.requestedSlot);
+  return parts.join(' · ');
+}
+
+/** The banner for the newest request waiting for a decision. */
+function NewWork({ line, busy, onDecide }: { line: PartnerRequest; busy: 'ACCEPTED' | 'DECLINED' | null; onDecide: (status: 'ACCEPTED' | 'DECLINED') => void }): React.ReactElement {
+  const t = useT();
+  const meta = [deliveryMeta(line, t), money(line.pricePaise * line.quantity)].filter(Boolean).join(' · ');
+  return (
+    <section className="vh-alert" aria-labelledby="vh-alert-title">
+      <span className="vh-alert__icon" aria-hidden="true"><Icon name="bell" size={22} /></span>
+      <span className="vh-alert__text">
+        <span id="vh-alert-title" className="vh-alert__title">{t('pc.home.newWork', { name: line.name, qty: line.quantity })}</span>
+        <span className="vh-alert__meta">{meta}</span>
+      </span>
+      <span className="vh-alert__actions">
+        <SkButton variant="secondary" className="vh-alert__decline" busy={busy === 'DECLINED'} disabled={busy !== null} onClick={() => onDecide('DECLINED')}>{t('pc.home.decline')}</SkButton>
+        <SkButton variant="on-hero" className="vh-alert__accept" busy={busy === 'ACCEPTED'} disabled={busy !== null} onClick={() => onDecide('ACCEPTED')}>{busy === 'ACCEPTED' ? null : <Icon name="check-2" size={17} />}{t('pc.home.accept')}</SkButton>
+      </span>
+    </section>
+  );
+}
+
+/** The account chip in the top bar and its menu. */
+function AccountMenu({ name, email, typeLabel, onSwitchRole, onSignOut }: { name: string; email?: string; typeLabel: string; onSwitchRole?: (role: 'student' | 'admin' | 'vendor') => void; onSignOut: () => void }): React.ReactElement {
+  const t = useT();
+  const [open, setOpen] = useState(false);
+  const root = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!open) return undefined;
+    const outside = (event: MouseEvent) => { if (root.current && event.target instanceof Node && !root.current.contains(event.target)) setOpen(false); };
+    const escape = (event: KeyboardEvent) => { if (event.key === 'Escape') setOpen(false); };
+    document.addEventListener('mousedown', outside);
+    document.addEventListener('keydown', escape);
+    return () => { document.removeEventListener('mousedown', outside); document.removeEventListener('keydown', escape); };
+  }, [open]);
+  const pick = (action: () => void) => () => { setOpen(false); action(); };
+  return (
+    <div className="vh-account" ref={root}>
+      <button type="button" className="vh-account__chip" aria-expanded={open} aria-haspopup="menu" aria-label={t('pc.home.accountMenu', { name })} onClick={() => setOpen(!open)}>
+        <span className="vh-account__avatar" aria-hidden="true">{partnerInitials(name)}</span>
+        <span className="vh-account__words">
+          <span className="vh-account__name">{name}</span>
+          {typeLabel ? <span className="vh-account__sub">{typeLabel}</span> : null}
+        </span>
+      </button>
+      {open ? (
+        <div className="vh-account__menu" role="menu">
+          <div className="vh-account__who"><strong>{name}</strong>{email ? <span>{email}</span> : null}</div>
+          {onSwitchRole ? (
+            <>
+              <button type="button" role="menuitem" className="vh-account__item" onClick={pick(() => onSwitchRole('student'))}><Icon name="graduation-cap" size={15} />{t('partner.vhome.home.switchStudent')}</button>
+              <button type="button" role="menuitem" className="vh-account__item" onClick={pick(() => onSwitchRole('admin'))}><Icon name="shield-2" size={15} />{t('partner.vhome.home.switchAdmin')}</button>
+            </>
+          ) : null}
+          <button type="button" role="menuitem" className="vh-account__item is-danger" onClick={pick(onSignOut)}><Icon name="log-out" size={15} />{t('console.signOut')}</button>
+        </div>
+      ) : null}
     </div>
   );
 }

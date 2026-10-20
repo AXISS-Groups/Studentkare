@@ -23,7 +23,7 @@ describe('partner console sidebar (VendorConsole / VendorHome boards)', () => {
       ['Home', 'home-2'], ['Verify student', 'scan'], ['Orders', 'box-2'], ['Rx review', 'prescription'],
       ['Substitutions', 'arrows-left-right-2'], ['OTP handover', 'key'], ['Returns', 'undo'],
       ['Dispense register', 'clipboard'], ['Reorder rules', 'repeat'],
-      ['Sample queue', 'flask'], ['Run sheet', 'truck'], ['Cold chain', 'asterisk'], ['Camp intake', 'alert-triangle-2'],
+      ['Sample queue', 'flask'], ['Run sheet', 'truck'], ['Cold chain', 'asterisk'], ['Lab reports', 'file'], ['Camp intake', 'alert-triangle-2'],
       ['Staff & roles', 'users'], ['Catalogue', 'grid'], ['Settlement', 'banknote'], ['Performance', 'bar-chart'],
     ]);
   });
@@ -40,6 +40,13 @@ describe('partner console sidebar (VendorConsole / VendorHome boards)', () => {
     renderShell('LAB', 'lab-queue');
     expect(within(nav()).getByRole('button', { name: 'Sample queue' })).toHaveAttribute('aria-current', 'page');
     expect(within(nav()).getByRole('button', { name: 'Home' })).not.toHaveAttribute('aria-current');
+    // "Lab reports" (the board's file icon) opens the same lab desk but never takes the pill.
+    expect(within(nav()).getByRole('button', { name: 'Lab reports' })).not.toHaveAttribute('aria-current');
+  });
+
+  it('keeps Camp intake lit while the staff app\'s camp fast mode is open', () => {
+    renderShell('LAB', 'camp-fast');
+    expect(within(nav()).getByRole('button', { name: 'Camp intake' })).toHaveAttribute('aria-current', 'page');
   });
 
   it('shows the brand mark, the PARTNER role line, and the partner’s own name on the help link', () => {

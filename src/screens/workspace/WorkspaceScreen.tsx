@@ -86,6 +86,7 @@ const WebAccountView = lazy(() => import('@/features/studentweb/views/WebAccount
 const WebNotificationsRoute = lazy(() => import('@/features/studentweb/views/WebNotificationsView').then(module => ({ default: module.WebNotificationsRoute })));
 const WebShopView = lazy(() => import('@/features/studentweb/views/shop/WebShopView').then(module => ({ default: module.WebShopView })));
 const WebCheckoutView = lazy(() => import('@/features/studentweb/views/shop/WebCheckoutView').then(module => ({ default: module.WebCheckoutView })));
+const StaffCampFastScreen = lazy(() => import('@/features/partner/staff/StaffCampFastScreen').then(module => ({ default: module.StaffCampFastScreen })));
 const VaultWorkspaceHub = lazy(() => import('../vault/VaultWorkspaceHub').then(module => ({ default: module.VaultWorkspaceHub })));
 
 /** The partner console page for a route, or null when the route is not one (same role checks as before). */
@@ -101,6 +102,8 @@ function vendorPageFor(route: RoutePath, role: AccountRole | null, onNavigate: (
     case 'substitutions': case 'vendor-substitutions': return <VendorSubstitutionScreen {...props} />;
     case 'reorder': case 'vendor-reorder': return <VendorReorderScreen {...props} />;
     case 'camp-intake': case 'vendor-camp-intake': return <VendorCampIntakeScreen {...props} />;
+    // The staff app's camp board: drawn full screen, outside the console shell (see WorkspaceScreen).
+    case 'camp-fast': return <StaffCampFastScreen onNavigate={(target) => onNavigate(target)} />;
     // The live lab desk (GET /work/lab-orders): sample custody through to filing the report for a doctor.
     case 'lab-queue': case 'vendor-lab-queue': return <LabSampleToReportScreen />;
     // The live dispense queue (GET /work/dispenses); the local register stays at /dispense-register.
@@ -114,7 +117,7 @@ function vendorPageFor(route: RoutePath, role: AccountRole | null, onNavigate: (
     case 'admin/catalog': return role === 'VENDOR' ? <VendorCatalogueScreen {...props} /> : null;
     case 'run-sheet': case 'lab-collection': return labStaff ? <LabCollectionScreen {...props} /> : null;
     case 'cold-chain': case 'lab-cold-chain': return labStaff ? <LabColdChainScreen {...props} /> : null;
-    case 'returns': case 'vendor-returns': return labStaff ? <VendorReturnsScreen {...props} liveRequests={<PartnerRequestsPanel />} /> : null;
+    case 'returns': case 'vendor-returns': return labStaff ? <VendorReturnsScreen {...props} liveRequests={<PartnerRequestsPanel omitReturns />} /> : null;
     default: return null;
   }
 }
@@ -187,6 +190,8 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
     // page, typed in or refreshed, goes back to their own home.
     const partnerKind = effectivePartnerKind;
     if (!canOpenPartnerRoute(route, user?.role ?? null, partnerKind)) return <Navigate to="/vendor" replace />;
+    // A phone board from the staff app: no sidebar, the whole screen is the scanner.
+    if (route === 'camp-fast') return <Suspense fallback={<ScreenLoading />}>{vendorPage}</Suspense>;
     return <>
       <VendorShell route={route} role={user?.role ?? null} partnerKind={partnerKind} assignedPartnerKind={partnerKindOf(user)} onNavigate={navigate} accountName={user ? partnerDisplayName(user) : undefined} onSignOut={user ? () => setConfirmSignOut(true) : undefined} signingOut={mutation.busy} signOutError={mutation.error}>
         <Suspense fallback={<ScreenLoading />}><PageTransition key={route}>{vendorPage}</PageTransition></Suspense>

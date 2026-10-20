@@ -1,122 +1,71 @@
 import React from 'react';
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
-import { VendorConsoleScreen, DEMO_CONSOLE_ORDERS } from '../VendorConsoleScreen';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
+import { VendorConsoleScreen } from '../VendorConsoleScreen';
+import type { ConsoleData, ConsoleSource } from '../VendorConsoleScreen';
+import type { PartnerRequest } from '@/features/partner/partnerApi';
 
-vi.mock('@/data/contexts/AuthContext', () => ({
-  useAuth: () => ({
-    user: {
-      id: 'demo-pharmacy',
-      fullName: 'MedPlus Bachupally',
-      role: 'VENDOR',
-      email: 'pharmacy@studentkare.test',
-    },
-    logout: vi.fn(),
-  }),
-}));
+const partner = { partnerKind: 'PHARMACY' };
+vi.mock('@/data/contexts/AuthContext', () => ({ useAuth: () => ({ user: { id: 'acct-1', fullName: 'Campus Pharmacy', role: 'VENDOR', partnerKind: partner.partnerKind } }) }));
+vi.mock('@/lib/utils/workflowRouting', () => ({ navigate: vi.fn() }));
 
-vi.mock('@/lib/utils/workflowRouting', () => ({
-  navigate: vi.fn(),
-  homeForRole: vi.fn((role: string) => (role === 'SUPER_ADMIN' ? 'admin' : role === 'VENDOR' ? 'vendor' : 'health')),
-}));
+const line = (over: Partial<PartnerRequest> = {}): PartnerRequest => ({
+  id: 'line-1', orderId: 'order-00048120', itemId: 'i1', name: 'Ashwagandha Stress Balance', kind: 'product', quantity: 2,
+  pricePaise: 28900, status: 'ACCEPTED', customer: 'Kiran Chandra', delivery: { mode: 'delivery', city: 'Hyderabad', pincode: '500090' },
+  requestedSlot: 'Tonight, 9 PM', createdAt: 1_760_000_000, ...over,
+});
+const data = (over: Partial<ConsoleData> = {}): ConsoleData => ({
+  page: { items: [line(), line({ id: 'line-2', orderId: 'order-00048115', name: 'Omega 3 Fish Oil', quantity: 1, status: 'COMPLETED', delivery: { mode: 'pickup' }, requestedSlot: '' })], total: 2, limit: 20, offset: 0 },
+  totals: { ALL: 9, REQUESTED: 2, ACCEPTED: 4, DISPATCHED: 1 },
+  rxWaiting: 2,
+  ...over,
+});
 
-describe('VendorConsoleScreen', () => {
-  beforeEach(() => {
-    vi.useFakeTimers();
+describe('VendorConsole — the fulfilment queue', () => {
+  beforeEach(() => { partner.partnerKind = 'PHARMACY'; });
+
+  it('lists the partner’s own lines with initials only, server prices and the server totals', async () => {
+    render(<VendorConsoleScreen source={vi.fn(async () => data())} />);
+    expect(await screen.findByRole('heading', { level: 1, name: 'Fulfilment queue' })).toBeInTheDocument();
+    expect(screen.getByText('9 orders · 2 waiting for you · 2 awaiting pharmacist verification')).toBeInTheDocument();
+    const table = screen.getByRole('table');
+    expect(within(table).getByText('048120')).toBeInTheDocument();
+    expect(within(table).getAllByText("K.C.").length).toBe(2);
+    expect(within(table).queryByText(/Kiran/)).toBeNull();
+    expect(within(table).getByText(/Qty 2 · ₹578/)).toBeInTheDocument();
+    expect(within(table).getByText('Pickup at the store')).toBeInTheDocument();
+    const side = screen.getByRole('complementary', { name: 'Summary and notes' });
+    expect(within(side).getByText('Orders received').nextElementSibling).toHaveTextContent('9');
+    expect(within(side).getByText('Settlement due').nextElementSibling).toHaveTextContent('—');
+    expect(within(side).getByText(/2 prescriptions are waiting/)).toBeInTheDocument();
+    expect(within(side).getByText('What you cannot see')).toBeInTheDocument();
   });
 
-  afterEach(() => {
-    vi.useRealTimers();
+  it('filters by state on the server and resets to the first page', async () => {
+    const source: ConsoleSource = vi.fn(async () => data());
+    render(<VendorConsoleScreen source={source} />);
+    fireEvent.click(await screen.findByRole('button', { name: /To pack/ }));
+    await waitFor(() => expect(source).toHaveBeenLastCalledWith('ACCEPTED', 0, true, expect.anything()));
+    expect(screen.getByRole('button', { name: /To pack/ })).toHaveAttribute('aria-pressed', 'true');
+    // No "Blocked" chip: order lines are never held, so it would always be empty.
+    expect(screen.queryByRole('button', { name: /Blocked/ })).toBeNull();
   });
 
-  it('renders heading, eyebrow, and top stat counters', () => {
-    render(<VendorConsoleScreen initialOrders={DEMO_CONSOLE_ORDERS} />);
-    expect(screen.getByRole('heading', { level: 1, name: 'Fulfilment queue' })).toBeInTheDocument();
-    expect(screen.getByText('Fulfilment fields only')).toBeInTheDocument();
-    expect(screen.getByText('TODAY')).toBeInTheDocument();
-    expect(screen.getByText('Orders received')).toBeInTheDocument();
-    expect(screen.getByText('Packed')).toBeInTheDocument();
-    expect(screen.getByText('Blocked on verification')).toBeInTheDocument();
-    expect(screen.getByText('Settlement due')).toBeInTheDocument();
+  it('a non-pharmacy partner gets no pharmacist note and no Rx call', async () => {
+    partner.partnerKind = 'CLINIC';
+    const source: ConsoleSource = vi.fn(async () => data({ rxWaiting: null }));
+    render(<VendorConsoleScreen source={source} />);
+    await screen.findByRole('table');
+    expect(source).toHaveBeenCalledWith('ALL', 0, false, expect.anything());
+    expect(screen.queryByText('Awaiting pharmacist')).toBeNull();
   });
 
-  it('renders privacy card and pharmacist alert', () => {
-    render(<VendorConsoleScreen initialOrders={DEMO_CONSOLE_ORDERS} />);
-    expect(screen.getByText('AWAITING PHARMACIST')).toBeInTheDocument();
-    expect(screen.getByText('WHAT YOU CANNOT SEE')).toBeInTheDocument();
-    expect(
-      screen.getByText(/Full names, diagnoses, lab results, prescription contents, or why anything was ordered/i)
-    ).toBeInTheDocument();
-  });
-
-  it('renders table columns and initial order rows', () => {
-    render(<VendorConsoleScreen initialOrders={DEMO_CONSOLE_ORDERS} />);
-    expect(screen.getByText('ORDER')).toBeInTheDocument();
-    expect(screen.getByText('ITEMS')).toBeInTheDocument();
-    expect(screen.getByText('DROP POINT')).toBeInTheDocument();
-    expect(screen.getByText('SLOT')).toBeInTheDocument();
-    expect(screen.getByText('STATUS')).toBeInTheDocument();
-
-    // Check sample order items
-    expect(screen.getByText('SK-48120')).toBeInTheDocument();
-    expect(screen.getByText(/Ashwagandha Stress Balance, Barrier Care Lotion/i)).toBeInTheDocument();
-    expect(screen.getAllByText('North Dorm, B').length).toBeGreaterThan(0);
-  });
-
-  it('filters rows when clicking tabs', () => {
-    render(<VendorConsoleScreen initialOrders={DEMO_CONSOLE_ORDERS} />);
-    const toPackTab = screen.getByRole('tab', { name: /To pack/i });
-    fireEvent.click(toPackTab);
-
-    // Only orders with 'To pack' should remain
-    expect(screen.getByText('SK-48120')).toBeInTheDocument();
-    // Blocked order should not appear
-    expect(screen.queryByText('SK-48118')).not.toBeInTheDocument();
-
-    const blockedTab = screen.getByRole('tab', { name: /Blocked/i });
-    fireEvent.click(blockedTab);
-    expect(screen.getByText('SK-48118')).toBeInTheDocument();
-    expect(screen.queryByText('SK-48120')).not.toBeInTheDocument();
-  });
-
-  it('filters rows by search input', () => {
-    render(<VendorConsoleScreen initialOrders={DEMO_CONSOLE_ORDERS} />);
-    const searchInput = screen.getByPlaceholderText(/Search orders, initials, drop/i);
-    fireEvent.change(searchInput, { target: { value: 'Ashwagandha' } });
-
-    expect(screen.getByText('SK-48120')).toBeInTheDocument();
-    expect(screen.queryByText('SK-48119')).not.toBeInTheDocument();
-  });
-
-  it('opens order fulfillment modal on order click and updates status', () => {
-    render(<VendorConsoleScreen initialOrders={DEMO_CONSOLE_ORDERS} />);
-    const orderBtn = screen.getByRole('button', { name: /Order SK-48120/i });
-    fireEvent.click(orderBtn);
-
-    // Modal should appear
-    expect(screen.getByRole('heading', { level: 3, name: /SK-48120/i })).toBeInTheDocument();
-    expect(screen.getByText('Mark Packed & Out')).toBeInTheDocument();
-
-    // Click 'Mark Packed & Out'
-    const markOutBtn = screen.getByRole('button', { name: /Mark Packed & Out/i });
-    fireEvent.click(markOutBtn);
-
-    // Toast notification should display
-    expect(screen.getByText(/Order SK-48120 marked “Out” on this screen only — nothing was sent/i)).toBeInTheDocument();
-  });
-
-  it('never invents a settlement amount or counts, and counts the orders awaiting a pharmacist', () => {
-    render(<VendorConsoleScreen initialOrders={DEMO_CONSOLE_ORDERS} />);
-    expect(screen.getByText('Settlement due').nextElementSibling?.textContent).toBe('—');
-    expect(screen.queryByText('₹4,188')).toBeNull();
-    expect(screen.getByText(/2 orders contain a scheduled medicine/i)).toBeInTheDocument();
-  });
-
-  it('shows an honest empty queue without demo data or the pharmacist card', () => {
-    render(<VendorConsoleScreen />);
-    expect(screen.getByText(/No orders to show/i)).toBeInTheDocument();
-    expect(screen.getByText(/not connected to live orders yet/i)).toBeInTheDocument();
-    expect(screen.queryByText('AWAITING PHARMACIST')).not.toBeInTheDocument();
-    expect(screen.queryByText('SK-48120')).not.toBeInTheDocument();
+  it('empty and error states', async () => {
+    const { unmount } = render(<VendorConsoleScreen source={vi.fn(async () => data({ page: { items: [], total: 0, limit: 20, offset: 0 }, totals: { ALL: 0, REQUESTED: 0, ACCEPTED: 0, DISPATCHED: 0 } }))} />);
+    expect(await screen.findByRole('heading', { name: 'Nothing in the fulfilment queue yet.' })).toBeInTheDocument();
+    unmount();
+    render(<VendorConsoleScreen source={vi.fn(async () => { throw new Error('down'); })} />);
+    expect(await screen.findByRole('alert')).toHaveTextContent('Couldn’t load the fulfilment queue');
+    expect(screen.getByText('Ref QUEUE · VendorConsole')).toBeInTheDocument();
   });
 });

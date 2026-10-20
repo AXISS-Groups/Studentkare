@@ -114,7 +114,7 @@ function CampRoute() {
   const navigate = useNavigate();
   return (
     <SafeAreaView edges={['left', 'right', 'bottom']} style={{ flex: 1 }}>
-      <CampScreen onOpenProviders={() => navigate('PreventiveCare')} />
+      <CampScreen onOpenProviders={() => navigate('PreventiveCare')} onSeeResults={() => navigate('Vault')} />
     </SafeAreaView>
   );
 }

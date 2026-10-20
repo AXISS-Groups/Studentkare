@@ -103,6 +103,12 @@ export const landingModule: FeatureModule = {
         import('@/features/campus/apply/CampusApplyScreen').then((m) => ({ default: m.CampusApplyScreen })),
     },
     {
+      path: '/partnerships/apply',
+      public: true,
+      load: () =>
+        import('@/features/partner/apply/PartnerApplyScreen').then((m) => ({ default: m.PartnerApplyScreen })),
+    },
+    {
       path: '/clinicians/apply',
       public: true,
       load: () =>
