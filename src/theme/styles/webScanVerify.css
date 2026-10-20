@@ -86,12 +86,12 @@
   width: 100%;
   min-height: 100vh;
   box-sizing: border-box;
-  background: #FAF8FF;
+  background: var(--sk-color-canvas);
   display: flex;
   overflow-x: hidden;
   position: relative;
   font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-  color: #131B2E;
+  color: var(--sk-color-text);
 }
 
 /* Sidebar */
@@ -102,7 +102,7 @@
   flex-shrink: 0;
   box-sizing: border-box;
   padding: 16px 12px;
-  background: #283044;
+  background: var(--sk-color-sidebar);
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -134,7 +134,7 @@
 .sk-verify-brand-name {
   font-size: 14px;
   font-weight: 800;
-  color: #FFFFFF;
+  color: var(--sk-color-sidebar-ink);
   letter-spacing: -0.4px;
 }
 
@@ -147,7 +147,7 @@
 .sk-verify-brand-partner {
   font-size: 10px;
   font-weight: 700;
-  color: #C3C0FF;
+  color: var(--sk-color-sidebar-ink-2);
   letter-spacing: 0.7px;
 }
 
@@ -162,7 +162,7 @@
   font-size: 9.5px;
   font-weight: 800;
   letter-spacing: 1.2px;
-  color: #A9A5E0;
+  color: var(--sk-color-sidebar-ink-3);
 }
 
 .sk-verify-nav-item {
@@ -175,7 +175,7 @@
   border-radius: 9px;
   font-size: 12.5px;
   font-weight: 600;
-  color: #C3C0FF !important;
+  color: var(--sk-color-sidebar-ink-2) !important;
   background: transparent;
   border: 0;
   cursor: pointer;
@@ -187,46 +187,46 @@
 }
 
 .sk-verify-nav-item span {
-  color: #C3C0FF !important;
+  color: var(--sk-color-sidebar-ink-2) !important;
 }
 
 .sk-verify-nav-item svg {
-  color: #C3C0FF !important;
-  stroke: #C3C0FF !important;
+  color: var(--sk-color-sidebar-ink-2) !important;
+  stroke: var(--sk-color-sidebar-ink-2) !important;
   flex-shrink: 0;
 }
 
 .sk-verify-nav-item:hover {
   background: rgba(255, 255, 255, 0.08) !important;
-  color: #FFFFFF !important;
+  color: var(--sk-color-sidebar-ink) !important;
 }
 
 .sk-verify-nav-item:hover span {
-  color: #FFFFFF !important;
+  color: var(--sk-color-sidebar-ink) !important;
 }
 
 .sk-verify-nav-item:hover svg {
-  color: #FFFFFF !important;
-  stroke: #FFFFFF !important;
+  color: var(--sk-color-sidebar-ink) !important;
+  stroke: var(--sk-color-sidebar-ink) !important;
 }
 
 .sk-verify-nav-item.is-active,
 .sk-verify-nav-item[aria-current="page"] {
-  background: #4F46E5 !important;
-  color: #FFFFFF !important;
+  background: var(--sk-color-sidebar-active) !important;
+  color: var(--sk-color-sidebar-ink) !important;
   font-weight: 700 !important;
 }
 
 .sk-verify-nav-item.is-active span,
 .sk-verify-nav-item[aria-current="page"] span {
-  color: #FFFFFF !important;
+  color: var(--sk-color-sidebar-ink) !important;
   font-weight: 700 !important;
 }
 
 .sk-verify-nav-item.is-active svg,
 .sk-verify-nav-item[aria-current="page"] svg {
-  color: #FFFFFF !important;
-  stroke: #FFFFFF !important;
+  color: var(--sk-color-sidebar-ink) !important;
+  stroke: var(--sk-color-sidebar-ink) !important;
 }
 
 .sk-verify-nav-badge {
@@ -236,13 +236,13 @@
   padding: 0 5px;
   box-sizing: border-box;
   border-radius: 999px;
-  background: #E11D48;
+  background: var(--sk-color-danger-fill);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 10.5px;
   font-weight: 800;
-  color: #FFFFFF;
+  color: var(--sk-color-on-danger-fill);
 }
 
 .sk-verify-sidebar-bottom {
@@ -260,7 +260,7 @@
   border-radius: 9px;
   font-size: 12px;
   font-weight: 600;
-  color: #C3C0FF;
+  color: var(--sk-color-sidebar-ink-2);
   background: transparent;
   border: 0;
   cursor: pointer;
@@ -269,7 +269,7 @@
 }
 
 .sk-verify-help-link:hover {
-  color: #FFFFFF;
+  color: var(--sk-color-sidebar-ink);
 }
 
 /* Main Content Area */
@@ -284,7 +284,7 @@
 /* Top Dark Banner */
 .sk-verify-header-bar {
   padding: 22px 32px;
-  background: #1E1B4B;
+  background: var(--sk-color-brand-navy);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -302,7 +302,7 @@
 .sk-verify-header-bar h1 {
   font-size: 24px;
   font-weight: 800;
-  color: #FFFFFF !important;
+  color: var(--sk-color-on-hero) !important;
   letter-spacing: -0.5px;
   margin: 0;
 }
@@ -319,13 +319,13 @@
   cursor: pointer;
   border: 1px solid rgba(255, 255, 255, 0.2);
   background: rgba(255, 255, 255, 0.1);
-  color: #FFFFFF;
+  color: var(--sk-color-on-hero);
   transition: all 0.2s ease;
 }
 
 .sk-verify-network-pill.is-online {
   background: rgba(16, 185, 129, 0.2);
-  border-color: #10B981;
+  border-color: var(--sk-color-positive-fill);
   color: #A7F3D0;
 }
 
@@ -346,7 +346,7 @@
 .sk-verify-header-sub {
   font-size: 13px;
   font-weight: 600;
-  color: #A9A5E0;
+  color: var(--sk-color-on-hero-label);
 }
 
 /* Context Switcher Buttons */
@@ -366,19 +366,19 @@
   font-weight: 800;
   cursor: pointer;
   background: rgba(255, 255, 255, 0.1);
-  color: #C7D2FE;
+  color: var(--sk-color-on-hero-2);
   border: 1px solid rgba(255, 255, 255, 0.18);
   transition: all 0.15s ease;
 }
 
 .sk-verify-ctx-btn:hover {
   background: rgba(255, 255, 255, 0.18);
-  color: #FFFFFF;
+  color: var(--sk-color-on-hero);
 }
 
 .sk-verify-ctx-btn.is-active {
-  background: #FFFFFF;
-  color: #131B2E;
+  background: var(--sk-color-hero-current);
+  color: var(--sk-color-on-hero-current);
   border: 0;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
@@ -489,11 +489,11 @@
   height: 52px;
   border-radius: 14px;
   border: 0;
-  background: #3525CD;
+  background: var(--sk-color-action);
   font-family: inherit;
   font-size: 15.5px;
   font-weight: 800;
-  color: #FFFFFF;
+  color: var(--sk-color-on-action);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -503,12 +503,12 @@
 }
 
 .sk-verify-btn-primary:hover {
-  background: #2A1EA8;
+  background: var(--sk-color-action-hover);
 }
 
 .sk-verify-btn-primary:disabled {
-  background: #DAE2FD;
-  color: #6B6980;
+  background: var(--sk-color-action-soft);
+  color: var(--sk-color-text-3);
   cursor: not-allowed;
 }
 
@@ -525,18 +525,18 @@
   height: 46px;
   padding: 0 14px;
   border-radius: 12px;
-  border: 1.5px solid #C7C4D8;
+  border: 1.5px solid var(--sk-color-rule-strong);
   font-family: 'IBM Plex Mono', ui-monospace, monospace;
   font-size: 16px;
   letter-spacing: 3px;
   outline: none;
-  background: #FFFFFF;
-  color: #131B2E;
+  background: var(--sk-color-surface);
+  color: var(--sk-color-text);
   transition: border-color 0.15s ease;
 }
 
 .sk-verify-code-input:focus {
-  border-color: #3525CD;
+  border-color: var(--sk-color-focus);
 }
 
 .sk-verify-code-btn {
@@ -549,14 +549,14 @@
   font-size: 14px;
   font-weight: 800;
   cursor: pointer;
-  background: #DAE2FD;
-  color: #6B6980;
+  background: var(--sk-color-action-soft);
+  color: var(--sk-color-text-3);
   transition: all 0.15s ease;
 }
 
 .sk-verify-code-btn.is-active {
-  background: #3525CD;
-  color: #FFFFFF;
+  background: var(--sk-color-action);
+  color: var(--sk-color-on-action);
 }
 
 /* Secondary Link Button */
@@ -571,7 +571,7 @@
   font-family: inherit;
   font-size: 14px;
   font-weight: 800;
-  color: #3525CD;
+  color: var(--sk-color-action);
   cursor: pointer;
 }
 
@@ -602,24 +602,24 @@
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 1px;
-  color: #464555;
+  color: var(--sk-color-text-2);
 }
 
 .sk-verify-text-input {
   height: 50px;
   padding: 0 14px;
   border-radius: 14px;
-  border: 1.5px solid #C7C4D8;
+  border: 1.5px solid var(--sk-color-rule-strong);
   font-family: 'IBM Plex Mono', ui-monospace, monospace;
   font-size: 16px;
   letter-spacing: 1px;
   outline: none;
-  background: #FFFFFF;
-  color: #131B2E;
+  background: var(--sk-color-surface);
+  color: var(--sk-color-text);
 }
 
 .sk-verify-text-input:focus {
-  border-color: #3525CD;
+  border-color: var(--sk-color-focus);
 }
 
 /* Checkbox Row */
@@ -630,7 +630,7 @@
   min-height: 44px;
   font-size: 13.5px;
   font-weight: 700;
-  color: #131B2E;
+  color: var(--sk-color-text);
   cursor: pointer;
 }
 
@@ -643,14 +643,14 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  background: #FFFFFF;
-  border: 1.5px solid #C7C4D8;
+  background: var(--sk-color-surface);
+  border: 1.5px solid var(--sk-color-rule-strong);
   transition: all 0.15s ease;
 }
 
 .sk-verify-checkbox-box.is-checked {
-  background: #047857;
-  border-color: #047857;
+  background: var(--sk-color-positive);
+  border-color: var(--sk-color-positive);
 }
 
 /* Expired Banner */
@@ -682,8 +682,8 @@
 .sk-verify-student-card {
   padding: 18px;
   border-radius: 20px;
-  background: #FFFFFF;
-  border: 1px solid #EEF2FF;
+  background: var(--sk-color-surface);
+  border: 1px solid var(--sk-color-rule-soft);
   display: flex;
   gap: 16px;
   align-items: center;
@@ -713,32 +713,32 @@
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 1px;
-  color: #047857;
+  color: var(--sk-color-positive);
 }
 
 .sk-verify-student-name {
   font-size: 21px;
   font-weight: 800;
-  color: #131B2E;
+  color: var(--sk-color-text);
 }
 
 .sk-verify-student-roll {
   font-family: 'IBM Plex Mono', monospace;
   font-size: 12.5px;
-  color: #464555;
+  color: var(--sk-color-text-2);
 }
 
 .sk-verify-student-date {
   font-size: 12.5px;
   font-weight: 600;
-  color: #464555;
+  color: var(--sk-color-text-2);
 }
 
 /* Visit Details Card */
 .sk-verify-visit-card {
   padding: 14px 16px;
   border-radius: 16px;
-  background: #F7F6FF;
+  background: var(--sk-color-surface-2);
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -747,13 +747,13 @@
 .sk-verify-visit-title {
   font-size: 15px;
   font-weight: 800;
-  color: #131B2E;
+  color: var(--sk-color-text);
 }
 
 .sk-verify-visit-sub {
   font-size: 12.5px;
   font-weight: 600;
-  color: #464555;
+  color: var(--sk-color-text-2);
 }
 
 /* Face Camera Oval */
@@ -820,7 +820,7 @@
 .sk-verify-compare-label {
   font-size: 12px;
   font-weight: 800;
-  color: #464555;
+  color: var(--sk-color-text-2);
   text-align: center;
 }
 
@@ -836,7 +836,7 @@
   justify-content: space-between;
   font-size: 12.5px;
   font-weight: 800;
-  color: #131B2E;
+  color: var(--sk-color-text);
 }
 
 .sk-verify-meter-track {
@@ -850,7 +850,7 @@
   display: block;
   width: 94%;
   height: 100%;
-  background: #10B981;
+  background: var(--sk-color-positive-fill);
   border-radius: 999px;
 }
 
@@ -902,7 +902,7 @@
 .sk-verify-success-card {
   padding: 26px 22px;
   border-radius: 22px;
-  background: #FFFFFF;
+  background: var(--sk-color-surface);
   border: 1.5px solid #A7F3D0;
   display: flex;
   flex-direction: column;
@@ -916,7 +916,7 @@
   width: 78px;
   height: 78px;
   border-radius: 999px;
-  background: #10B981;
+  background: var(--sk-color-positive-fill);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -991,7 +991,7 @@
 
 .sk-verify-flag-btn.is-active {
   background: #DC2626;
-  color: #FFFFFF;
+  color: var(--sk-color-on-danger-fill);
 }
 
 /* Right Sidebar Cards */
@@ -1004,15 +1004,15 @@
 .sk-verify-log-card {
   padding: 20px;
   border-radius: 20px;
-  background: #FFFFFF;
-  border: 1px solid #EEF2FF;
+  background: var(--sk-color-surface);
+  border: 1px solid var(--sk-color-rule-soft);
 }
 
 .sk-verify-log-title {
   font-size: 12px;
   font-weight: 800;
   letter-spacing: 1.1px;
-  color: #464555;
+  color: var(--sk-color-text-2);
   margin-bottom: 12px;
   display: block;
 }
@@ -1022,7 +1022,7 @@
   align-items: center;
   gap: 10px;
   padding: 10px 0;
-  border-bottom: 1px solid #F1F2FA;
+  border-bottom: 1px solid var(--sk-color-rule-soft);
 }
 
 .sk-verify-log-item:last-child {
@@ -1033,13 +1033,13 @@
   flex-grow: 1;
   font-size: 14px;
   font-weight: 700;
-  color: #131B2E;
+  color: var(--sk-color-text);
 }
 
 .sk-verify-log-time {
   font-family: 'IBM Plex Mono', monospace;
   font-size: 12px;
-  color: #6B6980;
+  color: var(--sk-color-text-3);
 }
 
 .sk-verify-log-chip {
@@ -1051,27 +1051,27 @@
 }
 
 .sk-verify-log-chip.ok {
-  background: #ECFDF5;
-  color: #047857;
+  background: var(--sk-color-positive-bg);
+  color: var(--sk-color-positive);
 }
 
 .sk-verify-log-chip.bad {
-  background: #FFF1F2;
-  color: #BE123C;
+  background: var(--sk-color-danger-bg);
+  color: var(--sk-color-danger);
 }
 
 /* Rules Card */
 .sk-verify-rules-card {
   padding: 20px;
   border-radius: 20px;
-  background: #EEF2FF;
+  background: var(--sk-color-surface-3);
   display: flex;
   flex-direction: column;
   gap: 8px;
   font-size: 13px;
   line-height: 1.55;
   font-weight: 600;
-  color: #312E81;
+  color: var(--sk-color-info);
 }
 
 .sk-verify-rules-title {
@@ -1108,12 +1108,12 @@
 .sk-verify-offline-note {
   padding: 10px 14px;
   border-radius: 12px;
-  background: #EEF2FF;
-  border: 1px solid #C7D2FE;
+  background: var(--sk-color-surface-3);
+  border: 1px solid var(--sk-color-rule);
   font-size: 12.5px;
   line-height: 1.5;
   font-weight: 700;
-  color: #312E81;
+  color: var(--sk-color-info);
 }
 
 /* Toast */
