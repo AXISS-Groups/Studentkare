@@ -154,6 +154,11 @@ def declare(key: str, type: str, default: Any, *, description: str, area: str, u
 ORDERED_PAIRS: tuple[tuple[str, str], ...] = (
     ("wellness.water_goal_ml_min", "wellness.water_goal_ml_default"),
     ("wellness.water_goal_ml_default", "wellness.water_goal_ml_max"),
+    ("wellness.water_entry_ml_min", "wellness.water_entry_ml_max"),
+    ("wellness.weight_kg_min", "wellness.weight_kg_max"),
+    ("wellness.height_cm_min", "wellness.height_cm_max"),
+    ("wellness.bmi_cutoff_low", "wellness.bmi_cutoff_mid"),
+    ("wellness.bmi_cutoff_mid", "wellness.bmi_cutoff_high"),
 )
 
 
@@ -183,6 +188,60 @@ declare("wellness.water_goal_ml_min", INT, 500, area="wellness", unit="ml", mini
         public=True, description="Lowest daily water goal a student can set.")
 declare("wellness.water_goal_ml_max", INT, 6000, area="wellness", unit="ml", minimum=100, maximum=10000,
         public=True, description="Highest daily water goal a student can set.")
+declare("wellness.water_entry_ml_min", INT, 10, area="wellness", unit="ml", minimum=1, maximum=1000, public=True,
+        description="Smallest amount one water entry may record.")
+declare("wellness.water_entry_ml_max", INT, 2000, area="wellness", unit="ml", minimum=10, maximum=5000, public=True,
+        description="Largest amount one water entry may record.")
+declare("wellness.entry_backdate_days", INT, 7, area="wellness", unit="days", minimum=0, maximum=366, public=True,
+        description="How far back a water entry or a body measurement may be dated.")
+declare("wellness.activity_backdate_days", INT, 366, area="wellness", unit="days", minimum=0, maximum=3660,
+        public=True, description="How far back a day's manual activity totals may be entered.")
+# Not public: a server-side allowance for a phone clock that runs a little fast.
+declare("wellness.entry_future_tolerance_minutes", INT, 5, area="wellness", unit="minutes", minimum=0, maximum=60,
+        description="How far in the future an entry's time may be before it is refused (clock skew).")
+# Upper bounds of one day's manual activity totals. The lower bound is 0 (a
+# total cannot be negative) and standing minutes are bounded by the minutes in a
+# day; both are structural, not declared here.
+declare("wellness.activity_steps_max", INT, 100000, area="wellness", unit="steps", minimum=1000, maximum=1000000,
+        public=True, description="Most steps one day's manual entry may record.")
+declare("wellness.activity_distance_km_max", FLOAT, 200.0, area="wellness", unit="km", minimum=1, maximum=1000,
+        public=True, description="Longest distance one day's manual entry may record.")
+declare("wellness.activity_floors_max", INT, 500, area="wellness", unit="floors", minimum=1, maximum=5000,
+        public=True, description="Most floors climbed one day's manual entry may record.")
+declare("wellness.activity_energy_kcal_max", FLOAT, 10000.0, area="wellness", unit="kcal", minimum=100,
+        maximum=50000, public=True, description="Most active energy one day's manual entry may record.")
+# Adult body-measure bounds (18+ only, AGENTS.md guardrail 8). A stored value
+# outside them is never used for BMI. The generic readings form keeps its own.
+declare("wellness.weight_kg_min", FLOAT, 20.0, area="wellness", unit="kg", minimum=1, maximum=100, public=True,
+        description="Lowest weight the weight & BMI form accepts and BMI is computed from.")
+declare("wellness.weight_kg_max", FLOAT, 350.0, area="wellness", unit="kg", minimum=100, maximum=700, public=True,
+        description="Highest weight the weight & BMI form accepts and BMI is computed from.")
+declare("wellness.height_cm_min", FLOAT, 100.0, area="wellness", unit="cm", minimum=30, maximum=150, public=True,
+        description="Lowest height the weight & BMI form accepts and BMI is computed from.")
+declare("wellness.height_cm_max", FLOAT, 250.0, area="wellness", unit="cm", minimum=150, maximum=300, public=True,
+        description="Highest height the weight & BMI form accepts and BMI is computed from.")
+declare("wellness.body_entries_list_cap", INT, 100, area="wellness", unit="entries", minimum=1, maximum=1000,
+        description="Most weight and height entries GET /body/measurements lists, newest first.")
+# BMI band cut-offs. CLINICAL OWNER: these are clinical reference values (WHO
+# expert consultation, Lancet 2004, cut-offs for Asian populations). Change them
+# only with the clinical lead's written sign-off, quoted in the override reason.
+# Not public: the bands, with their bounds, come from GET /body/measurements.
+declare("wellness.bmi_cutoff_low", FLOAT, 18.5, area="clinical", unit="kg/m²", minimum=10, maximum=40,
+        description="BMI where the second band starts (WHO Asian cut-offs, 2004). Clinical owner sign-off required.")
+declare("wellness.bmi_cutoff_mid", FLOAT, 23.0, area="clinical", unit="kg/m²", minimum=10, maximum=40,
+        description="BMI where the third band starts (WHO Asian cut-offs, 2004). Clinical owner sign-off required.")
+declare("wellness.bmi_cutoff_high", FLOAT, 25.0, area="clinical", unit="kg/m²", minimum=10, maximum=40,
+        description="BMI where the fourth band starts (WHO Asian cut-offs, 2004). Clinical owner sign-off required.")
+
+# --- health records --------------------------------------------------------
+declare("health.readings_list_cap", INT, 1000, area="health", unit="rows", minimum=1, maximum=10000,
+        description="Most readings GET /health/readings returns in one response.")
+
+# --- platform --------------------------------------------------------------
+# A name zoneinfo does not know (in an override or a student's preference) is
+# never used: the student's day then falls back to this declared default.
+declare("platform.default_timezone", STR, "Asia/Kolkata", area="platform", unit="IANA timezone",
+        description="Timezone for a student's calendar day when they have not set a valid one.")
 
 # --- consultations ---------------------------------------------------------
 declare("consult.media_join_before_minutes", INT, 15, area="consult", unit="minutes", minimum=0, maximum=120,

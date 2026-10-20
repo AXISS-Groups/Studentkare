@@ -19,12 +19,36 @@ export interface PublicSettings {
   "rewards.referral_claim_window_hours": number;
   /** Points credited to the referrer when a referred student completes sign-up. (points) */
   "rewards.referral_points": number;
+  /** How far back a day's manual activity totals may be entered. (days) */
+  "wellness.activity_backdate_days": number;
+  /** Longest distance one day's manual entry may record. (km) */
+  "wellness.activity_distance_km_max": number;
+  /** Most active energy one day's manual entry may record. (kcal) */
+  "wellness.activity_energy_kcal_max": number;
+  /** Most floors climbed one day's manual entry may record. (floors) */
+  "wellness.activity_floors_max": number;
+  /** Most steps one day's manual entry may record. (steps) */
+  "wellness.activity_steps_max": number;
+  /** How far back a water entry or a body measurement may be dated. (days) */
+  "wellness.entry_backdate_days": number;
+  /** Highest height the weight & BMI form accepts and BMI is computed from. (cm) */
+  "wellness.height_cm_max": number;
+  /** Lowest height the weight & BMI form accepts and BMI is computed from. (cm) */
+  "wellness.height_cm_min": number;
+  /** Largest amount one water entry may record. (ml) */
+  "wellness.water_entry_ml_max": number;
+  /** Smallest amount one water entry may record. (ml) */
+  "wellness.water_entry_ml_min": number;
   /** Daily water goal for a student who has not set one. (ml) */
   "wellness.water_goal_ml_default": number;
   /** Highest daily water goal a student can set. (ml) */
   "wellness.water_goal_ml_max": number;
   /** Lowest daily water goal a student can set. (ml) */
   "wellness.water_goal_ml_min": number;
+  /** Highest weight the weight & BMI form accepts and BMI is computed from. (kg) */
+  "wellness.weight_kg_max": number;
+  /** Lowest weight the weight & BMI form accepts and BMI is computed from. (kg) */
+  "wellness.weight_kg_min": number;
 }
 
 export type PublicSettingKey = keyof PublicSettings;
@@ -48,9 +72,21 @@ export const publicSettingDefaults: Readonly<PublicSettings> = {
   "pharmacy.quote_expiry_hours": 0,
   "rewards.referral_claim_window_hours": 24,
   "rewards.referral_points": 50,
+  "wellness.activity_backdate_days": 366,
+  "wellness.activity_distance_km_max": 200.0,
+  "wellness.activity_energy_kcal_max": 10000.0,
+  "wellness.activity_floors_max": 500,
+  "wellness.activity_steps_max": 100000,
+  "wellness.entry_backdate_days": 7,
+  "wellness.height_cm_max": 250.0,
+  "wellness.height_cm_min": 100.0,
+  "wellness.water_entry_ml_max": 2000,
+  "wellness.water_entry_ml_min": 10,
   "wellness.water_goal_ml_default": 2000,
   "wellness.water_goal_ml_max": 6000,
   "wellness.water_goal_ml_min": 500,
+  "wellness.weight_kg_max": 350.0,
+  "wellness.weight_kg_min": 20.0,
 };
 
 export const publicSettingSpecs: Readonly<Record<PublicSettingKey, PublicSettingSpec>> = {
@@ -62,7 +98,19 @@ export const publicSettingSpecs: Readonly<Record<PublicSettingKey, PublicSetting
   "pharmacy.quote_expiry_hours": { type: "int", min: 0, max: 720, allowed: [], unit: "hours" },
   "rewards.referral_claim_window_hours": { type: "int", min: 1, max: 720, allowed: [], unit: "hours" },
   "rewards.referral_points": { type: "int", min: 0, max: 10000, allowed: [], unit: "points" },
+  "wellness.activity_backdate_days": { type: "int", min: 0, max: 3660, allowed: [], unit: "days" },
+  "wellness.activity_distance_km_max": { type: "float", min: 1, max: 1000, allowed: [], unit: "km" },
+  "wellness.activity_energy_kcal_max": { type: "float", min: 100, max: 50000, allowed: [], unit: "kcal" },
+  "wellness.activity_floors_max": { type: "int", min: 1, max: 5000, allowed: [], unit: "floors" },
+  "wellness.activity_steps_max": { type: "int", min: 1000, max: 1000000, allowed: [], unit: "steps" },
+  "wellness.entry_backdate_days": { type: "int", min: 0, max: 366, allowed: [], unit: "days" },
+  "wellness.height_cm_max": { type: "float", min: 150, max: 300, allowed: [], unit: "cm" },
+  "wellness.height_cm_min": { type: "float", min: 30, max: 150, allowed: [], unit: "cm" },
+  "wellness.water_entry_ml_max": { type: "int", min: 10, max: 5000, allowed: [], unit: "ml" },
+  "wellness.water_entry_ml_min": { type: "int", min: 1, max: 1000, allowed: [], unit: "ml" },
   "wellness.water_goal_ml_default": { type: "int", min: 100, max: 10000, allowed: [], unit: "ml" },
   "wellness.water_goal_ml_max": { type: "int", min: 100, max: 10000, allowed: [], unit: "ml" },
   "wellness.water_goal_ml_min": { type: "int", min: 100, max: 10000, allowed: [], unit: "ml" },
+  "wellness.weight_kg_max": { type: "float", min: 100, max: 700, allowed: [], unit: "kg" },
+  "wellness.weight_kg_min": { type: "float", min: 1, max: 100, allowed: [], unit: "kg" },
 };

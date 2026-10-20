@@ -129,6 +129,9 @@ class Preference(Base):
     saved_exercises: Mapped[list] = mapped_column(JSON, default=list)
     completed_tasks: Mapped[list] = mapped_column(JSON, default=list)
     task_date: Mapped[str] = mapped_column(String(10), default="")
+    # Daily water goal the owner set, in ml (bounds: wellness.water_goal_ml_*
+    # settings). NULL = never set; the API then uses its default and says so.
+    water_goal_ml: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
 
 class ExerciseSession(Base):
@@ -548,6 +551,10 @@ class MedicationPlan(Base):
     name: Mapped[str] = mapped_column(String(160))
     dosage: Mapped[str] = mapped_column(String(120), default="")
     frequency: Mapped[str] = mapped_column(String(120), default="")
+    # Structured doses per day (1 to meds.times_per_day_max), set by the owner. ``frequency`` is free
+    # text ("twice daily", "as needed") and is never parsed into a count; with
+    # no value here the planned number of doses is unknown, not guessed.
+    times_per_day: Mapped[int | None] = mapped_column(Integer, nullable=True)
     source: Mapped[str] = mapped_column(String(30), default="USER")
     active: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[float] = mapped_column(Float, default=0.0)

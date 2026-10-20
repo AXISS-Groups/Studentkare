@@ -118,7 +118,7 @@ extend-immutable-calls = [
 # pool cannot be sampled the metric goes stale, and nothing about a request
 # changes. Arrived with main's telemetry work.
 "core/telemetry.py" = ["S110"]
-"services/workflow_api.py" = ["S110", "PLR2004"]
+"services/workflow_api.py" = ["S110"]
 
 # Imports placed after module setup on purpose: app/main.py wires routers after
 # the app and environment exist, and these modules import late to stay clear of
