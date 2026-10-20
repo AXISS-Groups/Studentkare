@@ -28,6 +28,8 @@ export const launchEn = {
 
   // Onboarding 1–3
   'launch.welcome.campusArt': 'A small clinic building — care close to your campus',
+  'launch.create.countryCode': '+91',
+  'launch.create.phonePlaceholder': '00000 00000',
 } as const;
 
 export const launchTe: Record<keyof typeof launchEn, string> = {
@@ -51,6 +53,8 @@ export const launchTe: Record<keyof typeof launchEn, string> = {
   'launch.splash.private': 'డిఫాల్ట్‌గా ప్రైవేట్',
 
   'launch.welcome.campusArt': 'చిన్న క్లినిక్ భవనం — మీ క్యాంపస్‌కు దగ్గరగా సంరక్షణ',
+  'launch.create.countryCode': '+91',
+  'launch.create.phonePlaceholder': '00000 00000',
 };
 
 export const launchHi: Record<keyof typeof launchEn, string> = {
@@ -74,4 +78,6 @@ export const launchHi: Record<keyof typeof launchEn, string> = {
   'launch.splash.private': 'डिफ़ॉल्ट रूप से निजी',
 
   'launch.welcome.campusArt': 'एक छोटी क्लिनिक इमारत — आपके कैंपस के पास देखभाल',
+  'launch.create.countryCode': '+91',
+  'launch.create.phonePlaceholder': '00000 00000',
 };

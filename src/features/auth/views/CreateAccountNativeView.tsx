@@ -16,6 +16,7 @@ import {
 import { observer } from 'mobx-react-lite';
 import { skTokens } from '@/theme/tokens/generated/skTokens';
 import { CrisisLinks } from '@/design-system';
+import { Icon } from '@/design-system/icons';
 import type { AuthViewModel } from '../viewmodel/AuthViewModel';
 
 
@@ -86,8 +87,10 @@ export const CreateAccountNativeView: React.FC<CreateAccountNativeViewProps> = o
             <>
               <View style={styles.field}>
                 <Text style={styles.label}>{`${t('auth.fullName')} *`}</Text>
+                <View style={styles.control}>
+                <Icon name="user-5" size={18} color={color.text2} />
                 <TextInput
-                  style={styles.input}
+                  style={styles.controlInput}
                   placeholder={t('auth.fullNameHint')}
                   placeholderTextColor={color.text3}
                   value={vm.fullName}
@@ -95,6 +98,7 @@ export const CreateAccountNativeView: React.FC<CreateAccountNativeViewProps> = o
                   autoCapitalize="words"
                   accessibilityLabel={t('auth.fullName')}
                 />
+                </View>
               </View>
 
               <View style={styles.field}>
@@ -143,7 +147,10 @@ export const CreateAccountNativeView: React.FC<CreateAccountNativeViewProps> = o
                 accessibilityRole="button"
                 accessibilityLabel={t('auth.nextContact')}
               >
-                <Text style={styles.primaryButtonText}>{`${t('auth.nextContact')} →`}</Text>
+                <View style={styles.buttonRow}>
+                  <Text style={styles.primaryButtonText}>{t('auth.nextContact')}</Text>
+                  <Icon name="arrow-right" size={18} color={color.onAction} />
+                </View>
               </TouchableOpacity>
             </>
           )}
@@ -178,9 +185,13 @@ export const CreateAccountNativeView: React.FC<CreateAccountNativeViewProps> = o
                 <Text style={styles.label}>
                   {`${t(vm.channel === 'WHATSAPP' ? 'auth.field.WHATSAPP' : 'auth.field.EMAIL')} *`}
                 </Text>
+                <View style={styles.control}>
+                {vm.channel === 'WHATSAPP'
+                  ? <Text style={styles.prefix}>{t('launch.create.countryCode')}</Text>
+                  : <Icon name="mail-2" size={18} color={color.text2} />}
                 <TextInput
-                  style={styles.input}
-                  placeholder={channelFieldCopy(vm.channel).placeholder}
+                  style={styles.controlInput}
+                  placeholder={vm.channel === 'WHATSAPP' ? t('launch.create.phonePlaceholder') : channelFieldCopy(vm.channel).placeholder}
                   placeholderTextColor={color.text3}
                   value={vm.identifier}
                   onChangeText={(val: string) => vm.setIdentifier(val)}
@@ -189,6 +200,13 @@ export const CreateAccountNativeView: React.FC<CreateAccountNativeViewProps> = o
                   autoCorrect={false}
                   accessibilityLabel={t(vm.channel === 'WHATSAPP' ? 'auth.field.WHATSAPP' : 'auth.field.EMAIL')}
                 />
+                </View>
+                <Text style={styles.hint}>{t(vm.channel === 'WHATSAPP' ? 'auth.signup.hint.WHATSAPP' : 'auth.signup.hint.EMAIL')}</Text>
+              </View>
+
+              <View style={styles.assurance}>
+                <Icon name="shield-check-4" size={18} color={color.positive} />
+                <Text style={styles.assuranceText}>{t('auth.signup.assurance')}</Text>
               </View>
 
               {vm.error ? (
@@ -213,7 +231,10 @@ export const CreateAccountNativeView: React.FC<CreateAccountNativeViewProps> = o
                 accessibilityRole="button"
                 accessibilityLabel={t('auth.backProfile')}
               >
-                <Text style={styles.textButtonLabel}>{`← ${t('auth.backProfile')}`}</Text>
+                <View style={styles.buttonRow}>
+                  <Icon name="arrow-left" size={16} color={color.action} />
+                  <Text style={styles.textButtonLabel}>{t('auth.backProfile')}</Text>
+                </View>
               </TouchableOpacity>
             </>
           )}
@@ -294,7 +315,10 @@ export const CreateAccountNativeView: React.FC<CreateAccountNativeViewProps> = o
                 accessibilityRole="link"
                 accessibilityLabel={t('auth.haveAccount')}
               >
-                <Text style={styles.linkText}>{`${t('auth.haveAccount')} →`}</Text>
+                <View style={styles.buttonRow}>
+                  <Text style={styles.linkText}>{t('auth.haveAccount')}</Text>
+                  <Icon name="arrow-right" size={16} color={color.action} />
+                </View>
               </TouchableOpacity>
             )}
           </View>
@@ -321,6 +345,18 @@ const styles = StyleSheet.create({
     minHeight: 48, borderWidth: 1, borderColor: color.ruleStrong, borderRadius: radius.lg,
     paddingHorizontal: space.s14, fontSize: skTokens.font.size.body, color: color.text, backgroundColor: color.surface,
   },
+  control: {
+    minHeight: 56, flexDirection: 'row', alignItems: 'center', gap: space.s12, borderWidth: 1, borderColor: color.ruleStrong,
+    borderRadius: radius.xl, paddingHorizontal: space.s16, backgroundColor: color.surface,
+  },
+  controlInput: { flex: 1, minHeight: 44, fontSize: skTokens.font.size.body, color: color.text },
+  prefix: { fontSize: skTokens.font.size.body, fontWeight: '800', color: color.text, paddingRight: space.s12, borderRightWidth: 1, borderRightColor: color.rule },
+  assurance: {
+    flexDirection: 'row', alignItems: 'flex-start', gap: space.s10, padding: space.s14, borderRadius: radius.lg,
+    borderWidth: 1, borderColor: color.positiveRule, backgroundColor: color.positiveBg,
+  },
+  assuranceText: { flex: 1, fontSize: skTokens.font.size.caption, lineHeight: 19, fontWeight: '600', color: color.positive },
+  buttonRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: space.s8 },
   otpInput: { fontSize: 24, fontWeight: '800', letterSpacing: 8, textAlign: 'center' },
   hint: { fontSize: skTokens.font.size.caption, color: color.text3 },
   channelRow: { flexDirection: 'row', backgroundColor: color.surface3, borderRadius: radius.md, padding: space.s4, gap: space.s4 },
