@@ -52,13 +52,16 @@ describe('which shell a route gets', () => {
     expect(screen.getByText('VNR VJIET · Edu ID verified')).toBeInTheDocument();
   });
 
-  it('log out in the student shell opens the one confirm dialog with the canvas wording', () => {
+  it('log out in the student shell opens the one confirm dialog with the WebSignOut board wording', () => {
     auth.user = { fullName: 'Asha Rao', role: 'STUDENT', isVerifiedStudent: true };
     render(<WorkspaceScreen route="records" />);
     fireEvent.click(screen.getByRole('button', { name: 'Log out' }));
-    const dialog = screen.getByRole('alertdialog', { name: 'Are you sure you want to log out?' });
+    const dialog = screen.getByRole('alertdialog', { name: 'Sign out of this browser?' });
     expect(dialog).toHaveAttribute('aria-modal', 'true');
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }));
+    expect(within(dialog).getByText('Signed in as Asha Rao')).toBeInTheDocument();
+    expect(within(dialog).getByText('What signing out does')).toBeInTheDocument();
+    expect(within(dialog).getByRole('button', { name: 'Sign out here' })).toBeInTheDocument();
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Stay signed in' }));
     expect(screen.queryByRole('alertdialog')).toBeNull();
   });
 
