@@ -104,6 +104,80 @@
   .sk-psite-btn { width: var(--sk-size-touch-target); padding: 0; justify-content: center; }
 }
 
+/* ---- compact header (student pages) and audience header (partner pages) ---- */
+.sk-psite-header--compact { padding: var(--sk-space-10) var(--sk-psite-gutter); }
+.sk-psite .sk-psite-textlink {
+  display: inline-flex; align-items: center; min-height: var(--sk-size-touch-target); padding: 0 var(--sk-space-8);
+  font-size: 14px; font-weight: 600; color: var(--sk-color-text-2); white-space: nowrap;
+}
+.sk-psite .sk-psite-textlink:hover { color: var(--sk-color-action); }
+.sk-psite .sk-psite-cta {
+  display: inline-flex; align-items: center; min-height: var(--sk-size-touch-target); padding: 0 var(--sk-space-20);
+  border-radius: var(--sk-radius-full); background: var(--sk-color-action); color: var(--sk-color-on-action);
+  font-size: 14px; font-weight: 800; white-space: nowrap;
+}
+.sk-psite .sk-psite-cta:hover { background: var(--sk-color-action-hover); }
+
+/* ---- page frame ---- */
+.sk-psite-page {
+  width: 100%; min-height: 100vh; display: flex; flex-direction: column;
+  background: var(--sk-color-canvas); font-family: var(--sk-font-sans);
+  overflow-x: clip;
+}
+.sk-psite-page__main { display: flex; flex-direction: column; flex-grow: 1; min-width: 0; }
+.sk-psite-page__main--bare { padding-bottom: 40px; }
+.sk-psite-page__closing { display: flex; flex-direction: column; gap: 40px; margin: 64px 0; padding: 0 var(--sk-psite-gutter, clamp(16px, 3.5vw, 44px)); }
+
+/* ---- trust pillars ---- */
+.sk-psite-trust {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--sk-space-20);
+  padding: 40px var(--sk-space-24); border-radius: 28px;
+  background: var(--sk-color-surface); border: 1px solid var(--sk-color-rule-soft);
+}
+.sk-psite-trust__item { display: flex; flex-direction: column; align-items: center; gap: var(--sk-space-10); padding: 0 var(--sk-space-14); text-align: center; }
+.sk-psite .sk-psite-trust__title { margin: 0; font-size: 18px; font-weight: 800; letter-spacing: -0.3px; color: var(--sk-color-text); }
+.sk-psite .sk-psite-trust__body { margin: 0; max-width: 260px; font-size: 13.5px; line-height: 1.55; font-weight: 500; color: var(--sk-color-text-2); }
+
+/* ---- app band ---- */
+.sk-psite-app {
+  display: flex; align-items: center; gap: 40px; flex-wrap: wrap; overflow: hidden;
+  min-height: 400px; padding: 0 clamp(var(--sk-space-16), 3vw, 40px) 0 clamp(var(--sk-space-20), 4vw, 56px);
+  border-radius: 28px;
+  background: linear-gradient(135deg, var(--sk-color-surface-3) 0%, var(--sk-color-rule) 100%);
+}
+.sk-psite-app__copy { flex: 1 1 320px; display: flex; flex-direction: column; gap: var(--sk-space-16); padding: 40px 0; }
+.sk-psite-app__eyebrow { font-size: 11.5px; font-weight: 800; letter-spacing: 1.4px; color: var(--sk-color-action); text-transform: uppercase; }
+.sk-psite .sk-psite-app__title { margin: 0; max-width: 520px; font-size: clamp(24px, 3vw, 32px); line-height: 1.2; font-weight: 800; letter-spacing: -0.9px; color: var(--sk-color-text); }
+.sk-psite-app__features { display: flex; flex-direction: column; gap: var(--sk-space-10); margin: 0; padding: 0; list-style: none; }
+.sk-psite-app__feature { display: flex; align-items: center; gap: var(--sk-space-10); font-size: 14.5px; font-weight: 700; color: var(--sk-color-text); }
+.sk-psite-app__feature-icon {
+  display: inline-flex; align-items: center; justify-content: center; flex: none;
+  width: 34px; height: 34px; border-radius: 11px; background: var(--sk-color-surface); color: var(--sk-color-action);
+}
+.sk-psite-app__ways { display: flex; align-items: center; gap: var(--sk-space-14); flex-wrap: wrap; padding-top: var(--sk-space-8); }
+.sk-psite .sk-psite-app__note { margin: 0; flex-basis: 100%; max-width: 460px; font-size: 13.5px; line-height: 1.55; font-weight: 500; color: var(--sk-color-text-2); }
+.sk-psite .sk-psite-app__signin {
+  display: inline-flex; align-items: center; gap: var(--sk-space-8);
+  min-height: 52px; padding: 0 var(--sk-space-24); border-radius: var(--sk-radius-md);
+  background: var(--sk-color-action); color: var(--sk-color-on-action); font-size: 14px; font-weight: 800;
+}
+.sk-psite .sk-psite-app__signin:hover { background: var(--sk-color-action-hover); }
+.sk-psite .sk-psite-app__store {
+  display: inline-flex; align-items: center; gap: var(--sk-space-10);
+  min-height: 52px; padding: 0 var(--sk-space-16); border-radius: var(--sk-radius-md);
+  background: var(--sk-color-brand-navy); color: var(--sk-color-on-hero);
+}
+.sk-psite-app__store-text { display: flex; flex-direction: column; }
+.sk-psite-app__store-top { font-size: 10px; font-weight: 600; color: var(--sk-color-on-hero-2); }
+.sk-psite-app__store-name { font-size: 16px; font-weight: 800; }
+.sk-psite-app__scan { display: inline-flex; align-items: center; gap: var(--sk-space-10); }
+.sk-psite-app__scan-text { font-size: 12px; font-weight: 600; color: var(--sk-color-text-3); }
+.sk-psite-app__scan-code { display: inline-flex; padding: var(--sk-space-6); border-radius: var(--sk-radius-sm); background: var(--sk-color-qr-background); }
+.sk-psite-app__art { align-self: flex-end; flex-shrink: 0; padding-bottom: var(--sk-space-10); }
+@media (max-width: 640px) {
+  .sk-psite-app__art { display: none; }
+}
+
 /* ---- newsletter band ----
    Text rules are scoped under .sk-psite so the app frame's `.wf-application p`
    cannot recolour them. */

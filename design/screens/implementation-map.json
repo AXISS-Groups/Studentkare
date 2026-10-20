@@ -105,16 +105,104 @@
     "SosDebrief": [],
     "MyRequests": [],
     "Legal": [],
-    "Landing": [],
-    "WebLabTests": [],
-    "WebLabList": [],
-    "WebConsult": [],
-    "WebPrograms": [],
-    "WebWellness": [],
+    "Landing": [
+      "src/features/landing/views/LandingView.tsx",
+      "src/features/landing/views/LandingNativeView.tsx",
+      "src/design-system/public-site/PublicSitePage.tsx",
+      "src/design-system/public-site/PublicSiteHeader.tsx",
+      "src/design-system/public-site/PublicSiteFooter.tsx",
+      "src/design-system/public-site/NewsletterBand.tsx",
+      "src/design-system/public-site/publicSiteNav.ts",
+      "src/design-system/public-site/PublicTrustBand.tsx",
+      "src/design-system/public-site/PublicAppBand.tsx",
+      "src/features/landing/views/landingWebKit.tsx"
+    ],
+    "WebLabTests": [
+      "src/features/landing/views/LandingLabTestsView.tsx",
+      "src/features/landing/views/LandingLabTestsNativeView.tsx",
+      "src/design-system/public-site/PublicSitePage.tsx",
+      "src/design-system/public-site/PublicSiteHeader.tsx",
+      "src/design-system/public-site/PublicSiteFooter.tsx",
+      "src/design-system/public-site/NewsletterBand.tsx",
+      "src/design-system/public-site/publicSiteNav.ts",
+      "src/design-system/public-site/PublicTrustBand.tsx",
+      "src/design-system/public-site/PublicAppBand.tsx",
+      "src/features/landing/views/landingWebKit.tsx"
+    ],
+    "WebLabList": [
+      "src/features/landing/views/LandingLabListView.tsx",
+      "src/features/landing/views/LandingLabListNativeView.tsx",
+      "src/design-system/public-site/PublicSitePage.tsx",
+      "src/design-system/public-site/PublicSiteHeader.tsx",
+      "src/design-system/public-site/PublicSiteFooter.tsx",
+      "src/design-system/public-site/NewsletterBand.tsx",
+      "src/design-system/public-site/publicSiteNav.ts",
+      "src/design-system/public-site/PublicTrustBand.tsx",
+      "src/design-system/public-site/PublicAppBand.tsx",
+      "src/features/landing/views/landingWebKit.tsx"
+    ],
+    "WebConsult": [
+      "src/features/landing/views/LandingConsultView.tsx",
+      "src/features/landing/views/LandingConsultNativeView.tsx",
+      "src/design-system/public-site/PublicSitePage.tsx",
+      "src/design-system/public-site/PublicSiteHeader.tsx",
+      "src/design-system/public-site/PublicSiteFooter.tsx",
+      "src/design-system/public-site/NewsletterBand.tsx",
+      "src/design-system/public-site/publicSiteNav.ts",
+      "src/design-system/public-site/PublicTrustBand.tsx",
+      "src/design-system/public-site/PublicAppBand.tsx",
+      "src/features/landing/views/landingWebKit.tsx"
+    ],
+    "WebPrograms": [
+      "src/features/landing/views/LandingProgramsView.tsx",
+      "src/features/landing/views/LandingProgramsNativeView.tsx",
+      "src/design-system/public-site/PublicSitePage.tsx",
+      "src/design-system/public-site/PublicSiteHeader.tsx",
+      "src/design-system/public-site/PublicSiteFooter.tsx",
+      "src/design-system/public-site/NewsletterBand.tsx",
+      "src/design-system/public-site/publicSiteNav.ts",
+      "src/design-system/public-site/PublicTrustBand.tsx",
+      "src/design-system/public-site/PublicAppBand.tsx",
+      "src/features/landing/views/landingWebKit.tsx"
+    ],
+    "WebWellness": [
+      "src/features/landing/views/LandingWellnessView.tsx",
+      "src/features/landing/views/LandingWellnessNativeView.tsx",
+      "src/design-system/public-site/PublicSitePage.tsx",
+      "src/design-system/public-site/PublicSiteHeader.tsx",
+      "src/design-system/public-site/PublicSiteFooter.tsx",
+      "src/design-system/public-site/NewsletterBand.tsx",
+      "src/design-system/public-site/publicSiteNav.ts",
+      "src/design-system/public-site/PublicTrustBand.tsx",
+      "src/design-system/public-site/PublicAppBand.tsx",
+      "src/features/landing/views/landingWebKit.tsx"
+    ],
     "WebPlans": [],
-    "LandingCampus": [],
+    "LandingCampus": [
+      "src/features/landing/views/LandingCampusView.tsx",
+      "src/features/landing/views/LandingCampusNativeView.tsx",
+      "src/design-system/public-site/PublicSitePage.tsx",
+      "src/design-system/public-site/PublicSiteHeader.tsx",
+      "src/design-system/public-site/PublicSiteFooter.tsx",
+      "src/design-system/public-site/NewsletterBand.tsx",
+      "src/design-system/public-site/publicSiteNav.ts",
+      "src/design-system/public-site/PublicTrustBand.tsx",
+      "src/design-system/public-site/PublicAppBand.tsx",
+      "src/features/landing/views/landingWebKit.tsx"
+    ],
     "LandingClinician": [],
-    "WebPartnerships": [],
+    "WebPartnerships": [
+      "src/features/landing/views/LandingPartnershipsView.tsx",
+      "src/features/landing/views/LandingPartnershipsNativeView.tsx",
+      "src/design-system/public-site/PublicSitePage.tsx",
+      "src/design-system/public-site/PublicSiteHeader.tsx",
+      "src/design-system/public-site/PublicSiteFooter.tsx",
+      "src/design-system/public-site/NewsletterBand.tsx",
+      "src/design-system/public-site/publicSiteNav.ts",
+      "src/design-system/public-site/PublicTrustBand.tsx",
+      "src/design-system/public-site/PublicAppBand.tsx",
+      "src/features/landing/views/landingWebKit.tsx"
+    ],
     "WebSignIn": [],
     "WebLoggedOut": [],
     "WebLostPhone": [],
@@ -527,49 +615,21 @@
     "Legal": [
       "src/features/legal/views/LegalView.tsx"
     ],
-    "Landing": [
-      "src/features/landing/views/LandingView.tsx",
-      "src/features/landing/views/LandingNativeView.tsx",
-      "src/design-system/public-site/PublicSiteHeader.tsx",
-      "src/design-system/public-site/PublicSiteFooter.tsx",
-      "src/design-system/public-site/NewsletterBand.tsx",
-      "src/design-system/public-site/publicSiteNav.ts"
-    ],
-    "WebLabTests": [
-      "src/features/landing/views/LandingLabTestsView.tsx",
-      "src/features/landing/views/LandingLabTestsNativeView.tsx"
-    ],
-    "WebLabList": [
-      "src/features/landing/views/LandingLabListView.tsx",
-      "src/features/landing/views/LandingLabListNativeView.tsx"
-    ],
-    "WebConsult": [
-      "src/features/landing/views/LandingConsultView.tsx",
-      "src/features/landing/views/LandingConsultNativeView.tsx"
-    ],
-    "WebPrograms": [
-      "src/features/landing/views/LandingProgramsView.tsx",
-      "src/features/landing/views/LandingProgramsNativeView.tsx"
-    ],
-    "WebWellness": [
-      "src/features/landing/views/LandingWellnessView.tsx",
-      "src/features/landing/views/LandingWellnessNativeView.tsx"
-    ],
     "WebPlans": [
       "src/features/landing/views/LandingPlansView.tsx",
       "src/features/landing/views/LandingPlansNativeView.tsx"
     ],
-    "LandingCampus": [
-      "src/features/landing/views/LandingCampusView.tsx",
-      "src/features/landing/views/LandingCampusNativeView.tsx"
-    ],
     "LandingClinician": [
       "src/features/landing/views/LandingClinicianView.tsx",
-      "src/features/landing/views/LandingClinicianNativeView.tsx"
-    ],
-    "WebPartnerships": [
-      "src/features/landing/views/LandingPartnershipsView.tsx",
-      "src/features/landing/views/LandingPartnershipsNativeView.tsx"
+      "src/features/landing/views/LandingClinicianNativeView.tsx",
+      "src/design-system/public-site/PublicSitePage.tsx",
+      "src/design-system/public-site/PublicSiteHeader.tsx",
+      "src/design-system/public-site/PublicSiteFooter.tsx",
+      "src/design-system/public-site/NewsletterBand.tsx",
+      "src/design-system/public-site/publicSiteNav.ts",
+      "src/design-system/public-site/PublicTrustBand.tsx",
+      "src/design-system/public-site/PublicAppBand.tsx",
+      "src/features/landing/views/landingWebKit.tsx"
     ],
     "WebSignIn": [
       "src/features/auth/views/SignInView.tsx",

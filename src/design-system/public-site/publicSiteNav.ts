@@ -39,6 +39,16 @@ export const PUBLIC_CATEGORIES: readonly PublicLink[] = [
 /** The last category carries an arrow on the canvas. */
 export const PUBLIC_CATEGORY_MORE: PublicLink = { label: 'landing.site.cat.vaccines', href: '/shop' };
 
+/** The partner-facing pages (campus, clinician, partnerships) have their own short nav. */
+export type PublicAudienceId = 'students' | 'campuses' | 'clinicians' | 'partnerships';
+
+export const PUBLIC_AUDIENCE_NAV: ReadonlyArray<PublicLink & { id: PublicAudienceId }> = [
+  { id: 'students', label: 'landing.campus.nav.forStudents', href: '/' },
+  { id: 'campuses', label: 'landing.campus.nav.forCampuses', href: '/campuses' },
+  { id: 'clinicians', label: 'landing.campus.nav.forClinicians', href: '/clinicians' },
+  { id: 'partnerships', label: 'landing.campus.nav.partnerships', href: '/partnerships' },
+];
+
 export const PUBLIC_ROUTES = {
   home: '/',
   plans: '/plans',

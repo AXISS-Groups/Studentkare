@@ -15,7 +15,7 @@ export interface PublicSiteFooterProps {
 }
 
 /** Re-render once the public settings arrive, so configured links appear. */
-function usePublicSettingsLoaded(): void {
+export function usePublicSettingsLoaded(): void {
   const [, setLoaded] = useState(false);
   useEffect(() => {
     let live = true;
@@ -38,6 +38,14 @@ function usePublicSettingsLoaded(): void {
  * labs" chips are not drawn: nothing computes either state (AGENTS.md
  * guardrail 6).
  */
+/** The store listings the settings registry publishes (none today). */
+export function publishedStores(): Array<(typeof FOOTER_STORES)[number] & { href: string }> {
+  return FOOTER_STORES.flatMap((s) => {
+    const href = publishedUrl(getSetting(s.setting));
+    return href ? [{ ...s, href }] : [];
+  });
+}
+
 export function PublicSiteFooter({ band, note }: PublicSiteFooterProps): React.ReactElement {
   const t = useT();
   usePublicSettingsLoaded();
@@ -46,10 +54,7 @@ export function PublicSiteFooter({ band, note }: PublicSiteFooterProps): React.R
     const href = publishedUrl(getSetting(s.setting));
     return href ? [{ ...s, href }] : [];
   });
-  const stores = FOOTER_STORES.flatMap((s) => {
-    const href = publishedUrl(getSetting(s.setting));
-    return href ? [{ ...s, href }] : [];
-  });
+  const stores = publishedStores();
 
   return (
     <footer className="sk-psite sk-psite-footer">
