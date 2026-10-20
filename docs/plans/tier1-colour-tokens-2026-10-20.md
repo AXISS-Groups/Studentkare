@@ -707,3 +707,92 @@ commit.
 | `.sk-rx-skel` | `#ECEEF8` | `skeleton` | `#ECEEF8` | `#202A48` | dark |
 | `.sk-rx-skel` | `#F7F8FD` | `skeleton-shine` | `#F7F8FD` | `#2E3862` | dark |
 | `.sk-rx-skel` | `#ECEEF8` | `skeleton` | `#ECEEF8` | `#202A48` | dark |
+
+## Completed clinical and medicines (approved by Krishna Chintakayala, 2026-10-20)
+
+Agent C, branch `feat/tier1-c`. Colours only: no copy, layout, icon, logic or threshold change.
+All 12 files are now free of hex / `rgb()` and are off `config/hex-colour-legacy.json`
+(**26 → 14**). Every new text pair is ≥ 4.5:1 and every icon/control border ≥ 3:1 in both
+themes (computed on `sk-tokens.css`; lowest: `on-danger-fill` on `danger-fill` 4.70,
+`attention` on `attention-bg` 4.84 light, `rule-strong` on `canvas` 3.01 light). Not colours and
+left as is: the `⚠️` emoji in the allergy flag (MedicationInfo), `var(--text-secondary)` (undefined
+legacy var, inherits text colour) in Vaccination / VitalTrends / CriticalValue timer.
+Screenshots: `/home/claude/navy-shots/tier1/clinical-*-{light,dark}.png`.
+
+### `src/components/CDSCORecallAlert.tsx`
+Was a hard-coded dark card in both themes; now a light danger card in light mode.
+
+| Element | Old | Token |
+|---|---|---|
+| ⚠ safety Recall card fill / border | `rgba(240,97,107,.13)` / `#5A1E2B` | `danger-bg` / `danger-rule` |
+| ⚠ safety Shield icon, eyebrow, "Batch … Recalled", batch code | `#F0616B` | `danger` |
+| ⚠ safety Contact Campus Clinic button | `#F0616B` + `#FFF` | `danger-fill` + `on-danger-fill` |
+| Body text; reason box | `#F4F4FA`; `#101019` / `#262638` / `#9095A8` | `text`; `surface` / `rule` / `text-2` |
+
+### `src/components/JanAushadhiComparison.tsx`
+Was dark in both themes; now light in light mode.
+
+| Element | Old | Token |
+|---|---|---|
+| Card, inner price box | `#101019` / `#1F1F30`, `#14141F` / `#262638` | `surface` / `rule`, `surface-2` / `rule` |
+| Icon tile, "Save %" pill | `rgba(52,211,153,.13/.15)` + `#17503E` | `positive-bg` + `positive-rule` |
+| Green label, price, savings, icons | `#34D399` | `positive` |
+| Generic name; heading; muted text | `#FFF`; `#F4F4FA`; `#9095A8`, `#7E7E92` | `text`; `text`; `text-2`, `text-3` |
+
+### `src/components/clinician/CriticalValueEscalationTimer.tsx`
+
+| Element | Old | Token |
+|---|---|---|
+| ⚠ safety Card border, eyebrow, critical value, countdown | `var(--emergency, #ef4444)` | `danger` (same value; `--emergency` was already `danger`) |
+| ⚠ safety Card tint | `rgba(239,68,68,.04)` | `color-mix(danger-fill 4%)` |
+| ⚠ safety Sign & Acknowledge button | `#ef4444` + `#fff` | `danger-fill` + `on-danger-fill` (light: `#ef4444` → `#E11D48`, white on it 3.8 → 4.7:1) |
+| ⚠ safety IVR auto-call chip | `#fee2e2` / `#991b1b` | `danger-bg` / `danger` |
+| Acknowledged border | `#10b981` (2.5:1) | `positive` (darker green in light, 5.5:1) |
+| Acknowledged eyebrow, chip, tint | `#065f46`, `rgba(16,185,129,.1/.04)` | `positive`, `positive-bg`, `color-mix(positive-fill 4%)` |
+
+The critical value itself stays red, as before (a panic value, not an out-of-range result);
+whether DESIGN.md's "lab values never `danger`" should apply here is a clinical call, unchanged.
+
+### `src/screens/vault/MedicationInfoScreen.tsx`
+Whole screen was hard-coded dark; now follows the theme (light page in light mode).
+
+| Element | Old | Token |
+|---|---|---|
+| ⚠ safety Crisis "Safety Priority Alert" banner | `rgba(240,97,107,.13)` / `#5A1E2B` / `#F0616B` | `danger-bg` / `danger-rule` / `danger` |
+| ⚠ safety Allergy conflict flag | `rgba(240,97,107,.14)` / `#5A1E2B` / `#F0616B` | `danger-bg` / `danger-rule` / `danger` |
+| ⚠ safety "Unlabelled Medication Detected — don't take it" | `rgba(245,158,11,.12)` / `#4A3410` / `#F59E0B` | `attention-bg` / `color-mix(attention 35%, attention-bg)` / `attention` (amber kept, now 4.8:1 in light) |
+| CDCI code (clinical ID, mono) | `#A78BFA` | `clinical-value` (purple → ink) |
+| Generic name · strength line (mono) | `#9095A8` | `text-2` |
+| Scan Printed Strip, selected language | `#7C5CFC` + `#FFF` | `action` + `on-action` |
+| Unselected language label | `#FFF` | `text` (was white on dark; now readable in light) |
+| Search field, Scan Loose Pill outline | `#262638`, `#1F1F30` | `rule-strong` (≥ 3:1 control boundary) |
+| Page, cards, inner boxes, muted text | `#08080F`, `#101019`, `#14141F`, `#9095A8`, `#7E7E92` | `canvas`, `surface`, `surface-2`, `text-2` / `text-3` |
+| Monograph heading; green ticks | `#A78BFA`; `#34D399` | `action`; `positive` |
+
+### `src/screens/health/VaccinationScheduleScreen.tsx`
+
+| Element | Old | Token |
+|---|---|---|
+| Immunisation status card | green gradient `#065f46 → #047857`, white text | `positive-bg` fill, `positive` eyebrow, `text` / `text-2` copy (light mode: pale green card, dark text) |
+| Completed chip + icon | `rgba(16,185,129,.1)` / `#065f46` / `#10b981` | `positive-bg` / `positive` / `positive` |
+| Due chip + icon | `rgba(245,158,11,.1)` / `#92400e` / `#f59e0b` | `attention-bg` / `attention` / `attention` |
+| Campus-mandatory tag | `#dbeafe` / `#1e40af` | `surface-3` / `info` |
+| Preventive / seasonal tag | `#f3e8ff` / `#6b21a8` (purple) | `neutral-bg` / `text-2` (grey; label text unchanged) |
+
+### `src/screens/health/VitalTrendsTelemetryScreen.tsx`
+
+| Element | Old | Token |
+|---|---|---|
+| Vital icons: heart rate, BP, SpO2, sleep, temp | `#ef4444`, `#3b82f6`, `#10b981`, `#8b5cf6`, `#f59e0b` | `chart-categorical-1…5` (heart rate is navy, no longer red) |
+| Status chip ("Normal") | `rgba(16,185,129,.1)` / `#065f46` | `positive-bg` / `positive` |
+| Telemetry log tick | `positive-fill` (2.5:1 in light) | `positive` |
+
+### Smaller files
+
+| File | Element | Old | Token |
+|---|---|---|---|
+| `institution/StudentHealthAccessRequestModal.tsx` | Consent-request-sent box | `var(--positive-fill)` (undefined → no fill) + `#064e3b` | `positive-bg` + `positive` (now shows its green tint) |
+| `vendor/CriticalResultEscalationScreen.tsx` | ⚠ safety "CRITICAL VALUE PROTOCOL" eyebrow | `var(--emergency, #ef4444)` | `danger` (same value) |
+| `workspace/MemberPanels.tsx` | Member metric trend line | `#927bae` | `chart-categorical-1` (muted purple → navy series 1) |
+| `MedicationSafetySimulator.tsx`, `vault/VaultTimelineScreen.tsx`, `vault/Flow02AddRecordScreen.tsx` | Text / icon on `action` fills | `#ffffff` | `tokens.onAction` (same light; dark text on the light dark-mode action) |
+| `vault/Flow02AddRecordScreen.tsx` | Preview header divider | `rgba(0,0,0,.06)` | `tokens.ruleSoft` |
