@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { consoleHasOwnChrome, pageTransitionKey } from '../App';
+import { consoleHasOwnChrome, drawsStudentWebShell, pageTransitionKey } from '../App';
 
 describe('page transition key', () => {
   it('is the same for every Super Admin section, so the console stays mounted', () => {
@@ -60,5 +60,15 @@ describe('app bar above a console', () => {
     expect(consoleHasOwnChrome('/clinical-review', 'SUPER_ADMIN')).toBe(false);
     expect(consoleHasOwnChrome('/health', 'NMC_DOCTOR')).toBe(false);
     expect(consoleHasOwnChrome('/administration', 'STUDENT')).toBe(false);
+  });
+
+  it('draws no app bar above the student web shell: its top nav carries Alerts and SOS', () => {
+    for (const path of ['/health', '/orders', '/profile', '/security', '/notification-settings', '/home', '/buy-again', '/shop', '/checkout']) {
+      expect(drawsStudentWebShell(path, 'STUDENT', false)).toBe(true);
+    }
+    // At phone width the phone frame draws its own header; other roles keep their chrome.
+    expect(drawsStudentWebShell('/health', 'STUDENT', true)).toBe(false);
+    expect(drawsStudentWebShell('/health', 'NMC_DOCTOR', false)).toBe(false);
+    expect(drawsStudentWebShell('/shop', null, false)).toBe(false);
   });
 });

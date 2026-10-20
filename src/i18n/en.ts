@@ -12,6 +12,7 @@ import { campusConsoleEn } from './areas/campusConsole';
 import { partnerEn } from './areas/partner';
 import { deviceEn } from './areas/device';
 import { studentshellEn } from './areas/studentshell';
+import { studentwebEn } from './areas/studentweb';
 import { payEn } from './areas/pay';
 import { labbookEn } from './areas/labbook';
 import { rewardsEn } from './areas/rewards';
@@ -828,6 +829,7 @@ export const en = {
   ...partnerEn,
   ...deviceEn,
   ...studentshellEn,
+  ...studentwebEn,
   ...payEn,
   ...labbookEn,
   ...rewardsEn,

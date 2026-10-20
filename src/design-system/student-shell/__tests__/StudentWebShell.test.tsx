@@ -14,6 +14,8 @@ function renderShell(overrides: Partial<React.ComponentProps<typeof StudentWebSh
     student: { fullName: 'Krishna Chintakayala', campus: 'VNR VJIET', verified: true },
     cartCount: 2,
     onNavigate: vi.fn(),
+    onSos: vi.fn(),
+    onAlerts: vi.fn(),
     onSignOut: vi.fn(),
     ...overrides,
   };
@@ -33,7 +35,7 @@ describe('StudentWebShell', () => {
       'Your Care', 'Health vault', 'My lab tests, Not available yet', 'Report insights, Not available yet', 'Emergency card', 'My check-in pass',
     ]);
     expect(within(groups[1]).getAllByRole('button').map((button) => button.textContent)).toEqual([
-      'Orders', 'Buy again, Not available yet', 'Ayush AI', 'My requests',
+      'Orders', 'Buy again', 'Ayush AI', 'My requests',
     ]);
     expect(within(groups[2]).getAllByRole('button').map((button) => button.textContent)).toEqual([
       'Account', 'Identity verification', 'Sign-in & security', 'Notifications', 'Plan & billing',
@@ -51,10 +53,50 @@ describe('StudentWebShell', () => {
 
   it('shows items with no student screen as unavailable and never navigates', () => {
     const props = renderShell();
-    const item = within(sidebarNav()).getByRole('button', { name: /Buy again/ });
+    const item = within(sidebarNav()).getByRole('button', { name: /My lab tests/ });
     expect(item).toHaveAttribute('aria-disabled', 'true');
     fireEvent.click(item);
     expect(props.onNavigate).not.toHaveBeenCalled();
+  });
+
+  it('opens the student Buy again page, never the partner console /reorder', () => {
+    const props = renderShell();
+    fireEvent.click(within(sidebarNav()).getByRole('button', { name: 'Buy again' }));
+    expect(props.onNavigate).toHaveBeenCalledWith('buy-again');
+    expect(props.onNavigate).not.toHaveBeenCalledWith('reorder');
+  });
+
+  it('opens the Notifications settings page from the sidebar (the inbox is Alerts)', () => {
+    const props = renderShell();
+    fireEvent.click(within(sidebarNav()).getByRole('button', { name: 'Notifications' }));
+    expect(props.onNavigate).toHaveBeenCalledWith('notification-settings');
+  });
+
+  it('keeps SOS one tap away in the top nav: red, labelled, and it opens the helplines', () => {
+    const props = renderShell();
+    const sos = screen.getByRole('button', { name: 'SOS — emergency help and helplines' });
+    expect(sos).toHaveClass('sk-sshell__sos');
+    expect(sos.closest('header')).not.toBeNull();
+    fireEvent.click(sos);
+    expect(props.onSos).toHaveBeenCalledTimes(1);
+    expect(props.onNavigate).not.toHaveBeenCalled();
+  });
+
+  it('opens Alerts from the top nav, with an unread count only above zero', () => {
+    const props = renderShell({ alertCount: 3 });
+    fireEvent.click(screen.getByRole('button', { name: 'Alerts, 3 unread' }));
+    expect(props.onAlerts).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows Alerts without a count at zero', () => {
+    renderShell();
+    expect(screen.getByRole('button', { name: 'Alerts' }).textContent).toBe('');
+  });
+
+  it('takes the brand to the student home', () => {
+    const props = renderShell();
+    fireEvent.click(screen.getByRole('button', { name: 'Student Kare — Home' }));
+    expect(props.onNavigate).toHaveBeenCalledWith('home');
   });
 
   it('has the top nav, My orders, the cart with its count and the account button', () => {
@@ -129,6 +171,8 @@ describe('student nav data', () => {
     expect(studentNavIdFor('health')).toBe('your-care');
     expect(studentNavIdFor('digital-id')).toBe('account');
     expect(studentNavIdFor('notification-settings')).toBe('notifications');
+    expect(studentNavIdFor('notifications')).toBe('notifications');
+    expect(studentNavIdFor('buy-again')).toBe('buy-again');
     expect(studentNavIdFor('shop')).toBeNull();
   });
 
@@ -161,6 +205,7 @@ describe('student shell colours, both schemes', () => {
       ['top link', c.text2, c.surface, 4.5],
       ['current top link', c.action, c.surface, 4.5],
       ['cart badge', c.onAction, c.action, 4.5],
+      ['SOS', c.onDangerFill, c.dangerFill, 4.5],
     ];
     const failures = checks.filter(([, fg, bg, min]) => contrast(fg.slice(0, 7), bg.slice(0, 7)) < min).map(([what]) => what);
     expect(failures).toEqual([]);

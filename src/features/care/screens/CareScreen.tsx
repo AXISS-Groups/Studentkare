@@ -1,17 +1,24 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { useRoutePath } from '@/core/navigation';
 import { LiveMarketplaceScreen } from '@/screens/marketplace/LiveMarketplaceScreen';
-import { WorkspaceScreen } from '@/screens/workspace/WorkspaceScreen';
 import { asRoutePath } from '@/lib/utils/workflowRouting';
 import { useAuth } from '@/data/contexts/AuthContext';
-import { usePhoneFrame } from '@/design-system/navigation/usePhoneFrame';
+import { ScreenLoading } from '@/components/health/ScreenLoading';
 
+// Loaded only for a signed-in student, so the public shop does not carry the workspace.
+const WorkspaceScreen = lazy(() => import('@/screens/workspace/WorkspaceScreen').then((m) => ({ default: m.WorkspaceScreen })));
+
+/**
+ * /shop, /care and /checkout. A signed-in student gets the shop and checkout
+ * inside the workspace: the phone boards at phone width, the student web shell
+ * (canvas 3b: WebShop, WebSearchResults, WebProduct, WebCheckout) above it.
+ * Everyone else keeps the public marketplace.
+ */
 export function CareScreen() {
   const route = asRoutePath(useRoutePath());
   const { user } = useAuth();
-  const phoneFrame = usePhoneFrame();
-  // A signed-in student at phone width gets the shop as the phone boards (ShopHome … OrderSuccess)
-  // inside the student phone frame and its tab bar; everyone else keeps the web shop.
-  if (phoneFrame && user?.role === 'STUDENT' && (route === 'shop' || route === 'checkout')) return <WorkspaceScreen route={route} />;
+  if (user?.role === 'STUDENT' && (route === 'shop' || route === 'checkout')) {
+    return <Suspense fallback={<ScreenLoading />}><WorkspaceScreen route={route} /></Suspense>;
+  }
   return <LiveMarketplaceScreen care={route === 'care'} checkout={route === 'checkout'} shop={route === 'shop'} />;
 }

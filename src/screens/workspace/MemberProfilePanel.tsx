@@ -127,7 +127,7 @@ export function MemberProfilePanel({ initialTab = 'profile' }: { initialTab?: 'p
   </>;
 }
 
-function ProfileForm({ initial, onOpenDigitalId }: { initial: MemberProfile; onOpenDigitalId: () => void }) {
+export function ProfileForm({ initial, onOpenDigitalId }: { initial: MemberProfile; onOpenDigitalId: () => void }) {
   const t = useT();
   const { updateUser } = useAuth();
   const [saved, setSaved] = useState(initial);

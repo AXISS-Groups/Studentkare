@@ -141,8 +141,9 @@ function RouterShell() {
       {/* Consoles with their own sidebar and top-right actions (SOS included) draw no
           app bar above them: it pushed their full-height sidebar below the window, so its
           footer could not be reached. */}
-      {/* A student at phone width gets the phone frame's own header (SOS included) from the workspace. */}
-      {!isPublicView && !hasOwnChrome && !drawsStudentPhoneFrame(location.pathname, auth.user?.role ?? null, phoneFrame) && <InterfaceBar section={section} />}
+      {/* A student at phone width gets the phone frame's own header (SOS included) from the workspace;
+          wider, the student web shell's top nav carries Alerts and SOS, so no second bar is drawn above it. */}
+      {!isPublicView && !hasOwnChrome && !drawsStudentPhoneFrame(location.pathname, auth.user?.role ?? null, phoneFrame) && !drawsStudentWebShell(location.pathname, auth.user?.role ?? null, phoneFrame) && <InterfaceBar section={section} />}
       {auth.status === 'error' && isPublicPath(location.pathname) && (
         <div className="wf-connection-banner" role="status">
           {auth.error}
@@ -173,6 +174,13 @@ export function drawsStudentPhoneFrame(pathname: string, role: string | null, ph
 
 /** Public shop pages that a signed-in student at phone width sees in the student phone frame (see CareScreen). */
 export const STUDENT_PHONE_SHOP_PATHS: readonly string[] = ['/shop', '/checkout'];
+/** Pages a signed-in student gets in the student web shell (top nav with Alerts and SOS) above phone width. */
+export const STUDENT_SHELL_COMMERCE_PATHS: readonly string[] = ['/shop', '/checkout'];
+
+/** A signed-in student's page above phone width draws the student web shell (its own Alerts and SOS), not the app bar. */
+export function drawsStudentWebShell(pathname: string, role: string | null, phoneWidth: boolean): boolean {
+  return !phoneWidth && role === 'STUDENT' && (isWorkspacePath(pathname) || STUDENT_SHELL_COMMERCE_PATHS.includes(pathname));
+}
 
 /**
  * The Super Admin console, the clinician console for a doctor and the campus

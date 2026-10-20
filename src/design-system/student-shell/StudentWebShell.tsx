@@ -22,6 +22,15 @@ export interface StudentWebShellProps {
   /** Items in this browser's cart; no badge at zero. */
   cartCount?: number;
   onNavigate: (route: RoutePath) => void;
+  /**
+   * SOS: opens the helplines dialog (112, Tele-MANAS and the campus SOS). Required,
+   * so every student web page keeps help one tap away (DESIGN.md §2.4).
+   */
+  onSos: () => void;
+  /** Alerts: opens the notification centre. */
+  onAlerts: () => void;
+  /** Unread alerts; no badge at zero. */
+  alertCount?: number;
   /** Opens the one sign-out confirm dialog (the shell never signs out by itself). */
   onSignOut: () => void;
   signingOut?: boolean;
@@ -51,7 +60,7 @@ export function shortNameOf(fullName: string): string {
 /**
  * Signed-in student web frame (canvas page 3b, boards WebDashboard / WebVault):
  * a white top nav (brand, Shop · Lab tests · Doctors · Health vault · Ayush,
- * My orders, cart, account), and the grouped sidebar (My care / Services /
+ * My orders, Alerts, SOS, cart, account), and the grouped sidebar (My care / Services /
  * Account) with the account header and Log out. The sidebar keeps the founder's
  * navy with the white pill for the current item (PR #152); the canvas draws it
  * light. At 1024 px and below the sidebar becomes a modal drawer.
@@ -61,6 +70,9 @@ export function StudentWebShell({
   student,
   cartCount = 0,
   onNavigate,
+  onSos,
+  onAlerts,
+  alertCount = 0,
   onSignOut,
   signingOut = false,
   signOutError = null,
@@ -106,6 +118,7 @@ export function StudentWebShell({
   const status = student.verified
     ? (campus ? t('shell.verified', { campus }) : t('shell.verifiedNoCampus'))
     : (campus ? t('shell.pending', { campus }) : t('shell.pendingNoCampus'));
+  const alertsLabel = alertCount > 0 ? t('shell.alertsCount', { count: alertCount }) : t('shell.alerts');
   const cartLabel = cartCount <= 0 ? t('shell.cart') : cartCount === 1 ? t('shell.cartOne') : t('shell.cartMany', { count: cartCount });
 
   const topLinks = (variant: 'bar' | 'drawer') => STUDENT_TOP_NAV.map((link) => (
@@ -134,7 +147,7 @@ export function StudentWebShell({
         >
           <Icon name="menu" size={22} />
         </button>
-        <button type="button" className="sk-sshell__brand" aria-label={t('shell.brand.home')} onClick={() => go('health')}>
+        <button type="button" className="sk-sshell__brand" aria-label={t('shell.brand.home')} onClick={() => go('home')}>
           <BrandLogo size={30} label="" />
           <span className="sk-sshell__wordmark" aria-hidden="true">{t('shell.brand.student')}<em>&nbsp;{t('shell.brand.kare')}</em></span>
         </button>
@@ -142,6 +155,15 @@ export function StudentWebShell({
         <span className="sk-sshell__grow" />
         <button type="button" className="sk-sshell__toplink sk-sshell__orders" aria-current={route === 'orders' ? 'page' : undefined} onClick={() => go('orders')}>
           {t('shell.myOrders')}
+        </button>
+        <button type="button" className="sk-sshell__icon-btn sk-sshell__alerts" aria-label={alertsLabel} onClick={onAlerts}>
+          <Icon name="bell" size={19} />
+          {alertCount > 0 ? <span className="sk-sshell__badge" aria-hidden="true">{alertCount}</span> : null}
+        </button>
+        {/* Red only for SOS (DESIGN.md §3). Never hidden at any width. */}
+        <button type="button" className="sk-sshell__sos" aria-label={t('shell.sosLabel')} onClick={onSos}>
+          <Icon name="sos" size={18} />
+          <span aria-hidden="true">{t('shell.sos')}</span>
         </button>
         <button type="button" className="sk-sshell__icon-btn sk-sshell__cart" aria-label={cartLabel} aria-current={route === 'checkout' ? 'page' : undefined} onClick={() => go('checkout')}>
           <Icon name="shopping-bag" size={19} />

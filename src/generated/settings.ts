@@ -45,6 +45,8 @@ export interface PublicSettings {
   "shop.search_results_max": number;
   /** Most catalogue suggestions the phone search shows while the student types. (suggestions) */
   "shop.search_suggestions_max": number;
+  /** How long a released lab report stays under Needs you on the student's Your Care page. (days) */
+  "studentweb.report_ready_days": number;
   /** How far back a day's manual activity totals may be entered. (days) */
   "wellness.activity_backdate_days": number;
   /** Longest distance one day's manual entry may record. (km) */
@@ -111,6 +113,7 @@ export const publicSettingDefaults: Readonly<PublicSettings> = {
   "shop.search_debounce_ms": 250,
   "shop.search_results_max": 50,
   "shop.search_suggestions_max": 6,
+  "studentweb.report_ready_days": 14,
   "wellness.activity_backdate_days": 366,
   "wellness.activity_distance_km_max": 200.0,
   "wellness.activity_energy_kcal_max": 10000.0,
@@ -150,6 +153,7 @@ export const publicSettingSpecs: Readonly<Record<PublicSettingKey, PublicSetting
   "shop.search_debounce_ms": { type: "int", min: 0, max: 2000, allowed: [], unit: "milliseconds" },
   "shop.search_results_max": { type: "int", min: 1, max: 100, allowed: [], unit: "listings" },
   "shop.search_suggestions_max": { type: "int", min: 1, max: 20, allowed: [], unit: "suggestions" },
+  "studentweb.report_ready_days": { type: "int", min: 1, max: 90, allowed: [], unit: "days" },
   "wellness.activity_backdate_days": { type: "int", min: 0, max: 3660, allowed: [], unit: "days" },
   "wellness.activity_distance_km_max": { type: "float", min: 1, max: 1000, allowed: [], unit: "km" },
   "wellness.activity_energy_kcal_max": { type: "float", min: 100, max: 50000, allowed: [], unit: "kcal" },
