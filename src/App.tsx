@@ -21,6 +21,8 @@ import { AppRouter } from './core/routing/Router';
 import { isPublicPath } from './core/routing/registry';
 import { isVendorPath } from './screens/vendor/vendorRoutes';
 import { isClinicianConsolePath } from './features/clinician/shared/clinicianRoutes';
+import { isWorkspacePath } from './features/health/module';
+import { usePhoneFrame } from './design-system/navigation/usePhoneFrame';
 // Register route metadata without eagerly loading screen-exporting feature barrels.
 import './features/auth/module';
 import './features/landing/module';
@@ -40,6 +42,7 @@ function RouterShell() {
   const routePath = asRoutePath(location.pathname.replace(/^\//, ''));
   const mainContent = useRef<HTMLDivElement>(null);
   const previousPath = useRef(location.pathname);
+  const phoneFrame = usePhoneFrame();
 
   useEffect(() => {
     registerGlobalNavigator((to) => routerNav(to));
@@ -137,7 +140,8 @@ function RouterShell() {
       {/* Consoles with their own sidebar and top-right actions (SOS included) draw no
           app bar above them: it pushed their full-height sidebar below the window, so its
           footer could not be reached. */}
-      {!isPublicView && !hasOwnChrome && <InterfaceBar section={section} />}
+      {/* A student at phone width gets the phone frame's own header (SOS included) from the workspace. */}
+      {!isPublicView && !hasOwnChrome && !drawsStudentPhoneFrame(location.pathname, auth.user?.role ?? null, phoneFrame) && <InterfaceBar section={section} />}
       {auth.status === 'error' && isPublicPath(location.pathname) && (
         <div className="wf-connection-banner" role="status">
           {auth.error}
@@ -158,6 +162,11 @@ function RouterShell() {
       </div>
     </div>
   );
+}
+
+/** A signed-in student's workspace page at phone width draws the phone frame (header and tab bar), not the app bar. */
+export function drawsStudentPhoneFrame(pathname: string, role: string | null, phoneWidth: boolean): boolean {
+  return phoneWidth && role === 'STUDENT' && isWorkspacePath(pathname);
 }
 
 /**

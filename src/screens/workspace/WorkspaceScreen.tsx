@@ -33,6 +33,8 @@ import { VendorShell } from '../vendor/VendorShell';
 import { canOpenPartnerRoute, partnerKindOf } from '../vendor/partnerAccess';
 import { useEffectivePartnerKind } from '../vendor/partnerPreview';
 import type { AccountRole } from '../../data/types/workflowTypes';
+import { usePhoneFrame } from '@/design-system/navigation/usePhoneFrame';
+import { StudentPhoneFrame } from './StudentPhoneFrame';
 
 const WebEmergencyCard = lazy(() => import('@/features/emergency/views/WebEmergencyCard').then(module => ({ default: module.WebEmergencyCard })));
 const WebPass = lazy(() => import('@/features/digital_id/views/WebPass').then(module => ({ default: module.WebPass })));
@@ -115,6 +117,7 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
   const effectivePartnerKind = useEffectivePartnerKind(user);
   const routerNavigate = useNavigate();
   const [mobileMenu, setMobileMenu] = useState(false);
+  const phoneFrame = usePhoneFrame();
   const [confirmSignOut, setConfirmSignOut] = useState(false);
   const [rememberDevice, setRememberDevice] = useState(false);
   const menuButton = useRef<HTMLButtonElement>(null);
@@ -122,7 +125,7 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
   useEffect(() => {
     if (!mobileMenu) return;
     const close = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') { setMobileMenu(false); menuButton.current?.focus(); }
+      if (event.key === 'Escape') { setMobileMenu(false); (menuButton.current ?? document.querySelector<HTMLElement>('[data-testid="phone-header-menu"]'))?.focus(); }
     };
     window.addEventListener('keydown', close);
     return () => window.removeEventListener('keydown', close);
@@ -266,9 +269,28 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
     </>;
   }
 
+  const sidebar = <aside id="workspace-sidebar" className={`wf-sidebar ${mobileMenu ? 'is-open' : ''}`}><button className="shop-logo-button wf-sidebar-brand" onClick={() => open('shop')} aria-label={t('ws.openShop')}><StudentKareLogo size={31} showStrapline={false} /></button><div className="wf-account-summary"><span>{user.fullName.charAt(0).toUpperCase()}</span><div><strong>{user.fullName}</strong><small>{roleLabel}</small></div></div><nav aria-label={t('ws.nav')}>{links.map(({ path, label, icon: Icon }) => <button key={path} aria-current={route === path ? 'page' : undefined} onClick={() => open(path)}><Icon size={18} aria-hidden="true" />{t(label)}</button>)}</nav>{user.role !== 'STUDENT' && <button className="wf-sidebar-secondary" onClick={() => open(staffHome ? 'health' : homeForRole(user.role))}><Building2 size={16} aria-hidden="true" />{staffHome ? t('ws.personal') : t('ws.staff')}</button>}<button className="wf-sidebar-secondary" onClick={() => open('shop')}><ArrowLeft size={16} aria-hidden="true" />{t('ws.shop')}</button><div className="wf-sidebar-bottom"><FormError message={mutation.error} /><button disabled={mutation.busy} onClick={() => setConfirmSignOut(true)}><LogOut size={16} aria-hidden="true" />{mutation.busy ? t('ws.signingOut') : t('home.signOut')}</button></div></aside>;
+
+  // At phone width a student gets the phone boards' frame (phone header and tab bar)
+  // instead of this desktop shell; the sidebar becomes the header's More panel.
+  if (user.role === 'STUDENT' && phoneFrame) {
+    const pageLink = memberLinks.find(link => link.path === route);
+    return <>
+      <StudentPhoneFrame
+        route={route}
+        title={pageLink ? t(pageLink.label) : t('phone.brand')}
+        menu={{ open: mobileMenu, onToggle: () => setMobileMenu(!mobileMenu), controls: 'workspace-sidebar' }}
+        menuPanel={sidebar}
+      >
+        <Suspense fallback={<ScreenLoading />}><PageTransition key={route}>{content()}</PageTransition></Suspense>
+      </StudentPhoneFrame>
+      {signOutDialog}
+    </>;
+  }
+
   return <div className="wf-workspace">
     <header className="wf-mobile-workspace-header"><StudentKareLogo size={28} showStrapline={false} /><button ref={menuButton} className="wf-icon-button" aria-label={mobileMenu ? t('ws.closeNav') : t('ws.openNav')} aria-expanded={mobileMenu} aria-controls="workspace-sidebar" onClick={() => setMobileMenu(!mobileMenu)}>{mobileMenu ? <X size={23} /> : <Menu size={23} />}</button></header>
-    <aside id="workspace-sidebar" className={`wf-sidebar ${mobileMenu ? 'is-open' : ''}`}><button className="shop-logo-button wf-sidebar-brand" onClick={() => open('shop')} aria-label={t('ws.openShop')}><StudentKareLogo size={31} showStrapline={false} /></button><div className="wf-account-summary"><span>{user.fullName.charAt(0).toUpperCase()}</span><div><strong>{user.fullName}</strong><small>{roleLabel}</small></div></div><nav aria-label={t('ws.nav')}>{links.map(({ path, label, icon: Icon }) => <button key={path} aria-current={route === path ? 'page' : undefined} onClick={() => open(path)}><Icon size={18} aria-hidden="true" />{t(label)}</button>)}</nav>{user.role !== 'STUDENT' && <button className="wf-sidebar-secondary" onClick={() => open(staffHome ? 'health' : homeForRole(user.role))}><Building2 size={16} aria-hidden="true" />{staffHome ? t('ws.personal') : t('ws.staff')}</button>}<button className="wf-sidebar-secondary" onClick={() => open('shop')}><ArrowLeft size={16} aria-hidden="true" />{t('ws.shop')}</button><div className="wf-sidebar-bottom"><FormError message={mutation.error} /><button disabled={mutation.busy} onClick={() => setConfirmSignOut(true)}><LogOut size={16} aria-hidden="true" />{mutation.busy ? t('ws.signingOut') : t('home.signOut')}</button></div></aside>
+    {sidebar}
     <main className="wf-workspace-main"><div className="wf-workspace-top"><div><span className="care-eyebrow">{roleLabel.toUpperCase()}</span><strong>{t('ws.greeting', { name: user.fullName.split(' ')[0] })}</strong><p>{user.university || t('ws.noCampus')}</p></div><div className="wf-row-actions" style={{ flexWrap: 'wrap', gap: 8 }}><div className="wf-top-profile-quicknav" style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'var(--surface-2)', padding: '4px 6px', borderRadius: 12, border: '1px solid var(--rule)' }}><button className={`health-button ${route === 'billing' ? 'health-button-primary' : ''}`} style={{ padding: '6px 12px', minHeight: 'var(--sk-size-touch-target, 44px)', fontSize: 'var(--sk-text-caption)', borderRadius: 8, display: 'inline-flex', alignItems: 'center', gap: 5 }} onClick={() => navigate('billing')} ><ShieldCheck size={14} aria-hidden="true" /> {t('nav.plan')}</button><button className={`health-button ${route === 'profile' ? 'health-button-primary' : ''}`} style={{ padding: '6px 12px', minHeight: 'var(--sk-size-touch-target, 44px)', fontSize: 'var(--sk-text-caption)', borderRadius: 8, display: 'inline-flex', alignItems: 'center', gap: 5 }} onClick={() => navigate('profile')} ><UserRound size={14} aria-hidden="true" /> {t('nav.profile')}</button><button className={`health-button ${route === 'digital-id' ? 'health-button-primary' : ''}`} style={{ padding: '6px 12px', minHeight: 'var(--sk-size-touch-target, 44px)', fontSize: 'var(--sk-text-caption)', borderRadius: 8, display: 'inline-flex', alignItems: 'center', gap: 5 }} onClick={() => navigate('digital-id')} ><IdCard size={14} aria-hidden="true" /> {t('nav.digitalId')}</button></div>{user.role === 'STUDENT' && <span className="wf-status">{user.isVerifiedStudent ? t('ws.verified') : t('ws.verifyPending')}</span>}<button className="health-button" onClick={() => navigate('shop')}>{t('ws.shop')} <Package size={15} aria-hidden="true" /></button></div></div>
       {staffHome && staffIntro && <ConsoleIntro title={t(staffIntro.title)} description={t(staffIntro.body)} eyebrow={roleLabel.toUpperCase()} />}
       <Suspense fallback={<ScreenLoading />}><PageTransition key={route}>{content()}</PageTransition></Suspense>

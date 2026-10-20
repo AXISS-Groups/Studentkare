@@ -263,7 +263,7 @@
   "VerifyGate": ["src/features/auth/views/VerifyGateView.tsx", "src/features/auth/views/VerifyGateNativeView.tsx"],
   "LoggedOut": ["src/features/auth/views/LoggedOutView.tsx"],
   "LostPhone": ["src/features/auth/views/LostPhoneView.tsx", "src/features/auth/views/LostPhonePanel.tsx", "src/features/auth/views/LostPhoneNativeView.tsx"],
-  "HomeDiscover": ["src/native/StudentHomeScreen.tsx", "src/native/StudentTabBar.tsx"],
+  "HomeDiscover": ["src/native/StudentHomeScreen.tsx", "src/native/StudentTabBar.tsx", "src/screens/workspace/StudentPhoneFrame.tsx", "src/design-system/navigation/PhoneHeader.tsx", "src/design-system/navigation/TabBar.tsx"],
   "SearchEntry": ["src/screens/marketplace/LiveMarketplaceScreen.tsx"],
   "SearchResults": ["src/screens/marketplace/LiveMarketplaceScreen.tsx"],
   "LabResults": ["src/features/labBooking/views/LabPackagesView.tsx"],

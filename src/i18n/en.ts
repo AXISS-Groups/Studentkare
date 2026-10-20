@@ -763,6 +763,10 @@ export const en = {
   'tabbar.ayush': "Ayush AI",
   'tabbar.records': "Records",
   'tabbar.appointments': "Appointments",
+  'tabbar.labTests': "Lab Tests",
+  'tabbar.yourCare': "Your Care",
+  // Phone header on the web at phone width (canvas phone boards)
+  'phone.brand': "Student Kare",
   'nav.campusWellness': "Campus wellness",
   'nav.devices': "Devices & sensors",
   'nav.plan': "Plan",

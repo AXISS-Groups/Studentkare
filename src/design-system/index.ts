@@ -39,6 +39,9 @@ export type { BadgeSource, ResultMoment, ResultMomentProps } from './Moments';
 export { Rise, useReducedMotion, usePulse, easing, bezierFromToken } from './motion';
 export { TabBar } from './navigation/TabBar';
 export type { TabBarItem, TabBarProps } from './navigation/TabBar';
+export { PhoneHeader } from './navigation/PhoneHeader';
+export type { PhoneHeaderAction, PhoneHeaderProps } from './navigation/PhoneHeader';
+export { usePhoneFrame, PHONE_FRAME_QUERY } from './navigation/usePhoneFrame';
 
 // ---- web console layer ----
 import './design-system.css';
