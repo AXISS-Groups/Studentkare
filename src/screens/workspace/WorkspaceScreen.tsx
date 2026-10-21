@@ -100,6 +100,7 @@ const VaultWorkspaceHub = lazy(() => import('../vault/VaultWorkspaceHub').then(m
 // Signed-in student web, Tier 1 pages (canvas 3b, WP-09), drawn in the student web shell.
 const WebVaultView = lazy(() => import('@/features/studentweb/views/t1/WebVaultView').then(module => ({ default: module.WebVaultView })));
 const WebMyLabTestsView = lazy(() => import('@/features/studentweb/views/t1/WebMyLabTestsView').then(module => ({ default: module.WebMyLabTestsView })));
+const WebReportInsightsView = lazy(() => import('@/features/studentweb/views/t1/WebReportInsightsView').then(module => ({ default: module.WebReportInsightsView })));
 const WebAyushView = lazy(() => import('@/features/studentweb/views/t1/WebAyushView').then(module => ({ default: module.WebAyushView })));
 const WebConsultSummaryRoute = lazy(() => import('@/features/studentweb/views/t1/WebConsultSummaryView').then(module => ({ default: module.WebConsultSummaryRoute })));
 const WebEmergencyCardRoute = lazy(() => import('@/features/studentweb/views/t1/WebEmergencyCardView').then(module => ({ default: module.WebEmergencyCardRoute })));
@@ -282,6 +283,7 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
     if (route === 'buy-again') return <WebReorderView />;
     // No phone board yet: the web page reflows into the phone frame.
     if (route === 'my-lab-tests') return <WebMyLabTestsView />;
+    if (route === 'report-insights') return <WebReportInsightsView />;
     if (phoneFrame) return null;
     switch (route) {
       case 'health': return <WebDashboardView />;

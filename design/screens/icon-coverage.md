@@ -1,6 +1,6 @@
 # Icon coverage
 
-Screens built and passing: **221 / 247** · built with gaps: 0 · not started: 26 · superseded: 5
+Screens built and passing: **221 / 250** · built with gaps: 0 · not started: 29 · superseded: 2
 
 | Screen | Status | Missing |
 |---|---|---|
@@ -248,11 +248,11 @@ Screens built and passing: **221 / 247** · built with gaps: 0 · not started: 2
 | StateScreens | not started | — |
 | StatusMoments | not started | — |
 | Teleconsult | not started | — |
+| VitalTrends | not started | — |
 | WebConsultSummary | not started | — |
 | WebGuardianApprove | not started | — |
 | WebGuardianConsent | not started | — |
+| WebReportAssistant | not started | — |
+| WebReportInsights | not started | — |
 | MyReports | superseded | by M2Insights, M2ReportUpload |
 | ReportInsights | superseded | by M2Insights, M2Trends |
-| VitalTrends | superseded | by M2Trends |
-| WebReportAssistant | superseded | by M2Insights |
-| WebReportInsights | superseded | by M2Insights |

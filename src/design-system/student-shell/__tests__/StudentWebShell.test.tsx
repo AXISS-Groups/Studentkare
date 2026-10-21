@@ -51,12 +51,12 @@ describe('StudentWebShell', () => {
     expect(props.onNavigate).toHaveBeenCalledWith('security');
   });
 
-  it('opens My lab tests, and Report insights on M2Insights (/your-care), which superseded WebReportInsights', () => {
+  it('opens My lab tests and Report insights (WP-09), which now have student pages', () => {
     const props = renderShell();
     fireEvent.click(within(sidebarNav()).getByRole('button', { name: 'My lab tests' }));
     expect(props.onNavigate).toHaveBeenCalledWith('my-lab-tests');
     fireEvent.click(within(sidebarNav()).getByRole('button', { name: 'Report insights' }));
-    expect(props.onNavigate).toHaveBeenCalledWith('your-care');
+    expect(props.onNavigate).toHaveBeenCalledWith('report-insights');
   });
 
   it('a bare board (WebAyush) keeps the top nav and SOS and marks the frame for no sidebar', () => {

@@ -171,7 +171,7 @@ function ReleasedCard({ test, who }: { test: StudentLabTest; who: string }) {
         <Facts test={test} who={who} />
         <div className="sk-swt-report__actions">
           <a className="sk-sw-btn sk-sw-btn--primary" href={apiFileUrl(test.reportDocumentId)} download>{t('swt.labs.view')}</a>
-          <button type="button" className="sk-sw-btn sk-sw-btn--outline" onClick={() => routerNavigate('/your-care')}>{t('swt.labs.insights')}</button>
+          <button type="button" className="sk-sw-btn sk-sw-btn--outline" onClick={() => routerNavigate(`/report-insights?id=${encodeURIComponent(test.id)}`)}>{t('swt.labs.insights')}</button>
           <button type="button" className="sk-sw-btn sk-sw-btn--ghost" onClick={() => navigate('lab-tests')}>{t('swt.labs.bookAgain')}</button>
         </div>
       </div>

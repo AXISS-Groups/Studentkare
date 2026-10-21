@@ -29,6 +29,7 @@ const workspacePaths: { path: string; access?: (role: AccountRole | null) => boo
   { path: '/buy-again', access: hasRole('STUDENT') },
   // My lab tests and Report insights (canvas 3b, WP-09).
   { path: '/my-lab-tests', access: hasRole('STUDENT') },
+  { path: '/report-insights', access: hasRole('STUDENT') },
   { path: '/care-navigator' },
   { path: '/preventive-care' },
   { path: '/report-reviews', access: hasRole('NMC_DOCTOR') },
@@ -175,20 +176,10 @@ export function isWorkspacePath(pathname: string): boolean {
   return workspacePaths.some((entry) => entry.path === pathname);
 }
 
-/**
- * Canvas boards superseded by Mobile 2.0 (design/screens/implementation-map.json
- * `superseded`): their old URLs land on the screen that replaced them.
- * WebReportInsights (/report-insights) -> M2Insights, drawn at /your-care.
- */
-export const SUPERSEDED_REDIRECTS: ReadonlyArray<readonly [string, string]> = [
-  ['/report-insights', '/your-care'],
-];
-
-export const LEGACY_REDIRECTS: ReadonlyArray<readonly [string, string]> = [
+const LEGACY_REDIRECTS: ReadonlyArray<readonly [string, string]> = [
   ['/vault', '/records'],
   ['/camp', '/health-camp'],
   ['/help', '/support'],
-  ...SUPERSEDED_REDIRECTS,
 ];
 
 function redirectTo(to: string): React.ComponentType {
