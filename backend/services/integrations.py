@@ -161,6 +161,11 @@ def test_integration(provider: str, user: dict = Depends(require_super_admin)):
             return {"success": False, "message": f"Slack rejected token: {err}"}
         except (httpx.HTTPError, OSError, ValueError) as err:
             return {"success": False, "message": str(err)[:300]}
+    if provider == "abdm_hfr":
+        # Never a live call: the connector reports exactly what it can and cannot do.
+        from services import hfr_registry
+        current = hfr_registry.status()
+        return {"success": False, "state": current["state"], "message": current["message"]}
     if provider in ("otp", "twofa"):
         return {"success": True, "message": f"{provider} policy valid", "config": sanitize(provider)}
     if provider == "platform":

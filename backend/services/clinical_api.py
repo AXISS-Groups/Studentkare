@@ -319,12 +319,15 @@ class ProviderUpdate(StrictModel):
     active: bool | None = None
     deliveryAvailable: bool | None = None
     pickupAvailable: bool | None = None
+    # A super admin has checked the listing (address, hours, coordinates) today; False clears it.
+    # Only a verified listing with a current licence reaches the care directory (services/care_directory.py).
+    verified: bool | None = None
 
 
 @router.patch("/ops/service-providers/{provider_id}")
 def update_provider(provider_id: str, body: ProviderUpdate, user=Depends(require_super_admin),
                     db: Session = Depends(workflow_db)):
-    """Record how a provider hands medicines over, or take it off the directory."""
+    """Record how a provider hands medicines over, mark its listing verified, or take it off the directory."""
     row = db.get(M.ServiceProvider, provider_id)
     if not row:
         raise HTTPException(404, "No such provider.")
@@ -334,6 +337,8 @@ def update_provider(provider_id: str, body: ProviderUpdate, user=Depends(require
         row.delivery_available = body.deliveryAvailable
     if body.pickupAvailable is not None:
         row.pickup_available = body.pickupAvailable
+    if body.verified is not None:
+        row.verified_at = time.time() if body.verified else 0.0
     row.updated_at = time.time()
     audit(db, user["id"], "SERVICE_PROVIDER_UPDATED", row.id)
     db.commit()

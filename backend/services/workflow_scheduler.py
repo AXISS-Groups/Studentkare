@@ -1033,6 +1033,12 @@ def integration_health_check(db) -> dict:
     else:
         add("analytics_posthog", False, None, "not configured")
 
+    # ABDM Health Facility Registry (care directory): no live probe, because no live search exists.
+    from services import hfr_registry
+    hfr = hfr_registry.status()
+    add("abdm_hfr", hfr["configured"], None,
+        "configured; live facility search not built" if hfr["configured"] else "not configured")
+
     # Firebase
     firebase = INTEGRATIONS_DB.get("firebase", {})
     add("firebase", bool(firebase.get("enabled")), None, "configured" if firebase.get("enabled") else "not configured")

@@ -209,6 +209,20 @@ declare("shop.order_line_phone", STR, "", area="shop", unit="phone number (digit
         description="The order line students call to order medicines or book a lab test. Empty shows the call "
                     "buttons as not available yet.")
 
+# --- care directory ("Find care near you") -------------------------------------
+# A listing reaches students only while its last check is this recent; older ones
+# drop out until someone checks them again (services/care_directory.py).
+declare("care_directory.verification_max_age_days", INT, 365, area="care_directory", unit="days", minimum=30,
+        maximum=1095, description="How long a care-directory listing stays shown after it was last verified.")
+declare("care_directory.results_max", INT, 100, area="care_directory", unit="listings", minimum=10, maximum=200,
+        description="Most listings one care-directory request returns.")
+# The device location a student chooses to share stays on the device; these only
+# bound how long the app waits for it and how old a cached fix may be.
+declare("care_directory.location_timeout_seconds", INT, 15, area="care_directory", unit="seconds", minimum=3,
+        maximum=60, public=True, description="How long the app waits for the device location before saying so.")
+declare("care_directory.location_max_age_seconds", INT, 120, area="care_directory", unit="seconds", minimum=0,
+        maximum=900, public=True, description="Oldest device location fix the app reuses to sort by distance.")
+
 # --- medicines -------------------------------------------------------------
 declare("meds.dose_undo_minutes", INT, 30, area="meds", unit="minutes", minimum=0, maximum=240, public=True,
         description="How long after marking a dose taken or skipped the student can undo it.")
