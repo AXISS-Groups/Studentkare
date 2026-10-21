@@ -305,6 +305,31 @@ for _key, _what in (
             description=f"The {_what} linked from the public site footer. Empty hides the link.")
 
 
+# --- billing ---------------------------------------------------------------
+# Plan prices, set by the founder on 2026-10-20. Whole rupees. The server's plan
+# catalogue (GET /api/billing/plans) and the online checkout read these; the
+# client's defaults are generated from them. The amount Razorpay actually charges
+# is fixed on the Razorpay plan (RAZORPAY_PLUS_PLAN_ID): checkout refuses to start
+# when that plan's amount differs from billing.student_plus.monthly_inr.
+declare("billing.student_plus.monthly_inr", INT, 149, area="billing", unit="₹ per month", minimum=1,
+        maximum=100000, public=True, description="Price of the Student Plus membership, per month.")
+declare("billing.student_plus.quarter_package_inr", INT, 2199, area="billing", unit="₹ per 3 months", minimum=1,
+        maximum=1000000, public=True, description="Price of the Student Plus 3-month package, paid once.")
+declare("billing.premium.from_monthly_inr", INT, 499, area="billing", unit="₹ per month (starting price)",
+        minimum=1, maximum=100000, public=True,
+        description="Starting price of Premium, per month. Always shown as \"from\" this amount.")
+declare("billing.campus.per_student_yearly_inr", INT, 240, area="billing", unit="₹ per student per year",
+        minimum=0, maximum=1000000, description="Listed price of the institution-paid Campus plan.")
+declare("billing.student_plus.benefit_requests_per_month", INT, 2, area="billing", unit="requests per period",
+        minimum=0, maximum=100, description="Care coordination requests a Student Plus member may make each paid period.")
+# Not public. Members who subscribed before a price rise keep paying the old
+# amount on their existing Razorpay plan; their paid invoices must still count.
+# Raise this to the monthly price once every legacy subscription has moved.
+declare("billing.student_plus.min_entitling_receipt_inr", INT, 99, area="billing", unit="₹", minimum=1,
+        maximum=100000,
+        description="Smallest paid, unrefunded Student Plus invoice that grants membership (keeps earlier subscribers).")
+
+
 def get_declaration(key: str) -> Setting:
     try:
         return REGISTRY[key]

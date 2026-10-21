@@ -2,15 +2,17 @@
 
 get_user_schedule counted doses taken today and nothing else, so a student
 could see "0%" at breakfast after a month of perfect adherence. These pin down
-what the windows, the streak and the missed-day list actually mean.
+what the windows and the missed-day list actually mean. There is no streak
+and no score (AGENTS.md guardrail 4): the API reports facts, not a game.
 """
 from datetime import date, timedelta
 
 import pytest
+from test_workflow_api import harness, register  # noqa: F401 - harness is a pytest fixture
 
+from services.agents import medication_adherence_loop_agent as agent_module
 from services.agents.medication_adherence_loop_agent import (
     coverage,
-    current_streak,
     missed_days,
 )
 
@@ -49,22 +51,6 @@ class TestCoverage:
         }
 
 
-class TestStreak:
-    def test_counts_consecutive_days_including_today(self):
-        assert current_streak(days_back(*range(7)), TODAY) == 7
-
-    def test_a_dose_not_yet_taken_today_does_not_break_the_streak(self):
-        # The day is not over. Telling someone at breakfast that they have lost
-        # a streak would be both wrong and discouraging.
-        assert current_streak(days_back(1, 2, 3, 4), TODAY) == 4
-
-    def test_a_gap_yesterday_ends_the_streak(self):
-        assert current_streak(days_back(3, 4, 5), TODAY) == 0
-
-    def test_no_doses_is_no_streak(self):
-        assert current_streak(set(), TODAY) == 0
-
-
 class TestMissedDays:
     def test_lists_gaps_most_recent_first(self):
         assert missed_days(days_back(0, 1, 3, 5), LONG_AGO, TODAY, 7) == [
@@ -85,3 +71,19 @@ class TestMissedDays:
 def test_rate_is_always_a_proportion(window):
     result = coverage(days_back(0, 2), LONG_AGO, TODAY, window)
     assert 0.0 <= result["rate"] <= 1.0
+
+
+def test_no_streak_or_score_in_the_schedule(harness):
+    """A logged dose is reported as a fact (taken today), never as a streak or a score."""
+    client, factory, codes = harness
+    _user, headers = register(client, codes, "nostreak@example.test")
+    plan = client.post("/api/meds/plans", json={"name": "Iron", "dosage": "1 tablet", "frequency": "daily"},
+                       headers=headers).json()
+    assert client.post("/api/meds/log-dose", json={"medId": plan["id"]}, headers=headers).status_code == 200
+    schedule = client.get("/api/meds/schedule", headers=headers).json()
+    assert schedule["todays_taken"] == 1
+    assert set(schedule["adherence"]) == {"windows", "missedDays", "trackedSince"}
+    flat = repr(schedule).lower()
+    for word in ("streak", "score", "completion_rate", "rank", "points"):
+        assert word not in flat
+    assert not hasattr(agent_module, "current_streak")

@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { pressable } from '@/lib/a11y/pressable';
 import { getPlans } from '@/data/datasets/billing';
-import type { BillingPlan } from '@/data/datasets/billing';
+import { planPackageLabels, planPriceLabel } from '@/data/datasets/billingPrices';
+import type { BillingPackage, BillingPlan } from '@/data/datasets/billing';
 import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
 import { PublicSiteHeader, PublicSitePage } from '@/design-system/public-site';
@@ -23,8 +24,10 @@ type PlansState =
 
 const PAGE_X = 'clamp(16px, 3.5vw, 44px)';
 
-function priceLabel(price: BillingPlan['price']): string {
-  return typeof price === 'number' ? `₹${price.toLocaleString('en-IN')}` : price;
+function isPackage(value: unknown): value is BillingPackage {
+  if (typeof value !== 'object' || value === null) return false;
+  const v = value as Record<string, unknown>;
+  return typeof v.id === 'string' && typeof v.months === 'number' && typeof v.price === 'number';
 }
 
 function footKey(plan: BillingPlan): MessageKey | null {
@@ -40,7 +43,9 @@ function isPlan(value: unknown): value is BillingPlan {
   return typeof v.id === 'string' && typeof v.name === 'string' && typeof v.period === 'string' &&
     typeof v.description === 'string' && typeof v.audience === 'string' &&
     (typeof v.price === 'number' || typeof v.price === 'string') &&
-    Array.isArray(v.benefits) && v.benefits.every((b) => typeof b === 'string');
+    Array.isArray(v.benefits) && v.benefits.every((b) => typeof b === 'string') &&
+    (v.priceFrom === undefined || typeof v.priceFrom === 'boolean') &&
+    (v.packages === undefined || (Array.isArray(v.packages) && v.packages.every(isPackage)));
 }
 
 /** Fail closed: one malformed plan and no price is shown at all. */
@@ -204,12 +209,18 @@ export function LandingPlansView(): React.ReactElement {
 
               <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', flexWrap: 'wrap' }}>
                 <span style={{ fontSize: '38px', fontWeight: 800, letterSpacing: '-1.4px', color: 'var(--sk-color-text)' }}>
-                  {priceLabel(p.price)}
+                  {planPriceLabel(p, t)}
                 </span>
                 <span style={{ fontSize: '12.5px', fontWeight: 600, color: 'var(--sk-color-text-3)' }}>
                   {p.period}
                 </span>
               </div>
+
+              {planPackageLabels(p, t).map((label) => (
+                <span key={label} style={{ fontSize: '13px', fontWeight: 700, color: 'var(--sk-color-text)' }}>
+                  {label}
+                </span>
+              ))}
 
               <span style={{ fontSize: '12px', lineHeight: 1.55, fontWeight: 500, color: 'var(--sk-color-text-3)' }}>
                 {p.description}

@@ -36,9 +36,10 @@ def test_phlebotomist_dispatch_agent():
 def test_medication_adherence_loop_agent():
     schedule = medication_adherence_loop_agent.get_user_schedule(None, "demo-student")
     assert schedule["user_id"] == "demo-student"
-    # No plans yet -> zero completion, no fabricated todays_medications.
+    # No plans yet -> nothing taken, no fabricated todays_medications, and no score.
     assert schedule["plans"] == []
-    assert schedule["daily_completion_rate"] == 0.0
+    assert schedule["todays_taken"] == 0
+    assert "daily_completion_rate" not in schedule
 
     plan = medication_adherence_loop_agent.add_plan(None, "demo-student", "Paracetamol", "1 tablet", "twice daily")
     assert plan["source"] == "USER"

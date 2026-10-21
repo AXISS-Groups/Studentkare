@@ -2,6 +2,8 @@
 
 import type { IntegrationCheck, IntegrationHealth, OpsFeedEvent, OpsSeverity } from '@/data/types/workflowTypes';
 import type { BillingPlan } from '@/data/datasets/billing';
+import { planPriceLabel } from '@/data/datasets/billingPrices';
+import type { MessageKey, Vars } from '@/i18n';
 import type { AuditPage, IndexStatus, KnowledgeSource, MetricValue, OpsFeedCounts, SourceState, StatusReading, StatusTone } from './types';
 
 export const readable = (value: string) => value.replace(/_/g, ' ').toLowerCase().replace(/^./, character => character.toUpperCase());
@@ -96,8 +98,10 @@ export const openSafetyStatus = (counts: SourceState<OpsFeedCounts>): StatusRead
   });
 
 // ── Plans & pricing ──────────────────────────────────────────────────────────
-/** A plan's price: a number in rupees is formatted (₹1,499); a word such as “Free” is shown as given. */
-export const planPrice = (plan: BillingPlan) => typeof plan.price === 'number' ? `₹${count(plan.price)}` : plan.price;
+type Translate = (key: MessageKey, vars?: Vars) => string;
+
+/** A plan's price: a number in rupees is formatted (₹1,499, or "from ₹499" for a starting price); a word such as “Free” is shown as given. */
+export const planPrice = (plan: BillingPlan, t: Translate) => planPriceLabel(plan, t);
 
 /** A plan's price with its period for a numeric price (₹1,499 per year); a word price stands alone. */
-export const planPriceWithPeriod = (plan: BillingPlan) => typeof plan.price === 'number' ? `₹${count(plan.price)} ${plan.period}` : plan.price;
+export const planPriceWithPeriod = (plan: BillingPlan, t: Translate) => typeof plan.price === 'number' ? `${planPriceLabel(plan, t)} ${plan.period}` : plan.price;

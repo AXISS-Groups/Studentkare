@@ -52,8 +52,4 @@ export class StudentStore {
   setLanguage(language: LanguageCode): void {
     this.language = language;
   }
-
-  addPoints(points: number): void {
-    this.student = { ...this.student, pointsBalance: this.student.pointsBalance + points };
-  }
 }

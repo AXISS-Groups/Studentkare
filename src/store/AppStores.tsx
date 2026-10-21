@@ -32,7 +32,7 @@ export class AppStores {
     this.student = new StudentStore();
     this.emergency = new EmergencyStore();
     this.records = new RecordsStore();
-    this.camp = new CampStore(this.student);
+    this.camp = new CampStore();
     this.fabric = new FabricStore(this.student);
     this.claims = new ClaimsStore();
     this.chat = new ChatStore(this.student);

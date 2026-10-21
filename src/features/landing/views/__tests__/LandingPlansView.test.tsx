@@ -6,6 +6,9 @@ import { join } from 'node:path';
 import * as billing from '@/data/datasets/billing';
 import { LandingPlansView } from '../LandingPlansView';
 import { LandingPlansNativeView } from '../LandingPlansNativeView';
+import { publicSettingDefaults } from '@/generated/settings';
+
+import { rupeeAmount } from '@/data/datasets/billingPrices';
 
 vi.mock('@/data/datasets/billing', () => ({ getPlans: vi.fn() }));
 const getPlans = vi.mocked(billing.getPlans);
@@ -16,12 +19,19 @@ function codeOf(name: string): string {
     .replace(/(^|[^:])\/\/.*$/gm, '$1');
 }
 
+// Prices are the registry's (src/generated/settings.ts), as the server's catalogue sends them.
+const PLUS = publicSettingDefaults['billing.student_plus.monthly_inr'];
+const QUARTER = publicSettingDefaults['billing.student_plus.quarter_package_inr'];
+const PREMIUM = publicSettingDefaults['billing.premium.from_monthly_inr'];
+const inr = rupeeAmount;
+
 const catalog = {
   checkoutAvailable: false,
   publicKey: '',
   plans: [
     { id: 'FREE', name: 'Free Student Account', price: 'Free', period: 'forever', audience: 'student', benefits: ['Personal health records'], description: 'Every account starts free.' },
-    { id: 'STUDENT_PLUS', name: 'Student Plus', price: 99, period: 'per month', audience: 'student', benefits: ['Everything in Free'], description: 'Monthly optional benefits pass.' },
+    { id: 'STUDENT_PLUS', name: 'Student Plus', price: PLUS, priceFrom: false, packages: [{ id: 'QUARTER', months: 3, price: QUARTER }], period: 'per month', audience: 'student', benefits: ['Everything in Free'], description: 'Monthly optional benefits pass.' },
+    { id: 'PREMIUM', name: 'Premium', price: PREMIUM, priceFrom: true, packages: [], period: 'per month', audience: 'student', benefits: [], description: 'Premium starts at this price.' },
   ],
 } as const;
 
@@ -42,8 +52,17 @@ describe('the plans page', () => {
     render(<LandingPlansView />);
     await settle();
     expect(screen.getByText('Student Plus')).toBeInTheDocument();
-    expect(screen.getByText('₹99')).toBeInTheDocument();
+    expect(screen.getByText(inr(PLUS))).toBeInTheDocument();
+    expect(screen.getByText(`3-month package: ${inr(QUARTER)}`)).toBeInTheDocument();
     expect(screen.getByText('Free Student Account')).toBeInTheDocument();
+  });
+
+  it('shows a starting price as "from", never as a flat price', async () => {
+    getPlans.mockResolvedValue(catalog as unknown as billing.PlanCatalog);
+    render(<LandingPlansView />);
+    await settle();
+    expect(screen.getByText(`from ${inr(PREMIUM)}`)).toBeInTheDocument();
+    expect(screen.queryByText(inr(PREMIUM))).toBeNull();
   });
 
   it('shows no price at all when the catalogue cannot be read', async () => {
@@ -68,7 +87,7 @@ describe('the plans page', () => {
     await settle();
     fireEvent.click(screen.getByRole('button', { name: /try again/i }));
     await settle();
-    expect(screen.getByText('₹99')).toBeInTheDocument();
+    expect(screen.getByText(inr(PLUS))).toBeInTheDocument();
   });
 
   it('types in no price, plan or commission the server does not publish', () => {

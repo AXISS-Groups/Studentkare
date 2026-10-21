@@ -320,6 +320,7 @@ def persistence(user=Depends(require_super_admin), db=Depends(workflow_db)):
 
 app.include_router(auth_router)
 app.include_router(workflow_router)
+app.include_router(wellness_router)
 app.include_router(member_profile_router)
 app.include_router(preventive_router)
 app.include_router(integrations_router)
