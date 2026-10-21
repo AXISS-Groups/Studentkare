@@ -1,0 +1,9 @@
+/* Lab orders: the "Order test" drawer. Tokens only. */
+.cl-form, .cl-placed { display: flex; flex-direction: column; gap: var(--sk-space-14); }
+.cl-modes { margin: 0; padding: 0; border: 0; display: flex; flex-direction: column; gap: var(--sk-space-8); }
+.cl-legend { font-size: 12.5px; font-weight: 700; color: var(--sk-color-text); }
+.cl-choice { display: flex; align-items: center; gap: var(--sk-space-10); min-height: var(--sk-size-touch-target); font-size: 13.5px; font-weight: 600; color: var(--sk-color-text); cursor: pointer; }
+.cl-choice input { width: 18px; height: 18px; accent-color: var(--sk-color-action); }
+.sk-ds .cl-small { display: block; margin: 0; font-size: 12px; line-height: 1.5; font-weight: 500; color: var(--sk-color-text-3); }
+.sk-ds .cl-error { margin: 0; font-size: 13px; font-weight: 600; color: var(--sk-color-danger); }
+.sk-ds .cl-placed p { margin: 0; font-size: 13.5px; line-height: 1.55; color: var(--sk-color-text-2); }
