@@ -2,4 +2,5 @@
 export { CampusInsightsScreen } from './CampusInsightsScreen';
 export { CampusAccessRequestsScreen } from './CampusAccessRequestsScreen';
 export { CampusBreakGlassScreen } from './CampusBreakGlassScreen';
+export { CampusIncidentsScreen } from './CampusIncidentsScreen';
 export { CampusAmbulanceScreen, CampusDischargeScreen, CampusIsolationScreen, CampusSlaScreen } from './safetyBoards';

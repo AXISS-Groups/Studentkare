@@ -60,7 +60,6 @@
   "src/screens/health/VitalTrendsTelemetryScreen.tsx",
   "src/screens/institution/BreakGlassEmergencyModal.tsx",
   "src/screens/institution/CampusAdminTeamScreen.tsx",
-  "src/screens/institution/CampusIncidentsDeskScreen.tsx",
   "src/screens/institution/CampusSosDesk.tsx",
   "src/screens/institution/CounsellorQueueScreen.tsx",
   "src/screens/institution/Flow11InstitutionConsoleScreen.tsx",
