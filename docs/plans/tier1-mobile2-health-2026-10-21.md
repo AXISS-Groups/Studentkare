@@ -424,6 +424,34 @@ audit text (audit carries ids only).
   commerce session cannot select `care_lab_results` (rule_l grants test); erasure removes rows; export
   includes them; notification payloads contain no value or test name; no-range row → NO_RANGE.
 
+**Built 2026-10-21 (package B backend, branch `feat/m2-labvalues`; migration `c3d7e2a9f4b1`, branches from
+`f1a9c3e5b7d2`).** No screens.
+- Tables: `care_lab_test_reference` (PLATFORM; created **empty**: the seed is a separate clinician-reviewed
+  migration, the clinical lead owns the body-system grouping), `care_lab_results` (CLINICAL), column
+  `care_preferences.pinned_lab_tests`. As specified above; `unit` is 40 chars.
+- Endpoints (`services/lab_results.py`, students only, owner only; other account → 404, other role → 403):
+  `GET /api/lab-tests/reference` · `GET /api/health/lab-results` (reports + `bodySystems` + `total`) ·
+  `GET /api/health/lab-results/tests` (chips: one per test key, bookmarked first) ·
+  `GET /api/health/lab-results/trends?test=<key>` · `GET` / `PUT /api/health/lab-results/pinned` `{codes}` ·
+  `GET` / `POST /api/health/documents/{id}/lab-results` (the Check step's rows; POST adds DRAFTs; LAB documents
+  only) · `POST /api/health/documents/{id}/lab-results/confirm` `{ids}` (all or nothing: ids from another
+  report → 422 and nothing saved; concurrent change → 409; unticked drafts of that report are discarded;
+  idempotent) · `PATCH /api/health/lab-results/{id}` (DRAFT only, else 409) · `DELETE /api/health/lab-results/{id}`
+  (not LAB_RELEASED rows).
+- Test key: the reference code, or `name:<printed name, case-folded>` for a test typed without a code.
+- Every value returns `rangeState` (computed on read from its own printed range) and `rangeSource`
+  (`TYPED_FROM_REPORT` | `LAB_REPORT`, null when NO_RANGE). One-sided printed ranges ("< 200", "> 40") work.
+- Settings: `lab_results.max_rows_per_report`, `.value_abs_max`, `.collected_on_max_age_years`, `.list_cap`,
+  `.pinned_max`, `trends.min_points_for_line`. Input bounds only; no clinical thresholds.
+- `GET /records/export` gains `labResults` and `pinnedLabTests`; deleting a report deletes its values; erasure
+  finds the table through its `account_id` FK.
+- D-M2-11: `nextSteps` accepts plain lines or `{text, kind, often?, when?}`; the review payload keeps
+  `nextSteps` as strings and adds `steps` (plain lines read back as OTHER).
+- Frontend data layer: `src/features/labResults/data/LabResultsRepository.ts`,
+  `viewmodel/labValueModels.ts`, `viewmodel/LabValuesViewModels.ts` (InsightsValues, Trends, ReportCheck).
+- Not built here: lab-entered `LAB_RELEASED` rows (follow-on, lab console), doctor reads through shares, Ayush
+  reads (Gap 2), the reference seed, `reviewedByName` (package A).
+
 ### Gap 2 — Ayush record access
 
 - **Consent store.** Reuse `care_consent_records` (CLINICAL, append-only, versioned, `withdrawn_at`) with
