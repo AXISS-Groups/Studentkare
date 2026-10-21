@@ -31,6 +31,7 @@
     "lint:fix": "eslint --config config/eslint.config.js --fix src",
     "lint:ratchet": "node scripts/check-legacy-lists.mjs",
     "lint:css-colours": "node scripts/check-css-colours.mjs",
+    "merge:resolve": "node scripts/git/resolve-registries.mjs",
     "check:dead-code": "knip --config config/knip.json --no-exit-code",
     "audit:all": "npm run tokens:check && npm run settings:check && npm run icons:check && npm run lint && npm run lint:ratchet && npm run lint:css-colours && tsc --noEmit && knip --config config/knip.json --no-exit-code && vitest run",
     "gen:module": "node scripts/gen-module.js",

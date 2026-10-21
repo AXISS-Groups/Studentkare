@@ -1,41 +1,5 @@
 import type { Catalog } from './en';
-import { memberHi } from './areas/member';
-import { careHi } from './areas/care';
-import { assistHi } from './areas/assist';
-import { shopwebHi } from './areas/shopweb';
-import { phonestoreHi } from './areas/phonestore';
-import { onboardHi } from './areas/onboard';
-import { launchHi } from './areas/launch';
-import { landingHi } from './areas/landing';
-import { adminHi } from './areas/admin';
-import { adminBoardHi } from './areas/adminBoard';
-import { adminGovHi } from './areas/adminGov';
-import { campusHi } from './areas/campus';
-import { campusConsoleHi } from './areas/campusConsole';
-import { campusBoardsHi } from './areas/campusBoards';
-import { campusSafetyHi } from './areas/campusSafety';
-import { partnerHi } from './areas/partner';
-import { deviceHi } from './areas/device';
-import { studentshellHi } from './areas/studentshell';
-import { studentwebHi } from './areas/studentweb';
-import { studentwebT1Hi } from './areas/studentwebT1';
-import { payHi } from './areas/pay';
-import { labbookHi } from './areas/labbook';
-import { rewardsHi } from './areas/rewards';
-import { mobile2Hi } from './areas/mobile2';
-import { mobile2OrdersHi } from './areas/mobile2Orders';
-import { mobile2WebHi } from './areas/mobile2Web';
-import { mobile2HealthHi } from './areas/mobile2health';
-import { m2valuesHi } from './areas/m2values';
-import { wellnessHi } from './areas/wellness';
-import { consoleHi } from './areas/console';
-import { phoneboardsHi } from './areas/phoneboards';
-import { safetyHi } from './areas/safety';
-import { identityHi } from './areas/identity';
-import { clinicianWorkHi } from './areas/clinicianWork';
-import { clinicianHi } from './areas/clinician';
-import { partnerConsoleHi } from './areas/partnerConsole';
-import { partnerWorkHi } from './areas/partnerWork';
+import { areasHi } from './areasHi';
 
 /**
  * हिंदी — machine-assisted first draft, NOT yet reviewed by a native speaker
@@ -832,41 +796,5 @@ export const hi: Catalog = {
   'ws.tab.records': "रिकॉर्ड",
   'ws.tab.requests': "अनुरोध",
   'ws.tab.more': "और",
-  ...memberHi,
-  ...careHi,
-  ...assistHi,
-  ...shopwebHi,
-  ...phonestoreHi,
-  ...onboardHi,
-  ...launchHi,
-  ...landingHi,
-  ...adminHi,
-  ...adminBoardHi,
-  ...adminGovHi,
-  ...campusHi,
-  ...campusConsoleHi,
-  ...campusBoardsHi,
-  ...campusSafetyHi,
-  ...partnerHi,
-  ...deviceHi,
-  ...studentshellHi,
-  ...studentwebHi,
-  ...studentwebT1Hi,
-  ...payHi,
-  ...labbookHi,
-  ...rewardsHi,
-  ...mobile2Hi,
-  ...mobile2OrdersHi,
-  ...mobile2WebHi,
-  ...mobile2HealthHi,
-  ...m2valuesHi,
-  ...wellnessHi,
-  ...consoleHi,
-  ...phoneboardsHi,
-  ...safetyHi,
-  ...identityHi,
-  ...clinicianWorkHi,
-  ...clinicianHi,
-  ...partnerConsoleHi,
-  ...partnerWorkHi,
+  ...areasHi,
 };

@@ -55,7 +55,7 @@ export const mobile2HealthEn = {
   'm2.prof.helpMeta': 'Chat, call or email us',
 
   // M2Insights
-  'm2.ins.eyebrow': 'Your record',
+  'm2.insights.eyebrow': 'Your record',
   'm2.ins.tabInsights': 'Insights',
   'm2.ins.tabTrends': 'Trends',
   'm2.ins.tabRecords': 'Records',
@@ -225,7 +225,7 @@ export const mobile2HealthTe: Record<keyof typeof mobile2HealthEn, string> = {
   'm2.prof.privacyMeta': 'మీ డేటాను డౌన్‌లోడ్ చేయండి లేదా తొలగించండి',
   'm2.prof.help': 'సహాయం మరియు సపోర్ట్',
   'm2.prof.helpMeta': 'చాట్, కాల్ లేదా ఇమెయిల్ చేయండి',
-  'm2.ins.eyebrow': 'మీ రికార్డ్',
+  'm2.insights.eyebrow': 'మీ రికార్డ్',
   'm2.ins.tabInsights': 'ఇన్‌సైట్స్',
   'm2.ins.tabTrends': 'ట్రెండ్స్',
   'm2.ins.tabRecords': 'రికార్డులు',
@@ -388,7 +388,7 @@ export const mobile2HealthHi: Record<keyof typeof mobile2HealthEn, string> = {
   'm2.prof.privacyMeta': 'अपना डेटा डाउनलोड करें या हटाएँ',
   'm2.prof.help': 'मदद और सहायता',
   'm2.prof.helpMeta': 'चैट, कॉल या ईमेल करें',
-  'm2.ins.eyebrow': 'आपका रिकॉर्ड',
+  'm2.insights.eyebrow': 'आपका रिकॉर्ड',
   'm2.ins.tabInsights': 'इनसाइट्स',
   'm2.ins.tabTrends': 'ट्रेंड्स',
   'm2.ins.tabRecords': 'रिकॉर्ड',

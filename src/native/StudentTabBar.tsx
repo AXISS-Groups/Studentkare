@@ -25,10 +25,23 @@ export const STUDENT_NAV: Readonly<Record<PillNavKey, StudentTabRoute>> = {
 };
 
 /** Store boards opened from Home: the nav shows there with Home current (as on the boards). */
-const HOME_STORE_ROUTES: ReadonlySet<string> = new Set(['Medicines', 'Labs', 'Consults', 'Insurance', 'Vaccines']);
+const HOME_STORE_ROUTES: ReadonlySet<string> = new Set([
+  // keep-sorted start
+  'Consults',
+  'Insurance',
+  'Labs',
+  'Medicines',
+  'Vaccines',
+  // keep-sorted end
+]);
 
 /** My health's own screens (M2Trends, M2ReportUpload): the nav shows My health there. */
-const HEALTH_ROUTES: ReadonlySet<string> = new Set(['Trends', 'ReportUpload']);
+const HEALTH_ROUTES: ReadonlySet<string> = new Set([
+  // keep-sorted start
+  'ReportUpload',
+  'Trends',
+  // keep-sorted end
+]);
 
 export function isStudentTabRoute(route: string): route is StudentTabRoute {
   return (Object.values(STUDENT_NAV) as string[]).includes(route);

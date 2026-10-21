@@ -1,5 +1,35 @@
 import React, { lazy, Suspense, useEffect, useRef, useState } from 'react';
-import { Activity, ArrowLeft, Bell, Bot, Building2, CalendarDays, ClipboardList, Dumbbell, FileText, FlaskConical, GraduationCap, HeartHandshake, HeartPulse, IdCard, LayoutDashboard, LogOut, Menu, MessageCircle, Package, Pill, QrCode, Receipt, Share2, ShieldAlert, ShieldCheck, UserRound, X } from 'lucide-react';
+import {
+  // keep-sorted start
+  Activity,
+  ArrowLeft,
+  Bell,
+  Bot,
+  Building2,
+  CalendarDays,
+  ClipboardList,
+  Dumbbell,
+  FileText,
+  FlaskConical,
+  GraduationCap,
+  HeartHandshake,
+  HeartPulse,
+  IdCard,
+  LayoutDashboard,
+  LogOut,
+  Menu,
+  MessageCircle,
+  Package,
+  Pill,
+  QrCode,
+  Receipt,
+  Share2,
+  ShieldAlert,
+  ShieldCheck,
+  UserRound,
+  X,
+  // keep-sorted end
+} from 'lucide-react';
 import { useAuth } from '../../data/contexts/AuthContext';
 import { useLiveCartCount } from '../../data/contexts/LiveCartContext';
 import { StudentWebShell } from '@/design-system/student-shell/StudentWebShell';

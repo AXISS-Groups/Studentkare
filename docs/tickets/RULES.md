@@ -37,6 +37,27 @@ These are the rules every StudentKare build ticket follows, human or agent. They
 - Alembic only. Find the single head first (`cd backend && alembic -c config/alembic.ini heads`) and branch
   from it. Every new table gets a Rule L plane. Commerce code never reads clinical tables.
 
+## Parallel branches
+Several branches are built at once, and most tickets add to the same registries. They are kept
+one entry per line and sorted, so two branches adding different entries touch different lines:
+- Routes: `src/lib/utils/routes/routePaths.ts`, `publicRoutes.ts`, and the role gate in `routeRoles.ts`
+  (only for a route not open to every signed-in role). i18n: a new area is one line in each of
+  `src/i18n/areas{En,Hi,Te}.ts`; no key may live in two areas.
+- Lists between `// keep-sorted start` and `// keep-sorted end` (nav sets, phone boards, native param
+  list, …): add your line in sorted order. Order-sensitive lists (switch cases, `Stack.Screen`, sidebar
+  links) are one entry per line too; add yours where it belongs.
+- Don't reformat these lists or put two entries on one line.
+
+Before the PR:
+1. `git fetch origin && git rebase origin/main` (or merge `origin/main` into your branch).
+2. On a conflict: `npm run merge:resolve`. It resolves the implementation map, the `config/*legacy*.json`
+   lists (shrink-only), generated files (settings, tokens, icons, `icon-coverage.md`) and one-line list
+   hunks, re-sorts every list, and stages what it fixed. Whatever it prints as "Not resolved" is a real
+   conflict: fix it by hand, `git add` it, run `npm run merge:resolve` again, then continue
+   (`git rebase --continue` / `git commit`).
+3. Run the checks under "Done means". The union merge driver (`.gitattributes`) can bring back a line one
+   branch deleted next to a line the other added: look over deletions.
+
 ## Done means
 - `node scripts/icons/check-icons.mjs --screen <Screen>` passes for each screen, and its files are listed under
   `screens` in `design/screens/implementation-map.json` (moved out of `inProgress`).
