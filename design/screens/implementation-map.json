@@ -1154,7 +1154,6 @@
       "src/features/account/views/DeleteAccountView.tsx"
     ],
     "CampusInsights": [
-      "src/screens/institution/InstitutionWorkspaceHub.tsx",
       "src/screens/institution/CampusHealthInsightsScreen.tsx",
       "src/design-system/campus-shell/CampusShell.tsx",
       "src/design-system/campus-shell/campusNav.ts"
@@ -1172,7 +1171,6 @@
       "src/design-system/campus-shell/campusNav.ts"
     ],
     "CampusIncidents": [
-      "src/screens/institution/InstitutionWorkspaceHub.tsx",
       "src/screens/institution/CampusIncidentsDeskScreen.tsx",
       "src/design-system/campus-shell/CampusShell.tsx",
       "src/design-system/campus-shell/campusNav.ts"
@@ -1182,13 +1180,11 @@
       "src/screens/institution/CounsellorQueueScreen.tsx"
     ],
     "CampusIsolation": [
-      "src/screens/institution/InstitutionWorkspaceHub.tsx",
       "src/screens/institution/OutbreakIsolationDeskScreen.tsx",
       "src/design-system/campus-shell/CampusShell.tsx",
       "src/design-system/campus-shell/campusNav.ts"
     ],
     "CampusAmbulance": [
-      "src/screens/institution/InstitutionWorkspaceHub.tsx",
       "src/screens/institution/AmbulanceDispatchTrackerScreen.tsx",
       "src/design-system/campus-shell/CampusShell.tsx",
       "src/design-system/campus-shell/campusNav.ts"
