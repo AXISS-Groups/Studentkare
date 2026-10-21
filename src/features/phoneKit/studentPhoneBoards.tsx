@@ -14,6 +14,7 @@ const M2LabsRoute = lazy(() => import('@/features/m2store/views/M2LabsRoute').th
 const M2OrdersRoute = lazy(() => import('@/features/m2store/views/M2OrdersRoute').then((m) => ({ default: m.M2OrdersRoute })));
 const M2ProfileRoute = lazy(() => import('@/features/m2profile/views/M2ProfileRoute').then((m) => ({ default: m.M2ProfileRoute })));
 const M2ReportUploadRoute = lazy(() => import('@/features/labResults/views/M2ReportUploadRoute').then((m) => ({ default: m.M2ReportUploadRoute })));
+const M2StepsRoute = lazy(() => import('@/features/steps/views/M2StepsRoute').then((m) => ({ default: m.M2StepsRoute })));
 const M2TrendsRoute = lazy(() => import('@/features/labResults/views/M2TrendsRoute').then((m) => ({ default: m.M2TrendsRoute })));
 const M2VaccinesRoute = lazy(() => import('@/features/preventive/views/M2VaccinesRoute').then((m) => ({ default: m.M2VaccinesRoute })));
 const ReturnRequestRoute = lazy(() => import('@/features/requests/views/ReturnRequestView').then((m) => ({ default: m.ReturnRequestRoute })));
@@ -32,7 +33,7 @@ export interface PhoneBoard {
 /**
  * The phone boards that replace a workspace page for a student at phone width
  * (S4 phone frame): Mobile 2.0 Home, Lab tests, Doctor consults, Orders, Vaccines,
- * My health (Insights), Ask Ayush and Profile (canvas page 9; the shop's first
+ * My health (Insights) and its Steps screen, Ask Ayush and Profile (canvas page 9; the shop's first
  * board is Mobile 2.0 Medicines, its product page M2Product), and from design
  * page 2 search, checkout and returns. Every other route keeps its page. On a wide
  * screen these routes draw the desktop pages as before (search has no
@@ -49,6 +50,7 @@ export function studentPhoneBoard(route: RoutePath): PhoneBoard | null {
     case 'profile': return { node: <M2ProfileRoute />, title: 'm2.nav.profile', ownBack: true };
     case 'health/trends': return { node: <M2TrendsRoute />, title: 'm2v.tr.title', ownBack: true };
     case 'health/report-upload': return { node: <M2ReportUploadRoute />, title: 'm2v.up.title', ownBack: true };
+    case 'health/steps': return { node: <M2StepsRoute />, title: 'steps.title', ownBack: true };
     case 'search': return { node: <SearchRoute />, title: 'phone.search.title', ownBack: true };
     case 'shop': return { node: <ShopPhoneRoute route="shop" />, title: 'm2.med.title', ownBack: false };
     case 'checkout': return { node: <ShopPhoneRoute route="checkout" />, title: 'phone.cart.title', ownBack: true };

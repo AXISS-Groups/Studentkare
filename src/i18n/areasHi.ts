@@ -33,6 +33,7 @@ import { phonestoreHi } from './areas/phonestore';
 import { rewardsHi } from './areas/rewards';
 import { safetyHi } from './areas/safety';
 import { shopwebHi } from './areas/shopweb';
+import { stepsHi } from './areas/steps';
 import { studentshellHi } from './areas/studentshell';
 import { studentwebHi } from './areas/studentweb';
 import { studentwebT1Hi } from './areas/studentwebT1';
@@ -81,6 +82,7 @@ export const areasHi = {
   ...rewardsHi,
   ...safetyHi,
   ...shopwebHi,
+  ...stepsHi,
   ...studentshellHi,
   ...studentwebHi,
   ...studentwebT1Hi,

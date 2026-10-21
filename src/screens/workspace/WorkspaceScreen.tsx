@@ -76,6 +76,7 @@ import { AyushWidget, ayushWidgetShownOn } from '@/features/ayush/AyushWidget';
 
 const M2TrendsRoute = lazy(() => import('@/features/labResults/views/M2TrendsRoute').then(module => ({ default: module.M2TrendsRoute })));
 const M2ReportUploadRoute = lazy(() => import('@/features/labResults/views/M2ReportUploadRoute').then(module => ({ default: module.M2ReportUploadRoute })));
+const M2StepsRoute = lazy(() => import('@/features/steps/views/M2StepsRoute').then(module => ({ default: module.M2StepsRoute })));
 const M2LabsRoute = lazy(() => import('@/features/m2store/views/M2LabsRoute').then(module => ({ default: module.M2LabsRoute })));
 const WebEmergencyCard = lazy(() => import('@/features/emergency/views/WebEmergencyCard').then(module => ({ default: module.WebEmergencyCard })));
 const IdentityVerifyView = lazy(() => import('@/features/auth/views/IdentityVerifyView').then(module => ({ default: module.IdentityVerifyView })));
@@ -348,6 +349,8 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
       // Mobile 2.0 My health (Tier 1): the same boards in the page column above phone width.
       case 'health/trends': return <M2TrendsRoute />;
       case 'health/report-upload': return <M2ReportUploadRoute />;
+      // Steps: the same board in the page column (a browser counts no steps; typed entry only).
+      case 'health/steps': return <M2StepsRoute />;
       case 'account': return <AccountDetailsPage />;
       case 'data-export': return <DataExportPage />;
       case 'billing': return <MemberProfilePanel initialTab="plan" />;

@@ -123,6 +123,7 @@ export const routePaths = [
   'health',
   'health-camp',
   'health/report-upload',
+  'health/steps',
   'health/trends',
   'home',
   'hostel-visit',
