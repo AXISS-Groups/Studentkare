@@ -22,6 +22,11 @@ export const VENDOR_ROUTE_PATHS = [
   '/camp-intake',
   '/vendor-camp-intake',
   '/camp-fast', // the staff app's camp fast mode: full screen, no sidebar
+  // The staff app's phone boards (WP-15): full screen, no sidebar.
+  '/staff-verify',
+  '/staff-handover',
+  '/staff-collect',
+  '/lab-reporting',
   '/lab-queue',
   '/vendor-lab-queue',
   '/dispensing',

@@ -24,6 +24,7 @@ import { consoleHi } from './areas/console';
 import { phoneboardsHi } from './areas/phoneboards';
 import { clinicianWorkHi } from './areas/clinicianWork';
 import { partnerConsoleHi } from './areas/partnerConsole';
+import { partnerWorkHi } from './areas/partnerWork';
 
 /**
  * हिंदी — machine-assisted first draft, NOT yet reviewed by a native speaker
@@ -845,4 +846,5 @@ export const hi: Catalog = {
   ...phoneboardsHi,
   ...clinicianWorkHi,
   ...partnerConsoleHi,
+  ...partnerWorkHi,
 };
