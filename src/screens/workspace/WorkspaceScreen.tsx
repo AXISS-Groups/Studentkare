@@ -43,6 +43,7 @@ import { SearchPage, studentPhoneBoard } from '@/features/phoneKit/studentPhoneB
 import { EmergencyHelplinesDialog } from '../../components/interface/InterfaceBar';
 import { NotificationCenterModal } from '../../components/health/NotificationCenterModal';
 
+const M2LabsRoute = lazy(() => import('@/features/m2store/views/M2LabsRoute').then(module => ({ default: module.M2LabsRoute })));
 const WebEmergencyCard = lazy(() => import('@/features/emergency/views/WebEmergencyCard').then(module => ({ default: module.WebEmergencyCard })));
 const WebPass = lazy(() => import('@/features/digital_id/views/WebPass').then(module => ({ default: module.WebPass })));
 const WellnessTrainingScreen = lazy(() => import('../wellbeing/WellnessTrainingScreen').then(module => ({ default: module.WellnessTrainingScreen })));
@@ -262,6 +263,8 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
       case 'notification-settings': return <WebNotificationsRoute />;
       case 'shop': return <WebShopView />;
       case 'checkout': return <WebCheckoutView />;
+      // Mobile 2.0 Lab tests: the student shell had no lab tests page (its nav item had no route).
+      case 'lab-tests': return <M2LabsRoute />;
       default: return null;
     }
   };
