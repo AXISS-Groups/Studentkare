@@ -297,6 +297,14 @@ declare("lab_results.pinned_max", INT, 8, area="lab_results", unit="tests", mini
 declare("trends.min_points_for_line", INT, 2, area="trends", unit="values", minimum=2, maximum=20, public=True,
         description="Fewest values of one test, in one unit, before Trends draws a line between them.")
 
+# --- lab collection (services/clinical_api.py; WP-15 StaffCollect) ----------
+# A lab may record a sample as collected only for a student whose live pass the
+# same signed-in counter account verified (POST /identity/verify) within this
+# many minutes. Not public: the server enforces it; the app only mirrors it.
+declare("lab.collect_verification_minutes", INT, 15, area="lab", unit="minutes", minimum=1, maximum=120,
+        description="How long a pass verification at a lab counter lets that counter record the student's sample "
+                    "as collected.")
+
 # --- privacy (DPDP erasure, services/erasure.py) ----------------------------
 # The window a student has to change their mind after asking to delete their
 # account. Public: the delete screens state the number of days and draw
