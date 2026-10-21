@@ -1,13 +1,27 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { apiRequest } from '../../data/services/http';
-import { DataState, EmptyState, Field, FormError, SubmitButton, useMutation } from '../../components/interface/WorkflowUI';
-import { ShopDialog } from '../../components/marketplace/ShopDialog';
+import { useMutation } from '../../components/interface/WorkflowUI';
+import { ConsolePageHeader } from '@/design-system/console/ConsoleTablePage';
+import { Drawer } from '@/design-system/overlays/Drawer';
 import { Icon } from '@/design-system/icons';
+import { SkButton, Skeleton } from '@/design-system/primitives';
 import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
+import { navigate } from '@/lib/utils/workflowRouting';
+import { BoardEmpty, BoardError, EmergencyLines, OfflineNotice, SafetyCard, SafetyNotice } from '@/features/campus/safety/safetyKit';
+import '@/features/campus/safety/campus-safety.css';
 
 /**
- * Counsellor queue (design: CampusCounsellor, Tier 1 — crisis follow-up).
+ * Counsellor queue (design page 4, CampusCounsellor; Tier 1 — crisis
+ * follow-up; built to the canvas 2026-10-21, approved by Krishna Chintakayala).
+ *
+ * Board layout: a queue of signals, each with the acknowledgement ring, the
+ * kind, where follow-up stands and one action; beside it the escalation note
+ * and "What you can and can't see". Left out because nothing backs them: the
+ * on-call roster (no roster source), the weekly median (no server aggregate,
+ * shown as "—") and the board's escalation promise (the server does not
+ * escalate an unacknowledged signal today, so the page says that instead).
+ * The 15-minute window is the existing behaviour, unchanged.
  *
  * The live crisis follow-up queue for a counsellor's own campus (the server
  * scopes it; a super admin sees every campus). Each item is only what is needed
@@ -94,7 +108,14 @@ function useCrisisQueue() {
   return { data, loading, error, refreshFailed, loadedAt, now, reload: load, retry };
 }
 
-const ROW: React.CSSProperties = { display: 'flex', alignItems: 'center', gap: 'var(--sk-space-8)' };
+const BOARD = 'CampusCounsellor';
+const DANGER_KINDS = new Set(['CRISIS_SELF_HARM', 'CRISIS_MEDICAL', 'CRISIS_OVERDOSE']);
+const ACK_WINDOW_MS = ACK_WINDOW_MINUTES * 60000;
+
+/** Share of the acknowledgement window used so far, 0–1, for the ring. */
+export function windowUsed(createdAtSeconds: number, nowMs: number): number {
+  return Math.min(1, Math.max(0, (nowMs - createdAtSeconds * 1000) / ACK_WINDOW_MS));
+}
 
 export function CounsellorQueueScreen() {
   const t = useT();
@@ -114,86 +135,156 @@ export function CounsellorQueueScreen() {
     return t('campus.counsellor.age.at', { time: dayTime(createdAt * 1000) });
   };
   const openFollowUp = (item: CrisisQueueItem) => {
+    mutation.setError('');
     setFollowing(item);
     setOutcome(isFollowUpOutcome(item.outcome) ? item.outcome : '');
     setNote('');
   };
+  const submit = (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!following || !outcome) return;
+    const target = following;
+    mutation.run(
+      () => apiRequest(`/ops/crisis-events/${encodeURIComponent(target.id)}/acknowledge`, { method: 'POST', body: JSON.stringify({ outcome, note: note.trim() }) }),
+      () => { setFollowing(null); queue.reload(); },
+    );
+  };
 
-  return <>
-    <div className="wf-panel-heading"><div>
-      <span className="care-eyebrow" style={ROW}><Icon name="heart-plus" size={14} />{t('nav.counsellorQueue')}</span>
-      <h2>{t('campus.counsellor.title')}</h2>
-      <p>{t('campus.counsellor.lead')}</p>
+  const pending = queue.data?.pending ?? 0;
+
+  return (
+    <div className="sk-ds cs-board">
+      <ConsolePageHeader
+        title={t('campus.counsellor.title')}
+        subtitle={t('campusSafety.counsellor.lead', { minutes: ACK_WINDOW_MINUTES })}
+        actions={(
+          <span className="cs-head-actions">
+            {/* A "0 waiting" badge reads as all-quiet; a count only shows when someone is waiting. */}
+            {pending > 0 ? <span className="cs-chip cs-chip--danger" role="status"><span className="cs-chip__dot" aria-hidden="true" />{t('campus.counsellor.waiting', { count: pending })}</span> : null}
+            <span className="cs-chip cs-chip--positive sk-mono">{t('campusSafety.counsellor.median')}</span>
+          </span>
+        )}
+      />
+      <OfflineNotice />
+      {queue.refreshFailed ? <p className="cs-alert" role="alert"><Icon name="alert-triangle" size={16} />{t('campus.counsellor.refreshFailed', { time: clockTime(queue.loadedAt) })}</p> : null}
+
+      <div className="cs-two cs-two--wide-left">
+        <div className="cs-drawer">
+          {queue.loading && !queue.data ? (
+            <div className="cs-queue" role="status" aria-busy="true" aria-label={t('campusSafety.counsellor.loading')}>
+              <Skeleton height={88} /><Skeleton height={88} /><Skeleton height={88} />
+            </div>
+          ) : null}
+          {queue.error && !queue.data ? (
+            <BoardError
+              title={t('campusSafety.counsellor.error')}
+              detail={queue.error}
+              reference={t('campusBoards.ref', { code: 'NET', board: BOARD })}
+              onRetry={queue.retry}
+              onHelp={() => navigate('support')}
+            />
+          ) : null}
+          {queue.data && items.length === 0 ? (
+            <BoardEmpty tile="chart-alt--p4" title={t('campusSafety.counsellor.empty')} body={t('campus.counsellor.emptyBody')} />
+          ) : null}
+          {items.length ? (
+            <ul className="cs-queue" aria-label={t('campusSafety.counsellor.queue')}>
+              {items.map((item) => {
+                const isPending = item.outcome === 'PENDING';
+                const clock = acknowledgementClock(item.createdAt, queue.now);
+                const ring = { '--cs-ring-pct': String(windowUsed(item.createdAt, queue.now)) } as React.CSSProperties;
+                return (
+                  <li key={item.id}>
+                    <article className={`cs-signal${isPending && clock.overdue ? ' cs-signal--late' : ''}`} aria-label={t('campus.counsellor.itemLabel', { name: item.studentName })}>
+                      {isPending ? (
+                        <span className={`cs-ring${clock.overdue ? ' cs-ring--late' : ''}`} style={ring} aria-hidden="true">
+                          <span className="cs-ring__value">{clock.overdue ? 0 : clock.minutes}</span>
+                          <span className="cs-ring__unit">{t('campusSafety.counsellor.minutesLeft')}</span>
+                        </span>
+                      ) : (
+                        <span className="cs-ring cs-ring--done" aria-hidden="true"><Icon name="check" size={20} strokeWidth={2.6} /></span>
+                      )}
+                      <div className="cs-signal__main">
+                        <div className="cs-signal__row">
+                          <h2 className="cs-signal__name">{item.studentName}</h2>
+                          <span className={`cs-chip cs-chip--${DANGER_KINDS.has(item.kind) ? 'danger' : 'neutral'}`}>
+                            <span className="sk-visually-hidden">{t('campus.counsellor.kindLabel')} </span>{kindLabel(item.kind)}
+                          </span>
+                        </div>
+                        <span className="cs-signal__meta">{t('campus.counsellor.signalled', { age: ageLabel(item.createdAt) })}</span>
+                        <span className="cs-signal__contact">
+                          {t('campus.counsellor.contact')}{' '}
+                          {isPhone(item.contact)
+                            ? <a href={`tel:${item.contact.replace(/[^\d+]/g, '')}`} aria-label={t('campus.counsellor.call', { name: item.studentName })}>{item.contact}</a>
+                            : isEmail(item.contact)
+                              ? <a href={`mailto:${item.contact}`} aria-label={t('campus.counsellor.email', { name: item.studentName })}>{item.contact}</a>
+                              : <span>{item.contact || t('campus.counsellor.noContact')}</span>}
+                        </span>
+                        <span className="cs-signal__privacy"><Icon name="lock" size={14} />{t('campus.counsellor.privacyNote')}</span>
+                      </div>
+                      <div className="cs-signal__side">
+                        {isPending ? (
+                          <span className={`cs-chip cs-chip--${clock.overdue ? 'danger' : 'neutral'}`}>
+                            <Icon name="timer" size={14} />
+                            {clock.overdue ? t('campus.counsellor.clock.overdue', { minutes: clock.minutes }) : t('campus.counsellor.clock.left', { minutes: clock.minutes })}
+                          </span>
+                        ) : (
+                          <span className="cs-chip cs-chip--positive"><Icon name="check-2" size={14} />{t('campus.counsellor.followedUp', { outcome: outcomeLabel(item.outcome), time: item.acknowledgedAt ? clockTime(item.acknowledgedAt * 1000) : '' })}</span>
+                        )}
+                        <SkButton variant={isPending ? 'primary' : 'secondary'} onClick={() => openFollowUp(item)}>
+                          {isPending ? t('campus.counsellor.acknowledge') : t('campus.counsellor.update')}
+                        </SkButton>
+                      </div>
+                    </article>
+                  </li>
+                );
+              })}
+            </ul>
+          ) : null}
+        </div>
+
+        <div className="cs-drawer">
+          <SafetyCard labelledBy="counsellor-lines" title={t('campusSafety.counsellor.linesTitle')}>
+            <EmergencyLines numbers={['14416', '112']} />
+            <SafetyNotice icon="info" tone="attention">{t('campusSafety.counsellor.escalation')}</SafetyNotice>
+          </SafetyCard>
+          <SafetyCard labelledBy="counsellor-visibility-title" title={t('campus.counsellor.canSee.title')}>
+            <ul className="cs-list">
+              <li><Icon name="check" size={18} className="cs-tick" label={t('campus.counsellor.canLabel')} />{t('campus.counsellor.canSee.when')}</li>
+              <li><Icon name="check" size={18} className="cs-tick" label={t('campus.counsellor.canLabel')} />{t('campus.counsellor.canSee.who')}</li>
+              <li><Icon name="x" size={18} className="cs-cross" label={t('campus.counsellor.cannotLabel')} />{t('campus.counsellor.cannot.text')}</li>
+              <li><Icon name="x" size={18} className="cs-cross" label={t('campus.counsellor.cannotLabel')} />{t('campus.counsellor.cannot.records')}</li>
+            </ul>
+          </SafetyCard>
+        </div>
+      </div>
+
+      <Drawer
+        open={following !== null}
+        title={following ? t('campus.counsellor.ackTitle', { name: following.studentName }) : ''}
+        subtitle={following ? t('campusSafety.counsellor.drawerSub', { kind: kindLabel(following.kind) }) : undefined}
+        busy={mutation.busy}
+        onClose={() => setFollowing(null)}
+      >
+        <form className="cs-drawer" onSubmit={submit}>
+          {mutation.error ? <p className="cs-form-error" role="alert">{mutation.error}</p> : null}
+          <fieldset className="cs-radios">
+            <legend className="cs-field__label">{t('campus.counsellor.outcomeLegend')}</legend>
+            {FOLLOW_UP_OUTCOMES.map((value) => (
+              <label key={value} className="cs-radio">
+                <input type="radio" name="crisis-outcome" value={value} required checked={outcome === value} onChange={() => setOutcome(value)} />
+                {t(`campus.counsellor.outcome.${value}` as MessageKey)}
+              </label>
+            ))}
+          </fieldset>
+          <div className="cs-field">
+            <label className="cs-field__label" htmlFor="crisis-note">{t('campus.counsellor.note')}</label>
+            <textarea id="crisis-note" className="cs-textarea" maxLength={500} rows={3} value={note} onChange={(event) => setNote(event.target.value)} aria-describedby="crisis-note-hint" />
+            <span id="crisis-note-hint" className="cs-field__hint">{t('campus.counsellor.noteHint')}</span>
+          </div>
+          <SkButton type="submit" className="cs-submit" busy={mutation.busy}>{t('campus.counsellor.ackSubmit')}</SkButton>
+        </form>
+      </Drawer>
     </div>
-    {/* A "0 waiting" badge reads as all-quiet; a count only shows when someone is waiting. */}
-    {queue.data && queue.data.pending > 0 && <span className="wf-status status-declined" role="status">{t('campus.counsellor.waiting', { count: queue.data.pending })}</span>}
-    </div>
-
-    {queue.refreshFailed && <p className="care-form-error" role="alert"><Icon name="alert-triangle" size={16} />{t('campus.counsellor.refreshFailed', { time: clockTime(queue.loadedAt) })}</p>}
-
-    <DataState loading={queue.loading} error={queue.error} retry={queue.retry}>
-      {items.length ? <ul className="wf-order-list" style={{ listStyle: 'none', padding: 0, margin: 0 }}>{items.map(item => {
-        const pending = item.outcome === 'PENDING';
-        const clock = acknowledgementClock(item.createdAt, queue.now);
-        const accent = pending ? (clock.overdue ? 'var(--sk-color-danger)' : 'var(--sk-color-attention)') : 'var(--sk-color-rule)';
-        return <li key={item.id}><article className="wf-card wf-order" aria-label={t('campus.counsellor.itemLabel', { name: item.studentName })} style={{ borderLeft: `4px solid ${accent}` }}>
-          <div className="wf-panel-heading"><div>
-            <h3>{item.studentName}</h3>
-            <p><strong>{t('campus.counsellor.kindLabel')}</strong> {kindLabel(item.kind)} · {t('campus.counsellor.signalled', { age: ageLabel(item.createdAt) })}</p>
-          </div>
-          {pending
-            ? <span className="wf-status" style={{ ...ROW, color: accent }}><Icon name="timer" size={16} />{clock.overdue ? t('campus.counsellor.clock.overdue', { minutes: clock.minutes }) : t('campus.counsellor.clock.left', { minutes: clock.minutes })}</span>
-            : <span className="wf-status status-completed" style={ROW}><Icon name="check-2" size={16} />{t('campus.counsellor.followedUp', { outcome: outcomeLabel(item.outcome), time: item.acknowledgedAt ? clockTime(item.acknowledgedAt * 1000) : '' })}</span>}
-          </div>
-          <p>
-            <strong>{t('campus.counsellor.contact')}</strong>{' '}
-            {isPhone(item.contact)
-              ? <a className="health-text-button" href={`tel:${item.contact.replace(/[^\d+]/g, '')}`} aria-label={t('campus.counsellor.call', { name: item.studentName })}>{item.contact}</a>
-              : isEmail(item.contact)
-                ? <a className="health-text-button" href={`mailto:${item.contact}`} aria-label={t('campus.counsellor.email', { name: item.studentName })}>{item.contact}</a>
-                : <span>{item.contact || t('campus.counsellor.noContact')}</span>}
-          </p>
-          <p className="wf-order-meta" style={ROW}><Icon name="lock" size={14} />{t('campus.counsellor.privacyNote')}</p>
-          <div className="wf-row-actions">
-            <button type="button" className={`health-button${pending ? ' health-button-primary' : ''}`} style={{ minHeight: 44 }} onClick={() => openFollowUp(item)}>
-              {pending ? t('campus.counsellor.acknowledge') : t('campus.counsellor.update')}
-            </button>
-          </div>
-        </article></li>;
-      })}</ul> : <EmptyState title={t('campus.counsellor.emptyTitle')} description={t('campus.counsellor.emptyBody')} />}
-    </DataState>
-
-    <section className="wf-card wf-section-gap" aria-labelledby="counsellor-visibility-title">
-      <h3 id="counsellor-visibility-title" style={ROW}><Icon name="shield-check" size={18} />{t('campus.counsellor.canSee.title')}</h3>
-      <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'grid', gap: 'var(--sk-space-8)' }}>
-        <li style={ROW}><Icon name="check" size={18} color="var(--sk-color-positive)" label={t('campus.counsellor.canLabel')} />{t('campus.counsellor.canSee.when')}</li>
-        <li style={ROW}><Icon name="check" size={18} color="var(--sk-color-positive)" label={t('campus.counsellor.canLabel')} />{t('campus.counsellor.canSee.who')}</li>
-        <li style={ROW}><Icon name="x" size={18} color="var(--sk-color-danger)" label={t('campus.counsellor.cannotLabel')} />{t('campus.counsellor.cannot.text')}</li>
-        <li style={ROW}><Icon name="x" size={18} color="var(--sk-color-danger)" label={t('campus.counsellor.cannotLabel')} />{t('campus.counsellor.cannot.records')}</li>
-      </ul>
-    </section>
-
-    {following && <ShopDialog title={t('campus.counsellor.ackTitle', { name: following.studentName })} onClose={() => setFollowing(null)}>
-      <form className="wf-form" onSubmit={event => {
-        event.preventDefault();
-        if (!outcome) return;
-        const target = following;
-        mutation.run(
-          () => apiRequest(`/ops/crisis-events/${encodeURIComponent(target.id)}/acknowledge`, { method: 'POST', body: JSON.stringify({ outcome, note: note.trim() }) }),
-          () => { setFollowing(null); queue.reload(); },
-        );
-      }}>
-        <FormError message={mutation.error} />
-        <fieldset className="wf-field" style={{ border: 0, padding: 0, margin: 0 }}>
-          <legend>{t('campus.counsellor.outcomeLegend')}</legend>
-          {FOLLOW_UP_OUTCOMES.map(value => <label key={value} style={{ ...ROW, minHeight: 44 }}>
-            <input type="radio" name="crisis-outcome" value={value} required checked={outcome === value} onChange={() => setOutcome(value)} />
-            {t(`campus.counsellor.outcome.${value}` as MessageKey)}
-          </label>)}
-        </fieldset>
-        <Field label={t('campus.counsellor.note')} hint={t('campus.counsellor.noteHint')}><textarea maxLength={500} rows={3} value={note} onChange={event => setNote(event.target.value)} /></Field>
-        <SubmitButton busy={mutation.busy}>{t('campus.counsellor.ackSubmit')}</SubmitButton>
-      </form>
-    </ShopDialog>}
-  </>;
+  );
 }

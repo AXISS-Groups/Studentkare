@@ -13,9 +13,10 @@ import type { RoutePath } from '@/lib/utils/workflowRouting';
  * Announcements, Reports and Settings boards draw the scope/search top bar; the
  * other boards are sidebar and page only.
  *
- * Tier 1 boards (Insights, Incidents, Ambulance, Isolation, Access requests,
- * Emergency access, SOS) render their existing screens unchanged; only the
- * wrapper around them moved from the old tab hub into this shell.
+ * The Tier 1 safety boards (Insights, Incidents, Ambulance, Counsellor, Access
+ * requests, Emergency access, Isolation, Discharge, SLA) are built to the
+ * canvas in src/features/campus/safety (WP-11, approved 2026-10-21). The SOS
+ * desk is unchanged. The counsellor queue stays on the counsellor's own home.
  */
 export interface CampusPage {
   current: CampusNavId | null;

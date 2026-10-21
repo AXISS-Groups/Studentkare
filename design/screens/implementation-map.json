@@ -609,7 +609,14 @@
       "src/features/campus/safety/CampusIncidentsScreen.tsx",
       "src/features/campus/safety/safetyKit.tsx"
     ],
-    "CampusCounsellor": [],
+    "CampusCounsellor": [
+      "src/design-system/campus-shell/CampusShell.tsx",
+      "src/design-system/campus-shell/campusNav.ts",
+      "src/features/campus/console/campusPages.tsx",
+      "src/features/campus/console/CampusPendingPage.tsx",
+      "src/screens/institution/CounsellorQueueScreen.tsx",
+      "src/features/campus/safety/safetyKit.tsx"
+    ],
     "CampusAdminTeam": [
       "src/design-system/campus-shell/CampusShell.tsx",
       "src/design-system/campus-shell/campusNav.ts",
@@ -1202,10 +1209,6 @@
     "WebDeleteAccount": [
       "src/screens/workspace/WorkspaceScreen.tsx",
       "src/features/account/views/DeleteAccountView.tsx"
-    ],
-    "CampusCounsellor": [
-      "src/screens/workspace/WorkspaceScreen.tsx",
-      "src/screens/institution/CounsellorQueueScreen.tsx"
     ],
     "ClinicalReview": [
       "src/design-system/clinician-shell/ClinicianShell.tsx",

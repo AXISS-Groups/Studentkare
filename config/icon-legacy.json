@@ -61,7 +61,6 @@
   "src/screens/institution/BreakGlassEmergencyModal.tsx",
   "src/screens/institution/CampusAdminTeamScreen.tsx",
   "src/screens/institution/CampusSosDesk.tsx",
-  "src/screens/institution/CounsellorQueueScreen.tsx",
   "src/screens/institution/Flow11InstitutionConsoleScreen.tsx",
   "src/screens/institution/MultiBlockConfigScreen.tsx",
   "src/screens/institution/StudentHealthAccessRequestModal.tsx",
