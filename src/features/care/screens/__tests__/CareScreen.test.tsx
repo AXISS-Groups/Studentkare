@@ -16,14 +16,16 @@ describe('CareScreen: who gets the student workspace', () => {
   it.each([
     { path: 'shop', phone: false }, { path: 'checkout', phone: false },
     { path: 'shop', phone: true }, { path: 'checkout', phone: true },
+    // Mobile 2.0 Doctor consults (M2Consults) is a phone board.
+    { path: 'care', phone: true },
   ])('a signed-in student gets /$path in the workspace (phone: $phone)', async ({ path, phone }) => {
     Object.assign(state, { role: 'STUDENT', phone, path });
     render(<CareScreen />);
     expect(await screen.findByText(`student shell ${path}`)).toBeInTheDocument();
   });
 
-  it('visitors, other roles and /care keep the public marketplace', () => {
-    for (const next of [{ role: null, phone: false, path: 'shop' }, { role: 'VENDOR', phone: false, path: 'shop' }, { role: 'VENDOR', phone: true, path: 'shop' }, { role: 'STUDENT', phone: false, path: 'care' }, { role: 'STUDENT', phone: true, path: 'care' }]) {
+  it('visitors, other roles and /care above phone width keep the public marketplace', () => {
+    for (const next of [{ role: null, phone: false, path: 'shop' }, { role: 'VENDOR', phone: false, path: 'shop' }, { role: 'VENDOR', phone: true, path: 'shop' }, { role: 'STUDENT', phone: false, path: 'care' }]) {
       Object.assign(state, next);
       const { unmount } = render(<CareScreen />);
       expect(screen.getByText('public marketplace')).toBeInTheDocument();

@@ -74,10 +74,11 @@ export function AppointmentsPanel() {
   </>;
 }
 
-export function BookAppointmentDialog({ onClose, onDone }: { onClose: () => void; onDone: () => void }) {
+/** `initialItemId`: the consultation already picked (Mobile 2.0 Doctor consults' "Book"). */
+export function BookAppointmentDialog({ onClose, onDone, initialItemId = '' }: { onClose: () => void; onDone: () => void; initialItemId?: string }) {
   const t = useT();
   const catalog = useApiResource<{ items: { id: string; name: string; kind: string; brand: string }[] }>('/catalog?kind=consultation&limit=50');
-  const [catalogItemId, setCatalogItemId] = useState('');
+  const [catalogItemId, setCatalogItemId] = useState(initialItemId);
   const [date, setDate] = useState('');
   const availability = useApiResource<{ slots: Slot[] }>(catalogItemId ? `/appointments/availability?catalogItemId=${encodeURIComponent(catalogItemId)}&date=${encodeURIComponent(date)}` : '');
   const [selectedSlot, setSelectedSlot] = useState('');
