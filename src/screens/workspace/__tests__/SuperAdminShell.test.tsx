@@ -134,9 +134,9 @@ describe('available entries', () => {
     expect(onNavigate).toHaveBeenCalledWith('admin/ops');
   });
 
-  it('has the design’s 25 links plus the 2 added ones, and no More tools group', () => {
+  it('has the design’s 25 links plus the 3 added ones, and no More tools group', () => {
     renderShell();
-    expect(within(nav()).getAllByRole('button')).toHaveLength(27);
+    expect(within(nav()).getAllByRole('button')).toHaveLength(28);
     expect(within(nav()).queryByRole('heading', { name: 'More tools' })).toBeNull();
   });
 
