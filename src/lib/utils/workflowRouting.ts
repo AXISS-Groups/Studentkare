@@ -40,7 +40,7 @@ export function canAccessRoute(route: RoutePath, role: AccountRole | null) {
   if (route === 'health/trends' || route === 'health/report-upload') return role === 'STUDENT';
   // Leaving campus, account deletion and the student requests (returns, hostel visits, refills),
   // as features/health/module.ts holds them: student accounts only.
-  if (route === 'leave-campus' || route === 'delete-account' || route === 'my-requests' || route === 'return-request' || route === 'hostel-visit' || route === 'refill-request') return role === 'STUDENT';
+  if (route === 'leave-campus' || route === 'delete-account' || route === 'my-requests' || route === 'return-request' || route === 'hostel-visit' || route === 'refill-request' || route === 'ice-contacts' || route === 'consent' || route === 'care-circle') return role === 'STUDENT';
   // The MEO triage console, as features/care/module.ts holds it.
   if (route === 'meo') return role === 'CAMPUS_ADMIN' || role === 'NMC_DOCTOR' || role === 'SUPER_ADMIN';
   return true;
