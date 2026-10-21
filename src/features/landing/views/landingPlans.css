@@ -1,0 +1,127 @@
+/* Public plans page (design board WebPlans). Tokens only (DESIGN.md §3);
+   text rules scoped under .sk-psite-page like landingWeb.css. */
+
+/* Hero: light card, the eyebrow, title and live price chips, the art on the right. */
+.lp-hero {
+  position: relative; display: flex; align-items: center; justify-content: space-between; gap: var(--sk-space-24);
+  margin: 22px var(--lw-gutter) 0; min-height: 240px; padding: var(--sk-space-24) clamp(var(--sk-space-20), 3vw, 40px);
+  border-radius: 28px; border: 1px solid var(--sk-color-rule-soft); overflow: hidden;
+  background: linear-gradient(100deg, var(--sk-color-surface-3) 0%, var(--sk-color-surface) 52%, var(--sk-color-illustration-gold-soft) 130%);
+}
+.lp-hero__copy { position: relative; z-index: 1; flex: 1 1 360px; max-width: 470px; display: flex; flex-direction: column; gap: var(--sk-space-10); }
+.sk-psite-page .lp-hero__title { margin: 0; font-size: clamp(24px, 2.4vw, 28px); line-height: 1.18; font-weight: 800; letter-spacing: -0.8px; color: var(--sk-color-text); }
+.lp-hero__chips { display: flex; flex-wrap: wrap; gap: var(--sk-space-8); margin: var(--sk-space-4) 0 0; padding: 0; list-style: none; }
+.lp-hero__chip {
+  display: inline-flex; align-items: center; min-height: 32px; padding: 0 var(--sk-space-12);
+  border-radius: var(--sk-radius-full); background: var(--sk-color-surface); border: 1px solid var(--sk-color-rule);
+  font-size: 12.5px; font-weight: 700; color: var(--sk-color-action);
+}
+.lp-hero__art { flex: 0 1 640px; display: flex; justify-content: flex-end; min-width: 0; }
+.lp-hero__art > span { max-width: 100%; height: auto !important; }
+.lp-hero__art svg { width: 100%; height: auto; }
+@media (max-width: 860px) { .lp-hero__art { display: none; } }
+
+/* Centred title, intro and the lock tile. */
+.lp-intro { display: flex; flex-direction: column; align-items: center; gap: var(--sk-space-14); padding: 50px var(--lw-gutter) 0; text-align: center; }
+.sk-psite-page .lp-intro__title { max-width: 720px; font-size: clamp(32px, 4vw, 48px); }
+.sk-psite-page .lp-intro__lede { max-width: 660px; font-size: 16px; }
+.lp-intro__lock {
+  display: inline-flex; align-items: center; justify-content: center; width: 112px; height: 112px; margin-top: var(--sk-space-14);
+  border-radius: 24px; background: var(--sk-color-surface-3); color: var(--sk-color-action);
+}
+
+/* Plan cards. */
+.lp-cards-section { padding-top: 34px; }
+.lp-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr)); gap: 18px; margin: 0; padding: 0; list-style: none; }
+.lp-cards__item { display: flex; }
+.lp-plan {
+  flex: 1; display: flex; flex-direction: column; gap: var(--sk-space-8); padding: 26px;
+  border-radius: 22px; background: var(--sk-color-surface); border: 1px solid var(--sk-color-rule-soft);
+}
+.lp-plan--free { border: 2px solid var(--sk-color-action); }
+.lp-plan--institution { background: var(--sk-color-brand-navy); border-color: var(--sk-color-brand-navy); }
+.lp-plan__badge {
+  align-self: flex-start; padding: 4px 10px; border-radius: var(--sk-radius-full);
+  background: var(--sk-color-surface-3); color: var(--sk-color-action);
+  font-size: 10px; font-weight: 800; letter-spacing: 0.8px; text-transform: uppercase;
+}
+.lp-plan--institution .lp-plan__badge { background: var(--sk-color-on-hero-veil); color: var(--sk-color-on-hero-2); }
+.sk-psite-page .lp-plan__name { margin: var(--sk-space-4) 0 0; font-size: 17px; font-weight: 800; color: var(--sk-color-text); }
+.sk-psite-page .lp-plan__price { margin: 0; display: flex; align-items: baseline; flex-wrap: wrap; gap: var(--sk-space-8); }
+.lp-plan__amount { font-size: 38px; line-height: 1.1; font-weight: 800; letter-spacing: -1.4px; color: var(--sk-color-text); }
+.lp-plan__period { font-size: 13px; font-weight: 600; color: var(--sk-color-text-3); }
+.lp-plan__package { font-size: 13px; font-weight: 700; color: var(--sk-color-text); }
+.sk-psite-page .lp-plan__desc { margin: 0; font-size: 12.5px; line-height: 1.55; font-weight: 500; color: var(--sk-color-text-2); }
+.lp-plan__rule { height: 1px; margin: var(--sk-space-10) 0 var(--sk-space-4); background: var(--sk-color-rule-soft); }
+.lp-plan__benefits { display: flex; flex-direction: column; gap: var(--sk-space-4); margin: 0; padding: 0; list-style: none; }
+.lp-plan__benefit { display: flex; align-items: flex-start; gap: var(--sk-space-10); padding: 5px 0; font-size: 13px; line-height: 1.45; font-weight: 500; color: var(--sk-color-text); }
+.lp-plan__tick { margin-top: 2px; color: var(--sk-color-positive); }
+.sk-psite-page .lp-plan__pending { margin: 0; font-size: 12.5px; line-height: 1.55; font-weight: 500; color: var(--sk-color-text-3); }
+.lp-plan__spacer { flex-grow: 1; }
+.sk-psite-page .lp-plan__cta {
+  display: flex; align-items: center; justify-content: center; min-height: 48px; margin-top: var(--sk-space-16); padding: 0 var(--sk-space-16);
+  border-radius: var(--sk-radius-lg); background: var(--sk-color-surface-3); color: var(--sk-color-action);
+  font-size: 14px; font-weight: 800; text-align: center;
+}
+.sk-psite-page .lp-plan__cta--primary { background: var(--sk-color-action); color: var(--sk-color-on-action); }
+.sk-psite-page .lp-plan__cta--primary:hover { background: var(--sk-color-action-hover); }
+.sk-psite-page .lp-plan__cta--light { background: var(--sk-color-hero-current); color: var(--sk-color-on-hero-current); }
+.sk-psite-page .lp-plan__foot { margin: var(--sk-space-8) 0 0; font-size: 11.5px; line-height: 1.5; font-weight: 600; color: var(--sk-color-text-3); }
+.sk-psite-page .lp-plan--institution :is(.lp-plan__name, .lp-plan__amount, .lp-plan__package, .lp-plan__benefit) { color: var(--sk-color-on-hero); }
+.sk-psite-page .lp-plan--institution :is(.lp-plan__period, .lp-plan__desc, .lp-plan__pending) { color: var(--sk-color-on-hero-2); }
+.lp-plan--institution .lp-plan__rule { background: var(--sk-color-on-hero-rule); }
+.lp-plan--institution .lp-plan__tick { color: var(--sk-color-on-hero-positive); }
+.sk-psite-page .lp-plan--institution .lp-plan__foot { color: var(--sk-color-on-hero-positive); }
+
+/* Loading: card-shaped placeholders, never a price. */
+.lp-plan--skeleton { min-height: 320px; gap: var(--sk-space-14); }
+.lp-skel { display: block; height: 12px; width: 100%; border-radius: var(--sk-radius-sm); background: var(--sk-color-surface-3); animation: lpPulse 1.4s ease-in-out infinite; }
+.lp-skel--short { width: 45%; }
+.lp-skel--price { height: 34px; width: 60%; }
+@keyframes lpPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
+@media (prefers-reduced-motion: reduce) { .lp-skel { animation: none; } }
+
+.lp-error { align-items: flex-start; border-color: var(--sk-color-rule); } /* a list that failed to load is not a clinical alert: no red */
+.lp-error__ref { font-family: var(--sk-font-mono, monospace); font-size: 11.5px; color: var(--sk-color-text-3); }
+
+/* "Line by line." A real table; stacked rows on a phone. */
+.lp-table { gap: var(--sk-space-16); }
+.lp-table__grid { width: 100%; border-collapse: collapse; }
+.lp-table__grid th, .lp-table__grid td { padding: 14px var(--sk-space-8); border-bottom: 1px solid var(--sk-color-rule-soft); text-align: center; vertical-align: middle; }
+.lp-table__grid thead th { padding-top: 0; font-size: 11.5px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; color: var(--sk-color-text-3); border-bottom-color: var(--sk-color-rule); }
+.lp-table__grid thead th:first-child, .lp-table__grid tbody th { text-align: left; }
+.lp-table__grid thead .lp-table__paid { color: var(--sk-color-action); }
+.lp-table__grid tbody th { width: 46%; }
+.lp-table__label { display: block; font-size: 15px; font-weight: 700; color: var(--sk-color-text); }
+.lp-table__note { display: block; margin-top: 2px; font-size: 12.5px; font-weight: 500; color: var(--sk-color-text-3); }
+.lp-table__grid td { font-size: 14px; font-weight: 700; color: var(--sk-color-positive); }
+.sk-psite-page .lp-table__foot { margin: 0; font-size: 13px; line-height: 1.55; font-weight: 500; color: var(--sk-color-text-2); }
+@media (max-width: 640px) {
+  .lp-table__grid thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .lp-table__grid, .lp-table__grid tbody, .lp-table__grid tr, .lp-table__grid th, .lp-table__grid td { display: block; width: auto; }
+  .lp-table__grid tr { padding: var(--sk-space-12) 0; border-bottom: 1px solid var(--sk-color-rule-soft); }
+  .lp-table__grid tbody th, .lp-table__grid td { width: auto; padding: var(--sk-space-4) 0; border: 0; text-align: left; }
+  .lp-table__grid td::before { content: attr(data-label) ": "; font-weight: 600; color: var(--sk-color-text-2); }
+}
+
+/* Pay per use. */
+.lp-ppu { flex-direction: row; flex-wrap: wrap; gap: 40px; align-items: flex-start; margin-top: 44px; }
+.lp-ppu__copy { flex: 1 1 320px; max-width: 420px; display: flex; flex-direction: column; gap: var(--sk-space-10); }
+.lp-ppu__grid { flex: 1 1 420px; display: grid; grid-template-columns: repeat(auto-fit, minmax(max(220px, calc((100% - 14px) / 2)), 1fr)); gap: var(--sk-space-14); margin: 0; padding: 0; list-style: none; }
+.lp-ppu__tile { display: flex; flex-direction: column; gap: var(--sk-space-6); padding: 18px; border-radius: var(--sk-radius-lg); background: var(--sk-color-surface-2); border: 1px solid var(--sk-color-rule-soft); }
+.lp-ppu__label { font-size: 15px; font-weight: 700; color: var(--sk-color-text); }
+.lp-ppu__note { font-size: 12.5px; line-height: 1.5; font-weight: 500; color: var(--sk-color-text-3); }
+
+/* Where your money goes: copy only until a commission rate has a source. */
+.lp-money {
+  display: flex; flex-wrap: wrap; gap: 40px; align-items: center;
+  margin: 40px var(--lw-gutter) 0; padding: clamp(var(--sk-space-24), 3vw, 40px); border-radius: 24px; background: var(--sk-color-positive-bg);
+}
+.lp-money__copy { flex: 1 1 340px; max-width: 460px; display: flex; flex-direction: column; gap: var(--sk-space-10); }
+.lp-money__eyebrow { font-size: 11.5px; font-weight: 800; letter-spacing: 1.3px; text-transform: uppercase; color: var(--sk-color-positive); }
+.sk-psite-page .lp-money__body { margin: 0; font-size: 14px; line-height: 1.6; font-weight: 500; color: var(--sk-color-text-2); }
+.sk-psite-page .lp-money__ranking { flex: 1 1 380px; margin: 0; font-size: 13.5px; line-height: 1.6; font-weight: 600; color: var(--sk-color-positive); }
+
+/* The "never" list is a statement of policy, not an alert: no red (founder colour rule, 2026-10-21). */
+.lp-rules .lw-rules__dot--no { background: var(--sk-color-on-hero-2); }
+.lp-rules .lw-rules__tag--no { color: var(--sk-color-on-hero-2); }

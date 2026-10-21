@@ -451,7 +451,20 @@
       "src/design-system/public-site/PublicAppBand.tsx",
       "src/features/landing/views/landingWebKit.tsx"
     ],
-    "WebPlans": [],
+    "WebPlans": [
+      "src/features/landing/views/LandingPlansView.tsx",
+      "src/features/landing/views/LandingPlansNativeView.tsx",
+      "src/features/landing/views/planCatalog.ts",
+      "src/features/landing/views/landingPlans.css",
+      "src/design-system/public-site/PublicSitePage.tsx",
+      "src/design-system/public-site/PublicSiteHeader.tsx",
+      "src/design-system/public-site/PublicSiteFooter.tsx",
+      "src/design-system/public-site/NewsletterBand.tsx",
+      "src/design-system/public-site/publicSiteNav.ts",
+      "src/design-system/public-site/PublicTrustBand.tsx",
+      "src/design-system/public-site/PublicAppBand.tsx",
+      "src/features/landing/views/landingWebKit.tsx"
+    ],
     "LandingCampus": [
       "src/features/landing/views/LandingCampusView.tsx",
       "src/features/landing/views/LandingCampusNativeView.tsx",
@@ -1635,10 +1648,6 @@
     ],
     "ConsultSummary": [
       "src/features/vault/views/VisitSummaryView.tsx"
-    ],
-    "WebPlans": [
-      "src/features/landing/views/LandingPlansView.tsx",
-      "src/features/landing/views/LandingPlansNativeView.tsx"
     ],
     "LandingClinician": [
       "src/features/landing/views/LandingClinicianView.tsx",

@@ -105,12 +105,21 @@ export interface IllustrationProps extends A11y {
   /** px; override `size` for art that is not square (e.g. 300×280 hero art). The drawing keeps its aspect ratio. */
   width?: number;
   height?: number;
+  /**
+   * Drops the drawing's own words and numbers (`<text>`), keeping the shapes. For canvas art
+   * whose lettering is not true for the product, e.g. board prices the server does not charge.
+   */
+  withoutText?: boolean;
 }
+
+/** Removes every `<text>` element from canvas artwork. */
+const stripSvgText = (svg: string): string => svg.replace(/<text\b[^>]*>[\s\S]*?<\/text>/g, '');
+
 /** Inline SVG illustration from the canvas (decorative unless you pass a label). */
-export function Illustration({ name, size = 120, ...rest }: IllustrationProps) {
+export function Illustration({ name, size = 120, withoutText = false, ...rest }: IllustrationProps) {
   const svg = skIllustrations[name];
   if (!svg) return null;
-  return <Raw svg={svg} size={size} kind="illustration" name={name} {...rest} />;
+  return <Raw svg={withoutText ? stripSvgText(svg) : svg} size={size} kind="illustration" name={name} {...rest} />;
 }
 
 /** The Student Kare shield. Pair with the wordmark text "Student Kare" ("Kare" in Georgia italic). */

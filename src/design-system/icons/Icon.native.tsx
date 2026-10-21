@@ -45,9 +45,11 @@ export function Glyph({ name, size = 24, label }: { name: SkGlyphName; size?: nu
   const xml = skGlyphs[name];
   return xml ? <SvgXml xml={xml} width={size} height={size} {...a11y(label)} /> : null;
 }
-export function Illustration({ name, size = 120, width = size, height = size, label }: { name: SkIllustrationName; size?: number; width?: number; height?: number; label?: string }) {
+/** `withoutText` drops the drawing's own lettering (see Icon.tsx). */
+export function Illustration({ name, size = 120, width = size, height = size, label, withoutText = false }: { name: SkIllustrationName; size?: number; width?: number; height?: number; label?: string; withoutText?: boolean }) {
   const xml = skIllustrations[name];
-  return xml ? <SvgXml xml={xml} width={width} height={height} {...a11y(label)} /> : null;
+  if (!xml) return null;
+  return <SvgXml xml={withoutText ? xml.replace(/<text\b[^>]*>[\s\S]*?<\/text>/g, '') : xml} width={width} height={height} {...a11y(label)} />;
 }
 export function BrandLogo({ size = 24, label = 'Student Kare' }: { size?: number; label?: string }) {
   return <SvgXml xml={skBrandLogo} width={size} height={size} {...a11y(label)} />;
