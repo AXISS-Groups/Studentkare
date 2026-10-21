@@ -94,7 +94,7 @@ export { StatRow, DataTable } from './data/DataTable';
 export type {
   Stat, StatTone, StatRowProps, DataTableColumn, DataTableRow, DataTableCell, CellTone, DataTableRowAction, DataTableSelection,
 } from './data/DataTable';
-export { ConsoleTablePage, ConsolePageHeader } from './console/ConsoleTablePage';
+export { ConsoleTablePage, ConsolePageHeader, ConsoleEmptyState, ConsoleErrorState, ConsoleLoadingState } from './console/ConsoleTablePage';
 export type {
   ConsoleTablePageProps, ConsolePageHeaderProps, ConsoleTableStatus, ConsoleTableSpec, ConsoleSearch, ConsoleFilters,
   ConsoleFilterOption, ConsoleBulk, ConsolePagination, ConsoleEmpty, ConsoleError, ConsoleBadgeTone,

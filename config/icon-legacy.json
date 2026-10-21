@@ -1,8 +1,5 @@
 [
   "src/features/admin/views/ActivityFeedView.tsx",
-  "src/features/admin/views/KnowledgeView.tsx",
-  "src/features/admin/views/OperationsOverviewView.tsx",
-  "src/features/admin/views/PublishSourceDialog.tsx",
   "src/features/admin/views/WorkRequestsView.tsx",
   "src/features/auth/views/AccountReadyView.tsx",
   "src/features/auth/views/CreateAccountView.tsx",
@@ -90,7 +87,6 @@
   "src/screens/workspace/DevicesAndSensorsScreen.tsx",
   "src/screens/workspace/DigitalIdPanel.tsx",
   "src/screens/workspace/EncounterNotesPanel.tsx",
-  "src/screens/workspace/ErasurePanel.tsx",
   "src/screens/workspace/FulfilmentQueuePanel.tsx",
   "src/screens/workspace/HealthCampPanel.tsx",
   "src/screens/workspace/MedicationPanel.tsx",

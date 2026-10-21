@@ -64,7 +64,7 @@ describe('OperationsOverviewViewModel', () => {
     expect(repos.ops.feed).toHaveBeenCalledWith({ limit: 5 }, expect.any(AbortSignal));
     expect(repos.ops.feedCounts).toHaveBeenCalledTimes(1);
     expect(repos.audit.listEvents).toHaveBeenCalledTimes(1);
-    expect(repos.audit.listEvents).toHaveBeenCalledWith(0, 1, expect.any(AbortSignal));
+    expect(repos.audit.listEvents).toHaveBeenCalledWith(0, 6, expect.any(AbortSignal));
     expect(vi.mocked(repos.accounts.countByRole).mock.calls.map(([role]) => role)).toEqual(['STUDENT', 'NMC_DOCTOR', 'VENDOR']);
     expect(repos.billing.plans).toHaveBeenCalledTimes(1);
   });

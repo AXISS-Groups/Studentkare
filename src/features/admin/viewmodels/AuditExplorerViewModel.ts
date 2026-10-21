@@ -5,6 +5,15 @@ import type { AuditPage } from '../model/types';
 
 const AUDIT_PAGE_SIZE = 50;
 
+/** The audit explorer's tabs. The server has no action filter, so a tab narrows the loaded page. */
+export type AuditTab = 'all' | 'break-glass' | 'denied';
+/** Actions that record an emergency (break-glass) opening of a record. */
+const BREAK_GLASS_ACTION = /BREAK_GLASS|BREAKGLASS|EMERGENCY_ACCESS/;
+/** Actions that record something being refused. */
+const DENIED_ACTION = /DENIED|REFUSED|REJECTED|BLOCKED/;
+export const isBreakGlass = (action: string) => BREAK_GLASS_ACTION.test(action);
+export const isDenied = (action: string) => DENIED_ACTION.test(action);
+
 /**
  * Audit explorer: one page of audit events, filtered on the client.
  *
@@ -23,6 +32,7 @@ export class AuditExplorerViewModel {
   to = '';
   actor = '';
   eventType = '';
+  tab: AuditTab = 'all';
   selected: AuditEvent | null = null;
   private version = 0;
   private controller: AbortController | null = null;
@@ -39,7 +49,7 @@ export class AuditExplorerViewModel {
   get total(): number { return this.data?.total ?? 0; }
   get actors(): string[] { return Array.from(new Set(this.items.map(item => item.actorId))).sort(); }
   get eventTypes(): string[] { return Array.from(new Set(this.items.map(item => item.action))).sort(); }
-  get filtering(): boolean { return Boolean(this.search || this.from || this.to || this.actor || this.eventType); }
+  get filtering(): boolean { return Boolean(this.search || this.from || this.to || this.actor || this.eventType || this.tab !== 'all'); }
   get lastPage(): number { return Math.max(0, Math.ceil(this.total / AUDIT_PAGE_SIZE) - 1); }
 
   /** Filters apply to the loaded page only. */
@@ -49,7 +59,8 @@ export class AuditExplorerViewModel {
     const end = this.to ? new Date(`${this.to}T23:59:59`).getTime() / 1000 : null;
     return this.items.filter(item => (!needle || [item.action, item.resourceId, item.actorId].some(value => value.toLowerCase().includes(needle)))
       && (!this.actor || item.actorId === this.actor) && (!this.eventType || item.action === this.eventType)
-      && (start === null || item.createdAt >= start) && (end === null || item.createdAt <= end));
+      && (start === null || item.createdAt >= start) && (end === null || item.createdAt <= end)
+      && (this.tab === 'all' || (this.tab === 'denied' ? isDenied(item.action) : isBreakGlass(item.action))));
   }
 
   setSearch(value: string) { this.search = value; }
@@ -57,6 +68,7 @@ export class AuditExplorerViewModel {
   setTo(value: string) { this.to = value; }
   setActor(value: string) { this.actor = value; }
   setEventType(value: string) { this.eventType = value; }
+  setTab(value: AuditTab) { this.tab = value; }
   select(event: AuditEvent) { this.selected = event; }
 
   /** Another page: the selection belonged to the old one. */

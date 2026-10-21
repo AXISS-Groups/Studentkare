@@ -1284,7 +1284,16 @@
       "src/features/partner/partnerApi.ts",
       "src/screens/vendor/PartnerStaffScreen.tsx"
     ],
-    "SuperAdminConsole": [],
+    "SuperAdminConsole": [
+      "src/screens/workspace/admin/SuperAdminShell.tsx",
+      "src/screens/workspace/admin/superAdminNavigation.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/admin/views/AdminBoard.tsx",
+      "src/features/admin/views/GovBoard.tsx",
+      "src/design-system/console/ConsoleTablePage.tsx",
+      "src/features/admin/views/OperationsOverviewView.tsx",
+      "src/features/admin/viewmodels/OperationsOverviewViewModel.ts"
+    ],
     "AdminAccounts": [
       "src/screens/workspace/admin/SuperAdminShell.tsx",
       "src/screens/workspace/admin/superAdminNavigation.ts",
@@ -1295,8 +1304,25 @@
       "src/features/admin/views/AccountsView.tsx",
       "src/features/admin/views/AccountsListView.tsx"
     ],
-    "AuditExplorer": [],
-    "AiGovernance": [],
+    "AuditExplorer": [
+      "src/screens/workspace/admin/SuperAdminShell.tsx",
+      "src/screens/workspace/admin/superAdminNavigation.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/admin/views/AdminBoard.tsx",
+      "src/features/admin/views/GovBoard.tsx",
+      "src/design-system/console/ConsoleTablePage.tsx",
+      "src/features/admin/views/AuditExplorerView.tsx",
+      "src/features/admin/viewmodels/AuditExplorerViewModel.ts"
+    ],
+    "AiGovernance": [
+      "src/screens/workspace/admin/SuperAdminShell.tsx",
+      "src/screens/workspace/admin/superAdminNavigation.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/admin/views/AdminBoard.tsx",
+      "src/features/admin/views/GovBoard.tsx",
+      "src/design-system/console/ConsoleTablePage.tsx",
+      "src/features/admin/views/AiGovernanceView.tsx"
+    ],
     "CatalogOps": [
       "src/screens/workspace/admin/SuperAdminShell.tsx",
       "src/screens/workspace/admin/superAdminNavigation.ts",
@@ -1306,8 +1332,28 @@
       "src/features/admin/views/AdminBoard.tsx",
       "src/features/admin/views/CatalogueView.tsx"
     ],
-    "Integrations": [],
-    "DpdpQueue": [],
+    "Integrations": [
+      "src/screens/workspace/admin/SuperAdminShell.tsx",
+      "src/screens/workspace/admin/superAdminNavigation.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/admin/views/AdminBoard.tsx",
+      "src/features/admin/views/GovBoard.tsx",
+      "src/design-system/console/ConsoleTablePage.tsx",
+      "src/features/admin/views/IntegrationsView.tsx",
+      "src/design-system/data/DataTable.tsx"
+    ],
+    "DpdpQueue": [
+      "src/screens/workspace/admin/SuperAdminShell.tsx",
+      "src/screens/workspace/admin/superAdminNavigation.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/admin/views/AdminBoard.tsx",
+      "src/features/admin/views/GovBoard.tsx",
+      "src/features/admin/views/ErasureQueueView.tsx",
+      "src/design-system/console/ConsoleTablePage.tsx",
+      "src/design-system/data/DataTable.tsx",
+      "src/design-system/overlays/Drawer.tsx",
+      "src/design-system/overlays/Overlay.tsx"
+    ],
     "ClaimsAdjudication": [
       "src/screens/workspace/admin/SuperAdminShell.tsx",
       "src/screens/workspace/admin/superAdminNavigation.ts",
@@ -1335,8 +1381,26 @@
       "src/features/admin/views/AdminBoard.tsx",
       "src/features/admin/views/UnconnectedBoards.tsx"
     ],
-    "AdminOps": [],
-    "AdminSurveillance": [],
+    "AdminOps": [
+      "src/screens/workspace/admin/SuperAdminShell.tsx",
+      "src/screens/workspace/admin/superAdminNavigation.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/admin/views/AdminBoard.tsx",
+      "src/features/admin/views/GovBoard.tsx",
+      "src/features/admin/views/SafetyEventsView.tsx",
+      "src/design-system/console/ConsoleTablePage.tsx",
+      "src/design-system/data/DataTable.tsx"
+    ],
+    "AdminSurveillance": [
+      "src/screens/workspace/admin/SuperAdminShell.tsx",
+      "src/screens/workspace/admin/superAdminNavigation.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/admin/views/AdminBoard.tsx",
+      "src/features/admin/views/GovBoard.tsx",
+      "src/features/admin/views/GovernanceBoards.tsx",
+      "src/design-system/console/ConsoleTablePage.tsx",
+      "src/design-system/data/DataTable.tsx"
+    ],
     "AdminTenants": [
       "src/screens/workspace/admin/SuperAdminShell.tsx",
       "src/screens/workspace/admin/superAdminNavigation.ts",
@@ -1347,9 +1411,36 @@
       "src/features/admin/views/UnconnectedBoards.tsx",
       "src/features/admin/views/ContractsView.tsx"
     ],
-    "AdminRuleL": [],
-    "AdminConsentPolicy": [],
-    "AdminHandover": [],
+    "AdminRuleL": [
+      "src/screens/workspace/admin/SuperAdminShell.tsx",
+      "src/screens/workspace/admin/superAdminNavigation.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/admin/views/AdminBoard.tsx",
+      "src/features/admin/views/GovBoard.tsx",
+      "src/features/admin/views/RuleLView.tsx",
+      "src/design-system/console/ConsoleTablePage.tsx",
+      "src/design-system/data/DataTable.tsx"
+    ],
+    "AdminConsentPolicy": [
+      "src/screens/workspace/admin/SuperAdminShell.tsx",
+      "src/screens/workspace/admin/superAdminNavigation.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/admin/views/AdminBoard.tsx",
+      "src/features/admin/views/GovBoard.tsx",
+      "src/features/admin/views/GovernanceBoards.tsx",
+      "src/design-system/console/ConsoleTablePage.tsx",
+      "src/design-system/data/DataTable.tsx"
+    ],
+    "AdminHandover": [
+      "src/screens/workspace/admin/SuperAdminShell.tsx",
+      "src/screens/workspace/admin/superAdminNavigation.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/admin/views/AdminBoard.tsx",
+      "src/features/admin/views/GovBoard.tsx",
+      "src/features/admin/views/GovernanceBoards.tsx",
+      "src/design-system/console/ConsoleTablePage.tsx",
+      "src/design-system/data/DataTable.tsx"
+    ],
     "AdminSentinel": [
       "src/screens/workspace/admin/SuperAdminShell.tsx",
       "src/screens/workspace/admin/superAdminNavigation.ts",
@@ -1368,8 +1459,27 @@
       "src/features/admin/views/AdminBoard.tsx",
       "src/features/admin/views/TokensView.tsx"
     ],
-    "AdminBreakGlassLog": [],
-    "AdminPlansPricing": [],
+    "AdminBreakGlassLog": [
+      "src/screens/workspace/admin/SuperAdminShell.tsx",
+      "src/screens/workspace/admin/superAdminNavigation.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/admin/views/AdminBoard.tsx",
+      "src/features/admin/views/GovBoard.tsx",
+      "src/features/admin/views/BreakGlassLogView.tsx",
+      "src/design-system/console/ConsoleTablePage.tsx",
+      "src/design-system/data/DataTable.tsx"
+    ],
+    "AdminPlansPricing": [
+      "src/screens/workspace/admin/SuperAdminShell.tsx",
+      "src/screens/workspace/admin/superAdminNavigation.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/admin/views/AdminBoard.tsx",
+      "src/features/admin/views/GovBoard.tsx",
+      "src/design-system/console/ConsoleTablePage.tsx",
+      "src/features/admin/views/PlansPricingView.tsx",
+      "src/design-system/overlays/Drawer.tsx",
+      "src/design-system/overlays/Overlay.tsx"
+    ],
     "AdminFlags": [
       "src/screens/workspace/admin/SuperAdminShell.tsx",
       "src/screens/workspace/admin/superAdminNavigation.ts",
@@ -1379,7 +1489,15 @@
       "src/features/admin/views/AdminBoard.tsx",
       "src/features/admin/views/FeatureFlagsView.tsx"
     ],
-    "AdminTemplates": [],
+    "AdminTemplates": [
+      "src/screens/workspace/admin/SuperAdminShell.tsx",
+      "src/screens/workspace/admin/superAdminNavigation.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/admin/views/AdminBoard.tsx",
+      "src/features/admin/views/GovBoard.tsx",
+      "src/design-system/console/ConsoleTablePage.tsx",
+      "src/features/admin/views/MessageTemplatesView.tsx"
+    ],
     "AdminBilling": [
       "src/screens/workspace/admin/SuperAdminShell.tsx",
       "src/screens/workspace/admin/superAdminNavigation.ts",
@@ -1389,7 +1507,16 @@
       "src/features/admin/views/AdminBoard.tsx",
       "src/features/admin/views/BillingLedgerView.tsx"
     ],
-    "AdminKnowledge": [],
+    "AdminKnowledge": [
+      "src/screens/workspace/admin/SuperAdminShell.tsx",
+      "src/screens/workspace/admin/superAdminNavigation.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/admin/views/AdminBoard.tsx",
+      "src/features/admin/views/GovBoard.tsx",
+      "src/design-system/console/ConsoleTablePage.tsx",
+      "src/features/admin/views/KnowledgeView.tsx",
+      "src/features/admin/views/PublishSourceDialog.tsx"
+    ],
     "AdminIntake": [
       "src/screens/workspace/admin/SuperAdminShell.tsx",
       "src/screens/workspace/admin/superAdminNavigation.ts",
@@ -1399,10 +1526,45 @@
       "src/features/admin/views/AdminBoard.tsx",
       "src/features/admin/views/IntakeView.tsx"
     ],
-    "AdminCheckins": [],
-    "AdminCase": [],
-    "AdminPriceFix": [],
-    "AdminApiKeys": [],
+    "AdminCheckins": [
+      "src/screens/workspace/admin/SuperAdminShell.tsx",
+      "src/screens/workspace/admin/superAdminNavigation.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/admin/views/AdminBoard.tsx",
+      "src/features/admin/views/GovBoard.tsx",
+      "src/features/admin/views/GovernanceBoards.tsx",
+      "src/design-system/console/ConsoleTablePage.tsx",
+      "src/design-system/data/DataTable.tsx"
+    ],
+    "AdminCase": [
+      "src/screens/workspace/admin/SuperAdminShell.tsx",
+      "src/screens/workspace/admin/superAdminNavigation.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/admin/views/AdminBoard.tsx",
+      "src/features/admin/views/GovBoard.tsx",
+      "src/design-system/console/ConsoleTablePage.tsx",
+      "src/features/admin/views/CaseView.tsx"
+    ],
+    "AdminPriceFix": [
+      "src/screens/workspace/admin/SuperAdminShell.tsx",
+      "src/screens/workspace/admin/superAdminNavigation.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/admin/views/AdminBoard.tsx",
+      "src/features/admin/views/GovBoard.tsx",
+      "src/design-system/console/ConsoleTablePage.tsx",
+      "src/features/admin/views/PriceFixView.tsx",
+      "src/features/admin/views/PlansPricingView.tsx"
+    ],
+    "AdminApiKeys": [
+      "src/screens/workspace/admin/SuperAdminShell.tsx",
+      "src/screens/workspace/admin/superAdminNavigation.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/admin/views/AdminBoard.tsx",
+      "src/features/admin/views/GovBoard.tsx",
+      "src/features/admin/views/ApiKeysView.tsx",
+      "src/design-system/console/ConsoleTablePage.tsx",
+      "src/design-system/data/DataTable.tsx"
+    ],
     "AdminSignIn": [
       "src/features/auth/views/AdminSignInView.tsx",
       "src/features/auth/views/SignInFrame.tsx"
@@ -1489,117 +1651,6 @@
       "src/design-system/public-site/PublicTrustBand.tsx",
       "src/design-system/public-site/PublicAppBand.tsx",
       "src/features/landing/views/landingWebKit.tsx"
-    ],
-    "SuperAdminConsole": [
-      "src/screens/workspace/admin/SuperAdminShell.tsx",
-      "src/screens/workspace/admin/superAdminNavigation.ts",
-      "src/screens/workspace/admin/AdminPage.tsx",
-      "src/screens/workspace/admin/SuperAdminScreens.tsx",
-      "src/features/admin/views/OperationsOverviewView.tsx",
-      "src/design-system/console-shell/ConsoleShell.tsx"
-    ],
-    "AuditExplorer": [
-      "src/screens/workspace/admin/SuperAdminShell.tsx",
-      "src/screens/workspace/admin/superAdminNavigation.ts",
-      "src/screens/workspace/admin/AdminPage.tsx",
-      "src/features/admin/views/AuditExplorerView.tsx"
-    ],
-    "AiGovernance": [
-      "src/screens/workspace/admin/SuperAdminShell.tsx",
-      "src/screens/workspace/admin/superAdminNavigation.ts",
-      "src/screens/workspace/admin/AdminPage.tsx",
-      "src/features/admin/views/AiGovernanceView.tsx"
-    ],
-    "Integrations": [
-      "src/screens/workspace/admin/SuperAdminShell.tsx",
-      "src/screens/workspace/admin/superAdminNavigation.ts",
-      "src/screens/workspace/admin/AdminPage.tsx",
-      "src/screens/workspace/admin/SuperAdminScreens.tsx",
-      "src/screens/admin/IntegrationsSettingsModule.tsx"
-    ],
-    "DpdpQueue": [
-      "src/screens/workspace/admin/SuperAdminShell.tsx",
-      "src/screens/workspace/admin/superAdminNavigation.ts",
-      "src/screens/workspace/admin/AdminPage.tsx",
-      "src/screens/workspace/ErasurePanel.tsx"
-    ],
-    "AdminOps": [
-      "src/screens/workspace/admin/SuperAdminShell.tsx",
-      "src/screens/workspace/admin/superAdminNavigation.ts",
-      "src/screens/workspace/admin/AdminPage.tsx",
-      "src/features/admin/views/SafetyEventsView.tsx"
-    ],
-    "AdminSurveillance": [
-      "src/screens/workspace/admin/SuperAdminShell.tsx",
-      "src/screens/workspace/admin/superAdminNavigation.ts",
-      "src/screens/workspace/admin/AdminPage.tsx",
-      "src/features/admin/views/SurveillanceView.tsx"
-    ],
-    "AdminRuleL": [
-      "src/screens/workspace/admin/SuperAdminShell.tsx",
-      "src/screens/workspace/admin/superAdminNavigation.ts",
-      "src/screens/workspace/admin/AdminPage.tsx",
-      "src/features/admin/views/NotConnectedView.tsx"
-    ],
-    "AdminConsentPolicy": [
-      "src/screens/workspace/admin/SuperAdminShell.tsx",
-      "src/screens/workspace/admin/superAdminNavigation.ts",
-      "src/screens/workspace/admin/AdminPage.tsx",
-      "src/features/admin/views/ReadOnlyAdminView.tsx"
-    ],
-    "AdminHandover": [
-      "src/screens/workspace/admin/SuperAdminShell.tsx",
-      "src/screens/workspace/admin/superAdminNavigation.ts",
-      "src/screens/workspace/admin/AdminPage.tsx",
-      "src/features/admin/views/ReadOnlyAdminView.tsx"
-    ],
-    "AdminBreakGlassLog": [
-      "src/screens/workspace/admin/SuperAdminShell.tsx",
-      "src/screens/workspace/admin/superAdminNavigation.ts",
-      "src/screens/workspace/admin/AdminPage.tsx",
-      "src/features/admin/views/BreakGlassLogView.tsx"
-    ],
-    "AdminPlansPricing": [
-      "src/screens/workspace/admin/SuperAdminShell.tsx",
-      "src/screens/workspace/admin/superAdminNavigation.ts",
-      "src/screens/workspace/admin/AdminPage.tsx",
-      "src/features/admin/views/PlansPricingView.tsx"
-    ],
-    "AdminTemplates": [
-      "src/screens/workspace/admin/SuperAdminShell.tsx",
-      "src/screens/workspace/admin/superAdminNavigation.ts",
-      "src/screens/workspace/admin/AdminPage.tsx",
-      "src/features/admin/views/MessageTemplatesView.tsx"
-    ],
-    "AdminKnowledge": [
-      "src/screens/workspace/admin/SuperAdminShell.tsx",
-      "src/screens/workspace/admin/superAdminNavigation.ts",
-      "src/screens/workspace/admin/AdminPage.tsx",
-      "src/features/admin/views/KnowledgeView.tsx"
-    ],
-    "AdminCheckins": [
-      "src/screens/workspace/admin/SuperAdminShell.tsx",
-      "src/screens/workspace/admin/superAdminNavigation.ts",
-      "src/screens/workspace/admin/AdminPage.tsx",
-      "src/features/admin/views/NotConnectedView.tsx"
-    ],
-    "AdminCase": [
-      "src/screens/workspace/admin/SuperAdminShell.tsx",
-      "src/screens/workspace/admin/superAdminNavigation.ts",
-      "src/screens/workspace/admin/AdminPage.tsx",
-      "src/features/admin/views/CaseView.tsx"
-    ],
-    "AdminPriceFix": [
-      "src/screens/workspace/admin/SuperAdminShell.tsx",
-      "src/screens/workspace/admin/superAdminNavigation.ts",
-      "src/screens/workspace/admin/AdminPage.tsx",
-      "src/features/admin/views/PriceFixView.tsx"
-    ],
-    "AdminApiKeys": [
-      "src/screens/workspace/admin/SuperAdminShell.tsx",
-      "src/screens/workspace/admin/superAdminNavigation.ts",
-      "src/screens/workspace/admin/AdminPage.tsx",
-      "src/screens/workspace/admin/SuperAdminScreens.tsx"
     ],
     "AyushSheet": [
       "src/features/chat/views/AyushChatNativeView.tsx"
