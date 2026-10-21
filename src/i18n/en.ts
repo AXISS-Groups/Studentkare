@@ -19,6 +19,7 @@ import { payEn } from './areas/pay';
 import { labbookEn } from './areas/labbook';
 import { rewardsEn } from './areas/rewards';
 import { mobile2En } from './areas/mobile2';
+import { mobile2OrdersEn } from './areas/mobile2Orders';
 import { wellnessEn } from './areas/wellness';
 import { consoleEn } from './areas/console';
 import { phoneboardsEn } from './areas/phoneboards';
@@ -841,6 +842,7 @@ export const en = {
   ...labbookEn,
   ...rewardsEn,
   ...mobile2En,
+  ...mobile2OrdersEn,
   ...wellnessEn,
   ...consoleEn,
   ...phoneboardsEn,

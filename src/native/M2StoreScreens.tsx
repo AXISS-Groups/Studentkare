@@ -11,12 +11,16 @@ import { M2MedicinesView } from '@/features/m2store/views/M2MedicinesView';
 import { M2LabsView } from '@/features/m2store/views/M2LabsView';
 import { M2ConsultsView } from '@/features/m2store/views/M2ConsultsView';
 import { ConsultsViewModel } from '@/features/m2store/viewmodel/ConsultsViewModel';
+import { M2InsuranceView } from '@/features/m2store/views/M2InsuranceView';
+import { InsuranceViewModel } from '@/features/m2store/viewmodel/InsuranceViewModel';
+import { M2OrdersView } from '@/features/m2store/views/M2OrdersView';
+import { OrdersViewModel } from '@/features/orders/viewmodel/OrdersViewModel';
 import { observer } from 'mobx-react-lite';
 import { useNavigate } from './navigation';
 import { useNativeSession } from './session';
 
 /**
- * Mobile 2.0 Medicines, Lab tests and Doctor consults in the Expo app: the
+ * Mobile 2.0 Medicines, Lab tests, Doctor consults, Insurance and Orders in the Expo app: the
  * same views as the web phone frame, handing off to the app's own screens
  * (Marketplace and Checkout keep the app's cart; booking a consult opens
  * BookAppointment). Each board draws its own header, so the stack hides the
@@ -107,3 +111,41 @@ export function ConsultsScreen(): React.ReactElement {
   );
 }
 
+
+/** Mobile 2.0 Insurance: the same board; the full web insurance page has no app twin, so there is no "Manage". */
+export function InsuranceScreen(): React.ReactElement {
+  const navigate = useNavigate();
+  const back = useBack();
+  const [vm] = useState(() => new InsuranceViewModel());
+  useEffect(() => { void vm.load(); return () => vm.dispose(); }, [vm]);
+  return (
+    <Frame>
+      <M2InsuranceView vm={vm} links={{ back, sos: () => navigate('Emergency') }} />
+    </Frame>
+  );
+}
+
+/** Mobile 2.0 Orders (the pill nav's Orders): one order's page is kept in the screen's own state. */
+export function OrdersScreen(): React.ReactElement {
+  const navigate = useNavigate();
+  const [vm] = useState(() => new OrdersViewModel());
+  const [orderId, setOrderId] = useState<string | null>(null);
+  useEffect(() => { void vm.load(); return () => vm.dispose(); }, [vm]);
+  return (
+    <Frame>
+      <M2OrdersView vm={vm} focusId={orderId} links={{
+        help: () => navigate('MyRequests'),
+        sos: () => navigate('Emergency'),
+        shop: () => navigate('Marketplace'),
+        buyAgain: () => navigate('Marketplace'),
+        returnItem: () => navigate('ReturnRequest'),
+        reports: () => navigate('Vault'),
+        details: setOrderId,
+        allOrders: () => setOrderId(null),
+        openEmergencyCard: () => navigate('Emergency'),
+        openPass: () => navigate('DigitalId'),
+        openCrisis: () => navigate('Emergency'),
+      }} />
+    </Frame>
+  );
+}
