@@ -15,8 +15,14 @@ export interface PreventivePreferences {
   seasonalEducationEnabled: boolean; promotionsEnabled: boolean; region: string; topics: Topic[];
   consentVersion: number; updatedAt: number | null;
 }
+/** A doctor's next step (D-M2-11). `kind` picks the icon only; `often` / `when` are the doctor's words. */
+export type GuidanceStepKind = 'ACTIVITY' | 'FOOD' | 'TEST' | 'OTHER';
+export interface GuidanceStep { text: string; kind: GuidanceStepKind; often: string | null; when: string | null }
 export interface ReportReview {
   id: string; documentId: string; status: 'REQUESTED' | 'ASSIGNED' | 'APPROVED' | 'REJECTED' | 'WITHDRAWN';
   version: number; reviewedBy: string | null; reviewedAt: number | null;
-  guidance: null | { summary: string; questions: string[]; nextSteps: string[]; sourceRefs: { title: string; url: string }[] };
+  guidance: null | {
+    summary: string; questions: string[]; nextSteps: string[]; steps: GuidanceStep[];
+    sourceRefs: { title: string; url: string }[];
+  };
 }
