@@ -14,6 +14,7 @@ export function SosRouteScreen(): React.ReactElement {
         signIn: () => navigate('login', 'sos'),
         editEmergencyContact: () => navigate('ice-contacts'),
         crisis: () => navigate('crisis'),
+        nearestHospitals: () => navigate('find-care'),
         home: () => navigate(signedIn ? 'your-care' : 'landing'),
         back: () => (window.history.length > 1 ? window.history.back() : navigate(signedIn ? 'your-care' : 'landing')),
       }}

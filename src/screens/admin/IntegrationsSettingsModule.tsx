@@ -26,7 +26,7 @@ import {
   ShieldAlert
 } from 'lucide-react';
 
-type Provider = 'platform' | 'posthog' | 'openwa' | 'postal' | 'slack' | 'firebase' | 'otp' | 'twofa' | 'llm';
+type Provider = 'platform' | 'posthog' | 'openwa' | 'postal' | 'slack' | 'firebase' | 'otp' | 'twofa' | 'llm' | 'abdm_hfr';
 
 /** One stored setting, as GET /admin/integrations returns it. */
 type ConfigValue = string | number | boolean | string[] | null;
@@ -42,6 +42,7 @@ const PROVIDER_META: Record<Provider, { title: MessageKey; desc: MessageKey; ico
   otp: { title: 'admin.int.otp.title', desc: 'admin.int.otp.desc', icon: KeyRound, category: 'admin.int.cat.security' },
   twofa: { title: 'admin.int.twofa.title', desc: 'admin.int.twofa.desc', icon: ShieldCheck, category: 'admin.int.cat.security' },
   llm: { title: 'admin.int.llm.title', desc: 'admin.int.llm.desc', icon: BrainCircuit, category: 'admin.int.cat.ai' },
+  abdm_hfr: { title: 'admin.int.abdm_hfr.title', desc: 'admin.int.abdm_hfr.desc', icon: Globe, category: 'admin.int.cat.registry' },
 };
 
 // Placeholders are example values, so they stay as they are in every language.
@@ -100,6 +101,10 @@ const FIELD_LABELS: Record<string, { label: MessageKey; description?: MessageKey
   // LLM
   provider: { label: 'admin.int.f.provider', description: 'admin.int.d.provider', placeholder: 'openai' },
   model: { label: 'admin.int.f.model', description: 'admin.int.d.model', placeholder: 'gpt-4o-mini / llama3.1:8b' },
+  // ABDM Health Facility Registry (care directory connector; nothing is fetched until a live search is built)
+  registry_url: { label: 'admin.int.f.registry_url', description: 'admin.int.d.registry_url' },
+  client_id: { label: 'admin.int.f.client_id', description: 'admin.int.d.client_id' },
+  client_secret: { label: 'admin.int.f.client_secret', description: 'admin.int.d.client_secret' },
 };
 
 function isSecretKey(k: string) {
@@ -320,6 +325,8 @@ export const IntegrationsSettingsModule: React.FC = () => {
             summary = text(data.project_id) ? t('admin.int.project', { id: text(data.project_id) }) : t('admin.int.notConfigured');
           } else if (p === 'llm') {
             summary = t('admin.int.llmSummary', { provider: text(data.provider) || notSet, model: text(data.model) || notSet });
+          } else if (p === 'abdm_hfr') {
+            summary = text(data.registry_url) ? text(data.registry_url) : t('admin.int.notConfigured');
           }
 
           return (

@@ -8,6 +8,7 @@ import { campusBoardsEn } from './areas/campusBoards';
 import { campusConsoleEn } from './areas/campusConsole';
 import { campusEn } from './areas/campus';
 import { campusSafetyEn } from './areas/campusSafety';
+import { careDirectoryEn } from './areas/careDirectory';
 import { careEn } from './areas/care';
 import { clinicianEn } from './areas/clinician';
 import { clinicianWorkEn } from './areas/clinicianWork';
@@ -57,6 +58,7 @@ export const areasEn = {
   ...campusConsoleEn,
   ...campusEn,
   ...campusSafetyEn,
+  ...careDirectoryEn,
   ...careEn,
   ...clinicianEn,
   ...clinicianWorkEn,
