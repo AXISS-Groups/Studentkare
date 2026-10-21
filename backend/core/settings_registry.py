@@ -363,6 +363,23 @@ declare("auth.otp_resend_seconds", INT, 45, area="auth", unit="seconds", minimum
 # (services/otp_delivery.py). The session check and a failed send are remembered
 # for this long, so /auth/options stays cheap and a failing channel drops out
 # until a later success or a fresh check. Not public: the server decides.
+# Team accounts (services/team_accounts.py, founder decision 2026-10-22): one
+# shared account per role, signed in on /staff-sign-in with an ID and a 6-digit
+# PIN. The switch is public so the page hides the option when it is off; the
+# server refuses PIN sign-in then as well. A PIN has only a million values, so
+# the lockout and the rate limits below are what keep it from being guessed.
+declare("auth.staff_pin_login_enabled", BOOL, True, area="auth", public=True,
+        description="Whether team accounts may sign in on the staff page with their ID and PIN.")
+declare("auth.staff_pin_max_attempts", INT, 5, area="auth", unit="attempts", minimum=3, maximum=10,
+        description="Wrong PINs in a row before a team account is locked.")
+declare("auth.staff_pin_lockout_minutes", INT, 15, area="auth", unit="minutes", minimum=5, maximum=1440,
+        description="How long a team account stays locked after too many wrong PINs.")
+declare("auth.staff_pin_rate_window_minutes", INT, 15, area="auth", unit="minutes", minimum=1, maximum=120,
+        description="The window the PIN sign-in rate limits below are counted over.")
+declare("auth.staff_pin_ip_max_attempts", INT, 20, area="auth", unit="attempts", minimum=5, maximum=200,
+        description="PIN sign-in attempts one network address may make in the rate window.")
+declare("auth.staff_pin_id_max_attempts", INT, 10, area="auth", unit="attempts", minimum=5, maximum=100,
+        description="PIN sign-in attempts against one ID in the rate window, whoever makes them.")
 declare("auth.whatsapp_status_cache_seconds", INT, 60, area="auth", unit="seconds", minimum=5, maximum=900,
         description="How long a WhatsApp session check (or a failed WhatsApp send) is trusted before checking again.")
 declare("auth.whatsapp_status_timeout_seconds", INT, 3, area="auth", unit="seconds", minimum=1, maximum=10,

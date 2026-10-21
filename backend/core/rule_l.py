@@ -128,6 +128,7 @@ TABLE_PLANES: dict[str, str] = {
     # --- platform: operations, reference content, no person's health ---
     "alembic_version": PLATFORM,
     "care_rate_buckets": PLATFORM,
+    "care_staff_pin_credentials": PLATFORM,       # team-account PIN hashes and lockout counters; no grant to either role
     "care_workflow_audit": PLATFORM,
     "audit_logs": PLATFORM,
     "care_system_settings": PLATFORM,             # integration secrets

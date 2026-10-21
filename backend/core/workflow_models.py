@@ -39,6 +39,27 @@ class Account(Base):
     # VENDOR only: PHARMACY | LAB | CLINIC | WELLNESS, set by a super admin. Its own
     # column, not a profile key, because PATCH /profile merges into the profile.
     partner_kind: Mapped[str] = mapped_column(String(12), default="", server_default="")
+    # A shared team account (services/team_accounts.py): one per role, signed in
+    # with a PIN, scoped to the test campus / test partner organisation so it sees
+    # no real student's data. Set only by the team-accounts command, never by an API.
+    is_team_account: Mapped[bool] = mapped_column(Boolean, default=False, server_default=sa_false())
+
+
+class StaffPinCredential(Base):
+    """A team account's sign-in PIN. Only a salted scrypt hash is kept, never the PIN.
+
+    Failed attempts count towards a lockout (auth.staff_pin_max_attempts within
+    auth.staff_pin_lockout_minutes). Platform plane (core/rule_l.py): neither group
+    role has any grant on it.
+    """
+    __tablename__ = "care_staff_pin_credentials"
+    account_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"), primary_key=True)
+    pin_hash: Mapped[str] = mapped_column(String(255))
+    failed_attempts: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
+    locked_until: Mapped[float] = mapped_column(Float, default=0.0, server_default="0")
+    created_at: Mapped[float] = mapped_column(Float)
+    rotated_at: Mapped[float] = mapped_column(Float, default=0.0, server_default="0")
+    last_sign_in_at: Mapped[float] = mapped_column(Float, default=0.0, server_default="0")
 
 
 class Session(Base):
