@@ -173,7 +173,7 @@ export const CreateAccountNativeView: React.FC<CreateAccountNativeViewProps> = o
 
           <View style={s.field}>
             <Text style={s.label}>{t(whatsapp ? 'auth.field.WHATSAPP' : 'auth.field.EMAIL')}</Text>
-            <View style={[s.control, sendError ? s.controlInvalid : null]}>
+            <View style={[s.control, vm.error && !vm.channelFailure ? s.controlInvalid : null]}>
               {whatsapp
                 ? <Text style={s.prefix}>{t('launch.create.countryCode')}</Text>
                 : <Icon name="mail-2" size={18} color={color.text2} />}

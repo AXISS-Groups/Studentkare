@@ -78,7 +78,7 @@ export const SignInNativeView: React.FC<SignInNativeViewProps> = observer(functi
 
           <View style={s.field}>
             <Text style={s.label}>{t(copy.label)}</Text>
-            <View style={[s.control, sendError ? s.controlInvalid : null]}>
+            <View style={[s.control, vm.error && !vm.channelFailure ? s.controlInvalid : null]}>
               {whatsapp
                 ? <Text style={s.prefix}>{t('launch.create.countryCode')}</Text>
                 : <Icon name="mail-2" size={18} color={color.text2} />}

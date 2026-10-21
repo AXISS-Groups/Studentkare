@@ -50,6 +50,9 @@ export const CreateAccountView = observer(function CreateAccountView({ vm }: { v
   const sendError = vm.channelFailure
     ? <ChannelFailureNote vm={vm} id={errorId} />
     : vm.error ? <SendErrorNote id={errorId} message={vm.error} /> : null;
+  // Red on the field only when what was typed is the problem; a channel that is
+  // down is on our side, so the field stays as it was.
+  const fieldInvalid = Boolean(vm.error) && !vm.channelFailure;
 
   return (
     <div className="sk-create">
@@ -102,7 +105,7 @@ export const CreateAccountView = observer(function CreateAccountView({ vm }: { v
 
           <div className="sk-signin__field">
             <label className="sk-signin__label" htmlFor="sk-create-contact">{t(copy.label)}</label>
-            <div className="sk-signin__input" data-invalid={Boolean(sendError)}>
+            <div className="sk-signin__input" data-invalid={fieldInvalid}>
               {whatsapp ? (
                 <span className="sk-signin__prefix">{t('launch.create.countryCode')}</span>
               ) : (
@@ -119,7 +122,7 @@ export const CreateAccountView = observer(function CreateAccountView({ vm }: { v
                 onChange={(event) => vm.setIdentifier(event.target.value)}
                 maxLength={254}
                 placeholder={whatsapp ? t('launch.create.phonePlaceholder') : copy.placeholder}
-                aria-invalid={Boolean(sendError)}
+                aria-invalid={fieldInvalid}
                 aria-describedby={sendError ? `${errorId} ${hintId}` : hintId}
               />
             </div>
@@ -128,7 +131,7 @@ export const CreateAccountView = observer(function CreateAccountView({ vm }: { v
 
           {sendError}
           {vm.optionsError && !vm.optionsLoaded ? <p className="sk-signin__hint" role="status">{t('authch.optionsError')}</p> : null}
-          {!deliverable ? (
+          {!deliverable && !vm.channelFailure ? (
             <p className="sk-signin__hint" role="status">
               {t('auth.notConfigured', { channel: t(whatsapp ? 'auth.channel.WHATSAPP' : 'auth.channel.EMAIL') })}
             </p>
