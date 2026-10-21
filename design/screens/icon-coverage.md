@@ -1,245 +1,258 @@
 # Icon coverage
 
-Screens built and passing: **0 / 239** · built with gaps: 0 · not started: 239
+Screens built and passing: **124 / 252** · built with gaps: 0 · not started: 128
 
 | Screen | Status | Missing |
 |---|---|---|
-| AbhaLink | not started | — |
-| AccountDetails | not started | — |
-| AccountReady | not started | — |
-| AdminAccounts | not started | — |
+| AbhaLink | pass | — |
+| AccountDetails | pass | — |
+| AccountReady | pass | — |
+| AdminAccounts | pass | — |
+| AdminBilling | pass | — |
+| AdminFlags | pass | — |
+| AdminIntake | pass | — |
+| AdminPartners | pass | — |
+| AdminSentinel | pass | — |
+| AdminTenants | pass | — |
+| AdminTokens | pass | — |
+| AdminVerification | pass | — |
+| Appointments | pass | — |
+| CampDay | pass | — |
+| CampusAdminConsole | pass | — |
+| CampusAdminTeam | pass | — |
+| CampusAnnouncements | pass | — |
+| CampusApply | pass | — |
+| CampusApprovals | pass | — |
+| CampusBlocks | pass | — |
+| CampusCamps | pass | — |
+| CampusCertificates | pass | — |
+| CampusMess | pass | — |
+| CampusOutbreak | pass | — |
+| CampusOverview | pass | — |
+| CampusReports | pass | — |
+| CampusRoster | pass | — |
+| CampusSanitary | pass | — |
+| CampusSettings | pass | — |
+| CampusVerify | pass | — |
+| CampusWater | pass | — |
+| CampusWellness | pass | — |
+| Cart | pass | — |
+| CatalogOps | pass | — |
+| Checkout | pass | — |
+| ClaimsAdjudication | pass | — |
+| ClaimsHub | pass | — |
+| ClinicianApply | pass | — |
+| ClinicianConsole | pass | — |
+| ClinicianEarnings | pass | — |
+| ClinicianInbox | pass | — |
+| ClinicianPatients | pass | — |
+| ClinicianSchedule | pass | — |
+| ClinicianToday | pass | — |
+| ConfirmDialogs | pass | — |
+| CreateAccount | pass | — |
+| DataExport | pass | — |
+| DigitalId | pass | — |
+| DoctorResults | pass | — |
+| Feedback | pass | — |
+| HelpCentre | pass | — |
+| HomeDiscover | pass | — |
+| HostelVisit | pass | — |
+| LabPackages | pass | — |
+| LabResults | pass | — |
+| Landing | pass | — |
+| LandingCampus | pass | — |
+| LeaveCampus | pass | — |
+| LoggedOut | pass | — |
+| Main | pass | — |
+| MoreHub | pass | — |
+| Movement | pass | — |
+| MyRequests | pass | — |
+| NoResults | pass | — |
+| NotificationSettings | pass | — |
+| Notifications | pass | — |
+| Onboarding1 | pass | — |
+| Onboarding2 | pass | — |
+| Onboarding3 | pass | — |
+| OrderHistory | pass | — |
+| OrderSuccess | pass | — |
+| OrderTracking | pass | — |
+| PartnerApply | pass | — |
+| PartnerStaff | pass | — |
+| Payment | pass | — |
+| PaymentResult | pass | — |
+| Permissions | pass | — |
+| PreventiveCare | pass | — |
+| ProductDetail | pass | — |
+| ProfileSetup | pass | — |
+| ResultCampBooked | pass | — |
+| ResultLabBooked | pass | — |
+| ResultRefund | pass | — |
+| ReturnRequest | pass | — |
+| SearchEntry | pass | — |
+| SearchLoading | pass | — |
+| SearchResults | pass | — |
+| SearchTyping | pass | — |
+| Sheets | pass | — |
+| ShopHome | pass | — |
+| SignOut | pass | — |
+| SplashPulse | pass | — |
+| SplashVault | pass | — |
+| StaffCampFast | pass | — |
+| StudentProfile | pass | — |
+| VendorCampIntake | pass | — |
+| VendorCatalogue | pass | — |
+| VendorConsole | pass | — |
+| VendorHome | pass | — |
+| VendorReorder | pass | — |
+| VendorReturns | pass | — |
+| VendorSettlement | pass | — |
+| WebAccount | pass | — |
+| WebCheckout | pass | — |
+| WebClinicianApply | pass | — |
+| WebConsult | pass | — |
+| WebDashboard | pass | — |
+| WebHome | pass | — |
+| WebLabList | pass | — |
+| WebLabTests | pass | — |
+| WebLoggedOut | pass | — |
+| WebNotifications | pass | — |
+| WebOrders | pass | — |
+| WebPartnerApply | pass | — |
+| WebPartnerships | pass | — |
+| WebProduct | pass | — |
+| WebPrograms | pass | — |
+| WebReorder | pass | — |
+| WebSearchResults | pass | — |
+| WebSecurity | pass | — |
+| WebShop | pass | — |
+| WebSignOut | pass | — |
+| WebWellness | pass | — |
+| YourCare | pass | — |
 | AdminApiKeys | not started | — |
-| AdminBilling | not started | — |
 | AdminBreakGlassLog | not started | — |
 | AdminCase | not started | — |
 | AdminCheckins | not started | — |
 | AdminConsentPolicy | not started | — |
-| AdminFlags | not started | — |
 | AdminHandover | not started | — |
-| AdminIntake | not started | — |
 | AdminKnowledge | not started | — |
 | AdminOps | not started | — |
-| AdminPartners | not started | — |
 | AdminPlansPricing | not started | — |
 | AdminPriceFix | not started | — |
 | AdminRuleL | not started | — |
-| AdminSentinel | not started | — |
 | AdminSignIn | not started | — |
 | AdminSurveillance | not started | — |
 | AdminTemplates | not started | — |
-| AdminTenants | not started | — |
-| AdminTokens | not started | — |
-| AdminVerification | not started | — |
 | AiGovernance | not started | — |
-| Appointments | not started | — |
 | AuditExplorer | not started | — |
 | AyushChat | not started | — |
 | AyushSheet | not started | — |
 | AyushWidget | not started | — |
-| CampDay | not started | — |
 | CampusAccessRequests | not started | — |
-| CampusAdminConsole | not started | — |
-| CampusAdminTeam | not started | — |
 | CampusAmbulance | not started | — |
-| CampusAnnouncements | not started | — |
-| CampusApply | not started | — |
-| CampusApprovals | not started | — |
-| CampusBlocks | not started | — |
 | CampusBreakGlass | not started | — |
-| CampusCamps | not started | — |
-| CampusCertificates | not started | — |
 | CampusCounsellor | not started | — |
 | CampusDischarge | not started | — |
 | CampusIncidents | not started | — |
 | CampusInsights | not started | — |
 | CampusIsolation | not started | — |
-| CampusMess | not started | — |
-| CampusOutbreak | not started | — |
-| CampusOverview | not started | — |
-| CampusReports | not started | — |
-| CampusRoster | not started | — |
-| CampusSanitary | not started | — |
-| CampusSettings | not started | — |
 | CampusSla | not started | — |
-| CampusVerify | not started | — |
-| CampusWater | not started | — |
-| CampusWellness | not started | — |
-| Cart | not started | — |
-| CatalogOps | not started | — |
 | CheckinReceipt | not started | — |
-| Checkout | not started | — |
-| ClaimsAdjudication | not started | — |
-| ClaimsHub | not started | — |
 | ClinicalReview | not started | — |
 | ClinicianAi | not started | — |
-| ClinicianApply | not started | — |
 | ClinicianAyush | not started | — |
 | ClinicianChronic | not started | — |
-| ClinicianConsole | not started | — |
 | ClinicianConsultRoom | not started | — |
-| ClinicianEarnings | not started | — |
-| ClinicianInbox | not started | — |
 | ClinicianLabOrder | not started | — |
-| ClinicianPatients | not started | — |
 | ClinicianReferral | not started | — |
 | ClinicianRenewals | not started | — |
-| ClinicianSchedule | not started | — |
-| ClinicianToday | not started | — |
-| ConfirmDialogs | not started | — |
 | ConsentInbox | not started | — |
 | ConsultSummary | not started | — |
-| CreateAccount | not started | — |
 | CrisisSupport | not started | — |
-| DataExport | not started | — |
 | DeleteAccount | not started | — |
 | Devices | not started | — |
-| DigitalId | not started | — |
 | DispenseRegister | not started | — |
-| DoctorResults | not started | — |
 | DpdpQueue | not started | — |
 | EmergencyCard | not started | — |
 | EncounterNote | not started | — |
 | FamilyCircle | not started | — |
-| Feedback | not started | — |
 | FlowMap | not started | — |
 | GuardianApprove | not started | — |
 | GuardianConsent | not started | — |
-| HelpCentre | not started | — |
-| HomeDiscover | not started | — |
-| HostelVisit | not started | — |
 | IceContacts | not started | — |
 | IconSystem | not started | — |
 | IllustrationLibrary | not started | — |
 | Integrations | not started | — |
 | LabColdChain | not started | — |
 | LabCollection | not started | — |
-| LabPackages | not started | — |
 | LabQueue | not started | — |
 | LabReporting | not started | — |
-| LabResults | not started | — |
-| Landing | not started | — |
-| LandingCampus | not started | — |
 | LandingClinician | not started | — |
-| LeaveCampus | not started | — |
 | Legal | not started | — |
-| LoggedOut | not started | — |
 | LostPhone | not started | — |
-| Main | not started | — |
 | Medications | not started | — |
-| MoreHub | not started | — |
 | MotionSystem | not started | — |
-| Movement | not started | — |
 | MyPass | not started | — |
 | MyReports | not started | — |
-| MyRequests | not started | — |
 | NavSheets | not started | — |
 | NewDevice | not started | — |
-| NoResults | not started | — |
-| NotificationSettings | not started | — |
 | NotificationTemplates | not started | — |
-| Notifications | not started | — |
-| Onboarding1 | not started | — |
-| Onboarding2 | not started | — |
-| Onboarding3 | not started | — |
 | OnboardingConsent | not started | — |
-| OrderHistory | not started | — |
-| OrderSuccess | not started | — |
-| OrderTracking | not started | — |
 | OtpVerify | not started | — |
-| PartnerApply | not started | — |
-| PartnerStaff | not started | — |
-| Payment | not started | — |
-| PaymentResult | not started | — |
-| Permissions | not started | — |
 | PlanBilling | not started | — |
 | Prescribe | not started | — |
 | PrescriptionUpload | not started | — |
-| PreventiveCare | not started | — |
-| ProductDetail | not started | — |
 | ProductList | not started | — |
-| ProfileSetup | not started | — |
 | RecordsVault | not started | — |
 | RefillRequest | not started | — |
 | ReportInsights | not started | — |
 | ReportReviews | not started | — |
-| ResultCampBooked | not started | — |
-| ResultLabBooked | not started | — |
-| ResultRefund | not started | — |
-| ReturnRequest | not started | — |
 | ScanVerify | not started | — |
-| SearchEntry | not started | — |
-| SearchLoading | not started | — |
-| SearchResults | not started | — |
-| SearchTyping | not started | — |
-| Sheets | not started | — |
-| ShopHome | not started | — |
 | SignIn | not started | — |
-| SignOut | not started | — |
 | SosBeacon | not started | — |
 | SosDebrief | not started | — |
-| SplashPulse | not started | — |
-| SplashVault | not started | — |
-| StaffCampFast | not started | — |
 | StaffCollect | not started | — |
 | StaffHandover | not started | — |
 | StateScreens | not started | — |
 | StatusMoments | not started | — |
-| StudentProfile | not started | — |
 | SuperAdminConsole | not started | — |
 | Teleconsult | not started | — |
-| VendorCampIntake | not started | — |
-| VendorCatalogue | not started | — |
-| VendorConsole | not started | — |
 | VendorHandover | not started | — |
-| VendorHome | not started | — |
 | VendorOrders | not started | — |
-| VendorReorder | not started | — |
-| VendorReturns | not started | — |
 | VendorRxReview | not started | — |
-| VendorSettlement | not started | — |
 | VendorSubstitution | not started | — |
 | VerifyGate | not started | — |
 | VerifyIdentity | not started | — |
 | VitalTrends | not started | — |
-| WebAccount | not started | — |
 | WebAyush | not started | — |
-| WebCheckout | not started | — |
-| WebClinicianApply | not started | — |
-| WebConsult | not started | — |
 | WebConsultSummary | not started | — |
-| WebDashboard | not started | — |
 | WebDeleteAccount | not started | — |
 | WebEmergencyCard | not started | — |
 | WebGuardianApprove | not started | — |
 | WebGuardianConsent | not started | — |
-| WebHome | not started | — |
-| WebLabList | not started | — |
-| WebLabTests | not started | — |
 | WebLeaveCampus | not started | — |
 | WebLegal | not started | — |
-| WebLoggedOut | not started | — |
 | WebLostPhone | not started | — |
 | WebMyLabTests | not started | — |
-| WebNotifications | not started | — |
-| WebOrders | not started | — |
-| WebPartnerApply | not started | — |
-| WebPartnerships | not started | — |
 | WebPass | not started | — |
 | WebPlans | not started | — |
-| WebProduct | not started | — |
-| WebPrograms | not started | — |
-| WebReorder | not started | — |
 | WebReportAssistant | not started | — |
 | WebReportInsights | not started | — |
 | WebRequests | not started | — |
 | WebScanVerify | not started | — |
-| WebSearchResults | not started | — |
-| WebSecurity | not started | — |
-| WebShop | not started | — |
 | WebSignIn | not started | — |
-| WebSignOut | not started | — |
 | WebVault | not started | — |
 | WebVerify | not started | — |
 | WebVerifyGate | not started | — |
-| WebWellness | not started | — |
-| YourCare | not started | — |
+| M2Home | not started | — |
+| M2Medicines | not started | — |
+| M2Product | not started | — |
+| M2Labs | not started | — |
+| M2Consults | not started | — |
+| M2Vaccines | not started | — |
+| M2Insurance | not started | — |
+| M2Orders | not started | — |
+| M2Insights | not started | — |
+| M2Trends | not started | — |
+| M2ReportUpload | not started | — |
+| M2AskAyush | not started | — |
+| M2Profile | not started | — |

@@ -6,8 +6,8 @@
 | Platform / frame | Phone · 390×1400 |
 | Tier | 1 |
 | Ticket(s) | SK-050, SK-057, SK-068 |
-| Picture | `design/screens/screenshots/09-mobile-2/M2Profile.jpg` |
-| Design source | `design/screens/source/09-mobile-2/M2Profile.html` |
+| Picture | `design/screens/screenshots/10-mobile-2/M2Profile.jpg` |
+| Design source | `design/screens/source/10-mobile-2/M2Profile.html` |
 
 ## Icons this screen must show (all of them)
 

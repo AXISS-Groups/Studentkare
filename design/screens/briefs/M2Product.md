@@ -6,8 +6,8 @@
 | Platform / frame | Phone · 390×1300 |
 | Tier | 1 |
 | Ticket(s) | SK-062 |
-| Picture | `design/screens/screenshots/09-mobile-2/M2Product.jpg` |
-| Design source | `design/screens/source/09-mobile-2/M2Product.html` |
+| Picture | `design/screens/screenshots/10-mobile-2/M2Product.jpg` |
+| Design source | `design/screens/source/10-mobile-2/M2Product.html` |
 
 ## Icons this screen must show (all of them)
 

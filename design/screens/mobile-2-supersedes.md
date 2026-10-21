@@ -1,10 +1,10 @@
 # Mobile 2.0 — what it replaces, its colours, and what has a backend
 
-Krishna (founder) approved the *StudentKare Mobile 2.0* canvas on **2026-10-21** as the new phone UI. It is kit page **9 · Mobile 2.0** (folder `09-mobile-2`): 13 phone boards, 390 px wide. It adds the 1mg-style store (medicines, medicine detail, labs, consults, vaccines, insurance, orders) and a new *My health* look (insights, trends, report upload, Ask Ayush about my records, profile).
+Krishna (founder) approved the *StudentKare Mobile 2.0* canvas on **2026-10-21** as the new phone UI. It is kit page **9 · Mobile 2.0** (folder `10-mobile-2`): 13 phone boards, 390 px wide. It adds the 1mg-style store (medicines, medicine detail, labs, consults, vaccines, insurance, orders) and a new *My health* look (insights, trends, report upload, Ask Ayush about my records, profile).
 
 The canvas notes say: every existing StudentKare feature stays (SOS, emergency card, check-in pass, campus clinic, camps, crisis support); sample data throughout; **prices are placeholders** (`₹[price]`, `[n]`, `[Name]`) until the catalogue fills them; *not copied from 1mg*: a health score, and product suggestions from lab results.
 
-Briefs: `briefs/M2*.md` · pictures: `screenshots/09-mobile-2/` · source: `source/09-mobile-2/` (the source files are copied unchanged and load `./support.js`; to click through one, serve it next to a copy of `source/support.js`).
+Briefs: `briefs/M2*.md` · pictures: `screenshots/10-mobile-2/` · source: `source/10-mobile-2/` (the source files are copied unchanged and load `./support.js`; to click through one, serve it next to a copy of `source/support.js`).
 
 ---
 

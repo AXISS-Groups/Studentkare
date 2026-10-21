@@ -13683,7 +13683,7 @@
  {
   "screen": "M2Home",
   "page": "9 \u00b7 Mobile 2.0 (approved 2026-10-21)",
-  "folder": "09-mobile-2",
+  "folder": "10-mobile-2",
   "title": "Mobile 2.0 \u2014 Home \u00b7 For You (service tabs, highlights, today, shop by concern)",
   "size": "390x1640",
   "platform": "Phone",
@@ -13765,7 +13765,7 @@
  {
   "screen": "M2Medicines",
   "page": "9 \u00b7 Mobile 2.0 (approved 2026-10-21)",
-  "folder": "09-mobile-2",
+  "folder": "10-mobile-2",
   "title": "Mobile 2.0 \u2014 Medicines (order with Rx, call/chat to order, generics, auto-refill)",
   "size": "390x1640",
   "platform": "Phone",
@@ -13828,7 +13828,7 @@
  {
   "screen": "M2Product",
   "page": "9 \u00b7 Mobile 2.0 (approved 2026-10-21)",
-  "folder": "09-mobile-2",
+  "folder": "10-mobile-2",
   "title": "Mobile 2.0 \u2014 Medicine detail \u00b7 generics",
   "size": "390x1300",
   "platform": "Phone",
@@ -13866,7 +13866,7 @@
  {
   "screen": "M2Labs",
   "page": "9 \u00b7 Mobile 2.0 (approved 2026-10-21)",
-  "folder": "09-mobile-2",
+  "folder": "10-mobile-2",
   "title": "Mobile 2.0 \u2014 Lab tests (packages by audience, doctor-ordered, collection)",
   "size": "390x1640",
   "platform": "Phone",
@@ -13922,7 +13922,7 @@
  {
   "screen": "M2Consults",
   "page": "9 \u00b7 Mobile 2.0 (approved 2026-10-21)",
-  "folder": "09-mobile-2",
+  "folder": "10-mobile-2",
   "title": "Mobile 2.0 \u2014 Doctor consults (concern chips, doctors, follow-up)",
   "size": "390x1640",
   "platform": "Phone",
@@ -13970,7 +13970,7 @@
  {
   "screen": "M2Vaccines",
   "page": "9 \u00b7 Mobile 2.0 (approved 2026-10-21)",
-  "folder": "09-mobile-2",
+  "folder": "10-mobile-2",
   "title": "Mobile 2.0 \u2014 Vaccines \u00b7 record and booking",
   "size": "390x1400",
   "platform": "Phone",
@@ -14013,7 +14013,7 @@
  {
   "screen": "M2Insurance",
   "page": "9 \u00b7 Mobile 2.0 (approved 2026-10-21)",
-  "folder": "09-mobile-2",
+  "folder": "10-mobile-2",
   "title": "Mobile 2.0 \u2014 Insurance \u00b7 policy and claims",
   "size": "390x1200",
   "platform": "Phone",
@@ -14056,7 +14056,7 @@
  {
   "screen": "M2Orders",
   "page": "9 \u00b7 Mobile 2.0 (approved 2026-10-21)",
-  "folder": "09-mobile-2",
+  "folder": "10-mobile-2",
   "title": "Mobile 2.0 \u2014 Orders \u00b7 live tracking and past",
   "size": "390x1100",
   "platform": "Phone",
@@ -14100,7 +14100,7 @@
  {
   "screen": "M2Insights",
   "page": "9 \u00b7 Mobile 2.0 (approved 2026-10-21)",
-  "folder": "09-mobile-2",
+  "folder": "10-mobile-2",
   "title": "Mobile 2.0 \u2014 My health \u00b7 Insights",
   "size": "390x1500",
   "platform": "Phone",
@@ -14143,7 +14143,7 @@
  {
   "screen": "M2Trends",
   "page": "9 \u00b7 Mobile 2.0 (approved 2026-10-21)",
-  "folder": "09-mobile-2",
+  "folder": "10-mobile-2",
   "title": "Mobile 2.0 \u2014 Trends \u00b7 each test over time",
   "size": "390x1300",
   "platform": "Phone",
@@ -14191,7 +14191,7 @@
  {
   "screen": "M2ReportUpload",
   "page": "9 \u00b7 Mobile 2.0 (approved 2026-10-21)",
-  "folder": "09-mobile-2",
+  "folder": "10-mobile-2",
   "title": "Mobile 2.0 \u2014 Upload a report from any lab",
   "size": "390x1250",
   "platform": "Phone",
@@ -14231,7 +14231,7 @@
  {
   "screen": "M2AskAyush",
   "page": "9 \u00b7 Mobile 2.0 (approved 2026-10-21)",
-  "folder": "09-mobile-2",
+  "folder": "10-mobile-2",
   "title": "Mobile 2.0 \u2014 Ask Ayush about my records",
   "size": "390x844",
   "platform": "Phone",
@@ -14267,7 +14267,7 @@
  {
   "screen": "M2Profile",
   "page": "9 \u00b7 Mobile 2.0 (approved 2026-10-21)",
-  "folder": "09-mobile-2",
+  "folder": "10-mobile-2",
   "title": "Mobile 2.0 \u2014 Profile \u00b7 documents \u00b7 family",
   "size": "390x1400",
   "platform": "Phone",

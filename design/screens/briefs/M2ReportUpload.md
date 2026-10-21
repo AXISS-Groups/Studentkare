@@ -6,8 +6,8 @@
 | Platform / frame | Phone · 390×1250 |
 | Tier | 1 |
 | Ticket(s) | SK-046, SK-047 |
-| Picture | `design/screens/screenshots/09-mobile-2/M2ReportUpload.jpg` |
-| Design source | `design/screens/source/09-mobile-2/M2ReportUpload.html` |
+| Picture | `design/screens/screenshots/10-mobile-2/M2ReportUpload.jpg` |
+| Design source | `design/screens/source/10-mobile-2/M2ReportUpload.html` |
 
 ## Icons this screen must show (all of them)
 

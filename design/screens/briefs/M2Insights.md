@@ -6,8 +6,8 @@
 | Platform / frame | Phone · 390×1500 |
 | Tier | 1 |
 | Ticket(s) | SK-047 |
-| Picture | `design/screens/screenshots/09-mobile-2/M2Insights.jpg` |
-| Design source | `design/screens/source/09-mobile-2/M2Insights.html` |
+| Picture | `design/screens/screenshots/10-mobile-2/M2Insights.jpg` |
+| Design source | `design/screens/source/10-mobile-2/M2Insights.html` |
 
 ## Icons this screen must show (all of them)
 

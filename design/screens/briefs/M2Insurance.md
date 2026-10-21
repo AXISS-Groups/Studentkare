@@ -6,8 +6,8 @@
 | Platform / frame | Phone · 390×1200 |
 | Tier | 2 |
 | Ticket(s) | SK-071 |
-| Picture | `design/screens/screenshots/09-mobile-2/M2Insurance.jpg` |
-| Design source | `design/screens/source/09-mobile-2/M2Insurance.html` |
+| Picture | `design/screens/screenshots/10-mobile-2/M2Insurance.jpg` |
+| Design source | `design/screens/source/10-mobile-2/M2Insurance.html` |
 
 ## Icons this screen must show (all of them)
 

@@ -6,8 +6,8 @@
 | Platform / frame | Phone · 390×844 |
 | Tier | 1 |
 | Ticket(s) | SK-048 |
-| Picture | `design/screens/screenshots/09-mobile-2/M2AskAyush.jpg` |
-| Design source | `design/screens/source/09-mobile-2/M2AskAyush.html` |
+| Picture | `design/screens/screenshots/10-mobile-2/M2AskAyush.jpg` |
+| Design source | `design/screens/source/10-mobile-2/M2AskAyush.html` |
 
 ## Icons this screen must show (all of them)
 
