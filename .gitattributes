@@ -4,3 +4,23 @@
 .env* text eol=lf
 *.yml text eol=lf
 *.yaml text eol=lf
+
+# Parallel ticket branches (docs/tickets/RULES.md, "Parallel branches").
+# merge=union keeps both sides' lines instead of reporting a conflict. It is set ONLY on files that
+# are pure one-entry-per-line lists (src/lib/__tests__/gitattributesUnion.test.ts holds them to
+# that): never JSON, never code with logic. After a merge, `npm run merge:resolve` re-sorts the
+# lists (src/lib/__tests__/registryLists.test.ts fails until it has). Union can bring back a line
+# one branch deleted next to a line the other added: check deletions after merging.
+#
+# Every web route: one quoted route per line.
+src/lib/utils/routes/routePaths.ts merge=union
+# Routes open without a session: one quoted route per line.
+src/lib/utils/routes/publicRoutes.ts merge=union
+# Who may open a route: one `'route': ROLES,` per line (a key changed on both sides becomes a
+# duplicate key, which tsc rejects, so a bad union cannot pass the checks).
+src/lib/utils/routes/routeRoles.ts merge=union
+# i18n area catalogues: one import and one spread per area (a removed area that comes back is an
+# import of a missing file, which tsc rejects).
+src/i18n/areasEn.ts merge=union
+src/i18n/areasHi.ts merge=union
+src/i18n/areasTe.ts merge=union
