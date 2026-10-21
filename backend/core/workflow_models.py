@@ -604,7 +604,7 @@ class MedicationPlan(Base):
 
 
 class MedicationDose(Base):
-    """A logged dose occurrence. Unique per plan so duplicate logs cannot double-count."""
+    """A logged dose occurrence, taken or skipped. Unique per plan so duplicate logs cannot double-count."""
     __tablename__ = "care_medication_doses"
     __table_args__ = (UniqueConstraint("plan_id", "dose_date", "dose_time"),)
     id: Mapped[str] = mapped_column(String, primary_key=True)
@@ -613,6 +613,8 @@ class MedicationDose(Base):
     dose_date: Mapped[str] = mapped_column(String(10))
     dose_time: Mapped[str] = mapped_column(String(8), default="")
     taken_at: Mapped[float] = mapped_column(Float, default=0.0)
+    # TAKEN or SKIPPED (the student said they skipped it). Only TAKEN counts as a dose taken.
+    outcome: Mapped[str] = mapped_column(String(8), default="TAKEN", server_default="TAKEN")
 
 
 class AvailabilitySlot(Base):

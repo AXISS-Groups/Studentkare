@@ -127,7 +127,10 @@ describe('M2Profile', () => {
 // ── M2Insights ───────────────────────────────────────────────────────────────
 
 function insightsLinks(): M2InsightsLinks {
-  return { sos: vi.fn(), trends: vi.fn(), records: vi.fn(), reportUpload: vi.fn(), refill: vi.fn(), collection: vi.fn(), addVaccineCard: vi.fn(), appointments: vi.fn() };
+  return {
+    sos: vi.fn(), trends: vi.fn(), records: vi.fn(), reportUpload: vi.fn(), medicines: vi.fn(), water: vi.fn(), refill: vi.fn(), collection: vi.fn(),
+    addVaccineCard: vi.fn(), appointments: vi.fn(),
+  };
 }
 
 const REVIEW: ReportReview = {
@@ -151,6 +154,9 @@ function insightsRoutes(over: Record<string, unknown> = {}) {
     '/preventive/report-reviews': { items: [REVIEW], total: 1 },
     '/refills/plans': { items: [{ id: 'p1', name: 'Cetirizine', dosage: '10 mg' }] },
     '/lab-orders': { items: [ORDER, { ...ORDER, id: 'self', orderedByDoctor: '' }, { ...ORDER, id: 'done', status: 'REPORT_RELEASED' }], total: 3 },
+    '/meds/today': { date: '2026-10-21', timezone: 'Asia/Kolkata', plans: [] },
+    '/wellness/water/today': { date: '2026-10-21', timezone: 'Asia/Kolkata', consumedMl: 0, goalMl: 2000, goalSource: 'DEFAULT', percent: 0, entries: [] },
+    '/wellness/water/goal': { goalMl: 2000, goalSource: 'DEFAULT', minMl: 500, maxMl: 6000 },
     ...over,
   };
 }

@@ -11230,6 +11230,62 @@
      }
     ]
    ]
+  },
+  {
+   "name": "skip-forward",
+   "kind": "line",
+   "file": "icons/line/skip-forward.svg",
+   "source": "kit",
+   "uses": 2,
+   "screens": [
+    "M2Insights",
+    "M2Reminders"
+   ],
+   "elements": [
+    [
+     "path",
+     {
+      "d": "M 5 5 v 14 l 10 -7 z"
+     }
+    ],
+    [
+     "path",
+     {
+      "d": "M 19 5 v 14"
+     }
+    ]
+   ]
+  },
+  {
+   "name": "bell-off",
+   "kind": "line",
+   "file": "icons/line/bell-off.svg",
+   "source": "kit",
+   "uses": 2,
+   "screens": [
+    "M2Reminders",
+    "M2Water"
+   ],
+   "elements": [
+    [
+     "path",
+     {
+      "d": "M 6 16 V 11 a 6 6 0 0 1 12 0 v 5 l 2 2 H 4 z"
+     }
+    ],
+    [
+     "path",
+     {
+      "d": "M 10 20 a 2 2 0 0 0 4 0"
+     }
+    ],
+    [
+     "path",
+     {
+      "d": "M 3 3 l 18 18"
+     }
+    ]
+   ]
   }
  ],
  "icons3d": [
@@ -20560,11 +20616,16 @@
     "ayush-spark",
     "bottle",
     "box",
+    "check",
     "chevron-right",
     "droplet",
+    "glass",
     "heart-3",
     "home",
+    "pill-3",
+    "plus",
     "refresh",
+    "skip-forward",
     "stetho",
     "thyroid",
     "user-5",

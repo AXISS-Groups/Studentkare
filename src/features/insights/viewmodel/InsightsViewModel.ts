@@ -164,5 +164,7 @@ export class InsightsViewModel implements ViewModel {
   reset(): void {
     this.dispose();
     this.values.reset();
+    this.meds.reset();
+    this.water.reset();
   }
 }

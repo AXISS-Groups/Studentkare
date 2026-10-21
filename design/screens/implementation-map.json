@@ -1885,7 +1885,8 @@
     ],
     "Medications": [
       "src/screens/workspace/MedicationPanel.tsx",
-      "src/native/MedicineRemindersScreen.tsx"
+      "src/native/M2ReminderScreens.tsx",
+      "src/features/reminders/views/M2RemindersView.tsx"
     ],
     "Devices": [
       "src/screens/workspace/DevicesAndSensorsScreen.tsx"

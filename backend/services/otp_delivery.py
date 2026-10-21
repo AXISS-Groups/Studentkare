@@ -276,13 +276,31 @@ def _deliver_email(to_email: str, subject: str, html_body: str, plain_body: str)
         return {"status": "failed", "reason": str(err)[:200]}
 
 
+def _whatsapp_otp_text(code: str) -> str:
+    """The sign-in code as one WhatsApp message: code, site link, then footer.
+
+    A linked Web session has no interactive buttons — WhatsApp Business API
+    templates are the only way to render a real one. The site link is the CTA
+    here: WhatsApp previews it as a tappable link in the same bubble.
+    """
+    from core.email_templates import branding_footer_text
+    from services.integration_config import app_domain
+
+    text = f"Your Studentkare verification code is {code}. It expires in 5 minutes. Do not share it."
+    lines = [text, "", f"Visit website: https://{app_domain()}"]
+    footer = branding_footer_text()
+    if footer:
+        lines.append(footer)
+    return "\n".join(lines)
+
+
 def dispatch_with_fallback(identifier: str, code: str, channel: str = "EMAIL", fallback_email: str | None = None) -> dict:
     """Send OTP on the requested channel; on WhatsApp failure auto-retry via email.
 
     Returns {"delivered", "channel", "fallback_sent", "fallback_channel",
     "fallback_masked", "reason"} — never raises.
     """
-    text = f"Your Studentkare verification code is {code}. It expires in 5 minutes. Do not share it."
+    text = _whatsapp_otp_text(code)
     out = {"delivered": False, "channel": channel, "fallback_sent": False,
            "fallback_channel": None, "fallback_masked": None, "reason": ""}
     if channel == "WHATSAPP":
@@ -326,7 +344,7 @@ def dispatch_otp(identifier: str, code: str, channel: str = "EMAIL", db=None) ->
         return {"delivered": False, "reason": f"channel-unavailable (available: {channels})", "channel": channel}
     if channel == "WHATSAPP":
         ow = _openwa()
-        text = f"Your Studentkare verification code is {code}. It expires in 5 minutes. Do not share it."
+        text = _whatsapp_otp_text(code)
         result = _send_openwa(normalize_chat_id(identifier, ow["cc"]), text)
         print(f"[OTP] WhatsApp result: {result.get('status')} {result.get('reason', '')}".rstrip(), flush=True)
         return {"delivered": result.get("status") == "sent",

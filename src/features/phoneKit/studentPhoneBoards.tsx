@@ -13,10 +13,12 @@ const M2InsightsRoute = lazy(() => import('@/features/insights/views/M2InsightsR
 const M2LabsRoute = lazy(() => import('@/features/m2store/views/M2LabsRoute').then((m) => ({ default: m.M2LabsRoute })));
 const M2OrdersRoute = lazy(() => import('@/features/m2store/views/M2OrdersRoute').then((m) => ({ default: m.M2OrdersRoute })));
 const M2ProfileRoute = lazy(() => import('@/features/m2profile/views/M2ProfileRoute').then((m) => ({ default: m.M2ProfileRoute })));
+const M2RemindersRoute = lazy(() => import('@/features/reminders/views/M2RemindersRoute').then((m) => ({ default: m.M2RemindersRoute })));
 const M2ReportUploadRoute = lazy(() => import('@/features/labResults/views/M2ReportUploadRoute').then((m) => ({ default: m.M2ReportUploadRoute })));
 const M2StepsRoute = lazy(() => import('@/features/steps/views/M2StepsRoute').then((m) => ({ default: m.M2StepsRoute })));
 const M2TrendsRoute = lazy(() => import('@/features/labResults/views/M2TrendsRoute').then((m) => ({ default: m.M2TrendsRoute })));
 const M2VaccinesRoute = lazy(() => import('@/features/preventive/views/M2VaccinesRoute').then((m) => ({ default: m.M2VaccinesRoute })));
+const M2WaterRoute = lazy(() => import('@/features/reminders/views/M2WaterRoute').then((m) => ({ default: m.M2WaterRoute })));
 const ReturnRequestRoute = lazy(() => import('@/features/requests/views/ReturnRequestView').then((m) => ({ default: m.ReturnRequestRoute })));
 const SearchRoute = lazy(() => import('@/features/discover/views/SearchRoute').then((m) => ({ default: m.SearchRoute })));
 const ShopPhoneRoute = lazy(() => import('@/features/shopPhone/views/ShopPhoneRoute').then((m) => ({ default: m.ShopPhoneRoute })));

@@ -45,6 +45,14 @@ export class Resource<T> {
     }
   }
 
+  /** Show what a write returned (the server's own copy of the resource), dropping any older read still on its way. */
+  set(data: T): void {
+    this.version += 1;
+    this.data = data;
+    this.phase = 'ready';
+    this.message = '';
+  }
+
   /** Forget any reply still on its way (the screen went away). */
   cancel(): void {
     this.version += 1;

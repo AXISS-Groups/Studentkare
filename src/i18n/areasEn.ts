@@ -17,6 +17,7 @@ import { identityEn } from './areas/identity';
 import { labbookEn } from './areas/labbook';
 import { landingEn } from './areas/landing';
 import { launchEn } from './areas/launch';
+import { m2remindersEn } from './areas/m2reminders';
 import { m2valuesEn } from './areas/m2values';
 import { memberEn } from './areas/member';
 import { mobile2En } from './areas/mobile2';
@@ -66,6 +67,7 @@ export const areasEn = {
   ...labbookEn,
   ...landingEn,
   ...launchEn,
+  ...m2remindersEn,
   ...m2valuesEn,
   ...memberEn,
   ...mobile2En,

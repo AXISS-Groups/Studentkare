@@ -3,7 +3,7 @@
 export type SkIconElement = readonly [tag: 'path' | 'circle' | 'rect' | 'line' | 'polyline' | 'polygon' | 'ellipse', attrs: Readonly<Record<string, string>>];
 export interface SkIconDef { readonly mode: 'line' | 'solid'; readonly els: readonly SkIconElement[] }
 
-/** 328 line/solid icons, 24 px grid, drawn with currentColor. */
+/** 330 line/solid icons, 24 px grid, drawn with currentColor. */
 export const skIcons = {
   "alert-triangle": { mode: "line", els: [["path",{"d":"M 12 3 l 10 18 H 2 z"}],["path",{"d":"M 12 10 v 4 M 12 17.5 v 0.5"}]] },
   "check": { mode: "line", els: [["path",{"d":"M 5 12.5 l 4.5 4.5 L 19 7"}]] },
@@ -333,6 +333,8 @@ export const skIcons = {
   "chart-line-axes": { mode: "line", els: [["path",{"d":"M 4 4 v 16 h 16"}],["path",{"d":"M 8 15 l 3 -4 l 3 2 l 5 -6"}]] },
   "trend-zigzag": { mode: "line", els: [["path",{"d":"M 3 17 l 6 -6 l 4 4 l 8 -8"}]] },
   "minus": { mode: "line", els: [["path",{"d":"M 5 12 h 14"}]] },
+  "skip-forward": { mode: "line", els: [["path",{"d":"M 5 5 v 14 l 10 -7 z"}],["path",{"d":"M 19 5 v 14"}]] },
+  "bell-off": { mode: "line", els: [["path",{"d":"M 6 16 V 11 a 6 6 0 0 1 12 0 v 5 l 2 2 H 4 z"}],["path",{"d":"M 10 20 a 2 2 0 0 0 4 0"}],["path",{"d":"M 3 3 l 18 18"}]] },
 } as const satisfies Record<string, SkIconDef>;
 export type SkIconName = keyof typeof skIcons;
 

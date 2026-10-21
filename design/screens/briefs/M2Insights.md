@@ -53,5 +53,6 @@ None. The drawings this board had with no manifest icon were drawn into the kit 
 
 - `thyroid` — thyroid gland — at: By body system: Thyroid
 - `ayush-spark` — eight-ray spark without a centre (Ask Ayush orb glyph in the pill nav) — at: pill nav Ask Ayush orb; "Ask Ayush about this report" card
+- `skip-forward` — play triangle against a bar (drawn 2026-10-21 for the reminders ticket) — at: Medicines today: Skip
 
 > Icons, glyphs and illustrations live in `design/icons/` and `design/illustrations/` — names match `design/icons/icon-manifest.json`. The boards draw icons as inline SVG; this list names the manifest icon for each drawing. Colours: see `design/screens/mobile-2-supersedes.md`. Verify with `node scripts/icons/check-icons.mjs --screen M2Insights`.

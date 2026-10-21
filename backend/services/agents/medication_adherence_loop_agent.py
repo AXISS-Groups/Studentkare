@@ -13,7 +13,7 @@ import uuid
 from datetime import date, datetime, timedelta, timezone
 from typing import List
 
-from sqlalchemy import func, select
+from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 
 from core import workflow_models as M
@@ -23,6 +23,9 @@ from services.wellness_messages import coded
 
 ADHERENCE_WINDOWS = (7, 30)
 SECONDS_PER_MINUTE = 60
+# A dose row's outcome (care_medication_doses.outcome). Only TAKEN is a dose taken.
+TAKEN = "TAKEN"
+SKIPPED = "SKIPPED"
 
 
 def dose_undo_seconds(db=None) -> int:
@@ -113,7 +116,8 @@ class MedicationAdherenceLoopAgent:
             # One query for today across every plan, rather than one per plan.
             taken_count = len(set(db.scalars(
                 select(M.MedicationDose.plan_id).where(
-                    M.MedicationDose.account_id == account_id, M.MedicationDose.dose_date == today.isoformat()
+                    M.MedicationDose.account_id == account_id, M.MedicationDose.dose_date == today.isoformat(),
+                    M.MedicationDose.outcome == TAKEN,
                 )
             ).all()))
         return {
@@ -129,7 +133,8 @@ class MedicationAdherenceLoopAgent:
         """Adherence over each window and the recent days with no dose logged.
 
         No streak and no score (AGENTS.md guardrail 4: no gamification of body
-        metrics): a streak rewards tapping "taken", not taking the dose.
+        metrics): a streak rewards tapping "taken", not taking the dose. A
+        skipped dose does not cover its day.
 
         One query for every dose, rather than one per plan per day.
         """
@@ -147,7 +152,8 @@ class MedicationAdherenceLoopAgent:
 
         dose_dates = set(
             db.scalars(
-                select(M.MedicationDose.dose_date).where(M.MedicationDose.account_id == account_id)
+                select(M.MedicationDose.dose_date).where(
+                    M.MedicationDose.account_id == account_id, M.MedicationDose.outcome == TAKEN)
             ).all()
         )
         earliest = min((plan.created_at or 0.0) for plan in plans)
@@ -167,14 +173,24 @@ class MedicationAdherenceLoopAgent:
         }
 
     def log_dose_taken(self, db, account_id: str, med_id: str) -> dict:
-        """Log a dose occurrence idempotently. Returns whether it was newly recorded.
+        """Log a dose taken, idempotently. Returns whether it was newly recorded."""
+        return self._log_dose(db, account_id, med_id, TAKEN)
 
-        A plan with a structured ``times_per_day`` takes up to that many doses
-        on the student's local day; one without takes one a day, as before.
-        A further log that day is not recorded and says so.
+    def skip_dose(self, db, account_id: str, med_id: str) -> dict:
+        """Record that the student skipped a dose. It fills a slot of the day but is never a dose taken."""
+        return self._log_dose(db, account_id, med_id, SKIPPED)
+
+    def _log_dose(self, db, account_id: str, med_id: str, outcome: str) -> dict:
+        """Log one dose occurrence (taken or skipped) idempotently.
+
+        A plan with a structured ``times_per_day`` has up to that many doses
+        on the student's local day; one without has one a day, as before.
+        Taken and skipped doses both fill the day's slots. A further log that
+        day is not recorded and says so.
         """
+        recorded = "DOSE_RECORDED" if outcome == TAKEN else "DOSE_SKIPPED"
         if db is None:
-            return {"status": "SUCCESS", "already_logged": False, **coded("DOSE_RECORDED")}
+            return {"status": "SUCCESS", "already_logged": False, **coded(recorded)}
         plan = db.scalar(
             select(M.MedicationPlan).where(M.MedicationPlan.id == med_id, M.MedicationPlan.account_id == account_id)
         )
@@ -184,28 +200,37 @@ class MedicationAdherenceLoopAgent:
         local = now.astimezone(student_time.student_zone(db, account_id))
         today = local.date().isoformat()
         limit = plan.times_per_day or 1
-        taken = db.scalar(select(func.count()).select_from(M.MedicationDose).where(
-            M.MedicationDose.plan_id == plan.id, M.MedicationDose.dose_date == today)) or 0
-        if taken >= limit:
+        outcomes = db.scalars(select(M.MedicationDose.outcome).where(
+            M.MedicationDose.plan_id == plan.id, M.MedicationDose.dose_date == today)).all()
+        taken = sum(1 for o in outcomes if o == TAKEN)
+        skipped = len(outcomes) - taken
+        if len(outcomes) >= limit:
             code = "DOSE_ALREADY_LOGGED_TODAY" if limit == 1 else "DOSES_ALL_LOGGED_TODAY"
-            return {"status": "SUCCESS", "already_logged": True, **coded(code), "dosesTaken": taken}
+            return {"status": "SUCCESS", "already_logged": True, **coded(code), "dosesTaken": taken,
+                    "dosesSkipped": skipped}
         dose_id = f"dose_{uuid.uuid4().hex[:12]}"
         taken_at = now.timestamp()
         db.add(M.MedicationDose(
             id=dose_id, plan_id=plan.id, account_id=account_id,
-            dose_date=today, dose_time=local.strftime("%H:%M:%S"), taken_at=taken_at,
+            dose_date=today, dose_time=local.strftime("%H:%M:%S"), taken_at=taken_at, outcome=outcome,
         ))
         try:
             db.commit()
         except IntegrityError:
             # The same plan logged twice within one second: one dose, not two.
             db.rollback()
-            return {"status": "SUCCESS", "already_logged": True, **coded("DOSE_ALREADY_LOGGED"), "dosesTaken": taken}
-        return {"status": "SUCCESS", "already_logged": False, **coded("DOSE_RECORDED"),
-                "doseId": dose_id, "undoUntil": _undo_until(taken_at, dose_undo_seconds(db)), "dosesTaken": taken + 1}
+            return {"status": "SUCCESS", "already_logged": True, **coded("DOSE_ALREADY_LOGGED"), "dosesTaken": taken,
+                    "dosesSkipped": skipped}
+        if outcome == TAKEN:
+            taken += 1
+        else:
+            skipped += 1
+        return {"status": "SUCCESS", "already_logged": False, **coded(recorded), "outcome": outcome,
+                "doseId": dose_id, "undoUntil": _undo_until(taken_at, dose_undo_seconds(db)),
+                "dosesTaken": taken, "dosesSkipped": skipped}
 
     def undo_dose(self, db, account_id: str, dose_id: str) -> str:
-        """Remove a dose logged by mistake. Returns OK, NOT_FOUND or TOO_LATE.
+        """Remove a dose (taken or skipped) logged by mistake. Returns OK, NOT_FOUND or TOO_LATE.
 
         Only the owner's own dose, and only within meds.dose_undo_minutes of logging
         it: after that the log is part of the record and stays.
@@ -223,9 +248,11 @@ class MedicationAdherenceLoopAgent:
         """Each active plan's doses for the student's local day.
 
         ``dosesPlanned`` is the structured ``timesPerDay`` or null: free-text
-        frequency is never turned into a count. ``nextSlot`` is the ordinal of
-        the next dose (2 = second dose of the day); no clock times are stored,
-        so none is offered.
+        frequency is never turned into a count. ``dosesTaken`` counts doses
+        taken only; ``dosesSkipped`` the ones the student skipped. ``nextSlot``
+        is the ordinal of the next dose (2 = second dose of the day), after
+        taken and skipped ones; no clock times are stored, so none is offered.
+        ``undo`` is the latest log of the day while it can still be taken back.
         """
         zone = student_time.student_zone(db, account_id)
         now = student_time.now_utc().timestamp()
@@ -242,16 +269,18 @@ class MedicationAdherenceLoopAgent:
         window = dose_undo_seconds(db)
         items = []
         for plan in plans:
-            taken = by_plan.get(plan.id, [])
+            logged = by_plan.get(plan.id, [])
+            taken = sum(1 for dose in logged if (dose.outcome or TAKEN) == TAKEN)
             planned = plan.times_per_day
-            last = taken[-1] if taken else None
+            last = logged[-1] if logged else None
             undo = None
             if last is not None and now - (last.taken_at or 0.0) <= window:
-                undo = {"doseId": last.id, "undoUntil": _undo_until(last.taken_at, window)}
+                undo = {"doseId": last.id, "undoUntil": _undo_until(last.taken_at, window),
+                        "outcome": last.outcome or TAKEN}
             items.append({
                 "planId": plan.id, "name": plan.name, "dosage": plan.dosage,
-                "dosesPlanned": planned, "dosesTaken": len(taken),
-                "nextSlot": len(taken) + 1 if planned is not None and len(taken) < planned else None,
+                "dosesPlanned": planned, "dosesTaken": taken, "dosesSkipped": len(logged) - taken,
+                "nextSlot": len(logged) + 1 if planned is not None and len(logged) < planned else None,
                 "undo": undo,
             })
         return {"date": today, "timezone": zone.key, "plans": items}

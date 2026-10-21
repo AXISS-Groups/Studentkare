@@ -25,6 +25,8 @@ export function M2InsightsRoute(): React.ReactElement {
       trends: () => navigate('health/trends'),
       records: () => navigate('records'),
       reportUpload: () => navigate('health/report-upload'),
+      medicines: () => navigate('health/medicines'),
+      water: () => navigate('health/water'),
       refill: () => navigate('refill-request'),
       // The order's own collection time is picked where the student's orders and prescriptions are.
       collection: () => navigate('prescriptions'),

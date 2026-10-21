@@ -1,18 +1,27 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 import { apiRequest } from '@/data/services/http';
+import { getSetting } from '@/data/services/config';
 import type { ViewModel } from '@/core/store/ViewModel';
 
 /** The times a student can pick. Fixed slots, so no free-form clock entry. */
 export const REMINDER_SLOTS = ['morning', 'afternoon', 'evening', 'night'] as const;
 export type ReminderSlot = (typeof REMINDER_SLOTS)[number];
-export const SLOT_TIME: Record<ReminderSlot, { hour: number; minute: number }> = {
-  morning: { hour: 8, minute: 0 },
-  afternoon: { hour: 14, minute: 0 },
-  evening: { hour: 20, minute: 0 },
-  night: { hour: 22, minute: 0 },
-};
 
-/** GET /api/meds/schedule → plans[]. */
+const MINUTES_PER_HOUR = 60;
+const SLOT_SETTING = {
+  morning: 'meds.reminder_minute_morning',
+  afternoon: 'meds.reminder_minute_afternoon',
+  evening: 'meds.reminder_minute_evening',
+  night: 'meds.reminder_minute_night',
+} as const satisfies Record<ReminderSlot, string>;
+
+/** A slot's clock time, from the settings registry (`meds.reminder_minute_*`, minutes after midnight). */
+export function slotTime(slot: ReminderSlot): { hour: number; minute: number } {
+  const minutes = getSetting(SLOT_SETTING[slot]);
+  return { hour: Math.floor(minutes / MINUTES_PER_HOUR), minute: minutes % MINUTES_PER_HOUR };
+}
+
+/** GET /api/meds/schedule: plans[]. */
 export interface MedicinePlan {
   id: string;
   name: string;
@@ -27,7 +36,7 @@ export type NotificationPermission = 'granted' | 'denied' | 'undetermined';
  * nothing is mirrored into app storage.
  */
 export interface ReminderScheduler {
-  /** planId → slot, for every reminder this app has scheduled. */
+  /** planId to slot, for every reminder this app has scheduled. */
   scheduled(): Promise<Record<string, ReminderSlot>>;
   permission(): Promise<NotificationPermission>;
   /** Shows the OS prompt. True only if the student allowed it. */
