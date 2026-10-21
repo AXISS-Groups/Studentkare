@@ -92,6 +92,7 @@ const WebAccountView = lazy(() => import('@/features/studentweb/views/WebAccount
 const WebNotificationsRoute = lazy(() => import('@/features/studentweb/views/WebNotificationsView').then(module => ({ default: module.WebNotificationsRoute })));
 const WebShopView = lazy(() => import('@/features/studentweb/views/shop/WebShopView').then(module => ({ default: module.WebShopView })));
 const WebCheckoutView = lazy(() => import('@/features/studentweb/views/shop/WebCheckoutView').then(module => ({ default: module.WebCheckoutView })));
+const WebCareView = lazy(() => import('@/features/studentweb/views/care/WebCareView').then(module => ({ default: module.WebCareView })));
 const StaffCampFastScreen = lazy(() => import('@/features/partner/staff/StaffCampFastScreen').then(module => ({ default: module.StaffCampFastScreen })));
 const StaffScanVerifyScreen = lazy(() => import('@/features/partner/staff/StaffScanVerifyScreen').then(module => ({ default: module.StaffScanVerifyScreen })));
 const StaffHandoverScreen = lazy(() => import('@/features/partner/staff/StaffHandoverScreen').then(module => ({ default: module.StaffHandoverScreen })));
@@ -292,6 +293,8 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
       case 'notification-settings': return <WebNotificationsRoute />;
       case 'shop': return <WebShopView />;
       case 'checkout': return <WebCheckoutView />;
+      // Mobile 2.0 Doctor consults above phone width (M2Consults keeps the phone frame).
+      case 'care': return <WebCareView />;
       case 'records': return <WebVaultView />;
       case 'ayush': return <WebAyushView />;
       case 'visit-summaries': return <WebConsultSummaryRoute />;

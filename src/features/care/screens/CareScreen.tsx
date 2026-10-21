@@ -1,34 +1,32 @@
 import React, { Suspense, lazy } from 'react';
 import { useRoutePath } from '@/core/navigation';
-import { LiveMarketplaceScreen } from '@/screens/marketplace/LiveMarketplaceScreen';
 import { asRoutePath } from '@/lib/utils/workflowRouting';
 import { useAuth } from '@/data/contexts/AuthContext';
 import { ScreenLoading } from '@/components/health/ScreenLoading';
-import { usePhoneFrame } from '@/design-system/navigation/usePhoneFrame';
 
-// Loaded only for a signed-in student, so the public shop does not carry the workspace.
+// Loaded only for a signed-in student, so the public pages do not carry the workspace.
 const WorkspaceScreen = lazy(() => import('@/screens/workspace/WorkspaceScreen').then((m) => ({ default: m.WorkspaceScreen })));
 // The Mobile 2.0 web shop in the public site's frame (visitors and other roles).
 const PublicShopPage = lazy(() => import('@/features/studentweb/views/shop/PublicShopPage').then((m) => ({ default: m.PublicShopPage })));
+// Mobile 2.0 Doctor consults in the public site's frame (visitors and other roles).
+const PublicCarePage = lazy(() => import('@/features/studentweb/views/care/PublicCarePage').then((m) => ({ default: m.PublicCarePage })));
 
 /**
- * /shop, /care and /checkout. A signed-in student gets the shop and checkout
- * inside the workspace: the phone boards at phone width, the student web shell
- * (the Mobile 2.0 web shop: WebShop, WebSearchResults, WebProduct,
- * WebCheckout) above it. At phone width /care is Mobile 2.0 Doctor consults
- * (M2Consults) in the phone frame. Everyone else gets the same Mobile 2.0 web
- * shop and checkout inside the public site's header and footer; /care above
- * phone width keeps the public marketplace.
+ * /shop, /care and /checkout. A signed-in student gets them inside the
+ * workspace: the phone boards at phone width (M2Consults for /care), the
+ * student web shell above it (the Mobile 2.0 web shop and WebCheckout; for
+ * /care, Doctor consults in the Mobile 2.0 web layout). Everyone else gets the
+ * same Mobile 2.0 pages inside the public site's header and footer, at any
+ * width.
  */
 export function CareScreen() {
   const route = asRoutePath(useRoutePath());
   const { user } = useAuth();
-  const phoneFrame = usePhoneFrame();
-  if (user?.role === 'STUDENT' && (route === 'shop' || route === 'checkout' || (route === 'care' && phoneFrame))) {
+  if (user?.role === 'STUDENT' && (route === 'shop' || route === 'checkout' || route === 'care')) {
     return <Suspense fallback={<ScreenLoading />}><WorkspaceScreen route={route} /></Suspense>;
   }
   if (route === 'shop' || route === 'checkout') {
     return <Suspense fallback={<ScreenLoading />}><PublicShopPage route={route} signedIn={Boolean(user)} /></Suspense>;
   }
-  return <LiveMarketplaceScreen care={route === 'care'} />;
+  return <Suspense fallback={<ScreenLoading />}><PublicCarePage signedIn={Boolean(user)} /></Suspense>;
 }
