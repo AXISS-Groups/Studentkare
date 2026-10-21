@@ -144,6 +144,24 @@ class Preference(Base):
     pinned_lab_tests: Mapped[list | None] = mapped_column(JSON, nullable=True)
 
 
+class ClinicalProfile(Base):
+    """A student's typed blood group and allergies (Rule L: clinical plane).
+
+    These used to sit in ``care_accounts.profile`` (identity plane), where any
+    code reading an account could see them. ``allergies`` is the student's own
+    free text. An empty list on its own means "not answered";
+    ``no_known_allergies`` is True only when the student said they have none,
+    so "none" and "not answered" are never confused (the prescribing cross-check
+    treats an empty list as nothing recorded). ``blood_group`` "" means not given.
+    """
+    __tablename__ = "care_clinical_profiles"
+    account_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"), primary_key=True)
+    blood_group: Mapped[str] = mapped_column(String(3), default="")
+    allergies: Mapped[list] = mapped_column(JSON, default=list)
+    no_known_allergies: Mapped[bool] = mapped_column(Boolean, default=False)
+    updated_at: Mapped[float] = mapped_column(Float, default=0)
+
+
 class WellnessGoal(Base):
     """What a student said they want from the app, asked once during setup.
 

@@ -28,7 +28,10 @@ def test_profile_persists_without_exposing_internal_metadata(harness):
     assert client.get("/api/auth/session").json()["user"]["fullName"] == "Updated Member"
     with factory() as db:
         row = db.get(M.Account, user["id"])
-        assert row.profile["allergies"] == ["Penicillin"]
+        # Clinical values live on the clinical plane, never in the identity row.
+        assert "allergies" not in row.profile and "bloodGroup" not in row.profile
+        clinical = db.get(M.ClinicalProfile, user["id"])
+        assert (clinical.blood_group, clinical.allergies) == ("O+", ["Penicillin"])
         row.profile = {**row.profile, "recovery_email": "private@example.test", "digitalIdSecret": "secret"}
         db.commit()
     payload = client.get("/api/profile").json()

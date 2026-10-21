@@ -26,7 +26,7 @@ from sqlalchemy import func, select, update
 from sqlalchemy.orm import Session
 
 from core import workflow_models as M
-from services import activity_telemetry, agent_ayush, ops_feed, payments, upload_files, vector_store
+from services import activity_telemetry, agent_ayush, clinical_profile, ops_feed, payments, upload_files, vector_store
 from services import clinical_fulfilment as F
 from services.workflow_auth import (
     authenticated_user,
@@ -501,7 +501,7 @@ def issue_prescription(body: PrescriptionInput, user=Depends(require_staff), db:
         if not note or note.account_id != user["id"] or note.patient_id != body.patientId:
             raise HTTPException(422, "Link the prescription to one of your own notes for this patient, or to none.")
 
-    allergies = list((patient.profile or {}).get("allergies", []) or [])
+    allergies = clinical_profile.allergies(db, patient.id)
     conflicts = []
     for item in body.items:
         result = F.cross_check_allergies(item.genericName, allergies, item.substanceCode)

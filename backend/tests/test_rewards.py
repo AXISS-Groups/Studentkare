@@ -549,8 +549,10 @@ def test_medals_come_from_presence_never_values(harness):
         db.add(M.HealthCamp(id="c1", name="Camp", date="2026-10-20"))
         db.add(M.CampAttendance(id="a1", camp_id="c1", account_id=account_id, checked_in=True, created_at=time.time()))
         account = db.get(M.Account, account_id)
-        account.profile = {**account.profile, "bloodGroup": "O+", "emergencyContactName": "Parent",
+        account.profile = {**account.profile, "emergencyContactName": "Parent",
                            "emergencyContactPhone": "+919876543210"}
+        # Blood group is on the clinical plane; the medal still only checks it is there.
+        db.add(M.ClinicalProfile(account_id=account_id, blood_group="O+", allergies=[]))
         db.commit()
     medals = medal_map(client, headers)
     assert medals["FIRST_HEALTH_CAMP"] and medals["EMERGENCY_CARD_COMPLETE"]

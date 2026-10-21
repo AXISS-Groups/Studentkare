@@ -29,6 +29,7 @@ from core import workflow_models as M
 from core.rule_l import COMMERCE_ROLE, commerce_role_usable, rule_l_status
 from core.settings_registry import setting
 from services import (
+    clinical_profile,
     lab_results,
     livekit_media,
     medicine_master,
@@ -332,7 +333,8 @@ def export_records(user=Depends(authenticated_user), db: Session = Depends(workf
     readings = db.scalars(select(M.Reading).where(M.Reading.account_id == user["id"]).order_by(M.Reading.recorded_at)).all()
     policies = db.scalars(select(M.Policy).where(M.Policy.account_id == user["id"])).all()
     return {
-        "user": dict(user.items()),
+        # The account's identity plus its own blood group and allergies (clinical plane).
+        "user": {**dict(user.items()), **clinical_profile.read(db, user["id"])},
         "documents": [{"id": d.id, "title": d.title, "category": d.category, "filename": d.filename,
                        "mimeType": d.mime_type, "createdAt": d.created_at, "downloadUrl": f"/api/health/documents/{d.id}/file"} for d in docs],
         "readings": [{"id": r.id, "metric": r.metric, "value": r.value, "recordedAt": r.recorded_at, "source": r.source} for r in readings],

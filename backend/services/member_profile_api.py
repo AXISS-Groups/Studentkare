@@ -8,14 +8,14 @@ from typing import Annotated, Literal
 
 import qrcode
 from fastapi import APIRouter, Depends, HTTPException, Response
-from pydantic import Field, field_validator, model_validator
+from pydantic import Field, StrictBool, field_validator, model_validator
 from qrcode.image.svg import SvgPathImage
 from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from core import workflow_models as M
-from services import check_in_pass
+from services import check_in_pass, clinical_profile
 from services.workflow_auth import (
     StrictModel,
     account_payload,
@@ -43,6 +43,9 @@ class ProfileUpdate(StrictModel):
     emergencyContactPhone: str | None = Field(default=None, max_length=32)
     emergencyContactRelation: str | None = Field(default=None, max_length=60)
     allergies: list[MedicalItem] | None = Field(default=None, max_length=30)
+    # True only when the student says they have no known allergies. An empty
+    # allergies list without it means "not answered" (services/clinical_profile.py).
+    noKnownAllergies: StrictBool | None = None
     chronicConditions: list[MedicalItem] | None = Field(default=None, max_length=30)
 
     @field_validator("*", mode="before")
@@ -75,6 +78,8 @@ class ProfileUpdate(StrictModel):
     def reject_nulls(self) -> "ProfileUpdate":
         if any(getattr(self, key) is None for key in self.model_fields_set):
             raise ValueError("Use an empty string or list to clear optional details, not null.")
+        if self.noKnownAllergies and self.allergies:
+            raise ValueError("Either list allergies or say there are none, not both.")
         return self
 
 
@@ -93,19 +98,23 @@ def record_audit(db: Session, user: dict, action: str, subject: str) -> None:
                            resource_id=subject, created_at=time.time()))
 
 
-def profile_payload(account: M.Account) -> dict:
+def profile_payload(db: Session, account: M.Account) -> dict:
+    """The owner's profile. bloodGroup, allergies and noKnownAllergies come from the
+    clinical plane (services/clinical_profile.py); the shape the apps read is unchanged."""
     stored = account.profile or {}
     return {**account_payload(account),
             **{key: stored.get(key, "") for key in ("hostelBlock", "room", "emergencyContactName",
                                                     "emergencyContactPhone", "emergencyContactRelation")},
-            "allergies": stored.get("allergies", []), "chronicConditions": stored.get("chronicConditions", []),
+            **clinical_profile.read(db, account.id),
+            "chronicConditions": stored.get("chronicConditions", []),
             "updatedAt": stored.get("profileUpdatedAt")}
 
 
 @router.get("/profile")
 def get_profile(response: Response, user: dict = Depends(authenticated_user), db: Session = Depends(workflow_db)) -> dict:
     response.headers["Cache-Control"] = "no-store"
-    return profile_payload(owned_account(db, user))
+    account = owned_account(db, user)
+    return profile_payload(db, account)
 
 
 @router.patch("/profile")
@@ -115,6 +124,7 @@ def update_profile(body: ProfileUpdate, response: Response, user: dict = Depends
     account = owned_account(db, user, lock=True)
     stored = dict(account.profile or {})
     changes = body.model_dump(mode="json", exclude_unset=True)
+    clinical_profile.write(db, account.id, clinical_profile.pop_changes(changes))
     identity_changed = any(value != (account.full_name if key == "fullName" else stored.get(key, ""))
                            for key, value in changes.items() if key in {"fullName", "dob", "university", "rollNumber"})
     if "fullName" in changes:
@@ -135,7 +145,7 @@ def update_profile(body: ProfileUpdate, response: Response, user: dict = Depends
     account.profile = stored
     record_audit(db, user, "PROFILE_UPDATED", account.id)
     db.commit()
-    return profile_payload(account)
+    return profile_payload(db, account)
 
 
 APPEARANCE_SAVE_CONFLICT = "APPEARANCE_SAVE_CONFLICT"
