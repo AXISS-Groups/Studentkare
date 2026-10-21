@@ -28,6 +28,7 @@ import { ErasureQueueView } from '../../../features/admin/views/ErasureQueueView
 import { INTEGRATION_ROUTES, IntegrationsView } from '../../../features/admin/views/IntegrationsView';
 import { RuleLView } from '../../../features/admin/views/RuleLView';
 import { TeamAccountsView } from '../../../features/team-accounts/TeamAccountsView';
+import { AdminCareDirectoryScreen } from '../../../features/careDirectory/admin/CareDirectoryAdminView';
 import { CheckinsView, ConsentPolicyView, HandoverView, SurveillanceView } from '../../../features/admin/views/GovernanceBoards';
 import { useT } from '../../../i18n';
 import { AdminPage, LegacyPanel } from './AdminPage';
@@ -63,6 +64,7 @@ export function superAdminScreen(route: RoutePath): ReactElement | null {
   if (PARTNER_ROUTES.includes(route)) return <PartnersView route={route} />;
   if (INTEGRATION_ROUTES.includes(route)) return <IntegrationsView route={route} />;
   if (route === 'admin/api-keys') return <ApiKeysView />;
+  if (route === 'admin/care-directory') return <AdminCareDirectoryScreen />;
   if (route === 'admin/audit') return <AuditExplorerView />;
   if (route === 'admin/surveillance') return <SurveillanceView />;
   if (route === 'admin/tokens') return <TokensView />;

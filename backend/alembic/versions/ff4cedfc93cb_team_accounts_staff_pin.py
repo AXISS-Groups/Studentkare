@@ -10,7 +10,7 @@
 Founder decision 2026-10-22; replaced later by individual logins.
 
 Revision ID: ff4cedfc93cb
-Revises: e4b8d2f6a913
+Revises: c8f2d5a1e9b3
 Create Date: 2026-10-22
 """
 import sqlalchemy as sa
@@ -18,7 +18,7 @@ import sqlalchemy as sa
 from alembic import op
 
 revision = "ff4cedfc93cb"
-down_revision = "e4b8d2f6a913"
+down_revision = "c8f2d5a1e9b3"
 branch_labels = None
 depends_on = None
 

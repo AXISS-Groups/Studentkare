@@ -9,7 +9,7 @@ import type { SkIconName } from '../icons';
  * an unrelated page.
  */
 
-export type PublicNavId = 'discover' | 'wellness' | 'training' | 'labTests' | 'findDoctor' | 'programmes' | 'plans';
+export type PublicNavId = 'discover' | 'wellness' | 'training' | 'labTests' | 'findDoctor' | 'findCare' | 'programmes' | 'plans';
 
 export interface PublicLink {
   label: MessageKey;
@@ -22,6 +22,7 @@ export const PUBLIC_NAV: ReadonlyArray<PublicLink & { id: PublicNavId }> = [
   { id: 'training', label: 'landing.home.nav.training', href: '/wellness' },
   { id: 'labTests', label: 'landing.home.nav.labTests', href: '/lab-tests' },
   { id: 'findDoctor', label: 'landing.home.nav.findDoctor', href: '/consult' },
+  { id: 'findCare', label: 'fc.nav.findCare', href: '/find-care' },
   { id: 'programmes', label: 'landing.home.nav.programmes', href: '/programs' },
   { id: 'plans', label: 'landing.home.nav.plans', href: '/plans' },
 ];
@@ -81,6 +82,7 @@ export const FOOTER_COLUMNS: readonly FooterColumn[] = [
     links: [
       { label: 'landing.site.footer.labTest', href: '/lab-tests' },
       { label: 'landing.site.footer.consult', href: '/consult' },
+      { label: 'fc.nav.findCare', href: '/find-care' },
       { label: 'landing.site.footer.programmes', href: '/programs' },
       { label: 'landing.site.footer.plans', href: '/plans' },
       { label: 'landing.site.footer.vault', href: '/records' },

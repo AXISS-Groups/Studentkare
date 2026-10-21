@@ -8,6 +8,7 @@ import { campusBoardsTe } from './areas/campusBoards';
 import { campusConsoleTe } from './areas/campusConsole';
 import { campusSafetyTe } from './areas/campusSafety';
 import { campusTe } from './areas/campus';
+import { careDirectoryTe } from './areas/careDirectory';
 import { careTe } from './areas/care';
 import { clinicianTe } from './areas/clinician';
 import { clinicianWorkTe } from './areas/clinicianWork';
@@ -34,6 +35,7 @@ import { phonestoreTe } from './areas/phonestore';
 import { rewardsTe } from './areas/rewards';
 import { safetyTe } from './areas/safety';
 import { shopwebTe } from './areas/shopweb';
+import { stepsTe } from './areas/steps';
 import { studentshellTe } from './areas/studentshell';
 import { studentwebT1Te } from './areas/studentwebT1';
 import { studentwebTe } from './areas/studentweb';
@@ -58,6 +60,7 @@ export const areasTe = {
   ...campusConsoleTe,
   ...campusSafetyTe,
   ...campusTe,
+  ...careDirectoryTe,
   ...careTe,
   ...clinicianTe,
   ...clinicianWorkTe,
@@ -84,6 +87,7 @@ export const areasTe = {
   ...rewardsTe,
   ...safetyTe,
   ...shopwebTe,
+  ...stepsTe,
   ...studentshellTe,
   ...studentwebT1Te,
   ...studentwebTe,

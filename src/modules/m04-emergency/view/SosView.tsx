@@ -37,6 +37,8 @@ export interface SosLinks {
   home?: () => void;
   /** Expo stack back; on the web the header's back is the browser's. */
   back?: () => void;
+  /** "Nearest hospitals": Find care on the Hospitals tab (plan tier1-care-directory-2026-10-21 §3). Never on an active alert. */
+  nearestHospitals?: () => void;
 }
 
 const kindKey = (kind: SosRecipientKind) => `sos.kind.${kind}` as MessageKey;
@@ -71,6 +73,12 @@ function useNow(on: boolean): number {
     return () => clearInterval(timer);
   }, [on]);
   return now;
+}
+
+function NearestHospitals({ onPress }: { onPress?: () => void }) {
+  const t = useT();
+  if (!onPress) return null;
+  return <Button testID="sos-find-care" label={t('fc.nearestHospitals')} accessibilityLabel={t('fc.nearestHospitalsSpoken')} variant="secondary" fullWidth onPress={onPress} />;
 }
 
 function Call112({ testID = 'sos-call-112' }: { testID?: string }) {
@@ -224,6 +232,7 @@ export const SosView = observer(function SosView({ signedIn, links }: { signedIn
         {links.crisis ? <Button testID="sos-crisis" label={t('sf.sos.notOkay')} variant="dangerOutline" size="cta" fullWidth onPress={links.crisis} /> : null}
         <Button label={t('crisis.callTeleManas')} accessibilityLabel={t('crisis.callTeleManasSpoken')} variant="secondary" fullWidth onPress={() => void Linking.openURL('tel:14416')} />
         <Call112 />
+        <NearestHospitals onPress={links.nearestHospitals} />
         {links.home ? <Button label={t('sf.sos.backHome')} size="cta" fullWidth onPress={links.home} /> : null}
         <Button label={t('sos.newSos')} variant="ghost" onPress={actions.triggerSos} />
       </ScrollView>
@@ -246,6 +255,7 @@ export const SosView = observer(function SosView({ signedIn, links }: { signedIn
             <Text style={styles.body}>{t('sos.signInBody')}</Text>
             {links.signIn ? <Button label={t('sos.signIn')} variant="secondary" fullWidth onPress={links.signIn} /> : null}
           </Card>
+          <NearestHospitals onPress={links.nearestHospitals} />
         </>
       ) : null}
 
@@ -264,6 +274,7 @@ export const SosView = observer(function SosView({ signedIn, links }: { signedIn
             />
             <Button testID="sos-send" label={t('sos.send')} variant="danger" size="cta" fullWidth onPress={actions.triggerSos} />
           </Card>
+          <NearestHospitals onPress={links.nearestHospitals} />
         </>
       ) : null}
 

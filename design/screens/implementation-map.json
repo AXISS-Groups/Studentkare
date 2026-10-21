@@ -1786,6 +1786,9 @@
       "src/native/StudentTabBar.tsx",
       "src/features/phoneKit/studentPhoneBoards.tsx",
       "src/native/M2HealthScreens.tsx",
+      "src/features/steps/views/StepsCard.tsx",
+      "src/features/steps/data/stepsApi.ts",
+      "src/design-system/m2/GradientHeroCard.tsx",
       "src/features/reminders/views/TodayCards.tsx",
       "src/features/reminders/views/ReminderParts.tsx",
       "src/features/reminders/views/useUndoClock.ts",
@@ -1893,7 +1896,71 @@
     ],
     "VitalTrends": [],
     "WebReportInsights": [],
-    "WebReportAssistant": []
+    "WebReportAssistant": [],
+    "M2FindCare": [
+      "src/features/careDirectory/views/CareDirectoryView.tsx",
+      "src/features/careDirectory/views/CareDirectoryRoute.tsx",
+      "src/features/careDirectory/views/careDirectoryParts.tsx",
+      "src/features/careDirectory/viewmodel/CareDirectoryViewModel.ts",
+      "src/features/careDirectory/model/types.ts",
+      "src/features/careDirectory/model/geo.ts",
+      "src/features/careDirectory/model/location.ts",
+      "src/native/CareDirectoryScreens.tsx",
+      "src/native/deviceLocation.ts",
+      "src/features/phoneKit/studentPhoneBoards.tsx",
+      "src/screens/workspace/StudentPhoneFrame.tsx",
+      "src/design-system/m2/M2Parts.tsx"
+    ],
+    "M2FacilityDetail": [
+      "src/features/careDirectory/views/FacilityDetailView.tsx",
+      "src/features/careDirectory/views/careDirectoryParts.tsx",
+      "src/features/careDirectory/viewmodel/CareDirectoryViewModel.ts",
+      "src/features/careDirectory/model/types.ts",
+      "src/features/careDirectory/model/geo.ts",
+      "src/features/careDirectory/model/location.ts"
+    ],
+    "WebFindCare": [
+      "src/features/careDirectory/views/PublicFindCarePage.tsx",
+      "src/features/careDirectory/screens/FindCareScreen.tsx",
+      "src/features/careDirectory/views/findCare.css",
+      "src/features/careDirectory/views/CareDirectoryView.tsx",
+      "src/features/careDirectory/views/FacilityDetailView.tsx",
+      "src/features/careDirectory/views/CareDirectoryRoute.tsx",
+      "src/features/careDirectory/views/careDirectoryParts.tsx",
+      "src/features/careDirectory/viewmodel/CareDirectoryViewModel.ts",
+      "src/features/careDirectory/model/types.ts",
+      "src/features/careDirectory/model/geo.ts",
+      "src/features/careDirectory/model/location.ts",
+      "src/design-system/public-site/publicSiteNav.ts"
+    ],
+    "AdminCareDirectory": [
+      "src/features/careDirectory/admin/CareDirectoryAdminView.tsx",
+      "src/features/careDirectory/viewmodel/CareDirectoryAdminViewModel.ts",
+      "src/features/campus/console/campusPages.tsx",
+      "src/design-system/campus-shell/campusNav.ts",
+      "src/screens/workspace/admin/SuperAdminScreens.tsx",
+      "src/screens/workspace/admin/superAdminNavigation.ts"
+    ],
+    "M2Steps": [
+      "src/features/steps/views/M2StepsView.tsx",
+      "src/features/steps/views/M2StepsRoute.tsx",
+      "src/features/steps/viewmodel/StepsViewModel.ts",
+      "src/features/steps/data/stepsApi.ts",
+      "src/features/steps/model/stepSources.ts",
+      "src/features/steps/sources/connectors.ts",
+      "src/features/steps/sources/healthSources.ts",
+      "src/native/stepConnectors.ts",
+      "src/native/healthSync.ts",
+      "src/native/M2HealthScreens.tsx",
+      "src/features/phoneKit/studentPhoneBoards.tsx",
+      "src/design-system/m2/PillNav.tsx",
+      "src/design-system/m2/M2Parts.tsx",
+      "src/design-system/m2/Gradient.tsx",
+      "src/design-system/m2/servicePalette.ts",
+      "src/design-system/m2/m2Motion.ts",
+      "src/screens/workspace/StudentPhoneFrame.tsx",
+      "src/native/StudentTabBar.tsx"
+    ]
   },
   "inProgress": {
     "Teleconsult": [

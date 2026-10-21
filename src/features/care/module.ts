@@ -8,6 +8,8 @@ export const careModule: FeatureModule = {
   routes: [
     { path: '/shop', public: true, load: () => import('./screens/CareScreen').then((m) => ({ default: m.CareScreen })) },
     { path: '/care', public: true, load: () => import('./screens/CareScreen').then((m) => ({ default: m.CareScreen })) },
+    // Find care near you: public (no location stored); a signed-in student gets it in the workspace.
+    { path: '/find-care', public: true, load: () => import('@/features/careDirectory/screens/FindCareScreen').then((m) => ({ default: m.FindCareScreen })) },
     { path: '/checkout', load: () => import('./screens/CareScreen').then((m) => ({ default: m.CareScreen })) },
     { path: '/lifeshare', public: true, load: () => import('@/screens/emergency/LifeShareExchangeScreen').then((m) => ({ default: m.LifeShareExchangeScreen })) },
     { path: '/medical-incident', public: true, load: () => import('@/screens/medical/MedicalIncidentScreen').then((m) => ({ default: m.MedicalIncidentScreen })) },

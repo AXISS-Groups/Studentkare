@@ -51,6 +51,8 @@ export const SUPER_ADMIN_NAVIGATION: SuperAdminNavGroup[] = [
       { label: 'Clinician verification', labelKey: 'console.admin.nav.verification', icon: 'shield', route: 'admin/verification' },
       { label: 'Partner applications', labelKey: 'console.admin.nav.partners', icon: 'hand-pointer', route: 'admin/partners', activeFor: ['admin/preventive'] },
       { label: 'Catalogue ops', labelKey: 'console.admin.nav.catalog', icon: 'box', route: 'admin/catalog' },
+      // Not on the design canvas: the Find care directory's curated listings and partner verification.
+      { label: 'Care directory', labelKey: 'console.admin.nav.careDirectory', icon: 'hospital', route: 'admin/care-directory' },
       // Not on the design canvas: added for held lab reports with no reviewer.
       { label: 'Lab report reviewers', labelKey: 'console.admin.nav.labReviews', icon: 'flask', route: 'admin/lab-reviews' },
     ],

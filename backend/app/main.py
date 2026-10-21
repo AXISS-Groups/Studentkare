@@ -67,6 +67,7 @@ from services.alerts import router as alerts_router
 from services.apilayer import router as apilayer_router
 from services.billing import router as billing_router
 from services.campus_departure import router as campus_departure_router
+from services.care_directory import router as care_directory_router
 from services.clinical_api import router as clinical_router
 from services.db_sql import SessionLocal, create_all_tables, is_persistent
 from services.emergency_api import router as emergency_router
@@ -331,6 +332,7 @@ app.include_router(integrations_router)
 app.include_router(billing_router)
 app.include_router(campus_departure_router)
 app.include_router(emergency_router)
+app.include_router(care_directory_router)
 app.include_router(erasure_router)
 app.include_router(student_requests_router)
 app.include_router(clinical_router)

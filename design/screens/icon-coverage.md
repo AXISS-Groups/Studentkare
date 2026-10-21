@@ -1,6 +1,6 @@
 # Icon coverage
 
-Screens built and passing: **221 / 250** · built with gaps: 0 · not started: 29 · superseded: 2
+Screens built and passing: **228 / 257** · built with gaps: 0 · not started: 29 · superseded: 2
 
 | Screen | Status | Missing |
 |---|---|---|
@@ -225,6 +225,13 @@ Screens built and passing: **221 / 250** · built with gaps: 0 · not started: 2
 | M2ReportUpload | pass | — |
 | M2AskAyush | pass | — |
 | M2Profile | pass | — |
+| M2FindCare | pass | — |
+| M2FacilityDetail | pass | — |
+| WebFindCare | pass | — |
+| AdminCareDirectory | pass | — |
+| M2Reminders | pass | — |
+| M2Water | pass | — |
+| M2Steps | pass | — |
 | AyushChat | not started | — |
 | AyushSheet | not started | — |
 | CheckinReceipt | not started | — |

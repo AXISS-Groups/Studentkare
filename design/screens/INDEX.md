@@ -1,6 +1,6 @@
 # Student Kare — every screen
 
-254 screens on 10 canvas pages (M2Reminders and M2Water have no board: designed in code in the Mobile 2.0 language). Each row links to a brief that lists every icon, picture, link and state the screen needs.
+259 screens: 252 on 10 canvas pages, plus 7 new screens with no board yet (M2Reminders, M2Water and M2Steps; the 4 Find care screens), designed in code in the Mobile 2.0 language. Each row links to a brief that lists every icon, picture, link and state the screen needs.
 
 | # | Screen | What it is | Platform | Tier | Tickets | Icons | 3D | Glyphs | Pictures |
 |---|---|---|---|---|---|---|---|---|---|
@@ -268,3 +268,9 @@
 | 252 | [M2Profile](briefs/M2Profile.md) | Profile · documents · family | Phone 390x1400 | 1 | SK-050, SK-057, SK-068 | 16 | 0 | 0 | 0 |
 | 253 | [M2Reminders](briefs/M2Reminders.md) | Medicines today and reminders (no board; designed in code) | Phone 390x1400 | 1 | reminders-m2 | 17 | 0 | 0 | 0 |
 | 254 | [M2Water](briefs/M2Water.md) | Water · today, goal, the week, reminders (no board; designed in code) | Phone 390x1400 | 2 | reminders-m2 | 13 | 0 | 0 | 0 |
+| 255 | [M2Steps](briefs/M2Steps.md) | Steps · today, this week, where the number came from (new, no canvas board) | Phone 390x1500 | 2 | Steps | 8 | 0 | 0 | 0 |
+| | **New · Find care near you (2026-10-21, no canvas board)** | | | | | | | | |
+| 256 | [M2FindCare](briefs/M2FindCare.md) | Find care near you (hospitals, pharmacies, ambulance, doctors by department) | Phone 390x1700 | 2 | Find care | 16 | 0 | 0 | 0 |
+| 257 | [M2FacilityDetail](briefs/M2FacilityDetail.md) | One place in the care directory | Phone 390x1200 | 2 | Find care | 13 | 0 | 0 | 0 |
+| 258 | [WebFindCare](briefs/WebFindCare.md) | Public /find-care page | Web 1440x1400 | 2 | Find care | 16 | 0 | 0 | 0 |
+| 259 | [AdminCareDirectory](briefs/AdminCareDirectory.md) | Care directory listings (super admin and campus console) | Web 1440x1100 | 3 | Find care | 7 | 0 | 0 | 0 |

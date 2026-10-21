@@ -17,6 +17,8 @@ export interface EmergencyCardLinks {
   back?: () => void;
   /** The emergency contacts board (IceContacts). */
   contacts: () => void;
+  /** "Nearest hospitals": Find care on the Hospitals tab (plan tier1-care-directory-2026-10-21 §3). */
+  nearestHospitals?: () => void;
 }
 
 type PressState = { pressed: boolean; focused?: boolean };
@@ -193,6 +195,9 @@ export const EmergencyCardBoard = observer(function EmergencyCardBoard({ vm, lin
         ) : null}
 
         <Call112Button />
+        {links.nearestHospitals ? (
+          <TextLink label={t('fc.nearestHospitals')} onPress={links.nearestHospitals} accessibilityLabel={t('fc.nearestHospitalsSpoken')} testID="card-find-care" />
+        ) : null}
         <Text style={styles.footnote}>{t('sf.card.footnote')}</Text>
       </View>
 

@@ -21,6 +21,10 @@
       "infoPlist": {
         "NSCameraUsageDescription": "Studentkare uses the camera only when you choose to photograph a prescription or health document to add to your records.",
         "NSMicrophoneUsageDescription": "Studentkare uses microphone access for secure doctor teleconsultations.",
+        "NSLocationWhenInUseUsageDescription": "Studentkare uses your location only when you tap \"Use my location\" in Find care, to sort places by distance on your phone. It is never sent or stored.",
+        "NSMotionUsageDescription": "Studentkare counts your steps with this phone's motion sensor, only after you connect it on the Steps screen. Steps are never turned into a score or shown on shop pages.",
+        "NSHealthShareUsageDescription": "Studentkare reads your daily steps and walking distance from Apple Health, only after you connect it on the Steps screen. Nothing else is read.",
+        "NSHealthUpdateUsageDescription": "Studentkare does not write anything to Apple Health.",
         "NSAppTransportSecurity": {
           "NSAllowsArbitraryLoads": false,
           "NSExceptionDomains": {
@@ -45,7 +49,12 @@
         "android.permission.RECEIVE_BOOT_COMPLETED",
         "android.permission.VIBRATE",
         "android.permission.RECORD_AUDIO",
-        "android.permission.MODIFY_AUDIO_SETTINGS"
+        "android.permission.MODIFY_AUDIO_SETTINGS",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACTIVITY_RECOGNITION",
+        "android.permission.health.READ_STEPS",
+        "android.permission.health.READ_DISTANCE"
       ],
       "allowBackup": false,
       "usesCleartextTraffic": false,
@@ -64,9 +73,42 @@
         }
       ],
       [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Studentkare uses your location only when you tap \"Use my location\" in Find care, to sort places by distance on your phone. It is never sent or stored.",
+          "locationAlwaysPermission": false,
+          "locationAlwaysAndWhenInUsePermission": false,
+          "isIosBackgroundLocationEnabled": false,
+          "isAndroidBackgroundLocationEnabled": false,
+          "isAndroidForegroundServiceEnabled": false
+        }
+      ],
+      [
         "expo-notifications",
         {
           "color": "#3525CD"
+        }
+      ],
+      [
+        "expo-sensors",
+        {
+          "motionPermission": "Studentkare counts your steps with this phone's motion sensor, only after you connect it on the Steps screen. Steps are never turned into a score or shown on shop pages."
+        }
+      ],
+      [
+        "react-native-health",
+        {
+          "healthSharePermission": "Studentkare reads your daily steps and walking distance from Apple Health, only after you connect it on the Steps screen. Nothing else is read.",
+          "healthUpdatePermission": "Studentkare does not write anything to Apple Health."
+        }
+      ],
+      "expo-health-connect",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "minSdkVersion": 26
+          }
         }
       ]
     ],

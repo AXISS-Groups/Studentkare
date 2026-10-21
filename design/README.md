@@ -90,6 +90,7 @@ Rings, timers and sparklines whose shape depends on data. Build them as componen
 | `chart-order-route` | M2Orders |
 | `chart-profile-complete-ring` | M2Profile |
 | `chart-test-trend` | M2Trends |
+| `chart-steps-week` | M2Steps (new screen, no canvas board) |
 
 ## Commands
 ```

@@ -1135,6 +1135,45 @@ class ServiceProvider(Base):
     updated_at: Mapped[float] = mapped_column(Float, default=0.0)
 
 
+class CareFacility(Base):
+    """A place a student can get care: a hospital, clinic, pharmacy, ambulance service or blood bank.
+
+    Curated by a super admin (any campus, or every campus when ``campus`` is
+    empty) or by a campus administrator (their own campus only). Reference data
+    about a place, never about a person, so it sits in the platform plane.
+
+    A listing reaches students only while it is active and its ``verified_on``
+    date is set and recent enough (``care_directory.verification_max_age_days``):
+    the directory never shows a place nobody has checked. ``source`` says how it
+    was checked ("Called the front desk", "Hospital website"). There is no bed
+    availability, rating or review field, by design.
+    """
+    __tablename__ = "care_facilities"
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    kind: Mapped[str] = mapped_column(String(16), index=True)  # HOSPITAL | CLINIC | PHARMACY | AMBULANCE | BLOOD_BANK
+    name: Mapped[str] = mapped_column(String(160), index=True)
+    departments: Mapped[list] = mapped_column(JSON, default=list)
+    address: Mapped[str] = mapped_column(String(400), default="")
+    area: Mapped[str] = mapped_column(String(120), default="")
+    pincode: Mapped[str] = mapped_column(String(6), default="")
+    # Both or neither: a place with no coordinates is listed without directions or distance.
+    latitude: Mapped[float | None] = mapped_column(Float, nullable=True, default=None)
+    longitude: Mapped[float | None] = mapped_column(Float, nullable=True, default=None)
+    phone: Mapped[str] = mapped_column(String(32), default="")
+    emergency_24x7: Mapped[bool] = mapped_column(Boolean, default=False)
+    hours_text: Mapped[str] = mapped_column(String(200), default="")
+    source: Mapped[str] = mapped_column(String(200), default="")
+    source_url: Mapped[str] = mapped_column(String(2000), default="")
+    verified_on: Mapped[date | None] = mapped_column(Date, nullable=True, default=None)
+    # "" = every campus and the public page; otherwise the students of that campus only.
+    campus: Mapped[str] = mapped_column(String(160), default="", index=True)
+    active: Mapped[bool] = mapped_column(Boolean, default=True)
+    created_by: Mapped[str] = mapped_column(String, default="")
+    created_at: Mapped[float] = mapped_column(Float, default=0.0)
+    updated_by: Mapped[str] = mapped_column(String, default="")
+    updated_at: Mapped[float] = mapped_column(Float, default=0.0)
+
+
 class Prescription(Base):
     """A clinician-issued prescription. The artefact a pharmacy can act on."""
     __tablename__ = "care_prescriptions"

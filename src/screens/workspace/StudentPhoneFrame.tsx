@@ -34,6 +34,7 @@ export const STUDENT_NAV_ROUTES: Readonly<Record<PillNavKey, RoutePath>> = {
 const HOME_STORE_ROUTES: ReadonlySet<RoutePath> = new Set<RoutePath>([
   // keep-sorted start
   'care',
+  'find-care',
   'insurance',
   'lab-tests',
   'preventive-care',
@@ -41,11 +42,12 @@ const HOME_STORE_ROUTES: ReadonlySet<RoutePath> = new Set<RoutePath>([
   // keep-sorted end
 ]);
 
-/** The My health screens opened from Insights (M2Trends, M2ReportUpload): the nav shows My health there. */
+/** The My health screens opened from Insights (M2Trends, M2ReportUpload, M2Steps): the nav shows My health there. */
 const HEALTH_ROUTES: ReadonlySet<RoutePath> = new Set<RoutePath>([
   // keep-sorted start
   'health/medicines',
   'health/report-upload',
+  'health/steps',
   'health/trends',
   'health/water',
   // keep-sorted end
@@ -137,7 +139,7 @@ export function StudentPhoneFrame({ route, title, menu, menuPanel, ownBack = fal
       <div style={dock}>
         <PillNav current={current} onSelect={(key) => navigate(STUDENT_NAV_ROUTES[key])} />
       </div>
-      {sosOpen && <EmergencyHelplinesDialog onClose={() => setSosOpen(false)} onSendSos={() => { setSosOpen(false); navigate('sos'); }} />}
+      {sosOpen && <EmergencyHelplinesDialog onClose={() => setSosOpen(false)} onSendSos={() => { setSosOpen(false); navigate('sos'); }} onFindCare={() => { setSosOpen(false); navigate('find-care'); }} />}
     </div>
   );
 }

@@ -8,6 +8,7 @@ import { campusBoardsHi } from './areas/campusBoards';
 import { campusConsoleHi } from './areas/campusConsole';
 import { campusHi } from './areas/campus';
 import { campusSafetyHi } from './areas/campusSafety';
+import { careDirectoryHi } from './areas/careDirectory';
 import { careHi } from './areas/care';
 import { clinicianHi } from './areas/clinician';
 import { clinicianWorkHi } from './areas/clinicianWork';
@@ -34,6 +35,7 @@ import { phonestoreHi } from './areas/phonestore';
 import { rewardsHi } from './areas/rewards';
 import { safetyHi } from './areas/safety';
 import { shopwebHi } from './areas/shopweb';
+import { stepsHi } from './areas/steps';
 import { studentshellHi } from './areas/studentshell';
 import { studentwebHi } from './areas/studentweb';
 import { studentwebT1Hi } from './areas/studentwebT1';
@@ -58,6 +60,7 @@ export const areasHi = {
   ...campusConsoleHi,
   ...campusHi,
   ...campusSafetyHi,
+  ...careDirectoryHi,
   ...careHi,
   ...clinicianHi,
   ...clinicianWorkHi,
@@ -84,6 +87,7 @@ export const areasHi = {
   ...rewardsHi,
   ...safetyHi,
   ...shopwebHi,
+  ...stepsHi,
   ...studentshellHi,
   ...studentwebHi,
   ...studentwebT1Hi,

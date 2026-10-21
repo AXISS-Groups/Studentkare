@@ -172,7 +172,7 @@ function NotificationsPage(): React.ReactElement {
  */
 export function safetyBoardFor(route: RoutePath): React.ReactElement | null {
   switch (route) {
-    case 'emergency-card': return <EmergencyCardRoute links={{ contacts: () => navigate('ice-contacts') }} />;
+    case 'emergency-card': return <EmergencyCardRoute links={{ contacts: () => navigate('ice-contacts'), nearestHospitals: () => navigate('find-care') }} />;
     case 'ice-contacts': return <IceContactsRoute links={{}} />;
     case 'pass': return <MyPassRoute links={{ digitalId: () => navigate('digital-id') }} />;
     case 'delete-account': return <DeleteAccountRoute links={{ exportData: () => navigate('data-export'), crisis: () => navigate('crisis') }} />;

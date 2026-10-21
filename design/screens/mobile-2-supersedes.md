@@ -182,6 +182,9 @@ Endpoints are under `/api` (`backend/services/*.py`). "No backend yet" means the
 | M2Insights | Latest report values, need a look / in range counts, by body system | no backend yet (no store of lab values per test) |
 | M2Insights | Your doctor's note on a report | `POST /report-reviews`, `GET /report-reviews` (`preventive_care.py`) |
 | M2Insights | Ask Ayush about this report | no backend yet (Ayush does not read records) |
+| M2Insights, M2Steps | Steps today and this week, with the source of each day's number (new screen, no board; 2026-10-21) | `GET /activity/trends` (`wellness_api.py`; per day one total per source, most trusted source shown: Apple Health / Health Connect, then phone motion sensor, then typed) |
+| M2Steps | Connect Apple Health, Health Connect, the phone's motion sensor; live count | phone only (`src/native/stepConnectors.ts`); sync `POST /v1/movement/background-sync` (providers `healthkit`, `health_connect`, `phone_motion`) |
+| M2Steps | Add today's steps yourself | `POST /activity/entries` (source MANUAL) |
 | M2Trends | Each test over time, range bar, table | no backend yet (`care_readings` holds vitals by metric, not lab tests) |
 | M2Trends | Bookmark a test | no backend yet |
 | M2Trends | Your doctor's 3 steps | partial: free-text doctor note via `report-reviews`; no structured steps |

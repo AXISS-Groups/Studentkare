@@ -124,6 +124,8 @@ const workspacePaths: { path: string; access?: (role: AccountRole | null) => boo
   { path: '/admin/claims', access: hasRole('SUPER_ADMIN') },
   { path: '/admin/outbox', access: hasRole('SUPER_ADMIN') },
   { path: '/admin/team-accounts', access: hasRole('SUPER_ADMIN') },
+  // Find care near you: the curated directory listings (super admin: every campus).
+  { path: '/admin/care-directory', access: hasRole('SUPER_ADMIN') },
   { path: '/delete-account', access: hasRole('STUDENT') },
   // The student's Your Care overview (the phone tab), account details and data export.
   { path: '/your-care', access: hasRole('STUDENT') },
@@ -139,6 +141,8 @@ const workspacePaths: { path: string; access?: (role: AccountRole | null) => boo
   // Mobile 2.0 Medicines today and Water (reminders ticket): the student's own doses and water log.
   { path: '/health/medicines', access: hasRole('STUDENT') },
   { path: '/health/water', access: hasRole('STUDENT') },
+  // Steps (Mobile 2.0, Tier 2): the student's own step totals; a browser counts none, typed entry only.
+  { path: '/health/steps', access: hasRole('STUDENT') },
   { path: '/vendor', access: hasRole('VENDOR') },
   { path: '/clinician', access: hasRole('NMC_DOCTOR') },
   { path: '/clinician/queue', access: hasRole('NMC_DOCTOR') },
@@ -157,7 +161,7 @@ const workspacePaths: { path: string; access?: (role: AccountRole | null) => boo
   { path: '/clinician/prescribe', access: hasRole('NMC_DOCTOR') },
   { path: '/campus', access: hasRole('CAMPUS_ADMIN', 'SUPER_ADMIN') },
   // The campus console's boards (design page 4); one shell, see CampusConsole.
-  ...['students', 'blocks', 'verification', 'leave', 'scorecard', 'insights', 'camps', 'certificates', 'sos', 'incidents', 'ambulance', 'counsellor', 'isolation', 'discharge', 'outbreak', 'water', 'sanitary', 'mess', 'sla', 'team', 'announcements', 'reports', 'settings', 'aggregate']
+  ...['students', 'blocks', 'verification', 'leave', 'scorecard', 'insights', 'camps', 'certificates', 'sos', 'incidents', 'ambulance', 'care-directory', 'counsellor', 'isolation', 'discharge', 'outbreak', 'water', 'sanitary', 'mess', 'sla', 'team', 'announcements', 'reports', 'settings', 'aggregate']
     .map((board) => ({ path: `/campus/${board}`, access: hasRole('CAMPUS_ADMIN', 'SUPER_ADMIN') })),
   { path: '/campus-access-requests', access: hasRole('CAMPUS_ADMIN', 'SUPER_ADMIN') },
   { path: '/campus-break-glass', access: hasRole('CAMPUS_ADMIN', 'SUPER_ADMIN') },

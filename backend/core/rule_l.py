@@ -145,6 +145,7 @@ TABLE_PLANES: dict[str, str] = {
     "care_articles": PLATFORM,
     "care_reviewed_benefits": PLATFORM,
     "care_service_providers": PLATFORM,
+    "care_facilities": PLATFORM,                  # the care directory: places and phone numbers, no person
     "care_availability_slots": PLATFORM,
     "care_lab_test_reference": PLATFORM,          # test names and body-system groups; no person, no range
     "care_lab_collectors": PLATFORM,              # which staff account collects for which lab

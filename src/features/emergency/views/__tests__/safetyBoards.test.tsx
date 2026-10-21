@@ -386,3 +386,40 @@ describe('ConsentInbox (Tier 1)', () => {
     await waitFor(() => expect(screen.queryByTestId('consent-share-s1')).toBeNull());
   });
 });
+
+describe('Nearest hospitals on the SOS surfaces (plan tier1-care-directory-2026-10-21 §3)', () => {
+  beforeEach(() => emergencyStore.reset());
+
+  it('signed out: after Call 112, and only when the screen is given the link', () => {
+    const nearestHospitals = vi.fn();
+    render(<SosView signedIn={false} links={{ signIn: vi.fn(), nearestHospitals }} />);
+    fireEvent.click(screen.getByTestId('sos-find-care'));
+    expect(nearestHospitals).toHaveBeenCalledTimes(1);
+    cleanup();
+    render(<SosView signedIn={false} links={{ signIn: vi.fn() }} />);
+    expect(screen.queryByTestId('sos-find-care')).toBeNull();
+  });
+
+  it('never on an active alert, where the student should stay', async () => {
+    serve({ '/emergency/sos/current': { alert: alert() } });
+    render(<SosView signedIn links={{ nearestHospitals: vi.fn() }} />);
+    expect(await screen.findByTestId('sos-beacon')).toBeInTheDocument();
+    expect(screen.queryByTestId('sos-find-care')).toBeNull();
+  });
+
+  it('after an SOS ends, beside Call 112', async () => {
+    serve({ '/emergency/sos/current': { alert: alert({ status: 'CANCELLED', cancelledAt: Date.now() / 1000 }) } });
+    render(<SosView signedIn links={{ nearestHospitals: vi.fn() }} />);
+    expect(await screen.findByTestId('sos-debrief')).toBeInTheDocument();
+    expect(screen.getByTestId('sos-find-care')).toHaveTextContent(en('fc.nearestHospitals'));
+  });
+
+  it('the emergency card links to it under Call 112', async () => {
+    const vm = new EmergencyCardViewModel(profileApi(profile(), (b) => profile(b as Partial<MemberProfile>)));
+    await vm.load();
+    const nearestHospitals = vi.fn();
+    render(<EmergencyCardBoard vm={vm} links={{ contacts: vi.fn(), nearestHospitals }} />);
+    fireEvent.click(screen.getByTestId('card-find-care'));
+    expect(nearestHospitals).toHaveBeenCalledTimes(1);
+  });
+});
