@@ -72,6 +72,8 @@ export function InsightsScreen(): React.ReactElement {
         trends: () => navigate('Trends'),
         records: () => navigate('Vault'),
         reportUpload: () => navigate('ReportUpload'),
+        medicines: () => navigate('MedicineReminders'),
+        water: () => navigate('Water'),
         refill: () => navigate('RefillRequest'),
         addVaccineCard: () => navigate('CaptureRecord'),
         appointments: () => navigate('Appointments'),

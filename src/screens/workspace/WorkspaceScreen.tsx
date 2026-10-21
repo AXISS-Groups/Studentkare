@@ -11,6 +11,7 @@ import {
   Dumbbell,
   FileText,
   FlaskConical,
+  GlassWater,
   GraduationCap,
   HeartHandshake,
   HeartPulse,
@@ -76,6 +77,8 @@ import { AyushWidget, ayushWidgetShownOn } from '@/features/ayush/AyushWidget';
 
 const M2TrendsRoute = lazy(() => import('@/features/labResults/views/M2TrendsRoute').then(module => ({ default: module.M2TrendsRoute })));
 const M2ReportUploadRoute = lazy(() => import('@/features/labResults/views/M2ReportUploadRoute').then(module => ({ default: module.M2ReportUploadRoute })));
+const M2RemindersRoute = lazy(() => import('@/features/reminders/views/M2RemindersRoute').then(module => ({ default: module.M2RemindersRoute })));
+const M2WaterRoute = lazy(() => import('@/features/reminders/views/M2WaterRoute').then(module => ({ default: module.M2WaterRoute })));
 const M2LabsRoute = lazy(() => import('@/features/m2store/views/M2LabsRoute').then(module => ({ default: module.M2LabsRoute })));
 const WebEmergencyCard = lazy(() => import('@/features/emergency/views/WebEmergencyCard').then(module => ({ default: module.WebEmergencyCard })));
 const IdentityVerifyView = lazy(() => import('@/features/auth/views/IdentityVerifyView').then(module => ({ default: module.IdentityVerifyView })));
@@ -275,6 +278,8 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
     ...(user.role === 'STUDENT' ? [{ path: 'my-requests' as RoutePath, label: 'nav.myRequests' as MessageKey, icon: ClipboardList }] : []),
     { path: 'appointments' as RoutePath, label: 'nav.appointments' as MessageKey, icon: CalendarDays },
     { path: 'medications' as RoutePath, label: 'nav.medications' as MessageKey, icon: Pill },
+    // Mobile 2.0 Water (the same board as the phone, in the page column).
+    ...(user.role === 'STUDENT' ? [{ path: 'health/water' as RoutePath, label: 'nav.water' as MessageKey, icon: GlassWater }] : []),
     { path: 'prescriptions' as RoutePath, label: 'nav.prescriptions' as MessageKey, icon: FlaskConical },
     { path: 'campus' as RoutePath, label: 'nav.campus' as MessageKey, icon: GraduationCap },
     { path: 'health-camp' as RoutePath, label: 'nav.healthCamp' as MessageKey, icon: ClipboardList },
@@ -348,6 +353,8 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
       // Mobile 2.0 My health (Tier 1): the same boards in the page column above phone width.
       case 'health/trends': return <M2TrendsRoute />;
       case 'health/report-upload': return <M2ReportUploadRoute />;
+      case 'health/medicines': return <M2RemindersRoute />;
+      case 'health/water': return <M2WaterRoute />;
       case 'account': return <AccountDetailsPage />;
       case 'data-export': return <DataExportPage />;
       case 'billing': return <MemberProfilePanel initialTab="plan" />;
