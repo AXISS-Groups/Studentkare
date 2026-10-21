@@ -118,3 +118,8 @@ any code is written. Once someone approves it, write their name and the date abo
 8. **"New" chat.** Should it clear the thread on screen but keep the same server
    `conversationId`, as `AyushViewModel.reset()` does today, or start a new id? The new-id option
    changes the view model and needs approval.
+
+
+## Approval (2026-10-21)
+
+Krishna Chintakayala (founder, named Tier 1 reviewer) approved this plan on 2026-10-21 ("approve all"). Where it overlaps `tier1-mobile2-health-2026-10-21.md`, that plan wins. Anything this plan routes to the clinical lead, legal or the AI-constitution owner stays unavailable until they sign.
