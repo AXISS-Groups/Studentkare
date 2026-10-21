@@ -275,3 +275,19 @@ Approved as a set; each settled on the conservative, honest option (TIER1_BUILD_
 - **D3-9** AdminSignIn is a separate public route `/staff-sign-in` with its own frame, reusing the OTP and 2FA endpoints. Backend: `POST /auth/otp/send` takes `audience: "STAFF"`, which sends a code only to an active non-student account by email and answers a student's email exactly like an unknown one (tests in `backend/tests/test_staff_sign_in.py`). Lock length, tries and session length are the server's own messages; "admin has been told" and new-device approval are not drawn (no backend). No lockout/session settings were added: the existing server limits are unchanged.
 - **Web brand panel** (WebSignIn): the board's "NABL lab tests with dorm sample pickup", "A free account" and "Live on 3 campuses" are unverified claims; three true benefit lines replace them.
 - **Routing**: `/verify` became a workspace route so the student web shell (WebVerify) and the phone frame (VerifyIdentity) draw it; `/lost-phone` stays public (it must work from a friend's phone) and draws the student web shell itself for a signed-in student.
+
+## Amendment 2026-10-22: team accounts (founder decision)
+
+Krishna Chintakayala (founder, named Tier 1 reviewer) decided on 2026-10-22 to have one fixed shared
+account per role on the live site, each with its own random 6-digit PIN shown once, until individual
+logins exist. This amends D3-9's "no demo or shared accounts" for those accounts only; everything else
+in D3-9 stands.
+
+- `/staff-sign-in` gains a "Team PIN" option beside the emailed code, shown only while the public
+  setting `auth.staff_pin_login_enabled` is on (the server refuses it too when off).
+- The PIN replaces the emailed code, never the authenticator: an account with one gets that step, and
+  super admin / counsellor are still held to setting one up.
+- One answer for every failure (unknown ID, student, wrong PIN, locked, disabled); lockout and rate
+  limits from the settings registry; every attempt audited, never the PIN; students never.
+- The staff page's "There are no shared accounts" line is removed (no longer true).
+- How it is run and replaced: `docs/guides/team-accounts.md`. Built in feat/role-accounts.
