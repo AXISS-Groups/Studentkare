@@ -11,7 +11,7 @@ vi.mock('../../../data/services/http', () => ({ apiRequest: vi.fn(() => Promise.
 
 import * as http from '../../../data/services/http';
 import { CareNavigatorPanel, localResources } from '../CareNavigatorPanel';
-import { PulseEstimateUnavailable } from '../DevicesAndSensorsScreen';
+import { DevicesAndSensorsScreen, PulseEstimateUnavailable } from '../DevicesAndSensorsScreen';
 
 const en = (key: MessageKey, vars?: Vars) => translate('en', key, vars);
 const te = (key: MessageKey, vars?: Vars) => translate('te', key, vars);
@@ -56,5 +56,15 @@ describe('devices and sensors', () => {
     const source = readFileSync(join(process.cwd(), 'src/screens/workspace/DevicesAndSensorsScreen.tsx'), 'utf-8');
     expect(source).not.toMatch(/camera-scan/);
     expect(source).toMatch(/form\.append\('file'/);
+  });
+
+  it('counts no steps in the browser: says to open the phone app and offers typed entry', () => {
+    render(<DevicesAndSensorsScreen />);
+    fireEvent.click(screen.getByRole('button', { name: translate('en', 'steps.title') }));
+    const panel = screen.getByTestId('devices-steps');
+    expect(panel).toHaveTextContent(translate('en', 'steps.sources.webTitle'));
+    expect(panel.textContent ?? '').not.toMatch(/\d|estimate/i);
+    const source = readFileSync(join(process.cwd(), 'src/screens/workspace/DevicesAndSensorsScreen.tsx'), 'utf-8');
+    expect(source).not.toMatch(/devicemotion|stepAccum|recordSession/);
   });
 });
