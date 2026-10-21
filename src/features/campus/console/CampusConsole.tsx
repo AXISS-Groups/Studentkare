@@ -16,6 +16,7 @@ import { CampusPendingPage } from './CampusPendingPage';
 import { liveCampusConsoleSummarySource } from './campusConsoleSummary';
 import type { CampusConsoleSummary, CampusConsoleSummarySource } from './campusConsoleSummary';
 import { CampusScopeContext, WHOLE_CAMPUS_SCOPE_ID } from './campusScope';
+import { TeamBadge } from '@/features/team-accounts/TeamBadge';
 import './campus-console.css';
 
 export function hasCampusPage(route: RoutePath): boolean {
@@ -78,6 +79,7 @@ export function CampusConsole({ route, summarySource = liveCampusConsoleSummaryS
         topBar={page.topBar}
         onNavigate={(target) => navigate(target)}
         onSignOut={() => setConfirmSignOut(true)}
+        badge={<TeamBadge />}
       >
         <PageTransition key={route}>
           <Suspense fallback={<ScreenLoading />}>

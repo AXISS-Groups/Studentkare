@@ -44,6 +44,29 @@ export function ConsoleBrand({ role, size = 32, className }: ConsoleBrandProps):
   );
 }
 
+export interface TeamAccountBadgeProps {
+  /** "Team account", already translated. */
+  label: string;
+  /** Longer explanation, read by screen readers and shown on hover. */
+  hint?: string;
+  className?: string;
+}
+
+/**
+ * The small "Team account" badge in a console header: the session is one of the
+ * shared team accounts (one per role, PIN sign-in), not a person's own login.
+ * Drawn only when the session says so; the caller decides that.
+ */
+export function TeamAccountBadge({ label, hint, className }: TeamAccountBadgeProps): React.ReactElement {
+  return (
+    <span className={`sk-team-badge${className ? ` ${className}` : ''}`} title={hint}>
+      <Icon name="users" size={14} strokeWidth={1.9} />
+      <span>{label}</span>
+      {hint ? <span className="sk-visually-hidden">{`: ${hint}`}</span> : null}
+    </span>
+  );
+}
+
 export interface ConsoleNavItem {
   /** Stable id, unique within the nav. */
   id: string;
@@ -176,11 +199,13 @@ export interface ConsoleTopbarProps {
   account?: React.ReactNode;
   /** Controls before the title, e.g. the drawer button below the sidebar breakpoint. */
   leading?: React.ReactNode;
+  /** After the title, e.g. the TeamAccountBadge for a shared team account. */
+  badge?: React.ReactNode;
   className?: string;
 }
 
 /** The white 64 px console top bar from the partner and doctor boards. */
-export function ConsoleTopbar({ title, titleShort, search, twoFactorLabel, notifications, account, leading, className }: ConsoleTopbarProps): React.ReactElement {
+export function ConsoleTopbar({ title, titleShort, search, twoFactorLabel, notifications, account, leading, badge, className }: ConsoleTopbarProps): React.ReactElement {
   return (
     <header className={`sk-console-topbar${className ? ` ${className}` : ''}`}>
       {leading}
@@ -188,6 +213,7 @@ export function ConsoleTopbar({ title, titleShort, search, twoFactorLabel, notif
         <span className={titleShort ? 'sk-console-topbar__title-long' : undefined}>{title}</span>
         {titleShort ? <span className="sk-console-topbar__title-short" aria-hidden="true">{titleShort}</span> : null}
       </span>
+      {badge}
       {search ? (
         <label className="sk-console-topbar__search">
           <Icon name="search" size={16} strokeWidth={1.9} />

@@ -10,6 +10,7 @@ import type { ClinicianNavId } from '@/design-system';
 import { defaultConsoleSummarySource } from './consoleSummary';
 import type { ConsoleSummary, ConsoleSummarySource } from './consoleSummary';
 import { initialsOf } from './names';
+import { TeamBadge } from '@/features/team-accounts/TeamBadge';
 
 export interface ClinicianConsoleFrameProps {
   /** The sidebar item this page belongs to; null for pages outside the sidebar. */
@@ -57,6 +58,7 @@ function ConsoleShell({ page, summarySource, children }: { page: FramePage; summ
       usePreviewRoutes={demoDataEnabled()}
       onNavigate={navigate}
       onPersonalHealth={() => navigate('health')}
+      badge={<TeamBadge />}
       onSignOut={() => setConfirmSignOut(true)}
     >
       {children}

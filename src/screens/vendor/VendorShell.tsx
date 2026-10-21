@@ -11,6 +11,7 @@ import { PARTNER_KIND_LABEL, PARTNER_KINDS, partnerHasItem } from './partnerAcce
 import { setPartnerPreview, usePartnerPreview } from './partnerPreview';
 import { isDev } from '@/core/env';
 import { useT } from '@/i18n';
+import { TeamBadge } from '@/features/team-accounts/TeamBadge';
 import './vendor-shell.css';
 
 interface VendorShellProps {
@@ -80,6 +81,7 @@ export function VendorShell({ route, role, partnerKind = null, assignedPartnerKi
   return <div className="sk-vendor-shell">
     <header className="sk-vendor-shell-mobilebar">
       <ConsoleBrand size={28} />
+      <TeamBadge />
       <button ref={menuButton} type="button" className="sk-vendor-shell-menu-button" aria-label={drawerOpen ? t('console.closeNav') : t('console.openNav')} aria-expanded={drawerOpen} aria-controls="sk-vendor-shell-sidebar" onClick={() => setDrawerOpen(!drawerOpen)}>
         <Icon name={drawerOpen ? 'x' : 'menu'} size={22} />
       </button>
@@ -90,6 +92,7 @@ export function VendorShell({ route, role, partnerKind = null, assignedPartnerKi
     <aside id="sk-vendor-shell-sidebar" className={`sk-vendor-shell-sidebar${drawerOpen ? ' is-open' : ''}`} aria-label={t('partner.vcon.nav.sidebarLabel')}>
       <div className="sk-vendor-shell-brand">
         <ConsoleBrand role={t('partner.vcon.nav.badge')} />
+        <TeamBadge />
       </div>
 
       <ConsoleNav label={t('partner.vcon.nav.label')} groups={groups} />

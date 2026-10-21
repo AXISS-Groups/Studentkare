@@ -77,8 +77,8 @@ export {
   DestinationButton,
 } from './primitives';
 export type { SkTone } from './primitives';
-export { ConsoleBrand, ConsoleNav, ConsoleSidebarLink, ConsoleTopbar } from './console-shell/ConsoleShell';
-export type { ConsoleBrandProps, ConsoleNavGroup, ConsoleNavItem, ConsoleNavProps, ConsoleSearchProps, ConsoleSidebarLinkProps, ConsoleTopbarProps } from './console-shell/ConsoleShell';
+export { ConsoleBrand, ConsoleNav, ConsoleSidebarLink, ConsoleTopbar, TeamAccountBadge } from './console-shell/ConsoleShell';
+export type { ConsoleBrandProps, ConsoleNavGroup, ConsoleNavItem, ConsoleNavProps, ConsoleSearchProps, ConsoleSidebarLinkProps, ConsoleTopbarProps, TeamAccountBadgeProps } from './console-shell/ConsoleShell';
 export { ClinicianShell } from './clinician-shell/ClinicianShell';
 export type { ClinicianIdentity, ClinicianShellProps } from './clinician-shell/ClinicianShell';
 export type { ClinicianNavId } from './clinician-shell/clinicianNav';

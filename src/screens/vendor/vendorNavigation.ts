@@ -31,8 +31,9 @@ export const VENDOR_NAVIGATION: VendorNavGroup[] = [
     items: [
       { label: 'Home', labelKey: 'partner.vcon.nav.home', icon: 'home-2', route: 'vendor' },
       { label: 'Verify student', labelKey: 'partner.vcon.nav.verify', icon: 'scan', route: 'scan-verify', activeFor: ['staff-verify'] },
-      // `/orders` is the member orders page for every other role.
-      { label: 'Orders', labelKey: 'partner.vcon.nav.orders', icon: 'box-2', route: 'orders', vendorOnly: true, kinds: ['PHARMACY', 'CLINIC'] },
+      // `/orders` is the member orders page for every other role. A wellness centre takes
+      // bookings like a clinic (founder decision 2026-10-22).
+      { label: 'Orders', labelKey: 'partner.vcon.nav.orders', icon: 'box-2', route: 'orders', vendorOnly: true, kinds: ['PHARMACY', 'CLINIC', 'WELLNESS'] },
       { label: 'Rx review', labelKey: 'partner.vcon.nav.rxReview', icon: 'prescription', route: 'rx-review', activeFor: ['vendor-rx-review'], kinds: PHARMACY },
       { label: 'Substitutions', labelKey: 'partner.vcon.nav.substitutions', icon: 'arrows-left-right-2', route: 'substitutions', activeFor: ['vendor-substitutions'], kinds: PHARMACY },
       { label: 'OTP handover', labelKey: 'partner.vcon.nav.handover', icon: 'key', route: 'handover', activeFor: ['vendor-handover', 'staff-handover'], kinds: PHARMACY },

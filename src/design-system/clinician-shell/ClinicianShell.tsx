@@ -37,6 +37,8 @@ export interface ClinicianShellProps {
   onNavigate: (route: RoutePath) => void;
   onSignOut: () => void;
   onPersonalHealth: () => void;
+  /** In the top bar after the page name, e.g. the "Team account" badge. */
+  badge?: React.ReactNode;
   children: React.ReactNode;
 }
 
@@ -60,6 +62,7 @@ export function ClinicianShell({
   onNavigate,
   onSignOut,
   onPersonalHealth,
+  badge,
   children,
 }: ClinicianShellProps): React.ReactElement {
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -174,6 +177,7 @@ export function ClinicianShell({
               <Icon name="menu" size={20} />
             </button>
           )}
+          badge={badge}
           search={{ label: t('console.search') }}
           twoFactorLabel={twoFactorOn ? t('console.twoFactorOn') : undefined}
           notifications={{

@@ -45,6 +45,8 @@ export interface CampusShellProps {
   topBar?: boolean;
   onNavigate: (route: RoutePath) => void;
   onSignOut: () => void;
+  /** In the top bar after the menu button, e.g. the "Team account" badge. */
+  badge?: React.ReactNode;
   children: React.ReactNode;
 }
 
@@ -76,6 +78,7 @@ export function CampusShell({
   topBar = true,
   onNavigate,
   onSignOut,
+  badge,
   children,
 }: CampusShellProps): React.ReactElement {
   const t = useT();
@@ -211,6 +214,7 @@ export function CampusShell({
           >
             <Icon name="menu" size={20} />
           </button>
+          {badge}
           {topBar ? (
             <>
               <div className="sk-cshell__scope" ref={scopeRef}>
