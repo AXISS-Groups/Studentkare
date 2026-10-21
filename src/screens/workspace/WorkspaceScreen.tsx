@@ -69,6 +69,7 @@ const VendorHandoverScreen = lazy(() => import('../vendor/VendorHandoverScreen')
 const VendorSubstitutionScreen = lazy(() => import('../vendor/VendorSubstitutionScreen').then(module => ({ default: module.VendorSubstitutionScreen })));
 const VendorReorderScreen = lazy(() => import('../vendor/VendorReorderScreen').then(module => ({ default: module.VendorReorderScreen })));
 const VendorCampIntakeScreen = lazy(() => import('../vendor/VendorCampIntakeScreen').then(module => ({ default: module.VendorCampIntakeScreen })));
+const LabReportingScreen = lazy(() => import('../vendor/LabReportingScreen').then(module => ({ default: module.LabReportingScreen })));
 const LabSampleToReportScreen = lazy(() => import('../vendor/LabSampleToReportScreen').then(module => ({ default: module.LabSampleToReportScreen })));
 const PharmacyDispensingScreen = lazy(() => import('../vendor/PharmacyDispensingScreen').then(module => ({ default: module.PharmacyDispensingScreen })));
 const PartnerRequestsPanel = lazy(() => import('../vendor/PartnerRequestsPanel').then(module => ({ default: module.PartnerRequestsPanel })));
@@ -87,6 +88,9 @@ const WebNotificationsRoute = lazy(() => import('@/features/studentweb/views/Web
 const WebShopView = lazy(() => import('@/features/studentweb/views/shop/WebShopView').then(module => ({ default: module.WebShopView })));
 const WebCheckoutView = lazy(() => import('@/features/studentweb/views/shop/WebCheckoutView').then(module => ({ default: module.WebCheckoutView })));
 const StaffCampFastScreen = lazy(() => import('@/features/partner/staff/StaffCampFastScreen').then(module => ({ default: module.StaffCampFastScreen })));
+const StaffScanVerifyScreen = lazy(() => import('@/features/partner/staff/StaffScanVerifyScreen').then(module => ({ default: module.StaffScanVerifyScreen })));
+const StaffHandoverScreen = lazy(() => import('@/features/partner/staff/StaffHandoverScreen').then(module => ({ default: module.StaffHandoverScreen })));
+const StaffCollectScreen = lazy(() => import('@/features/partner/staff/StaffCollectScreen').then(module => ({ default: module.StaffCollectScreen })));
 const VaultWorkspaceHub = lazy(() => import('../vault/VaultWorkspaceHub').then(module => ({ default: module.VaultWorkspaceHub })));
 
 /** The partner console page for a route, or null when the route is not one (same role checks as before). */
@@ -104,8 +108,14 @@ function vendorPageFor(route: RoutePath, role: AccountRole | null, onNavigate: (
     case 'camp-intake': case 'vendor-camp-intake': return <VendorCampIntakeScreen {...props} />;
     // The staff app's camp board: drawn full screen, outside the console shell (see WorkspaceScreen).
     case 'camp-fast': return <StaffCampFastScreen onNavigate={(target) => onNavigate(target)} />;
+    // The staff app's phone boards (WP-15): full screen, outside the console shell.
+    case 'staff-verify': return <StaffScanVerifyScreen onNavigate={(target) => onNavigate(target)} />;
+    case 'staff-handover': return <StaffHandoverScreen onNavigate={(target) => onNavigate(target)} />;
+    case 'staff-collect': return labStaff ? <StaffCollectScreen onNavigate={(target) => onNavigate(target)} /> : null;
     // The live lab desk (GET /work/lab-orders): sample custody through to filing the report for a doctor.
-    case 'lab-queue': case 'vendor-lab-queue': return <LabSampleToReportScreen />;
+    case 'lab-queue': case 'vendor-lab-queue': return <LabSampleToReportScreen onNavigate={onNavigate} />;
+    // Release results (WP-15): where each filed report has got to. The doctor releases.
+    case 'lab-reporting': return labStaff ? <LabReportingScreen onNavigate={onNavigate} /> : null;
     // The live dispense queue (GET /work/dispenses); the local register stays at /dispense-register.
     case 'dispensing': return <PharmacyDispensingScreen onNavigate={onNavigate} />;
     case 'dispense-register': case 'vendor-dispense-register': return <DispenseRegisterScreen {...props} />;
@@ -191,7 +201,7 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
     const partnerKind = effectivePartnerKind;
     if (!canOpenPartnerRoute(route, user?.role ?? null, partnerKind)) return <Navigate to="/vendor" replace />;
     // A phone board from the staff app: no sidebar, the whole screen is the scanner.
-    if (route === 'camp-fast') return <Suspense fallback={<ScreenLoading />}>{vendorPage}</Suspense>;
+    if (route === 'camp-fast' || route === 'staff-verify' || route === 'staff-handover' || route === 'staff-collect') return <Suspense fallback={<ScreenLoading />}>{vendorPage}</Suspense>;
     return <>
       <VendorShell route={route} role={user?.role ?? null} partnerKind={partnerKind} assignedPartnerKind={partnerKindOf(user)} onNavigate={navigate} accountName={user ? partnerDisplayName(user) : undefined} onSignOut={user ? () => setConfirmSignOut(true) : undefined} signingOut={mutation.busy} signOutError={mutation.error}>
         <Suspense fallback={<ScreenLoading />}><PageTransition key={route}>{vendorPage}</PageTransition></Suspense>

@@ -22,6 +22,7 @@ const RETURN = { id: 'r1', orderLineId: 'line-0000ab12', item: 'ORS sachets', st
 vi.mock('../../../data/services/http', () => ({
   apiRequest: (path: string) => {
     if (path.startsWith('/work/dispenses')) return Promise.resolve({ items: [DISPENSE], total: 1 });
+    if (path.startsWith('/ops/dispense-register')) return Promise.resolve({ items: [], total: 0 });
     if (path === '/work/returns') return Promise.resolve({ items: [RETURN] });
     if (path === '/work/hostel-visits' || path === '/work/refills') return Promise.resolve({ items: [] });
     return new Promise(() => undefined);
