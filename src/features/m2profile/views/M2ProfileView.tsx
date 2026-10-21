@@ -90,11 +90,14 @@ function Row({ icon, fill, ink, title, meta, onPress, trailing, testID }: {
   );
 }
 
+const groupInr = new Intl.NumberFormat('en-IN', { maximumFractionDigits: 2 });
+
 function plusLine(plan: Plan, t: ReturnType<typeof useT>): string {
   const quarter = plan.packages[0];
+  const price = groupInr.format(plan.price);
   return quarter
-    ? t('m2.prof.plusPrices', { price: String(plan.price), months: quarter.months, total: String(quarter.price) })
-    : t('m2.prof.plusPrice', { price: String(plan.price) });
+    ? t('m2.prof.plusPrices', { price, months: quarter.months, total: groupInr.format(quarter.price) })
+    : t('m2.prof.plusPrice', { price });
 }
 
 export const M2ProfileView = observer(function M2ProfileView({ vm, links }: { vm: ProfileViewModel; links: M2ProfileLinks }) {

@@ -61,7 +61,7 @@ const PROFILE_ROUTES = {
   '/profile': PROFILE,
   '/body/measurements': { height: { id: 'h', value: 174, unit: 'cm', recordedAt: '2026-06-02T10:00:00Z', source: 'MANUAL' }, weight: null },
   '/health/documents': { items: [], total: 12, categoryCounts: { LAB: 6, PRESCRIPTION: 4, OTHER: 1, VACCINE: 1 } },
-  '/plans': { plans: [{ id: 'STUDENT_PLUS', name: 'Student Plus', price: 149, period: 'per month', packages: [{ id: 'QUARTER', months: 3, price: 399 }] }] },
+  '/plans': { plans: [{ id: 'STUDENT_PLUS', name: 'Student Plus', price: 149, period: 'per month', packages: [{ id: 'QUARTER', months: 3, price: 2199 }] }] },
 };
 
 describe('M2Profile', () => {
@@ -88,7 +88,7 @@ describe('M2Profile', () => {
     expect(screen.getByTestId('m2-prof-blood')).not.toHaveTextContent(/from lab/i);
     expect(await screen.findByTestId('m2-prof-doc-lab')).toHaveTextContent('6');
     expect(screen.getByTestId('m2-prof-doc-vaccines')).toHaveTextContent('1');
-    expect(await screen.findByTestId('m2-prof-plus')).toHaveTextContent('₹149 a month · or 3 months for ₹399');
+    expect(await screen.findByTestId('m2-prof-plus')).toHaveTextContent('₹149 a month · or 3 months for ₹2,199');
     expect(screen.queryByText(/medical leave/i)).toBeNull();
     expect(calls.map((c) => c.path).every((p) => !p.includes('lab-results'))).toBe(true);
     const violations = await axeViolations(container);
