@@ -62,7 +62,7 @@ a:focus-visible,button:focus-visible{outline:3px solid #6D5BFF;outline-offset:3p
       <a href="Main.dc.html" class="sk-card" style="position: relative; grid-row: span 2; border-radius: 26px; padding: 16px; background: linear-gradient(155deg, #B91C1C, #7F1D1D); color: #FFFFFF; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; min-height: 200px;">
         <span aria-hidden="true" style="position: absolute; top: 0; bottom: 0; width: 60px; background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.22), rgba(255,255,255,0)); animation: skShine 4.5s ease-in-out infinite;"></span>
         <span style="width: 42px; height: 42px; border-radius: 14px; background: rgba(255,255,255,.16); display: flex; align-items: center; justify-content: center;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3"></rect><path d="M12 9v6M9 12h6"></path></svg></span>
-        <span style="display: flex; flex-direction: column; gap: 4px;"><span style="font-size: 16px; font-weight: 800;">Emergency card</span><span style="font-size: 11.5px; line-height: 16px; font-weight: 600; color: #FECACA;">Blood group, allergies, contacts. Works offline.</span></span>
+        <span style="display: flex; flex-direction: column; gap: 4px;"><span style="font-size: 16px; font-weight: 800;">Emergency card</span><span style="font-size: 11.5px; line-height: 16px; font-weight: 600; color: #FEE2E2;">Blood group, allergies, contacts. Works offline.</span></span>
       </a>
       <a href="Main.dc.html" class="sk-card" style="border-radius: 22px; padding: 14px; background: #FFFFFF; box-shadow: 0 6px 18px rgba(12,4,148,.06); display: flex; flex-direction: column; gap: 6px;"><span style="font-size: 13.5px; font-weight: 800; color: #131B2E;">Check-in pass</span><span style="font-size: 11px; font-weight: 600; color: #6B6980;">Show at the health centre</span></a>
       <a href="Main.dc.html" class="sk-card" style="border-radius: 22px; padding: 14px; background: #FFFFFF; box-shadow: 0 6px 18px rgba(12,4,148,.06); display: flex; flex-direction: column; gap: 6px;"><span style="font-size: 13.5px; font-weight: 800; color: #131B2E;">Medical leave</span><span style="font-size: 11px; font-weight: 600; color: #6B6980;">Requests and notes</span></a>
@@ -83,7 +83,7 @@ a:focus-visible,button:focus-visible{outline:3px solid #6D5BFF;outline-offset:3p
 
   <section style="padding: 18px 20px 0; animation: skRise .4s .2s both;">
     <div class="sk-card" style="border-radius: 26px; padding: 16px; background: linear-gradient(135deg, #FFF7ED, #FFEDD5); display: flex; align-items: center; gap: 14px;">
-      <span style="width: 52px; height: 52px; flex-shrink: 0; border-radius: 18px; background: linear-gradient(150deg, #FB923C, #C2410C); display: flex; align-items: center; justify-content: center;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2l2.9 6.3 6.8.7-5.1 4.6 1.5 6.8L12 17l-6.1 3.4 1.5-6.8L2.3 9l6.8-.7z"></path></svg></span>
+      <span style="width: 52px; height: 52px; flex-shrink: 0; border-radius: 18px; background: linear-gradient(150deg, #C2410C, #9A3412); display: flex; align-items: center; justify-content: center;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2l2.9 6.3 6.8.7-5.1 4.6 1.5 6.8L12 17l-6.1 3.4 1.5-6.8L2.3 9l6.8-.7z"></path></svg></span>
       <span style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px;"><span style="font-size: 15px; font-weight: 800;">Student Plus</span><span style="font-size: 12px; font-weight: 600; color: #7C2D12;">₹149 a month · or 3 months for ₹2,199</span></span>
       <a href="Consults.dc.html" style="height: 38px; padding: 0 14px; border-radius: 999px; background: #0C0494; color: #FFFFFF; font-size: 12.5px; font-weight: 800; display: flex; align-items: center;">View</a>
     </div>
@@ -136,9 +136,9 @@ class Component extends DCLogic {
       vitals: [{ k: 'Height', v: '174 cm', s: 'Added Jun' }, { k: 'Weight', v: '68 kg', s: 'Added Jun' }, { k: 'Blood', v: 'B+', s: 'From lab' }],
       docs: [
         { k: 'Lab reports', n: '6', icon: 'M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.8 3h10.4A2 2 0 0 0 19 18l-5-9V3', card: grad('#6D5BFF', '#0C0494') },
-        { k: 'Prescriptions', n: '4', icon: 'M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5M9 13h6M9 17h4', card: grad('#34D399', '#047857') },
-        { k: 'Scans', n: '1', icon: 'M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2M7 12h10', card: grad('#FB923C', '#C2410C') },
-        { k: 'Vaccines', n: '3', icon: 'M18 2l4 4M17 7l3-3M19 9L9 19l-4 1 1-4L16 6zM11 11l2 2', card: grad('#F472B6', '#BE185D') }
+        { k: 'Prescriptions', n: '4', icon: 'M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5M9 13h6M9 17h4', card: grad('#047857', '#065F46') },
+        { k: 'Scans', n: '1', icon: 'M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2M7 12h10', card: grad('#C2410C', '#9A3412') },
+        { k: 'Vaccines', n: '3', icon: 'M18 2l4 4M17 7l3-3M19 9L9 19l-4 1 1-4L16 6zM11 11l2 2', card: grad('#BE185D', '#9D174D') }
       ],
       rows: rows.map((r) => Object.assign({ k: r.k, v: r.v, icon: r.icon, stroke: r.stroke, tile: tile(r.bg), isSwitch: !!r.sw, isLink: !r.sw,
         tap: () => { if (r.sw) this.setState({ [r.sw]: !s[r.sw] }); } }, r.sw ? sw(s[r.sw]) : { track: '', knob: '' }))

@@ -2956,7 +2956,7 @@
    "kind": "line",
    "file": "icons/line/file-check.svg",
    "source": "canvas",
-   "uses": 25,
+   "uses": 24,
    "screens": [
     "CampusAccessRequests",
     "CampusAdminConsole",
@@ -2983,8 +2983,7 @@
     "CampusSla",
     "CampusWater",
     "CampusWellness",
-    "M2Consults",
-    "M2Home"
+    "M2Consults"
    ],
    "elements": [
     [
@@ -4600,7 +4599,7 @@
    "kind": "line",
    "file": "icons/line/chevron-right.svg",
    "source": "canvas",
-   "uses": 18,
+   "uses": 19,
    "screens": [
     "AccountDetails",
     "Checkout",
@@ -4618,7 +4617,8 @@
     "WebAccount",
     "WebMyLabTests",
     "WebReportInsights",
-    "WebSignIn"
+    "WebSignIn",
+    "M2Medicines"
    ],
    "elements": [
     [
@@ -7075,7 +7075,7 @@
    "screens": [
     "IconSystem",
     "M2Home",
-    "M2Labs"
+    "M2Insights"
    ],
    "elements": [
     [
@@ -9485,12 +9485,13 @@
    "kind": "line",
    "file": "icons/line/refresh.svg",
    "source": "canvas",
-   "uses": 1,
+   "uses": 2,
    "screens": [
     "M2Consults",
     "M2Home",
     "M2Medicines",
-    "OtpVerify"
+    "OtpVerify",
+    "M2Insights"
    ],
    "elements": [
     [
@@ -20334,7 +20335,6 @@
     "doc-upload",
     "droplet",
     "eye",
-    "file-check",
     "first-aid-kit",
     "heart",
     "heart-3",
@@ -20382,6 +20382,7 @@
     "bottle",
     "box",
     "cart",
+    "chevron-right",
     "doc-upload",
     "droplet",
     "eye",
@@ -20449,7 +20450,6 @@
     "phone",
     "search",
     "sprout",
-    "stetho",
     "thermometer",
     "thyroid",
     "trend-arrow",
@@ -20560,7 +20560,7 @@
   },
   "M2Insights": {
    "page": "9 \u00b7 Mobile 2.0 (approved 2026-10-21)",
-   "size": "390x1500",
+   "size": "390x1780",
    "icons": [
     "ayush-spark",
     "bottle",
@@ -20569,6 +20569,8 @@
     "droplet",
     "heart-3",
     "home",
+    "refresh",
+    "stetho",
     "thyroid",
     "user-5"
    ],

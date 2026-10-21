@@ -11,7 +11,7 @@
 
 ## Icons this screen must show (all of them)
 
-- **Line / solid icons (12):** `arrow-left`, `arrow-right`, `box`, `chevron-down`, `chevron-right`, `file-check`, `heart-3`, `home`, `refresh`, `shield`, `user-5`, `video-2`
+- **Line / solid icons (13):** `arrow-left`, `arrow-right`, `ayush-spark`, `box`, `chevron-down`, `chevron-right`, `file-check`, `heart-3`, `home`, `refresh`, `shield`, `user-5`, `video-2`
 - **3D icon tiles (0):** —
 - **Small glyphs (0):** —
 - **Brand mark:** —
@@ -37,11 +37,15 @@ Stress or anxiety / Sleep trouble / Low mood: a green note "The campus counsello
 
 Tier 2 (consult booking). Tier 1 part: the counsellor / Tele-MANAS note shown for stress, sleep and low mood (crisis route, DESIGN.md §2.4).
 
+## Design changes (founder, 2026-10-21)
+
+- Hero runs `service-blue-deep` → `brand-navy` (the `#3B82F6` light stop is gone). Doctor avatars end on a lighter tint so the initials stay AA.
+
 ## Missing icons
 
-Drawn on the board but not in `design/icons/icon-manifest.json`. Do not substitute a look-alike: these need a decision (add the drawing to the kit, or merge with an existing icon through `aliases.json`).
+None. The drawings this board had with no manifest icon were drawn into the kit on 2026-10-21 (house line style) and are in the list above:
 
-- eight-ray spark without a centre (Ask Ayush orb glyph in the pill nav) — at: pill nav: Ask Ayush orb
+- `ayush-spark` — eight-ray spark without a centre (Ask Ayush orb glyph in the pill nav) — at: pill nav: Ask Ayush orb
 
 ## Icon matching notes
 

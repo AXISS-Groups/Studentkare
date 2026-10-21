@@ -122,6 +122,7 @@
       "service-violet-deep": { "$value": "#6D28D9", "$description": "Service palette violet: gradient deep stop; on-hero (white) glyphs and text are AA on it. Same in both schemes (the tiles stay vivid on the dark canvas)" },
       "service-violet-soft": { "$value": "#EDE9FE", "$description": "Service palette violet: soft tile background (concern/category tiles, row icon tiles, product art). Muted deep tone in dark" },
       "service-violet-ink": { "$value": "#6D28D9", "$description": "Service palette violet: icon and short text on service-violet-soft (AA). Light tint in dark" },
+      "service-violet-shade": { "$value": "#4C1D95", "$description": "Service palette violet: dark end of a hero or card gradient that carries white text (service-violet-deep → service-violet-shade, founder 2026-10-21: no white text on a light stop). on-hero is AA on both. Same in both schemes" },
       "service-blue": { "$value": "#60A5FA", "$description": "Mobile 2.0 service palette (blue: consults, diabetes): gradient light stop of the glossy service tile, top-left. Decorative; white glyphs and text sit on the deep end" },
       "service-blue-deep": { "$value": "#1D4ED8", "$description": "Service palette blue: gradient deep stop; on-hero (white) glyphs and text are AA on it. Same in both schemes (the tiles stay vivid on the dark canvas)" },
       "service-blue-soft": { "$value": "#DBEAFE", "$description": "Service palette blue: soft tile background (concern/category tiles, row icon tiles, product art). Muted deep tone in dark" },
@@ -138,18 +139,22 @@
       "service-green-deep": { "$value": "#047857", "$description": "Service palette green: gradient deep stop; on-hero (white) glyphs and text are AA on it. Same in both schemes (the tiles stay vivid on the dark canvas)" },
       "service-green-soft": { "$value": "#D1FAE5", "$description": "Service palette green: soft tile background (concern/category tiles, row icon tiles, product art). Muted deep tone in dark" },
       "service-green-ink": { "$value": "#047857", "$description": "Service palette green: icon and short text on service-green-soft (AA). Light tint in dark" },
+      "service-green-shade": { "$value": "#065F46", "$description": "Service palette green: dark end of a hero or card gradient that carries white text (service-green-deep → service-green-shade, founder 2026-10-21: no white text on a light stop). on-hero is AA on both. Same in both schemes" },
       "service-amber": { "$value": "#FBBF24", "$description": "Mobile 2.0 service palette (amber: vaccines, vitamins): gradient light stop of the glossy service tile, top-left. Decorative; white glyphs and text sit on the deep end" },
       "service-amber-deep": { "$value": "#B45309", "$description": "Service palette amber: gradient deep stop; on-hero (white) glyphs and text are AA on it. Same in both schemes (the tiles stay vivid on the dark canvas)" },
       "service-amber-soft": { "$value": "#FEF3C7", "$description": "Service palette amber: soft tile background (concern/category tiles, row icon tiles, product art). Muted deep tone in dark" },
       "service-amber-ink": { "$value": "#B45309", "$description": "Service palette amber: icon and short text on service-amber-soft (AA). Light tint in dark" },
+      "service-amber-shade": { "$value": "#92400E", "$description": "Service palette amber: dark end of a hero or card gradient that carries white text (service-amber-deep → service-amber-shade, founder 2026-10-21: no white text on a light stop). on-hero is AA on both. Same in both schemes" },
       "service-orange": { "$value": "#FB923C", "$description": "Mobile 2.0 service palette (orange: report upload, fever): gradient light stop of the glossy service tile, top-left. Decorative; white glyphs and text sit on the deep end" },
       "service-orange-deep": { "$value": "#C2410C", "$description": "Service palette orange: gradient deep stop; on-hero (white) glyphs and text are AA on it. Same in both schemes (the tiles stay vivid on the dark canvas)" },
       "service-orange-soft": { "$value": "#FFEDD5", "$description": "Service palette orange: soft tile background (concern/category tiles, row icon tiles, product art). Muted deep tone in dark" },
       "service-orange-ink": { "$value": "#C2410C", "$description": "Service palette orange: icon and short text on service-orange-soft (AA). Light tint in dark" },
+      "service-orange-shade": { "$value": "#9A3412", "$description": "Service palette orange: dark end of a hero or card gradient that carries white text (service-orange-deep → service-orange-shade, founder 2026-10-21: no white text on a light stop). on-hero is AA on both. Same in both schemes" },
       "service-rose": { "$value": "#F472B6", "$description": "Mobile 2.0 service palette (rose: skin care, sexual health, vaccines card): gradient light stop of the glossy service tile, top-left. Decorative; white glyphs and text sit on the deep end" },
       "service-rose-deep": { "$value": "#BE185D", "$description": "Service palette rose: gradient deep stop; on-hero (white) glyphs and text are AA on it. Same in both schemes (the tiles stay vivid on the dark canvas)" },
       "service-rose-soft": { "$value": "#FCE7F3", "$description": "Service palette rose: soft tile background (concern/category tiles, row icon tiles, product art). Muted deep tone in dark" },
-      "service-rose-ink": { "$value": "#BE185D", "$description": "Service palette rose: icon and short text on service-rose-soft (AA). Light tint in dark" }
+      "service-rose-ink": { "$value": "#BE185D", "$description": "Service palette rose: icon and short text on service-rose-soft (AA). Light tint in dark" },
+      "service-rose-shade": { "$value": "#9D174D", "$description": "Service palette rose: dark end of a hero or card gradient that carries white text (service-rose-deep → service-rose-shade, founder 2026-10-21: no white text on a light stop). on-hero is AA on both. Same in both schemes" }
     },
     "dark": {
       "canvas":        { "$value": "#0E1428" },
@@ -270,6 +275,7 @@
       "service-violet-deep": { "$value": "#6D28D9" },
       "service-violet-soft": { "$value": "#2E2458" },
       "service-violet-ink": { "$value": "#C4B5FD" },
+      "service-violet-shade": { "$value": "#4C1D95" },
       "service-blue": { "$value": "#60A5FA" },
       "service-blue-deep": { "$value": "#1D4ED8" },
       "service-blue-soft": { "$value": "#1B2E5C" },
@@ -286,18 +292,22 @@
       "service-green-deep": { "$value": "#047857" },
       "service-green-soft": { "$value": "#12402F" },
       "service-green-ink": { "$value": "#6EE7B7" },
+      "service-green-shade": { "$value": "#065F46" },
       "service-amber": { "$value": "#FBBF24" },
       "service-amber-deep": { "$value": "#B45309" },
       "service-amber-soft": { "$value": "#3D2E10" },
       "service-amber-ink": { "$value": "#FCD34D" },
+      "service-amber-shade": { "$value": "#92400E" },
       "service-orange": { "$value": "#FB923C" },
       "service-orange-deep": { "$value": "#C2410C" },
       "service-orange-soft": { "$value": "#43260F" },
       "service-orange-ink": { "$value": "#FDBA74" },
+      "service-orange-shade": { "$value": "#9A3412" },
       "service-rose": { "$value": "#F472B6" },
       "service-rose-deep": { "$value": "#BE185D" },
       "service-rose-soft": { "$value": "#45192F" },
-      "service-rose-ink": { "$value": "#F9A8D4" }
+      "service-rose-ink": { "$value": "#F9A8D4" },
+      "service-rose-shade": { "$value": "#9D174D" }
     }
   },
   "contrast-minimum": {
@@ -337,7 +347,7 @@
       ["on-camera", "camera-bg", "text"], ["on-hero", "camera-bg", "text"], ["camera-accent", "camera-bg", "non-text"],
       ["service-violet-ink", "service-violet-soft", "text"], ["on-hero", "service-violet-deep", "text"], ["service-blue-ink", "service-blue-soft", "text"], ["on-hero", "service-blue-deep", "text"], ["service-sky-ink", "service-sky-soft", "text"], ["on-hero", "service-sky-deep", "text"],
       ["service-teal-ink", "service-teal-soft", "text"], ["on-hero", "service-teal-deep", "text"], ["service-green-ink", "service-green-soft", "text"], ["on-hero", "service-green-deep", "text"], ["service-amber-ink", "service-amber-soft", "text"], ["on-hero", "service-amber-deep", "text"],
-      ["service-orange-ink", "service-orange-soft", "text"], ["on-hero", "service-orange-deep", "text"], ["service-rose-ink", "service-rose-soft", "text"], ["on-hero", "service-rose-deep", "text"], ["on-hero", "brand-navy-light", "text"], ["on-hero", "service-indigo", "non-text"]
+      ["service-orange-ink", "service-orange-soft", "text"], ["on-hero", "service-orange-deep", "text"], ["service-rose-ink", "service-rose-soft", "text"], ["on-hero", "service-rose-deep", "text"], ["on-hero", "brand-navy-light", "text"], ["on-hero", "service-indigo", "non-text"], ["on-hero", "service-violet-shade", "text"], ["on-hero", "service-amber-shade", "text"], ["on-hero", "service-orange-shade", "text"], ["on-hero", "service-rose-shade", "text"], ["on-hero", "service-green-shade", "text"]
     ]
   },
   "font": {

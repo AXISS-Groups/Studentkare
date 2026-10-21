@@ -118,6 +118,7 @@
   --sk-color-service-violet-deep: #6D28D9;
   --sk-color-service-violet-soft: #EDE9FE;
   --sk-color-service-violet-ink: #6D28D9;
+  --sk-color-service-violet-shade: #4C1D95;
   --sk-color-service-blue: #60A5FA;
   --sk-color-service-blue-deep: #1D4ED8;
   --sk-color-service-blue-soft: #DBEAFE;
@@ -134,18 +135,22 @@
   --sk-color-service-green-deep: #047857;
   --sk-color-service-green-soft: #D1FAE5;
   --sk-color-service-green-ink: #047857;
+  --sk-color-service-green-shade: #065F46;
   --sk-color-service-amber: #FBBF24;
   --sk-color-service-amber-deep: #B45309;
   --sk-color-service-amber-soft: #FEF3C7;
   --sk-color-service-amber-ink: #B45309;
+  --sk-color-service-amber-shade: #92400E;
   --sk-color-service-orange: #FB923C;
   --sk-color-service-orange-deep: #C2410C;
   --sk-color-service-orange-soft: #FFEDD5;
   --sk-color-service-orange-ink: #C2410C;
+  --sk-color-service-orange-shade: #9A3412;
   --sk-color-service-rose: #F472B6;
   --sk-color-service-rose-deep: #BE185D;
   --sk-color-service-rose-soft: #FCE7F3;
   --sk-color-service-rose-ink: #BE185D;
+  --sk-color-service-rose-shade: #9D174D;
   --sk-font-sans: "Plus Jakarta Sans", "Noto Sans Telugu", "Noto Sans Devanagari", Manrope, system-ui, sans-serif;
   --sk-font-serif: Georgia, serif;
   --sk-font-mono: "IBM Plex Mono", ui-monospace, monospace;
@@ -319,6 +324,7 @@
     --sk-color-service-violet-deep: #6D28D9;
     --sk-color-service-violet-soft: #2E2458;
     --sk-color-service-violet-ink: #C4B5FD;
+    --sk-color-service-violet-shade: #4C1D95;
     --sk-color-service-blue: #60A5FA;
     --sk-color-service-blue-deep: #1D4ED8;
     --sk-color-service-blue-soft: #1B2E5C;
@@ -335,18 +341,22 @@
     --sk-color-service-green-deep: #047857;
     --sk-color-service-green-soft: #12402F;
     --sk-color-service-green-ink: #6EE7B7;
+    --sk-color-service-green-shade: #065F46;
     --sk-color-service-amber: #FBBF24;
     --sk-color-service-amber-deep: #B45309;
     --sk-color-service-amber-soft: #3D2E10;
     --sk-color-service-amber-ink: #FCD34D;
+    --sk-color-service-amber-shade: #92400E;
     --sk-color-service-orange: #FB923C;
     --sk-color-service-orange-deep: #C2410C;
     --sk-color-service-orange-soft: #43260F;
     --sk-color-service-orange-ink: #FDBA74;
+    --sk-color-service-orange-shade: #9A3412;
     --sk-color-service-rose: #F472B6;
     --sk-color-service-rose-deep: #BE185D;
     --sk-color-service-rose-soft: #45192F;
     --sk-color-service-rose-ink: #F9A8D4;
+    --sk-color-service-rose-shade: #9D174D;
   }
 }
 :root[data-theme="dark"] {
@@ -468,6 +478,7 @@
   --sk-color-service-violet-deep: #6D28D9;
   --sk-color-service-violet-soft: #2E2458;
   --sk-color-service-violet-ink: #C4B5FD;
+  --sk-color-service-violet-shade: #4C1D95;
   --sk-color-service-blue: #60A5FA;
   --sk-color-service-blue-deep: #1D4ED8;
   --sk-color-service-blue-soft: #1B2E5C;
@@ -484,18 +495,22 @@
   --sk-color-service-green-deep: #047857;
   --sk-color-service-green-soft: #12402F;
   --sk-color-service-green-ink: #6EE7B7;
+  --sk-color-service-green-shade: #065F46;
   --sk-color-service-amber: #FBBF24;
   --sk-color-service-amber-deep: #B45309;
   --sk-color-service-amber-soft: #3D2E10;
   --sk-color-service-amber-ink: #FCD34D;
+  --sk-color-service-amber-shade: #92400E;
   --sk-color-service-orange: #FB923C;
   --sk-color-service-orange-deep: #C2410C;
   --sk-color-service-orange-soft: #43260F;
   --sk-color-service-orange-ink: #FDBA74;
+  --sk-color-service-orange-shade: #9A3412;
   --sk-color-service-rose: #F472B6;
   --sk-color-service-rose-deep: #BE185D;
   --sk-color-service-rose-soft: #45192F;
   --sk-color-service-rose-ink: #F9A8D4;
+  --sk-color-service-rose-shade: #9D174D;
 }
 @media (prefers-reduced-motion: reduce) {
   :root { --sk-duration-fast: 0ms; --sk-duration-base: 0ms; --sk-duration-sheet: 0ms; }

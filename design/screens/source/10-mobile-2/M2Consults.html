@@ -25,7 +25,7 @@ a:focus-visible,button:focus-visible{outline:3px solid #6D5BFF;outline-offset:3p
 </helmet>
 <div style="width: 390px; height: 1640px; box-sizing: border-box; background: #FAF8FF; position: relative; overflow: hidden;">
 
-  <div style="position: relative; padding: 18px 20px 26px; border-radius: 0 0 36px 36px; background: linear-gradient(160deg, #3B82F6 0%, #1D4ED8 55%, #0C0494 100%); color: #FFFFFF; overflow: hidden; animation: skRise .5s both;">
+  <div style="position: relative; padding: 18px 20px 26px; border-radius: 0 0 36px 36px; background: linear-gradient(160deg, #1D4ED8 0%, #0C0494 100%); color: #FFFFFF; overflow: hidden; animation: skRise .5s both;">
     <span aria-hidden="true" style="position: absolute; right: -70px; top: 40px; width: 230px; height: 230px; border-radius: 999px; border: 30px solid rgba(255,255,255,.08);"></span>
     <header style="position: relative; display: flex; align-items: center; gap: 12px;">
       <a href="Main.dc.html" aria-label="Back to Home" style="width: 44px; height: 44px; border-radius: 999px; background: rgba(255,255,255,.16); display: flex; align-items: center; justify-content: center;"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"></path></svg></a>
@@ -125,9 +125,9 @@ class Component extends DCLogic {
       })),
       mindPicked: mind.indexOf(s.chip) >= 0,
       doctors: [
-        { name: 'Dr. [Name]', initials: 'DR', spec: 'General medicine', years: '[n] yrs', langs: 'English, Telugu', next: 'Free at 4:30 pm', avatar: av('#DBEAFE', '#93C5FD', '#1D4ED8') },
-        { name: 'Dr. [Name]', initials: 'DR', spec: 'Dermatology', years: '[n] yrs', langs: 'English, Hindi', next: 'Free at 6:00 pm', avatar: av('#FCE7F3', '#F9A8D4', '#9D174D') },
-        { name: 'Dr. [Name]', initials: 'DR', spec: 'Psychiatry', years: '[n] yrs', langs: 'English, Telugu', next: 'Free tomorrow', avatar: av('#D1FAE5', '#6EE7B7', '#047857') }
+        { name: 'Dr. [Name]', initials: 'DR', spec: 'General medicine', years: '[n] yrs', langs: 'English, Telugu', next: 'Free at 4:30 pm', avatar: av('#DBEAFE', '#BFDBFE', '#1D4ED8') },
+        { name: 'Dr. [Name]', initials: 'DR', spec: 'Dermatology', years: '[n] yrs', langs: 'English, Hindi', next: 'Free at 6:00 pm', avatar: av('#FCE7F3', '#FBCFE8', '#9D174D') },
+        { name: 'Dr. [Name]', initials: 'DR', spec: 'Psychiatry', years: '[n] yrs', langs: 'English, Telugu', next: 'Free tomorrow', avatar: av('#D1FAE5', '#A7F3D0', '#065F46') }
       ],
       faq: faqs.map(([k, v], i) => ({ k, v, open: s.open === i, expanded: s.open === i ? 'true' : 'false', toggle: () => this.setState({ open: s.open === i ? -1 : i }), chev: 'flex-shrink: 0; transition: transform .25s; transform: rotate(' + (s.open === i ? '180deg' : '0deg') + ');' }))
     };

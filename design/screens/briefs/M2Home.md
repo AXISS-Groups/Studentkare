@@ -11,7 +11,7 @@
 
 ## Icons this screen must show (all of them)
 
-- **Line / solid icons (33):** `arrow-right`, `bottle`, `box`, `calendar-2`, `cart`, `chevron-down`, `doc`, `droplet`, `eye`, `file-check`, `first-aid-kit`, `heart`, `heart-3`, `home`, `home-2`, `lab`, `map-pin-2`, `mic`, `moon-2`, `phone`, `pill-3`, `pill-alt`, `plus`, `qr-code-2`, `refresh`, `search`, `shield`, `shield-alert`, `star`, `stetho`, `syringe`, `thermo`, `user-5`
+- **Line / solid icons (38):** `arrow-right`, `ayush-spark`, `bottle`, `box`, `calendar-2`, `card-lines`, `cart`, `chevron-down`, `doc`, `doc-upload`, `droplet`, `eye`, `first-aid-kit`, `heart`, `heart-3`, `home`, `home-2`, `lab`, `map-pin-2`, `med-bottle`, `mic`, `moon-2`, `phone`, `pill-3`, `pill-alt`, `plus`, `plus-slash`, `qr-code-2`, `refresh`, `search`, `shield`, `shield-alert`, `star`, `stetho`, `syringe`, `thermo`, `trend-arrow`, `user-5`
 - **3D icon tiles (0):** —
 - **Small glyphs (0):** —
 - **Brand mark:** —
@@ -37,17 +37,24 @@ Default picture: For You tab, highlight 1 ("Three checks, one visit"). Highlight
 
 Tier 2 (home, like HomeDiscover). Tier 1 parts inside it: the "Medicines today" card (the student's own medicine and dose), the SOS button and the emergency-card tile — build those from reviewed components, not new code.
 
+## Design changes (founder, 2026-10-21)
+
+- Trust strip removed ("Licensed partner pharmacies", "Every Rx checked by a pharmacist", "Price shown before you pay"): AGENTS.md rule 6, no claim without an evidence source. Put a line back only when partner verification records can prove it.
+- "Medicines today" stays (founder, 2026-10-21): it is the student's own schedule, read from the clinical endpoints only, never passed into catalogue or commerce queries.
+- Highlights 2 and 3 run `service-green-deep` → `service-green-shade` and `service-orange-deep` → `service-orange-shade`; the eyebrow chip is a dark veil and the body line is solid white, so every line is AA across the whole card.
+- "Sexual health" tile uses the rose family (`service-rose-soft` + `service-rose-ink`), not red.
+
 ## Missing icons
 
-Drawn on the board but not in `design/icons/icon-manifest.json`. Do not substitute a look-alike: these need a decision (add the drawing to the kit, or merge with an existing icon through `aliases.json`).
+None. The drawings this board had with no manifest icon were drawn into the kit on 2026-10-21 (house line style) and are in the list above:
 
-- document with an upload arrow (upload a prescription / report) — at: search row "Upload a prescription" button; highlight 3 card
-- card with text lines, no portrait (emergency card / insurance e-card) — at: On campus: Emergency card tile
-- eight-ray spark without a centre (Ask Ayush orb glyph in the pill nav) — at: pill nav: Ask Ayush orb
-- medicine bottle with a cross — at: Shop by concern: Vitamins
-- open tray / till (price shown before you pay) — at: trust strip: "Price shown before you pay"
-- plus with one diagonal stroke (generics highlight) — at: highlight 2 (GENERICS) card
-- trend line with an up-right arrow — at: Shop by concern: Sports injury
+- `doc-upload` — document with an upload arrow (upload a prescription / report) — at: search row "Upload a prescription" button; highlight 3 card
+- `card-lines` — card with text lines, no portrait (emergency card / insurance e-card) — at: On campus: Emergency card tile
+- `ayush-spark` — eight-ray spark without a centre (Ask Ayush orb glyph in the pill nav) — at: pill nav: Ask Ayush orb
+- `med-bottle` — medicine bottle with a cross — at: Shop by concern: Vitamins
+- `tray-open` — open tray / till (price shown before you pay) — at: trust strip: "Price shown before you pay" (the trust strip is gone, so the board no longer draws it)
+- `plus-slash` — plus with one diagonal stroke (generics highlight) — at: highlight 2 (GENERICS) card
+- `trend-arrow` — trend line with an up-right arrow — at: Shop by concern: Sports injury
 
 ## Icon matching notes
 

@@ -95,9 +95,9 @@ a:focus-visible,button:focus-visible{outline:3px solid #6D5BFF;outline-offset:3p
         <a href="{{ s.href }}" class="sk-card" style="{{ s.cardStyle }}">
           <span aria-hidden="true" style="position: absolute; right: -40px; bottom: -60px; width: 190px; height: 190px; border-radius: 999px; border: 26px solid rgba(255,255,255,.12);"></span>
           <span aria-hidden="true" style="position: absolute; right: 40px; top: -50px; width: 120px; height: 120px; border-radius: 999px; background: rgba(255,255,255,.10);"></span>
-          <span style="position: relative; align-self: flex-start; padding: 5px 11px; border-radius: 999px; background: rgba(255,255,255,.18); color: #FFFFFF; font-size: 11px; font-weight: 800; letter-spacing: .4px;">{{ s.tag }}</span>
+          <span style="position: relative; align-self: flex-start; padding: 5px 11px; border-radius: 999px; background: rgba(0,0,0,.16); color: #FFFFFF; font-size: 11px; font-weight: 800; letter-spacing: .4px;">{{ s.tag }}</span>
           <span style="position: relative; font-size: 23px; line-height: 28px; font-weight: 800; letter-spacing: -0.6px; color: #FFFFFF; max-width: 250px;">{{ s.title }}</span>
-          <span style="position: relative; font-size: 13px; line-height: 19px; font-weight: 600; color: rgba(255,255,255,.86); max-width: 240px;">{{ s.body }}</span>
+          <span style="position: relative; font-size: 13px; line-height: 19px; font-weight: 600; color: #FFFFFF; max-width: 240px;">{{ s.body }}</span>
           <span style="position: relative; align-self: flex-start; margin-top: 4px; height: 38px; padding: 0 16px; border-radius: 999px; background: #FFFFFF; color: {{ s.ink }}; font-size: 13px; font-weight: 800; display: flex; align-items: center; gap: 6px;">{{ s.cta }}
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></span>
           <span aria-hidden="true" style="position: absolute; right: 22px; top: 52px; width: 64px; height: 64px; border-radius: 20px; background: rgba(255,255,255,.16); display: flex; align-items: center; justify-content: center; animation: skFloat 3.6s ease-in-out infinite;">
@@ -196,11 +196,6 @@ a:focus-visible,button:focus-visible{outline:3px solid #6D5BFF;outline-offset:3p
     </div>
   </section>
 
-  <div style="margin: 20px 20px 0; padding: 14px 16px; border-radius: 20px; background: #FFFFFF; display: flex; justify-content: space-between; gap: 8px; animation: skRise .55s .45s both;">
-    <span style="display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#047857" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6z"></path><path d="M8.5 12l2.5 2.5 4.5-5"></path></svg><span style="font-size: 10.5px; font-weight: 700; text-align: center; color: #464555; line-height: 13px;">Licensed partner pharmacies</span></span>
-    <span style="display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0C0494" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"></path><path d="M14 3v5h5M9 14l2 2 4-4"></path></svg><span style="font-size: 10.5px; font-weight: 700; text-align: center; color: #464555; line-height: 13px;">Every Rx checked by a pharmacist</span></span>
-    <span style="display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#B45309" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9h18M5 9V6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v3M5 9v9a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V9M10 13h4"></path></svg><span style="font-size: 10.5px; font-weight: 700; text-align: center; color: #464555; line-height: 13px;">Price shown before you pay</span></span>
-  </div>
 
   <a href="tel:" aria-label="Call to order" style="position: absolute; right: 20px; bottom: 112px; height: 48px; padding: 0 16px 0 12px; border-radius: 999px; background: #FFFFFF; color: #0C0494; font-size: 13px; font-weight: 800; display: flex; align-items: center; gap: 8px; box-shadow: 0 12px 28px rgba(12,4,148,.22); animation: skFloat 4s ease-in-out infinite;">
     <span style="width: 30px; height: 30px; border-radius: 999px; background: linear-gradient(145deg, #2B20C9, #0C0494); display: flex; align-items: center; justify-content: center;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"></path></svg></span>
@@ -246,8 +241,8 @@ class Component extends DCLogic {
     });
     const slideDefs = [
       { tag: 'SEMESTER HEALTH CHECK', title: 'Three checks, one visit to the campus clinic', body: 'Blood count, vitamin D and an eye test, booked together.', cta: 'Book the check', href: 'Labs.dc.html', a: '#2B20C9', b: '#0C0494', ink: '#0C0494', icon: 'M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.8 3h10.4A2 2 0 0 0 19 18l-5-9V3M7.5 14h9' },
-      { tag: 'GENERICS', title: 'Same medicine, a lower price', body: 'Same composition and strength. Your pharmacist confirms the swap.', cta: 'See generic options', href: 'Product.dc.html', a: '#10B981', b: '#065F46', ink: '#065F46', icon: 'M5 12h14M12 5v14M7 7l10 10' },
-      { tag: 'ANY LAB, EXPLAINED', title: 'Upload a report from any lab', body: 'We read the values; a doctor writes what they mean for you.', cta: 'Upload a report', href: 'ReportUpload.dc.html', a: '#F97316', b: '#C2410C', ink: '#C2410C', icon: 'M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5M12 17v-6M9.5 13.5L12 11l2.5 2.5' }
+      { tag: 'GENERICS', title: 'Same medicine, a lower price', body: 'Same composition and strength. Your pharmacist confirms the swap.', cta: 'See generic options', href: 'Product.dc.html', a: '#047857', b: '#065F46', ink: '#065F46', icon: 'M5 12h14M12 5v14M7 7l10 10' },
+      { tag: 'ANY LAB, EXPLAINED', title: 'Upload a report from any lab', body: 'We read the values; a doctor writes what they mean for you.', cta: 'Upload a report', href: 'ReportUpload.dc.html', a: '#C2410C', b: '#9A3412', ink: '#C2410C', icon: 'M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5M12 17v-6M9.5 13.5L12 11l2.5 2.5' }
     ];
     const slides = slideDefs.map((d, i) => ({
       ...d, on: s.slide === i, pressed: s.slide === i ? 'true' : 'false',
@@ -263,7 +258,7 @@ class Component extends DCLogic {
       c('Stress and sleep', '#5B21B6', '#EDE9FE', 'M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z'),
       c('Sports injury', '#1D4ED8', '#DBEAFE', 'M4 14l6-6 4 4 6-6M14 6h6v6'),
       c('Eye strain', '#0F766E', '#CCFBF1', 'M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12zM12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z'),
-      c('Sexual health', '#9F1239', '#FFE4E6', 'M12 21s-8-5.2-8-11.2A4.6 4.6 0 0 1 12 7a4.6 4.6 0 0 1 8 2.8C20 15.8 12 21 12 21z'),
+      c('Sexual health', '#BE185D', '#FCE7F3', 'M12 21s-8-5.2-8-11.2A4.6 4.6 0 0 1 12 7a4.6 4.6 0 0 1 8 2.8C20 15.8 12 21 12 21z'),
       c('Vitamins', '#B45309', '#FEF3C7', 'M9 3h6v3H9zM7 6h10v13a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2zM10 12h4M12 10v4'),
       c('First aid', '#047857', '#D1FAE5', 'M4 7h16v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zM9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M12 11v6M9 14h6')
     ];

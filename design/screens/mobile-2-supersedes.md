@@ -4,7 +4,14 @@ Krishna (founder) approved the *StudentKare Mobile 2.0* canvas on **2026-10-21**
 
 The canvas notes say: every existing StudentKare feature stays (SOS, emergency card, check-in pass, campus clinic, camps, crisis support); sample data throughout; **prices are placeholders** (`₹[price]`, `[n]`, `[Name]`) until the catalogue fills them; *not copied from 1mg*: a health score, and product suggestions from lab results.
 
-Briefs: `briefs/M2*.md` · pictures: `screenshots/10-mobile-2/` · source: `source/10-mobile-2/` (the source files are copied unchanged and load `./support.js`; to click through one, serve it next to a copy of `source/support.js`).
+**Founder changes, 2026-10-21** (made on the canvas boards and the kit sources alike; pictures re-rendered):
+- **Rule L on store boards.** M2Home keeps "Medicines today". The student's prescribed refills left M2Medicines (a plain link card to My health replaces them) and the doctor-ordered repeat test left M2Labs. Both now sit on M2Insights as a "Due from your care" card pair (*Refills due* → M2Medicines, *Repeat test your doctor ordered* → M2Labs). No other personal health data is on a store board.
+- **No unevidenced claims.** The M2Home trust strip ("Licensed partner pharmacies", "Every Rx checked by a pharmacist", "Price shown before you pay") is gone (AGENTS.md rule 6).
+- **Contrast.** Every hero and card with white text now runs `service-<hue>-deep` → `service-<hue>-shade` (new tokens), so the text is AA across the whole gradient (see §2).
+- **No red outside SOS / danger.** M2AskAyush's out-of-range segment is amber; red tiles (Sexual health, Heart and blood, PCOS, Iron) and the Labs tube art moved to the rose family. Red stays only on SOS, the emergency card and the Tele-MANAS crisis line.
+- **Icons.** The 20 missing drawings are now kit icons (§4).
+
+Briefs: `briefs/M2*.md` · pictures: `screenshots/10-mobile-2/` · source: `source/10-mobile-2/` (the source files are identical to the canvas `.dc.html` boards, including the founder's 2026-10-21 changes below, and load `./support.js`; to click through one, serve it next to a copy of `source/support.js`).
 
 ---
 
@@ -15,7 +22,7 @@ Briefs: `briefs/M2*.md` · pictures: `screenshots/10-mobile-2/` · source: `sour
 | M2 screen | Replaces | Extends / links to (old board stays) | Implemented today by | Route |
 |---|---|---|---|---|
 | M2Home | HomeDiscover | YourCare (the "Today for you" cards), MyPass, EmergencyCard, HostelVisit, camps (the "On campus" tiles open them) | `src/features/discover/views/HomeDiscoverView.tsx`, `HomeDiscoverRoute.tsx`, `src/features/phoneKit/studentPhoneBoards.tsx`, `src/screens/workspace/StudentPhoneFrame.tsx`, `src/design-system/navigation/TabBar.tsx`, `src/native/StudentHomeScreen.tsx`, `src/native/StudentTabBar.tsx` | `/health` (phone board), `/home` |
-| M2Medicines | ShopHome (medicine side), ProductList | RefillRequest (auto-refill), PrescriptionUpload (Order with prescription), Cart, Checkout | `src/features/shopPhone/views/ShopHomeView.tsx`, `ProductListView.tsx` (*ip*), `ShopFlow.tsx`, `ShopPhoneRoute.tsx`, `viewmodel/PhoneShopViewModel.ts`; refills `src/features/requests/views/RequestsViews.tsx` (*ip*); Rx upload `src/screens/marketplace/LiveMarketplaceScreen.tsx` (*ip*) | `/shop`, `/refill-request`, `/prescriptions` |
+| M2Medicines | ShopHome (medicine side), ProductList | PrescriptionUpload (Order with prescription), Cart, Checkout | `src/features/shopPhone/views/ShopHomeView.tsx`, `ProductListView.tsx` (*ip*), `ShopFlow.tsx`, `ShopPhoneRoute.tsx`, `viewmodel/PhoneShopViewModel.ts`; refills `src/features/requests/views/RequestsViews.tsx` (*ip*); Rx upload `src/screens/marketplace/LiveMarketplaceScreen.tsx` (*ip*) | `/shop`, `/refill-request`, `/prescriptions` |
 | M2Product | ProductDetail | Cart | `src/features/shopPhone/views/ProductDetailView.tsx`, `PhoneShopViewModel.ts` | inside `/shop` |
 | M2Labs | LabPackages, LabResults | ResultLabBooked, MyReports | `src/features/labBooking/views/LabPackagesView.tsx`, `LabBookingFlow.tsx`, `LabBookingOverlay.tsx`, `viewmodel/LabBookingViewModel.ts`, `data/LabBookingRepository.ts`; `src/features/discover/views/LabResultsView.tsx` | `/lab-tests` (student tab), `/search` |
 | M2Consults | DoctorResults | Appointments, Teleconsult, ConsultSummary (e-prescription), CrisisSupport (counsellor note) | `src/features/discover/views/DoctorResultsView.tsx`, `SearchRoute.tsx`; `src/features/appointments/views/AppointmentsBoard.tsx`; Teleconsult `src/features/teleconsult/views/TeleconsultNativeView.tsx` (*ip*) | `/search`, `/appointments` |
@@ -47,7 +54,7 @@ Nothing on Mobile 2.0 replaces these; keep the current boards and code:
 
 ## 2. Colours
 
-Tokens added to `design/tokens/studentkare.tokens.json` (light + dark, contrast pairs, DESIGN.md §3 row): a **service palette** of 9 hues and 3 navy/orb helpers (35 roles). Gradient light stops are decorative: white text or the only icon contrast never sits on them (white on a light stop is 1.7–2.7:1).
+Tokens added to `design/tokens/studentkare.tokens.json` (light + dark, contrast pairs, DESIGN.md §3 row): a **service palette** of 9 hues and 3 navy/orb helpers (35 roles), plus five `-shade` stops added on 2026-10-21 (40 roles). Gradient light stops are decorative: white text never sits on them (white on a light stop is 1.7–2.7:1). A hero or card that carries white text runs `service-<hue>-deep` → `service-<hue>-shade` (white is 5.0–7.1:1 on the deep stop, higher on the shade).
 
 | Token | Light | Dark | Use |
 |---|---|---|---|
@@ -63,7 +70,9 @@ Tokens added to `design/tokens/studentkare.tokens.json` (light + dark, contrast 
 | `service-orange` … | `#FB923C` / `#C2410C` / `#FFEDD5` / `#C2410C` | `#43260F`, `#FDBA74` | report upload, fever, scans, Student Plus |
 | `service-rose` … | `#F472B6` / `#BE185D` / `#FCE7F3` / `#BE185D` | `#45192F`, `#F9A8D4` | skin care, sexual health, iron, vaccines card |
 
-`-deep` and the light stop keep their light values in dark mode (vivid tiles on the dark canvas, like the navy surfaces).
+| `service-{green,orange,violet,amber,rose}-shade` | `#065F46` / `#9A3412` / `#4C1D95` / `#92400E` / `#9D174D` | same | dark end of a hero or card gradient with white text (`-deep` → `-shade`); contrast pair `on-hero` on each |
+
+`-deep`, `-shade` and the light stop keep their light values in dark mode (vivid tiles on the dark canvas, like the navy surfaces).
 
 ### Board colours → tokens
 
@@ -80,21 +89,31 @@ Tokens added to `design/tokens/studentkare.tokens.json` (light + dark, contrast 
 | Inactive dots `#C7C4D8`, `#D4D2E3` switch track off | `rule-strong` |
 | Service tiles (M2Home rail, M2Labs quick actions, M2ReportUpload sources, M2Profile document cards): `#6D5BFF`→`#0C0494`, `#14B8A6`→`#0F766E`, `#A78BFA`→`#6D28D9`, `#60A5FA`→`#1D4ED8`, `#FBBF24`→`#B45309`, `#34D399`→`#047857`, `#38BDF8`→`#0369A1`, `#FB923C`→`#C2410C`, `#F472B6`→`#BE185D` | `service-<hue>` → `service-<hue>-deep` (indigo: `service-indigo` → `brand-navy`) |
 | Tile gloss `radial(rgba(255,255,255,.55) → 0)` and card shine | `color-mix()` of `surface` / `illustration-highlight` with transparent; `aria-hidden` |
-| Concern / category / row-icon tiles: `#FFEDD5`+`#C2410C`, `#FCE7F3`+`#BE185D`, `#FFE4E6`+`#9F1239` / `#BE123C` / `#B91C1C`, `#EDE9FE`+`#5B21B6` / `#6D28D9` / `#7C3AED` / `#4C1D95`, `#DBEAFE`+`#1D4ED8`, `#E0E7FF`+`#4338CA`, `#CCFBF1`+`#0F766E`, `#D1FAE5`+`#047857`, `#DCFCE7`+`#15803D`, `#FEF3C7`+`#B45309`, `#FEF9C3`+`#A16207`, `#E0F2FE`+`#0369A1`, `#ECFEFF`+`#0E7490`, `#FFF4E5`/`#FFF7ED`+`#C2410C` | `service-<hue>-soft` + `service-<hue>-ink`: orange, rose (pink and red merge), violet (all purples), blue, indigo (`surface-3` + `action`), teal, green, amber (yellow merges), sky (cyan merges) |
+| Concern / category / row-icon tiles: `#FFEDD5`+`#C2410C`, `#FCE7F3`+`#BE185D` / `#9D174D` (the red tiles, `#FFE4E6`+`#9F1239` / `#BE123C` / `#B91C1C`, are now rose on the boards), `#EDE9FE`+`#5B21B6` / `#6D28D9` / `#7C3AED` / `#4C1D95`, `#DBEAFE`+`#1D4ED8`, `#E0E7FF`+`#4338CA`, `#CCFBF1`+`#0F766E`, `#D1FAE5`+`#047857`, `#DCFCE7`+`#15803D`, `#FEF3C7`+`#B45309`, `#FEF9C3`+`#A16207`, `#E0F2FE`+`#0369A1`, `#ECFEFF`+`#0E7490`, `#FFF4E5`/`#FFF7ED`+`#C2410C` | `service-<hue>-soft` + `service-<hue>-ink`: orange, rose (pink and red merge), violet (all purples), blue, indigo (`surface-3` + `action`), teal, green, amber (yellow merges), sky (cyan merges) |
 | Devices / Privacy tile `#F1F5F9`+`#334155`; neutral pills `#F1F5F9`+`#475569` | `neutral-bg` + `text-2` |
-| Product art gradients (`#CCFBF1`→`#99F6E4`, `#FEF3C7`→`#FDE68A`, `#DBEAFE`→`#BFDBFE`, `#E0F2FE`→`#BAE6FD`, `#FCE7F3`→`#FBCFE8`, `#FEF9C3`→`#FDE68A`), avatar gradients (`#EEF2FF`→`#DAD7FF`, `#DBEAFE`→`#93C5FD`, `#FCE7F3`→`#F9A8D4`, `#D1FAE5`→`#6EE7B7`) | `service-<hue>-soft` → `color-mix(service-<hue>-soft, service-<hue> 25%)`; initials in `service-<hue>-ink` |
-| Hero cards: highlight 2 and GENERICS `#10B981`→`#065F46`; highlight 3 / Add a lab report `#F97316`→`#C2410C`; Labs `#8B5CF6`→`#4C1D95`; Consults `#3B82F6`→`#1D4ED8`→`#0C0494`; Vaccines `#FBBF24`→`#F59E0B`→`#B45309`; Insurance-cover start `#10B981`→`#047857` | `service-green`, `service-orange`, `service-violet`, `service-blue`, `service-amber` → their `-deep` (see the AA note below) |
+| Product art gradients (`#CCFBF1`→`#99F6E4`, `#FEF3C7`→`#FDE68A`, `#DBEAFE`→`#BFDBFE`, `#E0F2FE`→`#BAE6FD`, `#FCE7F3`→`#FBCFE8`, `#FEF9C3`→`#FDE68A`), avatar gradients (`#EEF2FF`→`#DAD7FF`, `#DBEAFE`→`#BFDBFE`, `#FCE7F3`→`#FBCFE8`, `#D1FAE5`→`#A7F3D0`; were `#93C5FD` / `#F9A8D4` / `#6EE7B7`, too dark for the initials) | `service-<hue>-soft` → `color-mix(service-<hue>-soft, service-<hue> 25%)`; initials in `service-<hue>-ink` (green: `service-green-shade`); check the initials stay 4.5:1 on the end stop |
+| Hero cards (2026-10-21): highlight 2, GENERICS, Start a claim, done tick, Prescriptions card `#047857`→`#065F46`; highlight 3, Add a lab report, Scans card, Student Plus tile `#C2410C`→`#9A3412`; Labs hero and step numbers `#6D28D9`→`#4C1D95`; Consults `#1D4ED8`→`#0C0494`; Vaccines hero, badge and Pick a slot `#B45309`→`#92400E`; Vaccines card `#BE185D`→`#9D174D` | `service-<hue>-deep` → `service-<hue>-shade`; Consults `service-blue-deep` → `brand-navy` |
 | Policy card and emergency-card tile `#312E81`→`#1E1B4B`→`#131B2E`, `#1E1B4B`→`#131B2E` | `brand-navy` → `text` (dark ink panel); `info` and `illustration-ink` are the same hexes but are not UI roles |
 | Profile emergency card `#B91C1C`→`#7F1D1D` | `danger-fill` (flat). It is the emergency card, so the danger family fits; a gradient needs a design decision |
-| Status: in range `#ECFDF5`+`#047857`, outside range `#FFFBEB`+`#92400E`, dots `#34D399` / `#F59E0B`, claim bars `#34D399`→`#047857` / `#FBBF24`→`#D97706`, range bars `#A7F3D0` / `#FDE68A` | `positive-bg` + `positive`, `attention-bg` + `attention`, `positive-fill`, `attention`; range bands as `color-mix()` of `positive` / `attention` with `surface` |
+| Status: in range `#ECFDF5`+`#047857`, outside range `#FFFBEB`+`#92400E`, dots `#34D399` / `#F59E0B`, claim bars `#34D399`→`#047857` / `#FBBF24`→`#D97706`, range bars `#A7F3D0` / `#FDE68A` / `#FBBF24` (M2AskAyush: in range, near, out of range; no red) | `positive-bg` + `positive`, `attention-bg` + `attention`, `positive-fill`, `attention`; range bands as `color-mix()` of `positive` / `attention` with `surface` |
 | SOS `#E11D48`; done ticks `#10B981` | `danger-fill`; `positive-fill` |
 | Doctor's note card `#ECFDF5`→`#FFFFFF`, Vaccines steps `#FFFBEB`→`#FFFFFF`, Ask Ayush card `#EEF2FF`→`#F5F3FF`→`#ECFEFF`, Orders map `#EEF2FF`→`#E0E7FF`→`#C7D2FE` | `positive-bg`, `service-amber-soft`, `surface-3`, and `surface-3` → `color-mix(surface-3, service-indigo 15%)` for the map (not `illustration-indigo-soft`: illustration tokens are not UI) |
 | Shadows `rgba(12,4,148,.06–.35)` | `shadow-hairline`, `card`, `float` |
 
-**Contrast problems on the boards (fix when building, confirm with design):**
-- White titles start on a light gradient stop and fail AA: highlight 2 and the Medicines GENERICS card (`#10B981`, 2.5:1), highlight 3 and Add a lab report hero (`#F97316`, 2.8:1), Consults hero (`#3B82F6`, 3.7:1), Labs hero (`#8B5CF6`, 4.2:1). Keep the text on the `-deep` end (or a flat `-deep` behind it).
-- The white labels on the M2Profile document cards (`#FB923C`→`#C2410C`, `#34D399`→`#047857`, `#F472B6`→`#BE185D`) sit low-left where the gradient is mid-way; check them on the built card.
-- M2AskAyush's range bar has a red segment (`#FECACA`). DESIGN.md: a result outside range is amber, never red — use `attention`.
+**Contrast on the boards (fixed 2026-10-21).** Measured on the rendered boards (default state plus highlights 2–3, M2Orders past, M2Insights in range, M2ReportUpload reading, M2Labs audiences): every text element on a gradient, against every stop of the gradient, with translucent chips composited. Before: **37** text runs below the minimum (worst 1.67:1, white "FL" on `#FBBF24`). After: **0**. The worst cases fixed:
+
+| Where | Before | After |
+|---|---|---|
+| M2Home highlight 2 / M2Medicines GENERICS (white on `#10B981`) | 2.0–2.5:1 | 4.8–5.5:1 on `#047857`→`#065F46` |
+| M2Home highlight 3 / M2ReportUpload hero (white on `#F97316`) | 2.4–2.8:1 | 4.5–5.2:1 on `#C2410C`→`#9A3412` |
+| M2Labs hero, step numbers (white on `#8B5CF6`) | 3.2–4.2:1 | 5.8–7.1:1 on `#6D28D9`→`#4C1D95` |
+| M2Consults hero (white / `#DBEAFE` on `#3B82F6`) | 2.9–3.7:1 | 5.5–6.7:1 on `#1D4ED8`→`#0C0494` |
+| M2Vaccines hero (dark ink on `#B45309`), badge, Pick a slot (white on `#FBBF24` / `#F59E0B`) | 1.7–3.1:1 | 5.0:1, white on `#B45309`→`#92400E` |
+| M2Insurance Start a claim, M2Profile document cards (white on `#10B981` / `#34D399` / `#FB923C` / `#F472B6`) | 1.9–2.7:1 | 5.2–6.0:1 on `-deep`→`-shade` |
+| Avatars and coin (ink on the darker tint stop) | 3.6–4.4:1 | 4.7–6.0:1 (coin 5.4:1) |
+| M2Profile emergency card sub-line (`#FECACA` on `#B91C1C`) | 4.47:1 | 5.3:1 (`#FEE2E2`) |
+
+The glossy service tiles (M2Home rail, M2Labs quick actions, M2ReportUpload sources) still start on the light stop; they carry a white glyph but no text, and the glyph sits mid-gradient. Check the glyph reaches 3:1 when building (WCAG 1.4.11), or put it on the deep end.
 - M2Insurance sets the policy number in JetBrains Mono; DESIGN.md's mono is IBM Plex Mono.
 
 ---
@@ -119,13 +138,14 @@ Endpoints are under `/api` (`backend/services/*.py`). "No backend yet" means the
 | M2Home, M2Profile | Check-in pass | `GET/POST /identity` (`member_profile_api.py`, `check_in_pass.py`) |
 | M2Home | Hostel visit | `POST /hostel-visits` (`student_requests.py`) |
 | M2Home | Health camp · Sat | `GET /camps`, `POST /camps/{id}/book` |
-| M2Home | Trust strip ("Licensed partner pharmacies", "Every Rx checked by a pharmacist", "Price shown before you pay") | no evidence source: AGENTS.md rule 6 forbids hard-coded compliance claims — show only what partner verification records prove, or leave the strip out |
+| M2Home | Trust strip | removed from the board (2026-10-21, AGENTS.md rule 6): no evidence source. Bring a line back only when partner verification records prove it |
 | M2Home, M2Medicines, M2Labs | Call to order / Call to book (`tel:`) | no backend yet (no order-line number in the settings registry) |
 | M2Medicines | Chat to order (board says "soon") | no backend yet |
 | M2Home, M2Insights, M2Profile | SOS | `POST /emergency/sos` (`emergency_api.py`) |
 | M2Medicines, M2Product | Generics: same composition, other makers, cheapest first | `GET /catalog/{item_id}/alternatives` (`medicine_master.py`) |
 | M2Medicines, M2Product | Clinic pickup time / delivery window ("Today by 6 pm", "Tomorrow 10–12") | partial: `requested_slot` on `POST /orders`; no ready-by or delivery-window estimate API |
-| M2Medicines | Auto-refill your regulars | `GET /refills/plans`, `POST /refills`, `POST /refills/{id}/cancel` (`student_requests.py`), `POST /meds/refill-reminder` |
+| M2Medicines | Link card "Refills for your regular medicines" → My health | none needed (static link, no personal data) |
+| M2Insights | Refills due (moved from M2Medicines) | `GET /refills/plans`, `POST /refills`, `POST /refills/{id}/cancel` (`student_requests.py`), `POST /meds/refill-reminder`; clinical read only, the store link passes nothing |
 | M2Medicines | Lower prices this week (MRP, % off) | `GET /catalog` (`price_paise`, `mrp_paise`); no "deals" selection API |
 | M2Product | Medicine, pack, maker, Rx needed, MRP | `GET /catalog` (`requires_prescription`, `mrp_paise`, linked `care_medicines` composition and schedule) |
 | M2Product | In stock at the clinic | `GET /inventory/{item_id}` |
@@ -134,7 +154,7 @@ Endpoints are under `/api` (`backend/services/*.py`). "No backend yet" means the
 | M2Labs | Packages, includes, price, collection slots | `GET /lab-packages`, `GET /lab-packages/{id}/slots`, `POST /lab-bookings` (`lab_booking.py`), `GET /lab-orders/{id}/slots` |
 | M2Labs | Packages by audience (Everyone · Women · Men · Fitness · By concern) | no backend yet (no audience field; `category` only) |
 | M2Labs | Most booked on campus | no backend yet |
-| M2Labs | Your doctor asked for a repeat test | `GET /lab-orders` (`clinical_api.py`; doctor orders from `/work/doctor-lab-orders`) |
+| M2Insights | Repeat test your doctor ordered (moved from M2Labs) | `GET /lab-orders` (`clinical_api.py`; doctor orders from `/work/doctor-lab-orders`); clinical read only, the Lab tests link passes nothing |
 | M2Labs | Book again, report ready | `GET /lab-orders`, `GET /lab-bookings/{id}` |
 | M2Consults | Doctors online now count | no backend yet |
 | M2Consults | Consult now, next free slot, book a doctor | `GET /appointments/availability`, `POST /appointments`, `GET /providers` (`preventive_care.py`) |
@@ -187,12 +207,12 @@ Endpoints are under `/api` (`backend/services/*.py`). "No backend yet" means the
 
 ### Rule L and copy rules to settle before building
 
-- **Health data on store pages.** DESIGN.md §2.3: no health data on commercial surfaces. M2Home puts "Medicines today" next to the shop shelves, M2Medicines lists the student's prescribed medicines ("Auto-refill your regulars"), and M2Labs shows "Your doctor asked for a repeat test" on the lab catalogue. Read those from clinical endpoints only, never pass them into catalogue or commerce queries, and get a named reviewer to confirm the placement (or move them to My health).
+- **Health data on store pages (settled by the founder, 2026-10-21).** DESIGN.md §2.3: no health data on commercial surfaces. M2Home keeps "Medicines today" (read from the clinical endpoints only, never passed into catalogue or commerce queries). The refills list and the doctor-ordered repeat test moved to M2Insights; their links open the store page without carrying the medicine or test. Nothing else personal is on a store board.
 - **Prices and numbers** (`₹149 a month`, `3 months for ₹2,199`, `[n] tests`, helpline `14416`) come from `GET /plans`, the catalogue and the settings registry, never from copy (AGENTS.md rule 11).
-- **Trust claims** in the M2Home strip need evidence (AGENTS.md rule 6).
+- **Trust claims:** the M2Home strip is removed (AGENTS.md rule 6); keep only factual lines a record can prove.
 
 ---
 
 ## 4. Icons
 
-Every drawing on the boards is named against `design/icons/icon-manifest.json` in its brief. Drawings with no manifest icon are listed under **Missing icons** in each brief and were not replaced by look-alikes (19 kinds): document with an upload arrow; thyroid; card with text lines (emergency card / e-card); eight-ray Ayush spark (pill nav); medicine bottle with a cross; open tray (price shown before you pay); two-leaf sprout (Ayurveda, allergy); walking person; delivery scooter; bookmark; plus with one diagonal (generics); female ♀; male ♂; translate 文A; aeroplane; stomach; trend line with arrow; line chart on axes; zigzag trend line. M2Product also uses a text "−" on its quantity stepper; the manifest has no `minus`.
+Every drawing on the boards is named against `design/icons/icon-manifest.json` in its brief. The 20 drawings that had no manifest icon were drawn into the kit on 2026-10-21 in the house line style (24 px grid, 2 px stroke, round caps and joins), named after the drawing: `doc-upload`, `thyroid`, `card-lines`, `ayush-spark`, `med-bottle`, `tray-open` (no board draws it now that the trust strip is gone), `sprout`, `walk`, `scooter`, `bookmark`, `plus-slash`, `female`, `male`, `translate`, `plane`, `stomach`, `trend-arrow`, `chart-line-axes`, `trend-zigzag`, `minus`. Each brief's **Missing icons** section now says which new name replaces which drawing. M2Product still sets "−" and "+" as text on its stepper: build them with `minus` and `plus`.

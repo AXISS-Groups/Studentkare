@@ -37,8 +37,12 @@ After a question: the student bubble, three typing dots, then Ayush answers that
 
 Tier 1: AI answers about the student's own records, consent banner, crisis line.
 
+## Design changes (founder, 2026-10-21)
+
+- The range bar's out-of-range segment is amber (`attention` family, `#FBBF24`), never red: DESIGN.md, a result outside range is attention.
+
 ## Missing icons
 
-None.
+None. Every drawing on this board has a manifest icon.
 
 > Icons, glyphs and illustrations live in `design/icons/` and `design/illustrations/` — names match `design/icons/icon-manifest.json`. The boards draw icons as inline SVG; this list names the manifest icon for each drawing. Colours: see `design/screens/mobile-2-supersedes.md`. Verify with `node scripts/icons/check-icons.mjs --screen M2AskAyush`.

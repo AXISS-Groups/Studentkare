@@ -1,4 +1,4 @@
-# M2Medicines — Mobile 2.0 — Medicines (order with Rx, call/chat to order, generics, auto-refill)
+# M2Medicines — Mobile 2.0 — Medicines (order with Rx, call/chat to order, generics)
 
 | | |
 |---|---|
@@ -11,7 +11,7 @@
 
 ## Icons this screen must show (all of them)
 
-- **Line / solid icons (20):** `arrow-left`, `arrow-right`, `bottle`, `box`, `cart`, `droplet`, `eye`, `first-aid-kit`, `heart-3`, `home`, `message-circle`, `monitor`, `phone`, `pill-alt`, `refresh`, `search`, `sun`, `thermometer`, `user-5`, `wind`
+- **Line / solid icons (26):** `arrow-left`, `arrow-right`, `ayush-spark`, `bottle`, `box`, `cart`, `chevron-right`, `doc-upload`, `droplet`, `eye`, `first-aid-kit`, `heart-3`, `home`, `message-circle`, `monitor`, `phone`, `pill-alt`, `refresh`, `search`, `sprout`, `stomach`, `sun`, `thermometer`, `trend-arrow`, `user-5`, `wind`
 - **3D icon tiles (0):** —
 - **Small glyphs (0):** —
 - **Brand mark:** —
@@ -29,21 +29,27 @@
 
 ## States shown in the design's preview switcher
 
-Auto-refill on; Auto-refill off
+One layout (the auto-refill switch went with the refills list)
 
 ## Tier
 
-Tier 2 (shop, like ShopHome). Tier 1 part: "Auto-refill your regulars" lists the student's own prescribed medicines (cf. RefillRequest, Tier 1).
+Tier 2 (shop, like ShopHome). No personal health data on this board (Rule L): refills live on M2Insights.
+
+## Design changes (founder, 2026-10-21)
+
+- Rule L: "Auto-refill your regulars" (the student's prescribed medicines) is removed. In its place a plain link card, "Refills for your regular medicines — they live in My health", opens M2Insights; it shows no personal data.
+- GENERICS card runs `service-green-deep` → `service-green-shade` (eyebrow `service-green-soft` on it, 4.8:1); the coin runs `#FDE68A` → `service-amber`.
+- "Sexual health" tile uses the rose family, not red.
 
 ## Missing icons
 
-Drawn on the board but not in `design/icons/icon-manifest.json`. Do not substitute a look-alike: these need a decision (add the drawing to the kit, or merge with an existing icon through `aliases.json`).
+None. The drawings this board had with no manifest icon were drawn into the kit on 2026-10-21 (house line style) and are in the list above:
 
-- document with an upload arrow (upload a prescription / report) — at: "Order with prescription" card
-- eight-ray spark without a centre (Ask Ayush orb glyph in the pill nav) — at: pill nav: Ask Ayush orb
-- two-leaf sprout / lotus (Ayurveda, allergy) — at: Categories: Ayurveda
-- stomach — at: Categories: Stomach care
-- trend line with an up-right arrow — at: Categories: Sports and rehab
+- `doc-upload` — document with an upload arrow (upload a prescription / report) — at: "Order with prescription" card
+- `ayush-spark` — eight-ray spark without a centre (Ask Ayush orb glyph in the pill nav) — at: pill nav: Ask Ayush orb
+- `sprout` — two-leaf sprout / lotus (Ayurveda, allergy) — at: Categories: Ayurveda
+- `stomach` — stomach — at: Categories: Stomach care
+- `trend-arrow` — trend line with an up-right arrow — at: Categories: Sports and rehab
 
 ## Icon matching notes
 

@@ -11,7 +11,7 @@
 
 ## Icons this screen must show (all of them)
 
-- **Line / solid icons (15):** `chevron-right`, `credit-card`, `doc`, `flask`, `lock-4`, `map-pin-2`, `message-circle-3`, `plus`, `plus-square`, `scan`, `settings`, `shield-2`, `star`, `syringe`, `user-5`
+- **Line / solid icons (16):** `chevron-right`, `credit-card`, `doc`, `flask`, `lock-4`, `map-pin-2`, `message-circle-3`, `plus`, `plus-square`, `scan`, `settings`, `shield-2`, `star`, `syringe`, `translate`, `user-5`
 - **3D icon tiles (0):** —
 - **Small glyphs (0):** —
 - **Brand mark:** —
@@ -35,11 +35,15 @@ Ayush can read my records on / off; Share with family on / off (marked coming so
 
 Tier 1: identity, blood group and vitals, emergency card, consent switches (Ayush can read my records, share with family).
 
+## Design changes (founder, 2026-10-21)
+
+- Document cards and the Student Plus tile run `-deep` → `-shade` (green, orange, rose), so the white counts and labels are AA. The emergency card keeps the danger family; its sub-line is `#FEE2E2` (5.3:1).
+
 ## Missing icons
 
-Drawn on the board but not in `design/icons/icon-manifest.json`. Do not substitute a look-alike: these need a decision (add the drawing to the kit, or merge with an existing icon through `aliases.json`).
+None. The drawings this board had with no manifest icon were drawn into the kit on 2026-10-21 (house line style) and are in the list above:
 
-- translate / language (文A) — at: settings row: Language
+- `translate` — translate / language (文A) — at: settings row: Language
 
 ## Icon matching notes
 

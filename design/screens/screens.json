@@ -13710,15 +13710,17 @@
   ],
   "icons": [
    "arrow-right",
+   "ayush-spark",
    "bottle",
    "box",
    "calendar-2",
+   "card-lines",
    "cart",
    "chevron-down",
    "doc",
+   "doc-upload",
    "droplet",
    "eye",
-   "file-check",
    "first-aid-kit",
    "heart",
    "heart-3",
@@ -13726,12 +13728,14 @@
    "home-2",
    "lab",
    "map-pin-2",
+   "med-bottle",
    "mic",
    "moon-2",
    "phone",
    "pill-3",
    "pill-alt",
    "plus",
+   "plus-slash",
    "qr-code-2",
    "refresh",
    "search",
@@ -13741,6 +13745,7 @@
    "stetho",
    "syringe",
    "thermo",
+   "trend-arrow",
    "user-5"
   ],
   "icons3d": [],
@@ -13752,21 +13757,13 @@
   "brand": [],
   "assets": [],
   "textGlyphs": [],
-  "missingIcons": [
-   "document with an upload arrow (upload a prescription / report)",
-   "card with text lines, no portrait (emergency card / insurance e-card)",
-   "eight-ray spark without a centre (Ask Ayush orb glyph in the pill nav)",
-   "medicine bottle with a cross",
-   "open tray / till (price shown before you pay)",
-   "plus with one diagonal stroke (generics highlight)",
-   "trend line with an up-right arrow"
-  ]
+  "missingIcons": []
  },
  {
   "screen": "M2Medicines",
   "page": "9 \u00b7 Mobile 2.0 (approved 2026-10-21)",
   "folder": "10-mobile-2",
-  "title": "Mobile 2.0 \u2014 Medicines (order with Rx, call/chat to order, generics, auto-refill)",
+  "title": "Mobile 2.0 \u2014 Medicines (order with Rx, call/chat to order, generics)",
   "size": "390x1640",
   "platform": "Phone",
   "tier": 2,
@@ -13785,15 +13782,17 @@
    "M2ReportUpload"
   ],
   "states": [
-   "Auto-refill on",
-   "Auto-refill off"
+   "One layout"
   ],
   "icons": [
    "arrow-left",
    "arrow-right",
+   "ayush-spark",
    "bottle",
    "box",
    "cart",
+   "chevron-right",
+   "doc-upload",
    "droplet",
    "eye",
    "first-aid-kit",
@@ -13805,8 +13804,11 @@
    "pill-alt",
    "refresh",
    "search",
+   "sprout",
+   "stomach",
    "sun",
    "thermometer",
+   "trend-arrow",
    "user-5",
    "wind"
   ],
@@ -13817,13 +13819,7 @@
   "brand": [],
   "assets": [],
   "textGlyphs": [],
-  "missingIcons": [
-   "document with an upload arrow (upload a prescription / report)",
-   "eight-ray spark without a centre (Ask Ayush orb glyph in the pill nav)",
-   "two-leaf sprout / lotus (Ayurveda, allergy)",
-   "stomach",
-   "trend line with an up-right arrow"
-  ]
+  "missingIcons": []
  },
  {
   "screen": "M2Product",
@@ -13850,6 +13846,7 @@
    "cart",
    "chevron-down",
    "flask",
+   "minus",
    "plus"
   ],
   "icons3d": [],
@@ -13859,15 +13856,13 @@
   "brand": [],
   "assets": [],
   "textGlyphs": [],
-  "missingIcons": [
-   "minus sign \"\u2212\" used as text on the quantity stepper (One fewer)"
-  ]
+  "missingIcons": []
  },
  {
   "screen": "M2Labs",
   "page": "9 \u00b7 Mobile 2.0 (approved 2026-10-21)",
   "folder": "10-mobile-2",
-  "title": "Mobile 2.0 \u2014 Lab tests (packages by audience, doctor-ordered, collection)",
+  "title": "Mobile 2.0 \u2014 Lab tests (packages by audience, collection)",
   "size": "390x1640",
   "platform": "Phone",
   "tier": 2,
@@ -13887,17 +13882,25 @@
   ],
   "icons": [
    "arrow-left",
+   "ayush-spark",
    "bottle",
    "box",
+   "chart-line-axes",
+   "doc-upload",
    "droplet",
    "dumbbell",
+   "female",
    "heart-3",
    "home",
+   "male",
    "person-badge",
    "phone",
    "search",
-   "stetho",
+   "sprout",
    "thermometer",
+   "thyroid",
+   "trend-arrow",
+   "trend-zigzag",
    "user-5"
   ],
   "icons3d": [],
@@ -13907,17 +13910,7 @@
   "brand": [],
   "assets": [],
   "textGlyphs": [],
-  "missingIcons": [
-   "document with an upload arrow (upload a prescription / report)",
-   "thyroid gland",
-   "eight-ray spark without a centre (Ask Ayush orb glyph in the pill nav)",
-   "two-leaf sprout / lotus (Ayurveda, allergy)",
-   "female symbol \u2640",
-   "male symbol \u2642",
-   "trend line with an up-right arrow",
-   "line chart on axes",
-   "trend line (zigzag, no arrow)"
-  ]
+  "missingIcons": []
  },
  {
   "screen": "M2Consults",
@@ -13945,6 +13938,7 @@
   "icons": [
    "arrow-left",
    "arrow-right",
+   "ayush-spark",
    "box",
    "chevron-down",
    "chevron-right",
@@ -13963,9 +13957,7 @@
   "brand": [],
   "assets": [],
   "textGlyphs": [],
-  "missingIcons": [
-   "eight-ray spark without a centre (Ask Ayush orb glyph in the pill nav)"
-  ]
+  "missingIcons": []
  },
  {
   "screen": "M2Vaccines",
@@ -13992,6 +13984,7 @@
   ],
   "icons": [
    "arrow-left",
+   "ayush-spark",
    "box",
    "check",
    "heart-3",
@@ -14006,9 +13999,7 @@
   "brand": [],
   "assets": [],
   "textGlyphs": [],
-  "missingIcons": [
-   "eight-ray spark without a centre (Ask Ayush orb glyph in the pill nav)"
-  ]
+  "missingIcons": []
  },
  {
   "screen": "M2Insurance",
@@ -14032,10 +14023,13 @@
   "states": [],
   "icons": [
    "arrow-left",
+   "ayush-spark",
    "box",
+   "card-lines",
    "heart-3",
    "home",
    "home-2",
+   "plane",
    "plus",
    "shield-alert",
    "user-5"
@@ -14047,11 +14041,7 @@
   "brand": [],
   "assets": [],
   "textGlyphs": [],
-  "missingIcons": [
-   "card with text lines, no portrait (emergency card / insurance e-card)",
-   "eight-ray spark without a centre (Ask Ayush orb glyph in the pill nav)",
-   "aeroplane (travel abroad)"
-  ]
+  "missingIcons": []
  },
  {
   "screen": "M2Orders",
@@ -14076,11 +14066,13 @@
    "Past"
   ],
   "icons": [
+   "ayush-spark",
    "box",
    "first-aid-kit",
    "heart-3",
    "home",
    "home-2",
+   "scooter",
    "user-5"
   ],
   "icons3d": [],
@@ -14092,17 +14084,14 @@
   "brand": [],
   "assets": [],
   "textGlyphs": [],
-  "missingIcons": [
-   "eight-ray spark without a centre (Ask Ayush orb glyph in the pill nav)",
-   "delivery scooter / two-wheeler"
-  ]
+  "missingIcons": []
  },
  {
   "screen": "M2Insights",
   "page": "9 \u00b7 Mobile 2.0 (approved 2026-10-21)",
   "folder": "10-mobile-2",
   "title": "Mobile 2.0 \u2014 My health \u00b7 Insights",
-  "size": "390x1500",
+  "size": "390x1780",
   "platform": "Phone",
   "tier": 1,
   "tickets": [
@@ -14111,6 +14100,8 @@
   "links": [
    "M2AskAyush",
    "M2Home",
+   "M2Labs",
+   "M2Medicines",
    "M2Orders",
    "M2Profile",
    "M2Trends"
@@ -14120,12 +14111,16 @@
    "In range"
   ],
   "icons": [
+   "ayush-spark",
    "bottle",
    "box",
    "chevron-right",
    "droplet",
    "heart-3",
    "home",
+   "refresh",
+   "stetho",
+   "thyroid",
    "user-5"
   ],
   "icons3d": [],
@@ -14135,10 +14130,7 @@
   "brand": [],
   "assets": [],
   "textGlyphs": [],
-  "missingIcons": [
-   "thyroid gland",
-   "eight-ray spark without a centre (Ask Ayush orb glyph in the pill nav)"
-  ]
+  "missingIcons": []
  },
  {
   "screen": "M2Trends",
@@ -14166,12 +14158,15 @@
   ],
   "icons": [
    "arrow-left",
+   "ayush-spark",
+   "bookmark",
    "bowl",
    "box",
    "flask",
    "heart-3",
    "home",
-   "user-5"
+   "user-5",
+   "walk"
   ],
   "icons3d": [],
   "glyphs": [],
@@ -14182,11 +14177,7 @@
   "brand": [],
   "assets": [],
   "textGlyphs": [],
-  "missingIcons": [
-   "eight-ray spark without a centre (Ask Ayush orb glyph in the pill nav)",
-   "walking person",
-   "bookmark"
-  ]
+  "missingIcons": []
  },
  {
   "screen": "M2ReportUpload",
@@ -14215,6 +14206,7 @@
    "camera-2",
    "check",
    "chevron-right",
+   "doc-upload",
    "flask"
   ],
   "icons3d": [],
@@ -14224,9 +14216,7 @@
   "brand": [],
   "assets": [],
   "textGlyphs": [],
-  "missingIcons": [
-   "document with an upload arrow (upload a prescription / report)"
-  ]
+  "missingIcons": []
  },
  {
   "screen": "M2AskAyush",
@@ -14304,6 +14294,7 @@
    "shield-2",
    "star",
    "syringe",
+   "translate",
    "user-5"
   ],
   "icons3d": [],
@@ -14315,8 +14306,6 @@
   "brand": [],
   "assets": [],
   "textGlyphs": [],
-  "missingIcons": [
-   "translate / language (\u6587A)"
-  ]
+  "missingIcons": []
  }
 ]

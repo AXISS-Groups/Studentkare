@@ -122,6 +122,7 @@ export const skTokens = {
       "serviceVioletDeep": "#6D28D9",
       "serviceVioletSoft": "#EDE9FE",
       "serviceVioletInk": "#6D28D9",
+      "serviceVioletShade": "#4C1D95",
       "serviceBlue": "#60A5FA",
       "serviceBlueDeep": "#1D4ED8",
       "serviceBlueSoft": "#DBEAFE",
@@ -138,18 +139,22 @@ export const skTokens = {
       "serviceGreenDeep": "#047857",
       "serviceGreenSoft": "#D1FAE5",
       "serviceGreenInk": "#047857",
+      "serviceGreenShade": "#065F46",
       "serviceAmber": "#FBBF24",
       "serviceAmberDeep": "#B45309",
       "serviceAmberSoft": "#FEF3C7",
       "serviceAmberInk": "#B45309",
+      "serviceAmberShade": "#92400E",
       "serviceOrange": "#FB923C",
       "serviceOrangeDeep": "#C2410C",
       "serviceOrangeSoft": "#FFEDD5",
       "serviceOrangeInk": "#C2410C",
+      "serviceOrangeShade": "#9A3412",
       "serviceRose": "#F472B6",
       "serviceRoseDeep": "#BE185D",
       "serviceRoseSoft": "#FCE7F3",
-      "serviceRoseInk": "#BE185D"
+      "serviceRoseInk": "#BE185D",
+      "serviceRoseShade": "#9D174D"
     },
     "dark": {
       "canvas": "#0E1428",
@@ -270,6 +275,7 @@ export const skTokens = {
       "serviceVioletDeep": "#6D28D9",
       "serviceVioletSoft": "#2E2458",
       "serviceVioletInk": "#C4B5FD",
+      "serviceVioletShade": "#4C1D95",
       "serviceBlue": "#60A5FA",
       "serviceBlueDeep": "#1D4ED8",
       "serviceBlueSoft": "#1B2E5C",
@@ -286,18 +292,22 @@ export const skTokens = {
       "serviceGreenDeep": "#047857",
       "serviceGreenSoft": "#12402F",
       "serviceGreenInk": "#6EE7B7",
+      "serviceGreenShade": "#065F46",
       "serviceAmber": "#FBBF24",
       "serviceAmberDeep": "#B45309",
       "serviceAmberSoft": "#3D2E10",
       "serviceAmberInk": "#FCD34D",
+      "serviceAmberShade": "#92400E",
       "serviceOrange": "#FB923C",
       "serviceOrangeDeep": "#C2410C",
       "serviceOrangeSoft": "#43260F",
       "serviceOrangeInk": "#FDBA74",
+      "serviceOrangeShade": "#9A3412",
       "serviceRose": "#F472B6",
       "serviceRoseDeep": "#BE185D",
       "serviceRoseSoft": "#45192F",
-      "serviceRoseInk": "#F9A8D4"
+      "serviceRoseInk": "#F9A8D4",
+      "serviceRoseShade": "#9D174D"
     }
   },
   "font": {
@@ -900,6 +910,31 @@ export const skTokens = {
       "fg": "onHero",
       "bg": "serviceIndigo",
       "min": 3
+    },
+    {
+      "fg": "onHero",
+      "bg": "serviceVioletShade",
+      "min": 4.5
+    },
+    {
+      "fg": "onHero",
+      "bg": "serviceAmberShade",
+      "min": 4.5
+    },
+    {
+      "fg": "onHero",
+      "bg": "serviceOrangeShade",
+      "min": 4.5
+    },
+    {
+      "fg": "onHero",
+      "bg": "serviceRoseShade",
+      "min": 4.5
+    },
+    {
+      "fg": "onHero",
+      "bg": "serviceGreenShade",
+      "min": 4.5
     }
   ]
 } as const;

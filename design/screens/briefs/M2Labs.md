@@ -1,4 +1,4 @@
-# M2Labs — Mobile 2.0 — Lab tests (packages by audience, doctor-ordered, collection)
+# M2Labs — Mobile 2.0 — Lab tests (packages by audience, collection)
 
 | | |
 |---|---|
@@ -11,7 +11,7 @@
 
 ## Icons this screen must show (all of them)
 
-- **Line / solid icons (13):** `arrow-left`, `bottle`, `box`, `droplet`, `dumbbell`, `heart-3`, `home`, `person-badge`, `phone`, `search`, `stetho`, `thermometer`, `user-5`
+- **Line / solid icons (21):** `arrow-left`, `ayush-spark`, `bottle`, `box`, `chart-line-axes`, `doc-upload`, `droplet`, `dumbbell`, `female`, `heart-3`, `home`, `male`, `person-badge`, `phone`, `search`, `sprout`, `thermometer`, `thyroid`, `trend-arrow`, `trend-zigzag`, `user-5`
 - **3D icon tiles (0):** —
 - **Small glyphs (0):** —
 - **Brand mark:** —
@@ -35,21 +35,26 @@ Each audience swaps the package list (e.g. Women: Women's wellness, PCOS panel, 
 
 ## Tier
 
-Tier 2 (lab catalogue and booking, like LabPackages). Tier 1 part: the "Your doctor asked for a repeat test" card (a clinician order for this student).
+Tier 2 (lab catalogue and booking, like LabPackages). No personal health data on this board (Rule L): the doctor-ordered repeat test lives on M2Insights.
+
+## Design changes (founder, 2026-10-21)
+
+- Rule L: "Your doctor asked for a repeat test" is removed from the lab catalogue; it lives on M2Insights ("Due from your care").
+- Hero and step numbers run `service-violet-deep` → `service-violet-shade`; the tube art is rose, not red. PCOS and Iron packages use the rose family.
 
 ## Missing icons
 
-Drawn on the board but not in `design/icons/icon-manifest.json`. Do not substitute a look-alike: these need a decision (add the drawing to the kit, or merge with an existing icon through `aliases.json`).
+None. The drawings this board had with no manifest icon were drawn into the kit on 2026-10-21 (house line style) and are in the list above:
 
-- document with an upload arrow (upload a prescription / report) — at: quick action "Upload Rx"
-- thyroid gland — at: By concern: Thyroid package
-- eight-ray spark without a centre (Ask Ayush orb glyph in the pill nav) — at: pill nav: Ask Ayush orb
-- two-leaf sprout / lotus (Ayurveda, allergy) — at: By concern: Allergy panel
-- female symbol ♀ — at: Women: Women's wellness package
-- male symbol ♂ — at: Men: Men's wellness package
-- trend line with an up-right arrow — at: Fitness: Sports fitness package
-- line chart on axes — at: quick action "Reports"
-- trend line (zigzag, no arrow) — at: Men: Lipid profile package
+- `doc-upload` — document with an upload arrow (upload a prescription / report) — at: quick action "Upload Rx"
+- `thyroid` — thyroid gland — at: By concern: Thyroid package
+- `ayush-spark` — eight-ray spark without a centre (Ask Ayush orb glyph in the pill nav) — at: pill nav: Ask Ayush orb
+- `sprout` — two-leaf sprout / lotus (Ayurveda, allergy) — at: By concern: Allergy panel
+- `female` — female symbol ♀ — at: Women: Women's wellness package
+- `male` — male symbol ♂ — at: Men: Men's wellness package
+- `trend-arrow` — trend line with an up-right arrow — at: Fitness: Sports fitness package
+- `chart-line-axes` — line chart on axes — at: quick action "Reports"
+- `trend-zigzag` — trend line (zigzag, no arrow) — at: Men: Lipid profile package
 
 ## Icon matching notes
 

@@ -52,10 +52,10 @@ a:focus-visible,button:focus-visible{outline:3px solid #6D5BFF;outline-offset:3p
   </div>
 
   <div style="padding: 14px 20px 0; display: grid; grid-template-columns: 1.25fr 1fr; gap: 12px; animation: skRise .55s .15s both;">
-    <a href="Product.dc.html" class="sk-card" style="position: relative; overflow: hidden; height: 176px; box-sizing: border-box; border-radius: 26px; padding: 16px; background: linear-gradient(150deg, #10B981 0%, #065F46 100%); color: #FFFFFF; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 16px 30px rgba(6,95,70,.30);">
+    <a href="Product.dc.html" class="sk-card" style="position: relative; overflow: hidden; height: 176px; box-sizing: border-box; border-radius: 26px; padding: 16px; background: linear-gradient(150deg, #047857 0%, #065F46 100%); color: #FFFFFF; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 16px 30px rgba(6,95,70,.30);">
       <span aria-hidden="true" style="position: absolute; right: -36px; bottom: -40px; width: 140px; height: 140px; border-radius: 999px; border: 22px solid rgba(255,255,255,.12);"></span>
-      <span aria-hidden="true" style="position: absolute; right: 16px; top: 14px; width: 40px; height: 40px; border-radius: 999px; background: linear-gradient(145deg, #FDE68A, #F59E0B); display: flex; align-items: center; justify-content: center; color: #78350F; font-weight: 800; font-size: 18px; animation: skCoin 3.4s ease-in-out infinite;">₹</span>
-      <span style="font-size: 11px; font-weight: 800; letter-spacing: 1px; color: #A7F3D0;">GENERICS</span>
+      <span aria-hidden="true" style="position: absolute; right: 16px; top: 14px; width: 40px; height: 40px; border-radius: 999px; background: linear-gradient(145deg, #FDE68A, #FBBF24); display: flex; align-items: center; justify-content: center; color: #78350F; font-weight: 800; font-size: 18px; animation: skCoin 3.4s ease-in-out infinite;">₹</span>
+      <span style="font-size: 11px; font-weight: 800; letter-spacing: 1px; color: #D1FAE5;">GENERICS</span>
       <span style="position: relative; font-size: 18px; line-height: 22px; font-weight: 800; letter-spacing: -0.4px;">Same composition, a lower price</span>
       <span style="position: relative; font-size: 12.5px; font-weight: 700; display: flex; align-items: center; gap: 4px;">Compare options <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></span>
     </a>
@@ -81,21 +81,11 @@ a:focus-visible,button:focus-visible{outline:3px solid #6D5BFF;outline-offset:3p
     </div>
   </section>
 
-  <section aria-labelledby="regulars" style="margin: 22px 20px 0; padding: 16px; border-radius: 26px; background: #FFFFFF; box-shadow: 0 6px 18px rgba(12,4,148,.06); animation: skRise .55s .25s both;">
-    <div style="display: flex; align-items: center; gap: 12px;">
-      <span style="width: 44px; height: 44px; border-radius: 15px; background: #EEF2FF; display: flex; align-items: center; justify-content: center;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0C0494" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 0 1 15.5-6.2L21 8M21 3v5h-5M21 12a9 9 0 0 1-15.5 6.2L3 16M3 21v-5h5"></path></svg></span>
-      <span style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px;"><h2 id="regulars" style="margin: 0; font-size: 15px; font-weight: 800;">Auto-refill your regulars</h2><span style="font-size: 12px; font-weight: 600; color: #6B6980;">We ask before every refill. Stop any time.</span></span>
-      <button type="button" role="switch" aria-checked="{{ refillChecked }}" aria-label="Auto-refill" onClick="{{ toggleRefill }}" style="{{ refillStyle }}"><span style="{{ knobStyle }}"></span></button>
-    </div>
-    <div style="margin-top: 14px; display: flex; flex-direction: column;">
-      <sc-for list="{{ regulars }}" as="r" hint-placeholder-count="2">
-        <div style="display: flex; align-items: center; gap: 12px; padding: 12px 0; border-top: 1px solid #EEF2FF;">
-          <span style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px;"><span style="font-size: 13.5px; font-weight: 700;">{{ r.name }}</span><span style="font-size: 11.5px; font-weight: 600; color: #6B6980;">{{ r.meta }}</span></span>
-          <span style="font-size: 12px; font-weight: 800; color: #047857; background: #ECFDF5; padding: 5px 10px; border-radius: 999px;">{{ r.next }}</span>
-        </div>
-      </sc-for>
-    </div>
-  </section>
+  <a href="Insights.dc.html" class="sk-card" style="margin: 22px 20px 0; padding: 14px 16px; border-radius: 22px; background: #FFFFFF; box-shadow: 0 6px 18px rgba(12,4,148,.06); display: flex; align-items: center; gap: 12px; color: #131B2E; animation: skRise .55s .25s both;">
+    <span style="width: 44px; height: 44px; flex-shrink: 0; border-radius: 15px; background: #EEF2FF; display: flex; align-items: center; justify-content: center;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0C0494" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 0 1 15.5-6.2L21 8M21 3v5h-5M21 12a9 9 0 0 1-15.5 6.2L3 16M3 21v-5h5"></path></svg></span>
+    <span style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px;"><span style="font-size: 14.5px; font-weight: 800;">Refills for your regular medicines</span><span style="font-size: 12px; font-weight: 600; color: #6B6980;">They live in My health, with your prescriptions.</span></span>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6B6980" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
+  </a>
 
   <section aria-labelledby="deals" style="padding: 22px 0 0; animation: skRise .55s .3s both;">
     <div style="margin: 0 20px 12px; display: flex; align-items: baseline; justify-content: space-between;"><h2 id="deals" style="margin: 0; font-size: 17px; font-weight: 800; letter-spacing: -0.3px;">Lower prices this week</h2><a href="Product.dc.html" style="font-size: 13px; font-weight: 800;">See all</a></div>
@@ -137,9 +127,7 @@ a:focus-visible,button:focus-visible{outline:3px solid #6D5BFF;outline-offset:3p
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1640}}'>
 class Component extends DCLogic {
-  constructor(props) { super(props); this.state = { refill: true }; }
   renderVals() {
-    const on = this.state.refill;
     const c = (label, ink, bg, icon) => ({ label, ink, icon, tile: 'width: 58px; height: 58px; border-radius: 20px; display: flex; align-items: center; justify-content: center; background: ' + bg + ';' });
     const cats = [
       c('Fever and pain', '#C2410C', '#FFEDD5', 'M14 14.8V4a2 2 0 1 0-4 0v10.8a4 4 0 1 0 4 0z'),
@@ -149,7 +137,7 @@ class Component extends DCLogic {
       c('Vitamins', '#A16207', '#FEF9C3', 'M9 3h6v3H9zM7 6h10v13a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2z'),
       c('Diabetes care', '#1D4ED8', '#DBEAFE', 'M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z'),
       c('Eye care', '#0F766E', '#CCFBF1', 'M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12zM12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z'),
-      c('Sexual health', '#9F1239', '#FFE4E6', 'M12 21s-8-5.2-8-11.2A4.6 4.6 0 0 1 12 7a4.6 4.6 0 0 1 8 2.8C20 15.8 12 21 12 21z'),
+      c('Sexual health', '#BE185D', '#FCE7F3', 'M12 21s-8-5.2-8-11.2A4.6 4.6 0 0 1 12 7a4.6 4.6 0 0 1 8 2.8C20 15.8 12 21 12 21z'),
       c('Sports and rehab', '#4338CA', '#E0E7FF', 'M4 14l6-6 4 4 6-6M14 6h6v6'),
       c('Devices', '#334155', '#F1F5F9', 'M4 4h16v12H4zM8 20h8M12 16v4'),
       c('Ayurveda', '#15803D', '#DCFCE7', 'M12 21c-5-3-8-7-8-12 4 0 7 2 8 5 1-3 4-5 8-5 0 5-3 9-8 12z'),
@@ -163,20 +151,12 @@ class Component extends DCLogic {
     ];
     return {
       cats, deals,
-      regulars: [
-        { name: 'Vitamin D3 60K', meta: 'Every 4 weeks · from your prescription', next: 'Next 2 Nov' },
-        { name: 'Cetirizine 10 mg', meta: 'Every 30 days', next: 'Next 18 Nov' }
-      ],
       compare: [
         { k: 'Active ingredient', g: 'Same', b: 'Same' },
         { k: 'Strength and dose', g: 'Same', b: 'Same' },
         { k: 'Quality rules', g: 'Same', b: 'Same' },
         { k: 'Price', g: 'Lower', b: 'Higher' }
       ],
-      refillChecked: on ? 'true' : 'false',
-      toggleRefill: () => this.setState({ refill: !on }),
-      refillStyle: 'position: relative; width: 52px; height: 32px; border: 0; border-radius: 999px; cursor: pointer; transition: background .25s; background: ' + (on ? '#0C0494' : '#C7C4D8') + ';',
-      knobStyle: 'position: absolute; top: 4px; left: ' + (on ? '24px' : '4px') + '; width: 24px; height: 24px; border-radius: 999px; background: #FFFFFF; transition: left .25s cubic-bezier(.2,.7,.3,1); box-shadow: 0 2px 6px rgba(0,0,0,.2);'
     };
   }
 }

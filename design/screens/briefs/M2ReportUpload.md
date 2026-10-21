@@ -11,7 +11,7 @@
 
 ## Icons this screen must show (all of them)
 
-- **Line / solid icons (5):** `arrow-left`, `camera-2`, `check`, `chevron-right`, `flask`
+- **Line / solid icons (6):** `arrow-left`, `camera-2`, `check`, `chevron-right`, `doc-upload`, `flask`
 - **3D icon tiles (0):** —
 - **Small glyphs (0):** —
 - **Brand mark:** —
@@ -37,10 +37,14 @@ Read: a report sheet with a scanning line, "Reading your report…", progress ba
 
 Tier 1: values read from a report, confirmed by the student before saving.
 
+## Design changes (founder, 2026-10-21)
+
+- Hero runs `service-orange-deep` → `service-orange-shade`; the done tick circle runs `service-green-deep` → `service-green-shade`.
+
 ## Missing icons
 
-Drawn on the board but not in `design/icons/icon-manifest.json`. Do not substitute a look-alike: these need a decision (add the drawing to the kit, or merge with an existing icon through `aliases.json`).
+None. The drawings this board had with no manifest icon were drawn into the kit on 2026-10-21 (house line style) and are in the list above:
 
-- document with an upload arrow (upload a prescription / report) — at: source "Upload a PDF"
+- `doc-upload` — document with an upload arrow (upload a prescription / report) — at: source "Upload a PDF"
 
 > Icons, glyphs and illustrations live in `design/icons/` and `design/illustrations/` — names match `design/icons/icon-manifest.json`. The boards draw icons as inline SVG; this list names the manifest icon for each drawing. Colours: see `design/screens/mobile-2-supersedes.md`. Verify with `node scripts/icons/check-icons.mjs --screen M2ReportUpload`.
