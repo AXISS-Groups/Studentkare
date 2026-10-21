@@ -3,6 +3,9 @@ import { AlertTriangle, ArrowRight } from 'lucide-react';
 import { useRoutePath } from '@/core/navigation';
 import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
+import { usePhoneFrame } from '@/design-system/navigation/usePhoneFrame';
+import { navigate } from '@/lib/utils/workflowRouting';
+import { LegalBoard } from './LegalBoard';
 import './legal.css';
 
 type LegalTopic = 'privacy' | 'terms';
@@ -39,6 +42,20 @@ export function LegalView(): React.ReactElement {
   const t = useT();
   const route = useRoutePath();
   const topic: LegalTopic = route.includes('terms') ? 'terms' : 'privacy';
+  const phone = usePhoneFrame();
+
+  // At phone width: the Legal board (canvas page 2), with the same honest gap.
+  if (phone) {
+    return (
+      <LegalBoard
+        initialTab={topic}
+        links={{
+          back: () => (window.history.length > 1 ? window.history.back() : navigate('landing')),
+          help: () => navigate('support'),
+        }}
+      />
+    );
+  }
 
   return (
     <main className="sk-legal">
