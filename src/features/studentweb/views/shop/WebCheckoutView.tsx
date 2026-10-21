@@ -1,81 +1,87 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { observer } from 'mobx-react-lite';
 import { useT } from '@/i18n';
+import type { MessageKey } from '@/i18n';
 import { Icon } from '@/design-system/icons';
+import type { SkIconName } from '@/design-system/icons';
+import { useNavigate } from '@/core/navigation';
 import { useLiveCart } from '@/data/contexts/LiveCartContext';
-import { apiRequest } from '@/data/services/http';
-import { useMutation } from '@/components/interface/WorkflowUI';
 import { money } from '@/data/types/workflowTypes';
-import type { Delivery, LiveOrder } from '@/data/types/workflowTypes';
-import { PayStepViewModel } from '@/features/payments/viewmodel/PayStepViewModel';
+import type { LiveOrder } from '@/data/types/workflowTypes';
+import { PhoneShopViewModel } from '@/features/shopPhone/viewmodel/PhoneShopViewModel';
+import type { CartPort } from '@/features/shopPhone/viewmodel/PhoneShopViewModel';
+import { cartMrp, cartTotal } from '@/features/shopPhone/views/shopParts';
+import { orderRef } from '@/features/phoneKit/orderRef';
+import { plural } from '@/features/phoneKit/plural';
 import { PayStepView } from '@/features/payments/views/PayStepView';
 import { navigate } from '@/lib/utils/workflowRouting';
-import { maxQuantity } from '../../data/studentWebData';
-import { checkoutArt } from '../catalogArt';
-import { EmptyPanel, PageHead } from '../parts';
+import { EmptyPanel } from '../parts';
+import { CartLines, cartUnits, rise } from './m2WebParts';
 
-interface Validation { serviceable: boolean; serviceabilityNote?: string; items: { id: string; available: boolean; reason: string }[] }
+const PAID = new Set(['PAID', 'PARTIALLY_REFUNDED', 'REFUNDED']);
 
 /**
- * Checkout (canvas 3b, WebCheckout, Tier 2) in the student web shell. The
- * order flow is the shop's (LiveCheckout): validate the cart against live
- * stock and serviceability (fail closed), create the order once per cart with
- * an idempotency key, then the Pay step (PayStepView) takes over.
+ * Checkout above phone width (canvas 3b WebCheckout, Tier 2) in the Mobile 2.0
+ * look: three step cards beside a sticky cart summary, then the shared Pay
+ * step, then the order confirmation. The order rules are the phone shop's
+ * view model (PhoneShopViewModel), so web and phone place orders the same
+ * way: the city and a 6-digit pincode (and the full address for delivery),
+ * a future requested time only when a consult or vaccine is in the cart, then
+ * stock and serviceability are checked with the server and the order is not
+ * placed if that check fails or cannot run (fail closed), and it is created
+ * once per cart with an idempotency key.
  *
  * Made true: no room number or campus address is stored, so the student types
- * where it goes; slots are the provider's to confirm (a time is asked only for
- * bookings); no student discount or free-delivery threshold exists, so the
- * summary is the item total. Paying confers no access to anyone's records.
+ * where it goes; the provider confirms timing; no student discount or
+ * free-delivery threshold exists, so the summary is the item total. Paying
+ * confers no access to anyone's records. Payment is the gateway's
+ * (PayStepView): when no gateway is connected it says so and nothing is
+ * charged.
  */
-export function WebCheckoutView() {
+export const WebCheckoutView = observer(function WebCheckoutView() {
   const t = useT();
-  const cart = useLiveCart();
-  const [delivery, setDelivery] = useState<Delivery>({ mode: 'pickup', address: '', city: '', pincode: '' });
-  const [slot, setSlot] = useState('');
-  const [notice, setNotice] = useState('');
-  const key = useRef({ fingerprint: '', id: '' });
-  const mutation = useMutation();
-  const [placed, setPlaced] = useState<LiveOrder | null>(null);
-  const payment = useMemo(() => (placed ? new PayStepViewModel(placed.id, placed.totalPaise) : null), [placed]);
-  const needsSlot = cart.lines.some((line) => line.item.kind !== 'product');
-  const units = cart.lines.reduce((sum, line) => sum + line.quantity, 0);
-  const total = cart.lines.reduce((sum, line) => sum + line.item.pricePaise * line.quantity, 0);
-
-  const submit = async () => {
-    setNotice('');
-    try {
-      const validation = await apiRequest<Validation>('/cart/validate', { method: 'POST', body: JSON.stringify({ items: cart.lines.map((line) => ({ id: line.item.id, quantity: line.quantity })), pincode: delivery.pincode }) });
-      const blocked = validation.items.filter((item) => !item.available);
-      if (blocked.length || !validation.serviceable) {
-        setNotice(blocked.length ? t('shopweb.checkout.unavailable', { reasons: blocked.map((item) => item.reason).join(', ') }) : (validation.serviceabilityNote || t('shopweb.checkout.notServiceable')));
-        return;
-      }
-    } catch (error: unknown) {
-      // Fail closed: no validation, no order.
-      setNotice(error instanceof Error && error.message ? error.message : t('shopweb.checkout.validateFailed'));
-      return;
-    }
-    const payload = { items: cart.lines.map((line) => ({ id: line.item.id, quantity: line.quantity })), delivery, requestedSlot: needsSlot ? new Date(slot).toISOString() : '' };
-    const fingerprint = JSON.stringify(payload);
-    if (key.current.fingerprint !== fingerprint) key.current = { fingerprint, id: crypto.randomUUID() };
-    mutation.run(() => apiRequest<LiveOrder>('/orders', { method: 'POST', headers: { 'Idempotency-Key': key.current.id }, body: fingerprint }), setPlaced);
-  };
+  const live = useLiveCart();
+  const routerNavigate = useNavigate();
+  const cart: CartPort = useMemo(() => ({ lines: live.lines, add: live.add, setQuantity: live.setQuantity, clear: live.clear }), [live]);
+  const [vm] = useState(() => new PhoneShopViewModel({ name: 'checkout' }));
+  const [saved, setSaved] = useState(0);
+  // start() re-arms the view model after a remount (StrictMode runs the cleanup once in development).
+  useEffect(() => { vm.start(); return () => vm.dispose(); }, [vm]);
+  const screen = vm.screen.name;
+  const payment = vm.payment;
+  const paidNow = screen === 'pay' && payment?.phase === 'paid';
+  useEffect(() => {
+    if (!paidNow) return;
+    // The saving is worked out before the view model empties the cart.
+    setSaved(cartMrp(cart) - cartTotal(cart));
+    vm.paid(cart);
+  }, [paidNow, vm, cart]);
 
   const head = (
-    <PageHead
-      title={t('sw.checkout.title')}
-      actions={<span className="sk-sw-secure"><Icon name="lock-3" size={16} color="var(--sk-color-positive)" />{t('sw.checkout.secure')}</span>}
-    />
+    <div className="sk-m2w-checkout__head sk-m2w-rise">
+      <div>
+        <span className="sk-m2w-eyebrow">{t('m2.med.eyebrow')}</span>
+        <h1 className="sk-m2w-h1">{t('sw.checkout.title')}</h1>
+      </div>
+      <span className="sk-m2w-secure"><Icon name="lock-3" size={16} color="var(--sk-color-positive)" />{t('sw.checkout.secure')}</span>
+    </div>
   );
+  const track = (order: LiveOrder) => routerNavigate(`/orders?order=${encodeURIComponent(order.id)}`);
 
-  if (placed && payment) {
-    const finish = () => { cart.clear(); navigate('orders'); };
-    // Back keeps the cart and the idempotency key: resubmitting unchanged returns the same order.
+  if (screen === 'success' && vm.order) {
+    return <div className="sk-sw-page sk-m2w">{head}<OrderPlaced order={vm.order} savedPaise={saved} onTrack={track} onShop={() => navigate('shop')} /></div>;
+  }
+
+  if (screen === 'pay' && payment) {
     return (
-      <div className="sk-sw-page">
+      <div className="sk-sw-page sk-m2w">
         {head}
-        <section className="sk-sw-card sk-sw-step" aria-labelledby="sk-sw-pay-title">
-          <h2 id="sk-sw-pay-title" className="sk-sw-step__title">{t('sw.checkout.step3')}</h2>
-          <PayStepView viewModel={payment} onBack={() => setPlaced(null)} onTrack={finish} onOrders={finish} />
+        <Steps current={3} />
+        <section className="sk-m2w-panel sk-m2w-step sk-m2w-paystep" aria-labelledby="sk-m2w-pay-title">
+          <h2 id="sk-m2w-pay-title" className="sk-m2w-h3">{t('sw.checkout.step3')}</h2>
+          {/* Back keeps the cart and the idempotency key: resubmitting unchanged returns the same order. */}
+          {/* Leaving from here (an unpaid request, or no gateway connected) spends the cart, as before: the order exists. */}
+          <PayStepView viewModel={payment} onBack={() => vm.back()} onTrack={() => { const order = vm.order; cart.clear(); if (order) track(order); }} onOrders={() => { cart.clear(); navigate('orders'); }} />
         </section>
       </div>
     );
@@ -83,106 +89,158 @@ export function WebCheckoutView() {
 
   if (!cart.lines.length) {
     return (
-      <div className="sk-sw-page">
+      <div className="sk-sw-page sk-m2w">
         {head}
         <EmptyPanel title={t('cart.emptyTitle')} body={t('shopweb.checkout.emptyBody')} action={{ label: t('shopweb.checkout.keepExploring'), onPress: () => navigate('shop') }} secondary={{ label: t('sw.checkout.orders'), onPress: () => navigate('orders') }} />
       </div>
     );
   }
 
-  const set = (patch: Partial<Delivery>) => setDelivery((previous) => ({ ...previous, ...patch }));
+  const d = vm.delivery;
+  const needsSlot = vm.needsSlot(cart);
+  const units = cartUnits(cart.lines);
+  const total = cartTotal(cart);
+  const current = !vm.addressReady ? 1 : needsSlot && !vm.slotReady(cart) ? 2 : 3;
+  const error = vm.checkoutError ? (vm.checkoutErrorText ? `${t(vm.checkoutError)} ${vm.checkoutErrorText}` : t(vm.checkoutError)) : '';
 
   return (
-    <div className="sk-sw-page">
+    <div className="sk-sw-page sk-m2w">
       {head}
-      <form className="sk-sw-checkout" onSubmit={(event) => { event.preventDefault(); void submit(); }}>
-        <div className="sk-sw-checkout__main">
-          <section className="sk-sw-card sk-sw-step" aria-labelledby="sk-sw-step1">
-            <h2 id="sk-sw-step1" className="sk-sw-step__title">{t('sw.checkout.step1')}</h2>
-            <div className="sk-sw-options" role="radiogroup" aria-label={t('shopweb.checkout.arrangement')}>
+      <Steps current={current} />
+      <div className="sk-m2w-cq">
+      <form className="sk-m2w-checkout" onSubmit={(event) => { event.preventDefault(); void vm.placeOrder(cart); }}>
+        <div className="sk-m2w-checkout__main">
+          <section className="sk-m2w-panel sk-m2w-step sk-m2w-rise" style={rise(1)} aria-labelledby="sk-m2w-step1">
+            <h2 id="sk-m2w-step1" className="sk-m2w-h3">{t('sw.checkout.step1')}</h2>
+            <div className="sk-m2w-options" role="radiogroup" aria-label={t('shopweb.checkout.arrangement')}>
               {(['pickup', 'delivery'] as const).map((mode) => (
-                <label key={mode} className={`sk-sw-option${delivery.mode === mode ? ' is-on' : ''}`}>
-                  <input type="radio" name="sk-sw-mode" value={mode} checked={delivery.mode === mode} onChange={() => set({ mode })} />
-                  <span className="sk-sw-option__icon" aria-hidden="true"><Icon name="house-outline" size={18} /></span>
-                  <span className="sk-sw-option__text"><strong>{mode === 'pickup' ? t('cart.pickup') : t('cart.delivery')}</strong><small>{mode === 'pickup' ? t('sw.checkout.pickupMeta') : t('sw.checkout.deliveryMeta')}</small></span>
+                <label key={mode} className={`sk-m2w-option sk-m2w-lift${d.mode === mode ? ' is-on' : ''}`}>
+                  <input type="radio" name="sk-m2w-mode" value={mode} checked={d.mode === mode} onChange={() => vm.setDelivery({ mode })} />
+                  <span className="sk-m2w-option__icon" aria-hidden="true"><Icon name={mode === 'pickup' ? 'house-outline' : 'truck-2'} size={20} /></span>
+                  <span className="sk-m2w-option__text"><strong>{mode === 'pickup' ? t('cart.pickup') : t('cart.delivery')}</strong><small>{mode === 'pickup' ? t('sw.checkout.pickupMeta') : t('sw.checkout.deliveryMeta')}</small></span>
                 </label>
               ))}
             </div>
-            <div className="sk-sw-fields">
-              {delivery.mode === 'delivery' ? (
-                <label className="sk-sw-field sk-sw-field--wide">
+            <div className="sk-m2w-fields">
+              {d.mode === 'delivery' ? (
+                <label className="sk-m2w-field sk-m2w-field--wide">
                   <span>{t('cart.address')}</span>
-                  <textarea required minLength={10} maxLength={300} value={delivery.address} onChange={(event) => set({ address: event.target.value })} />
+                  <textarea required minLength={10} maxLength={300} value={d.address} onChange={(event) => vm.setDelivery({ address: event.target.value })} />
                 </label>
               ) : null}
-              <label className="sk-sw-field">
+              <label className="sk-m2w-field">
                 <span>{t('cart.city')}</span>
-                <input required minLength={2} maxLength={100} value={delivery.city} onChange={(event) => set({ city: event.target.value })} />
+                <input required minLength={2} maxLength={100} value={d.city} onChange={(event) => vm.setDelivery({ city: event.target.value })} />
               </label>
-              <label className="sk-sw-field">
+              <label className="sk-m2w-field">
                 <span>{t('cart.pincode')}</span>
-                <input required inputMode="numeric" pattern="[1-9][0-9]{5}" maxLength={6} value={delivery.pincode} onChange={(event) => set({ pincode: event.target.value })} />
+                <input required inputMode="numeric" pattern="[1-9][0-9]{5}" maxLength={6} value={d.pincode} onChange={(event) => vm.setDelivery({ pincode: event.target.value })} />
               </label>
             </div>
+            <p className="sk-m2w-meta">{t('phone.checkout.whereNote')}</p>
           </section>
 
-          <section className="sk-sw-card sk-sw-step" aria-labelledby="sk-sw-step2">
-            <h2 id="sk-sw-step2" className="sk-sw-step__title">{t('sw.checkout.step2')}</h2>
+          <section className="sk-m2w-panel sk-m2w-step sk-m2w-rise" style={rise(2)} aria-labelledby="sk-m2w-step2">
+            <h2 id="sk-m2w-step2" className="sk-m2w-h3">{t('sw.checkout.step2')}</h2>
             {needsSlot ? (
-              <label className="sk-sw-field">
-                <span>{t('cart.when')}</span>
-                <input required type="datetime-local" value={slot} onChange={(event) => setSlot(event.target.value)} />
-              </label>
+              <>
+                <p className="sk-m2w-meta">{t('phone.checkout.whenMeta')}</p>
+                <div className="sk-m2w-fields">
+                  <label className="sk-m2w-field">
+                    <span>{t('m2w.checkout.date')}</span>
+                    <input required type="date" value={vm.slotDate} onChange={(event) => vm.setSlot(event.target.value, vm.slotTime)} />
+                  </label>
+                  <label className="sk-m2w-field">
+                    <span>{t('m2w.checkout.time')}</span>
+                    <input required type="time" value={vm.slotTime} onChange={(event) => vm.setSlot(vm.slotDate, event.target.value)} />
+                  </label>
+                </div>
+                <p className="sk-m2w-meta">{t('phone.checkout.whenNote')}</p>
+              </>
             ) : (
-              <p className="sk-sw-muted">{t('sw.checkout.slotProvider')}</p>
+              <p className="sk-m2w-meta">{t('sw.checkout.slotProvider')}</p>
             )}
           </section>
 
-          <section className="sk-sw-card sk-sw-step" aria-labelledby="sk-sw-step3">
-            <h2 id="sk-sw-step3" className="sk-sw-step__title">{t('sw.checkout.step3')}</h2>
-            <p className="sk-sw-muted">{t('sw.checkout.payLater')}</p>
+          <section className="sk-m2w-panel sk-m2w-step sk-m2w-rise" style={rise(3)} aria-labelledby="sk-m2w-step3">
+            <h2 id="sk-m2w-step3" className="sk-m2w-h3">{t('sw.checkout.step3')}</h2>
+            <p className="sk-m2w-meta">{t('sw.checkout.payLater')}</p>
           </section>
         </div>
 
-        <aside className="sk-sw-checkout__side">
-          <section className="sk-sw-card sk-sw-summary" aria-labelledby="sk-sw-cart-title">
-            <span id="sk-sw-cart-title" className="sk-sw-eyebrow">{t('sw.checkout.cart', { count: units })}</span>
-            <ul className="sk-sw-summary__lines">
-              {cart.lines.map((line) => (
-                <li key={line.item.id}>
-                  <span className="sk-sw-summary__thumb" aria-hidden="true"><Icon name={checkoutArt(line.item)} size={18} /></span>
-                  <span className="sk-sw-summary__text">
-                    <strong>{line.item.name}</strong>
-                    <small>{line.item.pack}</small>
-                    {line.item.kind === 'product' ? (
-                      <span className="sk-sw-qty sk-sw-qty--sm" role="group" aria-label={t('sw.product.quantity')}>
-                        <button type="button" aria-label={t('cart.decrease', { name: line.item.name })} onClick={() => cart.setQuantity(line.item.id, line.quantity - 1)}>−</button>
-                        <output>{line.quantity}</output>
-                        <button type="button" aria-label={t('cart.increase', { name: line.item.name })} disabled={line.quantity >= maxQuantity(line.item)} onClick={() => cart.add(line.item)}>+</button>
-                      </span>
-                    ) : null}
-                  </span>
-                  <span className="sk-sw-summary__price">
-                    <strong>{money(line.item.pricePaise * line.quantity)}</strong>
-                    <button type="button" className="sk-sw-icon-btn" aria-label={t('cart.remove', { name: line.item.name })} onClick={() => cart.setQuantity(line.item.id, 0)}><Icon name="trash" size={16} /></button>
-                  </span>
-                </li>
-              ))}
-            </ul>
-            <dl className="sk-sw-summary__totals">
+        <aside className="sk-m2w-checkout__side">
+          <section className="sk-m2w-panel sk-m2w-summary" aria-labelledby="sk-m2w-cart-title">
+            <span id="sk-m2w-cart-title" className="sk-m2w-eyebrow">{t('sw.checkout.cart', { count: units })}</span>
+            <CartLines lines={cart.lines} onSet={cart.setQuantity} onAdd={cart.add} />
+            <dl className="sk-m2w-totals">
               <div><dt>{t('cart.itemsTotal')}</dt><dd>{money(total)}</dd></div>
               <div className="is-total"><dt>{t('sw.checkout.toPay')}</dt><dd>{money(total)}</dd></div>
             </dl>
-            {mutation.error ? <p className="sk-sw-error" role="alert">{mutation.error}</p> : null}
-            {notice ? <p className="sk-sw-error" role="alert">{notice}</p> : null}
-            <p className="sk-sw-fine">{t('pay.formNote')}</p>
-            <button type="submit" className="sk-sw-btn sk-sw-btn--primary sk-sw-btn--block" aria-busy={mutation.busy} disabled={mutation.busy}>
-              {mutation.busy ? t('sw.checkout.placing') : t('sw.checkout.continue', { total: money(total) })}
+            {error ? <p className="sk-m2w-error" role="alert">{error}</p> : null}
+            <p className="sk-m2w-fine">{t('pay.formNote')}</p>
+            <button type="submit" className="sk-m2w-btn sk-m2w-btn--primary sk-m2w-btn--block" aria-busy={vm.placing} disabled={vm.placing}>
+              {vm.placing ? t('sw.checkout.placing') : t('sw.checkout.continue', { total: money(total) })}
             </button>
           </section>
-          <p className="sk-sw-fine">{t('sw.checkout.ruleL')}</p>
+          <p className="sk-m2w-fine sk-m2w-fine--icon"><Icon name="shield-check" size={14} />{t('sw.checkout.ruleL')}</p>
         </aside>
       </form>
+      </div>
     </div>
+  );
+});
+
+/** Where the checkout is: 1 where it goes, 2 when, 3 pay. */
+function Steps({ current }: { current: number }) {
+  const t = useT();
+  const labels: MessageKey[] = ['sw.checkout.step1', 'sw.checkout.step2', 'sw.checkout.step3'];
+  return (
+    <ol className="sk-m2w-steps" aria-label={t('m2w.checkout.steps')}>
+      {labels.map((label, i) => (
+        <li key={label} className={i + 1 < current ? 'is-done' : i + 1 === current ? 'is-current' : undefined} aria-current={i + 1 === current ? 'step' : undefined}>
+          <span className="sk-m2w-steps__dot" aria-hidden="true">{i + 1 < current ? <Icon name="check" size={14} strokeWidth={3} /> : null}</span>
+          <span>{t(label)}</span>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+/** Order placed (canvas OrderSuccess, as on the phone): the order as the server has it, and the way to track it. */
+function OrderPlaced({ order, savedPaise, onTrack, onShop }: { order: LiveOrder; savedPaise: number; onTrack: (order: LiveOrder) => void; onShop: () => void }) {
+  const t = useT();
+  const paid = PAID.has(order.paymentStatus);
+  const d = order.delivery;
+  const rows: { key: string; icon: SkIconName; title: string; meta: string }[] = [
+    { key: 'delivery', icon: 'truck-2', title: d.mode === 'pickup' ? t('phone.success.pickup') : t('phone.success.delivery'), meta: [d.mode === 'delivery' ? d.address : '', d.city, d.pincode].filter(Boolean).join(' · ') },
+    {
+      key: 'paid', icon: 'credit-card-2',
+      title: paid ? t('phone.success.paid', { amount: money(order.totalPaise) }) : t('phone.success.unpaid', { amount: money(order.totalPaise) }),
+      meta: savedPaise > 0 ? t('phone.success.saved', { amount: money(savedPaise) }) : plural(t, order.lines.length, 'phone.success.itemsOne', 'phone.success.items'),
+    },
+    { key: 'points', icon: 'sparkle', title: t('phone.success.points'), meta: t('phone.shop.pointsNote') },
+  ];
+  return (
+    <section className="sk-m2w-panel sk-m2w-placed sk-m2w-rise" aria-labelledby="sk-m2w-placed-title" data-testid="m2w-order-placed">
+      <span className="sk-m2w-placed__tick" aria-hidden="true"><Icon name="check" size={28} strokeWidth={3} /></span>
+      <div role="status" className="sk-m2w-placed__head">
+        <h2 id="sk-m2w-placed-title" className="sk-m2w-h1">{t('phone.success.title')}</h2>
+        <p className="sk-m2w-meta">{paid ? t('phone.success.body') : t('phone.success.bodyUnpaid')}</p>
+        <span className="sk-m2w-ref">{t('phone.success.order')} <strong>{orderRef(order.id)}</strong></span>
+      </div>
+      <ul className="sk-m2w-placed__rows">
+        {rows.map((row) => (
+          <li key={row.key}>
+            <span className="sk-m2w-soft sk-m2w-soft--sm" aria-hidden="true"><Icon name={row.icon} size={18} /></span>
+            <span><strong>{row.title}</strong>{row.meta ? <small>{row.meta}</small> : null}</span>
+          </li>
+        ))}
+      </ul>
+      <div className="sk-m2w-placed__ctas">
+        <button type="button" className="sk-m2w-btn sk-m2w-btn--primary" onClick={() => onTrack(order)}>{t('phone.success.track')}<Icon name="arrow-right" size={16} /></button>
+        <button type="button" className="sk-m2w-btn sk-m2w-btn--outline" onClick={onShop}>{t('phone.success.backToShop')}</button>
+        <button type="button" className="sk-m2w-btn sk-m2w-btn--ghost" onClick={() => navigate('orders')}>{t('sw.checkout.orders')}</button>
+      </div>
+    </section>
   );
 }

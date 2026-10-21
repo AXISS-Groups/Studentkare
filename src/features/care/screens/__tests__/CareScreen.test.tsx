@@ -8,6 +8,7 @@ vi.mock('@/data/contexts/AuthContext', () => ({ useAuth: () => ({ user: state.ro
 vi.mock('@/design-system/navigation/usePhoneFrame', () => ({ usePhoneFrame: () => state.phone }));
 vi.mock('@/core/navigation', () => ({ useRoutePath: () => state.path }));
 vi.mock('@/screens/marketplace/LiveMarketplaceScreen', () => ({ LiveMarketplaceScreen: () => <p>public marketplace</p> }));
+vi.mock('@/features/studentweb/views/shop/PublicShopPage', () => ({ PublicShopPage: ({ route, signedIn }: { route: string; signedIn: boolean }) => <p>public m2 shop {route} {signedIn ? 'signed in' : 'signed out'}</p> }));
 vi.mock('@/screens/workspace/WorkspaceScreen', () => ({ WorkspaceScreen: ({ route }: { route: string }) => <p>student shell {route}</p> }));
 
 describe('CareScreen: who gets the student workspace', () => {
@@ -24,8 +25,22 @@ describe('CareScreen: who gets the student workspace', () => {
     expect(await screen.findByText(`student shell ${path}`)).toBeInTheDocument();
   });
 
-  it('visitors, other roles and /care above phone width keep the public marketplace', () => {
-    for (const next of [{ role: null, phone: false, path: 'shop' }, { role: 'VENDOR', phone: false, path: 'shop' }, { role: 'VENDOR', phone: true, path: 'shop' }, { role: 'STUDENT', phone: false, path: 'care' }]) {
+  it('visitors and other roles get the Mobile 2.0 web shop in the public frame, at any width', async () => {
+    for (const next of [
+      { role: null, phone: false, path: 'shop', text: 'public m2 shop shop signed out' },
+      { role: null, phone: true, path: 'shop', text: 'public m2 shop shop signed out' },
+      { role: 'VENDOR', phone: false, path: 'shop', text: 'public m2 shop shop signed in' },
+      { role: 'VENDOR', phone: true, path: 'checkout', text: 'public m2 shop checkout signed in' },
+    ]) {
+      Object.assign(state, next);
+      const { unmount } = render(<CareScreen />);
+      expect(await screen.findByText(next.text)).toBeInTheDocument();
+      unmount();
+    }
+  });
+
+  it('/care above phone width keeps the public marketplace', () => {
+    for (const next of [{ role: 'STUDENT', phone: false, path: 'care' }, { role: null, phone: false, path: 'care' }]) {
       Object.assign(state, next);
       const { unmount } = render(<CareScreen />);
       expect(screen.getByText('public marketplace')).toBeInTheDocument();

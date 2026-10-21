@@ -604,7 +604,13 @@
       "src/features/studentweb/data/studentWebData.ts",
       "src/design-system/student-shell/StudentWebShell.tsx",
       "src/design-system/student-shell/studentNav.ts",
-      "src/design-system/overlays/ConfirmDialog.tsx"
+      "src/design-system/overlays/ConfirmDialog.tsx",
+      "src/features/studentweb/views/shop/m2WebParts.tsx",
+      "src/features/studentweb/views/shop/m2webshop.css",
+      "src/features/studentweb/views/shop/ShopCartRail.tsx",
+      "src/features/studentweb/views/shop/PublicShopPage.tsx",
+      "src/features/m2store/data/storeArt.ts",
+      "src/design-system/m2/ServiceRail.tsx"
     ],
     "WebShop": [
       "src/features/studentweb/views/shop/WebShopView.tsx",
@@ -614,7 +620,18 @@
       "src/design-system/art/canvasAssets.ts",
       "src/design-system/student-shell/StudentWebShell.tsx",
       "src/design-system/student-shell/studentNav.ts",
-      "src/design-system/overlays/ConfirmDialog.tsx"
+      "src/design-system/overlays/ConfirmDialog.tsx",
+      "src/features/studentweb/views/shop/m2WebParts.tsx",
+      "src/features/studentweb/views/shop/m2webshop.css",
+      "src/features/studentweb/views/shop/ShopCartRail.tsx",
+      "src/features/studentweb/views/shop/PublicShopPage.tsx",
+      "src/features/m2store/data/storeArt.ts",
+      "src/design-system/m2/ServiceRail.tsx",
+      "src/features/studentweb/views/shop/WebShopFront.tsx",
+      "src/features/studentweb/views/shop/WebSearchResultsView.tsx",
+      "src/design-system/m2/HeroCarousel.tsx",
+      "src/design-system/m2/GradientHeroCard.tsx",
+      "src/features/m2store/data/orderLine.ts"
     ],
     "WebProduct": [
       "src/features/studentweb/views/shop/WebProductView.tsx",
@@ -622,7 +639,15 @@
       "src/features/studentweb/views/catalogArt.ts",
       "src/design-system/student-shell/StudentWebShell.tsx",
       "src/design-system/student-shell/studentNav.ts",
-      "src/design-system/overlays/ConfirmDialog.tsx"
+      "src/design-system/overlays/ConfirmDialog.tsx",
+      "src/features/studentweb/views/shop/m2WebParts.tsx",
+      "src/features/studentweb/views/shop/m2webshop.css",
+      "src/features/studentweb/views/shop/ShopCartRail.tsx",
+      "src/features/studentweb/views/shop/PublicShopPage.tsx",
+      "src/features/m2store/data/storeArt.ts",
+      "src/design-system/m2/ServiceRail.tsx",
+      "src/features/shopPhone/viewmodel/M2ProductViewModel.ts",
+      "src/features/shopPhone/views/M2ProductBoard.tsx"
     ],
     "WebCheckout": [
       "src/features/studentweb/views/shop/WebCheckoutView.tsx",
@@ -630,7 +655,14 @@
       "src/features/payments/views/PayStepView.tsx",
       "src/design-system/student-shell/StudentWebShell.tsx",
       "src/design-system/student-shell/studentNav.ts",
-      "src/design-system/overlays/ConfirmDialog.tsx"
+      "src/design-system/overlays/ConfirmDialog.tsx",
+      "src/features/studentweb/views/shop/m2WebParts.tsx",
+      "src/features/studentweb/views/shop/m2webshop.css",
+      "src/features/studentweb/views/shop/ShopCartRail.tsx",
+      "src/features/studentweb/views/shop/PublicShopPage.tsx",
+      "src/features/m2store/data/storeArt.ts",
+      "src/design-system/m2/ServiceRail.tsx",
+      "src/features/shopPhone/viewmodel/PhoneShopViewModel.ts"
     ],
     "WebOrders": [
       "src/features/studentweb/views/WebOrdersView.tsx",

@@ -8,13 +8,17 @@ import { usePhoneFrame } from '@/design-system/navigation/usePhoneFrame';
 
 // Loaded only for a signed-in student, so the public shop does not carry the workspace.
 const WorkspaceScreen = lazy(() => import('@/screens/workspace/WorkspaceScreen').then((m) => ({ default: m.WorkspaceScreen })));
+// The Mobile 2.0 web shop in the public site's frame (visitors and other roles).
+const PublicShopPage = lazy(() => import('@/features/studentweb/views/shop/PublicShopPage').then((m) => ({ default: m.PublicShopPage })));
 
 /**
  * /shop, /care and /checkout. A signed-in student gets the shop and checkout
  * inside the workspace: the phone boards at phone width, the student web shell
- * (canvas 3b: WebShop, WebSearchResults, WebProduct, WebCheckout) above it.
- * At phone width /care is Mobile 2.0 Doctor consults (M2Consults) in the
- * phone frame. Everyone else keeps the public marketplace.
+ * (the Mobile 2.0 web shop: WebShop, WebSearchResults, WebProduct,
+ * WebCheckout) above it. At phone width /care is Mobile 2.0 Doctor consults
+ * (M2Consults) in the phone frame. Everyone else gets the same Mobile 2.0 web
+ * shop and checkout inside the public site's header and footer; /care above
+ * phone width keeps the public marketplace.
  */
 export function CareScreen() {
   const route = asRoutePath(useRoutePath());
@@ -23,5 +27,8 @@ export function CareScreen() {
   if (user?.role === 'STUDENT' && (route === 'shop' || route === 'checkout' || (route === 'care' && phoneFrame))) {
     return <Suspense fallback={<ScreenLoading />}><WorkspaceScreen route={route} /></Suspense>;
   }
-  return <LiveMarketplaceScreen care={route === 'care'} checkout={route === 'checkout'} shop={route === 'shop'} />;
+  if (route === 'shop' || route === 'checkout') {
+    return <Suspense fallback={<ScreenLoading />}><PublicShopPage route={route} signedIn={Boolean(user)} /></Suspense>;
+  }
+  return <LiveMarketplaceScreen care={route === 'care'} />;
 }
