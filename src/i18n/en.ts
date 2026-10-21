@@ -1,40 +1,4 @@
-import { memberEn } from './areas/member';
-import { careEn } from './areas/care';
-import { assistEn } from './areas/assist';
-import { shopwebEn } from './areas/shopweb';
-import { phonestoreEn } from './areas/phonestore';
-import { onboardEn } from './areas/onboard';
-import { launchEn } from './areas/launch';
-import { landingEn } from './areas/landing';
-import { adminEn } from './areas/admin';
-import { adminBoardEn } from './areas/adminBoard';
-import { adminGovEn } from './areas/adminGov';
-import { campusEn } from './areas/campus';
-import { campusConsoleEn } from './areas/campusConsole';
-import { campusBoardsEn } from './areas/campusBoards';
-import { campusSafetyEn } from './areas/campusSafety';
-import { partnerEn } from './areas/partner';
-import { deviceEn } from './areas/device';
-import { studentshellEn } from './areas/studentshell';
-import { studentwebEn } from './areas/studentweb';
-import { studentwebT1En } from './areas/studentwebT1';
-import { payEn } from './areas/pay';
-import { labbookEn } from './areas/labbook';
-import { rewardsEn } from './areas/rewards';
-import { mobile2En } from './areas/mobile2';
-import { mobile2OrdersEn } from './areas/mobile2Orders';
-import { mobile2WebEn } from './areas/mobile2Web';
-import { mobile2HealthEn } from './areas/mobile2health';
-import { m2valuesEn } from './areas/m2values';
-import { wellnessEn } from './areas/wellness';
-import { consoleEn } from './areas/console';
-import { phoneboardsEn } from './areas/phoneboards';
-import { safetyEn } from './areas/safety';
-import { identityEn } from './areas/identity';
-import { clinicianWorkEn } from './areas/clinicianWork';
-import { clinicianEn } from './areas/clinician';
-import { partnerConsoleEn } from './areas/partnerConsole';
-import { partnerWorkEn } from './areas/partnerWork';
+import { areasEn } from './areasEn';
 /**
  * English — the source catalogue. Telugu and Hindi must define every key
  * (enforced by the `Catalog` type). Names, phone numbers, "WhatsApp", "ABHA"
@@ -831,43 +795,7 @@ export const en = {
   'ws.tab.records': "Records",
   'ws.tab.requests': "Requests",
   'ws.tab.more': "More",
-  ...memberEn,
-  ...careEn,
-  ...assistEn,
-  ...shopwebEn,
-  ...phonestoreEn,
-  ...onboardEn,
-  ...launchEn,
-  ...landingEn,
-  ...adminEn,
-  ...adminBoardEn,
-  ...adminGovEn,
-  ...campusEn,
-  ...campusConsoleEn,
-  ...campusBoardsEn,
-  ...campusSafetyEn,
-  ...partnerEn,
-  ...deviceEn,
-  ...studentshellEn,
-  ...studentwebEn,
-  ...studentwebT1En,
-  ...payEn,
-  ...labbookEn,
-  ...rewardsEn,
-  ...mobile2En,
-  ...mobile2OrdersEn,
-  ...mobile2WebEn,
-  ...mobile2HealthEn,
-  ...m2valuesEn,
-  ...wellnessEn,
-  ...consoleEn,
-  ...phoneboardsEn,
-  ...safetyEn,
-  ...identityEn,
-  ...clinicianWorkEn,
-  ...clinicianEn,
-  ...partnerConsoleEn,
-  ...partnerWorkEn,
+  ...areasEn,
 } as const;
 
 export type MessageKey = keyof typeof en;

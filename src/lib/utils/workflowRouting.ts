@@ -1,49 +1,23 @@
 import type { AccountRole } from '../../data/types/workflowTypes';
+import { routePaths } from './routes/routePaths';
+import { publicRoutes } from './routes/publicRoutes';
+import { routePrefixRoles, routeRoles } from './routes/routeRoles';
 
-export const routePaths = ['landing', 'campuses', 'clinicians', 'clinicians/apply', 'partnerships', 'lab-tests', 'privacy', 'terms', 'shop', 'care', 'checkout', 'pricing', 'login', 'signup', 'welcome', 'logged-out', 'profile-setup', 'permissions', 'account-ready', 'billing', 'health', 'profile', 'digital-id', 'records', 'insurance', 'orders', 'appointments', 'medications', 'health-camp', 'notifications', 'care-navigator', 'preventive-care', 'report-reviews', 'earnings', 'chronic', 'support', 'movement', 'campus-wellness', 'devices', 'clinical-notes', 'lifeshare', 'medical-incident', 'meo', 'admin', 'admin/billing', 'admin/catalog', 'admin/accounts', 'admin/requests', 'admin/support', 'admin/audit', 'admin/integrations', 'admin/telemetry', 'admin/knowledge', 'admin/intake', 'admin/preventive', 'admin/activity', 'admin/ops', 'admin/surveillance', 'admin/flags', 'admin/organisations', 'admin/sentinel', 'admin/tokens', 'admin/verification', 'admin/partners', 'admin/plans', 'admin/ledger', 'admin/templates', 'admin/rule-l', 'admin/consent-policy', 'admin/break-glass-log', 'admin/checkins', 'admin/handover', 'admin/ai-governance', 'admin/erasure', 'admin/api-keys', 'admin/case', 'admin/price-fix', 'admin/lab-reviews', 'admin/outbox', 'vendor', 'clinician', 'clinician/queue', 'clinician/lab-orders', 'clinician/referrals', 'clinician/renewals', 'clinician/patients', 'clinician/ayush', 'clinician/decision-support', 'clinician/schedule', 'clinician/inbox', 'clinician/consult-room', 'clinician/critical-results', 'clinician/report-reviews', 'clinician/encounter-note', 'clinician/prescribe', 'campus', 'campus/students', 'campus/blocks', 'campus/verification', 'campus/leave', 'campus/scorecard', 'campus/insights', 'campus/camps', 'campus/certificates', 'campus/sos', 'campus/incidents', 'campus/ambulance', 'campus/counsellor', 'campus/isolation', 'campus/discharge', 'campus/outbreak', 'campus/water', 'campus/sanitary', 'campus/mess', 'campus/sla', 'campus/team', 'campus/announcements', 'campus/reports', 'campus/settings', 'campus/aggregate', 'campus-access-requests', 'campus-break-glass', 'counsellor', 'visit-summaries', 'prescriptions', 'ayush', 'clinical-review', 'dispensing', 'dispense-register', 'vendor-dispense-register', 'lab-queue', 'vendor-lab-queue', 'verify', 'scan-verify', 'catalogue', 'run-sheet', 'lab-collection', 'cold-chain', 'lab-cold-chain', 'returns', 'vendor-returns', 'handover', 'vendor-handover', 'substitutions', 'vendor-substitutions', 'reorder', 'vendor-reorder', 'camp-intake', 'vendor-camp-intake', 'settlement', 'settlements', 'vendor-settlement', 'performance', 'vendor-console', 'console', 'rx-review', 'vendor-rx-review', 'staff', 'partner-staff', 'vendor-staff', 'staff-roles', 'emergency-card', 'pass', 'notification-settings', 'leave-campus', 'lost-phone', 'sos', 'wellness-training', 'delete-account', 'rewards', 'my-requests', 'return-request', 'hostel-visit', 'refill-request', 'security', 'your-care', 'account', 'data-export', 'search', 'home', 'buy-again', 'campuses/apply', 'partnerships/apply', 'camp-fast', 'admin/claims', 'ice-contacts', 'consent', 'care-circle', 'crisis', 'staff-sign-in', 'my-lab-tests', 'report-insights', 'lab-reporting', 'staff-verify', 'staff-handover', 'staff-collect', 'health/report-upload', 'health/trends'] as const;
+// The route lists live in ./routes/, one entry per line, so parallel branches don't collide.
+export { routePaths, publicRoutes };
 export type RoutePath = typeof routePaths[number];
-// Partner consoles are not public: the route registry holds them to VENDOR and SUPER_ADMIN
-// (features/health/module.ts). Listing them here made readReturnPath drop them as sign-in targets.
-export const publicRoutes: RoutePath[] = ['crisis', 'landing', 'campuses', 'clinicians', 'clinicians/apply', 'campuses/apply', 'partnerships', 'lab-tests', 'privacy', 'terms', 'shop', 'care', 'pricing', 'login', 'signup', 'welcome', 'logged-out', 'partnerships/apply', 'staff-sign-in'];
 export const isRoutePath = (value: string): value is RoutePath => routePaths.includes(value as RoutePath);
 export const asRoutePath = (value: string): RoutePath => (isRoutePath(value) ? value : ('shop' as RoutePath));
 export const homeForRole = (role: AccountRole): RoutePath => role === 'SUPER_ADMIN' ? 'admin' : role === 'VENDOR' ? 'vendor' : role === 'NMC_DOCTOR' ? 'clinician' : role === 'CAMPUS_ADMIN' ? 'campus' : role === 'COUNSELLOR' ? 'counsellor' : 'health';
 export function canAccessRoute(route: RoutePath, role: AccountRole | null) {
   if (publicRoutes.includes(route)) return true;
   if (!role) return false;
+  // Every /admin… page is the super admin's, whatever ./routes/routeRoles.ts says.
   if (route.startsWith('admin')) return role === 'SUPER_ADMIN';
-  if (route === 'vendor') return role === 'VENDOR';
-  if (route === 'clinician' || route.startsWith('clinician/')) return role === 'NMC_DOCTOR';
-  if (route === 'clinical-notes') return role === 'NMC_DOCTOR' || role === 'SUPER_ADMIN';
-  if (route === 'report-reviews') return role === 'NMC_DOCTOR';
-  if (route === 'earnings') return role === 'NMC_DOCTOR';
-  if (route === 'chronic') return role === 'NMC_DOCTOR';
-  if (route === 'campus-wellness') return role === 'CAMPUS_ADMIN' || role === 'SUPER_ADMIN';
-  if (route === 'clinical-review') return role === 'NMC_DOCTOR' || role === 'SUPER_ADMIN';
-  if (route === 'dispensing' || route === 'dispense-register' || route === 'vendor-dispense-register' || route === 'lab-queue' || route === 'vendor-lab-queue' || route === 'scan-verify' || route === 'catalogue' || route === 'run-sheet' || route === 'lab-collection' || route === 'cold-chain' || route === 'lab-cold-chain' || route === 'returns' || route === 'vendor-returns' || route === 'handover' || route === 'vendor-handover' || route === 'substitutions' || route === 'vendor-substitutions' || route === 'reorder' || route === 'vendor-reorder' || route === 'camp-intake' || route === 'vendor-camp-intake' || route === 'camp-fast' || route === 'lab-reporting' || route === 'staff-verify' || route === 'staff-handover' || route === 'staff-collect' || route === 'settlement' || route === 'settlements' || route === 'vendor-settlement' || route === 'performance' || route === 'vendor-console' || route === 'console' || route === 'rx-review' || route === 'vendor-rx-review' || route === 'staff' || route === 'partner-staff' || route === 'vendor-staff' || route === 'staff-roles') return role === 'VENDOR' || role === 'SUPER_ADMIN';
-  // The campus console: every page-4 board, campus administrators and the super admin only.
-  if (route === 'campus' || route.startsWith('campus/') || route === 'campus-access-requests' || route === 'campus-break-glass') return role === 'CAMPUS_ADMIN' || role === 'SUPER_ADMIN';
-  // The crisis follow-up queue carries students' names and contacts: counsellors
-  // (scoped to their campus by the server) and the super admin, never every campus admin.
-  if (route === 'counsellor') return role === 'COUNSELLOR' || role === 'SUPER_ADMIN';
-  // Invite codes, points and medals belong to student accounts only (the server refuses others).
-  if (route === 'rewards') return role === 'STUDENT';
-  // Your Care is the student's own overview (the phone tab).
-  if (route === 'your-care') return role === 'STUDENT';
-  // Mobile 2.0 My health screens (M2ReportUpload, M2Trends): the student's own lab values.
-  if (route.startsWith('health/')) return role === 'STUDENT';
-  // The signed-in student web home and Buy again (canvas 3b). /reorder is the partner console's page.
-  if (route === 'home' || route === 'buy-again') return role === 'STUDENT';
-  // My lab tests and Report insights (canvas 3b, WP-09): the student's own released reports.
-  if (route === 'my-lab-tests' || route === 'report-insights') return role === 'STUDENT';
-  // Mobile 2.0 My health boards on the student's own stored lab values (Tier 1).
-  if (route === 'health/trends' || route === 'health/report-upload') return role === 'STUDENT';
-  // Leaving campus, account deletion and the student requests (returns, hostel visits, refills),
-  // as features/health/module.ts holds them: student accounts only.
-  if (route === 'leave-campus' || route === 'delete-account' || route === 'my-requests' || route === 'return-request' || route === 'hostel-visit' || route === 'refill-request' || route === 'ice-contacts' || route === 'consent' || route === 'care-circle') return role === 'STUDENT';
-  // The MEO triage console, as features/care/module.ts holds it.
-  if (route === 'meo') return role === 'CAMPUS_ADMIN' || role === 'NMC_DOCTOR' || role === 'SUPER_ADMIN';
-  return true;
+  const roles = Object.prototype.hasOwnProperty.call(routeRoles, route)
+    ? routeRoles[route]
+    : routePrefixRoles.find(([prefix]) => route.startsWith(prefix))?.[1];
+  return roles ? roles.includes(role) : true;
 }
 export function readRoute() {
   const hashRaw = window.location.hash.replace(/^#\/?/, '');

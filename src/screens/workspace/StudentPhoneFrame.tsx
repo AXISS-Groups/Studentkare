@@ -31,10 +31,23 @@ export const STUDENT_NAV_ROUTES: Readonly<Record<PillNavKey, RoutePath>> = {
 };
 
 /** The store boards opened from Home's rail: the boards draw Home as current there. */
-const HOME_STORE_ROUTES: ReadonlySet<RoutePath> = new Set<RoutePath>(['shop', 'lab-tests', 'care', 'insurance', 'preventive-care']);
+const HOME_STORE_ROUTES: ReadonlySet<RoutePath> = new Set<RoutePath>([
+  // keep-sorted start
+  'care',
+  'insurance',
+  'lab-tests',
+  'preventive-care',
+  'shop',
+  // keep-sorted end
+]);
 
 /** The My health screens opened from Insights (M2Trends, M2ReportUpload): the nav shows My health there. */
-const HEALTH_ROUTES: ReadonlySet<RoutePath> = new Set<RoutePath>(['health/trends', 'health/report-upload']);
+const HEALTH_ROUTES: ReadonlySet<RoutePath> = new Set<RoutePath>([
+  // keep-sorted start
+  'health/report-upload',
+  'health/trends',
+  // keep-sorted end
+]);
 
 /** The pill-nav destination a route belongs to (null: none is current). */
 export function studentNavFor(route: RoutePath): PillNavKey | null {

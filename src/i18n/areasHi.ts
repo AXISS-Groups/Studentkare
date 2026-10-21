@@ -1,0 +1,87 @@
+// keep-sorted start
+import { adminBoardHi } from './areas/adminBoard';
+import { adminGovHi } from './areas/adminGov';
+import { adminHi } from './areas/admin';
+import { assistHi } from './areas/assist';
+import { campusBoardsHi } from './areas/campusBoards';
+import { campusConsoleHi } from './areas/campusConsole';
+import { campusHi } from './areas/campus';
+import { campusSafetyHi } from './areas/campusSafety';
+import { careHi } from './areas/care';
+import { clinicianHi } from './areas/clinician';
+import { clinicianWorkHi } from './areas/clinicianWork';
+import { consoleHi } from './areas/console';
+import { deviceHi } from './areas/device';
+import { identityHi } from './areas/identity';
+import { labbookHi } from './areas/labbook';
+import { landingHi } from './areas/landing';
+import { launchHi } from './areas/launch';
+import { m2valuesHi } from './areas/m2values';
+import { memberHi } from './areas/member';
+import { mobile2HealthHi } from './areas/mobile2health';
+import { mobile2Hi } from './areas/mobile2';
+import { mobile2OrdersHi } from './areas/mobile2Orders';
+import { mobile2WebHi } from './areas/mobile2Web';
+import { onboardHi } from './areas/onboard';
+import { partnerConsoleHi } from './areas/partnerConsole';
+import { partnerHi } from './areas/partner';
+import { partnerWorkHi } from './areas/partnerWork';
+import { payHi } from './areas/pay';
+import { phoneboardsHi } from './areas/phoneboards';
+import { phonestoreHi } from './areas/phonestore';
+import { rewardsHi } from './areas/rewards';
+import { safetyHi } from './areas/safety';
+import { shopwebHi } from './areas/shopweb';
+import { studentshellHi } from './areas/studentshell';
+import { studentwebHi } from './areas/studentweb';
+import { studentwebT1Hi } from './areas/studentwebT1';
+import { wellnessHi } from './areas/wellness';
+// keep-sorted end
+
+/**
+ * Every Hindi area catalogue, one import and one spread per area, sorted. A new area
+ * is one line in each list. No key may be defined in two areas (or in ./hi.ts as well):
+ * src/i18n/__tests__/catalogKeys.test.ts checks it, so the spread order never matters.
+ * This file is merged with git's union driver (.gitattributes): keep it a pure list.
+ */
+export const areasHi = {
+  // keep-sorted start
+  ...adminBoardHi,
+  ...adminGovHi,
+  ...adminHi,
+  ...assistHi,
+  ...campusBoardsHi,
+  ...campusConsoleHi,
+  ...campusHi,
+  ...campusSafetyHi,
+  ...careHi,
+  ...clinicianHi,
+  ...clinicianWorkHi,
+  ...consoleHi,
+  ...deviceHi,
+  ...identityHi,
+  ...labbookHi,
+  ...landingHi,
+  ...launchHi,
+  ...m2valuesHi,
+  ...memberHi,
+  ...mobile2HealthHi,
+  ...mobile2Hi,
+  ...mobile2OrdersHi,
+  ...mobile2WebHi,
+  ...onboardHi,
+  ...partnerConsoleHi,
+  ...partnerHi,
+  ...partnerWorkHi,
+  ...payHi,
+  ...phoneboardsHi,
+  ...phonestoreHi,
+  ...rewardsHi,
+  ...safetyHi,
+  ...shopwebHi,
+  ...studentshellHi,
+  ...studentwebHi,
+  ...studentwebT1Hi,
+  ...wellnessHi,
+  // keep-sorted end
+};

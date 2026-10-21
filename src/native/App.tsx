@@ -50,8 +50,22 @@ import { DeleteAccountRoute } from '@/features/account/views/DeleteAccountView';
 import { RewardsRoute } from '@/features/rewards/views/RewardsView';
 import { MyRequestsRoute, NewRequestRoute } from '@/features/requests/views/RequestsViews';
 import { ReturnRequestBoardScreen, SearchScreen } from './PhoneBoardsScreens';
-import { ConsultsScreen, InsuranceScreen, LabsScreen, MedicinesScreen, OrdersScreen } from './M2StoreScreens';
-import { AskAyushScreen, InsightsScreen, ProductScreen, ProfileScreen, ReportUploadScreen, TrendsScreen, VaccinesScreen } from './M2HealthScreens';
+import {
+  ConsultsScreen,
+  InsuranceScreen,
+  LabsScreen,
+  MedicinesScreen,
+  OrdersScreen,
+} from './M2StoreScreens';
+import {
+  AskAyushScreen,
+  InsightsScreen,
+  ProductScreen,
+  ProfileScreen,
+  ReportUploadScreen,
+  TrendsScreen,
+  VaccinesScreen,
+} from './M2HealthScreens';
 import { NativeSessionProvider, useNativeSession } from './session';
 import { StudentHomeScreen } from './StudentHomeScreen';
 import { StudentShell } from './StudentTabBar';
@@ -63,61 +77,63 @@ import { MoreHubBoard } from '@/features/account/views/MoreHubBoard';
 import { BoardScreen } from '@/design-system/board/BoardKit';
 
 export type RootStackParamList = {
-  Landing: undefined;
-  Campuses: undefined;
-  Clinicians: undefined;
-  LabTests: undefined;
-  Consult: undefined;
-  Partnerships: undefined;
-  Programs: undefined;
-  Plans: undefined;
-  Wellness: undefined;
-  LabList: undefined;
-  SignIn: undefined;
-  TwoFactorSetup: undefined;
-  CreateAccount: undefined;
-  LostPhone: undefined;
-  Verify: undefined;
-  VerifyGate: undefined;
-  Home: undefined;
-  YourCare: undefined;
-  More: undefined;
+  // keep-sorted start
+  AiChat: undefined;
+  Appearance: undefined;
+  Appointments: undefined;
   BookAppointment: undefined;
   Camp: undefined;
-  PreventiveCare: undefined;
-  Vault: undefined;
+  Campuses: undefined;
   CaptureRecord: undefined;
-  MedicineReminders: undefined;
-  Emergency: undefined;
-  Appointments: undefined;
-  DigitalId: undefined;
-  Marketplace: undefined;
   Checkout: undefined;
-  Teleconsult: undefined;
   ClinicianConsole: undefined;
-  AiChat: undefined;
-  Notifications: undefined;
-  NotificationSettings: undefined;
-  Appearance: undefined;
-  LeaveCampus: undefined;
-  DeleteAccount: undefined;
-  Rewards: undefined;
-  MyRequests: undefined;
-  ReturnRequest: undefined;
-  HostelVisit: undefined;
-  RefillRequest: undefined;
-  Search: undefined;
-  Orders: undefined;
-  Medicines: undefined;
-  Labs: undefined;
+  Clinicians: undefined;
+  Consult: undefined;
   Consults: undefined;
-  Insurance: undefined;
+  CreateAccount: undefined;
+  DeleteAccount: undefined;
+  DigitalId: undefined;
+  Emergency: undefined;
+  Home: undefined;
+  HostelVisit: undefined;
   Insights: undefined;
-  Profile: undefined;
-  Vaccines: undefined;
+  Insurance: undefined;
+  LabList: undefined;
+  LabTests: undefined;
+  Labs: undefined;
+  Landing: undefined;
+  LeaveCampus: undefined;
+  LostPhone: undefined;
+  Marketplace: undefined;
+  MedicineReminders: undefined;
+  Medicines: undefined;
+  More: undefined;
+  MyRequests: undefined;
+  NotificationSettings: undefined;
+  Notifications: undefined;
+  Orders: undefined;
+  Partnerships: undefined;
+  Plans: undefined;
+  PreventiveCare: undefined;
   Product: { itemId: string };
+  Profile: undefined;
+  Programs: undefined;
+  RefillRequest: undefined;
   ReportUpload: undefined;
+  ReturnRequest: undefined;
+  Rewards: undefined;
+  Search: undefined;
+  SignIn: undefined;
+  Teleconsult: undefined;
   Trends: undefined;
+  TwoFactorSetup: undefined;
+  Vaccines: undefined;
+  Vault: undefined;
+  Verify: undefined;
+  VerifyGate: undefined;
+  Wellness: undefined;
+  YourCare: undefined;
+  // keep-sorted end
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
