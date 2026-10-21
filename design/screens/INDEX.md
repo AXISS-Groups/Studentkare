@@ -1,6 +1,6 @@
 # Student Kare — every screen
 
-252 screens on 10 canvas pages. Each row links to a brief that lists every icon, picture, link and state the screen needs.
+254 screens on 10 canvas pages (M2Reminders and M2Water have no board: designed in code in the Mobile 2.0 language). Each row links to a brief that lists every icon, picture, link and state the screen needs.
 
 | # | Screen | What it is | Platform | Tier | Tickets | Icons | 3D | Glyphs | Pictures |
 |---|---|---|---|---|---|---|---|---|---|
@@ -261,8 +261,10 @@
 | 245 | [M2Vaccines](briefs/M2Vaccines.md) | Vaccines · record and booking | Phone 390x1400 | 1 | SK-042 | 8 | 0 | 0 | 0 |
 | 246 | [M2Insurance](briefs/M2Insurance.md) | Insurance · policy and claims | Phone 390x1200 | 2 | SK-071 | 11 | 0 | 0 | 0 |
 | 247 | [M2Orders](briefs/M2Orders.md) | Orders · live tracking and past | Phone 390x1100 | 2 | SK-064 | 8 | 0 | 0 | 0 |
-| 248 | [M2Insights](briefs/M2Insights.md) | My health · Insights | Phone 390x1780 | 1 | SK-047 | 11 | 0 | 0 | 0 |
+| 248 | [M2Insights](briefs/M2Insights.md) | My health · Insights | Phone 390x1780 | 1 | SK-047 | 17 | 0 | 0 | 0 |
 | 249 | [M2Trends](briefs/M2Trends.md) | Trends · each test over time | Phone 390x1300 | 1 | SK-045, SK-047 | 10 | 0 | 0 | 0 |
 | 250 | [M2ReportUpload](briefs/M2ReportUpload.md) | Upload a report from any lab | Phone 390x1250 | 1 | SK-046, SK-047 | 6 | 0 | 0 | 0 |
 | 251 | [M2AskAyush](briefs/M2AskAyush.md) | Ask Ayush about my records | Phone 390x844 | 1 | SK-048 | 4 | 0 | 0 | 0 |
 | 252 | [M2Profile](briefs/M2Profile.md) | Profile · documents · family | Phone 390x1400 | 1 | SK-050, SK-057, SK-068 | 16 | 0 | 0 | 0 |
+| 253 | [M2Reminders](briefs/M2Reminders.md) | Medicines today and reminders (no board; designed in code) | Phone 390x1400 | 1 | reminders-m2 | 17 | 0 | 0 | 0 |
+| 254 | [M2Water](briefs/M2Water.md) | Water · today, goal, the week, reminders (no board; designed in code) | Phone 390x1400 | 2 | reminders-m2 | 13 | 0 | 0 | 0 |
