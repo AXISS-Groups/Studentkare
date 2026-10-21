@@ -254,3 +254,8 @@ plane and never attached to clinical data.
 - **D7-7 Refill routing:** prescribing clinician (board) vs pharmacy (today). Clinical call.
 - **D7-8 VitalTrends wording:** may the screen state direction ("down 4 bpm since August")?
 - **D7-9 ConsultSummary extras:** type/price line, follow-up booking, rating: build or omit.
+
+
+## Approval (2026-10-21)
+
+Krishna Chintakayala (founder, named Tier 1 reviewer) approved this plan on 2026-10-21 ("approve all"). Where it overlaps `tier1-mobile2-health-2026-10-21.md`, that plan wins. Anything this plan routes to the clinical lead, legal or the AI-constitution owner stays unavailable until they sign.
