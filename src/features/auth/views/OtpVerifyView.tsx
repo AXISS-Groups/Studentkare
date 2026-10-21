@@ -4,6 +4,7 @@ import { useT } from '@/i18n';
 import { Icon } from '@/design-system/icons';
 import type { AuthViewModel } from '../viewmodel/AuthViewModel';
 import { clock, expiryCopy } from './otpCopy';
+import { ChannelFailureNote } from './ChannelChoice';
 import './sign-in-frame.css';
 
 const LENGTH = 6;
@@ -40,7 +41,7 @@ export const OtpVerifyView = observer(function OtpVerifyView({ vm, onEdit, allow
 
   const expiry = expiryCopy(vm.expiresInSeconds);
   const otherChannel = vm.channel === 'EMAIL' ? 'WHATSAPP' : 'EMAIL';
-  const canSwitch = allowSwitch && vm.channels.includes(otherChannel);
+  const canSwitch = allowSwitch && vm.offeredChannels.includes(otherChannel);
   const tooMany = vm.errorStatus === HTTP_TOO_MANY;
   const digits = vm.code.split('');
 
@@ -121,7 +122,8 @@ export const OtpVerifyView = observer(function OtpVerifyView({ vm, onEdit, allow
       </div>
       <p className="sk-sr-only" role="status">{ready ? t('ident.otp.resendReady') : ''}</p>
 
-      {vm.error ? (
+      {vm.channelFailure ? <ChannelFailureNote vm={vm} id={errorId} /> : null}
+      {vm.error && !vm.channelFailure ? (
         <div className="sk-otp__note sk-otp__note--error" role="alert" id={errorId}>
           <span className="sk-otp__note-icon"><Icon name="alert-circle-4" size={20} /></span>
           <span>

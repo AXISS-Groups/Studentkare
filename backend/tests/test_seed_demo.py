@@ -102,7 +102,10 @@ def test_console_delivery_opt_in_and_production_refusal(plain_harness, monkeypat
     monkeypatch.setenv("DEV_OTP_CONSOLE", "true")
     monkeypatch.setenv("APP_ENV", "development")
     assert client.post("/api/auth/otp/send", json=body).status_code == 200
-    assert "[DEV OTP] verification code for console@example.test" in capsys.readouterr().out
+    logged = capsys.readouterr().out
+    # The code is printed; the address is masked (guardrail 9: no identifiers in logs).
+    assert "[DEV OTP] verification code for c•••@example.test" in logged
+    assert "console@example.test" not in logged
     monkeypatch.setenv("APP_ENV", "production")
     assert client.post("/api/auth/otp/send", json=body).status_code == 503
 

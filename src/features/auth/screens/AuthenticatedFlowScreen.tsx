@@ -1,10 +1,8 @@
 import React, { useEffect } from 'react';
 import { useLanguage, useT } from '@/i18n';
-import { LanguageSetting } from '@/i18n/LanguageSetting';
 import { observer } from 'mobx-react-lite';
 import { Icon } from '@/design-system/icons';
 import { usePhoneFrame } from '@/design-system/navigation/usePhoneFrame';
-import { AuthLayout } from '@/components/interface/AuthLayout';
 import { PageTransition } from '@/components/interface/PageTransition';
 import { Field, FormError, SubmitButton } from '@/components/interface/WorkflowUI';
 import { useAuth } from '@/data/contexts/AuthContext';
@@ -22,16 +20,16 @@ import { SignInFrame, TermsLine } from '../views/SignInFrame';
 import { CreateAccountView } from '../views/CreateAccountView';
 import { SignupConsent } from '../views/SignupConsent';
 
-/** Sign-up steps drawn by AuthLayout's stepper; the consent screen is part of the last one. */
+/** Sign-up steps ("n of 6"); the consent screen is part of the last one. */
 const SIGNUP_STEPS = 6;
 /** The consent screen (OnboardingConsent): after campus details, before the account exists. */
 const CONSENT_STEP = 8;
 
 /**
  * /login and /signup (Tier 1 boards SignIn, WebSignIn, OtpVerify, OnboardingConsent;
- * approved 2026-10-21, plan tier1-canvas-wp03). Sign-in draws its own frame (phone
- * header or the web brand panel, no stepper); sign-up keeps AuthLayout, with the code
- * and consent steps drawn to their boards. The orchestration is AuthViewModel's.
+ * approved 2026-10-21, plan tier1-canvas-wp03). Sign in and create account share one
+ * Mobile 2.0 frame (SignInFrame: the navy gradient hero on web, a compact header on
+ * the phone, the emergency strip always in view). The orchestration is AuthViewModel's.
  */
 export const AuthenticatedFlowScreen = observer(function AuthenticatedFlowScreen({ mode, next }: { mode: 'login' | 'signup'; next: RoutePath | null }) {
   const auth = useAuth();
@@ -61,6 +59,7 @@ export const AuthenticatedFlowScreen = observer(function AuthenticatedFlowScreen
   }, [vm, vm.resendAt]);
 
   const accept = (response: SessionResponse) => auth.acceptSession(response);
+  const toSignup = () => navigate('signup', next ?? undefined);
 
   // Development builds only (isDev): never in a production bundle's UI.
   const demoLogin = (demoId: string, demoChan: 'EMAIL' | 'WHATSAPP') => {
@@ -95,7 +94,7 @@ export const AuthenticatedFlowScreen = observer(function AuthenticatedFlowScreen
   if (mode === 'login') {
     const footer = vm.step === 1 ? (
       <div className="sk-signin__links">
-        <p>{t('auth.newTo')} <button type="button" className="sk-signin__secondary" onClick={() => navigate('signup', next ?? undefined)}>{t('auth.createAccount')}</button></p>
+        <p>{t('auth.newTo')} <button type="button" className="sk-signin__secondary" onClick={toSignup}>{t('auth.createAccount')}</button></p>
         <a className="sk-signin__secondary" href="/lost-phone">
           {t('ident.signin.lostPhone')}
           <Icon name="chevron-right" size={16} />
@@ -106,7 +105,8 @@ export const AuthenticatedFlowScreen = observer(function AuthenticatedFlowScreen
     ) : null;
     return (
       <SignInFrame web={!phone} onBack={() => (vm.step === 1 ? navigate('welcome') : vm.advance(1))} footer={footer}>
-        <FormError message={vm.step === 3 ? '' : vm.error} />
+        {/* Step 1 and the code step show their errors by the field; these steps have none. */}
+        <FormError message={vm.step === 7 || (vm.step === 1 && vm.remembered) ? vm.error : ''} />
         {vm.twoFaRestart && <div className="wf-notice" role="alert"><p>{t(vm.twoFaRestart)}</p></div>}
         {vm.step === 1 && vm.remembered && (
           <div className="sk-signin__column">
@@ -124,7 +124,7 @@ export const AuthenticatedFlowScreen = observer(function AuthenticatedFlowScreen
         )}
         {vm.step === 1 && !vm.remembered && (
           <form className="sk-signin__column" onSubmit={(e) => { e.preventDefault(); void vm.sendCode(); }}>
-            <SignInView vm={vm} />
+            <SignInView vm={vm} onCreateAccount={toSignup} />
             {isDev() && demoLogins}
           </form>
         )}
@@ -156,64 +156,73 @@ export const AuthenticatedFlowScreen = observer(function AuthenticatedFlowScreen
   );
   // The consent board is a phone board: at phone width it is the whole screen.
   if (vm.step === CONSENT_STEP && phone) {
-    return <main className="sk-signin sk-signin--phone">{consent}<CrisisLinks titleKey="crisis.noAccount" testID="crisis-links" /></main>;
+    return <main className="sk-signin sk-signin--phone">{consent}<div className="sk-auth__crisis"><CrisisLinks titleKey="crisis.noAccount" testID="crisis-links" /></div></main>;
   }
 
+  // The contact step draws its own back button beside the "n of 6" progress.
+  const signupBack = vm.step === 2 ? undefined : () => {
+    if (vm.step === 1) navigate('welcome');
+    else if (vm.step === 3) vm.advance(2);
+    else if (vm.step === CONSENT_STEP) vm.advance(6);
+    else vm.advance(vm.step - 1);
+  };
+  const signupFooter = (
+    <div className="sk-signin__links">
+      <p>{t('auth.alreadyHave')} <button type="button" className="sk-signin__secondary" onClick={() => navigate('login', next ?? undefined)}>{t('auth.signIn')}</button></p>
+      {vm.step === 2 ? <TermsLine /> : null}
+    </div>
+  );
+
   return (
-    <AuthLayout mode={mode} step={Math.min(vm.step, SIGNUP_STEPS)}>
-      <div className="wf-auth-card" data-ui="auth-card">
-        {vm.step !== CONSENT_STEP && vm.step !== 3 && <FormError message={vm.error} />}
-        <PageTransition key={vm.step}>
-          {vm.step === 1 && (
-            <div className="wf-auth-form">
-              <div className="care-auth-step-mark"><Icon name="shield-check" size={24} /></div>
-              <h2>{t('auth.intro.title')}</h2>
-              <p>{t('auth.intro.body')}</p>
-              <ul className="wf-benefits"><li><Icon name="check" size={16} />{t('auth.intro.b1')}</li><li><Icon name="check" size={16} />{t('auth.intro.b2')}</li><li><Icon name="check" size={16} />{t('auth.intro.b3')}</li></ul>
-              <button className="health-button health-button-primary wf-submit" onClick={() => vm.advance(2)}>{t('auth.intro.cta')}</button>
-              <p className="wf-fineprint">{t('auth.intro.adults')}</p>
-            </div>
-          )}
-          {vm.step === 2 && (
-            <form className="wf-auth-form" onSubmit={(e) => { e.preventDefault(); void vm.sendCode(); }}><CreateAccountView vm={vm} /></form>
-          )}
-          {vm.step === 3 && <div className="sk-signin">{codeStep}</div>}
-          {vm.step === 4 && (
-            <form className="wf-auth-form" onSubmit={(e) => { e.preventDefault(); vm.advance(5); }}>
-              <h2>{t('auth.details.title')}</h2>
-              <p>{t('auth.details.body')}</p>
-              <Field label={t('auth.fullName')}><input required minLength={2} maxLength={120} autoComplete="name" value={vm.fullName} onChange={(e) => vm.setField('fullName', e.target.value)} /></Field>
-              <Field label={t('auth.dob')}><input type="date" required value={vm.dob} onChange={(e) => vm.setField('dob', e.target.value)} /></Field>
-              <Field label={t('auth.bloodGroup')}><select value={vm.bloodGroup} onChange={(e) => vm.setField('bloodGroup', e.target.value)}><option value="">{t('auth.notRecorded')}</option>{['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map((group) => <option key={group}>{group}</option>)}</select></Field>
-              <SubmitButton busy={false}>{t('auth.continue')}</SubmitButton>
-            </form>
-          )}
-          {vm.step === 5 && (
-            <div className="wf-auth-form">
-              <span className="wf-status">{t('auth.separate.badge')}</span>
-              <h2>{t('auth.separate.title')}</h2>
-              <p>{t('auth.separate.body')}</p>
-              <div className="wf-notice">{t('auth.separate.note')}</div>
-              <button className="health-button health-button-primary wf-submit" onClick={() => vm.advance(6)}>{t('auth.separate.cta')}</button>
-              <button className="health-text-button" onClick={() => vm.advance(4)}>{t('auth.backToDetails')}</button>
-            </div>
-          )}
-          {vm.step === 6 && (
-            <form className="wf-auth-form" onSubmit={(e) => { e.preventDefault(); vm.advance(CONSENT_STEP); }}>
-              <h2>{t('auth.campus.title')}</h2>
-              <Field label={t('auth.university')}><input required minLength={2} maxLength={160} value={vm.university} onChange={(e) => vm.setField('university', e.target.value)} /></Field>
-              <Field label={t('auth.roll')}><input required maxLength={80} value={vm.rollNumber} onChange={(e) => vm.setField('rollNumber', e.target.value)} /></Field>
-              <p>{t('auth.campus.note')}</p>
-              <SubmitButton busy={false}>{t('auth.continue')}</SubmitButton>
-              <button type="button" className="health-text-button" onClick={() => vm.advance(4)}>{t('auth.editDetails')}</button>
-            </form>
-          )}
-          {vm.step === CONSENT_STEP && consent}
-        </PageTransition>
-        <div className="wf-auth-switch"><span>{t('auth.alreadyHave')}</span><button className="health-text-button" onClick={() => navigate('login', next ?? undefined)}>{t('auth.signIn')}</button></div>
-        <CrisisLinks titleKey="crisis.noAccount" testID="crisis-links" />
-        <LanguageSetting />
-      </div>
-    </AuthLayout>
+    <SignInFrame web={!phone} onBack={signupBack} regionLabel="auth.signup.title" footer={signupFooter}>
+      {vm.step !== CONSENT_STEP && vm.step !== 2 && vm.step !== 3 && <FormError message={vm.error} />}
+      <PageTransition key={vm.step}>
+        {vm.step === 1 && (
+          <div className="wf-auth-form sk-signup-step">
+            <div className="care-auth-step-mark"><Icon name="shield-check" size={24} /></div>
+            <h1 className="sk-signin__title">{t('auth.intro.title')}</h1>
+            <p className="sk-signin__lead">{t('auth.intro.body')}</p>
+            <ul className="wf-benefits"><li><Icon name="check" size={16} />{t('auth.intro.b1')}</li><li><Icon name="check" size={16} />{t('auth.intro.b2')}</li><li><Icon name="check" size={16} />{t('auth.intro.b3')}</li></ul>
+            <button type="button" className="sk-signin__primary" onClick={() => vm.advance(2)}>{t('auth.intro.cta')}<Icon name="arrow-right" size={20} /></button>
+            <p className="wf-fineprint">{t('auth.intro.adults')}</p>
+          </div>
+        )}
+        {vm.step === 2 && (
+          <form className="sk-signin__column" onSubmit={(e) => { e.preventDefault(); void vm.sendCode(); }}><CreateAccountView vm={vm} /></form>
+        )}
+        {vm.step === 3 && codeStep}
+        {vm.step === 4 && (
+          <form className="wf-auth-form sk-signup-step" onSubmit={(e) => { e.preventDefault(); vm.advance(5); }}>
+            <h1 className="sk-signin__title">{t('auth.details.title')}</h1>
+            <p className="sk-signin__lead">{t('auth.details.body')}</p>
+            <Field label={t('auth.fullName')}><input required minLength={2} maxLength={120} autoComplete="name" value={vm.fullName} onChange={(e) => vm.setField('fullName', e.target.value)} /></Field>
+            <Field label={t('auth.dob')}><input type="date" required value={vm.dob} onChange={(e) => vm.setField('dob', e.target.value)} /></Field>
+            <Field label={t('auth.bloodGroup')}><select value={vm.bloodGroup} onChange={(e) => vm.setField('bloodGroup', e.target.value)}><option value="">{t('auth.notRecorded')}</option>{['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map((group) => <option key={group}>{group}</option>)}</select></Field>
+            <button type="submit" className="sk-signin__primary">{t('auth.continue')}</button>
+          </form>
+        )}
+        {vm.step === 5 && (
+          <div className="wf-auth-form sk-signup-step">
+            <span className="wf-status">{t('auth.separate.badge')}</span>
+            <h1 className="sk-signin__title">{t('auth.separate.title')}</h1>
+            <p className="sk-signin__lead">{t('auth.separate.body')}</p>
+            <div className="wf-notice">{t('auth.separate.note')}</div>
+            <button type="button" className="sk-signin__primary" onClick={() => vm.advance(6)}>{t('auth.separate.cta')}</button>
+            <button type="button" className="sk-signin__secondary" onClick={() => vm.advance(4)}>{t('auth.backToDetails')}</button>
+          </div>
+        )}
+        {vm.step === 6 && (
+          <form className="wf-auth-form sk-signup-step" onSubmit={(e) => { e.preventDefault(); vm.advance(CONSENT_STEP); }}>
+            <h1 className="sk-signin__title">{t('auth.campus.title')}</h1>
+            <Field label={t('auth.university')}><input required minLength={2} maxLength={160} value={vm.university} onChange={(e) => vm.setField('university', e.target.value)} /></Field>
+            <Field label={t('auth.roll')}><input required maxLength={80} value={vm.rollNumber} onChange={(e) => vm.setField('rollNumber', e.target.value)} /></Field>
+            <p className="sk-signin__lead">{t('auth.campus.note')}</p>
+            <button type="submit" className="sk-signin__primary">{t('auth.continue')}</button>
+            <button type="button" className="sk-signin__secondary" onClick={() => vm.advance(4)}>{t('auth.editDetails')}</button>
+          </form>
+        )}
+        {vm.step === CONSENT_STEP && consent}
+      </PageTransition>
+    </SignInFrame>
   );
 });

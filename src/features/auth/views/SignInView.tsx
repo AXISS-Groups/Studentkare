@@ -1,87 +1,101 @@
-import React, { useId, useState } from 'react';
+import React, { useEffect, useId, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useT } from '@/i18n';
-import type { MessageKey } from '@/i18n';
-import { Banner } from '@/design-system';
 import { Icon } from '@/design-system/icons';
-import type { SkIconName } from '@/design-system/icons';
 import type { AuthViewModel } from '../viewmodel/AuthViewModel';
-import { channelFieldCopy, channelIsDeliverable, type AuthChannel } from './channelCopy';
+import { channelFieldCopy, channelIsDeliverable } from './channelCopy';
+import { ChannelFailureNote, ChannelSwitch, NoAccountNote, NoChannelState, SendErrorNote } from './ChannelChoice';
 import './sign-in-frame.css';
-
-/** The board's order: Email first, then WhatsApp. Icons from the brief (mail-2, message-circle-3). */
-const CHANNELS: ReadonlyArray<{ id: AuthChannel; label: MessageKey; icon: SkIconName }> = [
-  { id: 'EMAIL', label: 'auth.channel.EMAIL', icon: 'mail-2' },
-  { id: 'WHATSAPP', label: 'auth.channel.WHATSAPP', icon: 'message-circle-3' },
-];
 
 /**
  * Sign in (canvas SignIn / WebSignIn, Tier 1, approved 2026-10-21).
  *
  * Binds to AuthViewModel and adds no API calls: "Send verification code" calls
- * the same POST /auth/otp/send as before (the old in-between confirmation step
- * only collected a backup email the server never uses: it sends a fallback only
- * to the account's own verified recovery address). The channels come from
- * GET /auth/options; one that cannot be delivered says so and the button stays off.
+ * POST /auth/otp/send. Only the channels GET /auth/options returned are drawn
+ * (WhatsApp only while its session is connected); with one there is no
+ * switcher, with none an honest "can't be sent right now" state replaces the
+ * form. A send that fails on its channel says so next to the field and offers
+ * the other channel in one tap. Errors sit by the field and are announced.
  *
  * "Continue with campus ID" is drawn switched off with the reason: there is no
  * single sign-on for any campus (decision D3-2).
  */
-export const SignInView = observer(function SignInView({ vm }: { vm: AuthViewModel }) {
+export const SignInView = observer(function SignInView({ vm, onCreateAccount }: { vm: AuthViewModel; onCreateAccount: () => void }) {
   const t = useT();
   const hintId = useId();
   const errorId = useId();
+  const field = useRef<HTMLInputElement>(null);
   const copy = channelFieldCopy(vm.channel);
-  const deliverable = channelIsDeliverable(vm.channel, vm.channels);
+  const deliverable = channelIsDeliverable(vm.channel, vm.offeredChannels);
   // Presentation only: the browser's own constraint check still decides
   // whether the form submits; this shows its verdict on the field.
   const [invalid, setInvalid] = useState(false);
+  useEffect(() => {
+    if (vm.focusContactRequest > 0) field.current?.focus();
+  }, [vm.focusContactRequest]);
+
+  const head = (
+    <div className="sk-signin__head">
+      <h1 className="sk-signin__title">{t('auth.signin.title')}</h1>
+      <p className="sk-signin__lead">{t('auth.signin.lead')}</p>
+    </div>
+  );
+
+  if (vm.noChannel) {
+    return (
+      <>
+        {head}
+        <NoChannelState vm={vm} />
+      </>
+    );
+  }
+
+  const sendError = vm.channelFailure
+    ? <ChannelFailureNote vm={vm} id={errorId} />
+    : vm.noAccount
+      ? <NoAccountNote id={errorId} onCreate={onCreateAccount} />
+      : vm.error
+        ? <SendErrorNote id={errorId} message={vm.error} />
+        : null;
+  const describedBy = [invalid || sendError ? errorId : '', hintId].filter(Boolean).join(' ');
+  // Red on the field only when what was typed is the problem (invalid, or no
+  // account uses it); a channel that is down is on our side.
+  const fieldInvalid = invalid || (Boolean(vm.error) && !vm.channelFailure);
 
   return (
     <>
-      <div className="sk-signin__head">
-        <h1 className="sk-signin__title">{t('auth.signin.title')}</h1>
-        <p className="sk-signin__lead">{t('auth.signin.lead')}</p>
-      </div>
+      {head}
 
-      <div className="sk-signin__channels" role="group" aria-label={t('auth.channels')}>
-        {CHANNELS.map(({ id, label, icon }) => (
-          <button
-            key={id}
-            type="button"
-            aria-pressed={vm.channel === id}
-            disabled={vm.busy}
-            onClick={() => { vm.setChannel(id); setInvalid(false); }}
-          >
-            <Icon name={icon} size={16} />
-            {t(label)}
-          </button>
-        ))}
-      </div>
+      <ChannelSwitch vm={vm} onPick={() => setInvalid(false)} />
 
       <div className="sk-signin__field">
         <label className="sk-signin__label" htmlFor="sk-signin-identifier">{t(copy.label)}</label>
-        <div className="sk-signin__input" data-invalid={invalid}>
-          <Icon name={vm.channel === 'EMAIL' ? 'mail-2' : 'message-circle-3'} size={18} />
+        <div className="sk-signin__input" data-invalid={fieldInvalid}>
+          {vm.channel === 'EMAIL'
+            ? <Icon name="mail-2" size={18} />
+            : <span className="sk-signin__prefix">{t('launch.create.countryCode')}</span>}
           <input
+            ref={field}
             id="sk-signin-identifier"
             required
             type={copy.inputType}
+            inputMode={vm.channel === 'EMAIL' ? 'email' : 'tel'}
             autoComplete={copy.autoComplete}
             value={vm.identifier}
-            aria-invalid={invalid}
-            aria-describedby={invalid ? `${errorId} ${hintId}` : hintId}
+            aria-invalid={fieldInvalid}
+            aria-describedby={describedBy}
             onChange={(event) => {
               vm.setIdentifier(event.target.value);
               if (invalid && event.target.validity.valid) setInvalid(false);
             }}
             onInvalid={(event) => { event.preventDefault(); setInvalid(true); event.currentTarget.focus(); }}
             maxLength={254}
-            placeholder={copy.placeholder}
+            placeholder={vm.channel === 'EMAIL' ? copy.placeholder : t('launch.create.phonePlaceholder')}
           />
         </div>
         {invalid ? (
           <p className="sk-signin__error" id={errorId} role="alert">
+            <Icon name="alert-circle-4" size={16} />
             {t(vm.channel === 'EMAIL' ? 'auth.signin.invalid.EMAIL' : 'auth.signin.invalid.WHATSAPP')}
           </p>
         ) : null}
@@ -90,15 +104,17 @@ export const SignInView = observer(function SignInView({ vm }: { vm: AuthViewMod
         </p>
       </div>
 
-      {vm.optionsError ? <Banner tone="attention" announce>{vm.optionsError}</Banner> : null}
-      {!deliverable && !vm.optionsLoading ? (
-        <Banner tone="attention" announce>
+      {invalid ? null : sendError}
+      {vm.optionsError && !vm.optionsLoaded ? <p className="sk-signin__hint" role="status">{t('authch.optionsError')}</p> : null}
+      {!deliverable && !vm.channelFailure ? (
+        <p className="sk-signin__hint" role="status">
           {t('auth.notConfigured', { channel: t(vm.channel === 'EMAIL' ? 'auth.channel.EMAIL' : 'auth.channel.WHATSAPP') })}
-        </Banner>
+        </p>
       ) : null}
 
       <button type="submit" className="sk-signin__primary" disabled={!deliverable || vm.busy} aria-busy={vm.busy}>
         {vm.busy ? t('auth.sending') : t('ident.signin.send')}
+        {vm.busy ? null : <Icon name="arrow-right" size={20} />}
       </button>
 
       <div className="sk-signin__or" aria-hidden="true">{t('ident.signin.or')}</div>

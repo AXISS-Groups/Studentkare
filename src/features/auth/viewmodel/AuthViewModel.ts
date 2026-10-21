@@ -9,6 +9,36 @@ import { normalizeInviteCode } from '@/features/rewards/inviteCode';
 import { getSetting } from '@/data/services/config';
 
 type AuthMode = 'login' | 'signup';
+/** The board's order for the channel switcher: Email first, then WhatsApp. */
+const CHANNEL_ORDER: readonly Channel[] = ['EMAIL', 'WHATSAPP'];
+const HTTP_NOT_FOUND = 404;
+const HTTP_UNAVAILABLE = 503;
+
+/**
+ * A send that failed because the channel could not deliver (503). The server
+ * names the channel and what still works; never the number or address.
+ */
+export interface ChannelFailure {
+  channel: Channel;
+  /** Channels that can still deliver, from the server's answer. */
+  remaining: Channel[];
+}
+
+function isChannel(value: unknown): value is Channel {
+  return value === 'EMAIL' || value === 'WHATSAPP';
+}
+
+/** Reads the 503 detail ({ code, channel, channels }); anything else is treated as the chosen channel failing. */
+export function channelFailureFrom(error: ApiError, chosen: Channel, known: Channel[]): ChannelFailure {
+  const detail = error.detail;
+  if (detail && typeof detail === 'object' && !Array.isArray(detail)) {
+    const record = detail as { channel?: unknown; channels?: unknown };
+    const channel = isChannel(record.channel) ? record.channel : chosen;
+    const remaining = Array.isArray(record.channels) ? record.channels.filter(isChannel).filter((c) => c !== channel) : known.filter((c) => c !== channel);
+    return { channel, remaining };
+  }
+  return { channel: chosen, remaining: known.filter((c) => c !== chosen) };
+}
 /** STAFF: the staff sign-in page (AdminSignIn). The server then sends codes only to staff accounts. */
 export type AuthAudience = 'STUDENT' | 'STAFF';
 type Channel = 'EMAIL' | 'WHATSAPP';
@@ -73,6 +103,12 @@ export class AuthViewModel {
   consentLanguage: Lang = 'en';
 
   channels: Channel[] = [];
+  /** True once GET /auth/options answered: only then does an empty list mean "nothing can deliver". */
+  optionsLoaded = false;
+  /** The last send failed because its channel could not deliver (503); the screen offers what still works. */
+  channelFailure: ChannelFailure | null = null;
+  /** Bumped when the screen should move focus to the contact field (after switching to email). */
+  focusContactRequest = 0;
   remembered: RememberedDevice | null = null;
   optionsError = '';
   optionsLoading = false;
@@ -116,6 +152,7 @@ export class AuthViewModel {
   reset(): void {
     this.step = 1;
     this.channel = this.audience === 'STAFF' ? 'EMAIL' : 'WHATSAPP';
+    if (this.audience === 'STUDENT') this.pickOfferedChannel();
     this.identifier = '';
     this.code = '';
     this.masked = '';
@@ -135,6 +172,7 @@ export class AuthViewModel {
     this.consent.reset();
     this.error = '';
     this.twoFaRestart = '';
+    this.channelFailure = null;
     this.busy = false;
   }
 
@@ -143,8 +181,45 @@ export class AuthViewModel {
   }
 
   setChannel(channel: Channel): void {
+    if (channel !== this.channel) this.identifier = '';
     this.channel = channel;
-    this.identifier = '';
+    this.channelFailure = null;
+    if (this.errorStatus === HTTP_UNAVAILABLE) {
+      this.error = '';
+      this.errorStatus = 0;
+    }
+  }
+
+  /**
+   * The channels to draw, in the board's order. Once /auth/options has
+   * answered, exactly what it listed; before that (or if it couldn't be read)
+   * both, so a slow network never locks the form: the send itself answers.
+   */
+  get offeredChannels(): Channel[] {
+    if (!this.optionsLoaded) return [...CHANNEL_ORDER];
+    return CHANNEL_ORDER.filter((c) => this.channels.includes(c));
+  }
+
+  /** The server said no channel can deliver a code right now. */
+  get noChannel(): boolean {
+    return this.optionsLoaded && this.offeredChannels.length === 0;
+  }
+
+  /** The last request was refused because no account uses this address or number (sign in). */
+  get noAccount(): boolean {
+    return this.isLogin && this.errorStatus === HTTP_NOT_FOUND && this.step === 1;
+  }
+
+  /**
+   * "Send the code by email instead": one tap after a WhatsApp failure. The
+   * typed name is kept; the number is cleared (it is not an email address) and
+   * the screen moves focus to the email field.
+   */
+  useEmailInstead(): void {
+    this.setChannel('EMAIL');
+    // From the code step (a resend failed), back to the form that asks for it.
+    if (this.step === 3) this.step = this.isLogin ? 1 : 2;
+    this.focusContactRequest += 1;
   }
 
   setIdentifier(value: string): void {
@@ -184,10 +259,15 @@ export class AuthViewModel {
     this.optionsLoading = true;
     this.optionsError = '';
     try {
-      const res = await apiRequest<{ channels: Channel[] }>('/auth/options');
+      const res = await apiRequest<{ channels?: unknown }>('/auth/options');
+      // An answer without a list is not "nothing can deliver": treat it as unread.
+      if (!Array.isArray(res?.channels)) throw new Error('Could not load sign-in options.');
+      const listed = res.channels;
       runInAction(() => {
-        this.channels = res.channels;
-        if (res.channels.length === 1) this.channel = res.channels[0];
+        this.channels = listed.filter(isChannel);
+        this.optionsLoaded = true;
+        this.channelFailure = null;
+        this.pickOfferedChannel();
       });
     } catch (error) {
       runInAction(() => {
@@ -197,6 +277,15 @@ export class AuthViewModel {
       runInAction(() => {
         this.optionsLoading = false;
       });
+    }
+  }
+
+  /** Keeps the chosen channel only if it is offered; otherwise the first one that is. */
+  private pickOfferedChannel(): void {
+    const offered = this.offeredChannels;
+    if (offered.length > 0 && !offered.includes(this.channel)) {
+      this.channel = offered[0];
+      this.identifier = '';
     }
   }
 
@@ -322,6 +411,14 @@ export class AuthViewModel {
       runInAction(() => {
         this.error = error instanceof Error ? error.message : 'Could not send the code.';
         this.errorStatus = error instanceof ApiError ? error.status : 0;
+        if (error instanceof ApiError && error.status === HTTP_UNAVAILABLE && this.audience === 'STUDENT') {
+          // The channel can't deliver: it drops out of the choice (the server
+          // stops offering it too), and the screen offers what still works.
+          const failure = channelFailureFrom(error, this.channel, this.offeredChannels);
+          this.channelFailure = failure;
+          this.channels = failure.remaining;
+          this.optionsLoaded = true;
+        }
       });
     } finally {
       runInAction(() => {

@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrandLogo, Icon } from '@/design-system/icons';
 import { CrisisLinks } from '@/design-system';
+import { useAmbientMotion } from '@/design-system/m2';
 import { LANGUAGE_NAMES, useLanguage, useT } from '@/i18n';
 import type { Lang, MessageKey } from '@/i18n';
 import './sign-in-frame.css';
@@ -16,11 +17,11 @@ const LANGS: readonly { code: Lang; short: string }[] = [
  * EN / తె / हि (canvas SignIn, WebSignIn): switches the whole app's language
  * through the i18n provider. Each button says its language in that language.
  */
-export function LanguageSwitch(): React.ReactElement {
+export function LanguageSwitch({ onNavy = false }: { onNavy?: boolean }): React.ReactElement {
   const t = useT();
   const { lang, setLang } = useLanguage();
   return (
-    <div className="sk-signin__langs" role="group" aria-label={t('ident.lang.group')}>
+    <div className={`sk-signin__langs${onNavy ? ' sk-signin__langs--navy' : ''}`} role="group" aria-label={t('ident.lang.group')}>
       {LANGS.map(({ code, short }) => (
         <button
           key={code}
@@ -51,76 +52,122 @@ export function Wordmark({ onNavy = false }: { onNavy?: boolean }): React.ReactE
   );
 }
 
-const BENEFITS: readonly MessageKey[] = ['ident.brand.b1', 'ident.brand.b2', 'ident.brand.b3'];
+/**
+ * The hero's three true lines (WP-03 decision: the board's unverified claims
+ * are not used). Each sits on a glossy Mobile 2.0 service tile; the tick is the
+ * board's `check`.
+ */
+const BENEFITS: readonly { key: MessageKey; hue: 'violet' | 'teal' | 'sky' }[] = [
+  { key: 'ident.brand.b1', hue: 'violet' },
+  { key: 'ident.brand.b2', hue: 'teal' },
+  { key: 'ident.brand.b3', hue: 'sky' },
+];
+
+/** The soft orbs behind the hero. Decoration only: drift stops under reduced motion and when the page is hidden. */
+function HeroOrbs(): React.ReactElement {
+  return (
+    <span className="sk-auth-hero__orbs" aria-hidden="true">
+      <span className="sk-auth-hero__orb sk-auth-hero__orb--violet" />
+      <span className="sk-auth-hero__orb sk-auth-hero__orb--sky" />
+      <span className="sk-auth-hero__orb sk-auth-hero__orb--teal" />
+    </span>
+  );
+}
 
 export interface SignInFrameProps {
-  /** Phone board (≤ 430 px and the Expo look) or the web board's two panels. */
+  /** Phone board (≤ 430 px and the Expo look) or the web board's two columns. */
   web: boolean;
   /** The phone header's back button (arrow-left). Omitted where there is nowhere to go back to. */
   onBack?: () => void;
+  /** Names the form region for screen readers (sign in or create account). */
+  regionLabel?: MessageKey;
   children: React.ReactNode;
   /** Links under the form (create account, lost phone, staff, terms). */
   footer?: React.ReactNode;
 }
 
 /**
- * The sign-in frame (Tier 1, approved 2026-10-21; plan tier1-canvas-wp03).
- * Phone: back, the brand mark and the language switch on one row, then the
- * form. Web: the navy brand panel on the left, the form on the right.
- * Crisis help sits under the form on both, signed in or not (DESIGN.md §2.4).
+ * The sign-in and create-account frame (Tier 1, approved 2026-10-21; plan
+ * tier1-canvas-wp03), in the Mobile 2.0 visual language: one navy gradient hero
+ * with soft orbs for both screens. Web: the hero on the left, the form on the
+ * right. Phone (and narrow web): the hero collapses to a compact header with
+ * back, the brand mark and the language switch, and the form rises in on a
+ * sheet over it. The emergency strip (112, Tele-MANAS) stays in view at the
+ * bottom on every width, signed in or not (DESIGN.md §2.4).
  */
-export function SignInFrame({ web, onBack, children, footer }: SignInFrameProps): React.ReactElement {
+export function SignInFrame({ web, onBack, regionLabel = 'auth.signin.title', children, footer }: SignInFrameProps): React.ReactElement {
   const t = useT();
+  const ambient = useAmbientMotion();
+  const crisis = (
+    <div className="sk-auth__crisis">
+      <CrisisLinks titleKey="crisis.noAccount" testID="crisis-links" />
+    </div>
+  );
+
   if (web) {
     return (
-      <main className="sk-signin sk-signin--web">
-        <aside className="sk-signin__panel">
-          <Wordmark onNavy />
-          <div className="sk-signin__pitch">
-            <h2 className="sk-signin__pitch-title">
+      <main className="sk-signin sk-signin--web" data-ambient={ambient ? 'on' : 'off'}>
+        <aside className="sk-auth-hero">
+          <HeroOrbs />
+          <div className="sk-auth-hero__bar">
+            <Wordmark onNavy />
+          </div>
+          <div className="sk-auth-hero__pitch sk-rise">
+            <span className="sk-auth-hero__eyebrow">{t('authch.hero.eyebrow')}</span>
+            <h2 className="sk-auth-hero__title">
               {t('ident.brand.title1')}
               <br />
               {t('ident.brand.title2')}
             </h2>
-            <p className="sk-signin__pitch-body">{t('ident.brand.body')}</p>
-            <ul className="sk-signin__benefits">
-              {BENEFITS.map((key) => (
+            <p className="sk-auth-hero__body">{t('ident.brand.body')}</p>
+            <ul className="sk-auth-hero__benefits">
+              {BENEFITS.map(({ key, hue }) => (
                 <li key={key}>
-                  <span className="sk-signin__tick"><Icon name="check" size={16} strokeWidth={2.6} /></span>
+                  <span className={`sk-auth-hero__tile sk-auth-hero__tile--${hue}`}>
+                    <Icon name="check" size={18} strokeWidth={2.6} />
+                  </span>
                   {t(key)}
                 </li>
               ))}
             </ul>
           </div>
         </aside>
-        <section className="sk-signin__main" aria-label={t('auth.signin.title')}>
+        <section className="sk-signin__main" aria-label={t(regionLabel)}>
           <div className="sk-signin__top"><LanguageSwitch /></div>
-          <div className="sk-signin__column">
-            {children}
-            {footer}
-            <CrisisLinks titleKey="crisis.noAccount" testID="crisis-links" />
+          <div className="sk-signin__card sk-rise">
+            <div className="sk-signin__column">
+              {children}
+              {footer}
+            </div>
           </div>
+          {crisis}
         </section>
       </main>
     );
   }
   return (
-    <main className="sk-signin sk-signin--phone">
-      <div className="sk-signin__bar">
-        {onBack ? (
-          <button type="button" className="sk-signin__back" aria-label={t('ident.signin.back')} onClick={onBack}>
-            <Icon name="arrow-left" size={20} />
-          </button>
-        ) : null}
-        <Wordmark />
-        <span className="sk-signin__spacer" />
-        <LanguageSwitch />
-      </div>
-      <div className="sk-signin__column">
-        {children}
-        {footer}
-        <CrisisLinks titleKey="crisis.noAccount" testID="crisis-links" />
-      </div>
+    <main className="sk-signin sk-signin--phone" data-ambient={ambient ? 'on' : 'off'}>
+      <header className="sk-auth-hero sk-auth-hero--compact">
+        <HeroOrbs />
+        <div className="sk-auth-hero__bar">
+          {onBack ? (
+            <button type="button" className="sk-signin__back" aria-label={t('ident.signin.back')} onClick={onBack}>
+              <Icon name="arrow-left" size={20} />
+            </button>
+          ) : null}
+          <Wordmark onNavy />
+          <span className="sk-signin__spacer" />
+          <LanguageSwitch onNavy />
+        </div>
+        <p className="sk-auth-hero__eyebrow">{t('authch.hero.eyebrow')}</p>
+      </header>
+      <section className="sk-signin__sheet sk-rise" aria-label={t(regionLabel)}>
+        <div className="sk-signin__column">
+          {children}
+          {footer}
+        </div>
+      </section>
+      {crisis}
     </main>
   );
 }

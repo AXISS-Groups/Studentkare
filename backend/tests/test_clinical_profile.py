@@ -13,7 +13,7 @@ from test_workflow_api import (  # noqa: F401 — pytest fixtures
 
 from core import rule_l
 from core import workflow_models as M
-from services.erasure import GRACE_SECONDS, process_due_erasures
+from services.erasure import grace_seconds, process_due_erasures
 
 
 def test_the_table_is_clinical_and_commerce_has_no_grant_on_it():
@@ -109,7 +109,7 @@ def test_erasure_removes_the_clinical_row_and_seals_it(harness, monkeypatch):
     client.patch("/api/profile", headers=headers, json={"bloodGroup": "A+", "allergies": ["Latex"]})
     client.post("/api/records/deletion-request", headers=headers)
     with factory() as db:
-        db.get(M.DeletionRequest, user["id"]).requested_at -= GRACE_SECONDS + 1
+        db.get(M.DeletionRequest, user["id"]).requested_at -= grace_seconds() + 1
         db.commit()
         assert process_due_erasures(db)["summary"]["erased"] == 1
         db.commit()

@@ -1,11 +1,15 @@
-/* Create account — design page 1, CreateAccount (Tier 2).
+/* Create account — design page 1, CreateAccount, in the shared Mobile 2.0 frame.
  *
- * Adds the board's top row (round back button, six-segment progress, "n of 6"),
- * the icon-led fields and the green assurance note on top of the shared
- * auth-form.css, without changing the rules Sign in shares. Tokens only.
+ * Adds the board's top row (round back button, six-segment progress, "n of 6")
+ * and the assurance note on top of sign-in-frame.css, which owns the fields,
+ * buttons and notes both screens share. Tokens only.
  */
 
-.sk-authform--create { gap: var(--sk-space-16); }
+.sk-create {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sk-space-20);
+}
 
 .sk-create__top {
   display: flex;
@@ -24,6 +28,7 @@
   border: 1px solid var(--sk-color-rule);
   background: var(--sk-color-surface);
   color: var(--sk-color-text);
+  box-shadow: var(--sk-shadow-hairline);
   cursor: pointer;
 }
 
@@ -35,12 +40,14 @@
 
 .sk-create__track span {
   flex: 1;
-  height: 4px;
+  height: 6px;
   border-radius: var(--sk-radius-full);
   background: var(--sk-color-action-soft);
 }
 
-.sk-create__track span[data-done='true'] { background: var(--sk-color-action); }
+.sk-create__track span[data-done='true'] {
+  background: linear-gradient(90deg, var(--sk-color-service-indigo), var(--sk-color-action));
+}
 
 .sk-create__step {
   flex: none;
@@ -49,73 +56,12 @@
   color: var(--sk-color-text);
 }
 
-.sk-create__field {
-  display: grid;
-  gap: var(--sk-space-8);
-  min-width: 0;
-}
-
-.sk-create__label {
-  font-size: var(--sk-text-body-sm);
-  font-weight: 700;
-  color: var(--sk-color-text);
-}
-
-.sk-create__control {
+.sk-create .sk-create__assurance {
   display: flex;
   align-items: center;
   gap: var(--sk-space-12);
-  min-height: 56px;
-  padding-inline: var(--sk-space-16);
-  border: 1px solid var(--sk-color-rule-strong);
-  border-radius: var(--sk-radius-xl);
-  background: var(--sk-color-surface);
-  color: var(--sk-color-text-2);
-}
-
-.sk-create__control:focus-within {
-  border-color: var(--sk-color-action);
-  outline: 3px solid var(--sk-color-focus);
-  outline-offset: 3px;
-}
-
-.sk-create__control input {
-  flex: 1;
-  min-width: 0;
-  min-height: var(--sk-size-touch-target);
-  border: 0;
-  outline: none;
-  background: transparent;
-  color: var(--sk-color-text);
-  font-family: var(--sk-font-sans);
-  font-size: var(--sk-text-body);
-  font-weight: 500;
-}
-
-.sk-create__control input::placeholder { color: var(--sk-color-text-3); }
-
-.sk-create__prefix {
-  flex: none;
-  padding-inline-end: var(--sk-space-12);
-  border-inline-end: 1px solid var(--sk-color-rule);
-  font-size: var(--sk-text-body);
-  font-weight: 800;
-  color: var(--sk-color-text);
-}
-
-.sk-create__hint {
-  font-size: var(--sk-text-caption);
-  line-height: 1.5;
-  font-weight: 500;
-  color: var(--sk-color-text-2);
-}
-
-.sk-create__assurance {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--sk-space-10);
   margin: 0;
-  padding: var(--sk-space-14) var(--sk-space-16);
+  padding: var(--sk-space-12) var(--sk-space-14);
   border: 1px solid var(--sk-color-positive-rule);
   border-radius: var(--sk-radius-lg);
   background: var(--sk-color-positive-bg);
@@ -125,17 +71,19 @@
   color: var(--sk-color-positive);
 }
 
-.sk-create__assurance svg { flex: none; margin-top: 1px; }
+.sk-create__assurance-tile {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--sk-radius-md);
+  background: var(--sk-color-surface);
+  color: var(--sk-color-positive);
+}
 
 .sk-create__back:focus-visible {
   outline: 3px solid var(--sk-color-focus);
   outline-offset: 3px;
-}
-
-/* At phone width the board is the whole screen: the shared auth layout's brand
-   bar and second progress are not drawn while this step is showing (sign-in
-   and the other sign-up steps are untouched). */
-@media (max-width: 430px) {
-  .care-auth-signup:has(.sk-authform--create) .care-auth-header,
-  .care-auth-signup:has(.sk-authform--create) .care-auth-progress { display: none; }
 }

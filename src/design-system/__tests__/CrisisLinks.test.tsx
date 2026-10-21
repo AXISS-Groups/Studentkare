@@ -28,11 +28,20 @@ describe('crisis help on screens before sign-in', () => {
     'src/screens/medical/MedicalIncidentScreen.tsx',
     'src/features/auth/screens/AuthenticatedFlowScreen.tsx',
     'src/features/auth/views/VerifyGateView.tsx',
-    'src/features/auth/views/SignInNativeView.tsx',
-    'src/features/auth/views/CreateAccountNativeView.tsx',
+    'src/features/auth/views/AuthNativeParts.tsx',
+    'src/features/auth/views/SignInFrame.tsx',
     'src/features/auth/views/VerifyGateNativeView.tsx',
   ])('%s renders CrisisLinks', (file) => {
     expect(readFileSync(resolve(process.cwd(), file), 'utf8')).toMatch(/<CrisisLinks\b/);
+  });
+
+  // Sign in and create account on Expo draw through the shared frame, whose
+  // emergency strip sits outside the scroll so it is always in view.
+  it.each([
+    'src/features/auth/views/SignInNativeView.tsx',
+    'src/features/auth/views/CreateAccountNativeView.tsx',
+  ])('%s draws through AuthNativeFrame', (file) => {
+    expect(readFileSync(resolve(process.cwd(), file), 'utf8')).toMatch(/<AuthNativeFrame\b/);
   });
 
   it('keeps the SOS and toolbar controls at the 44 px touch target', () => {

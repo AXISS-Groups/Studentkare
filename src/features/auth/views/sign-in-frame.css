@@ -1,6 +1,8 @@
-/* Sign in, code, staff sign-in (canvas SignIn, WebSignIn, OtpVerify, AdminSignIn).
+/* Sign in, create account, code, staff sign-in (canvas SignIn, WebSignIn, CreateAccount,
+ * OtpVerify, AdminSignIn), in the Mobile 2.0 visual language (canvas page 9).
  * Tier 1, approved 2026-10-21 (docs/plans/tier1-canvas-wp03-2026-10-20.md).
- * Colour, type, spacing, radius and size from --sk-* only. No hex values. */
+ * Colour, type, spacing, radius, size and motion from --sk-* only. No hex values.
+ * White text only on the navy end of a gradient (brand-navy-light → brand-navy). */
 
 .sk-signin {
   font-family: var(--sk-font-sans);
@@ -18,45 +20,144 @@
   outline-offset: 3px;
 }
 
-/* ---- phone frame ---- */
-.sk-signin--phone {
-  min-height: 100vh;
-  max-width: var(--sk-size-phone-width);
-  margin-inline: auto;
-  padding: var(--sk-space-24) var(--sk-space-gutter-phone) var(--sk-space-32);
+/* ---- motion: the form rises in; the orbs drift. Both rest under reduced motion. ---- */
+@keyframes sk-auth-rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
 }
-.sk-signin__bar {
+@keyframes sk-auth-drift {
+  0% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(6%, -5%, 0) scale(1.06); }
+  100% { transform: translate3d(0, 0, 0) scale(1); }
+}
+.sk-rise { animation: sk-auth-rise var(--sk-duration-sheet) var(--sk-ease-standard) both; }
+.sk-signin__column > * { animation: sk-auth-rise var(--sk-duration-sheet) var(--sk-ease-standard) both; }
+.sk-signin__column > :nth-child(2) { animation-delay: 40ms; }
+.sk-signin__column > :nth-child(3) { animation-delay: 80ms; }
+.sk-signin__column > :nth-child(4) { animation-delay: 120ms; }
+.sk-signin__column > :nth-child(n + 5) { animation-delay: 160ms; }
+
+/* ---- the hero: navy gradient with soft orbs (web: left column; phone: compact header) ---- */
+.sk-auth-hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sk-space-40);
+  padding: var(--sk-space-32) var(--sk-space-gutter-web) var(--sk-space-40);
+  background: linear-gradient(155deg, var(--sk-color-brand-navy-light) 0%, var(--sk-color-brand-navy) 62%);
+  color: var(--sk-color-on-hero);
+}
+.sk-auth-hero__orbs { position: absolute; inset: 0; z-index: -1; pointer-events: none; }
+.sk-auth-hero__orb {
+  position: absolute;
+  border-radius: var(--sk-radius-full);
+  filter: blur(36px);
+  opacity: 0.5;
+  animation: sk-auth-drift calc(var(--sk-duration-ambient) * 3) ease-in-out infinite;
+}
+.sk-auth-hero__orb--violet {
+  width: 46%; aspect-ratio: 1;
+  top: -14%; right: -12%;
+  background: radial-gradient(circle, var(--sk-color-service-violet) 0%, transparent 68%);
+}
+.sk-auth-hero__orb--sky {
+  width: 38%; aspect-ratio: 1;
+  bottom: -12%; left: -10%;
+  background: radial-gradient(circle, var(--sk-color-service-sky-deep) 0%, transparent 68%);
+  animation-delay: calc(var(--sk-duration-ambient) * -1);
+}
+.sk-auth-hero__orb--teal {
+  width: 26%; aspect-ratio: 1;
+  bottom: 14%; right: 4%;
+  background: radial-gradient(circle, var(--sk-color-service-teal-deep) 0%, transparent 68%);
+  opacity: 0.35;
+  animation-delay: calc(var(--sk-duration-ambient) * -2);
+}
+.sk-signin[data-ambient='off'] .sk-auth-hero__orb { animation-play-state: paused; }
+
+.sk-auth-hero__bar {
   display: flex;
   align-items: center;
   gap: var(--sk-space-12);
-  margin-bottom: var(--sk-space-24);
 }
-.sk-signin__spacer { flex: 1 1 auto; }
-.sk-signin__back {
-  width: var(--sk-size-touch-target);
-  height: var(--sk-size-touch-target);
+.sk-auth-hero__pitch {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sk-space-20);
+  margin-block: auto;
+  max-width: 34rem;
+}
+.sk-signin .sk-auth-hero__eyebrow {
+  margin: 0;
+  align-self: flex-start;
+  padding: var(--sk-space-6) var(--sk-space-12);
+  border-radius: var(--sk-radius-full);
+  background: var(--sk-color-on-hero-veil);
+  border: 1px solid var(--sk-color-on-hero-rule);
+  font-size: var(--sk-text-caption);
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--sk-color-on-hero);
+}
+.sk-signin .sk-auth-hero__title {
+  margin: 0;
+  font-size: clamp(calc(var(--sk-text-display) * 1.1), 3.3vw, calc(var(--sk-text-display) * 1.45));
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -1px;
+  color: var(--sk-color-on-hero);
+}
+.sk-signin .sk-auth-hero__body {
+  margin: 0;
+  font-size: var(--sk-text-title-sm);
+  line-height: 1.6;
+  color: var(--sk-color-on-hero-2);
+}
+.sk-auth-hero__benefits {
+  list-style: none;
+  margin: var(--sk-space-8) 0 0;
+  padding: var(--sk-space-8);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sk-space-4);
+  border-radius: var(--sk-radius-xl);
+  background: var(--sk-color-on-hero-veil);
+  border: 1px solid var(--sk-color-on-hero-rule);
+  backdrop-filter: blur(10px);
+  font-size: var(--sk-text-body);
+  font-weight: 700;
+}
+.sk-auth-hero__benefits li {
+  display: flex;
+  align-items: center;
+  gap: var(--sk-space-14);
+  padding: var(--sk-space-8);
+}
+/* Glossy service tiles: the light stop only in the corner, the white tick on the deep end. */
+.sk-auth-hero__tile {
+  width: 40px;
+  height: 40px;
   flex: 0 0 auto;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 0;
-  border-radius: var(--sk-radius-full);
-  background: var(--sk-color-surface);
-  color: var(--sk-color-text);
+  border-radius: var(--sk-radius-md);
+  color: var(--sk-color-on-hero);
   box-shadow: var(--sk-shadow-hairline);
-  cursor: pointer;
 }
-.sk-signin__column {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sk-space-20);
-}
+.sk-auth-hero__tile--violet { background: radial-gradient(circle at 28% 22%, color-mix(in srgb, var(--sk-color-illustration-highlight) 45%, transparent), transparent 50%), linear-gradient(150deg, var(--sk-color-service-violet), var(--sk-color-service-violet-deep) 55%); }
+.sk-auth-hero__tile--teal { background: radial-gradient(circle at 28% 22%, color-mix(in srgb, var(--sk-color-illustration-highlight) 45%, transparent), transparent 50%), linear-gradient(150deg, var(--sk-color-service-teal), var(--sk-color-service-teal-deep) 55%); }
+.sk-auth-hero__tile--sky { background: radial-gradient(circle at 28% 22%, color-mix(in srgb, var(--sk-color-illustration-highlight) 45%, transparent), transparent 50%), linear-gradient(150deg, var(--sk-color-service-sky), var(--sk-color-service-sky-deep) 55%); }
 
 /* ---- brand ---- */
 .sk-signin__brand {
   display: inline-flex;
   align-items: center;
   gap: var(--sk-space-8);
+  min-width: 0;
 }
 .sk-signin__wordmark {
   font-size: var(--sk-text-title-sm);
@@ -71,6 +172,7 @@
   margin-left: var(--sk-space-4);
 }
 .sk-signin__brand--navy .sk-signin__wordmark { color: var(--sk-color-on-hero); }
+.sk-signin__spacer { flex: 1 1 auto; }
 
 /* ---- language switch ---- */
 .sk-signin__langs {
@@ -93,93 +195,126 @@
   font-size: var(--sk-text-caption);
   font-weight: 800;
   cursor: pointer;
+  transition: background var(--sk-duration-fast) var(--sk-ease-standard), color var(--sk-duration-fast) var(--sk-ease-standard);
 }
 .sk-signin__langs button[aria-pressed='true'] {
   background: var(--sk-color-action);
   color: var(--sk-color-on-action);
 }
+/* On the navy the white pill is the only selected state (DESIGN.md §3). */
+.sk-signin__langs--navy {
+  background: var(--sk-color-on-hero-veil);
+  border: 1px solid var(--sk-color-on-hero-rule);
+  box-shadow: none;
+}
+.sk-signin__langs--navy button { color: var(--sk-color-on-hero); }
+.sk-signin__langs--navy button[aria-pressed='true'] {
+  background: var(--sk-color-hero-current);
+  color: var(--sk-color-on-hero-current);
+}
 
-/* ---- web frame ---- */
+/* ---- web: two columns ---- */
 .sk-signin--web {
   display: grid;
-  grid-template-columns: minmax(0, 52fr) minmax(0, 48fr);
+  grid-template-columns: minmax(0, 46fr) minmax(0, 54fr);
   min-height: 100vh;
 }
-.sk-signin__panel {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sk-space-40);
-  padding: var(--sk-space-40) var(--sk-space-gutter-web);
-  background: var(--sk-color-brand-navy);
-  color: var(--sk-color-on-hero);
-}
-.sk-signin__pitch {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sk-space-20);
-  margin-top: 10vh;
-  margin-bottom: auto;
-  max-width: 34rem;
-}
-.sk-signin .sk-signin__pitch-title {
-  margin: 0;
-  font-size: calc(var(--sk-text-display) * 1.4);
-  font-weight: 800;
-  line-height: 1.12;
-  letter-spacing: -1px;
-  color: var(--sk-color-on-hero);
-}
-.sk-signin .sk-signin__pitch-body {
-  margin: 0;
-  font-size: var(--sk-text-title-sm);
-  line-height: 1.6;
-  color: var(--sk-color-on-hero-2);
-}
-.sk-signin__benefits {
-  list-style: none;
-  margin: var(--sk-space-12) 0 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--sk-space-14);
-  font-size: var(--sk-text-body);
-  font-weight: 600;
-}
-.sk-signin__benefits li {
-  display: flex;
-  align-items: center;
-  gap: var(--sk-space-14);
-}
-.sk-signin__tick {
-  width: 38px;
-  height: 38px;
-  flex: 0 0 auto;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--sk-radius-md);
-  background: var(--sk-color-on-hero-veil);
-  color: var(--sk-color-on-hero-positive);
+.sk-signin--web .sk-auth-hero {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  min-height: 560px;
 }
 .sk-signin__main {
   display: flex;
   flex-direction: column;
-  padding: var(--sk-space-20) var(--sk-space-24) var(--sk-space-40);
+  min-width: 0;
+  padding: var(--sk-space-20) var(--sk-space-24) 0;
+  background:
+    radial-gradient(circle at 100% 0%, color-mix(in srgb, var(--sk-color-service-violet-soft) 70%, transparent), transparent 42%),
+    var(--sk-color-canvas);
 }
 .sk-signin__top {
   display: flex;
   justify-content: flex-end;
 }
-.sk-signin--web .sk-signin__column {
+.sk-signin__card {
   width: 100%;
-  max-width: 452px;
-  margin: auto;
-  padding-block: var(--sk-space-32);
+  max-width: 500px;
+  margin: var(--sk-space-24) auto var(--sk-space-32);
+  padding: var(--sk-space-32);
+  border-radius: var(--sk-radius-xl);
+  border: 1px solid var(--sk-color-rule-soft);
+  background: var(--sk-color-surface);
+  box-shadow: var(--sk-shadow-card);
 }
-@media (max-width: 900px) {
+.sk-signin__column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sk-space-20);
+  min-width: 0;
+}
+
+/* The emergency strip: always in view at the bottom, signed in or not. */
+.sk-auth__crisis {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  margin-top: auto;
+  padding: var(--sk-space-12) var(--sk-space-gutter-phone) var(--sk-space-14);
+  border-top: 1px solid var(--sk-color-rule-soft);
+  background: color-mix(in srgb, var(--sk-color-surface) 94%, transparent);
+  backdrop-filter: blur(12px);
+}
+.sk-signin--web .sk-auth__crisis {
+  margin-inline: calc(var(--sk-space-24) * -1);
+  padding-inline: max(var(--sk-space-24), calc((100% - 500px) / 2));
+}
+
+/* Narrow web (tablet): the hero collapses to a band, as on the phone. */
+@media (max-width: 860px) {
   .sk-signin--web { grid-template-columns: minmax(0, 1fr); }
-  .sk-signin__panel { gap: var(--sk-space-20); }
-  .sk-signin__pitch { margin: 0; }
+  .sk-signin--web .sk-auth-hero { position: relative; height: auto; min-height: 0; gap: var(--sk-space-20); padding: var(--sk-space-20) var(--sk-space-24) var(--sk-space-24); }
+  .sk-signin--web .sk-auth-hero__body,
+  .sk-signin--web .sk-auth-hero__benefits { display: none; }
+  .sk-signin .sk-auth-hero__title { font-size: var(--sk-text-heading); }
+}
+
+/* ---- phone: compact header, then the form on a sheet that rises over it ---- */
+.sk-signin--phone {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  max-width: var(--sk-size-phone-width);
+  margin-inline: auto;
+}
+.sk-auth-hero--compact {
+  gap: var(--sk-space-14);
+  padding: var(--sk-space-16) var(--sk-space-gutter-phone) calc(var(--sk-space-40) + var(--sk-space-8));
+}
+.sk-auth-hero--compact .sk-signin__wordmark { font-size: var(--sk-text-body); }
+.sk-auth-hero--compact .sk-signin__langs button { min-width: 40px; padding: 0 var(--sk-space-4); }
+.sk-signin__back {
+  width: var(--sk-size-touch-target);
+  height: var(--sk-size-touch-target);
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--sk-color-on-hero-rule);
+  border-radius: var(--sk-radius-full);
+  background: var(--sk-color-on-hero-veil);
+  color: var(--sk-color-on-hero);
+  cursor: pointer;
+}
+.sk-signin__sheet {
+  position: relative;
+  z-index: 1;
+  flex: 1 0 auto;
+  margin-top: calc(var(--sk-space-32) * -1);
+  padding: var(--sk-space-24) var(--sk-space-gutter-phone) var(--sk-space-32);
+  border-radius: var(--sk-radius-sheet) var(--sk-radius-sheet) 0 0;
+  background: var(--sk-color-canvas);
 }
 
 /* ---- form ---- */
@@ -224,6 +359,7 @@
   font-size: var(--sk-text-body-sm);
   font-weight: 700;
   cursor: pointer;
+  transition: background var(--sk-duration-fast) var(--sk-ease-standard), color var(--sk-duration-fast) var(--sk-ease-standard);
 }
 .sk-signin__channels button[aria-pressed='true'] {
   background: var(--sk-color-surface);
@@ -249,11 +385,15 @@
   min-height: var(--sk-size-control-lg);
   padding: 0 var(--sk-space-16);
   border: 1.5px solid var(--sk-color-rule);
-  border-radius: var(--sk-radius-md);
+  border-radius: var(--sk-radius-lg);
   background: var(--sk-color-surface);
   color: var(--sk-color-text-3);
+  transition: border-color var(--sk-duration-fast) var(--sk-ease-standard), box-shadow var(--sk-duration-fast) var(--sk-ease-standard);
 }
-.sk-signin__input:focus-within { border-color: var(--sk-color-action); }
+.sk-signin__input:focus-within {
+  border-color: var(--sk-color-action);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--sk-color-action) 14%, transparent);
+}
 .sk-signin__input[data-invalid='true'] { border-color: var(--sk-color-danger); }
 .sk-signin__input input {
   flex: 1 1 auto;
@@ -266,6 +406,15 @@
   font: inherit;
   font-size: var(--sk-text-body);
 }
+.sk-signin__input input::placeholder { color: var(--sk-color-text-3); }
+.sk-signin__prefix {
+  flex: none;
+  padding-inline-end: var(--sk-space-10);
+  border-inline-end: 1px solid var(--sk-color-rule);
+  font-size: var(--sk-text-body);
+  font-weight: 800;
+  color: var(--sk-color-text);
+}
 .sk-signin .sk-signin__hint,
 .sk-signin .sk-signin__error {
   margin: 0;
@@ -273,7 +422,13 @@
   line-height: 1.5;
   color: var(--sk-color-text-2);
 }
-.sk-signin .sk-signin__error { color: var(--sk-color-danger); font-weight: 700; }
+.sk-signin .sk-signin__error {
+  display: flex;
+  align-items: center;
+  gap: var(--sk-space-6);
+  color: var(--sk-color-danger);
+  font-weight: 700;
+}
 
 .sk-signin .sk-signin__primary {
   display: inline-flex;
@@ -287,17 +442,21 @@
   border-radius: var(--sk-radius-full);
   background: var(--sk-color-action);
   color: var(--sk-color-on-action);
+  box-shadow: inset 0 1px 0 var(--sk-color-action-highlight), var(--sk-shadow-float);
   font: inherit;
   font-size: var(--sk-text-title-sm);
   font-weight: 800;
   text-decoration: none;
   cursor: pointer;
+  transition: background var(--sk-duration-fast) var(--sk-ease-standard), transform var(--sk-duration-fast) var(--sk-ease-standard);
 }
 .sk-signin .sk-signin__primary:hover:not(:disabled) { background: var(--sk-color-action-hover); }
+.sk-signin .sk-signin__primary:active:not(:disabled) { transform: scale(0.99); }
 .sk-signin .sk-signin__primary:disabled,
 .sk-signin .sk-signin__primary[aria-disabled='true'] {
   background: var(--sk-color-action-soft);
   color: var(--sk-color-text-3);
+  box-shadow: none;
   cursor: not-allowed;
 }
 .sk-signin .sk-signin__secondary {
@@ -317,6 +476,23 @@
   cursor: pointer;
 }
 .sk-signin .sk-signin__secondary:disabled { color: var(--sk-color-text-3); cursor: not-allowed; }
+.sk-signin .sk-signin__ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sk-space-8);
+  min-height: var(--sk-size-control);
+  padding: 0 var(--sk-space-20);
+  border: 1.5px solid var(--sk-color-rule);
+  border-radius: var(--sk-radius-full);
+  background: var(--sk-color-surface);
+  color: var(--sk-color-action);
+  font: inherit;
+  font-size: var(--sk-text-body);
+  font-weight: 800;
+  cursor: pointer;
+}
+.sk-signin .sk-signin__ghost:disabled { color: var(--sk-color-text-3); cursor: progress; }
 
 .sk-signin__or {
   display: flex;
@@ -340,9 +516,9 @@
   width: 100%;
   min-height: 64px;
   padding: var(--sk-space-12) var(--sk-space-16);
-  border: 1px solid var(--sk-color-rule-soft);
+  border: 1px dashed var(--sk-color-rule);
   border-radius: var(--sk-radius-lg);
-  background: var(--sk-color-surface);
+  background: var(--sk-color-surface-2);
   color: var(--sk-color-text-3);
   font: inherit;
   text-align: left;
@@ -368,6 +544,8 @@
   flex-direction: column;
   align-items: center;
   gap: var(--sk-space-4);
+  padding-top: var(--sk-space-8);
+  border-top: 1px solid var(--sk-color-rule-soft);
   font-size: var(--sk-text-body-sm);
   color: var(--sk-color-text-2);
   text-align: center;
@@ -381,6 +559,80 @@
   text-align: center;
 }
 .sk-signin .sk-signin__terms a { color: var(--sk-color-text-2); font-weight: 700; }
+
+/* ---- notes by the field: a channel that failed, no account, any other error ---- */
+.sk-auth-note {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sk-space-12);
+  padding: var(--sk-space-14) var(--sk-space-16);
+  border: 1px solid var(--sk-color-rule-soft);
+  border-radius: var(--sk-radius-lg);
+  background: var(--sk-color-surface-2);
+  font-size: var(--sk-text-body-sm);
+  line-height: 1.5;
+  color: var(--sk-color-text-2);
+  animation: sk-auth-rise var(--sk-duration-base) var(--sk-ease-standard) both;
+}
+.sk-auth-note__icon { flex: 0 0 auto; display: inline-flex; margin-top: 1px; }
+.sk-auth-note__words { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: var(--sk-space-4); }
+.sk-auth-note__words strong { color: var(--sk-color-text); font-size: var(--sk-text-body); }
+.sk-auth-note--attention { border-color: color-mix(in srgb, var(--sk-color-attention) 35%, transparent); background: var(--sk-color-attention-bg); }
+.sk-auth-note--attention .sk-auth-note__icon { color: var(--sk-color-attention); }
+.sk-auth-note--info { background: var(--sk-color-surface-3); }
+.sk-auth-note--info .sk-auth-note__icon { color: var(--sk-color-action); }
+.sk-auth-note--danger { border-color: var(--sk-color-danger-rule); background: var(--sk-color-danger-bg); }
+.sk-auth-note--danger .sk-auth-note__icon { color: var(--sk-color-danger); }
+.sk-signin .sk-auth-note__action {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sk-space-8);
+  min-height: var(--sk-size-touch-target);
+  margin-top: var(--sk-space-6);
+  padding: 0 var(--sk-space-16);
+  border: 0;
+  border-radius: var(--sk-radius-full);
+  background: var(--sk-color-action);
+  color: var(--sk-color-on-action);
+  box-shadow: inset 0 1px 0 var(--sk-color-action-highlight);
+  font: inherit;
+  font-size: var(--sk-text-body-sm);
+  font-weight: 800;
+  cursor: pointer;
+}
+.sk-signin .sk-auth-note__action:hover { background: var(--sk-color-action-hover); }
+
+/* No channel can deliver: an honest state, never a dead form. */
+.sk-auth-none {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sk-space-12);
+  padding: var(--sk-space-24) var(--sk-space-20);
+  border-radius: var(--sk-radius-xl);
+  border: 1px solid var(--sk-color-rule-soft);
+  background: var(--sk-color-surface-2);
+  text-align: center;
+}
+.sk-auth-none__icon {
+  width: 64px;
+  height: 64px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--sk-radius-xl);
+  background: var(--sk-color-attention-bg);
+  color: var(--sk-color-attention);
+}
+.sk-signin .sk-auth-none__title { margin: 0; font-size: var(--sk-text-title); font-weight: 800; color: var(--sk-color-text); }
+.sk-signin .sk-auth-none__body { margin: 0; font-size: var(--sk-text-body-sm); line-height: 1.6; color: var(--sk-color-text-2); }
+
+/* ---- other sign-up steps (intro, details, campus) inside the frame ---- */
+.sk-signin .sk-signup-step { display: flex; flex-direction: column; gap: var(--sk-space-16); }
+.sk-signin .sk-signup-step .wf-benefits { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: var(--sk-space-8); }
+.sk-signin .sk-signup-step .wf-benefits li { display: flex; align-items: center; gap: var(--sk-space-8); color: var(--sk-color-text-2); font-size: var(--sk-text-body-sm); }
+.sk-signin .sk-signup-step .wf-benefits svg { color: var(--sk-color-positive); }
 
 /* ---- code (OtpVerify) ---- */
 .sk-otp__target {
@@ -429,7 +681,7 @@
   min-width: 0;
   height: 64px;
   border: 1.5px solid var(--sk-color-rule);
-  border-radius: var(--sk-radius-md);
+  border-radius: var(--sk-radius-lg);
   background: var(--sk-color-surface);
   color: var(--sk-color-text);
   font-family: var(--sk-font-mono);
@@ -439,10 +691,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: border-color var(--sk-duration-fast) var(--sk-ease-standard);
 }
 .sk-otp__cell[data-active='true'] { outline: 3px solid var(--sk-color-focus); outline-offset: 2px; }
 .sk-otp__cell[data-filled='true'],
-.sk-otp__cell:focus { border-color: var(--sk-color-action); }
+.sk-otp__cell:focus { border-color: var(--sk-color-action); background: var(--sk-color-surface-2); }
 .sk-otp__cells[data-invalid='true'] .sk-otp__cell { border-color: var(--sk-color-danger); }
 .sk-otp__resend {
   display: flex;
@@ -492,5 +745,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .sk-signin * { transition: none !important; animation: none !important; }
+  .sk-signin *,
+  .sk-signin .sk-rise { transition: none !important; animation: none !important; }
 }

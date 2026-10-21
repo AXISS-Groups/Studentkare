@@ -100,13 +100,13 @@ describe.each(['phone', 'web'] as const)('Sign in (%s board)', { timeout: 20_000
     expect(await screen.findByRole('button', { name: 'Send verification code' })).toBeInTheDocument();
   });
 
-  it('keeps sending off for a channel the server cannot deliver', async () => {
+  it('draws only the channels /auth/options returned: one channel, no switcher', async () => {
     channels = ['EMAIL'];
     renderSignIn();
-    await waitFor(() => expect(apiRequest).toHaveBeenCalledWith('/auth/options', undefined));
-    fireEvent.click(screen.getByRole('button', { name: 'WhatsApp' }));
-    expect(await screen.findByText(/WhatsApp delivery is not configured/)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Send verification code' })).toBeDisabled();
+    expect(await screen.findByLabelText('Campus email address')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'WhatsApp' })).toBeNull();
+    expect(screen.queryByRole('group', { name: 'How we send your code' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Send verification code' })).toBeEnabled();
   });
 
   it('shows no demo logins outside development builds', async () => {
