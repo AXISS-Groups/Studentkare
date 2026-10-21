@@ -63,7 +63,7 @@ export const KnowledgeView = observer(function KnowledgeView() {
       <div className="sk-gov-stack">
         <GovCard title={t('admin.kb.index')}>
           {vm.indexLoading ? <p className="sk-gov-fine" role="status">{t('admin.kb.indexLoading')}</p>
-            : vm.indexError ? <p className="sk-gov-error" role="alert"><Icon name="alert-triangle" size={16} />{t('admin.kb.indexError')}</p>
+            : vm.indexError ? <div className="sk-gov-error" role="alert"><Icon name="alert-triangle" size={16} /><span>{t('admin.kb.indexError')} · {vm.indexError}</span><button type="button" className="sk-gov-link" onClick={vm.reloadIndex}>{t('common.tryAgain')}</button></div>
               : index ? <>
                 <GovLines label={t('admin.kb.index')} lines={[
                   { label: t('admin.kb.indexed'), value: t('admin.kb.xOfY', { x: count(index.indexedSources), y: count(index.approvedSources) }), tone: index.missing.length ? 'attention' : undefined },

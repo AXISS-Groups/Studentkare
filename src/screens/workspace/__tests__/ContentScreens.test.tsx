@@ -120,8 +120,7 @@ describe('Knowledge base', () => {
     apiAnswers[SOURCES] = () => Promise.resolve(sources);
     apiAnswers[INDEX] = () => Promise.resolve(index);
     render(<KnowledgeView />);
-    expect(screen.getByText('Loading sources…')).toBeInTheDocument();
-    expect(screen.getByText('Checking the index…')).toBeInTheDocument();
+    expect(screen.getByRole('status', { name: 'Loading sources…' })).toBeInTheDocument();
     expect(await screen.findByText('48 chunks indexed')).toBeInTheDocument();
     expect(apiRequest.mock.calls.map(([path]) => path)).toEqual([SOURCES, INDEX]);
     const list = await screen.findByRole('region', { name: 'Sources Ayush may quote' });
@@ -139,7 +138,7 @@ describe('Knowledge base', () => {
     apiAnswers[SOURCES] = () => Promise.resolve(sources);
     apiAnswers[INDEX] = () => Promise.resolve(index);
     render(<KnowledgeView />);
-    const panel = screen.getByRole('region', { name: 'Search index' });
+    const panel = await screen.findByRole('region', { name: 'Search index' });
     await within(panel).findByText('Approved sources indexed');
     expect(panel).toHaveTextContent('1 of 2');
     expect(panel).toHaveTextContent('Keyword · hash-ngram');
@@ -157,21 +156,21 @@ describe('Knowledge base', () => {
     apiAnswers[INDEX] = () => Promise.resolve(index);
     apiAnswers['/ops/knowledge/reindex'] = () => Promise.reject(new Error('Index busy'));
     render(<KnowledgeView />);
-    const panel = screen.getByRole('region', { name: 'Search index' });
+    const panel = await screen.findByRole('region', { name: 'Search index' });
     fireEvent.click(await within(panel).findByRole('button', { name: 'Rebuild index' }));
     expect(await within(panel).findByRole('alert')).toHaveTextContent('Index busy');
     expect(panel).toHaveTextContent('1 of 2');
     expect(requestsTo(INDEX)).toHaveLength(1);
   });
 
-  it('keeps Test a question as an empty section, without asking the real agent', async () => {
+  it('keeps Test a question disabled, without asking the real agent', async () => {
     apiAnswers[SOURCES] = () => Promise.resolve(sources);
     apiAnswers[INDEX] = () => Promise.resolve(index);
     render(<KnowledgeView />);
     await screen.findByText('48 chunks indexed');
     const test = screen.getByRole('region', { name: 'Test a question' });
-    expect(test).toHaveTextContent('No retrieval preview.');
-    expect(within(test).queryByRole('textbox')).toBeNull();
+    expect(test).toHaveTextContent(/once a preview endpoint is connected/);
+    expect(within(test).getByRole('searchbox')).toBeDisabled();
     expect(apiRequest).not.toHaveBeenCalledWith(expect.stringContaining('/agents/ayush/ask'), expect.anything());
   });
 
