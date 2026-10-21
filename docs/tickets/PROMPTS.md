@@ -3,7 +3,8 @@
 Status on 2026-10-21, after #195 merged (main: 221 of 252 design screens built).
 Every prompt assumes Claude Code is opened at the repo root on an up-to-date `main`.
 Run one ticket per branch. Tickets in **Part A** can run in parallel with each other and with Part B;
-they don't touch the same files except routes/i18n lists (merge those as unions).
+they only share the registry lists (routes, i18n areas, nav, implementation map). Before the PR,
+rebase on `main`; on a conflict run `npm run merge:resolve`, then the checks (RULES.md, "Parallel branches").
 
 **Who does what**
 - **Part A — Krishna with Claude Code:** K1–K7 below.
