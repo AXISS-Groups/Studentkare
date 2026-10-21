@@ -44,6 +44,7 @@ import { EmergencyHelplinesDialog } from '../../components/interface/InterfaceBa
 import { NotificationCenterModal } from '../../components/health/NotificationCenterModal';
 
 const WebEmergencyCard = lazy(() => import('@/features/emergency/views/WebEmergencyCard').then(module => ({ default: module.WebEmergencyCard })));
+const IdentityVerifyView = lazy(() => import('@/features/auth/views/IdentityVerifyView').then(module => ({ default: module.IdentityVerifyView })));
 const WebPass = lazy(() => import('@/features/digital_id/views/WebPass').then(module => ({ default: module.WebPass })));
 const WellnessTrainingScreen = lazy(() => import('../wellbeing/WellnessTrainingScreen').then(module => ({ default: module.WellnessTrainingScreen })));
 const ExerciseLibraryScreen = lazy(() => import('../wellbeing/ExerciseLibraryScreen').then(module => ({ default: module.ExerciseLibraryScreen })));
@@ -291,6 +292,7 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
       case 'notifications': return <NotificationInboxPanel />;
       case 'notification-settings': return <NotificationSettingsRoute />;
       case 'security': return <SignInSecurityRoute />;
+      case 'verify': return <IdentityVerifyView />;
       case 'rewards': return <RewardsRoute />;
       case 'leave-campus': return <LeaveCampusRoute links={{ openRecords: () => navigate('records'), openPlans: () => navigate('billing'), openSupport: () => navigate('support') }} />;
       case 'care-navigator': return <CareNavigatorPanel />;

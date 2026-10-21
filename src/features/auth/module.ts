@@ -52,8 +52,10 @@ export const authModule: FeatureModule = {
       load: () => import('./views/LostPhoneView').then((m) => ({ default: m.LostPhoneView })),
     },
     {
-      path: '/verify',
-      load: () => import('./views/IdentityVerifyView').then((m) => ({ default: m.IdentityVerifyView })),
+      // Staff and admin sign-in (canvas AdminSignIn): its own frame, same OTP endpoints with audience STAFF.
+      path: '/staff-sign-in',
+      public: true,
+      load: () => import('./views/AdminSignInView').then((m) => ({ default: m.AdminSignInScreen })),
     },
     {
       path: '/verify-gate',
