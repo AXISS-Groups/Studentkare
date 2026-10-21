@@ -1,0 +1,59 @@
+/* Verification gate (canvas VerifyGate, WebVerifyGate). Tier 1, approved 2026-10-21.
+ * Colour, type, spacing, radius and size from --sk-* only. No hex values. */
+
+.sk-gate {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--sk-space-20);
+  font-family: var(--sk-font-sans);
+}
+.sk-gate__scrim {
+  position: absolute;
+  inset: 0;
+  background: var(--sk-color-scrim-strong);
+}
+.sk-gate__dialog {
+  position: relative;
+  width: 100%;
+  max-width: 560px;
+  max-height: calc(100vh - 2 * var(--sk-space-20));
+  overflow-y: auto;
+  padding: var(--sk-space-32);
+  border-radius: var(--sk-radius-sheet);
+  background: var(--sk-color-canvas);
+  box-shadow: var(--sk-shadow-sheet);
+  box-sizing: border-box;
+}
+.sk-gate__dialog:focus-visible { outline: 3px solid var(--sk-color-focus); outline-offset: 3px; }
+
+/* Phone: a bottom sheet with a grip, top corners only (DESIGN.md §3). */
+.sk-gate--sheet {
+  align-items: flex-end;
+  padding: 0;
+}
+.sk-gate--sheet .sk-gate__dialog {
+  max-width: none;
+  max-height: 92vh;
+  padding: var(--sk-space-12) var(--sk-space-gutter-phone) var(--sk-space-24);
+  border-radius: var(--sk-radius-sheet) var(--sk-radius-sheet) 0 0;
+}
+.sk-gate__grip {
+  display: block;
+  width: 40px;
+  height: 5px;
+  margin: 0 auto var(--sk-space-16);
+  border-radius: var(--sk-radius-full);
+  background: var(--sk-color-rule);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .sk-gate__dialog { animation: sk-gate-in var(--sk-duration-sheet) var(--sk-ease-sheet) both; }
+}
+@keyframes sk-gate-in {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: none; }
+}
+.sk-gate__crisis { margin-top: var(--sk-space-16); }
