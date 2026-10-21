@@ -1,10 +1,10 @@
-# WP-03 Sign-in, identity and device (Tier 1): canvas plan awaiting review
+# WP-03 Sign-in, identity and device (Tier 1): canvas plan, approved 2026-10-21, built in feat/t1-wp03
 
-**Approved by:** _(name, date)_
+**Approved by:** Krishna Chintakayala (founder, named Tier 1 reviewer), 2026-10-21 ("Approve all").
 
-**Status:** plan only. No screen code is written until a named design reviewer **and** the
-security/legal owner sign this file (`DESIGN.md` §5, `CLAUDE.md`). One screen (or one tight pair,
-phone + web) per ticket, branch and PR.
+**Status:** approved 2026-10-21, built in feat/t1-wp03. NewDevice is not built (D3-8). The
+approval does not cover legal text, vendors or backends we don't have; those parts are left out or
+drawn "not available yet" (see Decisions taken).
 **Source:** `docs/plans/canvas-gap-audit-2026-10-20.md` (lane 1 and 3b), each board's brief,
 screenshot and `design/screens/source/*/<Screen>.html`, and the code named below.
 **Depends on:** S4 phone frame on web, S7 sheets/dialogs, S8 feedback/validation; S1 student web
@@ -259,3 +259,19 @@ step can't be skipped; lockout message uses server values.
 - **D3-8 NewDevice.** Defer until selfie match and device transfer exist?
 - **D3-9 AdminSignIn.** Separate staff route now (reusing OTP + 2FA), new-device approval later?
   Lockout/session values to be added to the settings registry.
+
+## Decisions taken (approved by Krishna Chintakayala, 2026-10-21)
+
+Approved as a set; each settled on the conservative, honest option (TIER1_BUILD_BRIEF).
+
+- **D3-1** Rejected campus verification is drawn in `danger` (row, "Fix" badge, `alert-triangle`): a failed verification is a safety alert under the founder colour rule. In review is `action`, done is `positive`. Photo unclear, name mismatch and code locked are not drawn: no backend produces them.
+- **D3-2** "Continue with campus ID" is drawn switched off with "Not available for your campus yet" (phone, web, Expo): the board's layout uses the row and its `graduation-cap`, and no SSO endpoint exists.
+- **D3-3** Code expiry copy follows the server's `expiresInSeconds` (300 s today, "5 minutes"), never the board's 10 minutes. The resend wait is the new public setting `auth.otp_resend_seconds` (default 45, the client's old literal), not the board's 29 s.
+- **D3-4** No optional switches on OnboardingConsent (partner offers: Rule L; campus totals and research: no feature or server purpose). No withdraw endpoint was built, so the honest "delete your account" line stays and "withdrawing is as easy as agreeing" is not shown. The versioned consent wording is unchanged (no version bump); only the layout follows the board.
+- **D3-5** Grievance officer name, email and reply time stay omitted until legal supplies them.
+- **D3-6** The four-row frame is built now (VerifyIdentity, WebVerify, VerifyGate, WebVerifyGate). Only College ID comes from the server (`GET /identity`); photo, email and government ID say "Not available yet" and their sheets explain it. Progress counts only checks that exist ("0/1", "1/1"), so nothing implies the student can finish checks that don't exist. "All four are needed" and "encrypted" claims are not used.
+- **D3-7** No session-list endpoint or check-in log was built: LostPhone ships as one "sign out every other device" action, confirmed first (sheet on phone, ConfirmDialog `end-sessions` on web), reporting only what `POST /auth/sessions/revoke-others` returns. The device picker, "was it you?" and "Got a new phone?" are not drawn. The web info card keeps only true claims (pass cancelled; every sign-in needs a code); "face or PIN", "live photo match" and "support calls within 2 hours" are dropped.
+- **D3-8** NewDevice is deferred: no selfie match or device-transfer API.
+- **D3-9** AdminSignIn is a separate public route `/staff-sign-in` with its own frame, reusing the OTP and 2FA endpoints. Backend: `POST /auth/otp/send` takes `audience: "STAFF"`, which sends a code only to an active non-student account by email and answers a student's email exactly like an unknown one (tests in `backend/tests/test_staff_sign_in.py`). Lock length, tries and session length are the server's own messages; "admin has been told" and new-device approval are not drawn (no backend). No lockout/session settings were added: the existing server limits are unchanged.
+- **Web brand panel** (WebSignIn): the board's "NABL lab tests with dorm sample pickup", "A free account" and "Live on 3 campuses" are unverified claims; three true benefit lines replace them.
+- **Routing**: `/verify` became a workspace route so the student web shell (WebVerify) and the phone frame (VerifyIdentity) draw it; `/lost-phone` stays public (it must work from a friend's phone) and draws the student web shell itself for a signed-in student.

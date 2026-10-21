@@ -1,7 +1,7 @@
 import React from 'react';
 import { useT } from '@/i18n';
 import { LanguageSetting } from '@/i18n/LanguageSetting';
-import { color } from '@/design-system/theme';
+import { color, font } from '@/design-system/theme';
 import {
   ActivityIndicator,
   ScrollView,
@@ -14,6 +14,8 @@ import {
 import { observer } from 'mobx-react-lite';
 import { skTokens } from '@/theme/tokens/generated/skTokens';
 import { CrisisLinks } from '@/design-system';
+import { BrandLogo, Icon } from '@/design-system/icons';
+import { expiryCopy } from './otpCopy';
 import type { AuthViewModel } from '../viewmodel/AuthViewModel';
 import { channelFieldCopy, channelIsDeliverable } from './channelCopy';
 
@@ -67,6 +69,10 @@ export const SignInNativeView: React.FC<SignInNativeViewProps> = observer(functi
         accessibilityLabel={t('auth.signin.title')}
       >
         <View style={styles.card}>
+          <View style={styles.brandRow}>
+            <BrandLogo size={28} label="" />
+            <Text style={styles.wordmark}>{t('launch.brand.student')}<Text style={styles.wordmarkKare}>{` ${t('launch.brand.kare')}`}</Text></Text>
+          </View>
           <Text style={styles.title} accessibilityRole="header">
             {t('auth.signin.title')}
           </Text>
@@ -89,6 +95,7 @@ export const SignInNativeView: React.FC<SignInNativeViewProps> = observer(functi
                   accessibilityRole="radio"
                   accessibilityLabel={vm.channel === 'WHATSAPP' ? t('auth.channelSelected', { channel: t('auth.channel.WHATSAPP') }) : t('auth.channel.WHATSAPP')}
                 >
+                  <Icon name="message-circle-3" size={16} color={vm.channel === 'WHATSAPP' ? color.action : color.text2} />
                   <Text style={[styles.channelText, vm.channel === 'WHATSAPP' && styles.channelTextActive]}>
                     {t('auth.channel.WHATSAPP')}
                   </Text>
@@ -100,6 +107,7 @@ export const SignInNativeView: React.FC<SignInNativeViewProps> = observer(functi
                   accessibilityRole="radio"
                   accessibilityLabel={vm.channel === 'EMAIL' ? t('auth.channelSelected', { channel: t('auth.channel.EMAIL') }) : t('auth.channel.EMAIL')}
                 >
+                  <Icon name="mail-2" size={16} color={vm.channel === 'EMAIL' ? color.action : color.text2} />
                   <Text style={[styles.channelText, vm.channel === 'EMAIL' && styles.channelTextActive]}>
                     {t('auth.channel.EMAIL')}
                   </Text>
@@ -150,21 +158,36 @@ export const SignInNativeView: React.FC<SignInNativeViewProps> = observer(functi
                 onPress={() => void handleIdentifierSubmit()}
                 disabled={!deliverable || vm.busy}
                 accessibilityRole="button"
-                accessibilityLabel={t('auth.continueToCode')}
+                accessibilityLabel={t('ident.signin.send')}
               >
                 {vm.busy ? (
                   <ActivityIndicator color={color.onAction} />
                 ) : (
-                  <Text style={styles.primaryButtonText}>{t('auth.continue')}</Text>
+                  <Text style={styles.primaryButtonText}>{t('ident.signin.send')}</Text>
                 )}
               </TouchableOpacity>
+
+              <Text style={styles.orText}>{t('ident.signin.or')}</Text>
+              {/* No single sign-on exists for any campus (D3-2): drawn off, with why. */}
+              <View style={styles.ssoRow} accessible accessibilityRole="button" accessibilityState={{ disabled: true }}
+                accessibilityLabel={`${t('ident.signin.campusId')}, ${t('ident.signin.campusIdOff')}`}>
+                <View style={styles.ssoTile}><Icon name="graduation-cap" size={20} color={color.text3} /></View>
+                <View style={styles.ssoWords}>
+                  <Text style={styles.ssoTitle}>{t('ident.signin.campusId')}</Text>
+                  <Text style={styles.ssoMeta}>{t('ident.signin.campusIdOff')}</Text>
+                </View>
+                <Icon name="chevron-right" size={18} color={color.text3} />
+              </View>
             </>
           )}
 
           {vm.step === 3 && (
             <>
               <View style={styles.otpHeader}>
-                <Text style={styles.otpTitle}>{t('auth.code.enter')}</Text>
+                <Text style={styles.otpTitle}>{t('ident.otp.title')}</Text>
+                <Text style={styles.otpSubtitle}>
+                  {t(expiryCopy(vm.expiresInSeconds).key, expiryCopy(vm.expiresInSeconds).vars)}
+                </Text>
                 <Text style={styles.otpSubtitle}>
                   {t('auth.code.sentShort', { masked: vm.masked || vm.identifier })}
                 </Text>
@@ -261,9 +284,10 @@ export const SignInNativeView: React.FC<SignInNativeViewProps> = observer(functi
                 style={styles.linkTouch}
                 onPress={onNavigateToLostPhone}
                 accessibilityRole="link"
-                accessibilityLabel={t('auth.lostPhone')}
+                accessibilityLabel={t('ident.signin.lostPhone')}
               >
-                <Text style={styles.linkText}>{t('auth.lostPhone')} →</Text>
+                <Text style={styles.linkText}>{t('ident.signin.lostPhone')}</Text>
+                <Icon name="chevron-right" size={16} color={color.action} />
               </TouchableOpacity>
             )}
 
@@ -274,7 +298,8 @@ export const SignInNativeView: React.FC<SignInNativeViewProps> = observer(functi
                 accessibilityRole="link"
                 accessibilityLabel={t('auth.newStudent')}
               >
-                <Text style={styles.linkTextSecondary}>{t('auth.newStudent')} →</Text>
+                <Text style={styles.linkTextSecondary}>{t('auth.newStudent')}</Text>
+                <Icon name="chevron-right" size={16} color={color.text2} />
               </TouchableOpacity>
             )}
           </View>
@@ -334,6 +359,8 @@ const styles = StyleSheet.create({
   channelTab: {
     flex: 1,
     minHeight: 44,
+    flexDirection: 'row',
+    gap: space.s6,
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: radius.sm,
@@ -450,7 +477,60 @@ const styles = StyleSheet.create({
   },
   linkTouch: {
     minHeight: 44,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.s4,
+  },
+  brandRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.s8,
+  },
+  wordmark: {
+    fontSize: skTokens.font.size.titleSm,
+    fontWeight: '800',
+    color: color.text,
+  },
+  wordmarkKare: {
+    fontStyle: 'italic',
+    fontFamily: font.family.serif,
+  },
+  orText: {
+    textAlign: 'center',
+    fontSize: skTokens.font.size.caption,
+    color: color.text3,
+  },
+  ssoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.s12,
+    minHeight: 64,
+    paddingHorizontal: space.s14,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: color.ruleSoft,
+    backgroundColor: color.surface2,
+  },
+  ssoTile: {
+    width: 40,
+    height: 40,
+    borderRadius: radius.md,
+    alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: color.surface3,
+  },
+  ssoWords: {
+    flex: 1,
+    gap: space.s2,
+  },
+  ssoTitle: {
+    fontSize: skTokens.font.size.body,
+    fontWeight: '700',
+    color: color.text2,
+  },
+  ssoMeta: {
+    fontSize: skTokens.font.size.caption,
+    color: color.text3,
   },
   linkText: {
     fontSize: skTokens.font.size.bodySm,

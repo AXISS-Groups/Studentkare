@@ -9,7 +9,8 @@ export interface RevokeResult {
   passCancelled: boolean;
 }
 
-export type LostPhonePhase = 'ready' | 'busy' | 'done' | 'failed';
+/** ready, then confirm (the student says yes), then busy, then done or failed. Nothing is revoked without confirm. */
+export type LostPhonePhase = 'ready' | 'confirm' | 'busy' | 'done' | 'failed';
 
 /**
  * Lost phone (design page 1, LostPhone, Tier 1). Replaces a screen that listed
@@ -25,7 +26,18 @@ export class LostPhoneViewModel implements ViewModel {
     makeAutoObservable<LostPhoneViewModel, 'disposed' | 'request'>(this, { disposed: false, request: false }, { autoBind: true });
   }
 
+  /** "Secure my account": ask first (plan: confirm required before revoking). */
+  askConfirm(): void {
+    if (this.phase === 'ready' || this.phase === 'failed') this.phase = 'confirm';
+  }
+
+  cancelConfirm(): void {
+    if (this.phase === 'confirm') this.phase = 'ready';
+  }
+
+  /** Only from the confirm step: a stray call cannot sign anything out. */
   async revokeOthers(): Promise<void> {
+    if (this.phase !== 'confirm') return;
     this.disposed = false;
     this.phase = 'busy';
     this.result = null;

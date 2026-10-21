@@ -23,6 +23,7 @@ import { wellnessHi } from './areas/wellness';
 import { consoleHi } from './areas/console';
 import { phoneboardsHi } from './areas/phoneboards';
 import { safetyHi } from './areas/safety';
+import { identityHi } from './areas/identity';
 import { clinicianWorkHi } from './areas/clinicianWork';
 import { partnerConsoleHi } from './areas/partnerConsole';
 
@@ -845,6 +846,7 @@ export const hi: Catalog = {
   ...consoleHi,
   ...phoneboardsHi,
   ...safetyHi,
+  ...identityHi,
   ...clinicianWorkHi,
   ...partnerConsoleHi,
 };

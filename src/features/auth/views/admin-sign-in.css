@@ -1,0 +1,80 @@
+/* Staff and admin sign-in (canvas AdminSignIn). Tier 1, approved 2026-10-21.
+ * Colour, type, spacing, radius and size from --sk-* only. No hex values. */
+
+.sk-staff {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--sk-space-24) var(--sk-space-gutter-phone);
+  background: var(--sk-color-brand-navy);
+  box-sizing: border-box;
+}
+.sk-staff__card {
+  width: 100%;
+  max-width: 528px;
+  padding: var(--sk-space-32);
+  border-radius: var(--sk-radius-xl);
+  background: var(--sk-color-surface);
+  box-shadow: var(--sk-shadow-float);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sk-space-20);
+  min-height: 0;
+}
+.sk-staff__brand {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sk-space-12);
+  flex-wrap: wrap;
+}
+.sk-staff__badge {
+  padding: var(--sk-space-4) var(--sk-space-10);
+  border-radius: var(--sk-radius-full);
+  background: var(--sk-color-surface-3);
+  color: var(--sk-color-action);
+  font-size: var(--sk-text-caption);
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+.sk-staff .sk-staff__title {
+  margin: 0;
+  font-size: var(--sk-text-title);
+  font-weight: 800;
+  letter-spacing: -0.4px;
+  color: var(--sk-color-text);
+}
+.sk-staff__label {
+  font-size: var(--sk-text-caption);
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--sk-color-text-2);
+}
+.sk-staff__code { font-family: var(--sk-font-mono); letter-spacing: 4px; }
+.sk-staff__primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sk-space-8);
+  min-height: var(--sk-size-control);
+  border: 0;
+  border-radius: var(--sk-radius-md);
+  background: var(--sk-color-action);
+  color: var(--sk-color-on-action);
+  font: inherit;
+  font-size: var(--sk-text-body);
+  font-weight: 800;
+  cursor: pointer;
+}
+.sk-staff__primary:disabled { background: var(--sk-color-action-soft); color: var(--sk-color-text-3); cursor: not-allowed; }
+.sk-staff .sk-staff__note {
+  margin: 0;
+  padding: var(--sk-space-14) var(--sk-space-16);
+  border-radius: var(--sk-radius-md);
+  background: var(--sk-color-surface-2);
+  font-size: var(--sk-text-body-sm);
+  line-height: 1.55;
+  color: var(--sk-color-text-2);
+}

@@ -34,8 +34,18 @@
       "src/features/auth/views/WelcomeFlowView.tsx",
       "src/features/auth/views/welcomeSlides.ts"
     ],
-    "SignIn": [],
-    "OtpVerify": [],
+    "SignIn": [
+      "src/features/auth/screens/AuthenticatedFlowScreen.tsx",
+      "src/features/auth/views/SignInView.tsx",
+      "src/features/auth/views/SignInFrame.tsx",
+      "src/features/auth/views/SignInNativeView.tsx"
+    ],
+    "OtpVerify": [
+      "src/features/auth/views/OtpVerifyView.tsx",
+      "src/features/auth/views/otpCopy.ts",
+      "src/features/auth/screens/AuthenticatedFlowScreen.tsx",
+      "src/features/auth/views/SignInFrame.tsx"
+    ],
     "CreateAccount": [
       "src/features/auth/views/CreateAccountView.tsx",
       "src/features/auth/views/CreateAccountNativeView.tsx",
@@ -72,15 +82,33 @@
       "src/screens/digital_id/ABHALinkScreen.tsx",
       "src/design-system/navigation/PhoneHeader.tsx"
     ],
-    "OnboardingConsent": [],
-    "VerifyIdentity": [],
-    "VerifyGate": [],
+    "OnboardingConsent": [
+      "src/features/auth/views/SignupConsent.tsx",
+      "src/features/auth/views/SignupConsentNative.tsx"
+    ],
+    "VerifyIdentity": [
+      "src/features/auth/views/IdentityVerifyView.tsx",
+      "src/features/auth/views/IdentityVerifyPanel.tsx",
+      "src/features/auth/views/IdentityCheckRow.tsx",
+      "src/features/auth/viewmodel/IdentityVerifyViewModel.ts"
+    ],
+    "VerifyGate": [
+      "src/features/auth/views/VerifyGateView.tsx",
+      "src/features/auth/views/VerifyGateCard.tsx",
+      "src/features/auth/views/IdentityCheckRow.tsx",
+      "src/features/auth/views/VerifyGateNativeView.tsx"
+    ],
     "LoggedOut": [
       "src/features/auth/views/LoggedOutView.tsx"
     ],
     "GuardianConsent": [],
     "GuardianApprove": [],
-    "LostPhone": [],
+    "LostPhone": [
+      "src/features/auth/views/LostPhoneView.tsx",
+      "src/features/auth/views/LostPhonePanel.tsx",
+      "src/features/auth/views/LostPhoneNativeView.tsx",
+      "src/features/auth/viewmodel/LostPhoneViewModel.ts"
+    ],
     "NewDevice": [],
     "HomeDiscover": [
       "src/features/discover/views/HomeDiscoverView.tsx",
@@ -449,13 +477,36 @@
       "src/design-system/public-site/PublicAppBand.tsx",
       "src/features/landing/views/landingWebKit.tsx"
     ],
-    "WebSignIn": [],
+    "WebSignIn": [
+      "src/features/auth/screens/AuthenticatedFlowScreen.tsx",
+      "src/features/auth/views/SignInView.tsx",
+      "src/features/auth/views/SignInFrame.tsx"
+    ],
     "WebLoggedOut": [
       "src/features/auth/views/LoggedOutView.tsx"
     ],
-    "WebLostPhone": [],
-    "WebVerify": [],
-    "WebVerifyGate": [],
+    "WebLostPhone": [
+      "src/features/auth/views/LostPhoneView.tsx",
+      "src/features/auth/views/LostPhonePanel.tsx",
+      "src/features/auth/views/StandaloneStudentShell.tsx",
+      "src/design-system/student-shell/StudentWebShell.tsx",
+      "src/design-system/student-shell/studentNav.ts",
+      "src/design-system/overlays/ConfirmDialog.tsx"
+    ],
+    "WebVerify": [
+      "src/features/auth/views/IdentityVerifyView.tsx",
+      "src/features/auth/views/IdentityVerifyPanel.tsx",
+      "src/features/auth/views/IdentityCheckRow.tsx",
+      "src/features/auth/viewmodel/IdentityVerifyViewModel.ts",
+      "src/design-system/student-shell/StudentWebShell.tsx",
+      "src/design-system/student-shell/studentNav.ts",
+      "src/design-system/overlays/ConfirmDialog.tsx"
+    ],
+    "WebVerifyGate": [
+      "src/features/auth/views/VerifyGateView.tsx",
+      "src/features/auth/views/VerifyGateCard.tsx",
+      "src/features/auth/views/IdentityCheckRow.tsx"
+    ],
     "WebGuardianConsent": [],
     "WebGuardianApprove": [],
     "WebHome": [
@@ -987,7 +1038,10 @@
     "AdminCase": [],
     "AdminPriceFix": [],
     "AdminApiKeys": [],
-    "AdminSignIn": [],
+    "AdminSignIn": [
+      "src/features/auth/views/AdminSignInView.tsx",
+      "src/features/auth/views/SignInFrame.tsx"
+    ],
     "FlowMap": [],
     "Sheets": [
       "src/design-system/overlays/Overlay.tsx",
@@ -1014,31 +1068,6 @@
     ]
   },
   "inProgress": {
-    "SignIn": [
-      "src/features/auth/views/SignInView.tsx",
-      "src/features/auth/screens/AuthenticatedFlowScreen.tsx",
-      "src/features/auth/views/SignInNativeView.tsx"
-    ],
-    "OtpVerify": [
-      "src/features/auth/screens/AuthenticatedFlowScreen.tsx"
-    ],
-    "OnboardingConsent": [
-      "src/features/auth/views/SignupConsent.tsx",
-      "src/features/auth/views/SignupConsentNative.tsx"
-    ],
-    "VerifyIdentity": [
-      "src/features/auth/views/IdentityVerifyView.tsx",
-      "src/features/auth/views/IdentityVerifyPanel.tsx"
-    ],
-    "VerifyGate": [
-      "src/features/auth/views/VerifyGateView.tsx",
-      "src/features/auth/views/VerifyGateNativeView.tsx"
-    ],
-    "LostPhone": [
-      "src/features/auth/views/LostPhoneView.tsx",
-      "src/features/auth/views/LostPhonePanel.tsx",
-      "src/features/auth/views/LostPhoneNativeView.tsx"
-    ],
     "Teleconsult": [
       "src/features/teleconsult/views/TeleconsultNativeView.tsx",
       "src/components/health/consult/ConsultCallPanel.tsx"
@@ -1090,22 +1119,6 @@
       "src/design-system/public-site/PublicTrustBand.tsx",
       "src/design-system/public-site/PublicAppBand.tsx",
       "src/features/landing/views/landingWebKit.tsx"
-    ],
-    "WebSignIn": [
-      "src/features/auth/views/SignInView.tsx",
-      "src/features/auth/screens/AuthenticatedFlowScreen.tsx",
-      "src/components/interface/AuthLayout.tsx"
-    ],
-    "WebLostPhone": [
-      "src/features/auth/views/LostPhoneView.tsx",
-      "src/features/auth/views/LostPhonePanel.tsx"
-    ],
-    "WebVerify": [
-      "src/features/auth/views/IdentityVerifyView.tsx",
-      "src/features/auth/views/IdentityVerifyPanel.tsx"
-    ],
-    "WebVerifyGate": [
-      "src/features/auth/views/VerifyGateView.tsx"
     ],
     "WebVault": [
       "src/screens/workspace/WorkspaceScreen.tsx",

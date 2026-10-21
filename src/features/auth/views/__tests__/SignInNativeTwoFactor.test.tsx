@@ -28,7 +28,7 @@ async function toTwoStep() {
   vm.setIdentifier('root@example.test');
   const onSuccess = vi.fn();
   render(<SignInNativeView vm={vm} onSuccess={onSuccess} />);
-  fireEvent.click(screen.getByRole('button', { name: 'Continue to verification code' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Send verification code' }));
   await waitFor(() => expect(vm.step).toBe(3));
   vm.setCode('123456');
   fireEvent.click(await screen.findByRole('button', { name: 'Verify and sign in' }));

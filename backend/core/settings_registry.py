@@ -276,6 +276,12 @@ declare("emergency.sos_poll_seconds", INT, 15, area="emergency", unit="seconds",
 declare("platform.default_timezone", STR, "Asia/Kolkata", area="platform", unit="IANA timezone",
         description="Timezone for a student's calendar day when they have not set a valid one.")
 
+# --- sign-in ---------------------------------------------------------------
+# A screen pace, not a security limit: the server's own send limit (3 codes per
+# identifier per 5 minutes, services/workflow_auth.py) still refuses extra sends.
+declare("auth.otp_resend_seconds", INT, 45, area="auth", unit="seconds", minimum=10, maximum=300, public=True,
+        description="How long the code screen waits before offering to send a new sign-in code.")
+
 # --- consultations ---------------------------------------------------------
 declare("consult.media_join_before_minutes", INT, 15, area="consult", unit="minutes", minimum=0, maximum=120,
         public=True, description="How early before the slot starts a video consult can be joined.")

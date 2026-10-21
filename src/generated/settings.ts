@@ -5,6 +5,8 @@
 export interface PublicSettings {
   /** Longest the app waits at boot for the saved appearance before rendering with the default. (ms) */
   "appearance.boot_wait_ms": number;
+  /** How long the code screen waits before offering to send a new sign-in code. (seconds) */
+  "auth.otp_resend_seconds": number;
   /** Starting price of Premium, per month. Always shown as "from" this amount. (₹ per month (starting price)) */
   "billing.premium.from_monthly_inr": number;
   /** Price of the Student Plus membership, per month. (₹ per month) */
@@ -101,6 +103,7 @@ export interface PublicSettingSpec {
 
 export const publicSettingDefaults: Readonly<PublicSettings> = {
   "appearance.boot_wait_ms": 1500,
+  "auth.otp_resend_seconds": 45,
   "billing.premium.from_monthly_inr": 499,
   "billing.student_plus.monthly_inr": 149,
   "billing.student_plus.quarter_package_inr": 2199,
@@ -145,6 +148,7 @@ export const publicSettingDefaults: Readonly<PublicSettings> = {
 
 export const publicSettingSpecs: Readonly<Record<PublicSettingKey, PublicSettingSpec>> = {
   "appearance.boot_wait_ms": { type: "int", min: 0, max: 10000, allowed: [], unit: "ms" },
+  "auth.otp_resend_seconds": { type: "int", min: 10, max: 300, allowed: [], unit: "seconds" },
   "billing.premium.from_monthly_inr": { type: "int", min: 1, max: 100000, allowed: [], unit: "\u20b9 per month (starting price)" },
   "billing.student_plus.monthly_inr": { type: "int", min: 1, max: 100000, allowed: [], unit: "\u20b9 per month" },
   "billing.student_plus.quarter_package_inr": { type: "int", min: 1, max: 1000000, allowed: [], unit: "\u20b9 per 3 months" },

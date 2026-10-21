@@ -149,6 +149,8 @@ const workspacePaths: { path: string; access?: (role: AccountRole | null) => boo
   { path: '/campus-break-glass', access: hasRole('CAMPUS_ADMIN', 'SUPER_ADMIN') },
   // Crisis follow-up: counsellors (own campus, server-scoped) and the super admin only.
   { path: '/counsellor', access: hasRole('COUNSELLOR', 'SUPER_ADMIN') },
+  // Verify it's you (VerifyIdentity / WebVerify): in the student frame at every width.
+  { path: '/verify' },
   { path: '/emergency-card' },
   // Tier 1 phone boards (WP-06): emergency contacts, the consent inbox and the care circle.
   { path: '/ice-contacts', access: hasRole('STUDENT') },

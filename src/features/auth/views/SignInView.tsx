@@ -1,112 +1,116 @@
-import React, { useState } from 'react';
+import React, { useId, useState } from 'react';
+import { observer } from 'mobx-react-lite';
 import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
-import { observer } from 'mobx-react-lite';
-import { Mail, Smartphone } from 'lucide-react';
-import { SubmitButton } from '@/components/interface/WorkflowUI';
-import { Banner, FormField } from '@/design-system';
+import { Banner } from '@/design-system';
+import { Icon } from '@/design-system/icons';
+import type { SkIconName } from '@/design-system/icons';
 import type { AuthViewModel } from '../viewmodel/AuthViewModel';
 import { channelFieldCopy, channelIsDeliverable, type AuthChannel } from './channelCopy';
-import './auth-form.css';
+import './sign-in-frame.css';
 
-const CHANNELS: ReadonlyArray<{ id: AuthChannel; label: MessageKey; Icon: typeof Mail }> = [
-  { id: 'EMAIL', label: 'auth.channel.EMAIL', Icon: Mail },
-  { id: 'WHATSAPP', label: 'auth.channel.WHATSAPP', Icon: Smartphone },
+/** The board's order: Email first, then WhatsApp. Icons from the brief (mail-2, message-circle-3). */
+const CHANNELS: ReadonlyArray<{ id: AuthChannel; label: MessageKey; icon: SkIconName }> = [
+  { id: 'EMAIL', label: 'auth.channel.EMAIL', icon: 'mail-2' },
+  { id: 'WHATSAPP', label: 'auth.channel.WHATSAPP', icon: 'message-circle-3' },
 ];
 
 /**
- * Sign in — step 1 of the login flow.
+ * Sign in (canvas SignIn / WebSignIn, Tier 1, approved 2026-10-21).
  *
- * Design: design/screens/screens/01-launch-onboarding/SignIn.jpg (Tier 2).
- * Binds to the existing AuthViewModel; it adds no state and no API calls of
- * its own, so the OTP orchestration, CSRF handling and rate limiting are
- * unchanged.
+ * Binds to AuthViewModel and adds no API calls: "Send verification code" calls
+ * the same POST /auth/otp/send as before (the old in-between confirmation step
+ * only collected a backup email the server never uses: it sends a fallback only
+ * to the account's own verified recovery address). The channels come from
+ * GET /auth/options; one that cannot be delivered says so and the button stays off.
  *
- * Three elements of the design are deliberately absent, because nothing backs
- * them and a control that does nothing is worse than an honest omission:
- *   - "Continue with campus ID" — there is no SSO endpoint in the backend.
- *   - the EN / తెలుగు / हिंदी switcher — the repo has no i18n library or locales.
- *   - "Lost your phone?" — that screen is Tier 1 and not built, so the link
- *     would dangle.
+ * "Continue with campus ID" is drawn switched off with the reason: there is no
+ * single sign-on for any campus (decision D3-2).
  */
 export const SignInView = observer(function SignInView({ vm }: { vm: AuthViewModel }) {
   const t = useT();
+  const hintId = useId();
+  const errorId = useId();
   const copy = channelFieldCopy(vm.channel);
-  const hint = t(vm.channel === 'EMAIL' ? 'auth.signin.hint.EMAIL' : 'auth.signin.hint.WHATSAPP');
   const deliverable = channelIsDeliverable(vm.channel, vm.channels);
-  // Inline validation is presentation only: the browser's own constraint check
-  // (required, type=email) still decides whether the form submits; this shows
-  // its verdict on the field instead of a native bubble (board Feedback).
+  // Presentation only: the browser's own constraint check still decides
+  // whether the form submits; this shows its verdict on the field.
   const [invalid, setInvalid] = useState(false);
 
   return (
-    <div className="sk-authform">
-      <div className="sk-authform__head">
-        <h1 className="sk-authform__title">{t('auth.signin.title')}</h1>
-        <p className="sk-authform__lead">{t('auth.signin.lead')}</p>
+    <>
+      <div className="sk-signin__head">
+        <h1 className="sk-signin__title">{t('auth.signin.title')}</h1>
+        <p className="sk-signin__lead">{t('auth.signin.lead')}</p>
       </div>
 
-      <div className="sk-authform__channels" role="group" aria-label={t('auth.channels')}>
-        {CHANNELS.map(({ id, label, Icon }) => (
+      <div className="sk-signin__channels" role="group" aria-label={t('auth.channels')}>
+        {CHANNELS.map(({ id, label, icon }) => (
           <button
             key={id}
             type="button"
             aria-pressed={vm.channel === id}
+            disabled={vm.busy}
             onClick={() => { vm.setChannel(id); setInvalid(false); }}
           >
-            <Icon size={16} aria-hidden="true" />
+            <Icon name={icon} size={16} />
             {t(label)}
           </button>
         ))}
       </div>
 
-      <FormField
-        label={t(copy.label)}
-        hint={hint}
-        status={invalid ? 'invalid' : 'idle'}
-        message={t(vm.channel === 'EMAIL' ? 'auth.signin.invalid.EMAIL' : 'auth.signin.invalid.WHATSAPP')}
-      >
-        <input
-          required
-          type={copy.inputType}
-          autoComplete={copy.autoComplete}
-          value={vm.identifier}
-          onChange={(event) => {
-            vm.setIdentifier(event.target.value);
-            if (invalid && event.target.validity.valid) setInvalid(false);
-          }}
-          onInvalid={(event) => { event.preventDefault(); setInvalid(true); event.currentTarget.focus(); }}
-          maxLength={254}
-          placeholder={copy.placeholder}
-        />
-      </FormField>
+      <div className="sk-signin__field">
+        <label className="sk-signin__label" htmlFor="sk-signin-identifier">{t(copy.label)}</label>
+        <div className="sk-signin__input" data-invalid={invalid}>
+          <Icon name={vm.channel === 'EMAIL' ? 'mail-2' : 'message-circle-3'} size={18} />
+          <input
+            id="sk-signin-identifier"
+            required
+            type={copy.inputType}
+            autoComplete={copy.autoComplete}
+            value={vm.identifier}
+            aria-invalid={invalid}
+            aria-describedby={invalid ? `${errorId} ${hintId}` : hintId}
+            onChange={(event) => {
+              vm.setIdentifier(event.target.value);
+              if (invalid && event.target.validity.valid) setInvalid(false);
+            }}
+            onInvalid={(event) => { event.preventDefault(); setInvalid(true); event.currentTarget.focus(); }}
+            maxLength={254}
+            placeholder={copy.placeholder}
+          />
+        </div>
+        {invalid ? (
+          <p className="sk-signin__error" id={errorId} role="alert">
+            {t(vm.channel === 'EMAIL' ? 'auth.signin.invalid.EMAIL' : 'auth.signin.invalid.WHATSAPP')}
+          </p>
+        ) : null}
+        <p className="sk-signin__hint" id={hintId}>
+          {t(vm.channel === 'EMAIL' ? 'auth.signin.hint.EMAIL' : 'auth.signin.hint.WHATSAPP')}
+        </p>
+      </div>
 
-      {vm.optionsError ? (
-        <Banner tone="attention" announce>{vm.optionsError}</Banner>
-      ) : null}
-
-      {!deliverable ? (
+      {vm.optionsError ? <Banner tone="attention" announce>{vm.optionsError}</Banner> : null}
+      {!deliverable && !vm.optionsLoading ? (
         <Banner tone="attention" announce>
           {t('auth.notConfigured', { channel: t(vm.channel === 'EMAIL' ? 'auth.channel.EMAIL' : 'auth.channel.WHATSAPP') })}
         </Banner>
       ) : null}
 
-      {/* The design labels this "Send verification code", but in this flow step 1
-          only advances to the delivery confirmation, where a WhatsApp user can add
-          a backup email. Labelling it "Send" here would be a button that lies. */}
-      <SubmitButton busy={vm.busy} disabled={!deliverable}>
-        {t('auth.continue')}
-      </SubmitButton>
+      <button type="submit" className="sk-signin__primary" disabled={!deliverable || vm.busy} aria-busy={vm.busy}>
+        {vm.busy ? t('auth.sending') : t('ident.signin.send')}
+      </button>
 
-      <div style={{ display: 'flex', justifyContent: 'center', marginTop: '12px' }}>
-        <a href="/lost-phone" style={{ fontSize: '13px', fontWeight: 600, color: 'var(--sk-color-action)', textDecoration: 'none' }}>
-          {t('auth.lostPhone')} →
-        </a>
-      </div>
+      <div className="sk-signin__or" aria-hidden="true">{t('ident.signin.or')}</div>
 
-      <p className="sk-authform__terms">
-        {t('auth.terms')}
-      </p>
-    </div>
+      <button type="button" className="sk-signin__sso" disabled aria-describedby="sk-signin-sso-off">
+        <span className="sk-signin__sso-tile"><Icon name="graduation-cap" size={20} /></span>
+        <span className="sk-signin__sso-words">
+          <span className="sk-signin__sso-title">{t('ident.signin.campusId')}</span>
+          <span className="sk-signin__sso-meta" id="sk-signin-sso-off">{t('ident.signin.campusIdOff')}</span>
+        </span>
+        <Icon name="chevron-right" size={18} />
+      </button>
+    </>
   );
 });

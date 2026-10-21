@@ -22,6 +22,7 @@ import { wellnessEn } from './areas/wellness';
 import { consoleEn } from './areas/console';
 import { phoneboardsEn } from './areas/phoneboards';
 import { safetyEn } from './areas/safety';
+import { identityEn } from './areas/identity';
 import { clinicianWorkEn } from './areas/clinicianWork';
 import { partnerConsoleEn } from './areas/partnerConsole';
 /**
@@ -844,6 +845,7 @@ export const en = {
   ...consoleEn,
   ...phoneboardsEn,
   ...safetyEn,
+  ...identityEn,
   ...clinicianWorkEn,
   ...partnerConsoleEn,
 } as const;

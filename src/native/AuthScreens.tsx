@@ -71,18 +71,20 @@ export function LostPhoneScreen(): React.ReactElement {
 
 export function IdentityVerifyScreen(): React.ReactElement {
   const navigate = useNavigate();
+  // No campus-verification screen in the app yet: the College ID row says it is done on the web.
   return (
-    <IdentityVerifyRoute links={{ back: () => navigate('Home') }} />
+    <IdentityVerifyRoute links={{ back: () => navigate('Home'), openCrisis: () => navigate('Emergency') }} />
   );
 }
 
 export function VerifyGateScreen(): React.ReactElement {
   const navigate = useNavigate();
+  const emergency = () => navigate('Emergency');
   return (
     <VerifyGateNativeView
-      serviceName="consultations and health records"
       onProceedVerify={() => navigate('Verify')}
       onDismiss={() => navigate('Home')}
+      always={{ crisis: emergency, sos: emergency, emergencyCard: emergency }}
     />
   );
 }

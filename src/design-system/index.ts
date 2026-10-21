@@ -16,6 +16,8 @@ export type { TextFieldProps } from './TextField';
 export { Card, Eyebrow, Note } from './Surfaces';
 export type { CardProps, NoteProps, NoteTone } from './Surfaces';
 export { Stepper } from './Stepper';
+export { ProgressRing } from './ProgressRing';
+export type { ProgressRingProps } from './ProgressRing';
 export { SwitchRow } from './SwitchRow';
 export { RadioGroup } from './RadioGroup';
 export type { RadioGroupProps, RadioOption } from './RadioGroup';
