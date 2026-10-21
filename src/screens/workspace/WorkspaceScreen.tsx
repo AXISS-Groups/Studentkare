@@ -42,6 +42,7 @@ import { MoreHubBoard } from '@/features/account/views/MoreHubBoard';
 import { SearchPage, studentPhoneBoard } from '@/features/phoneKit/studentPhoneBoards';
 import { EmergencyHelplinesDialog } from '../../components/interface/InterfaceBar';
 import { NotificationCenterModal } from '../../components/health/NotificationCenterModal';
+import { AyushWidget, ayushWidgetShownOn } from '@/features/ayush/AyushWidget';
 
 const WebEmergencyCard = lazy(() => import('@/features/emergency/views/WebEmergencyCard').then(module => ({ default: module.WebEmergencyCard })));
 const WebPass = lazy(() => import('@/features/digital_id/views/WebPass').then(module => ({ default: module.WebPass })));
@@ -88,6 +89,17 @@ const WebShopView = lazy(() => import('@/features/studentweb/views/shop/WebShopV
 const WebCheckoutView = lazy(() => import('@/features/studentweb/views/shop/WebCheckoutView').then(module => ({ default: module.WebCheckoutView })));
 const StaffCampFastScreen = lazy(() => import('@/features/partner/staff/StaffCampFastScreen').then(module => ({ default: module.StaffCampFastScreen })));
 const VaultWorkspaceHub = lazy(() => import('../vault/VaultWorkspaceHub').then(module => ({ default: module.VaultWorkspaceHub })));
+// Signed-in student web, Tier 1 pages (canvas 3b, WP-09), drawn in the student web shell.
+const WebVaultView = lazy(() => import('@/features/studentweb/views/t1/WebVaultView').then(module => ({ default: module.WebVaultView })));
+const WebMyLabTestsView = lazy(() => import('@/features/studentweb/views/t1/WebMyLabTestsView').then(module => ({ default: module.WebMyLabTestsView })));
+const WebReportInsightsView = lazy(() => import('@/features/studentweb/views/t1/WebReportInsightsView').then(module => ({ default: module.WebReportInsightsView })));
+const WebAyushView = lazy(() => import('@/features/studentweb/views/t1/WebAyushView').then(module => ({ default: module.WebAyushView })));
+const WebConsultSummaryRoute = lazy(() => import('@/features/studentweb/views/t1/WebConsultSummaryView').then(module => ({ default: module.WebConsultSummaryRoute })));
+const WebEmergencyCardRoute = lazy(() => import('@/features/studentweb/views/t1/WebEmergencyCardView').then(module => ({ default: module.WebEmergencyCardRoute })));
+const WebPassView = lazy(() => import('@/features/studentweb/views/t1/WebPassView').then(module => ({ default: module.WebPassView })));
+const WebRequestsRoute = lazy(() => import('@/features/studentweb/views/t1/WebRequestsRoute').then(module => ({ default: module.WebRequestsRoute })));
+const WebLeaveCampusRoute = lazy(() => import('@/features/studentweb/views/t1/WebLeaveCampusView').then(module => ({ default: module.WebLeaveCampusRoute })));
+const WebDeleteAccountRoute = lazy(() => import('@/features/studentweb/views/t1/WebDeleteAccountView').then(module => ({ default: module.WebDeleteAccountRoute })));
 
 /** The partner console page for a route, or null when the route is not one (same role checks as before). */
 function vendorPageFor(route: RoutePath, role: AccountRole | null, onNavigate: (target: string) => void, onLogout: () => Promise<void>, onSwitchRole: (role: 'student' | 'admin' | 'vendor') => void): React.ReactNode {
@@ -254,6 +266,9 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
     if (user.role !== 'STUDENT') return null;
     if (route === 'home') return <WebHomeView />;
     if (route === 'buy-again') return <WebReorderView />;
+    // No phone board yet: the web page reflows into the phone frame.
+    if (route === 'my-lab-tests') return <WebMyLabTestsView />;
+    if (route === 'report-insights') return <WebReportInsightsView />;
     if (phoneFrame) return null;
     switch (route) {
       case 'health': return <WebDashboardView />;
@@ -262,6 +277,14 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
       case 'notification-settings': return <WebNotificationsRoute />;
       case 'shop': return <WebShopView />;
       case 'checkout': return <WebCheckoutView />;
+      case 'records': return <WebVaultView />;
+      case 'ayush': return <WebAyushView />;
+      case 'visit-summaries': return <WebConsultSummaryRoute />;
+      case 'emergency-card': return <WebEmergencyCardRoute />;
+      case 'pass': return <WebPassView />;
+      case 'my-requests': return <WebRequestsRoute />;
+      case 'leave-campus': return <WebLeaveCampusRoute />;
+      case 'delete-account': return <WebDeleteAccountRoute />;
       default: return null;
     }
   };
@@ -366,11 +389,14 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
         onSignOut={() => setConfirmSignOut(true)}
         signingOut={mutation.busy}
         signOutError={mutation.error || null}
+        bare={route === 'ayush'}
       >
         <Suspense fallback={<ScreenLoading />}><PageTransition key={route}>{content()}</PageTransition></Suspense>
       </StudentWebShell>
       {signOutDialog}
       <NotificationCenterModal isOpen={alertsOpen} onClose={() => setAlertsOpen(false)} />
+      {/* Ayush, floating (AyushWidget): never over crisis, SOS, the emergency card, checkout or Ayush itself. */}
+      {ayushWidgetShownOn(route) ? <AyushWidget /> : null}
       {/* The same helplines dialog the app bar opened, unchanged: 112, Tele-MANAS and the campus SOS. */}
       {sosOpen && <EmergencyHelplinesDialog onClose={() => setSosOpen(false)} onSendSos={() => { setSosOpen(false); navigate('sos'); }} />}
     </>;
