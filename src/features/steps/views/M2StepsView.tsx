@@ -286,7 +286,7 @@ export const M2StepsView = observer(function M2StepsView({ vm, links }: { vm: St
             </View>
           </M2Card>
         ) : (
-          <M2Card style={[styles.card, styles.row]} testID="m2-steps-web">
+          <M2Card style={[styles.card, styles.row, styles.top]} testID="m2-steps-web">
             <View style={[styles.sourceIcon, { backgroundColor: TEAL.soft }]}><Icon name="devices" size={20} color={TEAL.ink} strokeWidth={2.1} /></View>
             <View style={styles.grow}>
               <M2Heading style={m2Text.cardTitle}>{t('steps.sources.webTitle')}</M2Heading>
@@ -338,23 +338,24 @@ const styles = StyleSheet.create({
   gutter: { paddingHorizontal: space.gutterPhone },
   grow: { flex: 1, minWidth: 0, gap: space.s2 },
   row: { flexDirection: 'row', alignItems: 'center', gap: space.s12 },
+  top: { alignItems: 'flex-start' },
   hero: { paddingTop: space.s16, paddingHorizontal: space.gutterPhone, paddingBottom: space.s24, borderBottomLeftRadius: 36, borderBottomRightRadius: 36, overflow: 'hidden', gap: space.s16 },
   ringBig: { position: 'absolute', right: -50, bottom: -70, width: 210, height: 210, borderRadius: radius.full, borderWidth: 28, borderColor: color.onHeroRule },
   ringSmall: { position: 'absolute', right: 60, top: -60, width: 140, height: 140, borderRadius: radius.full, backgroundColor: color.onHeroVeil },
   glyph: { position: 'absolute', right: space.gutterPhone, top: 76, width: 64, height: 64, borderRadius: radius.xl, alignItems: 'center', justifyContent: 'center', backgroundColor: color.onHeroVeil },
   head: { flexDirection: 'row', alignItems: 'center', gap: space.s12 },
-  eyebrow: { fontFamily: font.family.sans, fontSize: font.size.caption, fontWeight: fontWeight(font.weight.strong), color: color.onHero2 },
+  eyebrow: { fontFamily: font.family.sans, fontSize: font.size.caption, fontWeight: fontWeight(font.weight.strong), color: color.onHero },
   title: { fontFamily: font.family.sans, fontSize: 22, fontWeight: fontWeight(font.weight.heavy), letterSpacing: -0.5, color: color.onHero },
   today: { gap: space.s6, paddingRight: 84 },
-  todayLabel: { fontFamily: font.family.sans, fontSize: 11, fontWeight: fontWeight(font.weight.heavy), letterSpacing: 0.8, textTransform: 'uppercase', color: color.onHeroLabel },
+  todayLabel: { fontFamily: font.family.sans, fontSize: 11, fontWeight: fontWeight(font.weight.heavy), letterSpacing: 0.8, textTransform: 'uppercase', color: color.onHero },
   todayValue: { fontFamily: font.family.sans, fontSize: font.size.display + space.s8, lineHeight: font.size.display + space.s16, fontWeight: fontWeight(font.weight.heavy), letterSpacing: -1, color: color.onHero, fontVariant: ['tabular-nums'] },
-  todayPending: { fontFamily: font.family.sans, fontSize: font.size.body, fontWeight: fontWeight(font.weight.strong), color: color.onHero2 },
+  todayPending: { fontFamily: font.family.sans, fontSize: font.size.body, fontWeight: fontWeight(font.weight.strong), color: color.onHero },
   todayNone: { fontFamily: font.family.sans, fontSize: font.size.titleSm, fontWeight: fontWeight(font.weight.heavy), color: color.onHero },
   heroBody: { fontFamily: font.family.sans, fontSize: font.size.bodySm, lineHeight: 19, fontWeight: fontWeight(font.weight.strong), color: color.onHero },
   heroError: { gap: space.s8 },
   heroRetry: { alignSelf: 'flex-start', minHeight: size.touchTarget, paddingHorizontal: space.s14, borderRadius: radius.full, flexDirection: 'row', alignItems: 'center', gap: space.s6, backgroundColor: color.heroCurrent },
   heroRetryText: { fontFamily: font.family.sans, fontSize: font.size.bodySm, fontWeight: fontWeight(font.weight.heavy), color: TEAL.deep },
-  noPressure: { fontFamily: font.family.sans, fontSize: 11.5, lineHeight: 16, fontWeight: fontWeight(font.weight.strong), color: color.onHero2 },
+  noPressure: { fontFamily: font.family.sans, fontSize: 11.5, lineHeight: 16, fontWeight: fontWeight(font.weight.strong), color: color.onHero },
   chip: { alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: space.s6, paddingHorizontal: space.s10, paddingVertical: space.s4, borderRadius: radius.full },
   chipOnHero: { backgroundColor: color.heroCurrent },
   chipOnCard: { backgroundColor: TEAL.soft },
