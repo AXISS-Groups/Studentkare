@@ -40,6 +40,7 @@ import { StudentPhoneFrame } from './StudentPhoneFrame';
 import { AccountDetailsPage, DataExportPage, phoneBoardFor, YourCareWebPage } from './PhoneBoards';
 import { MoreHubBoard } from '@/features/account/views/MoreHubBoard';
 import { SearchPage, studentPhoneBoard } from '@/features/phoneKit/studentPhoneBoards';
+import { HealthPlaceholder } from '@/features/m2health/views/HealthPlaceholder';
 import { EmergencyHelplinesDialog } from '../../components/interface/InterfaceBar';
 import { NotificationCenterModal } from '../../components/health/NotificationCenterModal';
 
@@ -276,6 +277,7 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
     if (phoneBoard) return phoneBoard.node;
     switch (route) {
       case 'search': return <SearchPage />;
+      case 'health/report-upload': case 'health/trends': return <HealthPlaceholder onRecords={() => navigate('records')} />;
       case 'health': return <MemberOverview />;
       case 'your-care': return <YourCareWebPage />;
       case 'account': return <AccountDetailsPage />;
@@ -335,6 +337,7 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
         title={phoneBoard ? t(phoneBoard.title) : pageLink ? t(pageLink.label) : t('phone.brand')}
         ownBack={phoneBoard?.ownBack}
         bleed={phoneBoard !== null}
+        onSignOut={() => setConfirmSignOut(true)}
         menu={{ open: mobileMenu, onToggle: () => setMobileMenu(!mobileMenu), controls: 'workspace-sidebar' }}
         menuPanel={<div id="workspace-sidebar" style={morePanel}><MoreHubBoard
           account={{ fullName: user.fullName, university: user.university, role: user.role, isVerifiedStudent: user.isVerifiedStudent }}

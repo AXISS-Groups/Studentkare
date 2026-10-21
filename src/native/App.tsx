@@ -51,6 +51,7 @@ import { RewardsRoute } from '@/features/rewards/views/RewardsView';
 import { MyRequestsRoute, NewRequestRoute } from '@/features/requests/views/RequestsViews';
 import { OrdersScreen, ReturnRequestBoardScreen, SearchScreen } from './PhoneBoardsScreens';
 import { ConsultsScreen, LabsScreen, MedicinesScreen } from './M2StoreScreens';
+import { AskAyushScreen, InsightsScreen, ProductScreen, ProfileScreen, ReportUploadScreen, TrendsScreen, VaccinesScreen } from './M2HealthScreens';
 import { NativeSessionProvider, useNativeSession } from './session';
 import { StudentHomeScreen } from './StudentHomeScreen';
 import { StudentShell } from './StudentTabBar';
@@ -110,6 +111,12 @@ export type RootStackParamList = {
   Medicines: undefined;
   Labs: undefined;
   Consults: undefined;
+  Insights: undefined;
+  Profile: undefined;
+  Vaccines: undefined;
+  Product: { itemId: string };
+  ReportUpload: undefined;
+  Trends: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -397,6 +404,12 @@ function RootNavigator() {
           <Stack.Screen name="Medicines" component={MedicinesScreen} options={{ title: t('m2.med.title'), headerShown: false }} />
           <Stack.Screen name="Labs" component={LabsScreen} options={{ title: t('m2.labs.title'), headerShown: false }} />
           <Stack.Screen name="Consults" component={ConsultsScreen} options={{ title: t('m2.doc.eyebrow'), headerShown: false }} />
+          <Stack.Screen name="Vaccines" component={VaccinesScreen} options={{ title: t('m2.vac.eyebrow'), headerShown: false }} />
+          <Stack.Screen name="Product" component={ProductScreen} options={{ title: t('m2.med.title'), headerShown: false }} />
+          <Stack.Screen name="Insights" component={InsightsScreen} options={{ title: t('m2.nav.health'), headerShown: false }} />
+          <Stack.Screen name="Profile" component={ProfileScreen} options={{ title: t('m2.nav.profile'), headerShown: false }} />
+          <Stack.Screen name="ReportUpload" component={ReportUploadScreen} options={{ title: t('m2h.reportUpload') }} />
+          <Stack.Screen name="Trends" component={TrendsScreen} options={{ title: t('m2h.trends') }} />
           <Stack.Screen name="Vault" component={VaultRoute} options={{ title: t('nav.records') }} />
           <Stack.Screen name="CaptureRecord" component={CaptureRecordRoute} options={{ title: t('capture.title') }} />
           <Stack.Screen name="MedicineReminders" component={MedicineRemindersRoute} options={{ title: t('reminders.title') }} />
@@ -407,7 +420,8 @@ function RootNavigator() {
           <Stack.Screen name="DigitalId" component={DigitalIdRoute} options={{ title: t('onboard.nav.healthId'), headerShown: false }} />
           <Stack.Screen name="Checkout" component={CheckoutRoute} options={{ title: t('onboard.nav.checkout') }} />
           <Stack.Screen name="Teleconsult" component={TeleconsultRoute} options={{ title: t('onboard.nav.videoConsult') }} />
-          <Stack.Screen name="AiChat" component={AiChatRoute} options={{ title: t('nav.ayush') }} />
+          {/* A student gets Mobile 2.0 Ask Ayush (general mode); other roles keep the plain chat. */}
+          <Stack.Screen name="AiChat" component={isStudent ? AskAyushScreen : AiChatRoute} options={{ title: t('nav.ayush'), headerShown: !isStudent }} />
           <Stack.Screen name="Notifications" component={NotificationsRoute} options={{ title: t('nav.notifications'), headerShown: false }} />
           <Stack.Screen name="NotificationSettings" component={NotificationSettingsScreen} options={{ title: t('onboard.nav.notificationSettings'), headerShown: false }} />
           <Stack.Screen name="Appearance" component={AppearanceRoute} options={{ title: t('appearance.title') }} />

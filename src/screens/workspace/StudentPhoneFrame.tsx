@@ -18,8 +18,8 @@ import type { RoutePath } from '@/lib/utils/workflowRouting';
  * - Home (M2Home) opens /health, the student home.
  * - Orders (M2Orders) opens /orders.
  * - Ask Ayush (M2AskAyush) opens /ayush.
- * - My health (M2Insights) opens /your-care until M2Insights is built (Tier 1).
- * - Profile (M2Profile) opens /profile until M2Profile is built (Tier 1).
+ * - My health (M2Insights) opens /your-care.
+ * - Profile (M2Profile) opens /profile.
  * The old tabs' shop and lab tests are on Home's service rail.
  */
 export const STUDENT_NAV_ROUTES: Readonly<Record<PillNavKey, RoutePath>> = {
@@ -31,12 +31,16 @@ export const STUDENT_NAV_ROUTES: Readonly<Record<PillNavKey, RoutePath>> = {
 };
 
 /** The store boards opened from Home's rail: the boards draw Home as current there. */
-const HOME_STORE_ROUTES: ReadonlySet<RoutePath> = new Set<RoutePath>(['shop', 'lab-tests', 'care']);
+const HOME_STORE_ROUTES: ReadonlySet<RoutePath> = new Set<RoutePath>(['shop', 'lab-tests', 'care', 'preventive-care']);
+
+/** The My health screens opened from Insights (M2Trends, M2ReportUpload): the nav shows My health there. */
+const HEALTH_ROUTES: ReadonlySet<RoutePath> = new Set<RoutePath>(['health/trends', 'health/report-upload']);
 
 /** The pill-nav destination a route belongs to (null: none is current). */
 export function studentNavFor(route: RoutePath): PillNavKey | null {
   const key = (Object.keys(STUDENT_NAV_ROUTES) as PillNavKey[]).find((k) => STUDENT_NAV_ROUTES[k] === route);
   if (key) return key;
+  if (HEALTH_ROUTES.has(route)) return 'health';
   return HOME_STORE_ROUTES.has(route) ? 'home' : null;
 }
 
@@ -57,6 +61,8 @@ export interface StudentPhoneFrameProps {
   ownBack?: boolean;
   /** The page draws its own gutters and full-width bands (the phone boards), so the frame adds no side padding. */
   bleed?: boolean;
+  /** Asks to sign out (a board's own Sign out, M2Profile). */
+  onSignOut?: () => void;
   children: React.ReactNode;
 }
 
@@ -72,7 +78,7 @@ function goBack(): void {
  * bar and its quick links) there. SOS stays one tap away in the header on
  * every page, as it was in the app bar it replaces.
  */
-export function StudentPhoneFrame({ route, title, menu, menuPanel, ownBack = false, bleed = false, children }: StudentPhoneFrameProps): React.ReactElement {
+export function StudentPhoneFrame({ route, title, menu, menuPanel, ownBack = false, bleed = false, onSignOut, children }: StudentPhoneFrameProps): React.ReactElement {
   const t = useT();
   const [sosOpen, setSosOpen] = useState(false);
   // A phone board's own header (BoardHeader), when the page draws one.
@@ -81,12 +87,15 @@ export function StudentPhoneFrame({ route, title, menu, menuPanel, ownBack = fal
   const [ownChrome, setOwnChrome] = useState(false);
   const menuNow = useRef(menu);
   menuNow.current = menu;
+  const signOutNow = useRef(onSignOut);
+  signOutNow.current = onSignOut;
   // Stable for the frame's life, so a re-render of the page never re-sends its header.
   const slot = useMemo<PhoneHeaderSlot>(() => ({
     set: setBoard,
     openMore: () => { if (!menuNow.current.open) menuNow.current.onToggle(); },
     setOwnChrome,
     openSos: () => setSosOpen(true),
+    askSignOut: () => signOutNow.current?.(),
   }), []);
   const current = studentNavFor(route);
   const root = isStudentNavRoot(route);

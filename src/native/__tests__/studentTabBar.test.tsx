@@ -41,8 +41,12 @@ describe('student pill nav destinations (Mobile 2.0)', () => {
   it('shows Home current on the store boards, and nothing on other screens', () => {
     expect(studentNavKeyFor('Home')).toBe('home');
     expect(studentNavKeyFor('Labs')).toBe('home');
-    expect(studentNavKeyFor('YourCare')).toBe('health');
-    expect(studentNavKeyFor('More')).toBe('profile');
+    expect(studentNavKeyFor('Vaccines')).toBe('home');
+    expect(studentNavKeyFor('Insights')).toBe('health');
+    expect(studentNavKeyFor('Trends')).toBe('health');
+    expect(studentNavKeyFor('ReportUpload')).toBe('health');
+    expect(studentNavKeyFor('Profile')).toBe('profile');
+    expect(studentNavKeyFor('Product')).toBeNull();
     expect(studentNavKeyFor('Checkout')).toBeNull();
   });
 
@@ -54,7 +58,7 @@ describe('student pill nav destinations (Mobile 2.0)', () => {
 
 describe('StudentTabBar (the pill nav)', () => {
   it('names each destination from the i18n catalogue and marks the current route', () => {
-    renderBar('YourCare');
+    renderBar('Insights');
     expect(screen.getByRole('navigation', { name: translate('en', 'm2.nav.label') })).toBeInTheDocument();
     for (const item of PILL_NAV) {
       const el = screen.getByRole('link', { name: translate('en', item.label) });
@@ -68,7 +72,7 @@ describe('StudentTabBar (the pill nav)', () => {
     fireEvent.click(screen.getByRole('link', { name: translate('en', 'm2.nav.ayush') }));
     fireEvent.click(screen.getByRole('link', { name: translate('en', 'm2.nav.health') }));
     fireEvent.click(screen.getByRole('link', { name: translate('en', 'm2.nav.home') }));
-    expect(navigate.mock.calls).toEqual([['AiChat'], ['YourCare'], ['Home']]);
+    expect(navigate.mock.calls).toEqual([['AiChat'], ['Insights'], ['Home']]);
   });
 
   it('is not drawn over a screen opened from a destination', () => {

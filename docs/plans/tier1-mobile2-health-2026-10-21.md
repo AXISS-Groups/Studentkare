@@ -2,8 +2,10 @@
 
 **Approved by:** _(design reviewer, date)_ · _(clinical lead, date)_ · _(AI-constitution owner, date: M2AskAyush and the Ayush consent only)_
 
-**Status:** plan only. No screen code is written until the named reviewers sign this file (`DESIGN.md` §5,
-`CLAUDE.md`). One screen per ticket, branch and PR.
+**Status:** approved 2026-10-21, package A built in feat/m2-healthA (M2Profile, M2Insights incl. the
+stored-values section, M2AskAyush general mode, M2Product, M2Vaccines booking half). Package B screens
+(M2ReportUpload, M2Trends) and package C are built separately. Parts routed to the clinical lead or the
+AI-constitution owner are not shipped.
 **Boards:** canvas page 9 · Mobile 2.0 (folder `10-mobile-2`, approved by the founder 2026-10-21):
 M2Product, M2Vaccines, M2Insights, M2Trends, M2ReportUpload, M2AskAyush, M2Profile. Briefs
 `design/screens/briefs/M2*.md`, pictures `design/screens/screenshots/10-mobile-2/`, sources
@@ -590,3 +592,28 @@ accordion.
 ## Approval
 
 Krishna Chintakayala (founder, named Tier 1 reviewer) approved all 18 recommended decisions on 2026-10-21, including #9 (care links go to RefillRequest and the existing order's slot booking, not the store). Items the plan routes to the clinical lead or the AI-constitution owner still need their sign-off before those parts ship.
+
+## Decisions taken (approved by Krishna Chintakayala, 2026-10-21)
+
+Package A, branch feat/m2-healthA. One line each: ID, choice, why.
+
+- D-M2-1: "About this medicine" not drawn; never filled from the AI lookup. No reviewed fields exist (Gap 5 is package C).
+- D-M2-2: prescription listings show the attention chip, the prescriber note, "Add Rx" (vault upload) and "Send your prescription to a pharmacy" (dispense flow); no other makers, stepper or add. OTC: other makers cheapest first with "Lowest", stepper bounded by new public setting `shop.cart_line_max` (default 10, enforced by /cart/validate and /orders).
+- D-M2-3: no vaccine record on M2Vaccines (plain link card to My health); M2Insights shows "Your vaccine record · not available yet" with "Add an old card" (vault upload). No "Due".
+- D-M2-4: "Pick a slot" drawn disabled with the reason; "Vaccine only" dropped.
+- D-M2-5: no "why" text or dose schedules; picker shows name, provider, price ("Price not listed" when null), availability and last-checked date.
+- D-M2-6: Insights values come from the package B store (GET /health/lab-results); student-confirmed values only today.
+- D-M2-7: tabs Insights · Trends (/health/trends) · Records (vault); "Improve" dropped.
+- D-M2-8: "To do" = refill plans + doctor-ordered tests not yet collected. Review decisions are not counted (the API cannot tell whether one was seen).
+- D-M2-9: "Request a refill" opens the refill request; "Pick a collection time" opens the student's orders and prescriptions (web) where the order's slot is picked; no store link, nothing passed in the link. Expo: refill only (no slot screen in the app yet).
+- D-M2-10, D-M2-11, D-M2-12: package B (not here). "See the n steps" links to Trends only when the approved review has steps.
+- D-M2-13: not built (AI-constitution owner). Profile row "Ayush can read my records · Not available yet", no switch; M2AskAyush general mode only; "Ask Ayush about this report" not drawn.
+- D-M2-14: not applicable in general mode (no record answers).
+- D-M2-15: "Share with family · coming soon", no switch.
+- D-M2-16: course/year and medical leave omitted; blood group "Typed by you"; scans card = OTHER documents.
+- D-M2-17: amber/green from the server's rangeState on the lab's printed range, range always printed next to the value, "ranges as you typed them" note; clinical lead still to confirm.
+- D7-5 / D7-8: crisis card from the server's CRISIS outcome stays in the thread; no direction words anywhere.
+- Backend (rule 5): `reviewedByName` on GET /preventive/report-reviews (approved only), `categoryCounts` on GET /health/documents (owner only), `shop.cart_line_max` setting. Tests in backend/tests/test_m2_health_payloads.py.
+- Profile ring counts 7 declared fields, not 8: allergies are left out because the server stores the same empty list for "none" and "not answered" (counting it would penalise a true "none").
+- Doctor's note source: APPROVED report reviews only; a released lab order's `reviewNote` is not used (its payload has no reviewer name to attribute it).
+- Crisis numbers: shown from the app's crisis constants (`TELE_MANAS_NUMBER`, SYNC with crisis_gate.py) so they never wait on a request; there is no endpoint exposing them.
