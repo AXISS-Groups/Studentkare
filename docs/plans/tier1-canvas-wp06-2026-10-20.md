@@ -1,10 +1,10 @@
-# WP-06 Phone: safety, consent and account deletion (Tier 1): canvas plan awaiting review
+# WP-06 Phone: safety, consent and account deletion (Tier 1): canvas plan approved 2026-10-21, built in feat/t1-wp06
 
-**Approved by:** _(name, date)_
+**Approved by:** Krishna Chintakayala (founder, named Tier 1 reviewer), 2026-10-21 ("Approve all").
 
-**Status:** plan only. No screen code is written until a named design reviewer **and** clinical
-(SOS, crisis, emergency card) or legal (Legal, DeleteAccount, ConsentInbox, FamilyCircle,
-PlanBilling) sign-off is recorded here (`DESIGN.md` §5). One screen per ticket, branch and PR.
+**Status:** approved 2026-10-21, built in feat/t1-wp06. The approval covers the layout, copy and
+states described here; it does not supply the clinical, legal or vendor input the plan marks as
+missing, so those parts are built in their honest reduced form (see Decisions taken).
 **Source:** `docs/plans/canvas-gap-audit-2026-10-20.md` lane 2, each board's brief, screenshot and
 `design/screens/source/02-student-app-mobile/<Screen>.html`, and the code named below.
 **Depends on:** S4 phone frame on web (phone header, tab bar at ≤ 430 px), S7 sheets/dialogs,
@@ -265,3 +265,23 @@ fact; revoke confirm sheet.
 - **D6-11 PlanBilling:** confirm "Contact support" path while payments are not connected.
 - **D6-12 / D6-13 Care circle and consent requests:** build the APIs, or keep honest not-available
   states styled to the boards?
+
+## Decisions taken (approved by Krishna Chintakayala, 2026-10-21)
+
+Approved as a set; each item takes the conservative, honest option.
+
+- **D6-1** Red only for SOS, Call 112, clinical alerts (allergies) and account deletion (`danger`, `dangerOutline` for "Continue to delete" / "Still not okay?"); revoke, "This wasn't me", eyebrows and chips use `action` / neutral. Why: founder colour rule.
+- **D6-2** No device storage of the emergency card. The "OFFLINE · stored on this phone" line is not drawn; offline, the card says it can't load and Call 112 still works (`wifi-off`). ABHA number, current medicines and "No known allergies" omitted (no profile fields). Why: guardrail 9 exception has no clinical/privacy sign-off.
+- **D6-3** Counsellor card and "Book time with a campus counsellor" omitted from CrisisSupport; step 3 dropped, step 2 reworded to what Student Kare can promise. The existing first steps stay below the call cards. Why: no student-facing counsellor line or booking exists; no dead options on a crisis screen; first-steps change needs clinical review.
+- **D6-4** SOS poll interval moved to the settings registry: `emergency.sos_poll_seconds` (int, default 15, 5–120, public). Copy says "checks for replies every {n} seconds"; no "location updates every 10 s" claim. Why: rule 11; the server pushes nothing.
+- **D6-5** No counsellor check-in request or private SOS note (no backend). Debrief lists who was alerted with real statuses and says only the campus console is told you ended it (that is what `cancel_sos` does); the "everyone was told" list is not drawn. Why: honesty.
+- **D6-6** One emergency contact (the profile field), ordered list / roles not built. "What they see" describes the real SOS WhatsApp: name + time yes, typed location yes, blood group and record never. Why: backend + clinical decision missing.
+- **D6-7** Pass offline chip reads "Works without signal for {n} min", computed from the codes held in memory (0 hides it). Why: true only while the window lasts.
+- **D6-8** CheckinReceipt **not built**; MyPass check-in history is an honest empty state and "This wasn't me" is hidden. Why: no student check-in record or receipt API.
+- **D6-9** No typed-DELETE + OTP server step and no PDF + FHIR export: the existing typed DELETE stays, the export link opens the JSON data export. "Kept because the law requires it" lines replaced by what erasure.py keeps (sealed copy for the server's retention days, pseudonymous audit). Request id and "we've emailed you" omitted. `GRACE_SECONDS` left in erasure.py (backend change not in scope). Why: no server step, no legal sign-off.
+- **D6-10** Legal board ships tabs and layout with the honest "not published yet" notices (existing reviewed keys), no grievance officer name, and the "not an emergency service · Call 112" line. Why: no legal text or officer.
+- **D6-11** "Contact support" opens the Help centre without promising support can activate Student Plus. Why: no such admin path verified.
+- **D6-12** Care circle: no guardian card, switches or leave; honest not-available board with "paying does not buy access" (true by Rule L). Why: no care-circle API.
+- **D6-13** Consent inbox: active clinician shares from `GET /records/shares` with revoke; "Awaiting you" states nothing can ask yet; lab and family grants omitted; campus row is a fixed "enrolment only" fact. Why: no access-request API.
+- **Routes** New student routes `/ice-contacts`, `/consent`, `/care-circle`; `/crisis` added to route paths (public). The records hub's Access and Family tabs now show the ConsentInbox and FamilyCircle boards; the old AccessConsentInboxPanel and FamilyAccessShareScreen were removed (export and delete stay on Account and Data export).
+- **Native** Expo screens updated where they exist: SOS (Emergency) and DeleteAccount share the boards' source and now draw their own header. No Expo screen exists yet for EmergencyCard, IceContacts, CrisisSupport, MyPass, Legal, PlanBilling, FamilyCircle or ConsentInbox (native parity later).

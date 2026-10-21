@@ -179,8 +179,13 @@
       "src/features/notifications/views/NotificationNativeView.tsx",
       "src/screens/workspace/PhoneBoards.tsx"
     ],
-    "EmergencyCard": [],
-    "CrisisSupport": [],
+    "EmergencyCard": [
+      "src/features/emergency/views/EmergencyCardBoard.tsx",
+      "src/features/emergency/viewmodel/EmergencyCardViewModel.ts"
+    ],
+    "CrisisSupport": [
+      "src/features/crisis/views/CrisisSupportBoard.tsx"
+    ],
     "ShopHome": [
       "src/features/shopPhone/views/ShopHomeView.tsx",
       "src/features/shopPhone/views/shopParts.tsx",
@@ -255,7 +260,9 @@
       "src/features/digital_id/views/DigitalIdNativeView.tsx",
       "src/screens/workspace/PhoneBoards.tsx"
     ],
-    "PlanBilling": [],
+    "PlanBilling": [
+      "src/features/billing/views/PlanBillingBoard.tsx"
+    ],
     "ClaimsHub": [
       "src/features/claims/views/ClaimsHubBoard.tsx",
       "src/screens/workspace/PhoneBoards.tsx"
@@ -270,14 +277,24 @@
     ],
     "MyReports": [],
     "ReportInsights": [],
-    "ConsentInbox": [],
-    "SosBeacon": [],
+    "ConsentInbox": [
+      "src/features/vault/views/ConsentInboxBoard.tsx"
+    ],
+    "SosBeacon": [
+      "src/modules/m04-emergency/view/SosView.tsx",
+      "src/features/emergency/screens/SosRouteScreen.tsx"
+    ],
     "DataExport": [
       "src/features/account/views/DataExportBoard.tsx",
       "src/screens/workspace/PhoneBoards.tsx"
     ],
-    "IceContacts": [],
-    "FamilyCircle": [],
+    "IceContacts": [
+      "src/features/emergency/views/IceContactsBoard.tsx",
+      "src/features/emergency/viewmodel/EmergencyCardViewModel.ts"
+    ],
+    "FamilyCircle": [
+      "src/features/vault/views/FamilyCircleBoard.tsx"
+    ],
     "RefillRequest": [],
     "VitalTrends": [],
     "HostelVisit": [
@@ -309,21 +326,31 @@
       "src/features/requests/views/ReturnRequestView.tsx",
       "src/design-system/ResultMoment.tsx"
     ],
-    "MyPass": [],
+    "MyPass": [
+      "src/features/digital_id/views/MyPassBoard.tsx"
+    ],
     "CheckinReceipt": [],
     "LeaveCampus": [
       "src/features/campus/views/LeaveCampusView.tsx"
     ],
-    "DeleteAccount": [],
+    "DeleteAccount": [
+      "src/features/account/views/DeleteAccountView.tsx",
+      "src/features/account/viewmodel/DeleteAccountViewModel.ts"
+    ],
     "NotificationSettings": [
       "src/features/notifications/views/NotificationSettingsView.tsx"
     ],
     "ConsultSummary": [],
-    "SosDebrief": [],
+    "SosDebrief": [
+      "src/modules/m04-emergency/view/SosView.tsx",
+      "src/features/emergency/screens/SosRouteScreen.tsx"
+    ],
     "MyRequests": [
       "src/features/requests/views/RequestsViews.tsx"
     ],
-    "Legal": [],
+    "Legal": [
+      "src/features/legal/views/LegalBoard.tsx"
+    ],
     "Landing": [
       "src/features/landing/views/LandingView.tsx",
       "src/features/landing/views/LandingNativeView.tsx",
@@ -1031,13 +1058,6 @@
       "src/screens/workspace/AgentAyushPanel.tsx",
       "src/features/chat/views/AyushChatNativeView.tsx"
     ],
-    "EmergencyCard": [
-      "src/features/emergency/views/WebEmergencyCard.tsx"
-    ],
-    "CrisisSupport": [
-      "src/screens/medical/MedicalIncidentScreen.tsx",
-      "src/design-system/CrisisLinks.tsx"
-    ],
     "ProductList": [
       "src/features/marketplace/views/ShopNativeView.tsx",
       "src/features/shopPhone/views/ProductListView.tsx",
@@ -1049,39 +1069,11 @@
     "PrescriptionUpload": [
       "src/screens/marketplace/LiveMarketplaceScreen.tsx"
     ],
-    "PlanBilling": [
-      "src/screens/billing/BillingPanel.tsx"
-    ],
-    "ConsentInbox": [
-      "src/screens/vault/AccessConsentInboxPanel.tsx"
-    ],
-    "SosBeacon": [
-      "src/modules/m04-emergency/view/SosView.tsx",
-      "src/features/emergency/screens/SosRouteScreen.tsx"
-    ],
-    "IceContacts": [
-      "src/features/emergency/views/WebEmergencyCard.tsx"
-    ],
-    "FamilyCircle": [
-      "src/screens/vault/FamilyAccessShareScreen.tsx"
-    ],
     "RefillRequest": [
       "src/features/requests/views/RequestsViews.tsx"
     ],
-    "MyPass": [
-      "src/features/digital_id/views/WebPass.tsx"
-    ],
-    "DeleteAccount": [
-      "src/features/account/views/DeleteAccountView.tsx"
-    ],
     "ConsultSummary": [
       "src/features/vault/views/VisitSummaryView.tsx"
-    ],
-    "SosDebrief": [
-      "src/modules/m04-emergency/view/SosView.tsx"
-    ],
-    "Legal": [
-      "src/features/legal/views/LegalView.tsx"
     ],
     "WebPlans": [
       "src/features/landing/views/LandingPlansView.tsx",

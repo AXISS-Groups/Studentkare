@@ -37,7 +37,7 @@ import { useEffectivePartnerKind } from '../vendor/partnerPreview';
 import type { AccountRole } from '../../data/types/workflowTypes';
 import { usePhoneFrame } from '@/design-system/navigation/usePhoneFrame';
 import { StudentPhoneFrame } from './StudentPhoneFrame';
-import { AccountDetailsPage, DataExportPage, phoneBoardFor, YourCareWebPage } from './PhoneBoards';
+import { AccountDetailsPage, DataExportPage, phoneBoardFor, safetyBoardFor, YourCareWebPage } from './PhoneBoards';
 import { MoreHubBoard } from '@/features/account/views/MoreHubBoard';
 import { SearchPage, studentPhoneBoard } from '@/features/phoneKit/studentPhoneBoards';
 import { EmergencyHelplinesDialog } from '../../components/interface/InterfaceBar';
@@ -302,7 +302,9 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
       case 'return-request': return <NewRequestRoute kind="RETURN" links={{ done: () => navigate('my-requests'), attachReturnPhoto }} />;
       case 'hostel-visit': return <NewRequestRoute kind="HOSTEL_VISIT" links={{ done: () => navigate('my-requests'), crisis: () => navigate('sos') }} />;
       case 'refill-request': return <NewRequestRoute kind="REFILL" links={{ done: () => navigate('my-requests') }} />;
-      case 'delete-account': return <DeleteAccountRoute links={{ exportData: () => navigate('records') }} />;
+      case 'delete-account': return <DeleteAccountRoute links={{ exportData: () => navigate('data-export'), crisis: () => navigate('crisis') }} />;
+      // WP-06 boards with no desktop twin yet: the phone board in the page column.
+      case 'ice-contacts': case 'consent': case 'care-circle': return safetyBoardFor(route);
       case 'prescriptions': return <MyPrescriptionsPanel />;
       case 'visit-summaries': return <VisitSummaryRoute links={{ openPrescriptions: () => navigate('prescriptions'), openAppointments: () => navigate('appointments') }} />;
       case 'ayush': return <AgentAyushPanel />;
