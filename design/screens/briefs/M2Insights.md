@@ -11,7 +11,7 @@
 
 ## Icons this screen must show (all of them)
 
-- **Line / solid icons (17):** `ayush-spark`, `bottle`, `box`, `check`, `chevron-right`, `droplet`, `glass`, `heart-3`, `home`, `pill-3`, `plus`, `refresh`, `skip-forward`, `stetho`, `thyroid`, `undo`, `user-5`
+- **Line / solid icons (18):** `ayush-spark`, `bottle`, `box`, `check`, `chevron-right`, `droplet`, `glass`, `heart-3`, `home`, `pill-3`, `plus`, `refresh`, `skip-forward`, `stetho`, `thyroid`, `undo`, `user-5`, `walk`
 - **3D icon tiles (0):** —
 - **Small glyphs (0):** —
 - **Brand mark:** —
@@ -25,7 +25,7 @@
 
 ## Where it links to
 
-`M2AskAyush`, `M2Home`, `M2Labs`, `M2Medicines`, `M2Orders`, `M2Profile`, `M2Reminders`, `M2Trends`, `M2Water` · also: SOS (href `#` on the canvas; the app opens the existing SOS flow, SosBeacon)
+`M2AskAyush`, `M2Home`, `M2Labs`, `M2Medicines`, `M2Orders`, `M2Profile`, `M2Reminders`, `M2Steps`, `M2Trends`, `M2Water` · also: SOS (href `#` on the canvas; the app opens the existing SOS flow, SosBeacon)
 
 ## States shown in the design's preview switcher
 
@@ -50,6 +50,11 @@ Two cards under the hero, before the latest report, in the same card style:
 - **Water** (`glass`, sky soft tile): "{consumed} of {goal} ml today" and a capped bar, **+ Glass** (`plus`), **Undo** (`undo`); "Open" → M2Water. No streak, medal or score.
 
 Both refuse offline (nothing is queued or kept on the device) and each has its own loading, error and retry.
+
+## Steps card (Steps ticket, 2026-10-21)
+
+- A Mobile 2.0 gradient card (`GradientHeroCard`, teal, floating `walk` glyph) under "Due from your care": "Steps today", today's number from `GET /activity/trends?period=this_week` and where it came from (From Apple Health / From Health Connect / From this phone's motion sensor / Typed by you), or "No steps for today yet" with "Connect a step source…" (phone) or "Open the phone app to count steps automatically" (web). "Open steps" → `M2Steps`.
+- Steps are a wellness number, not a clinical value: no goal, ring, streak, score or praise; the card has its own loading skeleton and "couldn't load" retry, so it never blanks the page.
 
 ## Missing icons
 

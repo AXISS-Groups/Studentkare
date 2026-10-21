@@ -62,7 +62,11 @@ INTEGRATIONS_DB: dict = {
         "brand_name": os.getenv("BRAND_NAME", "StudentKare"),
         "support_email": os.getenv("SUPPORT_EMAIL", f"support@{os.getenv('APP_DOMAIN', 'studentkare.co')}"),
         "company_address": os.getenv("COMPANY_ADDRESS", "Plot 42, Knowledge Park, HITEC City, Hyderabad, Telangana 500081"),
-        "copyright_text": os.getenv("COPYRIGHT_TEXT", "© 2026 StudentKare. All rights reserved."),
+        "copyright_text": os.getenv("COPYRIGHT_TEXT", "© StudentKare. All rights reserved."),
+        # The group the product belongs to, shown beside the copyright in
+        # outbound mail and messages. Override with PARENT_COMPANY (or the
+        # SuperAdmin integration settings) rather than editing a template.
+        "parent_company": os.getenv("PARENT_COMPANY", "Axiss Groups"),
         "support_phone": os.getenv("SUPPORT_PHONE", "+91 80080 00000"),
         "logo_url": os.getenv("LOGO_URL", ""),
         "favicon_url": os.getenv("FAVICON_URL", ""),

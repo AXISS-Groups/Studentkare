@@ -27,6 +27,10 @@ import type { PickedReport } from '@/features/labResults/viewmodel/ReportUploadV
 import { M2TrendsView } from '@/features/labResults/views/M2TrendsView';
 import { REVIEWS_PATH } from '@/features/labResults/viewmodel/trendScreenModels';
 import { M2ReportUploadView } from '@/features/labResults/views/M2ReportUploadView';
+import { StepsViewModel } from '@/features/steps/viewmodel/StepsViewModel';
+import { M2StepsView } from '@/features/steps/views/M2StepsView';
+import { syncToday } from '@/features/steps/sources/healthSources';
+import { nativeStepConnectors } from './stepConnectors';
 import { useNavigate } from './navigation';
 import { useNativeSession } from './session';
 
@@ -45,6 +49,11 @@ import { useNativeSession } from './session';
  *
  * Report upload sits under the pill nav like Trends (the nav carries the
  * bottom safe area), so its frame keeps only the top and side insets.
+ *
+ * Steps (new screen, Tier 2): this phone's step sources (stepConnectors.ts).
+ * Opening My health looks at each source without asking anything, reconnects
+ * the ones the phone still allows, and syncs today's total once; the Steps
+ * screen also counts live and re-syncs while it is in front.
  */
 
 function useBack(): () => void {
@@ -65,9 +74,17 @@ export function InsightsScreen(): React.ReactElement {
   const { user } = useNativeSession();
   const [vm] = useState(() => new InsightsViewModel());
   useEffect(() => { vm.load(); return () => vm.dispose(); }, [vm]);
+  useEffect(() => {
+    let live = true;
+    // Look only (no prompt): a source the phone still allows reconnects, then today's total is synced once.
+    void Promise.all(nativeStepConnectors().map((c) => c.status().catch(() => 'unavailable')))
+      .then(() => syncToday())
+      .then((outcome) => { if (live && outcome.status === 'synced') void vm.steps.load(); });
+    return () => { live = false; };
+  }, [vm]);
   return (
     <Frame>
-      <M2InsightsView vm={vm} name={user?.fullName ?? ''} links={{
+      <M2InsightsView vm={vm} name={user?.fullName ?? ''} stepsOnPhone links={{
         sos: () => navigate('Emergency'),
         trends: () => navigate('Trends'),
         records: () => navigate('Vault'),
@@ -77,9 +94,27 @@ export function InsightsScreen(): React.ReactElement {
         refill: () => navigate('RefillRequest'),
         addVaccineCard: () => navigate('CaptureRecord'),
         appointments: () => navigate('Appointments'),
+        steps: () => navigate('Steps'),
         emergencyCard: () => navigate('Emergency'),
         pass: () => navigate('DigitalId'),
       }} />
+    </Frame>
+  );
+}
+
+export function StepsScreen(): React.ReactElement {
+  const back = useBack();
+  const focused = useIsFocused();
+  const [vm] = useState(() => new StepsViewModel({ connectors: nativeStepConnectors() }));
+  // Live counting and the re-sync run only while the screen is in front.
+  useEffect(() => {
+    if (!focused) return undefined;
+    vm.open();
+    return () => vm.dispose();
+  }, [vm, focused]);
+  return (
+    <Frame>
+      <M2StepsView vm={vm} links={{ back }} />
     </Frame>
   );
 }

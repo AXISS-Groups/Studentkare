@@ -8,6 +8,7 @@ All templates use the Impilo Pearl design system:
 Each template returns (subject, html_body, plain_text) tuples.
 """
 import os
+from html import escape
 
 BRAND_NAME = "StudentKare"
 APP_BASE_URL = os.environ.get("APP_BASE_URL", "http://localhost:3000").rstrip("/")
@@ -32,6 +33,7 @@ MONO_FONT = "'IBM Plex Mono', 'Courier New', monospace"
 def _shell(content_html: str, preview_text: str = "") -> str:
     """Wrap content in the branded email shell."""
     preview = f'<div style="display:none;max-height:0;overflow:hidden;mso-hide:all;">{preview_text}</div>' if preview_text else ''
+    branding = _footer_branding_html()
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -74,6 +76,7 @@ def _shell(content_html: str, preview_text: str = "") -> str:
               <p style="margin:0 0 6px 0;color:{TEXT_MUTED};font-size:12px;line-height:1.6;">
                 This is an automated message from <strong style="color:{TEXT_SECONDARY};">{BRAND_NAME}</strong>.
               </p>
+              {branding}
               <p style="margin:0 0 4px 0;color:#d1d5db;font-size:11px;">
                 A little care, right where you left it.
               </p>
@@ -108,6 +111,62 @@ def _footer_note(text: str) -> str:
     return f'<p style="margin:16px 0 0 0;color:{TEXT_MUTED};font-size:12px;line-height:1.5;">{text}</p>'
 
 
+def _branding_footer() -> tuple[str, str]:
+    """(copyright, parent company) for the footer, from the platform settings.
+
+    Imported lazily: this module is loaded by the OTP boundary before the
+    integration config is necessarily initialised, so a module-level import
+    risks an import cycle.
+    """
+    from services.integration_config import platform_value
+
+    return platform_value("copyright_text"), platform_value("parent_company")
+
+
+def branding_footer_text() -> str:
+    """'© … · Powered by …' for plain-text bodies and WhatsApp messages.
+
+    Empty when neither value is configured, so a deployment that clears them
+    gets no dangling separator.
+    """
+    copyright_text, parent_company = _branding_footer()
+    parts = [copyright_text] if copyright_text else []
+    if parent_company:
+        parts.append(f"Powered by {parent_company}")
+    return " · ".join(parts)
+
+
+def _plain_signature() -> str:
+    """The footer appended to a plain-text body ('' when nothing is configured)."""
+    text = branding_footer_text()
+    return f"\n\n{text}" if text else ""
+
+
+def _footer_branding_html() -> str:
+    """The footer line as inline HTML: copyright and 'Powered by' side by side.
+
+    A table-free markup: email clients strip flexbox, so inline spans with a
+    separator render consistently everywhere.
+    """
+    copyright_text, parent_company = _branding_footer()
+    parts = []
+    if copyright_text:
+        parts.append(f'<span style="color:{TEXT_MUTED};">{escape(copyright_text)}</span>')
+    if parent_company:
+        parts.append(
+            f'<span style="color:{TEXT_MUTED};">Powered by '
+            f'<strong style="color:{TEXT_SECONDARY};font-weight:700;">{escape(parent_company)}</strong></span>'
+        )
+    if not parts:
+        return ""
+    separator = '<span style="color:#d1d5db;padding:0 8px;">·</span>'
+    return (
+        '<p style="margin:0 0 6px 0;font-size:11px;line-height:1.6;">'
+        + separator.join(parts)
+        + "</p>"
+    )
+
+
 # ─── OTP VERIFICATION CODE ────────────────────────────────────────────────
 
 def otp_verification_email(code: str, expiry_minutes: int = 5) -> tuple:
@@ -137,7 +196,7 @@ def otp_verification_email(code: str, expiry_minutes: int = 5) -> tuple:
         """,
         preview_text=f"Your {BRAND_NAME} verification code is {code}. It expires in {expiry_minutes} minutes."
     )
-    return subject, html, plain
+    return subject, html, plain + _plain_signature()
 
 
 # ─── REMINDER (APPOINTMENT / MEDICINE) ────────────────────────────────────
@@ -156,7 +215,7 @@ def reminder_email(message: str) -> tuple:
         """,
         preview_text=message,
     )
-    return subject, html, plain
+    return subject, html, plain + _plain_signature()
 
 
 # ─── GENERIC NOTIFICATION ─────────────────────────────────────────────────
@@ -176,7 +235,7 @@ def notification_email(message: str) -> tuple:
         """,
         preview_text=safe,
     )
-    return subject, html, plain
+    return subject, html, plain + _plain_signature()
 
 
 # ─── WELCOME / SIGNUP CONFIRMATION ────────────────────────────────────────
@@ -227,7 +286,7 @@ def welcome_email(full_name: str, role: str = "student") -> tuple:
         """,
         preview_text=f"Welcome to {BRAND_NAME}, {full_name}! Your {role_label} account is ready."
     )
-    return subject, html, plain
+    return subject, html, plain + _plain_signature()
 
 
 # ─── PASSWORD RESET / ACCOUNT RECOVERY ────────────────────────────────────
@@ -259,7 +318,7 @@ def password_reset_email(reset_link: str, expiry_minutes: int = 30) -> tuple:
         """,
         preview_text=f"Reset your {BRAND_NAME} password. Link expires in {expiry_minutes} minutes."
     )
-    return subject, html, plain
+    return subject, html, plain + _plain_signature()
 
 
 # ─── ORDER / REQUEST CONFIRMATION ─────────────────────────────────────────
@@ -298,7 +357,7 @@ def order_confirmation_email(full_name: str, order_id: str, items_summary: str, 
         """,
         preview_text=f"Your request {order_id} has been confirmed. Total: {total}."
     )
-    return subject, html, plain
+    return subject, html, plain + _plain_signature()
 
 
 # ─── SUPPORT TICKET UPDATE ────────────────────────────────────────────────
@@ -351,7 +410,7 @@ def support_update_email(full_name: str, ticket_id: str, subject_line: str, stat
         """,
         preview_text=f"Update on ticket {ticket_id}: {status}"
     )
-    return email_subject, html, plain
+    return email_subject, html, plain + _plain_signature()
 
 
 # ─── ACCOUNT DEACTIVATION / SECURITY ALERT ────────────────────────────────
@@ -388,4 +447,4 @@ def security_alert_email(full_name: str, action: str, details: str) -> tuple:
         """,
         preview_text=f"Security alert on your {BRAND_NAME} account: {action}"
     )
-    return subject, html, plain
+    return subject, html, plain + _plain_signature()

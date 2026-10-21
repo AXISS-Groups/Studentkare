@@ -78,6 +78,7 @@ const M2TrendsRoute = lazy(() => import('@/features/labResults/views/M2TrendsRou
 const M2ReportUploadRoute = lazy(() => import('@/features/labResults/views/M2ReportUploadRoute').then(module => ({ default: module.M2ReportUploadRoute })));
 const M2RemindersRoute = lazy(() => import('@/features/reminders/views/M2RemindersRoute').then(module => ({ default: module.M2RemindersRoute })));
 const M2WaterRoute = lazy(() => import('@/features/reminders/views/M2WaterRoute').then(module => ({ default: module.M2WaterRoute })));
+const M2StepsRoute = lazy(() => import('@/features/steps/views/M2StepsRoute').then(module => ({ default: module.M2StepsRoute })));
 const M2LabsRoute = lazy(() => import('@/features/m2store/views/M2LabsRoute').then(module => ({ default: module.M2LabsRoute })));
 const CareDirectoryRoute = lazy(() => import('@/features/careDirectory/views/CareDirectoryRoute').then(module => ({ default: module.CareDirectoryRoute })));
 const WebEmergencyCard = lazy(() => import('@/features/emergency/views/WebEmergencyCard').then(module => ({ default: module.WebEmergencyCard })));
@@ -355,6 +356,8 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
       case 'health/report-upload': return <M2ReportUploadRoute />;
       case 'health/medicines': return <M2RemindersRoute />;
       case 'health/water': return <M2WaterRoute />;
+      // Steps: the same board in the page column (a browser counts no steps; typed entry only).
+      case 'health/steps': return <M2StepsRoute />;
       case 'account': return <AccountDetailsPage />;
       case 'data-export': return <DataExportPage />;
       case 'billing': return <MemberProfilePanel initialTab="plan" />;

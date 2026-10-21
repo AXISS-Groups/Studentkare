@@ -8,6 +8,8 @@ import { InsightsValuesViewModel } from '@/features/labResults/viewmodel/LabValu
 import { Resource } from '@/features/m2health/resource';
 import { MedsTodayViewModel } from '@/features/reminders/viewmodel/MedsTodayViewModel';
 import { WaterViewModel } from '@/features/reminders/viewmodel/WaterViewModel';
+import { readWeek } from '@/features/steps/data/stepsApi';
+import type { ActivityTrends } from '@/features/steps/data/stepsApi';
 
 /**
  * Mobile 2.0 My health · Insights (M2Insights, Tier 1; plan package A and the
@@ -27,6 +29,8 @@ import { WaterViewModel } from '@/features/reminders/viewmodel/WaterViewModel';
  * - "Ask Ayush about this report" is not drawn: record access (D-M2-13) is not built.
  * - Medicines today and Water (reminders ticket) are their own view models,
  *   shared with the M2Reminders and M2Water screens; each loads on its own.
+ * - Steps (Steps ticket, 2026-10-21) is a wellness card, not a clinical value:
+ *   today's number from GET /activity/trends with its source, never a goal or score.
  */
 
 interface Appointment { id: string; slotStart: string; status: string }
@@ -82,6 +86,7 @@ export class InsightsViewModel implements ViewModel {
   readonly labOrders: Resource<{ items: LabOrder[] }>;
   readonly meds: MedsTodayViewModel;
   readonly water: WaterViewModel;
+  readonly steps: Resource<ActivityTrends>;
   reviewAsk: ReviewAsk = 'idle';
   reviewAskMessage = '';
 
@@ -95,8 +100,9 @@ export class InsightsViewModel implements ViewModel {
     this.labOrders = new Resource(() => request<{ items: LabOrder[] }>(`/lab-orders?limit=${ORDERS_READ}`));
     this.meds = new MedsTodayViewModel(request);
     this.water = new WaterViewModel(request);
+    this.steps = new Resource(() => readWeek(request));
     makeAutoObservable<InsightsViewModel, 'request'>(this, {
-      request: false, values: false, appointments: false, documents: false, shares: false, reviews: false, refills: false, labOrders: false,
+      request: false, values: false, appointments: false, documents: false, shares: false, reviews: false, refills: false, labOrders: false, steps: false,
       meds: false, water: false,
     }, { autoBind: true });
   }
@@ -138,7 +144,7 @@ export class InsightsViewModel implements ViewModel {
 
   load(): void {
     void this.values.load();
-    [this.appointments, this.documents, this.shares, this.reviews, this.refills, this.labOrders].forEach((r) => void r.load());
+    [this.appointments, this.documents, this.shares, this.reviews, this.refills, this.labOrders, this.steps].forEach((r) => void r.load());
     this.meds.load();
     this.water.load();
   }
@@ -163,7 +169,7 @@ export class InsightsViewModel implements ViewModel {
 
   dispose(): void {
     this.values.dispose();
-    [this.appointments, this.documents, this.shares, this.reviews, this.refills, this.labOrders].forEach((r) => r.cancel());
+    [this.appointments, this.documents, this.shares, this.reviews, this.refills, this.labOrders, this.steps].forEach((r) => r.cancel());
     this.meds.dispose();
     this.water.dispose();
   }

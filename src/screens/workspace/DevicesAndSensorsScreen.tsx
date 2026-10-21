@@ -1,18 +1,15 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Camera, CloudUpload, Footprints, Mic, Pause, Play, RefreshCw, Video, Volume2, AlertTriangle, Smartphone, Trash2, Activity } from 'lucide-react';
+import { Camera, CloudUpload, Footprints, Mic, Pause, Video, Volume2, AlertTriangle, Smartphone, Trash2, Activity } from 'lucide-react';
 import { apiRequest } from '../../data/services/http';
 import { Field, FormError, SubmitButton, useMutation } from '../../components/interface/WorkflowUI';
 import { describeNativeSupport } from '../../lib/platform/nativeHealth';
-import { useMovementHistory, formatDuration } from '../../lib/utils/movementHistory';
+import { navigate } from '../../lib/utils/workflowRouting';
 import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
 import '../../theme/workflows.css';
 
 type Capability = 'camera' | 'microphone' | 'motion' | 'audio' | 'bluetooth';
 interface CapabilityState { supported: boolean; available: 'yes' | 'no'; note: MessageKey }
-
-/** iOS Safari gates motion behind a permission prompt that is not in the DOM typings. */
-type MotionPermission = { requestPermission?: () => Promise<string> };
 
 function detectCapabilities(): Record<Capability, CapabilityState> {
   const media = typeof navigator !== 'undefined' && !!navigator.mediaDevices?.getUserMedia;
@@ -81,13 +78,13 @@ export function DevicesAndSensorsScreen() {
 
     <div className="wf-choice-row" style={{ marginBottom: 22 }} role="group" aria-label={t('assist.devices.tools')}>
       <button type="button" style={TARGET} aria-pressed={tab === 'camera'} onClick={() => setTab('camera')}><Camera size={16} aria-hidden="true" />{t('assist.devices.tab.camera')}</button>
-      <button type="button" style={TARGET} aria-pressed={tab === 'pedometer'} onClick={() => setTab('pedometer')}><Footprints size={16} aria-hidden="true" />{t('assist.devices.tab.movement')}</button>
+      <button type="button" style={TARGET} aria-pressed={tab === 'pedometer'} onClick={() => setTab('pedometer')}><Footprints size={16} aria-hidden="true" />{t('steps.title')}</button>
       <button type="button" style={TARGET} aria-pressed={tab === 'voice'} onClick={() => setTab('voice')}><Mic size={16} aria-hidden="true" />{t('assist.devices.tab.voice')}</button>
       <button type="button" style={TARGET} aria-pressed={tab === 'pulse'} onClick={() => setTab('pulse')}><Activity size={16} aria-hidden="true" />{t('assist.devices.tab.pulse')}</button>
     </div>
 
     {tab === 'camera' && <CameraCapture supported={caps.camera.available === 'yes'} />}
-    {tab === 'pedometer' && <MotionPedometer supported={caps.motion.available === 'yes'} />}
+    {tab === 'pedometer' && <StepsInThePhoneApp />}
     {tab === 'voice' && <VoiceRecorder supported={caps.microphone.available === 'yes'} />}
     {tab === 'pulse' && <PulseEstimateUnavailable />}
   </div>;
@@ -201,78 +198,18 @@ function CameraCapture({ supported }: { supported: boolean }) {
   </section>;
 }
 
-/* Foreground motion-based pedometer using real device motion events. */
-function MotionPedometer({ supported }: { supported: boolean }) {
+/* Steps. A browser cannot count steps reliably: this tab used to turn raw
+   motion-event peaks (a fixed 10.5 m/s² threshold) into a "step" count, which is
+   a guess, not a reading. Steps are counted by the phone app (Apple Health,
+   Health Connect or the phone's motion sensor); here they can be typed in. */
+function StepsInThePhoneApp() {
   const t = useT();
-  const [running, setRunning] = useState(false);
-  const [steps, setSteps] = useState(0);
-  const [duration, setDuration] = useState(0);
-  const [error, setError] = useState<MessageKey | null>(null);
-  const { sessions, recordSession, clearHistory } = useMovementHistory();
-  const lastPeak = useRef(0);
-  const stepAccum = useRef(0);
-
-  useEffect(() => {
-    if (!running || !supported) return;
-    const handler = (e: DeviceMotionEvent) => {
-      const acc = e.accelerationIncludingGravity ?? e.acceleration;
-      const magnitude = acc ? Math.sqrt((acc.x ?? 0) ** 2 + (acc.y ?? 0) ** 2 + (acc.z ?? 0) ** 2) : 0;
-      const now = Date.now();
-      if (magnitude > 10.5 && now - lastPeak.current > 320) {
-        stepAccum.current += 1;
-        lastPeak.current = now;
-      }
-    };
-    window.addEventListener('devicemotion', handler);
-    const interval = setInterval(() => { setSteps(stepAccum.current); setDuration(d => d + 1); }, 1000);
-    return () => { window.removeEventListener('devicemotion', handler); clearInterval(interval); };
-  }, [running, supported]);
-
-  const requestPermission = async () => {
-    if (!supported) return;
-    try {
-      const motion = window.DeviceMotionEvent as unknown as MotionPermission;
-      if (motion.requestPermission) {
-        const result = await motion.requestPermission();
-        if (result !== 'granted') { setError('assist.devices.motion.denied'); return; }
-      }
-      setRunning(true); setError(null);
-    } catch { setError('assist.devices.motion.startFailed'); }
-  };
-
-  const stop = () => {
-    if (stepAccum.current > 0) recordSession(stepAccum.current, duration, 'browser');
-    setRunning(false);
-  };
-  const reset = () => { setSteps(0); setDuration(0); stepAccum.current = 0; lastPeak.current = 0; };
-
-  if (!supported) {
-    return <section className="wf-card">
-      <h3>{t('assist.devices.motion.unavailableTitle')}</h3>
-      <p>{t('assist.devices.motion.unavailableBody')}</p>
-      <div className="wf-notice"><Footprints size={16} aria-hidden="true" />{t('assist.devices.motion.estimateNote')}</div>
-    </section>;
-  }
-
-  return <section className="wf-card">
-    <h3>{t('assist.devices.motion.title')}</h3>
-    <p>{t('assist.devices.motion.body')}</p>
-    <div className="wf-metric-grid">
-      <div className="wf-metric-card"><span className="wf-metric-icon"><Footprints size={20} aria-hidden="true" /></span><span>{t('assist.devices.motion.steps')}</span><strong>{steps.toLocaleString('en-IN')}</strong><small>{t('assist.devices.motion.live')}</small></div>
-      <div className="wf-metric-card"><span className="wf-metric-icon"><Activity size={20} aria-hidden="true" /></span><span>{t('assist.devices.motion.duration')}</span><strong>{t('assist.devices.motion.minutes', { count: Math.floor(duration / 60) })}</strong><small>{t('assist.devices.motion.thisSession')}</small></div>
-    </div>
+  return <section className="wf-card" data-testid="devices-steps">
+    <h3>{t('steps.sources.webTitle')}</h3>
+    <p>{t('steps.sources.webBody')}</p>
     <div className="wf-row-actions">
-      {running ? <>
-        <button type="button" className="health-button health-button-primary" style={TARGET} onClick={stop}><Pause size={16} aria-hidden="true" />{t('assist.devices.motion.stopSave')}</button>
-        <button type="button" className="health-button" style={TARGET} onClick={reset}><RefreshCw size={16} aria-hidden="true" />{t('assist.devices.motion.reset')}</button>
-      </> : <button type="button" className="health-button health-button-primary" style={TARGET} onClick={() => void requestPermission()}><Play size={16} aria-hidden="true" />{t('assist.devices.motion.start')}</button>}
+      <button type="button" className="health-button health-button-primary" style={TARGET} onClick={() => navigate('health/steps')}><Footprints size={16} aria-hidden="true" />{t('steps.web.addTyped')}</button>
     </div>
-    {error && <div className="wf-notice" role="alert"><AlertTriangle size={16} aria-hidden="true" />{t(error)}</div>}
-    <p className="wf-fineprint">{t('assist.devices.motion.fineprint')}</p>
-    {sessions.length > 0 && <section className="wf-section-gap">
-      <div className="wf-panel-heading"><div><span className="care-eyebrow">{t('assist.devices.motion.historyEyebrow')}</span><h3>{t('assist.devices.motion.historyTitle')}</h3><p>{t('assist.devices.motion.historyDevice')}</p></div><button type="button" className="health-text-button" style={TARGET} onClick={clearHistory}>{t('assist.devices.motion.clear')}</button></div>
-      <div className="wf-order-list">{sessions.slice(0, 10).map(s => <div className="wf-order-line" key={s.id}><div><strong>{t('assist.devices.motion.stepsCount', { count: s.steps.toLocaleString('en-IN') })}</strong><small>{formatDuration(s.durationSeconds)} · {new Date(s.endedAt).toLocaleString()} · {t(`assist.devices.source.${s.source}` as MessageKey)}</small></div></div>)}</div>
-    </section>}
   </section>;
 }
 

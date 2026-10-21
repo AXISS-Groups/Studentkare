@@ -53,3 +53,55 @@ describe('every OS permission the app declares has a screen that uses it', () =>
     expect(catalog['reminders.notifyBody']).not.toMatch(/\{/);
   });
 });
+
+describe('step counting permissions (Steps screen)', () => {
+  const plugin = (name: string) => appJson.expo.plugins.find((p) => (Array.isArray(p) ? p[0] : p) === name);
+  const pluginOptions = (name: string): Record<string, string> => {
+    const found = plugin(name);
+    return Array.isArray(found) ? found[1] : {};
+  };
+
+  it('motion and health access are used by the Steps screen, asked only from it', () => {
+    expect(read('src/native/App.tsx')).toMatch(/name="Steps"/);
+    const connectors = read('src/features/steps/sources/connectors.ts');
+    // Only connect() asks; status() only looks.
+    expect(connectors.match(/(pedometer\.requestPermissionsAsync|health\.requestRead|hc\.requestReads)\(/g)?.length).toBe(3);
+    expect(read('src/native/M2HealthScreens.tsx')).not.toMatch(/\.connect\(\)/);
+  });
+
+  it('the iOS usage strings say what is read and match the config plugins', () => {
+    const plist = appJson.expo.ios.infoPlist;
+    expect(String(plist.NSMotionUsageDescription)).toMatch(/steps/);
+    expect(pluginOptions('expo-sensors').motionPermission).toBe(plist.NSMotionUsageDescription);
+    expect(String(plist.NSHealthShareUsageDescription)).toMatch(/steps and walking distance/);
+    expect(pluginOptions('react-native-health').healthSharePermission).toBe(plist.NSHealthShareUsageDescription);
+    expect(String(plist.NSHealthUpdateUsageDescription)).toMatch(/does not write/);
+    expect(plist).not.toHaveProperty('NSHealthClinicalHealthRecordsShareUsageDescription');
+  });
+
+  it('reads only: no write permission for Apple Health or Health Connect', () => {
+    const perms = appJson.expo.android.permissions;
+    expect(perms).toEqual(expect.arrayContaining([
+      'android.permission.ACTIVITY_RECOGNITION', 'android.permission.health.READ_STEPS', 'android.permission.health.READ_DISTANCE',
+    ]));
+    expect(perms.filter((p) => p.startsWith('android.permission.health.'))).toEqual(['android.permission.health.READ_STEPS', 'android.permission.health.READ_DISTANCE']);
+    const native = read('src/native/stepConnectors.ts');
+    expect(native).toMatch(/write: \[\]/);
+    expect(native).not.toMatch(/insertRecords|saveSteps|saveWalkingRunningDistance|accessType: 'write'/);
+    expect(plugin('expo-health-connect')).toBeTruthy();
+  });
+
+  it('only src/native/stepConnectors.ts loads the native step modules (the web never does)', async () => {
+    const { readdirSync, statSync } = await import('node:fs');
+    const { join } = await import('node:path');
+    const files: string[] = [];
+    const walk = (dir: string) => readdirSync(dir).forEach((name) => {
+      const path = join(dir, name);
+      if (statSync(path).isDirectory()) { if (name !== '__tests__') walk(path); } else if (/\.(ts|tsx)$/.test(name)) files.push(path);
+    });
+    walk(resolve(process.cwd(), 'src'));
+    const importers = files.filter((f) => /from '(expo-sensors|react-native-health|react-native-health-connect)'/.test(readFileSync(f, 'utf8')))
+      .map((f) => f.slice(process.cwd().length + 1));
+    expect(importers).toEqual(['src/native/stepConnectors.ts']);
+  });
+});

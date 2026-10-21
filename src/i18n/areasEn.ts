@@ -35,6 +35,7 @@ import { phonestoreEn } from './areas/phonestore';
 import { rewardsEn } from './areas/rewards';
 import { safetyEn } from './areas/safety';
 import { shopwebEn } from './areas/shopweb';
+import { stepsEn } from './areas/steps';
 import { studentshellEn } from './areas/studentshell';
 import { studentwebEn } from './areas/studentweb';
 import { studentwebT1En } from './areas/studentwebT1';
@@ -85,6 +86,7 @@ export const areasEn = {
   ...rewardsEn,
   ...safetyEn,
   ...shopwebEn,
+  ...stepsEn,
   ...studentshellEn,
   ...studentwebEn,
   ...studentwebT1En,
