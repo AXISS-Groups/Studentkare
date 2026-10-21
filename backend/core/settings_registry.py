@@ -197,6 +197,11 @@ declare("shop.home_featured_count", INT, 6, area="shop", unit="listings", minimu
         description="Products in the phone shop home's first shelf.")
 declare("shop.orders_page_size", INT, 20, area="shop", unit="orders", minimum=1, maximum=100, public=True,
         description="Orders per page on the phone order history (GET /api/orders caps a page at 100).")
+# Mobile 2.0 product page quantity stepper (M2Product, plan D-M2-2): the most of one
+# listing a cart line may hold. POST /cart/validate and POST /orders refuse more. The
+# order API's own schema bound (10) is the ceiling.
+declare("shop.cart_line_max", INT, 10, area="shop", unit="units", minimum=1, maximum=10, public=True,
+        description="The most of one listing a cart line may hold (the product page's quantity stepper).")
 # Mobile 2.0 "Call to order" / "Call to book" (M2Home, M2Medicines, M2Labs). No
 # order line exists yet, so the default is empty and the app says "not
 # available yet"; the client dials it only when it is a plain phone number.

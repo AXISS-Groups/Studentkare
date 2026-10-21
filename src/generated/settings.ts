@@ -45,6 +45,8 @@ export interface PublicSettings {
   "rewards.referral_claim_window_hours": number;
   /** Points credited to the referrer when a friend who joined with their code is verified as a student. (points) */
   "rewards.referral_points": number;
+  /** The most of one listing a cart line may hold (the product page's quantity stepper). (units) */
+  "shop.cart_line_max": number;
   /** Products in the phone shop home's first shelf. (listings) */
   "shop.home_featured_count": number;
   /** The order line students call to order medicines or book a lab test. Empty shows the call buttons as not available yet. (phone number (digits, optional leading +)) */
@@ -131,6 +133,7 @@ export const publicSettingDefaults: Readonly<PublicSettings> = {
   "public_site.youtube_url": "",
   "rewards.referral_claim_window_hours": 24,
   "rewards.referral_points": 50,
+  "shop.cart_line_max": 10,
   "shop.home_featured_count": 6,
   "shop.order_line_phone": "",
   "shop.orders_page_size": 20,
@@ -180,6 +183,7 @@ export const publicSettingSpecs: Readonly<Record<PublicSettingKey, PublicSetting
   "public_site.youtube_url": { type: "str", min: null, max: null, allowed: [], unit: "https URL" },
   "rewards.referral_claim_window_hours": { type: "int", min: 1, max: 720, allowed: [], unit: "hours" },
   "rewards.referral_points": { type: "int", min: 0, max: 10000, allowed: [], unit: "points" },
+  "shop.cart_line_max": { type: "int", min: 1, max: 10, allowed: [], unit: "units" },
   "shop.home_featured_count": { type: "int", min: 1, max: 20, allowed: [], unit: "listings" },
   "shop.order_line_phone": { type: "str", min: null, max: null, allowed: [], unit: "phone number (digits, optional leading +)" },
   "shop.orders_page_size": { type: "int", min: 1, max: 100, allowed: [], unit: "orders" },

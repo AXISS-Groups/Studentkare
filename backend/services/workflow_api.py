@@ -195,10 +195,14 @@ def documents(
     stmt = select(M.Document.id, M.Document.title, M.Document.category, M.Document.filename, M.Document.mime_type, M.Document.created_at).where(M.Document.account_id == user["id"])
     total = db.scalar(select(func.count()).select_from(M.Document).where(M.Document.account_id == user["id"]))
     rows = db.execute(stmt.order_by(M.Document.created_at.desc()).offset(offset).limit(limit)).all()
+    # How many of the owner's documents are in each category (M2Profile's document cards).
+    counts = db.execute(select(M.Document.category, func.count()).where(M.Document.account_id == user["id"])
+                        .group_by(M.Document.category)).all()
     return {
         "items": [{"id": row.id, "title": row.title, "category": row.category, "filename": row.filename,
                    "mimeType": row.mime_type, "createdAt": row.created_at} for row in rows],
         "total": total,
+        "categoryCounts": {str(category): int(count) for category, count in counts},
         "limit": limit,
         "offset": offset,
     }
@@ -788,7 +792,12 @@ def validate_cart(body: CartValidationInput, user=Depends(authenticated_user), d
         serviceability_note = "This pincode is not currently serviceable."
 
     items = []
+    line_max = setting("shop.cart_line_max", db)
     for line in body.items:
+        if line.quantity > line_max:
+            items.append({"id": line.id, "available": False, "stock": 0, "reason": f"at most {line_max} of one item"})
+            serviceable = False
+            continue
         item = db.get(M.CatalogEntry, line.id)
         if not item or not item.active:
             items.append({"id": line.id, "available": False, "stock": 0, "reason": "no longer available"})
@@ -865,6 +874,9 @@ def place_order(body: OrderInput, idempotency_key: str = Header(..., min_length=
         if existing.request_hash != request_hash:
             raise HTTPException(409, "This request key was already used for different items.")
         return order_payload(db, existing)
+    line_max = setting("shop.cart_line_max", db)
+    if any(line.quantity > line_max for line in body.items):
+        raise HTTPException(422, f"You can order at most {line_max} of one item.")
     items = []
     for line in sorted(body.items, key=lambda item: item.id):
         item = db.get(M.CatalogEntry, line.id)

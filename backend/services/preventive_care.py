@@ -387,6 +387,7 @@ class ReviewView(StrictModel):
     createdAt: float
     updatedAt: float
     reviewedBy: str | None
+    reviewedByName: str | None = None
     reviewedAt: float | None
     guidance: GuidanceView | None
 
@@ -426,10 +427,18 @@ def guidance_view(stored: dict) -> dict:
     return {**stored, "nextSteps": [step["text"] for step in steps], "steps": steps}
 
 
-def review_payload(row: P.ReportReview) -> dict:
+def reviewer_name(db: Session | None, row: P.ReportReview) -> str | None:
+    """The reviewing doctor's display name (M2Insights "Your doctor's note"), only once approved."""
+    if db is None or row.status != "APPROVED" or not row.reviewed_by:
+        return None
+    account = db.get(M.Account, row.reviewed_by)
+    return account.full_name if account is not None else None
+
+
+def review_payload(row: P.ReportReview, db: Session | None = None) -> dict:
     return {"id": row.id, "documentId": row.document_id, "status": row.status, "version": row.version,
             "assignedClinicianId": row.assigned_clinician_id, "createdAt": row.created_at, "updatedAt": row.updated_at,
-            "reviewedBy": row.reviewed_by, "reviewedAt": row.reviewed_at,
+            "reviewedBy": row.reviewed_by, "reviewedByName": reviewer_name(db, row), "reviewedAt": row.reviewed_at,
             "guidance": guidance_view(row.guidance) if row.status == "APPROVED" else None}
 
 
@@ -488,7 +497,7 @@ def request_review(body: ReviewRequest, response: Response, user: dict = Depends
 def my_reviews(offset: int = Query(0, ge=0, le=10000), limit: int = Query(20, ge=1, le=100),
                user: dict = Depends(authenticated_user), db: Session = Depends(workflow_db)) -> dict:
     stmt = review_statement().where(P.ReportReview.account_id == user["id"]).order_by(P.ReportReview.created_at.desc(), P.ReportReview.id)
-    return page_result(db, stmt, offset, limit, review_payload)
+    return page_result(db, stmt, offset, limit, lambda row: review_payload(row, db))
 
 
 @router.get("/ops/report-reviews", response_model=Page[ReviewView])
