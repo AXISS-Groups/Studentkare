@@ -260,13 +260,13 @@ describe('WebShop, search and product', () => {
     render(withCart(<WebShopView />));
     await settle();
     expect(screen.getByRole('heading', { level: 1, name: 'Everything for “vitamin”' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Everything\s*2/ })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: /^All\s*2$/ })).toHaveAttribute('aria-pressed', 'true');
     expect(screen.getByText('Listed by name')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Urgent\?/ })).toBeInTheDocument();
   });
 
   it('opens a product with no invented rating, and adds the chosen quantity', async () => {
-    serve({ '/catalog': catalog });
+    serve({ '/catalog': catalog, '/inventory/': { available: true, stock: 5 } });
     let units = 0;
     render(withCart(<><WebShopView /><CartProbe onCart={(n) => { units = n; }} /></>));
     await settle();
@@ -274,10 +274,12 @@ describe('WebShop, search and product', () => {
     expect(screen.getByRole('heading', { level: 1, name: 'Vitamin D3' })).toBeInTheDocument();
     expect(screen.getByText('No ratings yet')).toBeInTheDocument();
     expect(document.body.textContent).not.toMatch(/student reviews|Earn \d+ Kare points/);
-    fireEvent.click(screen.getByRole('button', { name: 'Increase Vitamin D3' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Add to cart' }));
+    await settle();
+    fireEvent.click(screen.getByRole('button', { name: 'One more' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Add 2 to cart' }));
     expect(units).toBe(2);
     fireEvent.click(screen.getByRole('button', { name: /Back to shop/ }));
+    await settle();
     expect(screen.getByRole('heading', { name: 'Everything published' })).toBeInTheDocument();
   });
 });
