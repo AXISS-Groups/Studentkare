@@ -345,3 +345,9 @@ export function ConsoleTablePage(props: ConsoleTablePageProps): React.ReactEleme
     </div>
   );
 }
+
+/**
+ * The page's own states, for a board laid out without the table (cards, two
+ * columns): the same empty, error and skeleton the table page draws.
+ */
+export { EmptyView as ConsoleEmptyState, ErrorView as ConsoleErrorState, LoadingView as ConsoleLoadingState };

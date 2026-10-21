@@ -8,6 +8,7 @@ import { launchEn } from './areas/launch';
 import { landingEn } from './areas/landing';
 import { adminEn } from './areas/admin';
 import { adminBoardEn } from './areas/adminBoard';
+import { adminGovEn } from './areas/adminGov';
 import { campusEn } from './areas/campus';
 import { campusConsoleEn } from './areas/campusConsole';
 import { campusBoardsEn } from './areas/campusBoards';
@@ -829,6 +830,7 @@ export const en = {
   ...landingEn,
   ...adminEn,
   ...adminBoardEn,
+  ...adminGovEn,
   ...campusEn,
   ...campusConsoleEn,
   ...campusBoardsEn,

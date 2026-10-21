@@ -9,6 +9,7 @@ import { launchTe } from './areas/launch';
 import { landingTe } from './areas/landing';
 import { adminTe } from './areas/admin';
 import { adminBoardTe } from './areas/adminBoard';
+import { adminGovTe } from './areas/adminGov';
 import { campusTe } from './areas/campus';
 import { campusConsoleTe } from './areas/campusConsole';
 import { campusBoardsTe } from './areas/campusBoards';
@@ -830,6 +831,7 @@ export const te: Catalog = {
   ...landingTe,
   ...adminTe,
   ...adminBoardTe,
+  ...adminGovTe,
   ...campusTe,
   ...campusConsoleTe,
   ...campusBoardsTe,

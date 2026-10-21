@@ -9,6 +9,7 @@ import { launchHi } from './areas/launch';
 import { landingHi } from './areas/landing';
 import { adminHi } from './areas/admin';
 import { adminBoardHi } from './areas/adminBoard';
+import { adminGovHi } from './areas/adminGov';
 import { campusHi } from './areas/campus';
 import { campusConsoleHi } from './areas/campusConsole';
 import { campusBoardsHi } from './areas/campusBoards';
@@ -830,6 +831,7 @@ export const hi: Catalog = {
   ...landingHi,
   ...adminHi,
   ...adminBoardHi,
+  ...adminGovHi,
   ...campusHi,
   ...campusConsoleHi,
   ...campusBoardsHi,

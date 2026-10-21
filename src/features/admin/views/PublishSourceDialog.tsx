@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { observer } from "mobx-react-lite";
-import { ShieldCheck } from "lucide-react";
+import { Icon } from "@/design-system/icons";
 import {
   Field,
   FormError,
@@ -90,7 +90,7 @@ export const PublishSourceDialog = observer(function PublishSourceDialog({
           />
         </Field>
         <div className="wf-notice">
-          <ShieldCheck size={18} aria-hidden="true" />
+          <Icon name="shield-check" size={18} />
           {t("admin.publish.notice")}
         </div>
         <SubmitButton busy={vm.publishing}>{t("admin.publish.submit")}</SubmitButton>
