@@ -1,8 +1,8 @@
 # WP-01 · WebPlans (the one Tier 1 screen of the public site): canvas plan
 
-**Approved by:** _(name, date)_
+**Approved by:** Krishna Chintakayala (founder, named Tier 1 reviewer), 2026-10-21
 
-**Status:** proposed. Plan only; no screen code has been written.
+**Status:** approved 2026-10-21, built in feat/t1-wp01.
 **Rule:** `CLAUDE.md`, `DESIGN.md` §2.3 (prices shown before commitment) and §5, `AGENTS.md`
 rule 11 (prices from one source). WebPlans is Tier 1 because it states what a payment does and
 does not change about care. It needs a named design reviewer **and** founder/finance plus legal
@@ -131,3 +131,21 @@ absent when there is no source; FAQ keyboard toggling. `check-icons --screen Web
 6. **Premium benefits**: the server returns none for Premium ("not sold online yet"). Show the
    board's benefit list only once they exist, or show Premium as "coming soon" with its starting
    price?
+
+## Decisions taken (approved by Krishna Chintakayala, 2026-10-21)
+
+Approved as a set without per-item answers; each item takes the conservative, honest option.
+
+- D1 Line-up and names: the server catalogue's plans and names (Free Student Account, Student Plus, Premium, Campus, Enterprise); no Care Circle card, FAQ, table row or "free on Care Circle" note, because no family plan exists on the server.
+- D2 The ₹2,199 package: shown only as the registry/server value ("3-month package: ₹2,199") on the Student Plus card; no savings, per-month or comparison claim (it costs more than three monthly payments of ₹149, so none would be true).
+- D3 Commission disclosure: bars hidden; the section keeps its existing honest copy (no rate configured, ranking never by commission). Needs a rate source and legal sign-off before any number is shown.
+- D4 Pay-per-use "from" prices: no numbers; each tile says where the price is shown before you confirm. No live source today.
+- D5 "MOST STUDENTS" badge: dropped (no data). Badges used instead state facts: "Every account starts here" (free plan), "Not sold online yet" (priced student plan checkout does not sell), "For institutions".
+- D6 Premium benefits: Premium shows its server starting price ("from ₹499"), the server description, "listed here before it goes on sale" and no buy button.
+- D7 Hero art `illustration-care-circle-network`: drawn with its lettering removed (new `withoutText` option on `<Illustration>`, web and native), because the drawing carries the board's ₹0/₹199/₹249 and "Care Circle". Hero chips come from the API.
+- D8 "Line by line" table: only the five same-on-every-plan policy rows (records, emergency card, crisis support, critical-result handling, export), columns "Free account" / "Paid plans". The board's differing rows (Last 20 / Unlimited measurements, reminders, trend charts, lab discounts, members) are not enforced or sold anywhere and are omitted; a note points to each card's server benefits. Row notes softened where the board claimed unverified features (ABHA linking, works with no signal).
+- D9 Founder colour rule: the "never" list and the plan-list load error use regular tokens, not red; red stays for SOS/safety/clinical alerts.
+- D10 Board copy that claimed features we don't have ("Edu ID", tracking limits, "NMC-registered/NABL-accredited") is not used; the shared trust band keeps its existing honest wording.
+- D11 Backend: no endpoint added. Added `backend/tests/test_plans_never_gate_care.py` proving the page's claims: crisis, SOS/emergency, clinical results and alerts modules never import or read billing, the records-export handler never reads plan/payment state, and an account that never paid exports its records.
+- D12 Native: `LandingPlansNativeView` now uses the same catalogue path and states (loading, error with retry and reference, empty, data); layout parity with the web board remains a follow-up.
+

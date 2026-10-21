@@ -20,7 +20,6 @@
   "src/features/claims/views/ClaimsWebView.tsx",
   "src/features/emergency/views/EmergencySosWebView.tsx",
   "src/features/incidents/views/IncidentTriageWebView.tsx",
-  "src/features/landing/views/LandingPlansView.tsx",
   "src/features/legal/views/LegalView.tsx",
   "src/features/lifeshare/views/LifeShareWebView.tsx",
   "src/features/marketplace/views/MarketplaceWebView.tsx",
