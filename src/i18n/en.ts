@@ -22,6 +22,7 @@ import { wellnessEn } from './areas/wellness';
 import { consoleEn } from './areas/console';
 import { phoneboardsEn } from './areas/phoneboards';
 import { clinicianWorkEn } from './areas/clinicianWork';
+import { clinicianEn } from './areas/clinician';
 import { partnerConsoleEn } from './areas/partnerConsole';
 /**
  * English — the source catalogue. Telugu and Hindi must define every key
@@ -843,6 +844,7 @@ export const en = {
   ...consoleEn,
   ...phoneboardsEn,
   ...clinicianWorkEn,
+  ...clinicianEn,
   ...partnerConsoleEn,
 } as const;
 

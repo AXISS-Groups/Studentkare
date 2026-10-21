@@ -42,8 +42,8 @@ const CLINICIAN_SCREENS: Partial<Record<RoutePath, React.ComponentType>> = {
   'clinician/ayush': ClinicianAyushScreen,
   'clinician/decision-support': ClinicianDecisionSupportScreen,
   'clinician/schedule': ClinicianScheduleScreen,
-  // Tier 1 — awaiting a named design reviewer and clinical sign-off. Each
-  // shows a "preview" banner and serves sample data in development only.
+  // Tier 1 doctor screens (WP-13), approved by Krishna Chintakayala on
+  // 2026-10-21 and live on their real APIs.
   'clinician/inbox': ClinicianInboxScreen,
   'clinician/consult-room': ConsultRoomScreen,
   'clinician/critical-results': CriticalResultsScreen,
@@ -61,9 +61,10 @@ const SupportPanel = lazy(() => import('@/screens/workspace/MemberPanels').then(
 const EncounterNotesPanel = lazy(() => import('@/screens/workspace/EncounterNotesPanel').then(module => ({ default: module.EncounterNotesPanel })));
 
 /**
- * The production targets of three clinician sidebar items, and the shell's
- * notifications and help links. Older panels that used to open in the member
- * workspace, with its own sidebar; for a doctor they now open inside the console.
+ * The older panels behind three clinician links, and the shell's notifications
+ * and help links. The sidebar now opens the canvas screens; these routes stay
+ * for links that still point at them, and `clinical-review` keeps the held-report
+ * release and substitution decisions the critical results board does not cover.
  */
 const CONSOLE_PANELS: Partial<Record<RoutePath, { current: ClinicianNavId | null; context: string; Panel: React.ComponentType }>> = {
   'clinical-review': { current: 'critical-results', context: 'Critical results', Panel: ClinicalReviewPanel },

@@ -1,8 +1,8 @@
 # WP-13 · Doctor clinical screens: Tier 1 canvas plans
 
-**Approved by:** _(name, date)_
+**Approved by:** Krishna Chintakayala (founder, named Tier 1 reviewer), 2026-10-21 ("Approve all").
 
-**Status:** proposed. Plans only; no screen code has been written for this package.
+**Status:** approved 2026-10-21, built in feat/t1-wp13.
 **Rule:** `CLAUDE.md`, `DESIGN.md` §5–6, `AGENTS.md` (guardrails 1, 3, 4, 5, 9, 11). Every screen
 here shows a clinical value. Each needs a named design reviewer **and** a clinical lead's
 sign-off before its branch opens. One screen = one ticket, one branch, one PR.
@@ -341,3 +341,29 @@ follow-up chat window: not connected.
 
 **Open decisions.** Medical certificate: in scope (legal wording, who may issue)? The 72-hour
 follow-up window as a setting?
+
+## Decisions taken (approved by Krishna Chintakayala, 2026-10-21)
+
+Approved as a set; each open decision took the conservative, honest option (TIER1_BUILD_BRIEF).
+
+- **Shared — copy.** All eleven screens read copy from `src/i18n/areas/clinician.ts` (en; te/hi unreviewed drafts). Demo rows on the four unconnected boards stay English fixtures behind `demoDataEnabled()`. Why: rule 11; fixtures are allowed literals.
+- **Shared — offline.** Every write (acknowledge, sign, send, order, review, join) is disabled offline, with the loaded-at time shown read-only. Why: fail closed.
+- **Shared — preview banner.** `reviewPending` banner and the sidebar's preview-only routes removed; the canvas screens are the sidebar targets in every build. Why: approved.
+- **1 ClinicalReview — escalation.** No new field: the chosen escalation is written into the existing acknowledgement note (English, part of the record) and the option copy says it is recorded, not performed. Why: no escalation endpoint; never claim a call/route/task happened.
+- **1 ClinicalReview — legacy panel.** Not retired. `clinical-review` stays routed and linked from the board, because it also holds held-report release and substitution decisions the board does not cover. Why: retiring it would remove a safety flow.
+- **1 ClinicalReview — data.** Value shown as the lab's own note (the API does not split value/unit/range); flag `CRIT` added for "critical, direction not reported" (ranked with HH/LL, `bySeverity` unchanged). "Never collected" from `/work/lab-orders/awaiting-collection`. Turnaround and in-care tiles "—". Chase disabled with reason (no endpoint).
+- **2 EncounterNote — timeline.** Not connected (no consent-filtered clinician endpoint); the client never assembles one. A note picker and "New note" replace the legacy list so retiring the sidebar link loses nothing; signing keeps the legacy confirm dialog, saves before finalising, and treats a 409 as "signed elsewhere".
+- **2 EncounterNote — Sign & prescribe.** Opens Prescribe on the same student and note via an in-memory hand-off (no link field added).
+- **3 Prescribe — allergy.** Ships with the server's name-match check, labelled "NAME MATCH ONLY" every time. A conflicting drug is blocked and never re-sent; this screen never sends the server's acknowledge-override. No client allergy read path exists, so blocks appear after "Sign & send", not in search.
+- **3 Prescribe — drug search.** No clinician-readable drug master (ops/commerce table, Rule L): search shown unavailable; drugs are typed in structured fields.
+- **3 Prescribe — Schedule X.** Existing rule kept; the appointment does not report in-person, so it fails closed as video.
+- **4 ReportReviews — read receipt.** Not added; fourth stage and "Unread by student" shown as unknown. "Reviewed" tab not connected (no endpoint). No SLA/urgency or student question exists in the API, so none shown; oldest first as the server orders. The review form is the server's structured contract (summary, next steps, HTTPS sources).
+- **5 ClinicianLabOrder — indication.** Server already refuses under 3 characters (422); refused requests are not stored, so no "Not ordered" row. `DoctorLabOrderDispatchScreen` not deleted (still used by `ClinicianWorkspaceHub`). Urgency "—" (no field).
+- **6 ClinicianReferral.** No referral model built; stays not connected. Commission tile stays and is "—" (never "0") until a ledger reports it.
+- **7 ClinicianRenewals.** `/work/refills` is the pharmacy's queue, not a clinician decision, and carries no dose log: stays not connected. Reliever-use threshold not made a setting (not in the plan; no number shown).
+- **8 ClinicianChronic.** Copy to i18n; overdue rows say "Overdue" (state), no "Chase" action (no endpoint).
+- **9 ClinicianAyush.** Stays not connected until an owner and server check exist.
+- **10 ClinicianAi.** Kept as an honest not-connected page (no M18 service); no "act" control; critical values point to the deterministic rule.
+- **11 ClinicianConsultRoom.** Real appointment, waiting-room state, join-provider and LiveKit call (existing ConsultCallPanel), note and linked prescriptions. Hidden/unavailable: shared records, check-in badge, certificate (legal), 72-h follow-up (no setting), screen share. "End" leaves the call; it claims nothing server-side.
+- **Colour.** Red only for critical results and allergy blocks; ending a call and declining a review use regular roles.
+
