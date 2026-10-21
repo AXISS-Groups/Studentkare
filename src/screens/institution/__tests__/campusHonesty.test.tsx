@@ -5,12 +5,11 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { HostelOutbreakEarlyWarningRadar } from '@/components/institution/HostelOutbreakEarlyWarningRadar';
 import { CampusEpidemicOutbreakRadar } from '@/components/CampusEpidemicOutbreakRadar';
-import { CampusBreakGlass } from '../CampusBreakGlass';
-import { CampusAccessRequests } from '../CampusAccessRequests';
-import { OutbreakIsolationDeskScreen } from '../OutbreakIsolationDeskScreen';
+import { CampusAccessRequestsScreen, CampusBreakGlassScreen, CampusIsolationScreen } from '@/features/campus/safety';
 import { LanguageProvider } from '@/i18n';
 import { ThemeProvider } from '@/theme/tokens/theme';
 import { campusEn, campusHi, campusTe } from '@/i18n/areas/campus';
+import { campusSafetyHi } from '@/i18n/areas/campusSafety';
 
 function codeOf(path: string): string {
   return readFileSync(join(process.cwd(), path), 'utf-8')
@@ -43,33 +42,34 @@ describe('outbreak radars say no surveillance source is connected', () => {
 });
 
 describe('break-glass and access requests fail closed and say so up front', () => {
-  it('break-glass warns before submit and never reports access granted', async () => {
-    render(<CampusBreakGlass />);
-    expect(text()).toMatch(/submitting this form grants no access/i);
-    fireEvent.change(screen.getByLabelText(/emergency reason/i), { target: { value: 'Unconscious student' } });
-    fireEvent.change(screen.getByRole('textbox', { name: /authorising officer/i }), { target: { value: 'Dr. A' } });
-    await act(async () => { fireEvent.click(screen.getByRole('button', { name: /declare emergency/i })); });
-    expect(screen.getByRole('alert')).toHaveTextContent(/no access was granted/i);
-    expect(text()).not.toMatch(/access granted|audit logged/i);
+  it('break-glass says nothing can open a card and never reports access granted', () => {
+    render(<CampusBreakGlassScreen />);
+    expect(text()).toMatch(/nothing on this page can open a student’s card yet/i);
+    fireEvent.click(screen.getByRole('button', { name: 'Collapse / unconscious' }));
+    fireEvent.change(screen.getByRole('textbox', { name: /what is happening/i }), { target: { value: 'Unconscious student' } });
+    expect(screen.getByRole('button', { name: /open emergency card/i })).toBeDisabled();
+    expect(text()).not.toMatch(/access granted|audit id|left$/i);
   });
 
-  it('access requests warn before submit and never report a request sent', async () => {
-    render(<CampusAccessRequests />);
-    expect(text()).toMatch(/does not reach the student/i);
-    expect(codeOf('src/screens/institution/CampusAccessRequests.tsx')).not.toMatch(/setTimeout|successTitle|Request Sent/);
+  it('access requests say nothing reaches the student and cannot send', async () => {
+    render(<CampusAccessRequestsScreen />);
+    expect(text()).toMatch(/no request can reach a student yet/i);
+    await act(async () => { fireEvent.click(screen.getByRole('button', { name: 'New request' })); });
+    expect(screen.getByRole('button', { name: /send request to student/i })).toBeDisabled();
+    expect(codeOf('src/features/campus/safety/CampusAccessRequestsScreen.tsx')).not.toMatch(/setTimeout|apiRequest|Request sent/);
   });
 
   it('follows the app language instead of its own toggle', () => {
-    render(<LanguageProvider initial="hi"><CampusBreakGlass /></LanguageProvider>);
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(campusHi['campus.breakGlass.title']);
+    render(<LanguageProvider initial="hi"><CampusBreakGlassScreen /></LanguageProvider>);
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(campusSafetyHi['campusSafety.breakGlass.title']);
     expect(screen.queryByRole('button', { name: /switch to/i })).toBeNull();
   });
 });
 
 // The counsellor queue is live now; its honest empty state is covered in CounsellorQueueScreen.test.tsx.
 describe('disconnected queues never read as all-quiet', () => {
-  it('the isolation desk does not say no student is isolated', () => {
-    render(<OutbreakIsolationDeskScreen />);
+  it('the isolation board does not say no student is isolated', () => {
+    render(<CampusIsolationScreen />);
     expect(text()).not.toMatch(/no students in hostel isolation rooms/i);
     expect(text()).toMatch(/does not mean no student is in isolation/i);
   });

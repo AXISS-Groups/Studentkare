@@ -32,7 +32,6 @@ const named = <K extends string>(load: () => Promise<Record<K, React.ComponentTy
 const CampusOverviewScreen = named(() => import('@/features/campus/overview/CampusOverviewScreen'), 'CampusOverviewScreen');
 const CampusSosDesk = named(() => import('@/screens/institution/CampusSosDesk'), 'CampusSosDesk');
 const CampusIncidentsDeskScreen = named(() => import('@/screens/institution/CampusIncidentsDeskScreen'), 'CampusIncidentsDeskScreen');
-const CampusBreakGlass = named(() => import('@/screens/institution/CampusBreakGlass'), 'CampusBreakGlass');
 // WP-10 boards (design page 4), built to the canvas in src/features/campus/boards.
 const CampusRosterScreen = named(() => import('@/features/campus/boards'), 'CampusRosterScreen');
 const CampusBlocksScreen = named(() => import('@/features/campus/boards'), 'CampusBlocksScreen');
@@ -55,6 +54,7 @@ const CounsellorOnlyPage = named(() => import('./CampusPendingPage'), 'CampusCou
 // WP-11 boards (design page 4, Tier 1, approved 2026-10-21), built to the canvas in src/features/campus/safety.
 const CampusInsightsScreen = named(() => import('@/features/campus/safety'), 'CampusInsightsScreen');
 const CampusAccessRequestsScreen = named(() => import('@/features/campus/safety'), 'CampusAccessRequestsScreen');
+const CampusBreakGlassScreen = named(() => import('@/features/campus/safety'), 'CampusBreakGlassScreen');
 const CampusIsolationScreen = named(() => import('@/features/campus/safety'), 'CampusIsolationScreen');
 const CampusAmbulanceScreen = named(() => import('@/features/campus/safety'), 'CampusAmbulanceScreen');
 const CampusDischargeScreen = named(() => import('@/features/campus/safety'), 'CampusDischargeScreen');
@@ -79,7 +79,7 @@ export const CAMPUS_PAGES: Partial<Record<RoutePath, CampusPage>> = {
   'campus/ambulance': { current: 'ambulance', board: 'CampusAmbulance', title: 'campusShell.nav.ambulance', topBar: false, screen: CampusAmbulanceScreen },
   'campus/counsellor': { current: 'counsellor', board: 'CampusCounsellor', title: 'campusShell.nav.counsellor', topBar: true, screen: CounsellorOnlyPage },
   'campus-access-requests': { current: 'access-requests', board: 'CampusAccessRequests', title: 'campusShell.nav.accessRequests', topBar: true, screen: CampusAccessRequestsScreen },
-  'campus-break-glass': { current: 'emergency-access', board: 'CampusBreakGlass', title: 'campusShell.nav.emergencyAccess', topBar: true, screen: CampusBreakGlass },
+  'campus-break-glass': { current: 'emergency-access', board: 'CampusBreakGlass', title: 'campusShell.nav.emergencyAccess', topBar: true, screen: CampusBreakGlassScreen },
   'campus/isolation': { current: 'isolation', board: 'CampusIsolation', title: 'campusShell.nav.isolation', topBar: false, screen: CampusIsolationScreen },
   'campus/discharge': { current: 'discharge', board: 'CampusDischarge', title: 'campusShell.nav.discharge', topBar: false, screen: CampusDischargeScreen },
   'campus/outbreak': { current: 'outbreak', board: 'CampusOutbreak', title: 'campusShell.nav.outbreak', topBar: false, screen: CampusOutbreakScreen },
