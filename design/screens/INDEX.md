@@ -1,6 +1,6 @@
 # Student Kare — every screen
 
-252 screens on 10 canvas pages. Each row links to a brief that lists every icon, picture, link and state the screen needs.
+253 screens: 252 on 10 canvas pages, and M2Steps, a new Mobile 2.0 screen with no canvas board (2026-10-21). Each row links to a brief that lists every icon, picture, link and state the screen needs.
 
 | # | Screen | What it is | Platform | Tier | Tickets | Icons | 3D | Glyphs | Pictures |
 |---|---|---|---|---|---|---|---|---|---|
@@ -266,3 +266,4 @@
 | 250 | [M2ReportUpload](briefs/M2ReportUpload.md) | Upload a report from any lab | Phone 390x1250 | 1 | SK-046, SK-047 | 6 | 0 | 0 | 0 |
 | 251 | [M2AskAyush](briefs/M2AskAyush.md) | Ask Ayush about my records | Phone 390x844 | 1 | SK-048 | 4 | 0 | 0 | 0 |
 | 252 | [M2Profile](briefs/M2Profile.md) | Profile · documents · family | Phone 390x1400 | 1 | SK-050, SK-057, SK-068 | 16 | 0 | 0 | 0 |
+| 253 | [M2Steps](briefs/M2Steps.md) | Steps · today, this week, where the number came from (new, no canvas board) | Phone 390x1500 | 2 | Steps | 8 | 0 | 0 | 0 |

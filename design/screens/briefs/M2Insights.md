@@ -11,7 +11,7 @@
 
 ## Icons this screen must show (all of them)
 
-- **Line / solid icons (11):** `ayush-spark`, `bottle`, `box`, `chevron-right`, `droplet`, `heart-3`, `home`, `refresh`, `stetho`, `thyroid`, `user-5`
+- **Line / solid icons (12):** `ayush-spark`, `bottle`, `box`, `chevron-right`, `droplet`, `heart-3`, `home`, `refresh`, `stetho`, `thyroid`, `user-5`, `walk`
 - **3D icon tiles (0):** —
 - **Small glyphs (0):** —
 - **Brand mark:** —
@@ -25,7 +25,7 @@
 
 ## Where it links to
 
-`M2AskAyush`, `M2Home`, `M2Labs`, `M2Medicines`, `M2Orders`, `M2Profile`, `M2Trends` · also: SOS (href `#` on the canvas; the app opens the existing SOS flow, SosBeacon)
+`M2AskAyush`, `M2Home`, `M2Labs`, `M2Medicines`, `M2Orders`, `M2Profile`, `M2Steps`, `M2Trends` · also: SOS (href `#` on the canvas; the app opens the existing SOS flow, SosBeacon)
 
 ## States shown in the design's preview switcher
 
@@ -41,6 +41,11 @@ Tier 1: lab values, in/out of range counts, doctor's note, refills due and the d
 
 - New "Due from your care" card pair under the doctor's note: "Refills due" (the student's refill dates, Tier 1, from `GET /refills/plans`) with "Refill in the store" → M2Medicines, and "Repeat test your doctor ordered" (from `GET /lab-orders`, Tier 1) with "Book in Lab tests" → M2Labs. The links open the store page only; the medicine or test is never passed into catalogue or commerce queries (Rule L).
 - Board is now 390×1780 to fit the pair. The doctor avatar runs `service-green-soft` → `#A7F3D0` with `service-green-shade` initials (AA); "Heart and blood" uses the rose family, not red.
+
+## Steps card (Steps ticket, 2026-10-21)
+
+- A Mobile 2.0 gradient card (`GradientHeroCard`, teal, floating `walk` glyph) under "Due from your care": "Steps today", today's number from `GET /activity/trends?period=this_week` and where it came from (From Apple Health / From Health Connect / From this phone's motion sensor / Typed by you), or "No steps for today yet" with "Connect a step source…" (phone) or "Open the phone app to count steps automatically" (web). "Open steps" → `M2Steps`.
+- Steps are a wellness number, not a clinical value: no goal, ring, streak, score or praise; the card has its own loading skeleton and "couldn't load" retry, so it never blanks the page.
 
 ## Missing icons
 
