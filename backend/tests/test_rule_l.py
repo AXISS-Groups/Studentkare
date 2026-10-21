@@ -395,20 +395,20 @@ def _alembic(raw: str, verb: str, target: str) -> None:
     assert result.returncode == 0, result.stderr
 
 
-def test_pg_migrations_downgrade_move_images_and_upgrade_again(pg_db):
-    """Down to before the grants, seed catalogue photos the old way (rows in
-    care_documents), then upgrade: photos move to the commerce table, a clinical
-    document an image_id happens to point at is never copied, and the grants
-    come back."""
-    engine, _admin, _url, raw = pg_db
-    _alembic(raw, "downgrade", "b6965aa39f06")
+def _seed_old_catalogue_photos(engine) -> None:
+    """Seed rows the way the schema at b6965aa39f06 stored them.
+
+    Raw SQL only: the ORM models describe head, and a column added since (for
+    example care_accounts.partner_kind) does not exist at this revision.
+    """
     with engine.connect() as conn:
         assert rule_l.rule_l_status(conn)["enforced"] is False
     now = time.time()
     with sessionmaker(bind=engine)() as db:
-        db.add(M.Account(id="mig-admin", identifier="mig-admin@example.test", channel="EMAIL", full_name="A",
-                         role="SUPER_ADMIN", active=True, profile={}, created_at=now))
-        db.flush()
+        db.execute(text(
+            "INSERT INTO care_accounts (id, identifier, channel, full_name, role, active, profile, created_at) "
+            "VALUES ('mig-admin', 'mig-admin@example.test', 'EMAIL', 'A', 'SUPER_ADMIN', true, '{}', :now)"),
+            {"now": now})
         db.execute(text(
             "INSERT INTO care_documents (id, account_id, title, category, filename, mime_type, content, created_at) VALUES "
             "('mig-photo', 'mig-admin', 'Catalog Image - Mask', 'OTHER', 'p.png', 'image/png', :png, :now), "
@@ -420,7 +420,21 @@ def test_pg_migrations_downgrade_move_images_and_upgrade_again(pg_db):
             "('mig-item', 'mig-admin', 'product', 'Mask', 'B', 'devices', 'd', '1', 100, 0, 1, true, false, '', 'mig-photo', 'image/png'), "
             "('mig-bad', 'mig-admin', 'product', 'Odd', 'B', 'devices', 'd', '1', 100, 0, 1, true, false, '', 'mig-lab', 'image/png')"))
         db.commit()
-    _alembic(raw, "upgrade", "head")
+
+
+def test_pg_migrations_downgrade_move_images_and_upgrade_again(pg_db):
+    """Down to before the grants, seed catalogue photos the old way (rows in
+    care_documents), then upgrade: photos move to the commerce table, a clinical
+    document an image_id happens to point at is never copied, and the grants
+    come back."""
+    engine, _admin, _url, raw = pg_db
+    _alembic(raw, "downgrade", "b6965aa39f06")
+    try:
+        _seed_old_catalogue_photos(engine)
+    finally:
+        # Always return the shared module database to head, so a failure here
+        # cannot cascade into every later test in this module.
+        _alembic(raw, "upgrade", "head")
     with sessionmaker(bind=engine)() as db:
         photo = db.get(M.CatalogImage, "mig-photo")
         assert photo is not None and photo.item_id == "mig-item" and photo.content == PNG

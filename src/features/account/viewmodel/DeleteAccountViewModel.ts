@@ -1,6 +1,7 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 import type { MessageKey } from '@/i18n';
 import { apiRequest } from '@/data/services/http';
+import { getSetting } from '@/data/services/config';
 import type { ViewModel } from '@/core/store/ViewModel';
 
 /** GET/POST/DELETE /api/records/deletion-request (backend/services/erasure.py). */
@@ -10,6 +11,18 @@ export interface DeletionStatus {
   scheduledFor: number | null;
   /** Days the sealed copy is kept; null if the server has not been configured. */
   archiveRetentionDays: number | null;
+  /** The deletion grace period in days (settings registry privacy.deletion_grace_days). */
+  graceDays?: number | null;
+}
+
+/**
+ * Days a student has to change their mind: the server's value for this request,
+ * else the settings registry (GET /api/config/public, generated default). Never
+ * a constant in a view.
+ */
+export function deletionGraceDays(state?: DeletionStatus | null): number {
+  const fromServer = state?.graceDays;
+  return typeof fromServer === 'number' && fromServer > 0 ? fromServer : getSetting('privacy.deletion_grace_days');
 }
 
 export const CONFIRM_WORD = 'DELETE';

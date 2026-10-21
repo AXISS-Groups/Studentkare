@@ -8,6 +8,7 @@ as importantly, what each role must *not* see.
 import time
 
 from test_clinical_fulfilment import (
+    counter_verified,
     make_document,
     make_provider,
     make_staff,
@@ -305,6 +306,7 @@ def run_to_critical(client, factory, codes):
                         headers=headers).json()
     client.post("/api/auth/logout", headers=headers)
     lab_headers = login(client, codes, "labco@example.test")
+    counter_verified(factory, order["id"])  # the lab checked the pass at its counter
     for payload in [{"status": "ASSIGNED", "collectorName": "P. Rao"},
                     {"status": "SAMPLE_COLLECTED", "sampleId": "SMP-9"},
                     {"status": "RECEIVED_AT_LAB"}, {"status": "IN_ANALYSIS"}]:
@@ -352,6 +354,7 @@ def test_rejected_sample_can_be_recollected_without_losing_the_booking(harness):
     make_provider(factory, "lab-1", "labco", "LAB", pincode="500001")
     order = client.post("/api/lab-orders", json={"labId": "lab-1", "testPanel": ["CBC"]}, headers=headers).json()
     lab_headers = login(client, codes, "labco@example.test")
+    counter_verified(factory, order["id"])  # the lab checked the pass at its counter
     client.patch(f"/api/lab-orders/{order['id']}", json={"status": "ASSIGNED", "collectorName": "P. Rao"},
                  headers=lab_headers)
     client.patch(f"/api/lab-orders/{order['id']}", json={"status": "SAMPLE_COLLECTED", "sampleId": "SMP-1"},
@@ -392,6 +395,7 @@ def test_a_lab_cannot_attach_any_existing_document_as_the_report(harness):
     make_document(factory, "theirs", "stranger")
     order = client.post("/api/lab-orders", json={"labId": "lab-1", "testPanel": ["CBC"]}, headers=headers).json()
     lab_headers = login(client, codes, "labco@example.test")
+    counter_verified(factory, order["id"])  # the lab checked the pass at its counter
     for payload in [{"status": "ASSIGNED", "collectorName": "P. Rao"},
                     {"status": "SAMPLE_COLLECTED", "sampleId": "SMP-1"},
                     {"status": "RECEIVED_AT_LAB"}, {"status": "IN_ANALYSIS"}]:
@@ -499,6 +503,7 @@ def test_student_is_told_when_their_report_is_released(harness):
     order = client.post("/api/lab-orders", json={"labId": "lab-1", "testPanel": ["CBC"]}, headers=headers).json()
     client.post("/api/auth/logout", headers=headers)
     lab_headers = login(client, codes, "labco@example.test")
+    counter_verified(factory, order["id"])  # the lab checked the pass at its counter
     for payload in [{"status": "ASSIGNED", "collectorName": "P. Rao"},
                     {"status": "SAMPLE_COLLECTED", "sampleId": "SMP-3"},
                     {"status": "RECEIVED_AT_LAB"}, {"status": "IN_ANALYSIS"}]:
@@ -524,6 +529,7 @@ def test_a_rejected_sample_tells_the_student_why(harness):
     make_provider(factory, "lab-1", "labco", "LAB", pincode="500001")
     order = client.post("/api/lab-orders", json={"labId": "lab-1", "testPanel": ["CBC"]}, headers=headers).json()
     lab_headers = login(client, codes, "labco@example.test")
+    counter_verified(factory, order["id"])  # the lab checked the pass at its counter
     client.patch(f"/api/lab-orders/{order['id']}", json={"status": "ASSIGNED", "collectorName": "P. Rao"}, headers=lab_headers)
     client.patch(f"/api/lab-orders/{order['id']}", json={"status": "SAMPLE_COLLECTED", "sampleId": "S1"}, headers=lab_headers)
     client.patch(f"/api/lab-orders/{order['id']}",

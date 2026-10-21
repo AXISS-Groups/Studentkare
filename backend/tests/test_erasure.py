@@ -1,14 +1,38 @@
-"""DPDP erasure: 7-day window, everything removed from live tables, sealed archive, audited access."""
+"""DPDP erasure: grace window (settings registry, default 7 days), everything removed from live tables, sealed archive, audited access."""
 import time
 
+import pytest
 from cryptography.fernet import Fernet
 from sqlalchemy import select
 from test_workflow_api import harness, login, register  # noqa: F401 — pytest fixtures
 
+from core import settings_registry as R
 from core import workflow_models as M
-from services.erasure import ERASURE_BLOCKED_ALERT_KIND, GRACE_SECONDS, process_due_erasures
+from services.erasure import (
+    ERASURE_BLOCKED_ALERT_KIND,
+    GRACE_SETTING,
+    grace_seconds,
+    process_due_erasures,
+)
 
 URL = "/api/records/deletion-request"
+DAY = 86400
+GRACE_SECONDS = R.get_declaration(GRACE_SETTING).default * DAY
+
+
+@pytest.fixture(autouse=True)
+def _fresh_settings():
+    R.reset_cache()
+    yield
+    R.reset_cache()
+
+
+def override(factory, key, value):
+    """Set a registry override the way PATCH /api/ops/settings/{key} stores it."""
+    with factory() as db:
+        db.merge(M.SettingOverride(key=key, value=value, updated_by="test", updated_at=time.time()))
+        db.commit()
+    R.reset_cache()
 
 
 def configure(monkeypatch, days="30"):
@@ -32,6 +56,11 @@ def age_request(factory, account_id, seconds=GRACE_SECONDS + 1):
         db.commit()
 
 
+def test_the_grace_period_defaults_to_seven_days():
+    assert R.get_declaration(GRACE_SETTING).default == 7
+    assert R.get_declaration(GRACE_SETTING).public is True
+
+
 def test_request_is_scheduled_seven_days_out_and_cancellable(harness, monkeypatch):
     client, factory, codes = harness
     configure(monkeypatch, "45")
@@ -39,6 +68,7 @@ def test_request_is_scheduled_seven_days_out_and_cancellable(harness, monkeypatc
     first = client.post(URL, headers=headers).json()
     assert first["status"] == "PENDING"
     assert round(first["scheduledFor"] - first["requestedAt"]) == GRACE_SECONDS
+    assert first["graceDays"] == 7
     assert first["archiveRetentionDays"] == 45
     assert client.post(URL, headers=headers).json()["requestedAt"] == first["requestedAt"]  # idempotent
     assert client.delete(URL, headers=headers).json()["status"] == "CANCELLED"
@@ -150,3 +180,24 @@ def test_archive_opens_only_for_a_super_admin_with_a_reason_and_is_destroyed_lat
         db.commit()
         assert db.get(M.ErasureArchive, archive_id).sealed == b""
     assert client.post(f"/api/ops/erasure/archives/{archive_id}/open", headers=h, json={"reason": "Court order 12/2026 request"}).status_code == 410
+
+
+def test_the_grace_period_comes_from_the_settings_registry(harness, monkeypatch):
+    client, factory, codes = harness
+    configure(monkeypatch)
+    override(factory, GRACE_SETTING, 14)
+    user, headers = student_with_data(client, codes, factory)
+    first = client.post(URL, headers=headers).json()
+    assert first["graceDays"] == 14
+    assert round(first["scheduledFor"] - first["requestedAt"]) == 14 * DAY
+
+    age_request(factory, user["id"], seconds=8 * DAY)  # past the default, inside the override
+    with factory() as db:
+        assert grace_seconds(db) == 14 * DAY
+        assert process_due_erasures(db)["summary"]["erased"] == 0
+        db.commit()
+    age_request(factory, user["id"], seconds=7 * DAY)  # now 15 days old
+    with factory() as db:
+        assert process_due_erasures(db)["summary"]["erased"] == 1
+        db.commit()
+        assert db.get(M.Account, user["id"]) is None

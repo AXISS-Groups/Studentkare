@@ -44,7 +44,7 @@ PERIODIC_JOBS = {
     "care_followup": "Care-request follow-up & overdue detection",
     "slack_selftest": "Slack ops-alert channel self-test & volumetric digest",
     "campus_departures": "Complete campus departures whose date has arrived",
-    "account_erasure": "Erase accounts whose 7-day window has passed; destroy expired archives",
+    "account_erasure": "Erase accounts whose deletion grace period has passed; destroy expired archives",
     "payment_expiry": "Release the stock of orders and the slots of lab bookings not paid in time",
 }
 

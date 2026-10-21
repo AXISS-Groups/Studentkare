@@ -25,6 +25,7 @@ import { CrisisSupportBoard } from '@/features/crisis/views/CrisisSupportBoard';
 import { MyPassBoard, offlineMinutes, spokenCode } from '@/features/digital_id/views/MyPassBoard';
 import { DeleteAccountView, graceDay } from '@/features/account/views/DeleteAccountView';
 import { DeleteAccountViewModel } from '@/features/account/viewmodel/DeleteAccountViewModel';
+import { publicSettingDefaults } from '@/generated/settings';
 import { LegalBoard } from '@/features/legal/views/LegalBoard';
 import { PlanBillingBoard } from '@/features/billing/views/PlanBillingBoard';
 import { FamilyCircleBoard } from '@/features/vault/views/FamilyCircleBoard';
@@ -292,6 +293,18 @@ describe('DeleteAccount (Tier 1)', () => {
     fireEvent.click(screen.getByTestId('delete-keep'));
     expect(await screen.findByTestId('delete-cancelled')).toBeInTheDocument();
     expect(graceDay({ status: 'PENDING', requestedAt: null, scheduledFor: null, archiveRetentionDays: null }, 0)).toBeNull();
+  });
+
+  it('N in "day n of N" and the intro both read the grace-period setting, never a constant 7', async () => {
+    const t0 = Date.now() / 1000 - 86400 * 1.5;
+    expect(graceDay({ status: 'PENDING', requestedAt: t0, scheduledFor: t0 + 14 * 86400, archiveRetentionDays: 30, graceDays: 14 }, Date.now() / 1000)).toEqual({ day: 2, of: 14 });
+    // Without the server's value, the registry default (privacy.deletion_grace_days) applies.
+    expect(graceDay({ status: 'PENDING', requestedAt: t0, scheduledFor: t0 + 7 * 86400, archiveRetentionDays: 30 }, Date.now() / 1000)).toEqual({ day: 2, of: publicSettingDefaults['privacy.deletion_grace_days'] });
+    const vm = new DeleteAccountViewModel(vi.fn(async () => status({ graceDays: 10 })) as unknown as Requester);
+    await vm.load();
+    render(<DeleteAccountView viewModel={vm} links={{}} />);
+    expect(screen.getByText(en('sf.del.intro', { graceDays: 10 }))).toBeInTheDocument();
+    expect(en('sf.del.intro', { graceDays: 10 })).toContain('10');
   });
 });
 
