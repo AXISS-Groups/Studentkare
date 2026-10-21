@@ -785,3 +785,95 @@ def test_every_message_code_has_i18n_copy_with_the_same_placeholders():
         for text in (te, hi):
             assert text, f"{code} has no translation"
             assert set(PLACEHOLDER.findall(text)) == wanted, code
+
+
+# --- skipped doses and the water week (Mobile 2.0 reminders) -----------------------
+
+def test_skipped_dose_fills_a_slot_but_is_never_taken(harness, clock):
+    client, factory, codes = harness
+    _, headers = register(client, codes, "skip@example.test")
+    plan = client.post("/api/meds/plans", json={"name": "Iron", "timesPerDay": 2}, headers=headers).json()
+
+    skipped = client.post("/api/meds/skip-dose", json={"medId": plan["id"]}, headers=headers).json()
+    assert (skipped["code"], skipped["outcome"], skipped["dosesTaken"], skipped["dosesSkipped"]) == ("DOSE_SKIPPED", "SKIPPED", 0, 1)
+    today = client.get("/api/meds/today", headers=headers).json()["plans"][0]
+    assert (today["dosesTaken"], today["dosesSkipped"], today["nextSlot"]) == (0, 1, 2)
+    assert today["undo"] == {"doseId": skipped["doseId"], "undoUntil": skipped["undoUntil"], "outcome": "SKIPPED"}
+
+    clock["now"] = WED + timedelta(minutes=1)
+    taken = client.post("/api/meds/log-dose", json={"medId": plan["id"]}, headers=headers).json()
+    assert (taken["outcome"], taken["dosesTaken"], taken["dosesSkipped"]) == ("TAKEN", 1, 1)
+    clock["now"] = WED + timedelta(minutes=2)
+    full = client.post("/api/meds/skip-dose", json={"medId": plan["id"]}, headers=headers).json()
+    assert full["already_logged"] is True and full["code"] == "DOSES_ALL_LOGGED_TODAY"
+
+    # Schedule and adherence count taken doses only.
+    schedule = client.get("/api/meds/schedule", headers=headers).json()
+    assert schedule["todays_taken"] == 1
+
+
+def test_a_day_with_only_skips_is_not_covered(harness, clock):
+    client, factory, codes = harness
+    _, headers = register(client, codes, "skipcover@example.test")
+    plan = client.post("/api/meds/plans", json={"name": "Iron", "timesPerDay": 1}, headers=headers).json()
+    client.post("/api/meds/skip-dose", json={"medId": plan["id"]}, headers=headers)
+    schedule = client.get("/api/meds/schedule", headers=headers).json()
+    assert schedule["todays_taken"] == 0
+    assert schedule["adherence"]["windows"]["7"]["daysCovered"] == 0
+
+
+def test_skip_undo_uses_the_same_window_and_is_owner_only(harness, clock):
+    client, factory, codes = harness
+    _, mine = register(client, codes, "skipundo@example.test")
+    plan = client.post("/api/meds/plans", json={"name": "Iron", "timesPerDay": 1}, headers=mine).json()
+    skipped = client.post("/api/meds/skip-dose", json={"medId": plan["id"]}, headers=mine).json()
+    window = S("meds.dose_undo_minutes")
+    assert skipped["undoUntil"] == (WED + timedelta(minutes=window)).isoformat()
+
+    theirs = _other(client, codes, mine)
+    assert client.post("/api/meds/skip-dose", json={"medId": plan["id"]}, headers=theirs).json()["status"] == "NOT_FOUND"
+    assert client.delete(f"/api/meds/doses/{skipped['doseId']}", headers=theirs).status_code == 404
+
+    mine = _back(client, codes, "skipundo@example.test", theirs)
+    assert client.delete(f"/api/meds/doses/{skipped['doseId']}", headers=mine).status_code == 200
+    today = client.get("/api/meds/today", headers=mine).json()["plans"][0]
+    assert (today["dosesTaken"], today["dosesSkipped"], today["nextSlot"]) == (0, 0, 1)
+    with factory() as db:
+        assert db.scalars(select(M.OutboxEvent)).all() == []   # nobody is told about a skip
+
+
+def test_skip_requires_sign_in(harness):
+    client, factory, codes = harness
+    assert client.post("/api/meds/skip-dose", json={"medId": "med_x"}).status_code in (401, 403)
+    assert client.get("/api/wellness/water/days").status_code in (401, 403)
+
+
+def test_water_days_are_local_days_with_unknown_not_zero(harness, clock):
+    client, factory, codes = harness
+    _, headers = register(client, codes, "week@example.test")
+    days = S("wellness.water_history_days")
+    clock["now"] = WED - timedelta(days=2)
+    client.post("/api/wellness/water", json={"amountMl": 250}, headers=headers)
+    client.post("/api/wellness/water", json={"amountMl": 500}, headers=headers)
+    clock["now"] = WED
+    client.post("/api/wellness/water", json={"amountMl": 300}, headers=headers)
+
+    week = client.get("/api/wellness/water/days", headers=headers).json()
+    assert len(week["days"]) == days
+    assert (week["to"], week["days"][-1]["date"]) == ("2026-10-21", "2026-10-21")
+    by_date = {d["date"]: d for d in week["days"]}
+    assert by_date["2026-10-19"] == {"date": "2026-10-19", "consumedMl": 750, "entries": 2}
+    assert by_date["2026-10-21"]["consumedMl"] == 300
+    assert by_date["2026-10-20"] == {"date": "2026-10-20", "consumedMl": None, "entries": 0}
+    assert (week["goalMl"], week["goalSource"]) == (S("wellness.water_goal_ml_default"), "DEFAULT")
+    assert not GAMIFIED.search(json.dumps(week))
+
+    theirs = _other(client, codes, headers)
+    assert all(d["consumedMl"] is None for d in client.get("/api/wellness/water/days", headers=theirs).json()["days"])
+
+
+def test_override_water_history_days(harness, clock):
+    client, factory, codes = harness
+    _, headers = register(client, codes, "weeklen@example.test")
+    override(factory, "wellness.water_history_days", 14)
+    assert len(client.get("/api/wellness/water/days", headers=headers).json()["days"]) == 14
