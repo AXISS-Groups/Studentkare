@@ -340,6 +340,7 @@ export const partnerWorkEn = {
   // ---- VendorRxReview ----
   'pt.rxr.twoFactorOn': '2FA on',
   'pt.rxr.ref': 'Ref RX-REVIEW · VendorRxReview',
+  'pt.rxr.rxId': 'RX-{ref}',
   'pt.rxr.uploaded': 'Uploaded prescription',
   'pt.rxr.flag.upload': 'Uploaded Rx',
   'pt.rxr.onImage': 'Read it on the uploaded prescription',
@@ -744,6 +745,7 @@ export const partnerWorkTe: Record<keyof typeof partnerWorkEn, string> = {
   'pt.sub.drawer.send': "ప్రిస్క్రైబర్‌కు పంపండి",
   'pt.rxr.twoFactorOn': "2FA ఆన్",
   'pt.rxr.ref': "Ref RX-REVIEW · VendorRxReview",
+  'pt.rxr.rxId': "RX-{ref}",
   'pt.rxr.uploaded': "అప్‌లోడ్ చేసిన ప్రిస్క్రిప్షన్",
   'pt.rxr.flag.upload': "అప్‌లోడ్ చేసిన Rx",
   'pt.rxr.onImage': "అప్‌లోడ్ చేసిన ప్రిస్క్రిప్షన్‌పై చదవండి",
@@ -1146,6 +1148,7 @@ export const partnerWorkHi: Record<keyof typeof partnerWorkEn, string> = {
   'pt.sub.drawer.send': "प्रिस्क्राइबर को भेजें",
   'pt.rxr.twoFactorOn': "2FA चालू",
   'pt.rxr.ref': "Ref RX-REVIEW · VendorRxReview",
+  'pt.rxr.rxId': "RX-{ref}",
   'pt.rxr.uploaded': "अपलोड किया गया प्रिस्क्रिप्शन",
   'pt.rxr.flag.upload': "अपलोड किया Rx",
   'pt.rxr.onImage': "अपलोड किए गए प्रिस्क्रिप्शन पर पढ़ें",

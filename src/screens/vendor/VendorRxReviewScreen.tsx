@@ -112,7 +112,7 @@ export function VendorRxReviewScreen({ source = loadRxReviews, twoFactorSource =
                 return (
                   <li key={id}>
                     <button type="button" className={`sk-rx-queue-item${on ? ' is-selected' : ''}`} aria-pressed={on} onClick={() => setSelectedId(id)}>
-                      <span className="pw-rx-queue__top"><span className="pw-rx-queue__id">RX-{refOf(id)}</span><span className="pw-rx-queue__age">{ageOf(entry.kind === 'review' ? entry.review.receivedAt : entry.upload.receivedAt, t)}</span></span>
+                      <span className="pw-rx-queue__top"><span className="pw-rx-queue__id">{t('pt.rxr.rxId', { ref: refOf(id) })}</span><span className="pw-rx-queue__age">{ageOf(entry.kind === 'review' ? entry.review.receivedAt : entry.upload.receivedAt, t)}</span></span>
                       <span className="pw-rx-queue__items">{entry.kind === 'review' ? entry.review.items.map((item) => [item.genericName, item.strength].filter(Boolean).join(' ')).join(', ') : t('pt.rxr.uploaded')}</span>
                       <span className={`pw-flag pw-flag--${flag.tone}`}>{flag.label}</span>
                     </button>
@@ -233,7 +233,7 @@ function ReviewPanel({ selected, online, onDecided }: { selected: Selected; onli
       <section className="sk-rx-col-document" aria-labelledby="pw-rx-doc-title">
         <h2 id="pw-rx-doc-title" className="pw-rx-coltitle">
           {review ? t('partner.vrx.rx.documentTitle') : t('pt.rxr.imageTitle')}
-          <span className="pw-rx-coltitle__meta">{review ? `RX-${refOf(id)}` : t('pt.rxr.uploadedAt', { when: shortDate(selected.kind === 'upload' ? selected.upload.receivedAt : 0) })}</span>
+          <span className="pw-rx-coltitle__meta">{review ? t('pt.rxr.rxId', { ref: refOf(id) }) : t('pt.rxr.uploadedAt', { when: shortDate(selected.kind === 'upload' ? selected.upload.receivedAt : 0) })}</span>
         </h2>
         {review ? (
           <div className="sk-rx-paper-slip">
@@ -293,11 +293,11 @@ function ReviewPanel({ selected, online, onDecided }: { selected: Selected; onli
         {error ? <p className="pc-form__error" role="alert">{error}</p> : null}
         {!canApprove && !expired ? <p id="pw-rx-why" className="pw-hint">{t('pt.rxr.approveWhy')}</p> : null}
         <SkButton disabled={!canApprove} busy={busy && !rejecting} aria-describedby={!canApprove ? 'pw-rx-why' : undefined}
-          onClick={() => { void act(() => approveRx(selected.kind, id, pharmacist.trim(), checks), t('partner.vrx.rx.toast.approved', { id: `RX-${refOf(id)}`, name: pharmacist.trim() })); }}>
+          onClick={() => { void act(() => approveRx(selected.kind, id, pharmacist.trim(), checks), t('partner.vrx.rx.toast.approved', { id: t('pt.rxr.rxId', { ref: refOf(id) }), name: pharmacist.trim() })); }}>
           {t('partner.vrx.rx.approve')}
         </SkButton>
         {rejecting ? (
-          <form className="pc-form" onSubmit={(event) => { event.preventDefault(); if (reason.trim()) void act(() => rejectRx(selected.kind, id, reason.trim()), t('partner.vrx.rx.toast.rejected', { id: `RX-${refOf(id)}` })); }}>
+          <form className="pc-form" onSubmit={(event) => { event.preventDefault(); if (reason.trim()) void act(() => rejectRx(selected.kind, id, reason.trim()), t('partner.vrx.rx.toast.rejected', { id: t('pt.rxr.rxId', { ref: refOf(id) }) })); }}>
             <label className="pw-field">{t('partner.vrx.rx.rejectReason')}
               <textarea className="pc-textarea" required maxLength={300} value={reason} onChange={(event) => setReason(event.target.value)} />
             </label>
