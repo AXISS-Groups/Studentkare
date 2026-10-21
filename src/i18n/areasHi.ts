@@ -3,6 +3,7 @@ import { adminBoardHi } from './areas/adminBoard';
 import { adminGovHi } from './areas/adminGov';
 import { adminHi } from './areas/admin';
 import { assistHi } from './areas/assist';
+import { authChannelsHi } from './areas/authChannels';
 import { campusBoardsHi } from './areas/campusBoards';
 import { campusConsoleHi } from './areas/campusConsole';
 import { campusHi } from './areas/campus';
@@ -50,6 +51,7 @@ export const areasHi = {
   ...adminGovHi,
   ...adminHi,
   ...assistHi,
+  ...authChannelsHi,
   ...campusBoardsHi,
   ...campusConsoleHi,
   ...campusHi,

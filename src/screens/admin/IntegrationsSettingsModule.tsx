@@ -106,6 +106,16 @@ function isSecretKey(k: string) {
   return /key|secret|token|password|service_account/i.test(k);
 }
 
+/** WhatsApp delivery as the server sees it (GET /admin/integrations `status.openwa`). */
+type WhatsAppState = 'connected' | 'not_connected' | 'not_configured';
+const WHATSAPP_STATE_COPY: Record<WhatsAppState, MessageKey> = {
+  connected: 'authch.admin.wa.connected',
+  not_connected: 'authch.admin.wa.notConnected',
+  not_configured: 'authch.admin.wa.notConfigured',
+};
+const isWhatsAppState = (value: unknown): value is WhatsAppState =>
+  value === 'connected' || value === 'not_connected' || value === 'not_configured';
+
 /** A setting as text, or '' when it isn't text. */
 const text = (value: ConfigValue | undefined): string => (typeof value === 'string' ? value : '');
 
@@ -118,6 +128,8 @@ export const IntegrationsSettingsModule: React.FC = () => {
   const [busy, setBusy] = useState<Record<string, boolean>>({});
   const [msg, setMsg] = useState<Partial<Record<Provider, { ok: boolean; said: Said }>>>({});
   const [showSecrets, setShowSecrets] = useState<Record<string, boolean>>({});
+  // Configured is not connected: the WhatsApp session can log out while every key is right.
+  const [whatsapp, setWhatsapp] = useState<WhatsAppState | null>(null);
   const [loadError, setLoadError] = useState<{ said: Said; forbidden: boolean } | null>(null);
 
   // Active modal for the selected provider
@@ -131,7 +143,9 @@ export const IntegrationsSettingsModule: React.FC = () => {
 
   const loadData = async () => {
     try {
-      const res = await apiRequest<{ integrations: Record<string, ProviderConfig> }>('/admin/integrations');
+      const res = await apiRequest<{ integrations: Record<string, ProviderConfig>; status?: { openwa?: { state?: unknown } } }>('/admin/integrations');
+      const state = res.status?.openwa?.state;
+      setWhatsapp(isWhatsAppState(state) ? state : null);
       setForms(res.integrations);
       setSaved(res.integrations);
       setLoadError(null);
@@ -386,6 +400,15 @@ export const IntegrationsSettingsModule: React.FC = () => {
                     <span style={{ fontWeight: 700, color: tokens.text }}>{t('admin.int.status')} </span>{summary}
                   </div>
                 )}
+                {p === 'openwa' && whatsapp ? (
+                  <div
+                    role="status"
+                    data-testid="whatsapp-connection"
+                    style={{ fontSize: 12, lineHeight: 1.45, fontWeight: 700, padding: '8px 12px', borderRadius: 8, marginBottom: 14, color: whatsapp === 'connected' ? tokens.positive : whatsapp === 'not_connected' ? tokens.attention : tokens.text2, backgroundColor: whatsapp === 'connected' ? tokens.positiveBg : whatsapp === 'not_connected' ? tokens.attentionBg : tokens.surface2 }}
+                  >
+                    {t('authch.admin.wa.label')}: {t(WHATSAPP_STATE_COPY[whatsapp])}
+                  </div>
+                ) : null}
               </div>
 
               {/* Action Button Row */}
