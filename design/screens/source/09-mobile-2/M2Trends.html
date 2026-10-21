@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Trends</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:#FAF8FF;color:#131B2E}
+a{color:#0C0494;text-decoration:none}a:hover{color:#2B20C9}
+button{font-family:inherit}
+a:focus-visible,button:focus-visible{outline:3px solid #6D5BFF;outline-offset:3px;border-radius:14px}
+@keyframes skRise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes skDraw{from{stroke-dashoffset:600}to{stroke-dashoffset:0}}
+@keyframes skPop{0%{transform:scale(0)}70%{transform:scale(1.25)}100%{transform:scale(1)}}
+@keyframes skSlide{from{left:0}}
+.sk-rail{scrollbar-width:none}.sk-rail::-webkit-scrollbar{display:none}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div style="width: 390px; height: 1300px; box-sizing: border-box; background: #FAF8FF; position: relative; overflow: hidden;">
+  <div aria-hidden="true" style="position: absolute; top: -140px; left: -100px; width: 320px; height: 320px; border-radius: 999px; background: radial-gradient(circle, rgba(109,91,255,.20), rgba(109,91,255,0) 70%);"></div>
+
+  <header style="position: relative; padding: 18px 20px 0; display: flex; align-items: center; gap: 12px; animation: skRise .5s both;">
+    <a href="Insights.dc.html" aria-label="Back to My health" style="width: 44px; height: 44px; border-radius: 999px; background: #FFFFFF; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(12,4,148,.08);"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#131B2E" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"></path></svg></a>
+    <div style="flex-grow: 1; display: flex; flex-direction: column;"><span style="font-size: 12px; font-weight: 600; color: #6B6980;">3 reports · 2023 to 2026</span><h1 style="margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -0.5px;">Trends</h1></div>
+    <button type="button" aria-pressed="{{ savedPressed }}" aria-label="Bookmark this test" onClick="{{ toggleSave }}" style="width: 44px; height: 44px; border: 0; border-radius: 999px; background: #FFFFFF; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(12,4,148,.08);"><svg width="19" height="19" viewBox="0 0 24 24" fill="{{ saveFill }}" stroke="#0C0494" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4z"></path></svg></button>
+  </header>
+
+  <div role="tablist" aria-label="Test" class="sk-rail" style="margin-top: 16px; display: flex; gap: 8px; overflow-x: auto; padding: 0 20px 4px; animation: skRise .5s .05s both;">
+    <sc-for list="{{ tests }}" as="t" hint-placeholder-count="4"><button type="button" role="tab" aria-selected="{{ t.sel }}" onClick="{{ t.pick }}" style="{{ t.style }}"><span style="{{ t.dot }}"></span>{{ t.label }}</button></sc-for>
+  </div>
+
+  <section style="margin: 14px 20px 0; padding: 18px; border-radius: 28px; background: #FFFFFF; box-shadow: 0 10px 28px rgba(12,4,148,.08); animation: skRise .5s .1s both;">
+    <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 10px;">
+      <span style="display: flex; flex-direction: column; gap: 4px;"><span style="font-size: 11px; font-weight: 800; letter-spacing: 1px; color: #6B6980;">LATEST · {{ cur.date }}</span><span style="display: flex; align-items: baseline; gap: 6px;"><span style="font-size: 38px; font-weight: 800; letter-spacing: -1.2px; font-variant-numeric: tabular-nums;">{{ cur.value }}</span><span style="font-size: 13px; font-weight: 700; color: #464555;">{{ cur.unit }}</span></span></span>
+      <span style="{{ cur.badge }}">{{ cur.state }}</span>
+    </div>
+    <div style="margin-top: 14px; position: relative; height: 10px; border-radius: 999px; background: linear-gradient(90deg, #FDE68A 0%, #FDE68A 25%, #A7F3D0 25%, #A7F3D0 75%, #FDE68A 75%);">
+      <span style="{{ cur.marker }}"></span>
+    </div>
+    <div style="margin-top: 6px; display: flex; justify-content: space-between; font-size: 11px; font-weight: 700; color: #6B6980;"><span>Low</span><span>Range {{ cur.range }}</span><span>High</span></div>
+
+    <div role="radiogroup" aria-label="View" style="margin-top: 18px; padding: 4px; border-radius: 999px; background: #F2F3FF; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));">
+      <button type="button" role="radio" aria-checked="{{ graphChecked }}" onClick="{{ pickGraph }}" style="{{ graphStyle }}">Graph</button>
+      <button type="button" role="radio" aria-checked="{{ tableChecked }}" onClick="{{ pickTable }}" style="{{ tableStyle }}">Table</button>
+    </div>
+
+    <sc-if value="{{ isGraph }}" hint-placeholder-val="{{ true }}">
+      <svg width="314" height="190" viewBox="0 0 314 190" role="img" aria-label="{{ chartLabel }}" style="margin-top: 14px; display: block;">
+        <defs><linearGradient id="trendFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6D5BFF" stop-opacity=".28"></stop><stop offset="1" stop-color="#6D5BFF" stop-opacity="0"></stop></linearGradient></defs>
+        <rect x="0" y="{{ band.y }}" width="314" height="{{ band.h }}" rx="8" fill="#ECFDF5"></rect>
+        <text x="306" y="{{ band.ty }}" text-anchor="end" font-size="10.5" font-weight="700" fill="#047857" font-family="Plus Jakarta Sans">in range</text>
+        <path d="{{ area }}" fill="url(#trendFill)" style="animation: skRise .8s .4s both;"></path>
+        <path d="{{ line }}" fill="none" stroke="#0C0494" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="600" style="animation: skDraw 1.4s .2s both cubic-bezier(.2,.7,.3,1);"></path>
+        <circle cx="{{ p0.x }}" cy="{{ p0.y }}" r="7" fill="#FFFFFF" stroke="{{ p0.stroke }}" stroke-width="3" style="transform-box: fill-box; transform-origin: center; animation: skPop .45s .5s both;"></circle>
+        <text x="{{ p0.x }}" y="{{ p0.ly }}" text-anchor="middle" font-size="11.5" font-weight="800" fill="#131B2E" font-family="Plus Jakarta Sans">{{ p0.v }}</text>
+        <text x="{{ p0.x }}" y="184" text-anchor="middle" font-size="10.5" font-weight="700" fill="#6B6980" font-family="Plus Jakarta Sans">{{ p0.d }}</text>
+        <circle cx="{{ p1.x }}" cy="{{ p1.y }}" r="7" fill="#FFFFFF" stroke="{{ p1.stroke }}" stroke-width="3" style="transform-box: fill-box; transform-origin: center; animation: skPop .45s .8s both;"></circle>
+        <text x="{{ p1.x }}" y="{{ p1.ly }}" text-anchor="middle" font-size="11.5" font-weight="800" fill="#131B2E" font-family="Plus Jakarta Sans">{{ p1.v }}</text>
+        <text x="{{ p1.x }}" y="184" text-anchor="middle" font-size="10.5" font-weight="700" fill="#6B6980" font-family="Plus Jakarta Sans">{{ p1.d }}</text>
+        <circle cx="{{ p2.x }}" cy="{{ p2.y }}" r="7" fill="#FFFFFF" stroke="{{ p2.stroke }}" stroke-width="3" style="transform-box: fill-box; transform-origin: center; animation: skPop .45s 1.1s both;"></circle>
+        <text x="{{ p2.x }}" y="{{ p2.ly }}" text-anchor="middle" font-size="11.5" font-weight="800" fill="#131B2E" font-family="Plus Jakarta Sans">{{ p2.v }}</text>
+        <text x="{{ p2.x }}" y="184" text-anchor="middle" font-size="10.5" font-weight="700" fill="#6B6980" font-family="Plus Jakarta Sans">{{ p2.d }}</text>
+      </svg>
+    </sc-if>
+    <sc-if value="{{ isTable }}" hint-placeholder-val="{{ false }}">
+      <div style="margin-top: 14px; display: flex; flex-direction: column;">
+        <sc-for list="{{ rows }}" as="r" hint-placeholder-count="3">
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-top: 1px solid #EEF2FF; animation: skRise .3s both;"><span style="display: flex; flex-direction: column; gap: 2px;"><span style="font-size: 13.5px; font-weight: 800;">{{ r.d }}</span><span style="font-size: 11.5px; font-weight: 600; color: #6B6980;">{{ r.lab }}</span></span><span style="{{ r.chip }}">{{ r.v }}</span></div>
+        </sc-for>
+      </div>
+    </sc-if>
+    <p style="margin: 12px 0 0; font-size: 11.5px; line-height: 17px; font-weight: 600; color: #6B6980;">Values you confirmed from your reports. Different labs can use slightly different ranges.</p>
+  </section>
+
+  <section aria-labelledby="steps" style="margin: 16px 20px 0; padding: 16px; border-radius: 26px; background: linear-gradient(160deg, #ECFDF5, #FFFFFF 70%); animation: skRise .55s .2s both;">
+    <div style="display: flex; align-items: center; justify-content: space-between;"><h2 id="steps" style="margin: 0; font-size: 15px; font-weight: 800;">Your doctor’s 3 steps</h2><span style="font-size: 11px; font-weight: 700; color: #047857;">from Dr. S. Kumar</span></div>
+    <div class="sk-rail" style="margin-top: 12px; display: flex; gap: 10px; overflow-x: auto; padding-bottom: 4px;">
+      <sc-for list="{{ steps }}" as="s" hint-placeholder-count="3">
+        <div style="flex-shrink: 0; width: 196px; border-radius: 22px; padding: 14px; background: #FFFFFF; box-shadow: 0 6px 16px rgba(4,120,87,.08); display: flex; flex-direction: column; gap: 8px;">
+          <span style="width: 40px; height: 40px; border-radius: 14px; background: linear-gradient(145deg, #A7F3D0, #34D399); display: flex; align-items: center; justify-content: center;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#065F46" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{ s.icon }}"></path></svg></span>
+          <span style="font-size: 13.5px; font-weight: 800; line-height: 18px;">{{ s.k }}</span>
+          <span style="display: flex; gap: 6px; flex-wrap: wrap;"><span style="padding: 4px 9px; border-radius: 999px; background: #ECFDF5; color: #047857; font-size: 11px; font-weight: 800;">{{ s.often }}</span><span style="padding: 4px 9px; border-radius: 999px; background: #F2F3FF; color: #464555; font-size: 11px; font-weight: 800;">{{ s.time }}</span></span>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <nav aria-label="Main" style="position: absolute; left: 16px; right: 16px; bottom: 22px; height: 70px; border-radius: 999px; background: linear-gradient(160deg, #1A10B5, #0C0494); box-shadow: 0 18px 40px rgba(12,4,148,.35); display: flex; align-items: center; justify-content: space-between; padding: 0 10px;">
+    <a href="Main.dc.html" aria-label="Home" style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C7C3FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5L12 4l9 6.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"></path></svg></a>
+    <a href="Orders.dc.html" aria-label="Orders" style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C7C3FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8l-9-5-9 5 9 5zM3 8v8l9 5 9-5V8M12 13v8"></path></svg></a>
+    <a href="AskAyush.dc.html" aria-label="Ask Ayush" style="width: 52px; height: 52px; border-radius: 999px; background: radial-gradient(circle at 35% 30%, #A5F3FC, #6D5BFF 55%, #2B20C9); display: flex; align-items: center; justify-content: center;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M5.6 18.4l2.8-2.8M15.6 8.4l2.8-2.8"></path></svg></a>
+    <a href="Insights.dc.html" aria-current="page" style="height: 52px; padding: 0 16px; border-radius: 999px; background: #FFFFFF; color: #0C0494; font-size: 13.5px; font-weight: 800; display: flex; align-items: center; gap: 7px;"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#0C0494" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 5.6a5 5 0 0 0-7.1 0L12 7.3l-1.7-1.7a5 5 0 1 0-7.1 7.1L12 21.5l8.8-8.8a5 5 0 0 0 0-7.1z"></path></svg>My health</a>
+    <a href="Profile.dc.html" aria-label="Profile" style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C7C3FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21a8 8 0 0 1 16 0"></path></svg></a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1300}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { t: 'hba1c', view: 'graph', saved: true }; }
+  renderVals() {
+    const s = this.state;
+    const T = {
+      hba1c: { label: 'HbA1c', unit: '%', lo: 4.0, hi: 5.6, min: 3.5, max: 8.5, range: '4.0–5.6 %', data: [['Dec 23', 6.1, 'City Lab'], ['Mar 25', 6.9, 'Campus clinic'], ['Jun 26', 7.6, 'City Lab']] },
+      hdl: { label: 'HDL cholesterol', unit: 'mg/dL', lo: 40, hi: 60, min: 15, max: 70, range: '40–60 mg/dL', data: [['Dec 23', 23.5, 'City Lab'], ['Mar 25', 31, 'Campus clinic'], ['Jun 26', 26, 'City Lab']] },
+      vitd: { label: 'Vitamin D', unit: 'ng/mL', lo: 30, hi: 100, min: 0, max: 110, range: '30–100 ng/mL', data: [['Dec 23', 14, 'City Lab'], ['Mar 25', 28, 'Campus clinic'], ['Jun 26', 41, 'City Lab']] },
+      hb: { label: 'Haemoglobin', unit: 'g/dL', lo: 12, hi: 15.5, min: 9, max: 17, range: '12–15.5 g/dL', data: [['Dec 23', 12.8, 'City Lab'], ['Mar 25', 13.1, 'Campus clinic'], ['Jun 26', 13.4, 'City Lab']] }
+    };
+    const c = T[s.t];
+    const W = 314, top = 16, bot = 160;
+    const Y = (v) => bot - (v - c.min) / (c.max - c.min) * (bot - top);
+    const X = (i) => 28 + i * ((W - 56) / (c.data.length - 1));
+    const inR = (v) => v >= c.lo && v <= c.hi;
+    const pts = c.data.map(([d, v], i) => ({ d, v: String(v), x: X(i), y: Y(v), ly: Y(v) - 14, stroke: inR(v) ? '#10B981' : '#F59E0B' }));
+    const line = pts.map((p, i) => (i ? 'L' : 'M') + p.x + ' ' + p.y).join(' ');
+    const area = line + ' L' + pts[pts.length - 1].x + ' ' + bot + ' L' + pts[0].x + ' ' + bot + ' Z';
+    const last = c.data[c.data.length - 1];
+    const ok = inR(last[1]);
+    const pos = Math.max(2, Math.min(98, 25 + (last[1] - c.lo) / (c.hi - c.lo) * 50));
+    const seg = (on) => 'height: 38px; border: 0; border-radius: 999px; cursor: pointer; font-size: 12.5px; font-weight: 800; transition: all .25s; ' + (on ? 'background: #FFFFFF; color: #131B2E; box-shadow: 0 4px 12px rgba(12,4,148,.10);' : 'background: transparent; color: #6B6980;');
+    const chip = (v) => 'padding: 5px 10px; border-radius: 999px; font-size: 12.5px; font-weight: 800; font-variant-numeric: tabular-nums; ' + (inR(v) ? 'background: #ECFDF5; color: #047857;' : 'background: #FFFBEB; color: #92400E;');
+    return {
+      tests: Object.keys(T).map((id) => {
+        const on = s.t === id; const lv = T[id].data[T[id].data.length - 1][1]; const g = lv >= T[id].lo && lv <= T[id].hi;
+        return { label: T[id].label, sel: on ? 'true' : 'false', pick: () => this.setState({ t: id }),
+          style: 'flex-shrink: 0; height: 40px; padding: 0 14px; border-radius: 999px; cursor: pointer; display: flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 800; transition: all .25s; ' + (on ? 'border: 0; background: #0C0494; color: #FFFFFF; box-shadow: 0 8px 18px rgba(12,4,148,.25);' : 'border: 1.5px solid #DAE2FD; background: #FFFFFF; color: #464555;'),
+          dot: 'width: 8px; height: 8px; border-radius: 999px; background: ' + (g ? '#34D399' : '#F59E0B') + ';' };
+      }),
+      cur: {
+        date: last[0].toUpperCase(), value: String(last[1]), unit: c.unit, range: c.range, state: ok ? 'In range' : (last[1] < c.lo ? 'Below range' : 'Above range'),
+        badge: 'padding: 6px 12px; border-radius: 999px; font-size: 12px; font-weight: 800; ' + (ok ? 'background: #ECFDF5; color: #047857;' : 'background: #FFFBEB; color: #92400E;'),
+        marker: 'position: absolute; top: -5px; left: ' + pos + '%; margin-left: -10px; width: 20px; height: 20px; border-radius: 999px; background: #0C0494; border: 3px solid #FFFFFF; box-sizing: border-box; box-shadow: 0 4px 10px rgba(12,4,148,.35); transition: left .5s cubic-bezier(.2,.7,.3,1); animation: skSlide .9s .3s both cubic-bezier(.2,.7,.3,1);'
+      },
+      isGraph: s.view === 'graph', isTable: s.view === 'table',
+      graphChecked: s.view === 'graph' ? 'true' : 'false', tableChecked: s.view === 'table' ? 'true' : 'false',
+      pickGraph: () => this.setState({ view: 'graph' }), pickTable: () => this.setState({ view: 'table' }),
+      graphStyle: seg(s.view === 'graph'), tableStyle: seg(s.view === 'table'),
+      band: { y: Y(c.hi), h: Y(c.lo) - Y(c.hi), ty: Y(c.hi) + 14 },
+      line, area, p0: pts[0], p1: pts[1], p2: pts[2],
+      chartLabel: c.label + ' over time: ' + c.data.map((r) => r[0] + ' ' + r[1]).join(', '),
+      rows: c.data.slice().reverse().map(([d, v, lab]) => ({ d, lab, v: v + ' ' + c.unit, chip: chip(v) })),
+      savedPressed: s.saved ? 'true' : 'false', saveFill: s.saved ? '#0C0494' : 'none', toggleSave: () => this.setState({ saved: !s.saved }),
+      steps: [
+        { k: 'Walk after lunch and dinner', often: 'Daily', time: '15 min', icon: 'M13 4a2 2 0 1 0 0-.01M10 21l2-6 3 3v3M8 12l3-3 3 2 3 1M10 15l-2 2' },
+        { k: 'Fewer fried and refined foods', often: 'Most days', time: 'Each meal', icon: 'M4 11h16a8 8 0 0 1-16 0zM12 3v3M8 4v2M16 4v2' },
+        { k: 'Repeat HbA1c', often: 'Once', time: 'In 3 months', icon: 'M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.8 3h10.4A2 2 0 0 0 19 18l-5-9V3' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

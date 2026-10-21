@@ -13679,5 +13679,644 @@
   "brand": [],
   "assets": [],
   "textGlyphs": []
+ },
+ {
+  "screen": "M2Home",
+  "page": "9 \u00b7 Mobile 2.0 (approved 2026-10-21)",
+  "folder": "09-mobile-2",
+  "title": "Mobile 2.0 \u2014 Home \u00b7 For You (service tabs, highlights, today, shop by concern)",
+  "size": "390x1640",
+  "platform": "Phone",
+  "tier": 2,
+  "tickets": [
+   "SK-034"
+  ],
+  "links": [
+   "M2AskAyush",
+   "M2Consults",
+   "M2Insights",
+   "M2Insurance",
+   "M2Labs",
+   "M2Medicines",
+   "M2Orders",
+   "M2Product",
+   "M2Profile",
+   "M2ReportUpload",
+   "M2Vaccines"
+  ],
+  "states": [
+   "Service tab: For You \u00b7 Medicines \u00b7 Lab tests \u00b7 Consults \u00b7 Vaccines \u00b7 Insurance \u00b7 Campus",
+   "Highlight 1 \u00b7 2 \u00b7 3 (auto-advances every 4.2 s; dots switch)"
+  ],
+  "icons": [
+   "arrow-right",
+   "bottle",
+   "box",
+   "calendar-2",
+   "cart",
+   "chevron-down",
+   "doc",
+   "droplet",
+   "eye",
+   "file-check",
+   "first-aid-kit",
+   "heart",
+   "heart-3",
+   "home",
+   "home-2",
+   "lab",
+   "map-pin-2",
+   "mic",
+   "moon-2",
+   "phone",
+   "pill-3",
+   "pill-alt",
+   "plus",
+   "qr-code-2",
+   "refresh",
+   "search",
+   "shield",
+   "shield-alert",
+   "star",
+   "stetho",
+   "syringe",
+   "thermo",
+   "user-5"
+  ],
+  "icons3d": [],
+  "glyphs": [],
+  "illustrations": [],
+  "charts": [
+   "chart-medicines-today-ring"
+  ],
+  "brand": [],
+  "assets": [],
+  "textGlyphs": [],
+  "missingIcons": [
+   "document with an upload arrow (upload a prescription / report)",
+   "card with text lines, no portrait (emergency card / insurance e-card)",
+   "eight-ray spark without a centre (Ask Ayush orb glyph in the pill nav)",
+   "medicine bottle with a cross",
+   "open tray / till (price shown before you pay)",
+   "plus with one diagonal stroke (generics highlight)",
+   "trend line with an up-right arrow"
+  ]
+ },
+ {
+  "screen": "M2Medicines",
+  "page": "9 \u00b7 Mobile 2.0 (approved 2026-10-21)",
+  "folder": "09-mobile-2",
+  "title": "Mobile 2.0 \u2014 Medicines (order with Rx, call/chat to order, generics, auto-refill)",
+  "size": "390x1640",
+  "platform": "Phone",
+  "tier": 2,
+  "tickets": [
+   "SK-041",
+   "SK-062",
+   "SK-065"
+  ],
+  "links": [
+   "M2AskAyush",
+   "M2Home",
+   "M2Insights",
+   "M2Orders",
+   "M2Product",
+   "M2Profile",
+   "M2ReportUpload"
+  ],
+  "states": [
+   "Auto-refill on",
+   "Auto-refill off"
+  ],
+  "icons": [
+   "arrow-left",
+   "arrow-right",
+   "bottle",
+   "box",
+   "cart",
+   "droplet",
+   "eye",
+   "first-aid-kit",
+   "heart-3",
+   "home",
+   "message-circle",
+   "monitor",
+   "phone",
+   "pill-alt",
+   "refresh",
+   "search",
+   "sun",
+   "thermometer",
+   "user-5",
+   "wind"
+  ],
+  "icons3d": [],
+  "glyphs": [],
+  "illustrations": [],
+  "charts": [],
+  "brand": [],
+  "assets": [],
+  "textGlyphs": [],
+  "missingIcons": [
+   "document with an upload arrow (upload a prescription / report)",
+   "eight-ray spark without a centre (Ask Ayush orb glyph in the pill nav)",
+   "two-leaf sprout / lotus (Ayurveda, allergy)",
+   "stomach",
+   "trend line with an up-right arrow"
+  ]
+ },
+ {
+  "screen": "M2Product",
+  "page": "9 \u00b7 Mobile 2.0 (approved 2026-10-21)",
+  "folder": "09-mobile-2",
+  "title": "Mobile 2.0 \u2014 Medicine detail \u00b7 generics",
+  "size": "390x1300",
+  "platform": "Phone",
+  "tier": 1,
+  "tickets": [
+   "SK-062"
+  ],
+  "links": [
+   "M2Medicines",
+   "M2Orders",
+   "M2ReportUpload"
+  ],
+  "states": [
+   "Quantity 1\u20139 (\u2212 / +)",
+   "About: What it is used for \u00b7 Common side effects \u00b7 Do not take with (one open at a time, or none)"
+  ],
+  "icons": [
+   "arrow-left",
+   "cart",
+   "chevron-down",
+   "flask",
+   "plus"
+  ],
+  "icons3d": [],
+  "glyphs": [],
+  "illustrations": [],
+  "charts": [],
+  "brand": [],
+  "assets": [],
+  "textGlyphs": [],
+  "missingIcons": [
+   "minus sign \"\u2212\" used as text on the quantity stepper (One fewer)"
+  ]
+ },
+ {
+  "screen": "M2Labs",
+  "page": "9 \u00b7 Mobile 2.0 (approved 2026-10-21)",
+  "folder": "09-mobile-2",
+  "title": "Mobile 2.0 \u2014 Lab tests (packages by audience, doctor-ordered, collection)",
+  "size": "390x1640",
+  "platform": "Phone",
+  "tier": 2,
+  "tickets": [
+   "SK-036"
+  ],
+  "links": [
+   "M2AskAyush",
+   "M2Home",
+   "M2Insights",
+   "M2Orders",
+   "M2Profile",
+   "M2ReportUpload"
+  ],
+  "states": [
+   "Packages for: Everyone \u00b7 Women \u00b7 Men \u00b7 Fitness \u00b7 By concern"
+  ],
+  "icons": [
+   "arrow-left",
+   "bottle",
+   "box",
+   "droplet",
+   "dumbbell",
+   "heart-3",
+   "home",
+   "person-badge",
+   "phone",
+   "search",
+   "stetho",
+   "thermometer",
+   "user-5"
+  ],
+  "icons3d": [],
+  "glyphs": [],
+  "illustrations": [],
+  "charts": [],
+  "brand": [],
+  "assets": [],
+  "textGlyphs": [],
+  "missingIcons": [
+   "document with an upload arrow (upload a prescription / report)",
+   "thyroid gland",
+   "eight-ray spark without a centre (Ask Ayush orb glyph in the pill nav)",
+   "two-leaf sprout / lotus (Ayurveda, allergy)",
+   "female symbol \u2640",
+   "male symbol \u2642",
+   "trend line with an up-right arrow",
+   "line chart on axes",
+   "trend line (zigzag, no arrow)"
+  ]
+ },
+ {
+  "screen": "M2Consults",
+  "page": "9 \u00b7 Mobile 2.0 (approved 2026-10-21)",
+  "folder": "09-mobile-2",
+  "title": "Mobile 2.0 \u2014 Doctor consults (concern chips, doctors, follow-up)",
+  "size": "390x1640",
+  "platform": "Phone",
+  "tier": 2,
+  "tickets": [
+   "SK-037",
+   "SK-038"
+  ],
+  "links": [
+   "M2AskAyush",
+   "M2Home",
+   "M2Insights",
+   "M2Orders",
+   "M2Profile"
+  ],
+  "states": [
+   "Concern chip (12); Stress or anxiety \u00b7 Sleep trouble \u00b7 Low mood add the counsellor / Tele-MANAS note",
+   "FAQ: one open at a time, or none"
+  ],
+  "icons": [
+   "arrow-left",
+   "arrow-right",
+   "box",
+   "chevron-down",
+   "chevron-right",
+   "file-check",
+   "heart-3",
+   "home",
+   "refresh",
+   "shield",
+   "user-5",
+   "video-2"
+  ],
+  "icons3d": [],
+  "glyphs": [],
+  "illustrations": [],
+  "charts": [],
+  "brand": [],
+  "assets": [],
+  "textGlyphs": [],
+  "missingIcons": [
+   "eight-ray spark without a centre (Ask Ayush orb glyph in the pill nav)"
+  ]
+ },
+ {
+  "screen": "M2Vaccines",
+  "page": "9 \u00b7 Mobile 2.0 (approved 2026-10-21)",
+  "folder": "09-mobile-2",
+  "title": "Mobile 2.0 \u2014 Vaccines \u00b7 record and booking",
+  "size": "390x1400",
+  "platform": "Phone",
+  "tier": 1,
+  "tickets": [
+   "SK-042"
+  ],
+  "links": [
+   "M2AskAyush",
+   "M2Home",
+   "M2Insights",
+   "M2Orders",
+   "M2Profile",
+   "M2ReportUpload"
+  ],
+  "states": [
+   "Vaccine: Influenza \u00b7 HPV \u00b7 Hepatitis B \u00b7 Typhoid",
+   "Given at the clinic \u00b7 Vaccine only"
+  ],
+  "icons": [
+   "arrow-left",
+   "box",
+   "check",
+   "heart-3",
+   "home",
+   "syringe",
+   "user-5"
+  ],
+  "icons3d": [],
+  "glyphs": [],
+  "illustrations": [],
+  "charts": [],
+  "brand": [],
+  "assets": [],
+  "textGlyphs": [],
+  "missingIcons": [
+   "eight-ray spark without a centre (Ask Ayush orb glyph in the pill nav)"
+  ]
+ },
+ {
+  "screen": "M2Insurance",
+  "page": "9 \u00b7 Mobile 2.0 (approved 2026-10-21)",
+  "folder": "09-mobile-2",
+  "title": "Mobile 2.0 \u2014 Insurance \u00b7 policy and claims",
+  "size": "390x1200",
+  "platform": "Phone",
+  "tier": 2,
+  "tickets": [
+   "SK-071"
+  ],
+  "links": [
+   "M2AskAyush",
+   "M2Home",
+   "M2Insights",
+   "M2Orders",
+   "M2Profile",
+   "M2ReportUpload"
+  ],
+  "states": [],
+  "icons": [
+   "arrow-left",
+   "box",
+   "heart-3",
+   "home",
+   "home-2",
+   "plus",
+   "shield-alert",
+   "user-5"
+  ],
+  "icons3d": [],
+  "glyphs": [],
+  "illustrations": [],
+  "charts": [],
+  "brand": [],
+  "assets": [],
+  "textGlyphs": [],
+  "missingIcons": [
+   "card with text lines, no portrait (emergency card / insurance e-card)",
+   "eight-ray spark without a centre (Ask Ayush orb glyph in the pill nav)",
+   "aeroplane (travel abroad)"
+  ]
+ },
+ {
+  "screen": "M2Orders",
+  "page": "9 \u00b7 Mobile 2.0 (approved 2026-10-21)",
+  "folder": "09-mobile-2",
+  "title": "Mobile 2.0 \u2014 Orders \u00b7 live tracking and past",
+  "size": "390x1100",
+  "platform": "Phone",
+  "tier": 2,
+  "tickets": [
+   "SK-064"
+  ],
+  "links": [
+   "M2AskAyush",
+   "M2Home",
+   "M2Insights",
+   "M2Product",
+   "M2Profile"
+  ],
+  "states": [
+   "Active \u00b7 1",
+   "Past"
+  ],
+  "icons": [
+   "box",
+   "first-aid-kit",
+   "heart-3",
+   "home",
+   "home-2",
+   "user-5"
+  ],
+  "icons3d": [],
+  "glyphs": [],
+  "illustrations": [],
+  "charts": [
+   "chart-order-route"
+  ],
+  "brand": [],
+  "assets": [],
+  "textGlyphs": [],
+  "missingIcons": [
+   "eight-ray spark without a centre (Ask Ayush orb glyph in the pill nav)",
+   "delivery scooter / two-wheeler"
+  ]
+ },
+ {
+  "screen": "M2Insights",
+  "page": "9 \u00b7 Mobile 2.0 (approved 2026-10-21)",
+  "folder": "09-mobile-2",
+  "title": "Mobile 2.0 \u2014 My health \u00b7 Insights",
+  "size": "390x1500",
+  "platform": "Phone",
+  "tier": 1,
+  "tickets": [
+   "SK-047"
+  ],
+  "links": [
+   "M2AskAyush",
+   "M2Home",
+   "M2Orders",
+   "M2Profile",
+   "M2Trends"
+  ],
+  "states": [
+   "Need a look (default)",
+   "In range"
+  ],
+  "icons": [
+   "bottle",
+   "box",
+   "chevron-right",
+   "droplet",
+   "heart-3",
+   "home",
+   "user-5"
+  ],
+  "icons3d": [],
+  "glyphs": [],
+  "illustrations": [],
+  "charts": [],
+  "brand": [],
+  "assets": [],
+  "textGlyphs": [],
+  "missingIcons": [
+   "thyroid gland",
+   "eight-ray spark without a centre (Ask Ayush orb glyph in the pill nav)"
+  ]
+ },
+ {
+  "screen": "M2Trends",
+  "page": "9 \u00b7 Mobile 2.0 (approved 2026-10-21)",
+  "folder": "09-mobile-2",
+  "title": "Mobile 2.0 \u2014 Trends \u00b7 each test over time",
+  "size": "390x1300",
+  "platform": "Phone",
+  "tier": 1,
+  "tickets": [
+   "SK-045",
+   "SK-047"
+  ],
+  "links": [
+   "M2AskAyush",
+   "M2Home",
+   "M2Insights",
+   "M2Orders",
+   "M2Profile"
+  ],
+  "states": [
+   "Test: HbA1c \u00b7 HDL cholesterol \u00b7 Vitamin D \u00b7 Haemoglobin",
+   "Graph \u00b7 Table",
+   "Bookmarked on / off"
+  ],
+  "icons": [
+   "arrow-left",
+   "bowl",
+   "box",
+   "flask",
+   "heart-3",
+   "home",
+   "user-5"
+  ],
+  "icons3d": [],
+  "glyphs": [],
+  "illustrations": [],
+  "charts": [
+   "chart-test-trend"
+  ],
+  "brand": [],
+  "assets": [],
+  "textGlyphs": [],
+  "missingIcons": [
+   "eight-ray spark without a centre (Ask Ayush orb glyph in the pill nav)",
+   "walking person",
+   "bookmark"
+  ]
+ },
+ {
+  "screen": "M2ReportUpload",
+  "page": "9 \u00b7 Mobile 2.0 (approved 2026-10-21)",
+  "folder": "09-mobile-2",
+  "title": "Mobile 2.0 \u2014 Upload a report from any lab",
+  "size": "390x1250",
+  "platform": "Phone",
+  "tier": 1,
+  "tickets": [
+   "SK-046",
+   "SK-047"
+  ],
+  "links": [
+   "M2Insights",
+   "M2Trends"
+  ],
+  "states": [
+   "Add (pick a source)",
+   "Read (reading your report\u2026)",
+   "Check (confirm 8 values, untick any)",
+   "Saved (added to your record)"
+  ],
+  "icons": [
+   "arrow-left",
+   "camera-2",
+   "check",
+   "chevron-right",
+   "flask"
+  ],
+  "icons3d": [],
+  "glyphs": [],
+  "illustrations": [],
+  "charts": [],
+  "brand": [],
+  "assets": [],
+  "textGlyphs": [],
+  "missingIcons": [
+   "document with an upload arrow (upload a prescription / report)"
+  ]
+ },
+ {
+  "screen": "M2AskAyush",
+  "page": "9 \u00b7 Mobile 2.0 (approved 2026-10-21)",
+  "folder": "09-mobile-2",
+  "title": "Mobile 2.0 \u2014 Ask Ayush about my records",
+  "size": "390x844",
+  "platform": "Phone",
+  "tier": 1,
+  "tickets": [
+   "SK-048"
+  ],
+  "links": [
+   "M2Consults",
+   "M2Home",
+   "M2Insights",
+   "M2Profile"
+  ],
+  "states": [
+   "Thread with the report card",
+   "Suggestion or typed question \u2192 typing dots \u2192 answer (report card hides)"
+  ],
+  "icons": [
+   "arrow-left",
+   "arrow-right",
+   "phone",
+   "shield"
+  ],
+  "icons3d": [],
+  "glyphs": [],
+  "illustrations": [],
+  "charts": [],
+  "brand": [],
+  "assets": [],
+  "textGlyphs": [],
+  "missingIcons": []
+ },
+ {
+  "screen": "M2Profile",
+  "page": "9 \u00b7 Mobile 2.0 (approved 2026-10-21)",
+  "folder": "09-mobile-2",
+  "title": "Mobile 2.0 \u2014 Profile \u00b7 documents \u00b7 family",
+  "size": "390x1400",
+  "platform": "Phone",
+  "tier": 1,
+  "tickets": [
+   "SK-050",
+   "SK-057",
+   "SK-068"
+  ],
+  "links": [
+   "M2AskAyush",
+   "M2Consults",
+   "M2Home",
+   "M2Insights",
+   "M2Medicines",
+   "M2ReportUpload"
+  ],
+  "states": [
+   "Ayush can read my records on / off",
+   "Share with family on / off (marked coming soon)"
+  ],
+  "icons": [
+   "chevron-right",
+   "credit-card",
+   "doc",
+   "flask",
+   "lock-4",
+   "map-pin-2",
+   "message-circle-3",
+   "plus",
+   "plus-square",
+   "scan",
+   "settings",
+   "shield-2",
+   "star",
+   "syringe",
+   "user-5"
+  ],
+  "icons3d": [],
+  "glyphs": [],
+  "illustrations": [],
+  "charts": [
+   "chart-profile-complete-ring"
+  ],
+  "brand": [],
+  "assets": [],
+  "textGlyphs": [],
+  "missingIcons": [
+   "translate / language (\u6587A)"
+  ]
  }
 ]

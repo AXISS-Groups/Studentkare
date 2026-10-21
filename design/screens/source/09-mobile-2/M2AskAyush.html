@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Ask Ayush</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:#FAF8FF;color:#131B2E}
+a{color:#0C0494;text-decoration:none}a:hover{color:#2B20C9}
+button,input{font-family:inherit}
+a:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid #6D5BFF;outline-offset:3px;border-radius:14px}
+@keyframes skRise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes skOrb{0%,100%{transform:scale(1) rotate(0)}50%{transform:scale(1.06) rotate(180deg)}}
+@keyframes skGlow{0%,100%{opacity:.55}50%{opacity:1}}
+@keyframes skDot{0%,80%,100%{transform:translateY(0);opacity:.4}40%{transform:translateY(-5px);opacity:1}}
+.sk-q{transition:transform .2s,background .2s}.sk-q:hover{transform:translateY(-2px);background:#EEF2FF}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #FAF8FF; position: relative; overflow: hidden; display: flex; flex-direction: column;">
+  <div aria-hidden="true" style="position: absolute; top: -160px; left: -60px; width: 420px; height: 360px; border-radius: 999px; background: radial-gradient(circle, rgba(109,91,255,.22), rgba(109,91,255,0) 70%); animation: skGlow 6s ease-in-out infinite;"></div>
+
+  <header style="position: relative; padding: 18px 20px 10px; display: flex; align-items: center; gap: 12px;">
+    <a href="Insights.dc.html" aria-label="Back to My health" style="width: 44px; height: 44px; border-radius: 999px; background: #FFFFFF; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(12,4,148,.08);"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#131B2E" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"></path></svg></a>
+    <span aria-hidden="true" style="width: 40px; height: 40px; border-radius: 999px; background: radial-gradient(circle at 30% 25%, #A5F3FC, #6D5BFF 45%, #2B20C9 80%); box-shadow: 0 0 22px rgba(109,91,255,.55); animation: skOrb 8s ease-in-out infinite;"></span>
+    <div style="flex-grow: 1; display: flex; flex-direction: column;"><span style="display: flex; align-items: center; gap: 6px;"><h1 style="margin: 0; font-size: 19px; font-weight: 800;">Ayush</h1><span style="padding: 2px 8px; border-radius: 999px; background: #EEF2FF; color: #0C0494; font-size: 10.5px; font-weight: 800;">BETA</span></span><span style="font-size: 11.5px; font-weight: 600; color: #6B6980;">Explains your own records. Not a doctor.</span></div>
+    <a href="Main.dc.html" style="height: 34px; padding: 0 12px; border-radius: 999px; background: #DC2626; color: #FFFFFF; font-size: 12px; font-weight: 800; display: flex; align-items: center;">SOS</a>
+  </header>
+
+  <div style="position: relative; margin: 0 20px; padding: 10px 12px; border-radius: 16px; background: #FFFFFF; box-shadow: 0 4px 14px rgba(12,4,148,.06); display: flex; align-items: center; gap: 10px;">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#047857" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6z"></path><path d="M9 12l2 2 4-4"></path></svg>
+    <span style="flex-grow: 1; font-size: 11.5px; line-height: 16px; font-weight: 600; color: #464555;">You allowed Ayush to read your lab reports and prescriptions.</span>
+    <a href="Profile.dc.html" style="font-size: 11.5px; font-weight: 800;">Change</a>
+  </div>
+
+  <main style="position: relative; flex-grow: 1; overflow: hidden; padding: 16px 20px 0; display: flex; flex-direction: column; gap: 12px;">
+    <sc-for list="{{ thread }}" as="m" hint-placeholder-count="3">
+      <div style="{{ m.wrap }}"><div style="{{ m.bubble }}">{{ m.text }}</div></div>
+    </sc-for>
+    <sc-if value="{{ showCard }}" hint-placeholder-val="{{ true }}">
+      <div style="align-self: flex-start; max-width: 300px; border-radius: 22px; background: #FFFFFF; box-shadow: 0 8px 22px rgba(12,4,148,.08); padding: 14px; animation: skRise .4s both;">
+        <span style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 12px; font-weight: 800; color: #6B6980;">From your report · 20 Jun</span><span style="padding: 3px 8px; border-radius: 999px; background: #FFFBEB; color: #92400E; font-size: 11px; font-weight: 800;">Above range</span></span>
+        <span style="display: block; margin-top: 6px; font-size: 22px; font-weight: 800; letter-spacing: -0.5px;">HbA1c 7.6 %</span>
+        <span style="position: relative; display: block; margin-top: 10px; height: 8px; border-radius: 999px; background: linear-gradient(90deg, #A7F3D0 0 50%, #FDE68A 50% 72%, #FECACA 72%);"><span style="position: absolute; left: 80%; top: -4px; width: 16px; height: 16px; border-radius: 999px; background: #0C0494; border: 3px solid #FFFFFF; box-shadow: 0 2px 6px rgba(0,0,0,.2);"></span></span>
+        <span style="display: block; margin-top: 10px; font-size: 12px; line-height: 17px; font-weight: 600; color: #464555;">Your doctor has already seen this and wrote a note.</span>
+        <a href="Consults.dc.html" style="margin-top: 10px; height: 40px; border-radius: 999px; background: linear-gradient(150deg, #2B20C9, #0C0494); color: #FFFFFF; font-size: 13px; font-weight: 800; display: flex; align-items: center; justify-content: center;">Talk to a doctor about it</a>
+      </div>
+    </sc-if>
+    <sc-if value="{{ typing }}" hint-placeholder-val="{{ false }}">
+      <div style="align-self: flex-start; padding: 12px 16px; border-radius: 20px 20px 20px 6px; background: #FFFFFF; display: flex; gap: 5px;" aria-label="Ayush is typing"><span style="width: 7px; height: 7px; border-radius: 999px; background: #6D5BFF; animation: skDot 1.2s infinite;"></span><span style="width: 7px; height: 7px; border-radius: 999px; background: #6D5BFF; animation: skDot 1.2s .15s infinite;"></span><span style="width: 7px; height: 7px; border-radius: 999px; background: #6D5BFF; animation: skDot 1.2s .3s infinite;"></span></div>
+    </sc-if>
+  </main>
+
+  <section style="position: relative; padding: 10px 0 0;">
+    <div style="display: flex; gap: 8px; overflow-x: auto; padding: 0 20px 10px; scrollbar-width: none;">
+      <sc-for list="{{ suggestions }}" as="q" hint-placeholder-count="4">
+        <button type="button" class="sk-q" onClick="{{ q.ask }}" style="flex-shrink: 0; height: 38px; padding: 0 14px; border: 1px solid #E0E7FF; border-radius: 999px; background: #FFFFFF; color: #0C0494; font-size: 12.5px; font-weight: 700; cursor: pointer; white-space: nowrap;">{{ q.k }}</button>
+      </sc-for>
+    </div>
+    <div style="margin: 0 20px; padding: 10px 12px; border-radius: 16px; background: #FEF2F2; display: flex; align-items: center; gap: 10px;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"></path></svg>
+      <span style="flex-grow: 1; font-size: 11.5px; line-height: 16px; font-weight: 600; color: #7F1D1D;">Feeling low or unsafe? Tele-MANAS is free, 24×7.</span>
+      <a href="tel:14416" style="font-size: 12.5px; font-weight: 800; color: #B91C1C;">Call 14416</a>
+    </div>
+    <form onSubmit="{{ send }}" style="margin: 10px 20px 0; height: 56px; border-radius: 999px; background: #FFFFFF; box-shadow: 0 10px 28px rgba(12,4,148,.12); display: flex; align-items: center; padding: 0 6px 0 18px; gap: 8px;">
+      <label for="ask" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0);">Ask about your records</label>
+      <input id="ask" value="{{ draft }}" onInput="{{ onDraft }}" placeholder="Ask about your reports…" style="flex-grow: 1; border: 0; outline: none; font-size: 14px; font-weight: 600; background: transparent; color: #131B2E; min-width: 0;">
+      <button type="submit" aria-label="Send" style="width: 44px; height: 44px; border: 0; border-radius: 999px; background: linear-gradient(150deg, #2B20C9, #0C0494); display: flex; align-items: center; justify-content: center; cursor: pointer;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></button>
+    </form>
+    <p style="margin: 8px 20px 16px; text-align: center; font-size: 10.5px; line-height: 15px; font-weight: 600; color: #6B6980;">Ayush can be wrong. A doctor checks anything clinical before it reaches you.</p>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { draft: '', typing: false, msgs: [
+      { me: true, text: 'Why is my HbA1c marked?' },
+      { me: false, text: 'Your 20 Jun report shows 7.6 %. The lab’s range is 4.0–5.6 %, so it is above range. It reflects your average sugar over about 3 months.' }
+    ] };
+  }
+  componentWillUnmount() { clearTimeout(this._t); }
+  ask(text) {
+    if (!text) return;
+    this.setState({ msgs: this.state.msgs.concat([{ me: true, text }]), draft: '', typing: true });
+    clearTimeout(this._t);
+    this._t = setTimeout(() => this.setState({ typing: false, msgs: this.state.msgs.concat([{ me: false, text: 'I’ve shared what your records say. For what to do next, a doctor will guide you; you can book one from here.' }]) }), 1600);
+  }
+  renderVals() {
+    const s = this.state;
+    return {
+      draft: s.draft, typing: s.typing, showCard: s.msgs.length <= 2,
+      onDraft: (e) => this.setState({ draft: e.target.value }),
+      send: (e) => { e.preventDefault(); this.ask(s.draft.trim()); },
+      thread: s.msgs.map((m, i) => ({ text: m.text,
+        wrap: 'display: flex; justify-content: ' + (m.me ? 'flex-end' : 'flex-start') + '; animation: skRise .35s ' + (i * 0.08) + 's both;',
+        bubble: 'max-width: 270px; padding: 11px 14px; font-size: 13.5px; line-height: 19px; font-weight: 600; ' + (m.me ? 'border-radius: 20px 20px 6px 20px; background: linear-gradient(150deg, #2B20C9, #0C0494); color: #FFFFFF;' : 'border-radius: 20px 20px 20px 6px; background: #FFFFFF; color: #131B2E; box-shadow: 0 4px 14px rgba(12,4,148,.06);') })),
+      suggestions: ['What changed since last time?', 'Explain my lipid profile', 'Which tests are due?', 'What did my doctor write?'].map((k) => ({ k, ask: () => this.ask(k) }))
+    };
+  }
+}
+</script>
+</body>
+</html>

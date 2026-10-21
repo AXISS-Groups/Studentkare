@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Lab tests</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:#FAF8FF;color:#131B2E}
+a{color:#0C0494;text-decoration:none}a:hover{color:#2B20C9}
+button{font-family:inherit}
+a:focus-visible,button:focus-visible{outline:3px solid #6D5BFF;outline-offset:3px;border-radius:14px}
+@keyframes skRise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes skFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes skBubble{0%{transform:translateY(0);opacity:0}20%{opacity:1}100%{transform:translateY(-46px);opacity:0}}
+@keyframes skFill{from{width:0}}
+.sk-card{transition:transform .25s cubic-bezier(.2,.7,.3,1),box-shadow .25s}.sk-card:hover{transform:translateY(-2px);box-shadow:0 14px 30px rgba(12,4,148,.12)}
+.sk-rail{scrollbar-width:none}.sk-rail::-webkit-scrollbar{display:none}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div style="width: 390px; height: 1640px; box-sizing: border-box; background: #FAF8FF; position: relative; overflow: hidden;">
+  <div aria-hidden="true" style="position: absolute; top: -140px; right: -110px; width: 330px; height: 330px; border-radius: 999px; background: radial-gradient(circle, rgba(139,92,246,.22), rgba(139,92,246,0) 70%);"></div>
+
+  <header style="position: relative; padding: 18px 20px 0; display: flex; align-items: center; gap: 12px; animation: skRise .5s both;">
+    <a href="Main.dc.html" aria-label="Back to Home" style="width: 44px; height: 44px; border-radius: 999px; background: #FFFFFF; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(12,4,148,.08);"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#131B2E" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"></path></svg></a>
+    <div style="flex-grow: 1; display: flex; flex-direction: column;"><span style="font-size: 12px; font-weight: 600; color: #6B6980;">Sample collected at Block C</span><h1 style="margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -0.5px;">Lab tests</h1></div>
+    <a href="Insights.dc.html" style="height: 40px; padding: 0 14px; border-radius: 999px; background: #FFFFFF; font-size: 12.5px; font-weight: 800; display: flex; align-items: center; box-shadow: 0 4px 14px rgba(12,4,148,.08);">My reports</a>
+  </header>
+
+  <label style="margin: 14px 20px 0; height: 52px; border-radius: 18px; background: #FFFFFF; box-shadow: 0 6px 18px rgba(12,4,148,.07); display: flex; align-items: center; gap: 10px; padding: 0 14px; animation: skRise .5s .05s both;">
+    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#6B6980" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="M16 16l4.5 4.5"></path></svg>
+    <span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0);">Search tests</span>
+    <input type="search" placeholder="Search a test, e.g. thyroid" style="flex-grow: 1; min-width: 0; border: 0; outline: none; background: transparent; font-family: inherit; font-size: 14px; font-weight: 600; color: #131B2E;">
+  </label>
+
+  <div style="padding: 14px 20px 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; animation: skRise .5s .1s both;">
+    <sc-for list="{{ quick }}" as="q" hint-placeholder-count="4">
+      <a href="{{ q.href }}" class="sk-card" style="border-radius: 20px; padding: 12px 6px; background: #FFFFFF; box-shadow: 0 6px 18px rgba(12,4,148,.06); display: flex; flex-direction: column; align-items: center; gap: 8px; color: #131B2E;">
+        <span style="{{ q.tile }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{ q.icon }}"></path></svg></span>
+        <span style="font-size: 11.5px; font-weight: 800; text-align: center; line-height: 14px;">{{ q.label }}</span>
+      </a>
+    </sc-for>
+  </div>
+
+  <a href="Orders.dc.html" class="sk-card" style="margin: 16px 20px 0; position: relative; overflow: hidden; height: 196px; box-sizing: border-box; border-radius: 28px; padding: 20px; background: linear-gradient(150deg, #8B5CF6 0%, #4C1D95 100%); color: #FFFFFF; display: flex; flex-direction: column; gap: 8px; box-shadow: 0 18px 36px rgba(76,29,149,.32); animation: skRise .55s .15s both;">
+    <span aria-hidden="true" style="position: absolute; right: -40px; bottom: -60px; width: 190px; height: 190px; border-radius: 999px; border: 26px solid rgba(255,255,255,.10);"></span>
+    <span aria-hidden="true" style="position: absolute; right: 28px; top: 34px; width: 54px; height: 86px; border-radius: 10px 10px 27px 27px; border: 3px solid rgba(255,255,255,.75); overflow: hidden;"><span style="position: absolute; left: 0; right: 0; bottom: 0; height: 46%; background: #FCA5A5;"></span><span style="position: absolute; left: 14px; bottom: 10px; width: 8px; height: 8px; border-radius: 999px; background: #FFFFFF; animation: skBubble 2.4s ease-in infinite;"></span><span style="position: absolute; left: 28px; bottom: 6px; width: 6px; height: 6px; border-radius: 999px; background: #FFFFFF; animation: skBubble 2.4s .8s ease-in infinite;"></span></span>
+    <span style="position: relative; align-self: flex-start; padding: 5px 11px; border-radius: 999px; background: rgba(255,255,255,.18); font-size: 11px; font-weight: 800; letter-spacing: .4px;">MOST BOOKED ON CAMPUS</span>
+    <span style="position: relative; font-size: 22px; line-height: 27px; font-weight: 800; letter-spacing: -0.5px; max-width: 220px;">Semester health check</span>
+    <span style="position: relative; font-size: 12.5px; font-weight: 600; color: rgba(255,255,255,.88);">[n] tests · report in [n] hours · fasting not needed</span>
+    <span style="position: relative; margin-top: auto; display: flex; align-items: center; gap: 10px;"><span style="font-size: 20px; font-weight: 800;">₹[price]</span><span style="height: 36px; padding: 0 16px; border-radius: 999px; background: #FFFFFF; color: #4C1D95; font-size: 13px; font-weight: 800; display: flex; align-items: center;">Book a slot</span></span>
+  </a>
+
+  <section aria-labelledby="who" style="padding: 22px 0 0; animation: skRise .55s .2s both;">
+    <h2 id="who" style="margin: 0 20px 12px; font-size: 17px; font-weight: 800; letter-spacing: -0.3px;">Packages for</h2>
+    <div role="tablist" aria-label="Packages for" class="sk-rail" style="display: flex; gap: 8px; overflow-x: auto; padding: 0 20px 4px;">
+      <sc-for list="{{ audiences }}" as="a" hint-placeholder-count="5">
+        <button type="button" role="tab" aria-selected="{{ a.selected }}" onClick="{{ a.pick }}" style="{{ a.style }}">{{ a.label }}</button>
+      </sc-for>
+    </div>
+    <div style="padding: 12px 20px 0; display: flex; flex-direction: column; gap: 10px;">
+      <sc-for list="{{ packages }}" as="p" hint-placeholder-count="3">
+        <a href="Orders.dc.html" class="sk-card" style="border-radius: 22px; padding: 14px; background: #FFFFFF; box-shadow: 0 6px 18px rgba(12,4,148,.06); display: flex; align-items: center; gap: 12px; color: #131B2E; animation: skRise .35s both;">
+          <span style="{{ p.tile }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="{{ p.ink }}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{ p.icon }}"></path></svg></span>
+          <span style="flex-grow: 1; display: flex; flex-direction: column; gap: 3px;"><span style="font-size: 14px; font-weight: 800;">{{ p.name }}</span><span style="font-size: 11.5px; font-weight: 600; color: #6B6980;">{{ p.meta }}</span></span>
+          <span style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;"><span style="font-size: 14.5px; font-weight: 800;">₹[price]</span><span style="font-size: 11.5px; font-weight: 800; color: #0C0494;">Add</span></span>
+        </a>
+      </sc-for>
+    </div>
+  </section>
+
+  <section aria-labelledby="doctor" style="margin: 18px 20px 0; padding: 16px; border-radius: 24px; background: #FFFBEB; display: flex; gap: 12px; animation: skRise .55s .25s both;">
+    <span style="width: 42px; height: 42px; flex-shrink: 0; border-radius: 14px; background: #FDE68A; display: flex; align-items: center; justify-content: center;"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#92400E" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3v6a5 5 0 0 0 10 0V3"></path><path d="M11 14v2a4 4 0 0 0 8 0v-1.5"></path><circle cx="19" cy="12.5" r="2"></circle></svg></span>
+    <span style="display: flex; flex-direction: column; gap: 4px;"><h2 id="doctor" style="margin: 0; font-size: 14.5px; font-weight: 800; color: #78350F;">Your doctor asked for a repeat test</h2><span style="font-size: 12.5px; line-height: 18px; font-weight: 600; color: #92400E;">Vitamin D, due since 10 Oct. Only tests a doctor ordered show here.</span><a href="Orders.dc.html" style="margin-top: 4px; align-self: flex-start; height: 34px; padding: 0 14px; border-radius: 999px; background: #92400E; color: #FFFFFF; font-size: 12.5px; font-weight: 800; display: flex; align-items: center;">Book it</a></span>
+  </section>
+
+  <section aria-labelledby="how" style="margin: 18px 20px 0; padding: 16px; border-radius: 26px; background: #FFFFFF; box-shadow: 0 6px 18px rgba(12,4,148,.06); animation: skRise .55s .3s both;">
+    <h2 id="how" style="margin: 0 0 14px; font-size: 15px; font-weight: 800;">How collection works</h2>
+    <div style="position: relative; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px;">
+      <span aria-hidden="true" style="position: absolute; left: 12%; right: 12%; top: 19px; height: 3px; border-radius: 999px; background: #EEF2FF;"></span>
+      <span aria-hidden="true" style="position: absolute; left: 12%; top: 19px; height: 3px; width: 76%; border-radius: 999px; background: linear-gradient(90deg, #8B5CF6, #0C0494); animation: skFill 2.2s .6s both cubic-bezier(.2,.7,.3,1);"></span>
+      <sc-for list="{{ steps }}" as="s" hint-placeholder-count="4">
+        <span style="position: relative; display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center;">
+          <span style="width: 40px; height: 40px; border-radius: 999px; background: linear-gradient(145deg, #8B5CF6, #4C1D95); color: #FFFFFF; font-size: 14px; font-weight: 800; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 4px #FFFFFF;">{{ s.n }}</span>
+          <span style="font-size: 11.5px; font-weight: 700; line-height: 14px;">{{ s.label }}</span>
+        </span>
+      </sc-for>
+    </div>
+  </section>
+
+  <section aria-labelledby="again" style="padding: 20px 0 0; animation: skRise .55s .35s both;">
+    <h2 id="again" style="margin: 0 20px 12px; font-size: 17px; font-weight: 800; letter-spacing: -0.3px;">Book again</h2>
+    <div class="sk-rail" style="display: flex; gap: 12px; overflow-x: auto; padding: 0 20px 8px;">
+      <a href="Orders.dc.html" class="sk-card" style="flex-shrink: 0; width: 230px; border-radius: 22px; padding: 14px; background: #FFFFFF; box-shadow: 0 6px 18px rgba(12,4,148,.06); display: flex; flex-direction: column; gap: 6px; color: #131B2E;"><span style="font-size: 11px; font-weight: 800; letter-spacing: .8px; color: #6B6980;">LAST BOOKED 14 JUN</span><span style="font-size: 14px; font-weight: 800;">Complete blood count</span><span style="font-size: 12px; font-weight: 600; color: #464555;">[n] tests · report in [n] h</span><span style="margin-top: 4px; font-size: 13px; font-weight: 800; color: #0C0494;">Book again · ₹[price]</span></a>
+      <a href="Orders.dc.html" class="sk-card" style="flex-shrink: 0; width: 230px; border-radius: 22px; padding: 14px; background: #FFFFFF; box-shadow: 0 6px 18px rgba(12,4,148,.06); display: flex; flex-direction: column; gap: 6px; color: #131B2E;"><span style="font-size: 11px; font-weight: 800; letter-spacing: .8px; color: #6B6980;">LAST BOOKED 2 MAR</span><span style="font-size: 14px; font-weight: 800;">Thyroid profile</span><span style="font-size: 12px; font-weight: 600; color: #464555;">[n] tests · report in [n] h</span><span style="margin-top: 4px; font-size: 13px; font-weight: 800; color: #0C0494;">Book again · ₹[price]</span></a>
+    </div>
+  </section>
+
+  <div style="margin: 14px 20px 0; padding: 12px 14px; border-radius: 18px; background: #F2F3FF; font-size: 12px; line-height: 18px; font-weight: 600; color: #464555; animation: skRise .55s .4s both;">Each test page names the lab that runs it, its accreditation and when the report is due.</div>
+
+  <a href="tel:" aria-label="Call to book a test" style="position: absolute; right: 20px; bottom: 112px; height: 48px; padding: 0 16px 0 12px; border-radius: 999px; background: #FFFFFF; color: #4C1D95; font-size: 13px; font-weight: 800; display: flex; align-items: center; gap: 8px; box-shadow: 0 12px 28px rgba(76,29,149,.25); animation: skFloat 4s ease-in-out infinite;"><span style="width: 30px; height: 30px; border-radius: 999px; background: linear-gradient(145deg, #8B5CF6, #4C1D95); display: flex; align-items: center; justify-content: center;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"></path></svg></span>Call to book</a>
+
+  <nav aria-label="Main" style="position: absolute; left: 16px; right: 16px; bottom: 22px; height: 70px; border-radius: 999px; background: linear-gradient(160deg, #1A10B5, #0C0494); box-shadow: 0 18px 40px rgba(12,4,148,.35); display: flex; align-items: center; justify-content: space-between; padding: 0 10px;">
+    <a href="Main.dc.html" style="height: 52px; padding: 0 18px; border-radius: 999px; background: #FFFFFF; color: #0C0494; font-size: 13.5px; font-weight: 800; display: flex; align-items: center; gap: 7px;"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#0C0494" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5L12 4l9 6.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"></path></svg>Home</a>
+    <a href="Orders.dc.html" aria-label="Orders" style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C7C3FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8l-9-5-9 5 9 5zM3 8v8l9 5 9-5V8M12 13v8"></path></svg></a>
+    <a href="AskAyush.dc.html" aria-label="Ask Ayush" style="width: 52px; height: 52px; border-radius: 999px; background: radial-gradient(circle at 35% 30%, #A5F3FC, #6D5BFF 55%, #2B20C9); display: flex; align-items: center; justify-content: center;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M5.6 18.4l2.8-2.8M15.6 8.4l2.8-2.8"></path></svg></a>
+    <a href="Insights.dc.html" aria-label="My health" style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C7C3FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 5.6a5 5 0 0 0-7.1 0L12 7.3l-1.7-1.7a5 5 0 1 0-7.1 7.1L12 21.5l8.8-8.8a5 5 0 0 0 0-7.1z"></path></svg></a>
+    <a href="Profile.dc.html" aria-label="Profile" style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C7C3FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21a8 8 0 0 1 16 0"></path></svg></a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1640}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { who: 'all' }; }
+  renderVals() {
+    const who = this.state.who;
+    const q = (label, href, a, b, icon) => ({ label, href, icon, tile: 'width: 42px; height: 42px; border-radius: 15px; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle at 28% 22%, rgba(255,255,255,.5), rgba(255,255,255,0) 46%), linear-gradient(150deg, ' + a + ', ' + b + ');' });
+    const auds = [['all', 'Everyone'], ['women', 'Women'], ['men', 'Men'], ['fitness', 'Fitness'], ['concern', 'By concern']];
+    const pk = (name, meta, ink, bg, icon) => ({ name, meta, ink, icon, tile: 'width: 46px; height: 46px; flex-shrink: 0; border-radius: 16px; display: flex; align-items: center; justify-content: center; background: ' + bg + ';' });
+    const lists = {
+      all: [pk('Full body check', '[n] tests · fasting 10 h', '#4C1D95', '#EDE9FE', 'M12 3a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM8 9h8l-1 6h-2v6h-2v-6H9z'), pk('Fever panel', '[n] tests · no fasting', '#C2410C', '#FFEDD5', 'M14 14.8V4a2 2 0 1 0-4 0v10.8a4 4 0 1 0 4 0z'), pk('Vitamin levels', 'Vitamin D and B12', '#B45309', '#FEF3C7', 'M9 3h6v3H9zM7 6h10v13a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2z')],
+      women: [pk('Women’s wellness', '[n] tests incl. thyroid, iron', '#BE185D', '#FCE7F3', 'M12 3a5 5 0 1 0 0 10 5 5 0 0 0 0-10zM12 13v8M9 18h6'), pk('PCOS panel', '[n] hormone tests', '#9D174D', '#FFE4E6', 'M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z'), pk('Iron and anaemia', 'Haemoglobin, ferritin', '#B91C1C', '#FEE2E2', 'M12 21s-8-5.2-8-11.2A4.6 4.6 0 0 1 12 7a4.6 4.6 0 0 1 8 2.8C20 15.8 12 21 12 21z')],
+      men: [pk('Men’s wellness', '[n] tests incl. liver, kidney', '#1D4ED8', '#DBEAFE', 'M14 3h7v7M21 3l-8 8M10 21a6 6 0 1 1 0-12 6 6 0 0 1 0 12z'), pk('Lipid profile', 'Cholesterol panel', '#0369A1', '#E0F2FE', 'M4 14l6-6 4 4 6-6'), pk('Vitamin levels', 'Vitamin D and B12', '#B45309', '#FEF3C7', 'M9 3h6v3H9zM7 6h10v13a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2z')],
+      fitness: [pk('Sports fitness', '[n] tests for training', '#4338CA', '#E0E7FF', 'M4 14l6-6 4 4 6-6M14 6h6v6'), pk('Protein and muscle', 'Creatinine, CK and more', '#0F766E', '#CCFBF1', 'M6 12h12M4 9v6M20 9v6M8 7v10M16 7v10')],
+      concern: [pk('Thyroid', 'TSH, T3, T4', '#7C3AED', '#EDE9FE', 'M8 4c-2 3-2 13 4 16 6-3 6-13 4-16-1.5 2-6.5 2-8 0z'), pk('Diabetes check', 'HbA1c, fasting sugar', '#1D4ED8', '#DBEAFE', 'M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z'), pk('Allergy panel', 'Common triggers', '#047857', '#D1FAE5', 'M12 21c-5-3-8-7-8-12 4 0 7 2 8 5 1-3 4-5 8-5 0 5-3 9-8 12z')]
+    };
+    return {
+      quick: [
+        q('Full body', 'Orders.dc.html', '#A78BFA', '#6D28D9', 'M12 3a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM8 9h8l-1 6h-2v6h-2v-6H9z'),
+        q('Upload Rx', 'ReportUpload.dc.html', '#6D5BFF', '#0C0494', 'M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5M12 17v-6M9.5 13.5L12 11l2.5 2.5'),
+        q('Call to book', 'tel:', '#60A5FA', '#1D4ED8', 'M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2'),
+        q('Reports', 'Insights.dc.html', '#34D399', '#047857', 'M4 19V5M4 19h16M8 15l3-4 3 2 4-6')
+      ],
+      audiences: auds.map(([id, label]) => ({
+        label, selected: who === id ? 'true' : 'false', pick: () => this.setState({ who: id }),
+        style: 'flex-shrink: 0; height: 40px; padding: 0 16px; border-radius: 999px; cursor: pointer; font-size: 13px; font-weight: 800; transition: all .25s; ' + (who === id ? 'border: 0; background: #0C0494; color: #FFFFFF; box-shadow: 0 8px 18px rgba(12,4,148,.25);' : 'border: 1.5px solid #DAE2FD; background: #FFFFFF; color: #464555;')
+      })),
+      packages: lists[who],
+      steps: [{ n: '1', label: 'Pick tests and a slot' }, { n: '2', label: 'Collected at your block' }, { n: '3', label: 'Lab runs the tests' }, { n: '4', label: 'Report in your vault' }]
+    };
+  }
+}
+</script>
+</body>
+</html>
