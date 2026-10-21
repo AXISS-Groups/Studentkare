@@ -1,803 +1,162 @@
-import React, { useMemo, useState } from 'react';
-import {
-  AlertCircle,
-  AlertTriangle,
-  ArrowLeftRight,
-  CheckCircle2,
-  Plus,
-  Search,
-  X,
-} from 'lucide-react';
+import React, { useCallback, useState } from 'react';
+import { ConsoleTablePage } from '@/design-system/console/ConsoleTablePage';
+import type { ConsoleTableStatus } from '@/design-system/console/ConsoleTablePage';
+import type { DataTableRow } from '@/design-system/data/DataTable';
+import { Drawer } from '@/design-system/overlays/Drawer';
+import { SkButton, Toast } from '@/design-system/primitives';
 import { useT } from '@/i18n';
-import type { MessageKey } from '@/i18n';
-import '@/theme/styles/vendorSubstitution.css';
+import { navigate, RoutePath } from '@/lib/utils/workflowRouting';
+import { PARTNER_EMPTY_TILE, PartnerNote, usePartnerLoad } from '@/features/partner/PartnerPage';
+import { loadDispenses, proposeSubstitution, refOf } from '@/features/partner/work/pharmacyWork';
+import type { Dispense, DispenseItem } from '@/features/partner/work/pharmacyWork';
+import { useOnline } from '@/features/partner/work/workCopy';
+import '@/features/partner/work/partner-work.css';
 
-export interface SubstitutionRecord {
-  id: string;
-  prescribedDrug: string;
-  genericOffered: string;
-  savingsText: string;
-  savingsRupees: number;
-  savingsPercentage: number;
-  prescriberRule: 'Swap permitted' | 'Swap NOT permitted';
-  isPrescriberBlocked: boolean;
-  outcome: 'Student accepted' | 'Student declined' | 'Dispensed as written' | 'No equivalent in stock' | 'Offered to student';
-  statusType: 'green' | 'indigo' | 'red' | 'grey';
-  notes?: string;
-  isNtiDrug?: boolean;
-}
+/**
+ * VendorSubstitution — generic substitutions (design page 6, Tier 1, approved 2026-10-21).
+ *
+ * One row per prescribed line on the pharmacy's verified and swap-pending
+ * prescriptions (`GET /work/dispenses`). A swap is proposed with
+ * `POST /dispenses/{id}/substitutions`; the server refuses it for a line the
+ * prescriber marked no-substitution, and only on a verified prescription that
+ * is not yet paid. It used to draw only what a caller passed in.
+ *
+ * Follows the server, not the picture (approved decisions):
+ * - the prescriber decides a swap, not the student, and the pharmacy cannot
+ *   see the decision until the order comes back verified;
+ * - saving, accepted and declined have no source: "—";
+ * - the board's narrow-therapeutic-index rule (levothyroxine dispensed as
+ *   written) is not on the server and no NTI list exists, so the page does not
+ *   claim it; only the prescriber's own no-substitution mark blocks a swap.
+ */
 
-const INITIAL_SUBSTITUTIONS: SubstitutionRecord[] = [
-  {
-    id: 'sub-1',
-    prescribedDrug: 'Shelcal 500',
-    genericOffered: 'Calcium carbonate 500 mg',
-    savingsText: '₹78 (46%)',
-    savingsRupees: 78,
-    savingsPercentage: 46,
-    prescriberRule: 'Swap permitted',
-    isPrescriberBlocked: false,
-    outcome: 'Student accepted',
-    statusType: 'green',
-    notes: 'Direct bio-equivalent. DCGI approved monograph formulation. Student confirmed via mobile app.',
-  },
-  {
-    id: 'sub-2',
-    prescribedDrug: 'Augmentin 625',
-    genericOffered: 'Amoxicillin + clavulanate',
-    savingsText: '₹112 (38%)',
-    savingsRupees: 112,
-    savingsPercentage: 38,
-    prescriberRule: 'Swap permitted',
-    isPrescriberBlocked: false,
-    outcome: 'Student declined',
-    statusType: 'indigo',
-    notes: 'Prescriber permitted generic substitution. Student opted for innovator brand Augmentin. Dispensed as written.',
-  },
-  {
-    id: 'sub-3',
-    prescribedDrug: 'Eltroxin 50 mcg',
-    genericOffered: 'Levothyroxine 50 mcg',
-    savingsText: '₹34 (29%)',
-    savingsRupees: 34,
-    savingsPercentage: 29,
-    prescriberRule: 'Swap NOT permitted',
-    isPrescriberBlocked: true,
-    outcome: 'Dispensed as written',
-    statusType: 'red',
-    isNtiDrug: true,
-    notes: 'Narrow therapeutic index (NTI) hormone. Bioavailability fluctuations can compromise thyroid stability. Substitution prohibited by campus endocrinologist.',
-  },
-  {
-    id: 'sub-4',
-    prescribedDrug: 'Zincovit',
-    genericOffered: 'Multivitamin, equivalent',
-    savingsText: '₹42 (35%)',
-    savingsRupees: 42,
-    savingsPercentage: 35,
-    prescriberRule: 'Swap permitted',
-    isPrescriberBlocked: false,
-    outcome: 'Student accepted',
-    statusType: 'green',
-    notes: 'Standard multivitamin-mineral formulation with identical elemental zinc and vitamin levels.',
-  },
-  {
-    id: 'sub-5',
-    prescribedDrug: 'Asthalin inhaler',
-    genericOffered: 'None in stock',
-    savingsText: 'No savings',
-    savingsRupees: 0,
-    savingsPercentage: 0,
-    prescriberRule: 'Swap permitted',
-    isPrescriberBlocked: false,
-    outcome: 'No equivalent in stock',
-    statusType: 'grey',
-    notes: 'Aerosol DPI equivalent out of stock at partner depot. Innovator Cipla Asthalin dispensed as prescribed.',
-  },
-];
+export type SubstitutionsSource = (signal: AbortSignal) => Promise<{ items: Dispense[] }>;
 
-export const DEMO_SUBSTITUTIONS: SubstitutionRecord[] = INITIAL_SUBSTITUTIONS;
+const SHOWN = new Set(['RX_VERIFIED', 'SUBSTITUTION_PROPOSED']);
 
-const KNOWN_NTI_DRUGS = [
-  'levothyroxine',
-  'eltroxin',
-  'thyronorm',
-  'warfarin',
-  'lithium',
-  'digoxin',
-  'phenytoin',
-  'carbamazepine',
-  'theophylline',
-];
+interface Line { dispense: Dispense; item: DispenseItem }
 
-const OUTCOME_LABEL: Record<SubstitutionRecord['outcome'], MessageKey> = {
-  'Student accepted': 'partner.vsub.sub.outcome.accepted',
-  'Student declined': 'partner.vsub.sub.outcome.declined',
-  'Dispensed as written': 'partner.vsub.sub.outcome.asWritten',
-  'No equivalent in stock': 'partner.vsub.sub.outcome.noEquivalent',
-  'Offered to student': 'partner.vsub.sub.outcome.offered',
-};
+const nameOf = (item: DispenseItem) => [item.brandName || item.genericName, item.strength].filter(Boolean).join(' ');
 
-const RULE_LABEL: Record<SubstitutionRecord['prescriberRule'], MessageKey> = {
-  'Swap permitted': 'partner.vsub.sub.rule.permitted',
-  'Swap NOT permitted': 'partner.vsub.sub.rule.notPermitted',
-};
-
-const LABEL_STYLE: React.CSSProperties = { fontSize: 12, fontWeight: 700, color: 'var(--sk-color-text)', display: 'block', marginBottom: 4 };
-const INPUT_STYLE: React.CSSProperties = { width: '100%', minHeight: 44, borderRadius: 8, border: '1px solid var(--sk-color-rule-strong)', padding: '0 12px', fontSize: 13 };
-
-export interface VendorSubstitutionScreenProps {
-  initialSubstitutions?: SubstitutionRecord[];
-  onNavigate?: (path: string) => void;
-  onLogout?: () => void;
-}
-
-export function VendorSubstitutionScreen({ initialSubstitutions }: VendorSubstitutionScreenProps) {
+export function VendorSubstitutionScreen({ source = loadDispenses, onNavigate }: { source?: SubstitutionsSource; onNavigate?: (route: string) => void; onLogout?: () => void }) {
   const t = useT();
-  const [substitutions, setSubstitutions] = useState<SubstitutionRecord[]>(() =>
-    initialSubstitutions ?? (typeof process !== 'undefined' && process.env?.VITEST ? DEMO_SUBSTITUTIONS : [])
-  );
-  const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'accepted' | 'declined' | 'blocked' | 'no-equivalent'>('all');
-  const [selectedRecord, setSelectedRecord] = useState<SubstitutionRecord | null>(null);
-  const [isProposeModalOpen, setIsProposeModalOpen] = useState(false);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const online = useOnline();
+  const load = useCallback((signal: AbortSignal) => source(signal), [source]);
+  const data = usePartnerLoad<{ items: Dispense[] }>(load);
+  const [proposing, setProposing] = useState<Line | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
+  const go = (route: RoutePath) => (onNavigate ? onNavigate(route) : navigate(route));
 
-  // New swap form state
-  const [prescribedInput, setPrescribedInput] = useState('');
-  const [genericInput, setGenericInput] = useState('');
-  const [brandPrice, setBrandPrice] = useState(150);
-  const [genericPrice, setGenericPrice] = useState(85);
-  const [prescriberPermitted, setPrescriberPermitted] = useState(true);
-  const [studentChoice, setStudentChoice] = useState<'accepted' | 'declined' | 'pending'>('accepted');
+  const lines: Line[] = (data.data?.items ?? []).filter((row) => SHOWN.has(row.status))
+    .flatMap((dispense) => (dispense.prescription?.items ?? []).map((item) => ({ dispense, item })));
+  const status: ConsoleTableStatus = data.status === 'loading' && !data.data ? 'loading' : data.status === 'error' ? 'error' : 'ready';
+  const withPrescriber = new Set(lines.filter((line) => line.dispense.status === 'SUBSTITUTION_PROPOSED').map((line) => line.dispense.id)).size;
+  const blocked = lines.filter((line) => !line.item.substitutionAllowed).length;
 
-  // Natural view state: data, loading, empty, error
-  const [viewState, setViewState] = useState<'data' | 'loading' | 'empty' | 'error'>('data');
-
-  const showToast = (msg: string) => {
-    setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 3500);
-  };
-
-  // KPI calculations
-  const totalSavedToday = useMemo(() => {
-    return substitutions
-      .filter((s) => s.outcome === 'Student accepted')
-      .reduce((sum, item) => sum + item.savingsRupees, 0);
-  }, [substitutions]);
-
-  const acceptedCount = useMemo(() => {
-    return substitutions.filter((s) => s.outcome === 'Student accepted').length;
-  }, [substitutions]);
-
-  const declinedCount = useMemo(() => {
-    return substitutions.filter((s) => s.outcome === 'Student declined').length;
-  }, [substitutions]);
-
-  const blockedCount = useMemo(() => {
-    return substitutions.filter((s) => s.isPrescriberBlocked).length;
-  }, [substitutions]);
-
-  // Check if current drug in form is NTI
-  const isInputDrugNti = useMemo(() => {
-    const lower = prescribedInput.toLowerCase().trim();
-    return KNOWN_NTI_DRUGS.some((nti) => lower.includes(nti));
-  }, [prescribedInput]);
-
-  // Filtered list
-  const filteredSubstitutions = useMemo(() => {
-    return substitutions.filter((item) => {
-      const matchesSearch =
-        item.prescribedDrug.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.genericOffered.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.prescriberRule.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.outcome.toLowerCase().includes(searchQuery.toLowerCase());
-
-      if (!matchesSearch) return false;
-
-      if (statusFilter === 'accepted') return item.outcome === 'Student accepted';
-      if (statusFilter === 'declined') return item.outcome === 'Student declined';
-      if (statusFilter === 'blocked') return item.isPrescriberBlocked;
-      if (statusFilter === 'no-equivalent') return item.outcome === 'No equivalent in stock';
-      return true;
-    });
-  }, [substitutions, searchQuery, statusFilter]);
-
-  // There is no substitutions API yet: nothing to fetch, so retry just
-  // returns to the list. It used to fake a "refreshed with campus dispensary" sync.
-  const handleReload = () => {
-    setViewState('data');
-  };
-
-  // Submit new substitution proposal
-  const handleCreateSubstitution = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!prescribedInput.trim() || !genericInput.trim()) {
-      showToast(t('partner.vsub.sub.toast.fillBoth'));
-      return;
-    }
-
-    if (isInputDrugNti) {
-      showToast(t('partner.vsub.sub.toast.ntiBlocked'));
-      const ntiRecord: SubstitutionRecord = {
-        id: `sub-${Date.now()}`,
-        prescribedDrug: prescribedInput,
-        genericOffered: genericInput,
-        savingsText: `₹${brandPrice - genericPrice} (${Math.round(((brandPrice - genericPrice) / brandPrice) * 100)}%)`,
-        savingsRupees: brandPrice - genericPrice,
-        savingsPercentage: Math.round(((brandPrice - genericPrice) / brandPrice) * 100),
-        prescriberRule: 'Swap NOT permitted',
-        isPrescriberBlocked: true,
-        outcome: 'Dispensed as written',
-        statusType: 'red',
-        isNtiDrug: true,
-        notes: t('partner.vsub.sub.note.nti'),
-      };
-      setSubstitutions((prev) => [ntiRecord, ...prev]);
-      setIsProposeModalOpen(false);
-      resetForm();
-      return;
-    }
-
-    const savingsVal = Math.max(0, brandPrice - genericPrice);
-    const savingsPct = brandPrice > 0 ? Math.round((savingsVal / brandPrice) * 100) : 0;
-
-    let finalOutcome: SubstitutionRecord['outcome'] = 'Student accepted';
-    let finalStatus: SubstitutionRecord['statusType'] = 'green';
-
-    if (!prescriberPermitted) {
-      finalOutcome = 'Dispensed as written';
-      finalStatus = 'red';
-    } else if (studentChoice === 'declined') {
-      finalOutcome = 'Student declined';
-      finalStatus = 'indigo';
-    } else if (studentChoice === 'pending') {
-      finalOutcome = 'Offered to student';
-      finalStatus = 'indigo';
-    }
-
-    const newRecord: SubstitutionRecord = {
-      id: `sub-${Date.now()}`,
-      prescribedDrug: prescribedInput,
-      genericOffered: genericInput,
-      savingsText: `₹${savingsVal} (${savingsPct}%)`,
-      savingsRupees: savingsVal,
-      savingsPercentage: savingsPct,
-      prescriberRule: prescriberPermitted ? 'Swap permitted' : 'Swap NOT permitted',
-      isPrescriberBlocked: !prescriberPermitted,
-      outcome: finalOutcome,
-      statusType: finalStatus,
-      notes: t('partner.vsub.sub.note.proposed'),
+  const rows: DataTableRow[] = lines.map((line) => {
+    const { dispense, item } = line;
+    const proposed = dispense.status === 'SUBSTITUTION_PROPOSED';
+    const canOffer = !proposed && item.substitutionAllowed && dispense.quoteStatus !== 'PAYMENT_STARTED' && dispense.quoteStatus !== 'PAID';
+    return {
+      id: `${dispense.id}:${item.id}`,
+      cells: [
+        { text: nameOf(item), sub: t('pt.sub.onOrder', { ref: refOf(dispense.id) }), weight: 'strong' },
+        { text: proposed && dispense.substitutionNote ? dispense.substitutionNote : '—', weight: proposed ? 'regular' : 'muted' },
+        { text: '—', weight: 'muted' },
+        item.substitutionAllowed
+          ? { text: t('pt.sub.permitted'), tone: 'positive', weight: 'strong' }
+          : { text: t('pt.sub.notPermitted'), tone: 'attention', weight: 'strong' },
+        { pill: proposed
+          ? { label: t('pt.sub.outcome.withPrescriber'), tone: 'attention' }
+          : item.substitutionAllowed ? { label: t('pt.sub.outcome.asWritten'), tone: 'neutral' } : { label: t('pt.sub.outcome.dispensedAsWritten'), tone: 'action' } },
+      ],
+      actions: canOffer ? [{ label: t('pt.sub.offer'), disabled: !online, onSelect: () => setProposing(line), accessibleLabel: t('pt.sub.offerFor', { item: nameOf(item), ref: refOf(dispense.id) }) }] : [],
     };
+  });
 
-    setSubstitutions((prev) => [newRecord, ...prev]);
-    setIsProposeModalOpen(false);
-    resetForm();
-    showToast(t('partner.vsub.sub.toast.notedLocally', { from: newRecord.prescribedDrug, to: newRecord.genericOffered }));
-  };
+  return (
+    <main className="sk-ds pc-page">
+      <ConsoleTablePage
+        status={status}
+        header={{ title: t('pt.sub.title'), subtitle: t('pt.sub.sub'), badge: blocked ? { label: t('pt.sub.blockedBadge', { count: blocked }), tone: 'attention' } : undefined }}
+        note={!online && status === 'ready' ? <PartnerNote tone="attention">{t('pt.offline.readOnly')}</PartnerNote> : undefined}
+        stats={[
+          { label: t('pt.sub.stat.saved'), value: null },
+          { label: t('pt.sub.stat.withPrescriber'), value: String(withPrescriber), tone: withPrescriber ? 'attention' : 'text' },
+          { label: t('pt.sub.stat.declined'), value: null },
+          { label: t('pt.sub.stat.blocked'), value: String(blocked) },
+        ]}
+        statsLabel={t('pt.sub.statsLabel')}
+        table={{
+          caption: t('pt.sub.caption'),
+          columns: [
+            { label: t('pt.sub.col.prescribed') },
+            { label: t('pt.sub.col.generic'), width: '240px' },
+            { label: t('pt.sub.col.saving'), width: '110px' },
+            { label: t('pt.sub.col.prescriber'), width: '200px' },
+            { label: t('pt.sub.col.outcome'), width: '200px', align: 'end' },
+          ],
+          rows,
+          rowActions: true,
+          footnote: t('pt.sub.footnote'),
+        }}
+        empty={{ title: t('pt.sub.emptyTitle'), body: t('pt.sub.emptyBody'), icon3d: PARTNER_EMPTY_TILE, action: { label: t('pt.sub.emptyAction'), onSelect: () => go('rx-review') } }}
+        unconnected={{ title: t('pt.sub.emptyTitle'), body: t('pt.sub.emptyBody') }}
+        error={{ title: t('pt.sub.errorTitle'), reference: t('pt.sub.ref'), detail: data.error || undefined, onRetry: data.reload, onHelp: () => go('support') }}
+        loadingLabel={t('console.loading', { title: t('pt.sub.title') })}
+      />
+      {proposing ? (
+        <ProposeDrawer line={proposing} online={online} onClose={() => setProposing(null)} onDone={() => { setProposing(null); setToast(t('pt.sub.sent')); data.reload(); }} />
+      ) : null}
+      {toast ? <Toast message={toast} onDone={() => setToast(null)} /> : null}
+    </main>
+  );
+}
 
-  const resetForm = () => {
-    setPrescribedInput('');
-    setGenericInput('');
-    setBrandPrice(150);
-    setGenericPrice(85);
-    setPrescriberPermitted(true);
-    setStudentChoice('accepted');
+function ProposeDrawer({ line, online, onClose, onDone }: { line: Line; online: boolean; onClose: () => void; onDone: () => void }) {
+  const t = useT();
+  const [generic, setGeneric] = useState('');
+  const [brand, setBrand] = useState('');
+  const [reason, setReason] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const valid = generic.trim().length >= 2 && reason.trim().length >= 3;
+
+  const submit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!valid || busy || !online) return;
+    setBusy(true);
+    setError('');
+    try {
+      await proposeSubstitution(line.dispense.id, { prescriptionItemId: line.item.id, proposedGeneric: generic.trim(), proposedBrand: brand.trim(), reason: reason.trim() });
+      onDone();
+    } catch (reasonError) {
+      setError(reasonError instanceof Error && reasonError.message ? reasonError.message : t('pt.saveFailed'));
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
-    <div className="sk-sub-layout">
-      {/* Toast Alert */}
-      {toastMessage && (
-        <div
-          role="status"
-          aria-live="polite"
-          style={{
-            position: 'fixed',
-            top: 20,
-            right: 20,
-            zIndex: 150,
-            background: 'var(--sk-color-brand-navy)',
-            color: 'var(--sk-color-on-action)',
-            padding: '12px 20px',
-            borderRadius: 12,
-            boxShadow: 'var(--sk-shadow-float)',
-            fontSize: 13,
-            fontWeight: 700,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 10,
-          }}
-        >
-          <CheckCircle2 size={18} color="var(--sk-color-positive)" aria-hidden="true" />
-          <span>{toastMessage}</span>
+    <Drawer open title={t('pt.sub.drawer.title', { item: nameOf(line.item) })} eyebrow={t('pt.sub.drawer.eyebrow')} subtitle={t('pt.sub.drawer.sub')} busy={busy} onClose={onClose}>
+      <form className="pc-form" onSubmit={(event) => { void submit(event); }}>
+        <label className="pw-field">{t('pt.sub.field.generic')}
+          <input className="pc-input" required minLength={2} maxLength={160} value={generic} onChange={(event) => setGeneric(event.target.value)} />
+        </label>
+        <label className="pw-field">{t('pt.sub.field.brand')}
+          <input className="pc-input" maxLength={160} value={brand} onChange={(event) => setBrand(event.target.value)} />
+        </label>
+        <label className="pw-field">{t('pt.sub.field.reason')}
+          <textarea className="pc-textarea" required minLength={3} maxLength={300} value={reason} onChange={(event) => setReason(event.target.value)} />
+          <span className="pw-hint">{t('pt.sub.field.reasonHint')}</span>
+        </label>
+        {error ? <p className="pc-form__error" role="alert">{error}</p> : null}
+        {!online ? <p className="pw-hint" role="status">{t('pt.offline.readOnly')}</p> : null}
+        <div className="pc-form__actions">
+          <SkButton variant="secondary" disabled={busy} onClick={onClose}>{t('common.cancel')}</SkButton>
+          <SkButton type="submit" busy={busy} disabled={!valid || busy || !online}>{t('pt.sub.drawer.send')}</SkButton>
         </div>
-      )}
-
-      {/* Main Content Area */}
-      <main className="sk-sub-main">
-        {/* Skeleton Loading State */}
-        {viewState === 'loading' && (
-          <div aria-busy="true" aria-label={t('partner.vsub.sub.loading')} style={{ display: 'flex', flexDirection: 'column', gap: 18, flexGrow: 1 }}>
-            <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                <span className="skel" style={{ display: 'block', width: 280, height: 26 }} />
-                <span className="skel" style={{ display: 'block', width: 420, height: 14 }} />
-              </div>
-              <span className="skel" style={{ display: 'block', width: 150, height: 42 }} />
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 14 }}>
-              <span className="skel" style={{ display: 'block', width: '100%', height: 108 }} />
-              <span className="skel" style={{ display: 'block', width: '100%', height: 108 }} />
-              <span className="skel" style={{ display: 'block', width: '100%', height: 108 }} />
-              <span className="skel" style={{ display: 'block', width: '100%', height: 108 }} />
-            </div>
-            <div style={{ display: 'flex', gap: 18, flexGrow: 1 }}>
-              <div style={{ flex: 1.6, display: 'flex', flexDirection: 'column', gap: 10 }}>
-                <span className="skel" style={{ display: 'block', width: '100%', height: 54 }} />
-                <span className="skel" style={{ display: 'block', width: '100%', height: 54 }} />
-                <span className="skel" style={{ display: 'block', width: '100%', height: 54 }} />
-                <span className="skel" style={{ display: 'block', width: '100%', height: 54 }} />
-                <span className="skel" style={{ display: 'block', width: '100%', height: 54 }} />
-              </div>
-              <span className="skel" style={{ display: 'block', width: 'auto', height: 380, flex: 1 }} />
-            </div>
-          </div>
-        )}
-
-        {/* Error State */}
-        {viewState === 'error' && (
-          <div style={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 450 }}>
-            <div
-              role="alert"
-              style={{
-                width: 480,
-                padding: 30,
-                borderRadius: 24,
-                background: 'var(--sk-color-surface)',
-                border: '1.5px solid var(--sk-color-danger)',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: 12,
-                textAlign: 'center',
-              }}
-            >
-              <span style={{ width: 64, height: 64, borderRadius: 999, background: 'var(--sk-color-danger-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <AlertTriangle size={30} color="var(--sk-color-danger)" aria-hidden="true" />
-              </span>
-              <span style={{ fontSize: 21, fontWeight: 800, color: 'var(--sk-color-text)' }}>{t('partner.vsub.sub.error.title')}</span>
-              <span style={{ fontSize: 14, lineHeight: '1.55', fontWeight: 500, color: 'var(--sk-color-text-2)' }}>
-                {t('partner.vsub.sub.error.body')}
-              </span>
-              <div style={{ display: 'flex', gap: 10, paddingTop: 6 }}>
-                <button
-                  type="button"
-                  onClick={handleReload}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 8,
-                    height: 46,
-                    padding: '0 22px',
-                    borderRadius: 12,
-                    border: 0,
-                    background: 'var(--sk-color-action)',
-                    fontFamily: 'inherit',
-                    fontSize: '14.5px',
-                    fontWeight: 800,
-                    color: 'var(--sk-color-on-action)',
-                    cursor: 'pointer',
-                  }}
-                >
-                  {t('common.tryAgain')}
-                </button>
-              </div>
-              <span style={{ fontFamily: 'monospace', fontSize: '11.5px', color: 'var(--sk-color-text-3)' }}>Ref ERR-503 · VendorSubstitution</span>
-            </div>
-          </div>
-        )}
-
-        {/* Normal Data State */}
-        {viewState === 'data' && (
-          <>
-            {/* Header */}
-            <div className="sk-sub-header">
-              <div className="sk-sub-header-title">
-                <h1>{t('partner.vsub.sub.title')}</h1>
-                <span>{t('partner.vsub.sub.subtitle')}</span>
-              </div>
-              <div style={{ flexGrow: 1 }} />
-              <div className="sk-sub-alert-badge">
-                <span className="sk-sub-pulse-dot" aria-hidden="true" />
-                <span>{t('partner.vsub.sub.blockedBadge', { count: blockedCount })}</span>
-              </div>
-            </div>
-            <p role="note" style={{ margin: 0, fontSize: 13, color: 'var(--sk-color-text-2)' }}>
-              {t('partner.vsub.sub.localOnly')}
-            </p>
-
-            {/* KPI Metric Cards */}
-            <div className="sk-sub-kpis">
-              <div
-                className="sk-sub-kpi-card"
-                onClick={() => setStatusFilter('accepted')}
-                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setStatusFilter('accepted'); } }}
-                role="button"
-                tabIndex={0}
-                aria-label={t('partner.vsub.sub.kpi.savedFilter')}
-              >
-                <span className="sk-sub-kpi-val is-green">₹{totalSavedToday}</span>
-                <span className="sk-sub-kpi-lbl">{t('partner.vsub.sub.kpi.saved')}</span>
-              </div>
-              <div
-                className="sk-sub-kpi-card"
-                onClick={() => setStatusFilter('accepted')}
-                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setStatusFilter('accepted'); } }}
-                role="button"
-                tabIndex={0}
-                aria-label={t('partner.vsub.sub.kpi.acceptedFilter')}
-              >
-                <span className="sk-sub-kpi-val">{acceptedCount}</span>
-                <span className="sk-sub-kpi-lbl">{t('partner.vsub.sub.filter.accepted')}</span>
-              </div>
-              <div
-                className="sk-sub-kpi-card"
-                onClick={() => setStatusFilter('declined')}
-                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setStatusFilter('declined'); } }}
-                role="button"
-                tabIndex={0}
-                aria-label={t('partner.vsub.sub.kpi.declinedFilter')}
-              >
-                <span className="sk-sub-kpi-val">{declinedCount}</span>
-                <span className="sk-sub-kpi-lbl">{t('partner.vsub.sub.filter.declined')}</span>
-              </div>
-              <div
-                className="sk-sub-kpi-card"
-                onClick={() => setStatusFilter('blocked')}
-                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setStatusFilter('blocked'); } }}
-                role="button"
-                tabIndex={0}
-                aria-label={t('partner.vsub.sub.kpi.blockedFilter')}
-              >
-                <span className="sk-sub-kpi-val is-red">{blockedCount}</span>
-                <span className="sk-sub-kpi-lbl">{t('partner.vsub.sub.kpi.blocked')}</span>
-              </div>
-            </div>
-
-            {/* Search and Filters */}
-            <div className="sk-sub-controls">
-              <div className="sk-sub-search-wrap">
-                <Search size={16} className="sk-sub-search-icon" aria-hidden="true" />
-                <input
-                  type="text"
-                  className="sk-sub-search-input"
-                  placeholder={t('partner.vsub.sub.searchPlaceholder')}
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  aria-label={t('partner.vsub.sub.searchLabel')}
-                />
-              </div>
-
-              <div className="sk-sub-filter-tabs">
-                <button
-                  type="button"
-                  className={`sk-sub-filter-btn ${statusFilter === 'all' ? 'is-active' : ''}`}
-                  onClick={() => setStatusFilter('all')}
-                >
-                  {t('partner.vsub.sub.filter.all', { count: substitutions.length })}
-                </button>
-                <button
-                  type="button"
-                  className={`sk-sub-filter-btn ${statusFilter === 'accepted' ? 'is-active' : ''}`}
-                  onClick={() => setStatusFilter('accepted')}
-                >
-                  {t('partner.vsub.sub.filter.accepted')}
-                </button>
-                <button
-                  type="button"
-                  className={`sk-sub-filter-btn ${statusFilter === 'declined' ? 'is-active' : ''}`}
-                  onClick={() => setStatusFilter('declined')}
-                >
-                  {t('partner.vsub.sub.filter.declined')}
-                </button>
-                <button
-                  type="button"
-                  className={`sk-sub-filter-btn ${statusFilter === 'blocked' ? 'is-active' : ''}`}
-                  onClick={() => setStatusFilter('blocked')}
-                >
-                  {t('partner.vsub.sub.filter.blocked')}
-                </button>
-                <button
-                  type="button"
-                  className={`sk-sub-filter-btn ${statusFilter === 'no-equivalent' ? 'is-active' : ''}`}
-                  onClick={() => setStatusFilter('no-equivalent')}
-                >
-                  {t('partner.vsub.sub.filter.outOfStock')}
-                </button>
-              </div>
-
-              <div style={{ display: 'flex', gap: 8 }}>
-                <button
-                  type="button"
-                  className="sk-sub-btn-primary"
-                  style={{ minHeight: 44, padding: '0 14px', fontSize: 12 }}
-                  onClick={() => setIsProposeModalOpen(true)}
-                >
-                  <Plus size={14} aria-hidden="true" />
-                  <span>{t('partner.vsub.sub.propose')}</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Substitutions Table Card */}
-            <div className="sk-sub-table-card">
-              <div className="sk-sub-table-header">
-                <span className="sk-sub-th">{t('partner.vsub.sub.th.prescribed')}</span>
-                <span className="sk-sub-th">{t('partner.vsub.sub.th.generic')}</span>
-                <span className="sk-sub-th">{t('partner.vsub.sub.th.saving')}</span>
-                <span className="sk-sub-th">{t('partner.vsub.sub.th.prescriber')}</span>
-                <span className="sk-sub-th" style={{ justifySelf: 'end' }}>
-                  {t('partner.vsub.sub.th.outcome')}
-                </span>
-              </div>
-
-              {filteredSubstitutions.length === 0 ? (
-                /* Empty state */
-                <div style={{ padding: '40px 20px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
-                  <ArrowLeftRight size={48} color="var(--sk-color-text-3)" aria-hidden="true" />
-                  <span style={{ fontSize: 18, fontWeight: 800, color: 'var(--sk-color-text)' }}>{t('partner.vsub.sub.empty.title')}</span>
-                  <span style={{ fontSize: 13, color: 'var(--sk-color-text-2)', maxWidth: 360 }}>
-                    {searchQuery ? t('partner.vsub.sub.empty.noMatch') : t('partner.vsub.sub.empty.body')}
-                  </span>
-                  {searchQuery && (
-                    <button
-                      type="button"
-                      className="sk-handover-btn-secondary"
-                      onClick={() => {
-                        setSearchQuery('');
-                        setStatusFilter('all');
-                      }}
-                      style={{ marginTop: 8, minHeight: 44 }}
-                    >
-                      {t('partner.vsub.sub.clearSearch')}
-                    </button>
-                  )}
-                </div>
-              ) : (
-                filteredSubstitutions.map((item) => (
-                  <div
-                    key={item.id}
-                    className="sk-sub-table-row"
-                    onClick={() => setSelectedRecord(item)}
-                    role="button"
-                    tabIndex={0}
-                    aria-label={t('partner.vsub.sub.rowLabel', { drug: item.prescribedDrug })}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        setSelectedRecord(item);
-                      }
-                    }}
-                  >
-                    <span className="sk-sub-col-prescribed">{item.prescribedDrug}</span>
-                    <span className="sk-sub-col-generic">{item.genericOffered}</span>
-                    <span className="sk-sub-col-saving">{item.savingsText}</span>
-                    <span className={`sk-sub-col-prescriber ${item.isPrescriberBlocked ? 'is-blocked' : ''}`}>
-                      {t(RULE_LABEL[item.prescriberRule])}
-                    </span>
-                    <span className={`sk-sub-status-badge ${item.statusType}`}>
-                      {t(OUTCOME_LABEL[item.outcome])}
-                    </span>
-                  </div>
-                ))
-              )}
-
-              {/* Statutory Clinical Notice */}
-              <div className="sk-sub-rule-notice">
-                {t('partner.vsub.sub.ruleNotice')}
-              </div>
-            </div>
-          </>
-        )}
-      </main>
-
-      {/* Modal: Propose Generic Swap */}
-      {isProposeModalOpen && (
-        <div className="sk-sub-modal-backdrop" onClick={() => setIsProposeModalOpen(false)}>
-          <div className="sk-sub-modal" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="modal-propose-title">
-            <div className="sk-sub-modal-title">
-              <h2 id="modal-propose-title">{t('partner.vsub.sub.form.title')}</h2>
-              <button type="button" className="sk-sub-close-btn" onClick={() => setIsProposeModalOpen(false)} aria-label={t('partner.vsub.sub.closeModal')}>
-                <X size={20} aria-hidden="true" />
-              </button>
-            </div>
-
-            <form onSubmit={handleCreateSubstitution} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-              <div>
-                <label htmlFor="sub-prescribed" style={LABEL_STYLE}>
-                  {t('partner.vsub.sub.form.prescribed')}
-                </label>
-                <input
-                  id="sub-prescribed"
-                  type="text"
-                  required
-                  placeholder={t('partner.vsub.sub.form.prescribedPlaceholder')}
-                  value={prescribedInput}
-                  onChange={(e) => setPrescribedInput(e.target.value)}
-                  style={INPUT_STYLE}
-                />
-              </div>
-
-              {/* NTI Clinical Warning if detected */}
-              {isInputDrugNti && (
-                <div role="alert" style={{ background: 'var(--sk-color-danger-bg)', border: '1.5px solid var(--sk-color-danger)', padding: 12, borderRadius: 10, display: 'flex', gap: 10 }}>
-                  <AlertCircle size={20} color="var(--sk-color-danger)" style={{ flexShrink: 0, marginTop: 2 }} aria-hidden="true" />
-                  <div>
-                    <strong style={{ fontSize: 13, color: 'var(--sk-color-danger)' }}>{t('partner.vsub.sub.form.ntiTitle')}</strong>
-                    <p style={{ margin: '4px 0 0', fontSize: 12, color: 'var(--sk-color-danger)', lineHeight: 1.4 }}>
-                      {t('partner.vsub.sub.form.ntiBody')}
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              <div>
-                <label htmlFor="sub-generic" style={LABEL_STYLE}>
-                  {t('partner.vsub.sub.form.generic')}
-                </label>
-                <input
-                  id="sub-generic"
-                  type="text"
-                  required
-                  placeholder={t('partner.vsub.sub.form.genericPlaceholder')}
-                  value={genericInput}
-                  onChange={(e) => setGenericInput(e.target.value)}
-                  style={INPUT_STYLE}
-                />
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                <div>
-                  <label htmlFor="sub-brand-price" style={LABEL_STYLE}>
-                    {t('partner.vsub.sub.form.brandPrice')}
-                  </label>
-                  <input
-                    id="sub-brand-price"
-                    type="number"
-                    min={1}
-                    value={brandPrice}
-                    onChange={(e) => setBrandPrice(Number(e.target.value))}
-                    style={INPUT_STYLE}
-                  />
-                </div>
-                <div>
-                  <label htmlFor="sub-generic-price" style={LABEL_STYLE}>
-                    {t('partner.vsub.sub.form.genericPrice')}
-                  </label>
-                  <input
-                    id="sub-generic-price"
-                    type="number"
-                    min={1}
-                    value={genericPrice}
-                    onChange={(e) => setGenericPrice(Number(e.target.value))}
-                    style={INPUT_STYLE}
-                  />
-                </div>
-              </div>
-
-              {/* Live Savings Calculation */}
-              <div style={{ background: 'var(--sk-color-positive-bg)', padding: 12, borderRadius: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--sk-color-positive)' }}>{t('partner.vsub.sub.form.estimatedSaving')}</span>
-                <strong style={{ fontSize: 15, color: 'var(--sk-color-positive)' }}>
-                  ₹{Math.max(0, brandPrice - genericPrice)} ({brandPrice > 0 ? Math.round((Math.max(0, brandPrice - genericPrice) / brandPrice) * 100) : 0}%)
-                </strong>
-              </div>
-
-              {/* Prescriber Swap Rule */}
-              <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'var(--sk-color-text-2)', cursor: 'pointer', minHeight: 44 }}>
-                <input
-                  type="checkbox"
-                  checked={prescriberPermitted && !isInputDrugNti}
-                  disabled={isInputDrugNti}
-                  onChange={(e) => setPrescriberPermitted(e.target.checked)}
-                />
-                <span>{t('partner.vsub.sub.form.prescriberPermitted')}</span>
-              </label>
-
-              {/* Student Response */}
-              <div>
-                <label htmlFor="sub-student-choice" style={LABEL_STYLE}>
-                  {t('partner.vsub.sub.form.studentChoice')}
-                </label>
-                <select
-                  id="sub-student-choice"
-                  value={studentChoice}
-                  onChange={(e) => setStudentChoice(e.target.value as 'accepted' | 'declined' | 'pending')}
-                  disabled={isInputDrugNti || !prescriberPermitted}
-                  style={{ ...INPUT_STYLE, padding: '0 10px', background: 'var(--sk-color-surface)' }}
-                >
-                  <option value="accepted">{t('partner.vsub.sub.form.choiceAccepted')}</option>
-                  <option value="declined">{t('partner.vsub.sub.form.choiceDeclined')}</option>
-                  <option value="pending">{t('partner.vsub.sub.form.choicePending')}</option>
-                </select>
-              </div>
-
-              <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
-                <button type="button" className="sk-handover-btn-secondary" style={{ flex: 1, minHeight: 44 }} onClick={() => setIsProposeModalOpen(false)}>
-                  {t('common.cancel')}
-                </button>
-                <button type="submit" className="sk-sub-btn-primary" style={{ flex: 1, minHeight: 44 }}>
-                  {t('partner.vsub.sub.form.submit')}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Modal: Inspection Details */}
-      {selectedRecord && (
-        <div className="sk-sub-modal-backdrop" onClick={() => setSelectedRecord(null)}>
-          <div className="sk-sub-modal" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="modal-sub-audit-title">
-            <div className="sk-sub-modal-title">
-              <h2 id="modal-sub-audit-title">{t('partner.vsub.sub.detail.title')}</h2>
-              <button type="button" className="sk-sub-close-btn" onClick={() => setSelectedRecord(null)} aria-label={t('partner.vsub.sub.closeModal')}>
-                <X size={20} aria-hidden="true" />
-              </button>
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                <div style={{ background: 'var(--sk-color-surface-2)', padding: 12, borderRadius: 10 }}>
-                  <span style={{ fontSize: 11, color: 'var(--sk-color-text-3)', display: 'block' }}>{t('partner.vsub.sub.detail.prescribed')}</span>
-                  <strong style={{ fontSize: 15, color: 'var(--sk-color-text)' }}>{selectedRecord.prescribedDrug}</strong>
-                </div>
-                <div style={{ background: 'var(--sk-color-surface-2)', padding: 12, borderRadius: 10 }}>
-                  <span style={{ fontSize: 11, color: 'var(--sk-color-text-3)', display: 'block' }}>{t('partner.vsub.sub.detail.generic')}</span>
-                  <strong style={{ fontSize: 15, color: 'var(--sk-color-text)' }}>{selectedRecord.genericOffered}</strong>
-                </div>
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                <div style={{ background: 'var(--sk-color-positive-bg)', padding: 12, borderRadius: 10 }}>
-                  <span style={{ fontSize: 11, color: 'var(--sk-color-positive)', display: 'block' }}>{t('partner.vsub.sub.detail.saving')}</span>
-                  <strong style={{ fontSize: 15, color: 'var(--sk-color-positive)' }}>{selectedRecord.savingsText}</strong>
-                </div>
-                <div style={{ background: 'var(--sk-color-surface-2)', padding: 12, borderRadius: 10 }}>
-                  <span style={{ fontSize: 11, color: 'var(--sk-color-text-3)', display: 'block' }}>{t('partner.vsub.sub.detail.outcome')}</span>
-                  <strong style={{ fontSize: 14, color: selectedRecord.statusType === 'green' ? 'var(--sk-color-positive)' : selectedRecord.statusType === 'red' ? 'var(--sk-color-danger)' : 'var(--sk-color-action)' }}>
-                    {t(OUTCOME_LABEL[selectedRecord.outcome])}
-                  </strong>
-                </div>
-              </div>
-
-              {selectedRecord.notes && (
-                <div style={{ background: 'var(--sk-color-surface-2)', padding: 12, borderRadius: 10 }}>
-                  <span style={{ fontSize: 11, color: 'var(--sk-color-text-3)', display: 'block', fontWeight: 700 }}>
-                    {t('partner.vsub.sub.detail.notes')}
-                  </span>
-                  <p style={{ margin: '4px 0 0', fontSize: 12, color: 'var(--sk-color-text-2)', lineHeight: 1.45 }}>
-                    {selectedRecord.notes}
-                  </p>
-                </div>
-              )}
-
-              <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
-                <button
-                  type="button"
-                  className="sk-handover-btn-secondary"
-                  style={{ flex: 1, minHeight: 44 }}
-                  onClick={() => setSelectedRecord(null)}
-                >
-                  {t('partner.vsub.sub.detail.close')}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+      </form>
+    </Drawer>
   );
 }
