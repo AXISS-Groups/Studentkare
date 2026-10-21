@@ -30,13 +30,24 @@ export function soonestOpen(slots: readonly AvailabilitySlot[], now = Date.now()
     .sort((a, b) => (toDate(a.slotStart)?.getTime() ?? 0) - (toDate(b.slotStart)?.getTime() ?? 0))[0] ?? null;
 }
 
+export interface ConsultsOptions {
+  /**
+   * Read each consultation's next open slot (default). Off for a visitor:
+   * availability needs a session, so a signed-out page never asks for it.
+   */
+  slots?: boolean;
+}
+
 export class ConsultsViewModel implements ViewModel {
   phase: ConsultsPhase = 'loading';
   options: ConsultOption[] = [];
+  /** Whether next open slots are read at all (false signed out). */
+  readonly slots: boolean;
   private disposed = false;
 
-  constructor(private readonly request: typeof apiRequest = apiRequest) {
-    makeAutoObservable<ConsultsViewModel, 'disposed' | 'request'>(this, { disposed: false, request: false }, { autoBind: true });
+  constructor(private readonly request: typeof apiRequest = apiRequest, options: ConsultsOptions = {}) {
+    this.slots = options.slots ?? true;
+    makeAutoObservable<ConsultsViewModel, 'disposed' | 'request'>(this, { disposed: false, request: false, slots: false }, { autoBind: true });
   }
 
   /** Lowest listed consultation price (paise), or null when none is priced. */
@@ -71,7 +82,7 @@ export class ConsultsViewModel implements ViewModel {
         this.options = res.items.filter((item) => item.active !== false).map((service) => ({ service, next: undefined }));
         this.phase = 'ready';
       });
-      await Promise.all(this.options.map((o) => this.loadNext(o.service.id)));
+      if (this.slots) await Promise.all(this.options.map((o) => this.loadNext(o.service.id)));
     } catch {
       if (!this.disposed) runInAction(() => { this.phase = 'error'; });
     }
