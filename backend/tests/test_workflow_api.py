@@ -10,7 +10,7 @@ from sqlalchemy.pool import StaticPool
 
 from app.main import app
 from core import workflow_models as M
-from services import workflow_auth
+from services import email_deliverability, workflow_auth
 from services.db_sql import Base
 from services.workflow_auth import workflow_db
 
@@ -25,6 +25,10 @@ def harness(monkeypatch):
             yield session
     codes = []
     monkeypatch.setattr(workflow_auth, "deliver_code", lambda identifier, code, channel: codes.append(code) or True)
+    # The OTP send path probes DNS for real domains (services.email_deliverability).
+    # Tests must never touch the network: a sandbox or CI runner without DNS
+    # answers "no nameservers", which the gate reads as undeliverable (422).
+    monkeypatch.setattr(email_deliverability, "_resolve_domain", lambda domain: True)
     app.dependency_overrides[workflow_db] = database
     client = TestClient(app)
     yield client, factory, codes
