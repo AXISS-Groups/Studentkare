@@ -36,6 +36,7 @@ import { safetyTe } from './areas/safety';
 import { shopwebTe } from './areas/shopweb';
 import { studentshellTe } from './areas/studentshell';
 import { studentwebT1Te } from './areas/studentwebT1';
+import { teamAccountsTe } from './areas/teamAccounts';
 import { studentwebTe } from './areas/studentweb';
 import { wellnessTe } from './areas/wellness';
 // keep-sorted end
@@ -85,6 +86,7 @@ export const areasTe = {
   ...shopwebTe,
   ...studentshellTe,
   ...studentwebT1Te,
+  ...teamAccountsTe,
   ...studentwebTe,
   ...wellnessTe,
   // keep-sorted end

@@ -78,3 +78,43 @@
   line-height: 1.55;
   color: var(--sk-color-text-2);
 }
+
+/* Team accounts: emailed code or team PIN (founder decision 2026-10-22).
+   Two pills in a radio group; the chosen one is the action fill. */
+.sk-staff .sk-staff__methods {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sk-space-4);
+  padding: var(--sk-space-4);
+  border-radius: var(--sk-radius-md);
+  background: var(--sk-color-surface-2);
+}
+.sk-staff .sk-staff__method {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sk-space-8);
+  min-height: var(--sk-size-touch-target);
+  margin: 0;
+  padding: 0 var(--sk-space-12);
+  border: 0;
+  border-radius: var(--sk-radius-sm);
+  background: transparent;
+  color: var(--sk-color-text-2);
+  font: inherit;
+  font-size: var(--sk-text-body-sm);
+  font-weight: 700;
+  cursor: pointer;
+}
+.sk-staff .sk-staff__method[aria-checked='true'] {
+  background: var(--sk-color-surface);
+  color: var(--sk-color-action);
+  box-shadow: var(--sk-shadow-hairline);
+}
+.sk-staff .sk-staff__method:focus-visible { outline: 3px solid var(--sk-color-focus); outline-offset: 2px; }
+.sk-staff .sk-staff__hint {
+  margin: var(--sk-space-4) 0 0;
+  font-size: var(--sk-text-caption);
+  line-height: 1.45;
+  color: var(--sk-color-text-2);
+}

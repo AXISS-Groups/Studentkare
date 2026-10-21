@@ -41,6 +41,10 @@ export function channelFailureFrom(error: ApiError, chosen: Channel, known: Chan
 }
 /** STAFF: the staff sign-in page (AdminSignIn). The server then sends codes only to staff accounts. */
 export type AuthAudience = 'STUDENT' | 'STAFF';
+/** Staff page only: an emailed code, or a team account's ID and PIN (POST /auth/staff-pin/sign-in). */
+export type StaffSignInMethod = 'CODE' | 'PIN';
+/** A team account's PIN is six digits (services/team_accounts.py PIN_LENGTH). */
+export const STAFF_PIN_LENGTH = 6;
 type Channel = 'EMAIL' | 'WHATSAPP';
 
 /** What the server says about a device the student chose to be remembered on. Never a session. */
@@ -120,6 +124,10 @@ export class AuthViewModel {
    * check) closes that attempt: retrying it could only fail.
    */
   twoFaRestart: 'auth.twofa.restart' | 'auth.twofa.restartOther' | '' = '';
+  /** Staff page: which way the person signs in. */
+  signInMethod: StaffSignInMethod = 'CODE';
+  /** A team account's PIN while it is typed. Never kept after a try, right or wrong. */
+  pin = '';
 
   constructor(
     mode: AuthMode,
@@ -236,6 +244,62 @@ export class AuthViewModel {
 
   setTwoFaCode(value: string): void {
     this.twoFaCode = value.replace(/\D/g, '').slice(0, 6);
+  }
+
+  setSignInMethod(method: StaffSignInMethod): void {
+    this.signInMethod = method;
+    this.pin = '';
+    this.error = '';
+    this.errorStatus = 0;
+    this.twoFaRestart = '';
+  }
+
+  setPin(value: string): void {
+    this.pin = value.replace(/\D/g, '').slice(0, STAFF_PIN_LENGTH);
+  }
+
+  get canSubmitPin(): boolean {
+    return !this.busy && this.identifier.includes('@') && this.pin.length === STAFF_PIN_LENGTH;
+  }
+
+  /**
+   * A team account's ID and PIN (staff page). The server answers every failure
+   * the same way and decides lockout; the authenticator step follows when the
+   * account has one, exactly as after an emailed code. Nothing is kept from a
+   * refused try: no session, and the PIN field empties.
+   */
+  async signInWithPin(onAccept: (response: SessionResponse) => void): Promise<void> {
+    if (!this.canSubmitPin) return;
+    this.busy = true;
+    this.error = '';
+    this.errorStatus = 0;
+    this.twoFaRestart = '';
+    const pin = this.pin;
+    this.pin = '';
+    try {
+      const response = await apiRequest<SessionResponse>('/auth/staff-pin/sign-in', {
+        method: 'POST',
+        body: JSON.stringify({ identifier: this.identifier.trim(), pin }),
+      });
+      runInAction(() => {
+        if (response.requires2FA && response.tempToken) {
+          this.tempToken = response.tempToken;
+          this.twoFaCode = '';
+          this.step = 7;
+          return;
+        }
+        this.accept(response, onAccept);
+      });
+    } catch (error) {
+      runInAction(() => {
+        this.error = error instanceof Error ? error.message : 'Could not sign in.';
+        this.errorStatus = error instanceof ApiError ? error.status : 0;
+      });
+    } finally {
+      runInAction(() => {
+        this.busy = false;
+      });
+    }
   }
 
   setField(field: 'fullName' | 'dob' | 'bloodGroup' | 'university' | 'rollNumber', value: string): void {

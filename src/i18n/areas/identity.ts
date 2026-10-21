@@ -131,7 +131,7 @@ export const identityEn = {
   'ident.staff.title': 'Sign in to your console',
   'ident.staff.email': 'Work email',
   'ident.staff.send': 'Email me a code',
-  'ident.staff.note': 'There are no shared accounts. Staff accounts are created by an administrator.',
+  'ident.staff.note': 'Staff accounts are created by an administrator.',
   'ident.staff.student': 'Student? Sign in here',
 };
 
@@ -255,7 +255,7 @@ export const identityTe: Record<keyof typeof identityEn, string> = {
   'ident.staff.title': 'మీ కన్సోల్‌లో సైన్ ఇన్ చేయండి',
   'ident.staff.email': 'ఆఫీస్ ఈమెయిల్',
   'ident.staff.send': 'నాకు కోడ్ ఈమెయిల్ చేయండి',
-  'ident.staff.note': 'పంచుకునే ఖాతాలు లేవు. సిబ్బంది ఖాతాలను అడ్మినిస్ట్రేటర్ సృష్టిస్తారు.',
+  'ident.staff.note': 'సిబ్బంది ఖాతాలను అడ్మినిస్ట్రేటర్ సృష్టిస్తారు.',
   'ident.staff.student': 'విద్యార్థా? ఇక్కడ సైన్ ఇన్ చేయండి',
 };
 
@@ -379,6 +379,6 @@ export const identityHi: Record<keyof typeof identityEn, string> = {
   'ident.staff.title': 'अपने कंसोल में साइन इन करें',
   'ident.staff.email': 'काम का ईमेल',
   'ident.staff.send': 'मुझे कोड ईमेल करें',
-  'ident.staff.note': 'कोई साझा खाते नहीं हैं। स्टाफ़ खाते एक एडमिनिस्ट्रेटर बनाता है।',
+  'ident.staff.note': 'स्टाफ़ खाते एक एडमिनिस्ट्रेटर बनाता है।',
   'ident.staff.student': 'छात्र हैं? यहाँ साइन इन करें',
 };

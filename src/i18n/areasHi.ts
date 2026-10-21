@@ -37,6 +37,7 @@ import { shopwebHi } from './areas/shopweb';
 import { studentshellHi } from './areas/studentshell';
 import { studentwebHi } from './areas/studentweb';
 import { studentwebT1Hi } from './areas/studentwebT1';
+import { teamAccountsHi } from './areas/teamAccounts';
 import { wellnessHi } from './areas/wellness';
 // keep-sorted end
 
@@ -86,6 +87,7 @@ export const areasHi = {
   ...studentshellHi,
   ...studentwebHi,
   ...studentwebT1Hi,
+  ...teamAccountsHi,
   ...wellnessHi,
   // keep-sorted end
 };
