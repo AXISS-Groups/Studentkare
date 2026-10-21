@@ -12,6 +12,26 @@ describe('Authenticated workspace routing', () => {
     }
   });
 
+  it('opens partner consoles to partners and the super admin only, as the route registry does', () => {
+    for (const path of ['dispensing', 'rx-review'] as const) {
+      expect(canAccessRoute(path, 'VENDOR')).toBe(true);
+      expect(canAccessRoute(path, 'SUPER_ADMIN')).toBe(true);
+      for (const role of [null, 'STUDENT', 'CAMPUS_ADMIN', 'COUNSELLOR', 'NMC_DOCTOR'] as const) expect(canAccessRoute(path, role), `${path} ${role}`).toBe(false);
+    }
+  });
+
+  it('opens leaving campus, account deletion and the student requests to students only', () => {
+    for (const path of ['leave-campus', 'delete-account', 'my-requests', 'return-request', 'hostel-visit', 'refill-request'] as const) {
+      expect(canAccessRoute(path, 'STUDENT'), path).toBe(true);
+      for (const role of [null, 'SUPER_ADMIN', 'CAMPUS_ADMIN', 'COUNSELLOR', 'VENDOR', 'NMC_DOCTOR'] as const) expect(canAccessRoute(path, role), `${path} ${role}`).toBe(false);
+    }
+  });
+
+  it('opens the MEO console to campus admins, doctors and the super admin only', () => {
+    for (const role of ['CAMPUS_ADMIN', 'NMC_DOCTOR', 'SUPER_ADMIN'] as const) expect(canAccessRoute('meo', role), role).toBe(true);
+    for (const role of [null, 'STUDENT', 'COUNSELLOR', 'VENDOR'] as const) expect(canAccessRoute('meo', role), `${role}`).toBe(false);
+  });
+
   it('does not grant administrative access through a client-side role switch', () => {
     const roles: AccountRole[] = ['STUDENT', 'VENDOR', 'NMC_DOCTOR', 'CAMPUS_ADMIN', 'COUNSELLOR'];
     for (const role of roles) {

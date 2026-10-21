@@ -8,7 +8,7 @@ Answers [audit/02-repository-structure.md](../audit/02-repository-structure.md).
 
 **Goal:** `src/features/<domain>/` is the only place feature code lives. "Exists" means "runs".
 
-**Approach:** Execute the team's own `docs/dead-code-2026-10-14.md` list in staged, reviewable PRs, then lock the result in with tooling.
+**Approach:** Delete dead code in staged, reviewable PRs from a freshly verified cleanup plan (pending), then lock the result in with tooling. Do not execute the old `docs/dead-code-2026-10-14.md` list: it is superseded, and four files on it are now used by the app.
 
 **Steps**
 1. **Re-verify the list** at the current HEAD. Re-run the import-graph script the team used, plus Knip with stricter entries:

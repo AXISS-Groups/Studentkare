@@ -62,7 +62,7 @@ The authoritative audit is [`/audit`](../audit/README.md), with fixes in
 |---|---|
 | [remediation-plan-2026-10-09.md](remediation-plan-2026-10-09.md) | active |
 | [backlog-audit-2026-10-16.md](backlog-audit-2026-10-16.md) | unreviewed |
-| [dead-code-2026-10-14.md](dead-code-2026-10-14.md) | unreviewed |
+| [dead-code-2026-10-14.md](dead-code-2026-10-14.md) | superseded — stale, do not run its commands (marked in the file); verified replacement plan pending |
 | [dead-code-2026-10-11.md](dead-code-2026-10-11.md) | superseded by dead-code-2026-10-14.md |
 | [P0_HOUSE_CONSTITUTION_CERTIFICATION.md](P0_HOUSE_CONSTITUTION_CERTIFICATION.md) | withdrawn (marked in the file; audit TD-26) |
 | [application-audit-2026-09-13.md](application-audit-2026-09-13.md) | superseded by `/audit` |
