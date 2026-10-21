@@ -50,6 +50,7 @@ import { DeleteAccountRoute } from '@/features/account/views/DeleteAccountView';
 import { RewardsRoute } from '@/features/rewards/views/RewardsView';
 import { MyRequestsRoute, NewRequestRoute } from '@/features/requests/views/RequestsViews';
 import { OrdersScreen, ReturnRequestBoardScreen, SearchScreen } from './PhoneBoardsScreens';
+import { ConsultsScreen, LabsScreen, MedicinesScreen } from './M2StoreScreens';
 import { NativeSessionProvider, useNativeSession } from './session';
 import { StudentHomeScreen } from './StudentHomeScreen';
 import { StudentShell } from './StudentTabBar';
@@ -106,6 +107,9 @@ export type RootStackParamList = {
   RefillRequest: undefined;
   Search: undefined;
   Orders: undefined;
+  Medicines: undefined;
+  Labs: undefined;
+  Consults: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -389,7 +393,10 @@ function RootNavigator() {
         </Stack.Group>
       ) : signedIn ? (
         <Stack.Group>
-          <Stack.Screen name="Home" component={StudentHomeScreen} options={{ title: 'Studentkare' }} />
+          <Stack.Screen name="Home" component={StudentHomeScreen} options={{ title: 'Studentkare', headerShown: !isStudent }} />
+          <Stack.Screen name="Medicines" component={MedicinesScreen} options={{ title: t('m2.med.title'), headerShown: false }} />
+          <Stack.Screen name="Labs" component={LabsScreen} options={{ title: t('m2.labs.title'), headerShown: false }} />
+          <Stack.Screen name="Consults" component={ConsultsScreen} options={{ title: t('m2.doc.eyebrow'), headerShown: false }} />
           <Stack.Screen name="Vault" component={VaultRoute} options={{ title: t('nav.records') }} />
           <Stack.Screen name="CaptureRecord" component={CaptureRecordRoute} options={{ title: t('capture.title') }} />
           <Stack.Screen name="MedicineReminders" component={MedicineRemindersRoute} options={{ title: t('reminders.title') }} />
