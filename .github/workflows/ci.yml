@@ -41,10 +41,15 @@ jobs:
       - name: 1. Code Style & Formatting Check (ESLint)
         run: npm run lint
 
-      - name: 1.2 Lint ratchets only shrink (config/*-legacy.json vs main)
+      # A pull request is compared with the branch it merges into; a push (no
+      # base_ref) is compared with main. CI is set, so the script fails if the
+      # base cannot be read instead of skipping the comparison.
+      - name: 1.2 Lint ratchets only shrink (config/*-legacy.json vs the target branch)
+        env:
+          LEGACY_BASE_BRANCH: ${{ github.base_ref || 'main' }}
         run: |
-          git fetch --no-tags --depth=1 origin main
-          npm run lint:ratchet
+          git fetch --no-tags --depth=1 origin "+refs/heads/${LEGACY_BASE_BRANCH}:refs/remotes/origin/${LEGACY_BASE_BRANCH}"
+          LEGACY_BASE="origin/${LEGACY_BASE_BRANCH}" npm run lint:ratchet
 
       # Blocking: no raw hex/rgb()/hsl() colour in src/**/*.css outside the
       # generated token CSS and config/css-colour-legacy.json (shrink-only, 1.2).
