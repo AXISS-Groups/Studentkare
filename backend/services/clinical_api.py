@@ -26,6 +26,7 @@ from sqlalchemy import func, select, update
 from sqlalchemy.orm import Session
 
 from core import workflow_models as M
+from core.settings_registry import setting
 from services import (
     activity_telemetry,
     agent_ayush,
