@@ -9,7 +9,7 @@ Places and phone numbers only: no person, no bed availability, no ratings.
 Grants are re-applied (P23) so neither group role gets anything it should not.
 
 Revision ID: c8f2d5a1e9b3
-Revises: a6c2e8d4f1b7
+Revises: e4b8d2f6a913
 Create Date: 2026-10-21
 """
 import sqlalchemy as sa
@@ -17,7 +17,7 @@ import sqlalchemy as sa
 from alembic import op
 
 revision = "c8f2d5a1e9b3"
-down_revision = "a6c2e8d4f1b7"
+down_revision = "e4b8d2f6a913"
 branch_labels = None
 depends_on = None
 

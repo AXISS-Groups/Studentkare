@@ -1994,6 +1994,12 @@ def log_medication_dose(body: MedDoseLogInput, user=Depends(authenticated_user),
     return medication_adherence_loop_agent.log_dose_taken(db, user["id"], body.medId)
 
 
+@router.post("/meds/skip-dose")
+def skip_medication_dose(body: MedDoseLogInput, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+    """The student skipped a dose. It is recorded as skipped, never as taken; nobody is told."""
+    return medication_adherence_loop_agent.skip_dose(db, user["id"], body.medId)
+
+
 class RefillReminderInput(StrictModel):
     medId: str
     daysBefore: int = Field(default=3, ge=1, le=60)

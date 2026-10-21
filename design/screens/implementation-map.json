@@ -1785,7 +1785,47 @@
       "src/screens/workspace/StudentPhoneFrame.tsx",
       "src/native/StudentTabBar.tsx",
       "src/features/phoneKit/studentPhoneBoards.tsx",
-      "src/native/M2HealthScreens.tsx"
+      "src/native/M2HealthScreens.tsx",
+      "src/features/reminders/views/TodayCards.tsx",
+      "src/features/reminders/views/ReminderParts.tsx",
+      "src/features/reminders/views/useUndoClock.ts",
+      "src/features/reminders/viewmodel/MedsTodayViewModel.ts",
+      "src/features/reminders/viewmodel/WaterViewModel.ts"
+    ],
+    "M2Reminders": [
+      "src/features/reminders/views/M2RemindersView.tsx",
+      "src/features/reminders/views/M2RemindersRoute.tsx",
+      "src/features/reminders/views/ReminderParts.tsx",
+      "src/features/reminders/views/useUndoClock.ts",
+      "src/features/reminders/viewmodel/MedsTodayViewModel.ts",
+      "src/features/reminders/viewmodel/MedicineRemindersViewModel.ts",
+      "src/features/reminders/viewmodel/serverMessage.ts",
+      "src/native/hardware/notifications.ts",
+      "src/design-system/m2/PillNav.tsx",
+      "src/design-system/m2/M2Parts.tsx",
+      "src/design-system/m2/Gradient.tsx",
+      "src/design-system/m2/servicePalette.ts",
+      "src/screens/workspace/StudentPhoneFrame.tsx",
+      "src/native/StudentTabBar.tsx",
+      "src/features/phoneKit/studentPhoneBoards.tsx",
+      "src/native/M2ReminderScreens.tsx"
+    ],
+    "M2Water": [
+      "src/features/reminders/views/M2WaterView.tsx",
+      "src/features/reminders/views/M2WaterRoute.tsx",
+      "src/features/reminders/views/ReminderParts.tsx",
+      "src/features/reminders/viewmodel/WaterViewModel.ts",
+      "src/features/reminders/viewmodel/WaterRemindersViewModel.ts",
+      "src/features/reminders/viewmodel/serverMessage.ts",
+      "src/native/hardware/notifications.ts",
+      "src/design-system/m2/PillNav.tsx",
+      "src/design-system/m2/M2Parts.tsx",
+      "src/design-system/m2/Gradient.tsx",
+      "src/design-system/m2/servicePalette.ts",
+      "src/screens/workspace/StudentPhoneFrame.tsx",
+      "src/native/StudentTabBar.tsx",
+      "src/features/phoneKit/studentPhoneBoards.tsx",
+      "src/native/M2ReminderScreens.tsx"
     ],
     "M2Trends": [
       "src/features/labResults/views/M2TrendsView.tsx",
@@ -1906,7 +1946,8 @@
     ],
     "Medications": [
       "src/screens/workspace/MedicationPanel.tsx",
-      "src/native/MedicineRemindersScreen.tsx"
+      "src/native/M2ReminderScreens.tsx",
+      "src/features/reminders/views/M2RemindersView.tsx"
     ],
     "Devices": [
       "src/screens/workspace/DevicesAndSensorsScreen.tsx"

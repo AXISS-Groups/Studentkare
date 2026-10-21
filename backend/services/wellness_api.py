@@ -195,6 +195,38 @@ def undo_latest_water(user=Depends(authenticated_user), db: Session = Depends(wo
     return {"removedId": latest.id, **water_today(db, user["id"])}
 
 
+def water_days(db, account_id: str) -> dict:
+    """The last ``wellness.water_history_days`` local days, oldest first, today last.
+
+    A day with no entry has ``consumedMl`` null: nothing logged is unknown, not
+    zero. The goal is today's; goals are not kept per day, so past days are not
+    marked as met or missed.
+    """
+    zone = student_time.student_zone(db, account_id)
+    today = student_time.local_today(zone)
+    first = today - timedelta(days=setting("wellness.water_history_days", db) - 1)
+    start, _ = student_time.day_bounds_utc(first, zone)
+    _, end = student_time.day_bounds_utc(today, zone)
+    totals: dict[Date, list[float]] = defaultdict(list)
+    for row in _rows_between(db, account_id, {WATER}, start, end):
+        totals[student_time.parse_stored(row.recorded_at).astimezone(zone).date()].append(row.value)
+    goal, goal_source = _water_goal(db, account_id)
+    days = []
+    day = first
+    while day <= today:
+        amounts = totals.get(day, [])
+        days.append({"date": day.isoformat(), "consumedMl": int(sum(amounts)) if amounts else None,
+                     "entries": len(amounts)})
+        day += timedelta(days=1)
+    return {"timezone": zone.key, "from": first.isoformat(), "to": today.isoformat(),
+            "goalMl": goal, "goalSource": goal_source, "days": days}
+
+
+@router.get("/wellness/water/days")
+def get_water_days(user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+    return water_days(db, user["id"])
+
+
 @router.get("/wellness/water/goal")
 def get_water_goal(user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
     goal, source = _water_goal(db, user["id"])

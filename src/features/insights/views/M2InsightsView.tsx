@@ -15,6 +15,8 @@ import { CardError, HeroStat, NavyHero, TileIcon } from '@/features/m2health/Hea
 import type { BodySystem, LabValue } from '@/features/labResults/data/LabResultsRepository';
 import { toneOf } from '@/features/labResults/viewmodel/labValueModels';
 import type { BodySystemRow, ValueTone } from '@/features/labResults/viewmodel/labValueModels';
+import { MedsTodayCard, WaterCard } from '@/features/reminders/views/TodayCards';
+import { useUndoClock } from '@/features/reminders/views/useUndoClock';
 import { refillLine } from '../viewmodel/InsightsViewModel';
 import type { InsightsViewModel } from '../viewmodel/InsightsViewModel';
 
@@ -34,6 +36,10 @@ export interface M2InsightsLinks {
   trends: () => void;
   records: () => void;
   reportUpload: () => void;
+  /** Medicines today and reminders (M2Reminders). */
+  medicines: () => void;
+  /** Water (M2Water). */
+  water: () => void;
   refill?: () => void;
   /** Pick a collection time on a test a doctor ordered (the order's own slot booking). */
   collection?: () => void;
@@ -179,6 +185,11 @@ export const M2InsightsView = observer(function M2InsightsView({ vm, name, links
   const t = useT();
   useOwnPhoneChrome();
   const online = useOnline();
+  React.useEffect(() => {
+    vm.meds.setOnline(online);
+    vm.water.setOnline(online);
+  }, [vm, online]);
+  useUndoClock(vm.meds);
   const values = vm.values;
   const latest = values.latest;
   const next = vm.next;
@@ -223,6 +234,11 @@ export const M2InsightsView = observer(function M2InsightsView({ vm, name, links
           </View>
         </View>
       ) : null}
+
+      <Rise index={1} style={[styles.gutter, styles.today]}>
+        <MedsTodayCard vm={vm.meds} onOpen={links.medicines} />
+        <WaterCard vm={vm.water} onOpen={links.water} />
+      </Rise>
 
       <Rise index={1} style={styles.gutter}>
         <M2Card style={styles.report} testID="m2-ins-report">
@@ -397,6 +413,7 @@ const styles = StyleSheet.create({
   statRow: { flexDirection: 'row', gap: space.s10 },
   noScore: { marginTop: space.s12, fontFamily: font.family.sans, fontSize: 11.5, lineHeight: 16, fontWeight: fontWeight(font.weight.strong), color: color.onHero2 },
   offline: { gap: space.s8 },
+  today: { gap: space.s12 },
   offlineLinks: { flexDirection: 'row', gap: space.s16, flexWrap: 'wrap' },
   offlineLink: { minHeight: size.touchTarget, paddingTop: space.s12 },
   report: { borderRadius: 28, padding: space.s16 },

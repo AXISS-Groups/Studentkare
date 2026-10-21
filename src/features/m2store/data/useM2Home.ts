@@ -16,8 +16,12 @@ import { BUY_AGAIN_ORDER_LIMIT, buyAgainEntries } from '@/features/studentweb/da
  * - Health camp: GET /camps.
  */
 
-/** GET /meds/today to plans[] (structured doses only; free-text frequency is never counted). */
-interface MedsTodayPlan { planId: string; dosesPlanned: number | null; dosesTaken: number }
+/**
+ * GET /meds/today to plans[] (structured doses only; free-text frequency is never counted).
+ * Rule L: only the counts are read here. The response also carries each plan's
+ * name and dose; they are never kept, drawn or passed on from Home.
+ */
+interface MedsTodayPlan { planId: string; dosesPlanned: number | null; dosesTaken: number; dosesSkipped?: number }
 interface MedsToday { plans: MedsTodayPlan[] }
 interface Appointment { id: string; slotStart: string; status: string }
 interface Camp { id: string; name: string; date: string }
@@ -25,6 +29,8 @@ interface Camp { id: string; name: string; date: string }
 export interface MedsSummary {
   taken: number;
   planned: number;
+  /** Doses the student skipped today (they are not left to take, and not taken). */
+  skipped: number;
 }
 
 const UPCOMING = new Set(['REQUESTED', 'CONFIRMED']);
@@ -34,12 +40,15 @@ export function medsSummary(today: MedsToday | null): MedsSummary | null {
   if (!today) return null;
   let planned = 0;
   let taken = 0;
+  let skipped = 0;
   for (const plan of today.plans) {
     if (plan.dosesPlanned === null || plan.dosesPlanned <= 0) continue;
     planned += plan.dosesPlanned;
-    taken += Math.min(plan.dosesTaken, plan.dosesPlanned);
+    const took = Math.min(plan.dosesTaken, plan.dosesPlanned);
+    taken += took;
+    skipped += Math.min(plan.dosesSkipped ?? 0, plan.dosesPlanned - took);
   }
-  return planned > 0 ? { taken, planned } : null;
+  return planned > 0 ? { taken, planned, skipped } : null;
 }
 
 /** The soonest requested or confirmed appointment still ahead. */

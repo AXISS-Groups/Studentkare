@@ -155,6 +155,11 @@ ORDERED_PAIRS: tuple[tuple[str, str], ...] = (
     ("wellness.water_goal_ml_min", "wellness.water_goal_ml_default"),
     ("wellness.water_goal_ml_default", "wellness.water_goal_ml_max"),
     ("wellness.water_entry_ml_min", "wellness.water_entry_ml_max"),
+    ("wellness.water_entry_ml_min", "wellness.water_glass_ml"),
+    ("wellness.water_glass_ml", "wellness.water_entry_ml_max"),
+    ("wellness.water_reminder_interval_minutes_min", "wellness.water_reminder_interval_minutes_default"),
+    ("wellness.water_reminder_interval_minutes_default", "wellness.water_reminder_interval_minutes_max"),
+    ("wellness.water_reminder_start_hour_default", "wellness.water_reminder_end_hour_default"),
     ("wellness.weight_kg_min", "wellness.weight_kg_max"),
     ("wellness.height_cm_min", "wellness.height_cm_max"),
     ("wellness.bmi_cutoff_low", "wellness.bmi_cutoff_mid"),
@@ -228,6 +233,16 @@ declare("meds.dose_undo_minutes", INT, 30, area="meds", unit="minutes", minimum=
         description="How long after marking a dose taken or skipped the student can undo it.")
 declare("meds.times_per_day_max", INT, 6, area="meds", unit="doses per day", minimum=1, maximum=24, public=True,
         description="Most reminder times one medication plan may have in a day.")
+# The clock times a student can pick for a daily medicine reminder on the phone
+# (local notifications; the server sends none). Minutes after midnight.
+declare("meds.reminder_minute_morning", INT, 480, area="meds", unit="minutes after midnight", minimum=0,
+        maximum=1439, public=True, description="Time of the 'morning' medicine reminder slot on the phone.")
+declare("meds.reminder_minute_afternoon", INT, 840, area="meds", unit="minutes after midnight", minimum=0,
+        maximum=1439, public=True, description="Time of the 'afternoon' medicine reminder slot on the phone.")
+declare("meds.reminder_minute_evening", INT, 1200, area="meds", unit="minutes after midnight", minimum=0,
+        maximum=1439, public=True, description="Time of the 'evening' medicine reminder slot on the phone.")
+declare("meds.reminder_minute_night", INT, 1320, area="meds", unit="minutes after midnight", minimum=0,
+        maximum=1439, public=True, description="Time of the 'night' medicine reminder slot on the phone.")
 
 # --- student web (signed in) ----------------------------------------------
 declare("studentweb.report_ready_days", INT, 14, area="studentweb", unit="days", minimum=1, maximum=90, public=True,
@@ -244,6 +259,25 @@ declare("wellness.water_entry_ml_min", INT, 10, area="wellness", unit="ml", mini
         description="Smallest amount one water entry may record.")
 declare("wellness.water_entry_ml_max", INT, 2000, area="wellness", unit="ml", minimum=10, maximum=5000, public=True,
         description="Largest amount one water entry may record.")
+declare("wellness.water_glass_ml", INT, 250, area="wellness", unit="ml", minimum=10, maximum=2000, public=True,
+        description="How much one tap of '+ glass' logs on the Water card and screen.")
+declare("wellness.water_history_days", INT, 7, area="wellness", unit="days", minimum=2, maximum=31, public=True,
+        description="How many days, today included, the Water screen shows (GET /wellness/water/days).")
+# Water reminders are local notifications on the phone; the server sends none.
+declare("wellness.water_reminder_interval_minutes_min", INT, 60, area="wellness", unit="minutes", minimum=15,
+        maximum=720, public=True, description="Shortest gap a student can pick between water reminders.")
+declare("wellness.water_reminder_interval_minutes_default", INT, 120, area="wellness", unit="minutes", minimum=15,
+        maximum=720, public=True, description="Gap between water reminders until the student picks another.")
+declare("wellness.water_reminder_interval_minutes_max", INT, 240, area="wellness", unit="minutes", minimum=15,
+        maximum=720, public=True, description="Longest gap a student can pick between water reminders.")
+declare("wellness.water_reminder_interval_step_minutes", INT, 30, area="wellness", unit="minutes", minimum=5,
+        maximum=120, public=True, description="Step of the water reminder gap picker.")
+declare("wellness.water_reminder_start_hour_default", INT, 9, area="wellness", unit="hour of day", minimum=0,
+        maximum=23, public=True, description="First water reminder of the day until the student picks another hour.")
+declare("wellness.water_reminder_end_hour_default", INT, 21, area="wellness", unit="hour of day", minimum=0,
+        maximum=23, public=True, description="No water reminder after this hour until the student picks another.")
+declare("wellness.water_reminders_per_day_max", INT, 12, area="wellness", unit="reminders", minimum=1, maximum=24,
+        public=True, description="Most water reminders the phone schedules in one day.")
 declare("wellness.entry_backdate_days", INT, 7, area="wellness", unit="days", minimum=0, maximum=366, public=True,
         description="How far back a water entry or a body measurement may be dated.")
 declare("wellness.activity_backdate_days", INT, 366, area="wellness", unit="days", minimum=0, maximum=3660,

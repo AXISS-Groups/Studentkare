@@ -115,7 +115,7 @@ function TodayTile({ icon, hue, title, onPress, testID }: { icon: 'doc' | 'refre
 function MedsCard({ data, onPress }: { data: M2HomeData['meds']; onPress: () => void }) {
   const t = useT();
   const s = data.summary;
-  const left = s ? s.planned - s.taken : 0;
+  const left = s ? s.planned - s.taken - s.skipped : 0;
   const line = data.loading ? t('m2.home.medsLoading') : data.failed ? t('m2.home.medsFailed') : !s ? t('m2.home.medsNone')
     : left > 0 ? t(left === 1 ? 'm2.home.medsLeftOne' : 'm2.home.medsLeft', { count: left }) : t('m2.home.medsAllTaken');
   const spoken = s ? `${t('m2.home.medsEyebrow')}. ${t('m2.home.medsSpoken', { taken: s.taken, planned: s.planned })}. ${line}` : `${t('m2.home.medsEyebrow')}. ${line}`;

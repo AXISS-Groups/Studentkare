@@ -45,8 +45,10 @@ const HOME_STORE_ROUTES: ReadonlySet<RoutePath> = new Set<RoutePath>([
 /** The My health screens opened from Insights (M2Trends, M2ReportUpload): the nav shows My health there. */
 const HEALTH_ROUTES: ReadonlySet<RoutePath> = new Set<RoutePath>([
   // keep-sorted start
+  'health/medicines',
   'health/report-upload',
   'health/trends',
+  'health/water',
   // keep-sorted end
 ]);
 

@@ -61,7 +61,7 @@ export function M2HomeRoute(): React.ReactElement {
         labs: () => navigate('lab-tests'),
         generics: () => routerNavigate(shopPath({ category: 'medicines' })),
         uploadReport: () => navigate('records'),
-        meds: () => navigate('medications'),
+        meds: () => navigate('health/medicines'),
         buyAgain: () => navigate('buy-again'),
         consult: () => navigate('appointments'),
         bookConsult: () => navigate('care'),

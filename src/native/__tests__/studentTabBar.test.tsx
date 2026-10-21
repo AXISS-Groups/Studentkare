@@ -44,6 +44,8 @@ describe('student pill nav destinations (Mobile 2.0)', () => {
     expect(studentNavKeyFor('Vaccines')).toBe('home');
     expect(studentNavKeyFor('Insights')).toBe('health');
     expect(studentNavKeyFor('Trends')).toBe('health');
+    expect(studentNavKeyFor('MedicineReminders')).toBe('health');
+    expect(studentNavKeyFor('Water')).toBe('health');
     expect(studentNavKeyFor('ReportUpload')).toBe('health');
     expect(studentNavKeyFor('Profile')).toBe('profile');
     expect(studentNavKeyFor('Product')).toBeNull();

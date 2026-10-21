@@ -3,7 +3,7 @@
 export type SkIconElement = readonly [tag: 'path' | 'circle' | 'rect' | 'line' | 'polyline' | 'polygon' | 'ellipse', attrs: Readonly<Record<string, string>>];
 export interface SkIconDef { readonly mode: 'line' | 'solid'; readonly els: readonly SkIconElement[] }
 
-/** 330 line/solid icons, 24 px grid, drawn with currentColor. */
+/** 332 line/solid icons, 24 px grid, drawn with currentColor. */
 export const skIcons = {
   "alert-triangle": { mode: "line", els: [["path",{"d":"M 12 3 l 10 18 H 2 z"}],["path",{"d":"M 12 10 v 4 M 12 17.5 v 0.5"}]] },
   "check": { mode: "line", els: [["path",{"d":"M 5 12.5 l 4.5 4.5 L 19 7"}]] },
@@ -335,6 +335,8 @@ export const skIcons = {
   "minus": { mode: "line", els: [["path",{"d":"M 5 12 h 14"}]] },
   "hospital": { mode: "line", els: [["path",{"d":"M 4 21 V 8 a 1 1 0 0 1 1 -1 h 3 V 4 a 1 1 0 0 1 1 -1 h 6 a 1 1 0 0 1 1 1 v 3 h 3 a 1 1 0 0 1 1 1 v 13"}],["path",{"d":"M 2 21 h 20"}],["path",{"d":"M 12 5.5 v 4 M 10 7.5 h 4"}],["path",{"d":"M 10 21 v -4 h 4 v 4"}]] },
   "directions": { mode: "line", els: [["path",{"d":"M 10.6 2.6 a 2 2 0 0 1 2.8 0 l 8 8 a 2 2 0 0 1 0 2.8 l -8 8 a 2 2 0 0 1 -2.8 0 l -8 -8 a 2 2 0 0 1 0 -2.8 z"}],["path",{"d":"M 9 15 v -3 a 1 1 0 0 1 1 -1 h 5"}],["path",{"d":"M 13 8.5 l 2.5 2.5 l -2.5 2.5"}]] },
+  "skip-forward": { mode: "line", els: [["path",{"d":"M 5 5 v 14 l 10 -7 z"}],["path",{"d":"M 19 5 v 14"}]] },
+  "bell-off": { mode: "line", els: [["path",{"d":"M 6 16 V 11 a 6 6 0 0 1 12 0 v 5 l 2 2 H 4 z"}],["path",{"d":"M 10 20 a 2 2 0 0 0 4 0"}],["path",{"d":"M 3 3 l 18 18"}]] },
 } as const satisfies Record<string, SkIconDef>;
 export type SkIconName = keyof typeof skIcons;
 

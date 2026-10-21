@@ -45,7 +45,7 @@ function homeLinks(): M2HomeLinks {
 }
 
 const DATA: M2HomeData = {
-  meds: { loading: false, failed: false, summary: { taken: 2, planned: 3 } },
+  meds: { loading: false, failed: false, summary: { taken: 2, planned: 3, skipped: 0 } },
   consult: { loading: false, next: { id: 'a1', slotStart: later(30), status: 'CONFIRMED' } },
   buyAgainCount: 3,
   camp: null,
@@ -54,7 +54,7 @@ const DATA: M2HomeData = {
 describe('Mobile 2.0 Home data (pure)', () => {
   it('counts only structured doses, never more taken than planned', () => {
     expect(medsSummary({ plans: [{ planId: 'a', dosesPlanned: 2, dosesTaken: 3 }, { planId: 'b', dosesPlanned: null, dosesTaken: 1 }, { planId: 'c', dosesPlanned: 1, dosesTaken: 0 }] }))
-      .toEqual({ taken: 2, planned: 3 });
+      .toEqual({ taken: 2, planned: 3, skipped: 0 });
     expect(medsSummary({ plans: [{ planId: 'b', dosesPlanned: null, dosesTaken: 1 }] })).toBeNull();
     expect(medsSummary(null)).toBeNull();
   });

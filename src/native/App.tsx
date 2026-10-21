@@ -9,7 +9,7 @@ import { NavigationProvider, useNavigate } from './navigation';
 import PreventiveCareScreen from './PreventiveCareScreen';
 import { CampScreen } from './CampScreen';
 import { RecordCaptureScreen } from './RecordCaptureScreen';
-import { MedicineRemindersScreen } from './MedicineRemindersScreen';
+import { RemindersScreen, WaterScreen } from './M2ReminderScreens';
 import { AppearanceScreen } from './AppearanceScreen';
 import { applyAppearanceAndRestart } from './applyAppearance';
 import {
@@ -133,6 +133,7 @@ export type RootStackParamList = {
   Vault: undefined;
   Verify: undefined;
   VerifyGate: undefined;
+  Water: undefined;
   Wellness: undefined;
   YourCare: undefined;
   // keep-sorted end
@@ -166,14 +167,6 @@ function CaptureRecordRoute() {
   return (
     <SafeAreaView edges={['left', 'right', 'bottom']} style={{ flex: 1 }}>
       <RecordCaptureScreen onDone={() => navigate('Vault')} />
-    </SafeAreaView>
-  );
-}
-
-function MedicineRemindersRoute() {
-  return (
-    <SafeAreaView edges={['left', 'right', 'bottom']} style={{ flex: 1 }}>
-      <MedicineRemindersScreen />
     </SafeAreaView>
   );
 }
@@ -440,7 +433,9 @@ function RootNavigator() {
           <Stack.Screen name="ReportUpload" component={ReportUploadScreen} options={{ title: t('m2v.up.title'), headerShown: false }} />
           <Stack.Screen name="Vault" component={VaultRoute} options={{ title: t('nav.records') }} />
           <Stack.Screen name="CaptureRecord" component={CaptureRecordRoute} options={{ title: t('capture.title') }} />
-          <Stack.Screen name="MedicineReminders" component={MedicineRemindersRoute} options={{ title: t('reminders.title') }} />
+          {/* Mobile 2.0 Medicines today and reminders (M2Reminders) and Water (M2Water): each draws its own header. */}
+          <Stack.Screen name="MedicineReminders" component={RemindersScreen} options={{ title: t('m2r.meds.title'), headerShown: false }} />
+          <Stack.Screen name="Water" component={WaterScreen} options={{ title: t('m2r.water.title'), headerShown: false }} />
           <Stack.Screen name="YourCare" component={YourCareRoute} options={{ title: t('tabbar.yourCare'), headerShown: false }} />
           <Stack.Screen name="More" component={MoreRoute} options={{ title: t('ws.tab.more') }} />
           <Stack.Screen name="Appointments" component={AppointmentsRoute} options={{ title: t('nav.appointments'), headerShown: false }} />
