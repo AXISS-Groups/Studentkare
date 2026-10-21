@@ -23,7 +23,7 @@ export type { SwitchRowProps } from './SwitchRow';
 export type { StepperProps } from './Stepper';
 export { EmptyState, ErrorState, OfflineBanner, Skeleton, StateScreen, useOnline } from './States';
 export type { EmptyStateProps, ErrorStateProps, OfflineBannerProps, SkeletonProps, StateAction, StateKind, StateScreenProps } from './States';
-export { CrisisLinks } from './CrisisLinks';
+export { CrisisLinks, EMERGENCY_NUMBER, TELE_MANAS_NUMBER } from './CrisisLinks';
 export { Checkbox, Chip } from './Controls';
 export type { CheckboxProps, ChipProps } from './Controls';
 export { CodeInput, PhoneInput, Select } from './Inputs';

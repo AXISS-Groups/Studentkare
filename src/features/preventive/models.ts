@@ -21,6 +21,8 @@ export interface GuidanceStep { text: string; kind: GuidanceStepKind; often: str
 export interface ReportReview {
   id: string; documentId: string; status: 'REQUESTED' | 'ASSIGNED' | 'APPROVED' | 'REJECTED' | 'WITHDRAWN';
   version: number; reviewedBy: string | null; reviewedAt: number | null;
+  /** The reviewing doctor's display name, once APPROVED (older servers omit it). */
+  reviewedByName?: string | null;
   guidance: null | {
     summary: string; questions: string[]; nextSteps: string[]; steps: GuidanceStep[];
     sourceRefs: { title: string; url: string }[];
