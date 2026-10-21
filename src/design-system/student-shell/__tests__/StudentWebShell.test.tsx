@@ -32,7 +32,7 @@ describe('StudentWebShell', () => {
     const groups = within(nav).getAllByRole('group').filter((group) => group.getAttribute('aria-labelledby'));
     expect(groups.map((group) => group.getAttribute('aria-labelledby'))).toEqual(['sk-sshell-care', 'sk-sshell-services', 'sk-sshell-account']);
     expect(within(groups[0]).getAllByRole('button').map((button) => button.textContent)).toEqual([
-      'Your Care', 'Health vault', 'My lab tests', 'Report insights', 'Emergency card', 'My check-in pass',
+      'Your Care', 'Health vault', 'My lab tests', 'Report insights', 'Medicines today', 'Water', 'Emergency card', 'My check-in pass',
     ]);
     expect(within(groups[1]).getAllByRole('button').map((button) => button.textContent)).toEqual([
       'Orders', 'Buy again', 'Ayush AI', 'My requests',

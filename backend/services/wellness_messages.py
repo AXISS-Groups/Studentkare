@@ -46,6 +46,7 @@ MESSAGES: dict[str, str] = {
     "DOSE_NOT_FOUND": "Dose not found.",
     "DOSE_UNDO_TOO_LATE": "A dose can be undone only within {minutes} minutes of logging it.",
     "DOSE_RECORDED": "Dose recorded for today.",
+    "DOSE_SKIPPED": "Dose marked as skipped for today.",
     "DOSE_ALREADY_LOGGED_TODAY": "Dose already logged today for this medication.",
     "DOSES_ALL_LOGGED_TODAY": "Every planned dose is already logged today for this medication.",
     "DOSE_ALREADY_LOGGED": "Dose already logged.",
