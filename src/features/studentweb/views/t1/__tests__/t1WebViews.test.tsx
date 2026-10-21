@@ -10,7 +10,6 @@ import { WebVaultView, vaultStats } from '../WebVaultView';
 import type { VaultShare } from '../WebVaultView';
 import { WebMyLabTestsView, splitLabTests } from '../WebMyLabTestsView';
 import type { StudentLabTest } from '../WebMyLabTestsView';
-import { WebReportInsightsView, pickReport } from '../WebReportInsightsView';
 import { WebConsultSummaryRoute } from '../WebConsultSummaryView';
 import { WebEmergencyCardRoute, readiness } from '../WebEmergencyCardView';
 import { WebPassView } from '../WebPassView';
@@ -135,33 +134,6 @@ describe('WebMyLabTests', () => {
     await settle();
     expect(screen.getByText('No lab tests yet')).toBeTruthy();
     expect(container.querySelector('[data-icon^="glyph:qr-sample"]')).toBeNull();
-  });
-});
-
-describe('WebReportInsights', () => {
-  it('shows the releasing doctor’s own note, picks the report asked for, and no body-system scores', async () => {
-    const a = lab('l1', 'REPORT_RELEASED', { reportDocumentId: 'd1', reviewedAt: 100, reviewNote: 'Older note', reviewedByDoctor: 'Dr A' });
-    const b = lab('l2', 'REPORT_RELEASED', { reportDocumentId: 'd2', reviewedAt: 200, reviewNote: 'Newer note', reviewedByDoctor: 'Dr B' });
-    expect(pickReport([a, b, lab('l3', 'REPORT_READY')], null)?.id).toBe('l2');
-    expect(pickReport([a, b], 'l1')?.id).toBe('l1');
-    expect(pickReport([lab('l3', 'REPORT_READY')], 'l3')).toBeNull();
-    window.history.pushState({}, '', '/report-insights?id=l1');
-    serve({ '/lab-orders': { items: [a, b] } });
-    const { container } = render(withRouter(<WebReportInsightsView />));
-    await settle();
-    expect(screen.getByText('Older note')).toBeTruthy();
-    expect(screen.queryByText(/AI draft|percentile score|Ask Ayush/)).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: /Go over it with a clinician/ }));
-    expect(go).toHaveBeenCalledWith('care');
-    await axeClean(container);
-  });
-
-  it('with nothing released it says so and never shows a held result', async () => {
-    serve({ '/lab-orders': { items: [lab('l3', 'REPORT_READY', { reviewNote: 'secret' })] } });
-    render(withRouter(<WebReportInsightsView />));
-    await settle();
-    expect(screen.getByText('No released reports yet')).toBeTruthy();
-    expect(screen.queryByText('secret')).toBeNull();
   });
 });
 

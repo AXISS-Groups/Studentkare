@@ -1,6 +1,6 @@
 # Icon coverage
 
-Screens built and passing: **221 / 252** · built with gaps: 0 · not started: 31
+Screens built and passing: **221 / 247** · built with gaps: 0 · not started: 26 · superseded: 5
 
 | Screen | Status | Missing |
 |---|---|---|
@@ -238,7 +238,6 @@ Screens built and passing: **221 / 252** · built with gaps: 0 · not started: 3
 | LandingClinician | not started | — |
 | Medications | not started | — |
 | MotionSystem | not started | — |
-| MyReports | not started | — |
 | NavSheets | not started | — |
 | NewDevice | not started | — |
 | NotificationTemplates | not started | — |
@@ -246,13 +245,14 @@ Screens built and passing: **221 / 252** · built with gaps: 0 · not started: 3
 | ProductList | not started | — |
 | RecordsVault | not started | — |
 | RefillRequest | not started | — |
-| ReportInsights | not started | — |
 | StateScreens | not started | — |
 | StatusMoments | not started | — |
 | Teleconsult | not started | — |
-| VitalTrends | not started | — |
 | WebConsultSummary | not started | — |
 | WebGuardianApprove | not started | — |
 | WebGuardianConsent | not started | — |
-| WebReportAssistant | not started | — |
-| WebReportInsights | not started | — |
+| MyReports | superseded | by M2Insights, M2ReportUpload |
+| ReportInsights | superseded | by M2Insights, M2Trends |
+| VitalTrends | superseded | by M2Trends |
+| WebReportAssistant | superseded | by M2Insights |
+| WebReportInsights | superseded | by M2Insights |
