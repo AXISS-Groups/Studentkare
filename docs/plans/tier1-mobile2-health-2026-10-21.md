@@ -1,4 +1,4 @@
-# Mobile 2.0 health screens (Tier 1): canvas plan awaiting review
+# Mobile 2.0 health screens (Tier 1): canvas plan approved 2026-10-21
 
 **Approved by:** _(design reviewer, date)_ · _(clinical lead, date)_ · _(AI-constitution owner, date: M2AskAyush and the Ayush consent only)_
 
@@ -557,3 +557,8 @@ tests. Then M2ReportUpload (Add · Check · Saved), M2Trends, and the M2Insights
 Backend: Gap 2 (AI-constitution owner signs), Gap 3, Gap 5. Then M2Profile Ayush switch, M2AskAyush records mode
 and report card, "Ask Ayush about this report" on M2Insights, "Your vaccine record" in My health, M2Product
 accordion.
+
+
+## Approval
+
+Krishna Chintakayala (founder, named Tier 1 reviewer) approved all 18 recommended decisions on 2026-10-21, including #9 (care links go to RefillRequest and the existing order's slot booking, not the store). Items the plan routes to the clinical lead or the AI-constitution owner still need their sign-off before those parts ship.
