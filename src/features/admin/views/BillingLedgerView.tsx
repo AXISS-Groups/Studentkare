@@ -31,7 +31,7 @@ const LEDGER_FILTERS: readonly { key: LedgerKind; label: MessageKey; empty: Mess
 const PlanPrices = observer(function PlanPrices({ vm }: { vm: PlansPricingViewModel }) {
   const t = useT();
   if (vm.loading || vm.error || !vm.plans.length) return null;
-  const prices = vm.plans.map(plan => `${plan.name} ${planPriceWithPeriod(plan)}`).join(' · ');
+  const prices = vm.plans.map(plan => `${plan.name} ${planPriceWithPeriod(plan, t)}`).join(' · ');
   return <BoardNote icon="banknote">{t('adminBoard.billing.prices', { prices })}</BoardNote>;
 });
 
