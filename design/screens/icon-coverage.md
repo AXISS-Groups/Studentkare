@@ -1,6 +1,6 @@
 # Icon coverage
 
-Screens built and passing: **208 / 239** · built with gaps: 0 · not started: 31
+Screens built and passing: **221 / 252** · built with gaps: 0 · not started: 31
 
 | Screen | Status | Missing |
 |---|---|---|
@@ -212,6 +212,19 @@ Screens built and passing: **208 / 239** · built with gaps: 0 · not started: 3
 | WebVerifyGate | pass | — |
 | WebWellness | pass | — |
 | YourCare | pass | — |
+| M2Home | pass | — |
+| M2Medicines | pass | — |
+| M2Product | pass | — |
+| M2Labs | pass | — |
+| M2Consults | pass | — |
+| M2Vaccines | pass | — |
+| M2Insurance | pass | — |
+| M2Orders | pass | — |
+| M2Insights | pass | — |
+| M2Trends | pass | — |
+| M2ReportUpload | pass | — |
+| M2AskAyush | pass | — |
+| M2Profile | pass | — |
 | AyushChat | not started | — |
 | AyushSheet | not started | — |
 | CheckinReceipt | not started | — |

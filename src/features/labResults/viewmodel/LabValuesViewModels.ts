@@ -5,6 +5,7 @@ import {
   labResultsRepository,
   type ConfirmResult,
   type LabResultsRepository,
+  type LabValue,
   type LabValuesList,
   type ReferenceTest,
   type TestTrend,
@@ -121,8 +122,13 @@ export class TrendsViewModel implements ViewModel {
       this, { repository: false, disposed: false }, { autoBind: true });
   }
 
+  /** The trend's values, confirmed only: a draft never reaches the screen, even if a response carried one. */
+  get items(): LabValue[] {
+    return this.trend ? this.trend.items.filter(v => v.status === 'CONFIRMED') : [];
+  }
+
   get view(): TrendView | null {
-    return this.trend ? trendView(this.trend.items, this.trend.minPointsForLine) : null;
+    return this.trend ? trendView(this.items, this.trend.minPointsForLine) : null;
   }
 
   get selectedPinned(): boolean {

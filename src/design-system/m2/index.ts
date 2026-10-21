@@ -5,7 +5,7 @@
  */
 export { Gradient, gradientCss } from './Gradient';
 export type { GradientProps } from './Gradient';
-export { PillNav, PILL_NAV, PILL_NAV_HEIGHT } from './PillNav';
+export { M2_NAV_CLEARANCE, PillNav, PILL_NAV, PILL_NAV_HEIGHT } from './PillNav';
 export type { PillNavKey, PillNavDestination, PillNavProps } from './PillNav';
 export { ServiceRail } from './ServiceRail';
 export type { ServiceTile } from './ServiceRail';

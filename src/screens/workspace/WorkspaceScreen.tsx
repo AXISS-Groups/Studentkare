@@ -40,11 +40,12 @@ import { StudentPhoneFrame } from './StudentPhoneFrame';
 import { AccountDetailsPage, DataExportPage, phoneBoardFor, safetyBoardFor, YourCareWebPage } from './PhoneBoards';
 import { MoreHubBoard } from '@/features/account/views/MoreHubBoard';
 import { SearchPage, studentPhoneBoard } from '@/features/phoneKit/studentPhoneBoards';
-import { HealthPlaceholder } from '@/features/m2health/views/HealthPlaceholder';
 import { EmergencyHelplinesDialog } from '../../components/interface/InterfaceBar';
 import { NotificationCenterModal } from '../../components/health/NotificationCenterModal';
 import { AyushWidget, ayushWidgetShownOn } from '@/features/ayush/AyushWidget';
 
+const M2TrendsRoute = lazy(() => import('@/features/labResults/views/M2TrendsRoute').then(module => ({ default: module.M2TrendsRoute })));
+const M2ReportUploadRoute = lazy(() => import('@/features/labResults/views/M2ReportUploadRoute').then(module => ({ default: module.M2ReportUploadRoute })));
 const M2LabsRoute = lazy(() => import('@/features/m2store/views/M2LabsRoute').then(module => ({ default: module.M2LabsRoute })));
 const WebEmergencyCard = lazy(() => import('@/features/emergency/views/WebEmergencyCard').then(module => ({ default: module.WebEmergencyCard })));
 const IdentityVerifyView = lazy(() => import('@/features/auth/views/IdentityVerifyView').then(module => ({ default: module.IdentityVerifyView })));
@@ -311,9 +312,11 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
     if (phoneBoard) return phoneBoard.node;
     switch (route) {
       case 'search': return <SearchPage />;
-      case 'health/report-upload': case 'health/trends': return <HealthPlaceholder onRecords={() => navigate('records')} />;
       case 'health': return <MemberOverview />;
       case 'your-care': return <YourCareWebPage />;
+      // Mobile 2.0 My health (Tier 1): the same boards in the page column above phone width.
+      case 'health/trends': return <M2TrendsRoute />;
+      case 'health/report-upload': return <M2ReportUploadRoute />;
       case 'account': return <AccountDetailsPage />;
       case 'data-export': return <DataExportPage />;
       case 'billing': return <MemberProfilePanel initialTab="plan" />;

@@ -24,6 +24,7 @@ import { rewardsEn } from './areas/rewards';
 import { mobile2En } from './areas/mobile2';
 import { mobile2OrdersEn } from './areas/mobile2Orders';
 import { mobile2HealthEn } from './areas/mobile2health';
+import { m2valuesEn } from './areas/m2values';
 import { wellnessEn } from './areas/wellness';
 import { consoleEn } from './areas/console';
 import { phoneboardsEn } from './areas/phoneboards';
@@ -855,6 +856,7 @@ export const en = {
   ...mobile2En,
   ...mobile2OrdersEn,
   ...mobile2HealthEn,
+  ...m2valuesEn,
   ...wellnessEn,
   ...consoleEn,
   ...phoneboardsEn,

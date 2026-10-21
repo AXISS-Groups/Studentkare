@@ -5,7 +5,7 @@ import { Icon } from '@/design-system/icons';
 import type { SkIconName } from '@/design-system/icons';
 import { Button, ErrorState, Rise, Skeleton, useReducedMotion } from '@/design-system';
 import {
-  Gradient, M2Card, M2Header, M2Heading, M2_BOTTOM_SPACE, NAVY_STOPS, NotYetTile, SoftIcon, SosButton, heroStops, m2Text, useAmbientMotion, useLift, useLoop,
+  Gradient, M2Card, M2Header, M2Heading, M2_NAV_CLEARANCE, NAVY_STOPS, NotYetTile, SoftIcon, SosButton, heroStops, m2Text, useAmbientMotion, useLift, useLoop,
   useOwnPhoneChrome,
 } from '@/design-system/m2';
 import type { PressState } from '@/design-system/m2';
@@ -245,7 +245,7 @@ export const M2InsuranceView = observer(function M2InsuranceView({ vm, links }: 
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.canvas },
-  content: { paddingBottom: M2_BOTTOM_SPACE, gap: space.s16, width: '100%', maxWidth: size.phoneFrameMax, alignSelf: 'center', overflow: 'hidden' },
+  content: { paddingBottom: M2_NAV_CLEARANCE, gap: space.s16, width: '100%', maxWidth: size.phoneFrameMax, alignSelf: 'center', overflow: 'hidden' },
   glow: {
     position: 'absolute', top: -140, right: -110, width: 330, height: 330, borderRadius: radius.full,
     ...webOnly({ backgroundImage: `radial-gradient(circle, ${color.serviceGreenSoft}, transparent 70%)` }),

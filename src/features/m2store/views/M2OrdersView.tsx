@@ -4,7 +4,7 @@ import { observer } from 'mobx-react-lite';
 import { Icon3d } from '@/design-system/icons';
 import { Button, ErrorState, Note, Rise, Skeleton, useOnline } from '@/design-system';
 import {
-  M2Card, M2Header, M2Heading, M2_BOTTOM_SPACE, SosButton, m2Text, useAmbientMotion, useLift, useLoop, useOwnPhoneChrome, webAttrs,
+  M2Card, M2Header, M2Heading, M2_NAV_CLEARANCE, SosButton, m2Text, useAmbientMotion, useLift, useLoop, useOwnPhoneChrome, webAttrs,
 } from '@/design-system/m2';
 import type { PressState } from '@/design-system/m2';
 import { color, focusRing, font, fontWeight, motion, radius, shadow, shadowStyle, size, space, webOnly } from '@/design-system/theme';
@@ -327,7 +327,7 @@ const DOT = 14;
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.canvas },
-  content: { paddingBottom: M2_BOTTOM_SPACE, gap: space.s16, width: '100%', maxWidth: size.phoneFrameMax, alignSelf: 'center' },
+  content: { paddingBottom: M2_NAV_CLEARANCE, gap: space.s16, width: '100%', maxWidth: size.phoneFrameMax, alignSelf: 'center' },
   gutter: { paddingHorizontal: space.gutterPhone, gap: space.s12 },
   grow: { flex: 1, minWidth: 0 },
   centre: { textAlign: 'center' },

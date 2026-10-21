@@ -417,8 +417,8 @@ function RootNavigator() {
           <Stack.Screen name="Product" component={ProductScreen} options={{ title: t('m2.med.title'), headerShown: false }} />
           <Stack.Screen name="Insights" component={InsightsScreen} options={{ title: t('m2.nav.health'), headerShown: false }} />
           <Stack.Screen name="Profile" component={ProfileScreen} options={{ title: t('m2.nav.profile'), headerShown: false }} />
-          <Stack.Screen name="ReportUpload" component={ReportUploadScreen} options={{ title: t('m2h.reportUpload') }} />
-          <Stack.Screen name="Trends" component={TrendsScreen} options={{ title: t('m2h.trends') }} />
+          <Stack.Screen name="Trends" component={TrendsScreen} options={{ title: t('m2v.tr.title'), headerShown: false }} />
+          <Stack.Screen name="ReportUpload" component={ReportUploadScreen} options={{ title: t('m2v.up.title'), headerShown: false }} />
           <Stack.Screen name="Vault" component={VaultRoute} options={{ title: t('nav.records') }} />
           <Stack.Screen name="CaptureRecord" component={CaptureRecordRoute} options={{ title: t('capture.title') }} />
           <Stack.Screen name="MedicineReminders" component={MedicineRemindersRoute} options={{ title: t('reminders.title') }} />

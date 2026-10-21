@@ -4,7 +4,7 @@ import { observer } from 'mobx-react-lite';
 import { Icon } from '@/design-system/icons';
 import type { SkIconName } from '@/design-system/icons';
 import { OfflineBanner, Rise, Skeleton, useOnline } from '@/design-system';
-import { Gradient, M2Card, M2Heading, M2_BOTTOM_SPACE, SosButton, m2Text, useLift, useOwnPhoneChrome, webAttrs } from '@/design-system/m2';
+import { Gradient, M2Card, M2Heading, M2_NAV_CLEARANCE, SosButton, m2Text, useLift, useOwnPhoneChrome, webAttrs } from '@/design-system/m2';
 import type { PressState } from '@/design-system/m2';
 import { color, focusRing, font, fontWeight, motion, radius, shadow, shadowStyle, size, space, webOnly } from '@/design-system/theme';
 import { useT } from '@/i18n';
@@ -379,7 +379,7 @@ export const M2InsightsView = observer(function M2InsightsView({ vm, name, links
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.canvas },
-  content: { paddingBottom: M2_BOTTOM_SPACE, gap: space.s16, width: '100%', maxWidth: size.phoneFrameMax, alignSelf: 'center', overflow: 'hidden' },
+  content: { paddingBottom: M2_NAV_CLEARANCE, gap: space.s16, width: '100%', maxWidth: size.phoneFrameMax, alignSelf: 'center', overflow: 'hidden' },
   gutter: { paddingHorizontal: space.gutterPhone },
   grow: { flex: 1, minWidth: 0, gap: space.s2 },
   head: { flexDirection: 'row', alignItems: 'center', gap: space.s12 },

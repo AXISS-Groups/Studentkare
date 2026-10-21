@@ -3,7 +3,7 @@ import { Animated, Linking, Pressable, ScrollView, StyleSheet, Text, TextInput, 
 import { observer } from 'mobx-react-lite';
 import { Icon } from '@/design-system/icons';
 import { OfflineBanner, Rise, TELE_MANAS_NUMBER, useOnline } from '@/design-system';
-import { Gradient, M2_BOTTOM_SPACE, ORB_STOPS, RoundButton, SosButton, m2Text, useAmbientMotion, useLoop, useOwnPhoneChrome, M2Heading, webAttrs } from '@/design-system/m2';
+import { Gradient, M2_NAV_CLEARANCE, ORB_STOPS, RoundButton, SosButton, m2Text, useAmbientMotion, useLoop, useOwnPhoneChrome, M2Heading, webAttrs } from '@/design-system/m2';
 import type { PressState } from '@/design-system/m2';
 import { color, focusRing, font, fontWeight, motion, radius, shadow, shadowStyle, size, space, webOnly } from '@/design-system/theme';
 import { useT } from '@/i18n';
@@ -211,7 +211,7 @@ export const M2AskAyushView = observer(function M2AskAyushView({ vm, links }: { 
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.canvas },
-  content: { paddingBottom: M2_BOTTOM_SPACE, gap: space.s12, width: '100%', maxWidth: size.phoneFrameMax, alignSelf: 'center', overflow: 'hidden' },
+  content: { paddingBottom: M2_NAV_CLEARANCE, gap: space.s12, width: '100%', maxWidth: size.phoneFrameMax, alignSelf: 'center', overflow: 'hidden' },
   glow: { position: 'absolute', top: -160, left: -60, width: 420, height: 360, borderRadius: radius.full, backgroundColor: color.surface3, opacity: 0.8 },
   gutter: { paddingHorizontal: space.gutterPhone },
   grow: { flex: 1, minWidth: 0 },

@@ -5,7 +5,7 @@ import { Icon } from '@/design-system/icons';
 import type { SkIconName } from '@/design-system/icons';
 import { Button, OfflineBanner, RadioGroup, Rise, Sheet, Skeleton, useOnline } from '@/design-system';
 import {
-  Gradient, LiftCard, M2Card, M2Heading, M2_BOTTOM_SPACE, ProgressRing, SosButton, heroStops, m2Text, useAmbientMotion, useLift, useLoop, useOwnPhoneChrome,
+  Gradient, LiftCard, M2Card, M2Heading, M2_NAV_CLEARANCE, ProgressRing, SosButton, heroStops, m2Text, useAmbientMotion, useLift, useLoop, useOwnPhoneChrome,
 } from '@/design-system/m2';
 import type { PressState, ServiceHue } from '@/design-system/m2';
 import { color, focusRing, font, fontWeight, motion, radius, shadow, shadowStyle, size, space, webOnly } from '@/design-system/theme';
@@ -286,7 +286,7 @@ export const M2ProfileView = observer(function M2ProfileView({ vm, links }: { vm
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.canvas },
-  content: { paddingBottom: M2_BOTTOM_SPACE, gap: space.s16, width: '100%', maxWidth: size.phoneFrameMax, alignSelf: 'center', overflow: 'hidden' },
+  content: { paddingBottom: M2_NAV_CLEARANCE, gap: space.s16, width: '100%', maxWidth: size.phoneFrameMax, alignSelf: 'center', overflow: 'hidden' },
   gutter: { paddingHorizontal: space.gutterPhone },
   headRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: space.s12 },
   headActions: { flexDirection: 'row', alignItems: 'center', gap: space.s8 },

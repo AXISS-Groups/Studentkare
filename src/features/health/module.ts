@@ -132,6 +132,9 @@ const workspacePaths: { path: string; access?: (role: AccountRole | null) => boo
   { path: '/return-request', access: hasRole('STUDENT') },
   { path: '/hostel-visit', access: hasRole('STUDENT') },
   { path: '/refill-request', access: hasRole('STUDENT') },
+  // Mobile 2.0 My health (Tier 1): Trends and Add a lab report, on the student's own stored lab values.
+  { path: '/health/trends', access: hasRole('STUDENT') },
+  { path: '/health/report-upload', access: hasRole('STUDENT') },
   { path: '/vendor', access: hasRole('VENDOR') },
   { path: '/clinician', access: hasRole('NMC_DOCTOR') },
   { path: '/clinician/queue', access: hasRole('NMC_DOCTOR') },

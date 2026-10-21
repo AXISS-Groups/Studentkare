@@ -1754,8 +1754,42 @@
       "src/features/phoneKit/studentPhoneBoards.tsx",
       "src/native/M2HealthScreens.tsx"
     ],
-    "M2Trends": [],
-    "M2ReportUpload": [],
+    "M2Trends": [
+      "src/features/labResults/views/M2TrendsView.tsx",
+      "src/features/labResults/views/M2TrendsRoute.tsx",
+      "src/features/labResults/viewmodel/trendScreenModels.ts",
+      "src/features/labResults/viewmodel/LabValuesViewModels.ts",
+      "src/features/labResults/viewmodel/labValueModels.ts",
+      "src/features/labResults/data/LabResultsRepository.ts",
+      "src/design-system/charts/trendGeometry.ts",
+      "src/features/phoneKit/studentPhoneBoards.tsx",
+      "src/native/M2HealthScreens.tsx",
+      "src/design-system/m2/PillNav.tsx",
+      "src/design-system/m2/M2Parts.tsx",
+      "src/design-system/m2/Gradient.tsx",
+      "src/design-system/m2/servicePalette.ts",
+      "src/design-system/m2/m2Motion.ts",
+      "src/screens/workspace/StudentPhoneFrame.tsx",
+      "src/native/StudentTabBar.tsx"
+    ],
+    "M2ReportUpload": [
+      "src/features/labResults/views/M2ReportUploadView.tsx",
+      "src/features/labResults/views/M2ReportUploadRoute.tsx",
+      "src/features/labResults/views/pickReportFile.web.ts",
+      "src/features/labResults/viewmodel/ReportUploadViewModel.ts",
+      "src/features/labResults/viewmodel/LabValuesViewModels.ts",
+      "src/features/labResults/viewmodel/labValueModels.ts",
+      "src/features/labResults/data/LabResultsRepository.ts",
+      "src/features/phoneKit/studentPhoneBoards.tsx",
+      "src/native/M2HealthScreens.tsx",
+      "src/design-system/m2/PillNav.tsx",
+      "src/design-system/m2/M2Parts.tsx",
+      "src/design-system/m2/Gradient.tsx",
+      "src/design-system/m2/servicePalette.ts",
+      "src/design-system/m2/m2Motion.ts",
+      "src/screens/workspace/StudentPhoneFrame.tsx",
+      "src/native/StudentTabBar.tsx"
+    ],
     "M2AskAyush": [
       "src/features/chat/views/M2AskAyushView.tsx",
       "src/features/chat/views/M2AskAyushRoute.tsx",
@@ -1859,8 +1893,6 @@
       "src/design-system/public-site/PublicSiteFooter.tsx",
       "src/design-system/public-site/publicSiteNav.ts",
       "src/design-system/public-site/NewsletterBand.tsx"
-    ],
-    "M2Trends": [],
-    "M2ReportUpload": []
+    ]
   }
 }

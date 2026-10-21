@@ -11,7 +11,8 @@ const M2InsightsRoute = lazy(() => import('@/features/insights/views/M2InsightsR
 const M2AskAyushRoute = lazy(() => import('@/features/chat/views/M2AskAyushRoute').then((m) => ({ default: m.M2AskAyushRoute })));
 const M2VaccinesRoute = lazy(() => import('@/features/preventive/views/M2VaccinesRoute').then((m) => ({ default: m.M2VaccinesRoute })));
 const M2ProfileRoute = lazy(() => import('@/features/m2profile/views/M2ProfileRoute').then((m) => ({ default: m.M2ProfileRoute })));
-const HealthPlaceholder = lazy(() => import('@/features/m2health/views/HealthPlaceholder').then((m) => ({ default: m.HealthPlaceholder })));
+const M2TrendsRoute = lazy(() => import('@/features/labResults/views/M2TrendsRoute').then((m) => ({ default: m.M2TrendsRoute })));
+const M2ReportUploadRoute = lazy(() => import('@/features/labResults/views/M2ReportUploadRoute').then((m) => ({ default: m.M2ReportUploadRoute })));
 const SearchRoute = lazy(() => import('@/features/discover/views/SearchRoute').then((m) => ({ default: m.SearchRoute })));
 const ShopPhoneRoute = lazy(() => import('@/features/shopPhone/views/ShopPhoneRoute').then((m) => ({ default: m.ShopPhoneRoute })));
 const IdentityVerifyView = lazy(() => import('@/features/auth/views/IdentityVerifyView').then((m) => ({ default: m.IdentityVerifyView })));
@@ -44,9 +45,8 @@ export function studentPhoneBoard(route: RoutePath): PhoneBoard | null {
     case 'ayush': return { node: <M2AskAyushRoute />, title: 'm2.nav.ayush', ownBack: true };
     case 'preventive-care': return { node: <M2VaccinesRoute />, title: 'm2.vac.eyebrow', ownBack: true };
     case 'profile': return { node: <M2ProfileRoute />, title: 'm2.nav.profile', ownBack: true };
-    // M2ReportUpload and M2Trends are built in their own update; until then the routes say so.
-    case 'health/report-upload': return { node: <HealthPlaceholder onRecords={() => navigate('records')} />, title: 'm2h.reportUpload', ownBack: false };
-    case 'health/trends': return { node: <HealthPlaceholder onRecords={() => navigate('records')} />, title: 'm2h.trends', ownBack: false };
+    case 'health/trends': return { node: <M2TrendsRoute />, title: 'm2v.tr.title', ownBack: true };
+    case 'health/report-upload': return { node: <M2ReportUploadRoute />, title: 'm2v.up.title', ownBack: true };
     case 'search': return { node: <SearchRoute />, title: 'phone.search.title', ownBack: true };
     case 'shop': return { node: <ShopPhoneRoute route="shop" />, title: 'm2.med.title', ownBack: false };
     case 'checkout': return { node: <ShopPhoneRoute route="checkout" />, title: 'phone.cart.title', ownBack: true };

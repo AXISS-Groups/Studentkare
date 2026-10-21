@@ -3,7 +3,7 @@ import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-na
 import { Icon } from '@/design-system/icons';
 import { Rise } from '@/design-system';
 import {
-  Gradient, HeroCarousel, LiftCard, M2Heading, M2SearchField, M2SectionHead, M2_BOTTOM_SPACE, NAVY_STOPS, ProgressRing, RoundButton, SERVICE_HUES,
+  Gradient, HeroCarousel, LiftCard, M2Heading, M2SearchField, M2SectionHead, M2_NAV_CLEARANCE, NAVY_STOPS, ProgressRing, RoundButton, SERVICE_HUES,
   ServiceRail, SoftIcon, SoftTileGrid, SosButton, heroStops, m2Text, useLift, useOwnPhoneChrome,
 } from '@/design-system/m2';
 import type { HeroSlide, PressState, ServiceTile } from '@/design-system/m2';
@@ -322,7 +322,7 @@ export function M2HomeView({ name, campus, verified, data, links, cart, recent, 
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.canvas },
-  content: { paddingTop: space.s16, paddingBottom: M2_BOTTOM_SPACE, gap: space.s16, width: '100%', maxWidth: size.phoneFrameMax, alignSelf: 'center', overflow: 'hidden' },
+  content: { paddingTop: space.s16, paddingBottom: M2_NAV_CLEARANCE, gap: space.s16, width: '100%', maxWidth: size.phoneFrameMax, alignSelf: 'center', overflow: 'hidden' },
   glow: { position: 'absolute', top: -120, right: -90, width: 300, height: 300, borderRadius: radius.full, opacity: 0.9 },
   gutter: { paddingHorizontal: space.gutterPhone },
   grow: { flex: 1, minWidth: 0 },

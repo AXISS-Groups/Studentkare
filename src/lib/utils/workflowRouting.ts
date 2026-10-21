@@ -34,6 +34,8 @@ export function canAccessRoute(route: RoutePath, role: AccountRole | null) {
   if (route === 'home' || route === 'buy-again') return role === 'STUDENT';
   // My lab tests and Report insights (canvas 3b, WP-09): the student's own released reports.
   if (route === 'my-lab-tests' || route === 'report-insights') return role === 'STUDENT';
+  // Mobile 2.0 My health boards on the student's own stored lab values (Tier 1).
+  if (route === 'health/trends' || route === 'health/report-upload') return role === 'STUDENT';
   return true;
 }
 export function readRoute() {

@@ -4,7 +4,7 @@ import { observer } from 'mobx-react-lite';
 import { Icon } from '@/design-system/icons';
 import { EmptyState, ErrorState, Rise, Skeleton } from '@/design-system';
 import {
-  Gradient, LiftCard, M2Card, M2Heading, M2_BOTTOM_SPACE, RoundButton, SERVICE_HUES, floatTransform, heroStops, m2Text, useAmbientMotion, useLoop, useOwnPhoneChrome,
+  Gradient, LiftCard, M2Card, M2Heading, M2_NAV_CLEARANCE, RoundButton, SERVICE_HUES, floatTransform, heroStops, m2Text, useAmbientMotion, useLoop, useOwnPhoneChrome,
 } from '@/design-system/m2';
 import type { PressState } from '@/design-system/m2';
 import { color, focusRing, font, fontWeight, motion, radius, size, space, webOnly } from '@/design-system/theme';
@@ -169,7 +169,7 @@ export const M2VaccinesView = observer(function M2VaccinesView({ vm, links }: { 
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.canvas },
-  content: { paddingBottom: M2_BOTTOM_SPACE, gap: space.s16, width: '100%', maxWidth: size.phoneFrameMax, alignSelf: 'center', overflow: 'hidden' },
+  content: { paddingBottom: M2_NAV_CLEARANCE, gap: space.s16, width: '100%', maxWidth: size.phoneFrameMax, alignSelf: 'center', overflow: 'hidden' },
   gutter: { paddingHorizontal: space.gutterPhone },
   grow: { flex: 1, minWidth: 0, gap: space.s2 },
   hero: { paddingTop: space.s16, paddingHorizontal: space.gutterPhone, paddingBottom: space.s24, borderBottomLeftRadius: 36, borderBottomRightRadius: 36, overflow: 'hidden' },

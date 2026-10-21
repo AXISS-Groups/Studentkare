@@ -3,7 +3,7 @@ import { Animated, Linking, Pressable, ScrollView, StyleSheet, Text, View } from
 import { Icon } from '@/design-system/icons';
 import { ErrorState, Rise, Skeleton } from '@/design-system';
 import {
-  Gradient, LiftCard, M2Card, M2Header, M2Heading, M2SearchField, M2SectionHead, M2_BOTTOM_SPACE, NAVY_STOPS, NotYetTile, RoundButton, SERVICE_HUES,
+  Gradient, LiftCard, M2Card, M2Header, M2Heading, M2SearchField, M2SectionHead, M2_NAV_CLEARANCE, NAVY_STOPS, NotYetTile, RoundButton, SERVICE_HUES,
   SoftIcon, SoftTileGrid, floatTransform, heroStops, m2Text, useAmbientMotion, useLift, useLoop, useOwnPhoneChrome,
 } from '@/design-system/m2';
 import type { PressState } from '@/design-system/m2';
@@ -258,7 +258,7 @@ export function M2MedicinesView({ links, cartCount, shelf, points, labFromPaise 
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.canvas },
-  content: { paddingBottom: M2_BOTTOM_SPACE, gap: space.s16, width: '100%', maxWidth: size.phoneFrameMax, alignSelf: 'center', overflow: 'hidden' },
+  content: { paddingBottom: M2_NAV_CLEARANCE, gap: space.s16, width: '100%', maxWidth: size.phoneFrameMax, alignSelf: 'center', overflow: 'hidden' },
   glow: { position: 'absolute', top: -140, left: -100, width: 320, height: 320, borderRadius: radius.full },
   gutter: { paddingHorizontal: space.gutterPhone },
   grow: { flex: 1, minWidth: 0 },

@@ -4,7 +4,7 @@ import { observer } from 'mobx-react-lite';
 import { Icon } from '@/design-system/icons';
 import { CrisisLinks, ErrorState, Rise, Skeleton } from '@/design-system';
 import {
-  Gradient, LiftCard, M2Card, M2Heading, M2SectionHead, M2_BOTTOM_SPACE, NotYetTile, RoundButton, SERVICE_HUES, SoftIcon, floatTransform, heroStops,
+  Gradient, LiftCard, M2Card, M2Heading, M2SectionHead, M2_NAV_CLEARANCE, NotYetTile, RoundButton, SERVICE_HUES, SoftIcon, floatTransform, heroStops,
   m2Text, useAmbientMotion, useLift, useLoop, useOwnPhoneChrome,
 } from '@/design-system/m2';
 import type { PressState, ServiceHue } from '@/design-system/m2';
@@ -255,7 +255,7 @@ export const M2ConsultsView = observer(function M2ConsultsView({ vm, links }: { 
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.canvas },
-  content: { paddingBottom: M2_BOTTOM_SPACE, gap: space.s16, width: '100%', maxWidth: size.phoneFrameMax, alignSelf: 'center', overflow: 'hidden' },
+  content: { paddingBottom: M2_NAV_CLEARANCE, gap: space.s16, width: '100%', maxWidth: size.phoneFrameMax, alignSelf: 'center', overflow: 'hidden' },
   gutter: { paddingHorizontal: space.gutterPhone },
   grow: { flex: 1, minWidth: 0, gap: space.s2 },
   hero: { paddingTop: space.s16, paddingHorizontal: space.gutterPhone, paddingBottom: space.s24, borderBottomLeftRadius: 36, borderBottomRightRadius: 36, overflow: 'hidden', gap: space.s6 },

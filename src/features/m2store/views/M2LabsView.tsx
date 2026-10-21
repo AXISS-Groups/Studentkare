@@ -4,7 +4,7 @@ import { Icon } from '@/design-system/icons';
 import type { SkIconName } from '@/design-system/icons';
 import { ErrorState, Rise, Skeleton, useReducedMotion } from '@/design-system';
 import {
-  Gradient, GradientHeroCard, LiftCard, M2Card, M2Header, M2SearchField, M2SectionHead, M2_BOTTOM_SPACE, NotYetTile, SERVICE_HUES, SoftIcon,
+  Gradient, GradientHeroCard, LiftCard, M2Card, M2Header, M2SearchField, M2SectionHead, M2_NAV_CLEARANCE, NotYetTile, SERVICE_HUES, SoftIcon,
   heroStops, m2Text, tileStops, useAmbientMotion, useLift, useLoop, useOwnPhoneChrome,
 } from '@/design-system/m2';
 import type { PressState, ServiceHue } from '@/design-system/m2';
@@ -219,7 +219,7 @@ export function M2LabsView({ links, phase, packages, retry, block }: M2LabsViewP
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.canvas },
-  content: { paddingBottom: M2_BOTTOM_SPACE, gap: space.s16, width: '100%', maxWidth: size.phoneFrameMax, alignSelf: 'center', overflow: 'hidden' },
+  content: { paddingBottom: M2_NAV_CLEARANCE, gap: space.s16, width: '100%', maxWidth: size.phoneFrameMax, alignSelf: 'center', overflow: 'hidden' },
   glow: { position: 'absolute', top: -140, right: -110, width: 330, height: 330, borderRadius: radius.full },
   gutter: { paddingHorizontal: space.gutterPhone },
   grow: { flex: 1, minWidth: 0, gap: space.s2 },

@@ -28,6 +28,8 @@ export interface PillNavDestination {
   key: PillNavKey;
   label: MessageKey;
   icon: SkIconName;
+  /** The drawing in the white pill when this is the current destination, where the boards draw another (My health: plain heart). */
+  currentIcon?: SkIconName;
 }
 
 /** In the boards' order, with the icons from their briefs (`ayush-spark` in the orb). */
@@ -110,7 +112,7 @@ export function PillNav({ current, onSelect, bottomInset = 0, testID = 'pill-nav
                 onPress={() => onSelect(item.key)}
                 style={({ focused }: PressState) => [styles.item, isCurrent ? styles.current : null, focused ? focusRing : null]}
               >
-                <Icon name={item.icon} size={isCurrent ? 19 : 22} strokeWidth={isCurrent ? 2.3 : 2} color={isCurrent ? color.onHeroCurrent : color.navText} />
+                <Icon name={isCurrent ? item.currentIcon ?? item.icon : item.icon} size={isCurrent ? 19 : 22} strokeWidth={isCurrent ? 2.3 : 2} color={isCurrent ? color.onHeroCurrent : color.navText} />
                 {isCurrent ? <Text numberOfLines={1} style={styles.currentLabel}>{label}</Text> : null}
               </Pressable>
             );
@@ -123,6 +125,15 @@ export function PillNav({ current, onSelect, bottomInset = 0, testID = 'pill-nav
 
 /** Height the nav takes at the bottom of a screen (bar + its bottom margin), for layouts that must clear it. */
 export const PILL_NAV_HEIGHT = BAR_HEIGHT + space.s16 + space.s8;
+
+/**
+ * Bottom padding for a board's scroll content so its last field and button
+ * scroll fully clear of the floating pill nav: the nav's height and offset plus
+ * breathing room. The bottom safe area is added by the dock (web:
+ * env(safe-area-inset-bottom)) and by the native shell, which lays the nav out
+ * under the screens with the inset.
+ */
+export const M2_NAV_CLEARANCE = PILL_NAV_HEIGHT + space.s24;
 
 const styles = StyleSheet.create({
   dock: { paddingHorizontal: space.s16, paddingTop: space.s8 },
