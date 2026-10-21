@@ -35,6 +35,11 @@ export interface StudentWebShellProps {
   onSignOut: () => void;
   signingOut?: boolean;
   signOutError?: string | null;
+  /**
+   * Boards drawn without the sidebar (WebAyush): above 1024 px only the top nav
+   * shows; narrower, the drawer still opens from the menu button.
+   */
+  bare?: boolean;
   children: React.ReactNode;
 }
 
@@ -76,6 +81,7 @@ export function StudentWebShell({
   onSignOut,
   signingOut = false,
   signOutError = null,
+  bare = false,
   children,
 }: StudentWebShellProps): React.ReactElement {
   const t = useT();
@@ -134,7 +140,7 @@ export function StudentWebShell({
   ));
 
   return (
-    <div className={`sk-ds sk-sshell${drawerOpen ? ' is-drawer-open' : ''}`}>
+    <div className={`sk-ds sk-sshell${drawerOpen ? ' is-drawer-open' : ''}${bare ? ' is-bare' : ''}`}>
       <header className="sk-sshell__top">
         <button
           ref={menuButton}

@@ -16,6 +16,7 @@ import { partnerTe } from './areas/partner';
 import { deviceTe } from './areas/device';
 import { studentshellTe } from './areas/studentshell';
 import { studentwebTe } from './areas/studentweb';
+import { studentwebT1Te } from './areas/studentwebT1';
 import { payTe } from './areas/pay';
 import { labbookTe } from './areas/labbook';
 import { rewardsTe } from './areas/rewards';
@@ -837,6 +838,7 @@ export const te: Catalog = {
   ...deviceTe,
   ...studentshellTe,
   ...studentwebTe,
+  ...studentwebT1Te,
   ...payTe,
   ...labbookTe,
   ...rewardsTe,

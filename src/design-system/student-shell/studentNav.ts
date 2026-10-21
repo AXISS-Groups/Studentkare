@@ -29,8 +29,8 @@ export const STUDENT_NAV: StudentNavGroup[] = [
     items: [
       { id: 'your-care', label: 'shell.item.yourCare', icon: 'map-pin', route: 'health' },
       { id: 'vault', label: 'shell.item.vault', icon: 'lock-2', route: 'records' },
-      { id: 'lab-tests', label: 'shell.item.labTests', icon: 'flask', route: null },
-      { id: 'insights', label: 'shell.item.insights', icon: 'bar-chart', route: null },
+      { id: 'lab-tests', label: 'shell.item.labTests', icon: 'flask', route: 'my-lab-tests' },
+      { id: 'insights', label: 'shell.item.insights', icon: 'bar-chart', route: 'report-insights' },
       { id: 'emergency', label: 'shell.item.emergency', icon: 'heart-plus', route: 'emergency-card' },
       { id: 'pass', label: 'shell.item.pass', icon: 'qr-code', route: 'pass' },
     ],

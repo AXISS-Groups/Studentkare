@@ -15,6 +15,7 @@ import { partnerEn } from './areas/partner';
 import { deviceEn } from './areas/device';
 import { studentshellEn } from './areas/studentshell';
 import { studentwebEn } from './areas/studentweb';
+import { studentwebT1En } from './areas/studentwebT1';
 import { payEn } from './areas/pay';
 import { labbookEn } from './areas/labbook';
 import { rewardsEn } from './areas/rewards';
@@ -836,6 +837,7 @@ export const en = {
   ...deviceEn,
   ...studentshellEn,
   ...studentwebEn,
+  ...studentwebT1En,
   ...payEn,
   ...labbookEn,
   ...rewardsEn,
