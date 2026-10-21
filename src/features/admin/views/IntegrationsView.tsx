@@ -31,6 +31,7 @@ const DEPENDENCY: Record<string, { name: MessageKey; blast: MessageKey }> = {
   analytics_posthog: { name: 'gov.integrations.analytics', blast: 'gov.integrations.analyticsBlast' },
   firebase: { name: 'gov.integrations.firebase', blast: 'gov.integrations.firebaseBlast' },
   rule_l_firewall: { name: 'gov.integrations.ruleL', blast: 'gov.integrations.ruleLBlast' },
+  abdm_hfr: { name: 'gov.integrations.hfr', blast: 'gov.integrations.hfrBlast' },
 };
 /** A broken Rule L firewall is a safety alert; any other broken dependency needs attention. */
 const SAFETY_CHECKS = new Set(['rule_l_firewall']);
@@ -46,7 +47,8 @@ export function dependencyState(check: IntegrationCheck): { label: MessageKey; t
  * Integrations (design: Integrations, Tier 1). The dependency table is the server's live
  * probes (GET /ops/integration-health), plus the payment provider (from the plan
  * catalogue) and the old proxy routes (GET /apilayer/status); nothing is listed that
- * isn't probed (no ABDM, LDAP or migration row). The index card is the knowledge index
+ * isn't probed (no ABDM gateway, LDAP or migration row; the ABDM Health Facility Registry row
+ * is the care directory's connector, which reports configured or not and never probes). The index card is the knowledge index
  * status; its warning appears only when approved sources are really missing from the
  * index. The older provider settings panel (the only place to configure a provider)
  * stays as the second tab until its replacement exists.
