@@ -351,10 +351,30 @@ class SourceRef(StrictModel):
     url: HttpsUrl
 
 
+StepKind = Literal["ACTIVITY", "FOOD", "TEST", "OTHER"]
+StepDetail = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=80)]
+
+
+class GuidanceStep(StrictModel):
+    """One next step as the doctor chose it in the review form (Mobile 2.0 plan, D-M2-11).
+
+    ``kind`` only picks the icon on M2Trends (walk / bowl / flask); ``often`` and
+    ``when`` are the doctor's own words ("Daily", "In 3 months"). The app never
+    writes any of them.
+    """
+    text: GuidanceLine
+    kind: StepKind = "OTHER"
+    often: StepDetail | None = None
+    when: StepDetail | None = None
+
+
 class GuidanceView(StrictModel):
     summary: str
     questions: list[str]
+    # The text of every step, in order: what screens built before D-M2-11 read.
     nextSteps: list[str]
+    # The same steps with the doctor's kind / often / when; a plain-text step is OTHER.
+    steps: list[GuidanceStep]
     sourceRefs: list[SourceRef]
 
 
@@ -380,7 +400,8 @@ class ReviewInput(StrictModel):
     decision: Literal["APPROVED", "REJECTED"]
     summary: Annotated[str, StringConstraints(strip_whitespace=True, max_length=4000)] = ""
     questions: list[GuidanceLine] = Field(default_factory=list, max_length=10)
-    nextSteps: list[GuidanceLine] = Field(default_factory=list, max_length=10)
+    # A plain line (as before) or a structured step (D-M2-11); both may be mixed.
+    nextSteps: list[GuidanceLine | GuidanceStep] = Field(default_factory=list, max_length=10)
     sourceRefs: list[SourceRef] = Field(default_factory=list, max_length=10)
 
     @model_validator(mode="after")
@@ -392,11 +413,24 @@ class ReviewInput(StrictModel):
         return self
 
 
+def guidance_view(stored: dict) -> dict:
+    """Stored guidance as the API returns it: ``nextSteps`` as text, ``steps`` structured.
+
+    Reviews approved before D-M2-11 stored plain strings; they read back as OTHER
+    steps with no often / when, exactly as the doctor wrote them.
+    """
+    steps = [{"text": step, "kind": "OTHER", "often": None, "when": None} if isinstance(step, str)
+             else {"text": step["text"], "kind": step.get("kind", "OTHER"), "often": step.get("often"),
+                   "when": step.get("when")}
+             for step in stored.get("nextSteps", [])]
+    return {**stored, "nextSteps": [step["text"] for step in steps], "steps": steps}
+
+
 def review_payload(row: P.ReportReview) -> dict:
     return {"id": row.id, "documentId": row.document_id, "status": row.status, "version": row.version,
             "assignedClinicianId": row.assigned_clinician_id, "createdAt": row.created_at, "updatedAt": row.updated_at,
             "reviewedBy": row.reviewed_by, "reviewedAt": row.reviewed_at,
-            "guidance": row.guidance if row.status == "APPROVED" else None}
+            "guidance": guidance_view(row.guidance) if row.status == "APPROVED" else None}
 
 
 def review_statement():

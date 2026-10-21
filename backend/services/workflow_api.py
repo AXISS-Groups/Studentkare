@@ -29,6 +29,7 @@ from core import workflow_models as M
 from core.rule_l import COMMERCE_ROLE, commerce_role_usable, rule_l_status
 from core.settings_registry import setting
 from services import (
+    lab_results,
     livekit_media,
     medicine_master,
     ops_feed,
@@ -249,6 +250,7 @@ def delete_document(document_id: str, user=Depends(authenticated_user), db: Sess
     if db.scalar(select(M.Document.id).where(M.Document.id == document_id, M.Document.account_id == user["id"])):
         # A prescription sent to a pharmacist leaves that queue with its file.
         withdraw_reviews_for_document(db, document_id)
+        lab_results.delete_for_document(db, user["id"], document_id)
     changed = db.execute(delete(M.Document).where(M.Document.id == document_id, M.Document.account_id == user["id"])).rowcount
     if not changed:
         raise HTTPException(404, "Record not found.")
@@ -338,6 +340,7 @@ def export_records(user=Depends(authenticated_user), db: Session = Depends(workf
                        "mimeType": d.mime_type, "createdAt": d.created_at, "downloadUrl": f"/api/health/documents/{d.id}/file"} for d in docs],
         "readings": [{"id": r.id, "metric": r.metric, "value": r.value, "recordedAt": r.recorded_at, "source": r.source} for r in readings],
         "policies": [{"id": p.id, "insurer": p.insurer, "policyNumber": p.policy_number, "sumInsured": p.sum_insured, "validUntil": p.valid_until} for p in policies],
+        **lab_results.export_rows(db, user["id"]),
     }
 
 

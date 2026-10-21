@@ -270,6 +270,23 @@ declare("wellness.bmi_cutoff_high", FLOAT, 25.0, area="clinical", unit="kg/m²",
 declare("health.readings_list_cap", INT, 1000, area="health", unit="rows", minimum=1, maximum=10000,
         description="Most readings GET /health/readings returns in one response.")
 
+# --- lab results (services/lab_results.py; Mobile 2.0 plan Gap 1) ------------
+# Input bounds only. None of these is a clinical threshold: whether a value is
+# in range is decided by the range the lab printed, stored with the value.
+declare("lab_results.max_rows_per_report", INT, 60, area="lab_results", unit="values", minimum=1, maximum=200,
+        public=True, description="Most values one lab report (document) may hold, drafts and confirmed together.")
+declare("lab_results.value_abs_max", FLOAT, 10000000.0, area="lab_results", unit="any unit", minimum=1,
+        maximum=1000000000, public=True,
+        description="Largest magnitude a typed value or printed range limit may have (catches typing slips).")
+declare("lab_results.collected_on_max_age_years", INT, 30, area="lab_results", unit="years", minimum=1,
+        maximum=100, public=True, description="How far back a typed report's collection date may be.")
+declare("lab_results.list_cap", INT, 1000, area="lab_results", unit="values", minimum=1, maximum=10000,
+        description="Most stored values GET /health/lab-results and the trends endpoints read in one response.")
+declare("lab_results.pinned_max", INT, 8, area="lab_results", unit="tests", minimum=1, maximum=50, public=True,
+        description="Most tests a student may bookmark on Trends.")
+declare("trends.min_points_for_line", INT, 2, area="trends", unit="values", minimum=2, maximum=20, public=True,
+        description="Fewest values of one test, in one unit, before Trends draws a line between them.")
+
 # --- platform --------------------------------------------------------------
 # A name zoneinfo does not know (in an override or a student's preference) is
 # never used: the student's day then falls back to this declared default.
