@@ -25,11 +25,12 @@ describe('Create account (canvas CreateAccount)', () => {
 
   it('WhatsApp shows the +91 prefix; email shows the mail icon', () => {
     const { container, vm } = draw('WHATSAPP');
+    const fieldIcon = () => container.querySelector('#sk-create-contact')?.parentElement?.querySelector('[data-icon="mail-2"]') ?? null;
     expect(screen.getByText('+91')).toBeInTheDocument();
-    expect(container.querySelector('[data-icon="mail-2"]')).toBeNull();
+    expect(fieldIcon()).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Email' }));
     expect(vm.channel).toBe('EMAIL');
-    expect(container.querySelector('[data-icon="mail-2"]')).not.toBeNull();
+    expect(fieldIcon()).not.toBeNull();
     expect(screen.queryByText('+91')).toBeNull();
   });
 
@@ -37,7 +38,8 @@ describe('Create account (canvas CreateAccount)', () => {
     draw();
     expect(screen.getByLabelText('Full name')).toHaveAttribute('autocomplete', 'name');
     const contact = screen.getByLabelText(/whatsapp/i, { selector: 'input' });
-    expect(contact).toHaveAttribute('aria-describedby', 'sk-create-contact-hint');
+    const hint = document.getElementById(contact.getAttribute('aria-describedby') ?? '');
+    expect(hint).toHaveTextContent('Used for order updates and consult reminders. No marketing.');
   });
 
   it('the back arrow returns to the intro step without sending anything', () => {
