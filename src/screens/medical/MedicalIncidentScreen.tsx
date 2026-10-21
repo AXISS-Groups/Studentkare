@@ -23,14 +23,27 @@ type Situation = (typeof SITUATIONS)[number];
  */
 export function MedicalIncidentScreen(): React.ReactElement {
   const t = useT();
-  const [situation, setSituation] = useState<Situation | null>(null);
-
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <CrisisLinks titleKey="crisis.pageCannotSend" testID="crisis-links" />
 
       <Eyebrow>{t('help.eyebrow')}</Eyebrow>
       <Text accessibilityRole="header" style={styles.title}>{t('help.title')}</Text>
+      <FirstSteps />
+    </ScrollView>
+  );
+}
+
+/**
+ * "This page can't send help" and the first steps while waiting, each saying
+ * when to call 112. Shared with crisis support (/crisis), where it sits under
+ * the call cards. Static: no request, no state outside the picker.
+ */
+export function FirstSteps(): React.ReactElement {
+  const t = useT();
+  const [situation, setSituation] = useState<Situation | null>(null);
+  return (
+    <>
       <Note tone="danger">{t('help.cannotSend')}</Note>
 
       <Card>
@@ -49,7 +62,7 @@ export function MedicalIncidentScreen(): React.ReactElement {
         ) : null}
         <Text style={styles.meta}>{t('help.notAdvice')}</Text>
       </Card>
-    </ScrollView>
+    </>
   );
 }
 

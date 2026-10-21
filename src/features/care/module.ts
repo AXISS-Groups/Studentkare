@@ -13,7 +13,8 @@ export const careModule: FeatureModule = {
     { path: '/medical-incident', public: true, load: () => import('@/screens/medical/MedicalIncidentScreen').then((m) => ({ default: m.MedicalIncidentScreen })) },
     // SOS: public so a signed-out visitor still gets Call 112; dispatch needs a student session.
     { path: '/sos', public: true, load: () => import('@/features/emergency/screens/SosRouteScreen').then((m) => ({ default: m.SosRouteScreen })) },
-    { path: '/crisis', public: true, load: () => import('@/screens/medical/MedicalIncidentScreen').then((m) => ({ default: m.MedicalIncidentScreen })) },
+    // Crisis support (CrisisSupport, Tier 1): Tele-MANAS and 112, then the first steps. No request on load.
+    { path: '/crisis', public: true, load: () => import('@/features/crisis/views/CrisisSupportBoard').then((m) => ({ default: m.CrisisSupportRoute })) },
     // A triage console: it renders named students with their blood group,
     // allergies, hostel block and room number, and it can reassign and resolve
     // incidents. It was declared public, so anyone with the link reached it
