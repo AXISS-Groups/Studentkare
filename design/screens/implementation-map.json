@@ -1610,7 +1610,20 @@
       "src/design-system/Toast.tsx",
       "src/design-system/Banner.tsx",
       "src/design-system/feedback/FormField.tsx"
-    ]
+    ],
+    "M2Home": [],
+    "M2Medicines": [],
+    "M2Product": [],
+    "M2Labs": [],
+    "M2Consults": [],
+    "M2Vaccines": [],
+    "M2Insurance": [],
+    "M2Orders": [],
+    "M2Insights": [],
+    "M2Trends": [],
+    "M2ReportUpload": [],
+    "M2AskAyush": [],
+    "M2Profile": []
   },
   "inProgress": {
     "Teleconsult": [
@@ -1686,6 +1699,19 @@
       "src/design-system/public-site/PublicSiteFooter.tsx",
       "src/design-system/public-site/publicSiteNav.ts",
       "src/design-system/public-site/NewsletterBand.tsx"
-    ]
+    ],
+    "M2Home": [],
+    "M2Medicines": [],
+    "M2Product": [],
+    "M2Labs": [],
+    "M2Consults": [],
+    "M2Vaccines": [],
+    "M2Insurance": [],
+    "M2Orders": [],
+    "M2Insights": [],
+    "M2Trends": [],
+    "M2ReportUpload": [],
+    "M2AskAyush": [],
+    "M2Profile": []
   }
 }

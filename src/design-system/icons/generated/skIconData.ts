@@ -3,7 +3,7 @@
 export type SkIconElement = readonly [tag: 'path' | 'circle' | 'rect' | 'line' | 'polyline' | 'polygon' | 'ellipse', attrs: Readonly<Record<string, string>>];
 export interface SkIconDef { readonly mode: 'line' | 'solid'; readonly els: readonly SkIconElement[] }
 
-/** 308 line/solid icons, 24 px grid, drawn with currentColor. */
+/** 328 line/solid icons, 24 px grid, drawn with currentColor. */
 export const skIcons = {
   "alert-triangle": { mode: "line", els: [["path",{"d":"M 12 3 l 10 18 H 2 z"}],["path",{"d":"M 12 10 v 4 M 12 17.5 v 0.5"}]] },
   "check": { mode: "line", els: [["path",{"d":"M 5 12.5 l 4.5 4.5 L 19 7"}]] },
@@ -313,6 +313,26 @@ export const skIcons = {
   "video-alt": { mode: "line", els: [["rect",{"x":"3","y":"6","width":"13","height":"12","rx":"2.5"}],["path",{"d":"M 16 10 l 5 -3 v 10 l -5 -3 z"}]] },
   "calendar-alt": { mode: "line", els: [["rect",{"x":"4","y":"5","width":"16","height":"15","rx":"2.5"}],["path",{"d":"M 4 10 h 16 M 9 3 v 4 M 15 3 v 4"}],["path",{"d":"M 9 14 l 2 2 4 -4"}]] },
   "vault-alt": { mode: "line", els: [["rect",{"x":"5","y":"10","width":"14","height":"11","rx":"2.5"}],["path",{"d":"M 8 10 V 7 a 4 4 0 0 1 8 0 v 3"}],["path",{"d":"M 12 14 v 3"}]] },
+  "doc-upload": { mode: "line", els: [["path",{"d":"M 14 3 H 7 a 2 2 0 0 0 -2 2 v 14 a 2 2 0 0 0 2 2 h 10 a 2 2 0 0 0 2 -2 V 8 z M 14 3 v 5 h 5"}],["path",{"d":"M 12 18 v -6 M 9.5 14.5 L 12 12 l 2.5 2.5"}]] },
+  "thyroid": { mode: "line", els: [["path",{"d":"M 12 12 C 11 7.5 9.5 4 7.5 4 C 5.5 4 4 8.5 4 13 C 4 17.5 5.5 20 8 20 C 10 20 11 18.5 12 17 C 13 18.5 14 20 16 20 C 18.5 20 20 17.5 20 13 C 20 8.5 18.5 4 16.5 4 C 14.5 4 13 7.5 12 12 z"}],["path",{"d":"M 12 3 v 9"}]] },
+  "card-lines": { mode: "line", els: [["rect",{"x":"3","y":"5","width":"18","height":"14","rx":"2.5"}],["path",{"d":"M 7 10 h 10 M 7 14 h 6"}]] },
+  "ayush-spark": { mode: "line", els: [["path",{"d":"M 12 3 v 4 M 12 17 v 4 M 3 12 h 4 M 17 12 h 4 M 5.6 5.6 l 2.8 2.8 M 15.6 15.6 l 2.8 2.8 M 5.6 18.4 l 2.8 -2.8 M 15.6 8.4 l 2.8 -2.8"}]] },
+  "med-bottle": { mode: "line", els: [["rect",{"x":"8","y":"3","width":"8","height":"3.5","rx":"1"}],["path",{"d":"M 7 6.5 h 10 V 19 a 2 2 0 0 1 -2 2 H 9 a 2 2 0 0 1 -2 -2 z"}],["path",{"d":"M 10 13.5 h 4 M 12 11.5 v 4"}]] },
+  "tray-open": { mode: "line", els: [["path",{"d":"M 3 9 h 18 M 5 9 V 6 a 2 2 0 0 1 2 -2 h 10 a 2 2 0 0 1 2 2 v 3 M 5 9 v 9 a 2 2 0 0 0 2 2 h 10 a 2 2 0 0 0 2 -2 V 9"}],["path",{"d":"M 10 13 h 4"}]] },
+  "sprout": { mode: "line", els: [["path",{"d":"M 12 21 v -9"}],["path",{"d":"M 12 12 C 12 7.5 9.5 5 4.5 5 C 4.5 9.5 7 12 12 12 z"}],["path",{"d":"M 12 15 C 12 11 14.5 8.5 19.5 8.5 C 19.5 12.5 17 15 12 15 z"}]] },
+  "walk": { mode: "line", els: [["circle",{"cx":"13","cy":"4.5","r":"2"}],["path",{"d":"M 12 8.5 L 10.5 14.5 L 7 21 M 10.5 14.5 L 14 17 L 14.5 21 M 7.5 12.5 L 9.5 9.5 L 12 8.5 L 14 11.5 L 17 12.5"}]] },
+  "scooter": { mode: "line", els: [["circle",{"cx":"6","cy":"17.5","r":"2.5"}],["circle",{"cx":"18.5","cy":"17.5","r":"2.5"}],["path",{"d":"M 15 6 h 3 M 16.5 6 L 18.5 17.5 M 8.5 17.5 H 13 l 4.2 -4.2 M 3.5 15.5 C 3.5 13.5 5 12 7 12 h 4.5"}]] },
+  "bookmark": { mode: "line", els: [["path",{"d":"M 6 5 a 2 2 0 0 1 2 -2 h 8 a 2 2 0 0 1 2 2 v 16 l -6 -4 l -6 4 z"}]] },
+  "plus-slash": { mode: "line", els: [["path",{"d":"M 12 5 v 14 M 5 12 h 14"}],["path",{"d":"M 7 7 l 10 10"}]] },
+  "female": { mode: "line", els: [["circle",{"cx":"12","cy":"9","r":"5"}],["path",{"d":"M 12 14 v 7 M 9 18 h 6"}]] },
+  "male": { mode: "line", els: [["circle",{"cx":"10","cy":"14","r":"5"}],["path",{"d":"M 13.5 10.5 L 20 4 M 15 4 h 5 v 5"}]] },
+  "translate": { mode: "line", els: [["path",{"d":"M 3 5 h 10 M 8 3 v 2 M 5 5 c 1 4 3.5 6.5 7 7.5 M 11 5 c -1 4 -3.5 6.5 -7 7.5"}],["path",{"d":"M 13 21 l 4 -9 l 4 9 M 14.5 18 h 5"}]] },
+  "plane": { mode: "line", els: [["path",{"d":"M 12 3 c 0.8 0 1.5 1 1.5 2.5 V 10 l 7.5 4.5 V 16 l -7.5 -2 v 4 l 2.5 2 V 21 L 12 20 l -4 1 v -1 l 2.5 -2 v -4 L 3 16 v -1.5 L 10.5 10 V 5.5 C 10.5 4 11.2 3 12 3 z"}]] },
+  "stomach": { mode: "line", els: [["path",{"d":"M 13 3 v 3 c 0 1.5 1 2 2.5 2 c 2.5 0 4.5 2 4.5 5 c 0 4.5 -3.5 8 -8.5 8 c -3 0 -5.5 -1.5 -6.5 -4 M 10 3 v 3.5 c 0 2 1 3.5 3 4.5 c 1.5 0.8 2 2 1.5 3.5 c -0.6 1.7 -2.6 2.3 -4.5 1.5 c -1.5 -0.6 -3 -0.9 -4.5 -0.5"}]] },
+  "trend-arrow": { mode: "line", els: [["path",{"d":"M 3 17 l 6 -6 l 4 4 l 8 -8"}],["path",{"d":"M 15 7 h 6 v 6"}]] },
+  "chart-line-axes": { mode: "line", els: [["path",{"d":"M 4 4 v 16 h 16"}],["path",{"d":"M 8 15 l 3 -4 l 3 2 l 5 -6"}]] },
+  "trend-zigzag": { mode: "line", els: [["path",{"d":"M 3 17 l 6 -6 l 4 4 l 8 -8"}]] },
+  "minus": { mode: "line", els: [["path",{"d":"M 5 12 h 14"}]] },
 } as const satisfies Record<string, SkIconDef>;
 export type SkIconName = keyof typeof skIcons;
 

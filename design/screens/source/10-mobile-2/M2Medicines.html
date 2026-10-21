@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Medicines</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:#FAF8FF;color:#131B2E}
+a{color:#0C0494;text-decoration:none}a:hover{color:#2B20C9}
+button{font-family:inherit}
+a:focus-visible,button:focus-visible{outline:3px solid #6D5BFF;outline-offset:3px;border-radius:14px}
+@keyframes skRise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes skFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes skShine{0%,60%{transform:translateX(-120%) rotate(18deg)}100%{transform:translateX(220%) rotate(18deg)}}
+@keyframes skCoin{0%,100%{transform:translateY(0) rotate(-8deg)}50%{transform:translateY(-8px) rotate(8deg)}}
+.sk-tile{transition:transform .25s cubic-bezier(.2,.7,.3,1)}.sk-tile:hover{transform:translateY(-3px) scale(1.04)}
+.sk-card{transition:transform .25s cubic-bezier(.2,.7,.3,1),box-shadow .25s}.sk-card:hover{transform:translateY(-2px);box-shadow:0 14px 30px rgba(12,4,148,.12)}
+.sk-rail{scrollbar-width:none}.sk-rail::-webkit-scrollbar{display:none}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div style="width: 390px; height: 1640px; box-sizing: border-box; background: #FAF8FF; position: relative; overflow: hidden;">
+  <div aria-hidden="true" style="position: absolute; top: -140px; left: -100px; width: 320px; height: 320px; border-radius: 999px; background: radial-gradient(circle, rgba(20,184,166,.20), rgba(20,184,166,0) 70%);"></div>
+
+  <header style="position: relative; padding: 18px 20px 0; display: flex; align-items: center; gap: 12px; animation: skRise .5s both;">
+    <a href="Main.dc.html" aria-label="Back to Home" style="width: 44px; height: 44px; border-radius: 999px; background: #FFFFFF; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(12,4,148,.08);"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#131B2E" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"></path></svg></a>
+    <div style="flex-grow: 1; display: flex; flex-direction: column;"><span style="font-size: 12px; font-weight: 600; color: #6B6980;">Pharmacy</span><h1 style="margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -0.5px;">Medicines</h1></div>
+    <a href="Orders.dc.html" aria-label="Cart, 2 items" style="position: relative; width: 44px; height: 44px; border-radius: 999px; background: #FFFFFF; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(12,4,148,.08);"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#131B2E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 7h13l-1.5 8.5a2 2 0 0 1-2 1.5H9.2a2 2 0 0 1-2-1.6L5 4H3"></path><circle cx="10" cy="20.5" r="1.2"></circle><circle cx="17" cy="20.5" r="1.2"></circle></svg><span style="position: absolute; top: 4px; right: 3px; min-width: 18px; height: 18px; border-radius: 999px; background: #0C0494; color: #FFFFFF; font-size: 10px; font-weight: 800; display: flex; align-items: center; justify-content: center; border: 2px solid #FAF8FF;">2</span></a>
+  </header>
+
+  <label style="margin: 14px 20px 0; height: 52px; border-radius: 18px; background: #FFFFFF; box-shadow: 0 6px 18px rgba(12,4,148,.07); display: flex; align-items: center; gap: 10px; padding: 0 14px; animation: skRise .5s .05s both;">
+    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#6B6980" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="M16 16l4.5 4.5"></path></svg>
+    <span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0);">Search medicines</span>
+    <input type="search" placeholder="Search a medicine or salt" style="flex-grow: 1; min-width: 0; border: 0; outline: none; background: transparent; font-family: inherit; font-size: 14px; font-weight: 600; color: #131B2E;">
+  </label>
+
+  <div style="padding: 14px 20px 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; animation: skRise .5s .1s both;">
+    <a href="ReportUpload.dc.html" class="sk-card" style="border-radius: 20px; padding: 12px 10px; background: linear-gradient(150deg, #2B20C9, #0C0494); color: #FFFFFF; display: flex; flex-direction: column; gap: 8px;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"></path><path d="M14 3v5h5M12 17v-6M9.5 13.5L12 11l2.5 2.5"></path></svg>
+      <span style="font-size: 12.5px; font-weight: 800; line-height: 16px;">Order with prescription</span></a>
+    <a href="tel:" class="sk-card" style="border-radius: 20px; padding: 12px 10px; background: #FFFFFF; box-shadow: 0 6px 18px rgba(12,4,148,.06); color: #131B2E; display: flex; flex-direction: column; gap: 8px;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0C0494" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"></path></svg>
+      <span style="font-size: 12.5px; font-weight: 800; line-height: 16px;">Call to order</span></a>
+    <span style="border-radius: 20px; padding: 12px 10px; background: #F1F5F9; color: #475569; display: flex; flex-direction: column; gap: 8px;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-12.4 7.4L3 20.5l1.6-5.4A8.4 8.4 0 1 1 21 11.5z"></path></svg>
+      <span style="font-size: 12.5px; font-weight: 800; line-height: 16px;">Chat to order · soon</span></span>
+  </div>
+
+  <div style="padding: 14px 20px 0; display: grid; grid-template-columns: 1.25fr 1fr; gap: 12px; animation: skRise .55s .15s both;">
+    <a href="Product.dc.html" class="sk-card" style="position: relative; overflow: hidden; height: 176px; box-sizing: border-box; border-radius: 26px; padding: 16px; background: linear-gradient(150deg, #047857 0%, #065F46 100%); color: #FFFFFF; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 16px 30px rgba(6,95,70,.30);">
+      <span aria-hidden="true" style="position: absolute; right: -36px; bottom: -40px; width: 140px; height: 140px; border-radius: 999px; border: 22px solid rgba(255,255,255,.12);"></span>
+      <span aria-hidden="true" style="position: absolute; right: 16px; top: 14px; width: 40px; height: 40px; border-radius: 999px; background: linear-gradient(145deg, #FDE68A, #FBBF24); display: flex; align-items: center; justify-content: center; color: #78350F; font-weight: 800; font-size: 18px; animation: skCoin 3.4s ease-in-out infinite;">₹</span>
+      <span style="font-size: 11px; font-weight: 800; letter-spacing: 1px; color: #D1FAE5;">GENERICS</span>
+      <span style="position: relative; font-size: 18px; line-height: 22px; font-weight: 800; letter-spacing: -0.4px;">Same composition, a lower price</span>
+      <span style="position: relative; font-size: 12.5px; font-weight: 700; display: flex; align-items: center; gap: 4px;">Compare options <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></span>
+    </a>
+    <div style="display: grid; grid-template-rows: repeat(2, minmax(0, 1fr)); gap: 12px;">
+      <span style="border-radius: 22px; padding: 12px; background: #FFFFFF; box-shadow: 0 6px 18px rgba(12,4,148,.06); display: flex; flex-direction: column; justify-content: space-between;">
+        <span style="font-size: 10.5px; font-weight: 800; letter-spacing: .8px; color: #047857;">CLINIC PICKUP</span>
+        <span style="font-size: 13.5px; font-weight: 800; line-height: 17px;">Ready today by 6 pm</span></span>
+      <span style="border-radius: 22px; padding: 12px; background: #FFFFFF; box-shadow: 0 6px 18px rgba(12,4,148,.06); display: flex; flex-direction: column; justify-content: space-between;">
+        <span style="font-size: 10.5px; font-weight: 800; letter-spacing: .8px; color: #0C0494;">TO YOUR BLOCK</span>
+        <span style="font-size: 13.5px; font-weight: 800; line-height: 17px;">Tomorrow, 10–12</span></span>
+    </div>
+  </div>
+
+  <section aria-labelledby="cats" style="padding: 22px 20px 0; animation: skRise .55s .2s both;">
+    <h2 id="cats" style="margin: 0 0 12px; font-size: 17px; font-weight: 800; letter-spacing: -0.3px;">Categories</h2>
+    <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px 8px;">
+      <sc-for list="{{ cats }}" as="c" hint-placeholder-count="12">
+        <a href="Product.dc.html" class="sk-tile" style="display: flex; flex-direction: column; align-items: center; gap: 7px; color: #131B2E;">
+          <span style="{{ c.tile }}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="{{ c.ink }}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{ c.icon }}"></path></svg></span>
+          <span style="font-size: 11.5px; font-weight: 700; text-align: center; line-height: 14px;">{{ c.label }}</span>
+        </a>
+      </sc-for>
+    </div>
+  </section>
+
+  <a href="Insights.dc.html" class="sk-card" style="margin: 22px 20px 0; padding: 14px 16px; border-radius: 22px; background: #FFFFFF; box-shadow: 0 6px 18px rgba(12,4,148,.06); display: flex; align-items: center; gap: 12px; color: #131B2E; animation: skRise .55s .25s both;">
+    <span style="width: 44px; height: 44px; flex-shrink: 0; border-radius: 15px; background: #EEF2FF; display: flex; align-items: center; justify-content: center;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0C0494" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 0 1 15.5-6.2L21 8M21 3v5h-5M21 12a9 9 0 0 1-15.5 6.2L3 16M3 21v-5h5"></path></svg></span>
+    <span style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px;"><span style="font-size: 14.5px; font-weight: 800;">Refills for your regular medicines</span><span style="font-size: 12px; font-weight: 600; color: #6B6980;">They live in My health, with your prescriptions.</span></span>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6B6980" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
+  </a>
+
+  <section aria-labelledby="deals" style="padding: 22px 0 0; animation: skRise .55s .3s both;">
+    <div style="margin: 0 20px 12px; display: flex; align-items: baseline; justify-content: space-between;"><h2 id="deals" style="margin: 0; font-size: 17px; font-weight: 800; letter-spacing: -0.3px;">Lower prices this week</h2><a href="Product.dc.html" style="font-size: 13px; font-weight: 800;">See all</a></div>
+    <div class="sk-rail" style="display: flex; gap: 12px; overflow-x: auto; padding: 0 20px 8px;">
+      <sc-for list="{{ deals }}" as="p" hint-placeholder-count="3">
+        <a href="Product.dc.html" class="sk-card" style="flex-shrink: 0; width: 156px; border-radius: 22px; background: #FFFFFF; box-shadow: 0 6px 18px rgba(12,4,148,.06); padding: 12px; display: flex; flex-direction: column; gap: 6px; color: #131B2E;">
+          <span style="{{ p.art }}"><span style="position: absolute; top: 8px; left: 8px; padding: 3px 8px; border-radius: 999px; background: #0C0494; color: #FFFFFF; font-size: 10px; font-weight: 800;">{{ p.off }}</span><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="{{ p.ink }}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{ p.icon }}"></path></svg></span>
+          <span style="font-size: 13px; font-weight: 800; line-height: 17px;">{{ p.name }}</span>
+          <span style="font-size: 11.5px; font-weight: 600; color: #6B6980;">{{ p.pack }}</span>
+          <span style="font-size: 11px; font-weight: 700; color: #047857;">{{ p.when }}</span>
+          <span style="display: flex; align-items: center; justify-content: space-between;"><span style="display: flex; align-items: baseline; gap: 5px;"><span style="font-size: 15px; font-weight: 800;">{{ p.price }}</span><span style="font-size: 11px; font-weight: 600; color: #6B6980; text-decoration: line-through;">{{ p.mrp }}</span></span>
+          <span aria-hidden="true" style="height: 30px; padding: 0 12px; border-radius: 999px; border: 1.5px solid #0C0494; color: #0C0494; font-size: 12px; font-weight: 800; display: flex; align-items: center;">Add</span></span>
+        </a>
+      </sc-for>
+    </div>
+  </section>
+
+  <section aria-labelledby="gvb" style="margin: 18px 20px 0; border-radius: 26px; overflow: hidden; background: #FFFFFF; box-shadow: 0 6px 18px rgba(12,4,148,.06); animation: skRise .55s .35s both;">
+    <h2 id="gvb" style="margin: 0; padding: 16px 16px 10px; font-size: 15px; font-weight: 800;">Generic or branded: what is the same?</h2>
+    <div style="display: grid; grid-template-columns: 1.5fr 1fr 1fr; font-size: 12.5px;">
+      <span style="padding: 8px 16px; font-weight: 700; color: #6B6980; background: #FAF8FF;"></span><span style="padding: 8px 0; text-align: center; font-weight: 800; color: #047857; background: #ECFDF5;">Generic</span><span style="padding: 8px 0; text-align: center; font-weight: 800; color: #464555; background: #FAF8FF;">Branded</span>
+      <sc-for list="{{ compare }}" as="row" hint-placeholder-count="4">
+        <span style="padding: 10px 16px; font-weight: 700; border-top: 1px solid #EEF2FF;">{{ row.k }}</span>
+        <span style="padding: 10px 0; text-align: center; font-weight: 800; color: #047857; background: #F4FEF9; border-top: 1px solid #EEF2FF;">{{ row.g }}</span>
+        <span style="padding: 10px 0; text-align: center; font-weight: 700; color: #464555; border-top: 1px solid #EEF2FF;">{{ row.b }}</span>
+      </sc-for>
+    </div>
+    <p style="margin: 0; padding: 12px 16px 16px; font-size: 12px; line-height: 18px; font-weight: 600; color: #464555;">A pharmacist confirms any swap against your prescription. You can always keep the brand.</p>
+  </section>
+
+  <nav aria-label="Main" style="position: absolute; left: 16px; right: 16px; bottom: 22px; height: 70px; border-radius: 999px; background: linear-gradient(160deg, #1A10B5, #0C0494); box-shadow: 0 18px 40px rgba(12,4,148,.35); display: flex; align-items: center; justify-content: space-between; padding: 0 10px;">
+    <a href="Main.dc.html" style="height: 52px; padding: 0 18px; border-radius: 999px; background: #FFFFFF; color: #0C0494; font-size: 13.5px; font-weight: 800; display: flex; align-items: center; gap: 7px;"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#0C0494" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5L12 4l9 6.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"></path></svg>Home</a>
+    <a href="Orders.dc.html" aria-label="Orders" style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C7C3FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8l-9-5-9 5 9 5zM3 8v8l9 5 9-5V8M12 13v8"></path></svg></a>
+    <a href="AskAyush.dc.html" aria-label="Ask Ayush" style="width: 52px; height: 52px; border-radius: 999px; background: radial-gradient(circle at 35% 30%, #A5F3FC, #6D5BFF 55%, #2B20C9); display: flex; align-items: center; justify-content: center;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M5.6 18.4l2.8-2.8M15.6 8.4l2.8-2.8"></path></svg></a>
+    <a href="Insights.dc.html" aria-label="My health" style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C7C3FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 5.6a5 5 0 0 0-7.1 0L12 7.3l-1.7-1.7a5 5 0 1 0-7.1 7.1L12 21.5l8.8-8.8a5 5 0 0 0 0-7.1z"></path></svg></a>
+    <a href="Profile.dc.html" aria-label="Profile" style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C7C3FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21a8 8 0 0 1 16 0"></path></svg></a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1640}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const c = (label, ink, bg, icon) => ({ label, ink, icon, tile: 'width: 58px; height: 58px; border-radius: 20px; display: flex; align-items: center; justify-content: center; background: ' + bg + ';' });
+    const cats = [
+      c('Fever and pain', '#C2410C', '#FFEDD5', 'M14 14.8V4a2 2 0 1 0-4 0v10.8a4 4 0 1 0 4 0z'),
+      c('Cold and cough', '#0369A1', '#E0F2FE', 'M4 12h11a3 3 0 1 0-3-3M4 16h14a3 3 0 1 1-3 3'),
+      c('Stomach care', '#B45309', '#FEF3C7', 'M8 3v5a4 4 0 0 0 4 4h1a4 4 0 0 1 4 4v1a4 4 0 0 1-8 0'),
+      c('Skin care', '#BE185D', '#FCE7F3', 'M9 3h6v4H9zM8 7h8l1 4v8a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2v-8z'),
+      c('Vitamins', '#A16207', '#FEF9C3', 'M9 3h6v3H9zM7 6h10v13a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2z'),
+      c('Diabetes care', '#1D4ED8', '#DBEAFE', 'M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z'),
+      c('Eye care', '#0F766E', '#CCFBF1', 'M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12zM12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z'),
+      c('Sexual health', '#BE185D', '#FCE7F3', 'M12 21s-8-5.2-8-11.2A4.6 4.6 0 0 1 12 7a4.6 4.6 0 0 1 8 2.8C20 15.8 12 21 12 21z'),
+      c('Sports and rehab', '#4338CA', '#E0E7FF', 'M4 14l6-6 4 4 6-6M14 6h6v6'),
+      c('Devices', '#334155', '#F1F5F9', 'M4 4h16v12H4zM8 20h8M12 16v4'),
+      c('Ayurveda', '#15803D', '#DCFCE7', 'M12 21c-5-3-8-7-8-12 4 0 7 2 8 5 1-3 4-5 8-5 0 5-3 9-8 12z'),
+      c('First aid', '#047857', '#D1FAE5', 'M4 7h16v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zM9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M12 11v6M9 14h6')
+    ];
+    const d = (name, pack, price, mrp, off, when, ink, bg, icon) => ({ name, pack, price, mrp, off, when, ink, icon, art: 'position: relative; height: 92px; border-radius: 16px; display: flex; align-items: center; justify-content: center; background: ' + bg + ';' });
+    const deals = [
+      d('Cetirizine 10 mg', 'Strip of 10', '₹[price]', '₹[MRP]', '[x]% off', 'Pickup today', '#0369A1', 'linear-gradient(145deg, #E0F2FE, #BAE6FD)', 'M3 8.5h18v7H3zM12 8.5v7'),
+      d('Multivitamin', '30 tablets', '₹[price]', '₹[MRP]', '[x]% off', 'Tomorrow', '#A16207', 'linear-gradient(145deg, #FEF9C3, #FDE68A)', 'M9 3h6v3H9zM7 6h10v13a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2z'),
+      d('Sunscreen SPF 50', '50 g', '₹[price]', '₹[MRP]', '[x]% off', 'Pickup today', '#BE185D', 'linear-gradient(145deg, #FCE7F3, #FBCFE8)', 'M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8z')
+    ];
+    return {
+      cats, deals,
+      compare: [
+        { k: 'Active ingredient', g: 'Same', b: 'Same' },
+        { k: 'Strength and dose', g: 'Same', b: 'Same' },
+        { k: 'Quality rules', g: 'Same', b: 'Same' },
+        { k: 'Price', g: 'Lower', b: 'Higher' }
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

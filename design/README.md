@@ -1,12 +1,12 @@
 # Student Kare design kit
 
-Everything Claude (or a person) needs to build every canvas screen, web and mobile, without missing an icon. It was generated from the design canvas *StudentKare — Onboarding & Auth Flows* on 16 Oct 2026.
+Everything Claude (or a person) needs to build every canvas screen, web and mobile, without missing an icon. It was generated from the design canvas *StudentKare — Onboarding & Auth Flows* on 16 Oct 2026. Page 9, *StudentKare Mobile 2.0* (13 phone boards, approved by Krishna on 21 Oct 2026), was added from its own canvas; what it replaces is in `screens/mobile-2-supersedes.md`.
 
 ## What's here
 
 | Path | What it is |
 |---|---|
-| `screens/INDEX.md` | All 239 screens by canvas page, with tier, tickets and icon counts. **Start here.** |
+| `screens/INDEX.md` | All 252 screens by canvas page, with tier, tickets and icon counts. **Start here.** |
 | `screens/briefs/<Screen>.md` | One page per screen: every icon, 3D tile, glyph, illustration, image and text symbol it needs, the screens it links to, and its preview states. |
 | `screens/screenshots/<page>/<Screen>.jpg` | Picture of each screen (phone 390 px, web 1440 px). |
 | `screens/source/<page>/<Screen>.html` | Design source: exact copy, states and logic. Reference only; open it through a local server to click through it. |
@@ -41,6 +41,7 @@ Code that ships with the kit, outside this folder:
 | 6 · Partner — pharmacy, lab, clinic | 25 |
 | 7 · Super admin | 30 |
 | 8 · Design system & flow map | 13 |
+| 9 · Mobile 2.0 (approved 2026-10-21) | 13 |
 
 ## How icon names work
 - Names describe the drawing (`bell`, `shield-check`, `stethoscope`). The 27 core icons keep their names from the canvas icon system: `home`, `search`, `calendar`, `doctor`, `stetho`, `lab`, `pill`, `heart`, `shield`, `vault`, `bell`, `chat`, `user`, `ambulance`, `syringe`, `thermo`, `idcard`, `chart`, `cart`, `pin`, `phone`, `video`, `sos`, `doc`, `wellness`, `brain`, `settings`.
@@ -85,6 +86,10 @@ Rings, timers and sparklines whose shape depends on data. Build them as componen
 | `chart-verifyidentity` | VerifyIdentity |
 | `chart-refreshes-2` | WebPass |
 | `chart-webverify` | WebVerify |
+| `chart-medicines-today-ring` | M2Home |
+| `chart-order-route` | M2Orders |
+| `chart-profile-complete-ring` | M2Profile |
+| `chart-test-trend` | M2Trends |
 
 ## Commands
 ```

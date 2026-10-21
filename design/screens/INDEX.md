@@ -1,6 +1,6 @@
 # Student Kare — every screen
 
-239 screens on 9 canvas pages. Each row links to a brief that lists every icon, picture, link and state the screen needs.
+252 screens on 10 canvas pages. Each row links to a brief that lists every icon, picture, link and state the screen needs.
 
 | # | Screen | What it is | Platform | Tier | Tickets | Icons | 3D | Glyphs | Pictures |
 |---|---|---|---|---|---|---|---|---|---|
@@ -252,3 +252,17 @@
 | 237 | [ConfirmDialogs](briefs/ConfirmDialogs.md) | Design system — confirm dialogs (log out, cancel, revoke) | Web 1440x900 | 3 | SK-014 | 7 | 0 | 0 | 0 |
 | 238 | [NotificationTemplates](briefs/NotificationTemplates.md) | Notification templates (copy + rules) | Web 1440x1100 | 1 | SK-141 | 0 | 0 | 0 | 0 |
 | 239 | [Feedback](briefs/Feedback.md) | System — feedback (toasts, banners, validation) | Web 1440x1024 | 3 | SK-010, SK-012, SK-013 | 5 | 0 | 0 | 0 |
+| | **9 · Mobile 2.0 (approved 2026-10-21)** | | | | | | | | |
+| 240 | [M2Home](briefs/M2Home.md) | Home · For You (service tabs, highlights, today, shop by concern) | Phone 390x1640 | 2 | SK-034 | 38 | 0 | 0 | 0 |
+| 241 | [M2Medicines](briefs/M2Medicines.md) | Medicines (order with Rx, call/chat to order, generics) | Phone 390x1640 | 2 | SK-041, SK-062, SK-065 | 26 | 0 | 0 | 0 |
+| 242 | [M2Product](briefs/M2Product.md) | Medicine detail · generics | Phone 390x1300 | 1 | SK-062 | 6 | 0 | 0 | 0 |
+| 243 | [M2Labs](briefs/M2Labs.md) | Lab tests (packages by audience, collection) | Phone 390x1640 | 2 | SK-036 | 21 | 0 | 0 | 0 |
+| 244 | [M2Consults](briefs/M2Consults.md) | Doctor consults (concern chips, doctors, follow-up) | Phone 390x1640 | 2 | SK-037, SK-038 | 13 | 0 | 0 | 0 |
+| 245 | [M2Vaccines](briefs/M2Vaccines.md) | Vaccines · record and booking | Phone 390x1400 | 1 | SK-042 | 8 | 0 | 0 | 0 |
+| 246 | [M2Insurance](briefs/M2Insurance.md) | Insurance · policy and claims | Phone 390x1200 | 2 | SK-071 | 11 | 0 | 0 | 0 |
+| 247 | [M2Orders](briefs/M2Orders.md) | Orders · live tracking and past | Phone 390x1100 | 2 | SK-064 | 8 | 0 | 0 | 0 |
+| 248 | [M2Insights](briefs/M2Insights.md) | My health · Insights | Phone 390x1780 | 1 | SK-047 | 11 | 0 | 0 | 0 |
+| 249 | [M2Trends](briefs/M2Trends.md) | Trends · each test over time | Phone 390x1300 | 1 | SK-045, SK-047 | 10 | 0 | 0 | 0 |
+| 250 | [M2ReportUpload](briefs/M2ReportUpload.md) | Upload a report from any lab | Phone 390x1250 | 1 | SK-046, SK-047 | 6 | 0 | 0 | 0 |
+| 251 | [M2AskAyush](briefs/M2AskAyush.md) | Ask Ayush about my records | Phone 390x844 | 1 | SK-048 | 4 | 0 | 0 | 0 |
+| 252 | [M2Profile](briefs/M2Profile.md) | Profile · documents · family | Phone 390x1400 | 1 | SK-050, SK-057, SK-068 | 16 | 0 | 0 | 0 |

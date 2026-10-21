@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>My health · Insights</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:#FAF8FF;color:#131B2E}
+a{color:#0C0494;text-decoration:none}a:hover{color:#2B20C9}
+button{font-family:inherit}
+a:focus-visible,button:focus-visible{outline:3px solid #6D5BFF;outline-offset:3px;border-radius:14px}
+@keyframes skRise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes skPop{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}
+@keyframes skOrb{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-14px,10px) scale(1.08)}}
+@keyframes skSpin{to{transform:rotate(360deg)}}
+.sk-card{transition:transform .25s cubic-bezier(.2,.7,.3,1),box-shadow .25s}.sk-card:hover{transform:translateY(-2px);box-shadow:0 14px 30px rgba(12,4,148,.12)}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div style="width: 390px; height: 1780px; box-sizing: border-box; background: #FAF8FF; position: relative; overflow: hidden;">
+
+  <div style="position: relative; padding: 18px 20px 22px; border-radius: 0 0 36px 36px; background: linear-gradient(165deg, #2B20C9 0%, #0C0494 55%, #08036B 100%); color: #FFFFFF; overflow: hidden;">
+    <span aria-hidden="true" style="position: absolute; right: -60px; top: -60px; width: 220px; height: 220px; border-radius: 999px; background: radial-gradient(circle, rgba(130,245,193,.35), rgba(130,245,193,0) 70%); animation: skOrb 9s ease-in-out infinite;"></span>
+    <span aria-hidden="true" style="position: absolute; left: -80px; bottom: -100px; width: 260px; height: 260px; border-radius: 999px; background: radial-gradient(circle, rgba(165,180,252,.30), rgba(165,180,252,0) 70%); animation: skOrb 11s 1s ease-in-out infinite reverse;"></span>
+    <header style="position: relative; display: flex; align-items: center; gap: 12px; animation: skRise .5s both;">
+      <span aria-hidden="true" style="width: 44px; height: 44px; border-radius: 999px; background: rgba(255,255,255,.18); font-size: 15px; font-weight: 800; display: flex; align-items: center; justify-content: center;">AR</span>
+      <div style="flex-grow: 1; display: flex; flex-direction: column;"><span style="font-size: 12px; font-weight: 600; color: #C7C3FF;">Your record</span><h1 style="margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -0.5px;">My health</h1></div>
+      <a href="#" aria-label="SOS, get help now" style="height: 40px; padding: 0 12px; border-radius: 999px; background: #E11D48; color: #FFFFFF; font-size: 12.5px; font-weight: 800; display: flex; align-items: center;">SOS</a>
+    </header>
+    <div role="tablist" aria-label="My health" style="position: relative; margin-top: 16px; padding: 4px; border-radius: 999px; background: rgba(255,255,255,.12); display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); animation: skRise .5s .05s both;">
+      <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="4"><a href="{{ t.href }}" role="tab" aria-selected="{{ t.sel }}" style="{{ t.style }}">{{ t.label }}</a></sc-for>
+    </div>
+    <div style="position: relative; margin-top: 18px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; animation: skRise .55s .1s both;">
+      <span style="border-radius: 20px; padding: 12px 14px; background: rgba(255,255,255,.10); display: flex; flex-direction: column; gap: 2px;"><span style="font-size: 24px; font-weight: 800; color: #FCD34D;">2</span><span style="font-size: 11px; font-weight: 800; letter-spacing: .8px; color: #C7C3FF;">NEED YOU</span></span>
+      <span style="border-radius: 20px; padding: 12px 14px; background: rgba(255,255,255,.10); display: flex; flex-direction: column; gap: 2px;"><span style="font-size: 18px; line-height: 29px; font-weight: 800;">Fri 4:30 pm</span><span style="font-size: 11px; font-weight: 800; letter-spacing: .8px; color: #C7C3FF;">NEXT CONSULT</span></span>
+      <span style="border-radius: 20px; padding: 12px 14px; background: rgba(255,255,255,.10); display: flex; flex-direction: column; gap: 2px;"><span style="font-size: 24px; font-weight: 800; color: #82F5C1;">11</span><span style="font-size: 11px; font-weight: 800; letter-spacing: .8px; color: #C7C3FF;">DOCUMENTS</span></span>
+      <span style="border-radius: 20px; padding: 12px 14px; background: rgba(255,255,255,.10); display: flex; flex-direction: column; gap: 2px;"><span style="font-size: 24px; font-weight: 800;">0</span><span style="font-size: 11px; font-weight: 800; letter-spacing: .8px; color: #C7C3FF;">SHARED NOW</span></span>
+    </div>
+    <p style="position: relative; margin: 12px 0 0; font-size: 11.5px; font-weight: 600; color: #C7C3FF;">No health score here: we show what needs doing, never a number about your body.</p>
+  </div>
+
+  <section aria-labelledby="latest" style="margin: 18px 20px 0; padding: 16px; border-radius: 28px; background: #FFFFFF; box-shadow: 0 8px 24px rgba(12,4,148,.07); animation: skRise .55s .15s both;">
+    <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 11px; font-weight: 800; letter-spacing: 1px; color: #6B6980;">LATEST REPORT · 20 JUN</span><a href="Trends.dc.html" style="font-size: 12.5px; font-weight: 800;">Open</a></div>
+    <h2 id="latest" style="margin: 6px 0 12px; font-size: 19px; font-weight: 800; letter-spacing: -0.4px;">Lipid profile and HbA1c</h2>
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px;">
+      <button type="button" aria-pressed="{{ lookPressed }}" onClick="{{ showLook }}" style="{{ lookStyle }}"><span style="font-size: 30px; font-weight: 800; animation: skPop .6s .4s both;">2</span><span style="font-size: 12px; font-weight: 800;">Need a look</span></button>
+      <button type="button" aria-pressed="{{ okPressed }}" onClick="{{ showOk }}" style="{{ okStyle }}"><span style="font-size: 30px; font-weight: 800; animation: skPop .6s .55s both;">6</span><span style="font-size: 12px; font-weight: 800;">In range</span></button>
+    </div>
+    <div style="margin-top: 12px; display: flex; flex-direction: column;">
+      <sc-for list="{{ tests }}" as="r" hint-placeholder-count="2">
+        <a href="Trends.dc.html" style="display: flex; align-items: center; gap: 12px; padding: 12px 0; border-top: 1px solid #EEF2FF; color: #131B2E; animation: skRise .3s both;">
+          <span style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px;"><span style="font-size: 13.5px; font-weight: 800;">{{ r.name }}</span><span style="font-size: 11.5px; font-weight: 600; color: #6B6980;">Range {{ r.range }}</span></span>
+          <span style="{{ r.chip }}">{{ r.value }}</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6B6980" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
+        </a>
+      </sc-for>
+    </div>
+  </section>
+
+  <section aria-labelledby="note" style="margin: 14px 20px 0; padding: 16px; border-radius: 26px; background: linear-gradient(160deg, #ECFDF5, #FFFFFF 70%); box-shadow: 0 6px 18px rgba(12,4,148,.05); animation: skRise .55s .2s both;">
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <span style="width: 44px; height: 44px; border-radius: 15px; background: linear-gradient(145deg, #D1FAE5, #A7F3D0); color: #065F46; font-size: 15px; font-weight: 800; display: flex; align-items: center; justify-content: center;">SK</span>
+      <span style="display: flex; flex-direction: column; gap: 2px;"><h2 id="note" style="margin: 0; font-size: 14.5px; font-weight: 800;">Your doctor’s note</h2><span style="font-size: 11.5px; font-weight: 600; color: #6B6980;">Dr. S. Kumar · reviewed 22 Jun</span></span>
+    </div>
+    <p style="margin: 12px 0 0; font-size: 13px; line-height: 20px; font-weight: 600; color: #1F2937;">HDL is a little low and HbA1c is slightly high. Nothing urgent. A 15-minute walk after lunch and dinner helps both. Let’s repeat HbA1c in 3 months.</p>
+    <a href="Trends.dc.html" style="margin-top: 12px; display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 14px; border-radius: 999px; background: #047857; color: #FFFFFF; font-size: 12.5px; font-weight: 800;">See the 3 steps</a>
+  </section>
+
+  <section aria-labelledby="due" style="padding: 22px 20px 0; animation: skRise .55s .22s both;">
+    <h2 id="due" style="margin: 0 0 12px; font-size: 17px; font-weight: 800; letter-spacing: -0.3px;">Due from your care</h2>
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px;">
+      <div style="border-radius: 24px; padding: 14px; background: #FFFFFF; box-shadow: 0 6px 18px rgba(12,4,148,.06); display: flex; flex-direction: column; gap: 8px;">
+        <span style="width: 40px; height: 40px; border-radius: 14px; background: #EEF2FF; display: flex; align-items: center; justify-content: center;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0C0494" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 0 1 15.5-6.2L21 8M21 3v5h-5M21 12a9 9 0 0 1-15.5 6.2L3 16M3 21v-5h5"></path></svg></span>
+        <h3 style="margin: 0; font-size: 14px; font-weight: 800;">Refills due</h3>
+        <span style="font-size: 12px; line-height: 17px; font-weight: 600; color: #464555;">Vitamin D3 60K · 2 Nov<br>Cetirizine 10 mg · 18 Nov</span>
+        <a href="Medicines.dc.html" style="margin-top: auto; align-self: flex-start; height: 36px; padding: 0 12px; border-radius: 999px; background: #EEF2FF; color: #0C0494; font-size: 12px; font-weight: 800; display: flex; align-items: center;">Refill in the store</a>
+      </div>
+      <div style="border-radius: 24px; padding: 14px; background: #FFFFFF; box-shadow: 0 6px 18px rgba(12,4,148,.06); display: flex; flex-direction: column; gap: 8px;">
+        <span style="width: 40px; height: 40px; border-radius: 14px; background: #FEF3C7; display: flex; align-items: center; justify-content: center;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#B45309" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3v6a5 5 0 0 0 10 0V3"></path><path d="M11 14v2a4 4 0 0 0 8 0v-1.5"></path><circle cx="19" cy="12.5" r="2"></circle></svg></span>
+        <h3 style="margin: 0; font-size: 14px; font-weight: 800;">Repeat test your doctor ordered</h3>
+        <span style="font-size: 12px; line-height: 17px; font-weight: 600; color: #464555;">Vitamin D · due since 10 Oct</span>
+        <a href="Labs.dc.html" style="margin-top: auto; align-self: flex-start; height: 36px; padding: 0 12px; border-radius: 999px; background: #FEF3C7; color: #92400E; font-size: 12px; font-weight: 800; display: flex; align-items: center;">Book in Lab tests</a>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="systems" style="padding: 22px 20px 0; animation: skRise .55s .25s both;">
+    <h2 id="systems" style="margin: 0 0 12px; font-size: 17px; font-weight: 800; letter-spacing: -0.3px;">By body system</h2>
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px;">
+      <sc-for list="{{ systems }}" as="s" hint-placeholder-count="4">
+        <a href="Trends.dc.html" class="sk-card" style="border-radius: 24px; padding: 14px; background: #FFFFFF; box-shadow: 0 6px 18px rgba(12,4,148,.06); display: flex; flex-direction: column; gap: 10px; color: #131B2E;">
+          <span style="{{ s.tile }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="{{ s.ink }}" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{ s.icon }}"></path></svg></span>
+          <span style="font-size: 14px; font-weight: 800;">{{ s.name }}</span>
+          <span style="display: flex; gap: 4px;"><sc-for list="{{ s.dots }}" as="d" hint-placeholder-count="4"><span style="{{ d.style }}"></span></sc-for></span>
+          <span style="font-size: 11.5px; font-weight: 700; color: #464555;">{{ s.summary }}</span>
+        </a>
+      </sc-for>
+    </div>
+  </section>
+
+  <a href="AskAyush.dc.html" class="sk-card" style="margin: 16px 20px 0; position: relative; overflow: hidden; padding: 16px; border-radius: 26px; background: linear-gradient(135deg, #EEF2FF, #F5F3FF 50%, #ECFEFF); display: flex; align-items: center; gap: 14px; color: #131B2E; animation: skRise .55s .3s both;">
+    <span aria-hidden="true" style="width: 52px; height: 52px; flex-shrink: 0; border-radius: 999px; background: radial-gradient(circle at 35% 30%, #A5F3FC, #6D5BFF 55%, #2B20C9); display: flex; align-items: center; justify-content: center;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" style="animation: skSpin 12s linear infinite;"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M5.6 18.4l2.8-2.8M15.6 8.4l2.8-2.8"></path></svg></span>
+    <span style="display: flex; flex-direction: column; gap: 3px;"><span style="font-size: 14.5px; font-weight: 800;">Ask Ayush about this report</span><span style="font-size: 12px; font-weight: 600; color: #464555;">Only with your OK. A doctor checks anything clinical.</span></span>
+  </a>
+
+  <nav aria-label="Main" style="position: absolute; left: 16px; right: 16px; bottom: 22px; height: 70px; border-radius: 999px; background: linear-gradient(160deg, #1A10B5, #0C0494); box-shadow: 0 18px 40px rgba(12,4,148,.35); display: flex; align-items: center; justify-content: space-between; padding: 0 10px;">
+    <a href="Main.dc.html" aria-label="Home" style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C7C3FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5L12 4l9 6.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"></path></svg></a>
+    <a href="Orders.dc.html" aria-label="Orders" style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C7C3FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8l-9-5-9 5 9 5zM3 8v8l9 5 9-5V8M12 13v8"></path></svg></a>
+    <a href="AskAyush.dc.html" aria-label="Ask Ayush" style="width: 52px; height: 52px; border-radius: 999px; background: radial-gradient(circle at 35% 30%, #A5F3FC, #6D5BFF 55%, #2B20C9); display: flex; align-items: center; justify-content: center;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M5.6 18.4l2.8-2.8M15.6 8.4l2.8-2.8"></path></svg></a>
+    <a href="Insights.dc.html" aria-current="page" style="height: 52px; padding: 0 16px; border-radius: 999px; background: #FFFFFF; color: #0C0494; font-size: 13.5px; font-weight: 800; display: flex; align-items: center; gap: 7px;"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#0C0494" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 5.6a5 5 0 0 0-7.1 0L12 7.3l-1.7-1.7a5 5 0 1 0-7.1 7.1L12 21.5l8.8-8.8a5 5 0 0 0 0-7.1z"></path></svg>My health</a>
+    <a href="Profile.dc.html" aria-label="Profile" style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C7C3FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21a8 8 0 0 1 16 0"></path></svg></a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1780}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { show: 'look' }; }
+  renderVals() {
+    const show = this.state.show;
+    const tabDefs = [['Insights', 'Insights.dc.html'], ['Improve', 'Insights.dc.html'], ['Trends', 'Trends.dc.html'], ['Records', 'Profile.dc.html']];
+    const card = (on, bg, ink, ring) => 'border: 0; cursor: pointer; text-align: left; border-radius: 22px; padding: 14px; display: flex; flex-direction: column; gap: 2px; transition: all .25s; background: ' + bg + '; color: ' + ink + '; box-shadow: ' + (on ? '0 0 0 2.5px ' + ring + ', 0 10px 22px rgba(12,4,148,.10)' : 'none') + ';';
+    const chip = (k) => 'padding: 5px 10px; border-radius: 999px; font-size: 12.5px; font-weight: 800; font-variant-numeric: tabular-nums; ' + (k === 'look' ? 'background: #FFFBEB; color: #92400E;' : 'background: #ECFDF5; color: #047857;');
+    const all = {
+      look: [{ name: 'HDL cholesterol', range: '40–60 mg/dL', value: '26 mg/dL', k: 'look' }, { name: 'HbA1c', range: '4.0–5.6 %', value: '7.6 %', k: 'look' }],
+      ok: [{ name: 'LDL cholesterol', range: 'under 100 mg/dL', value: '92 mg/dL', k: 'ok' }, { name: 'Triglycerides', range: 'under 150 mg/dL', value: '118 mg/dL', k: 'ok' }, { name: 'Vitamin B12', range: '200–900 pg/mL', value: '412 pg/mL', k: 'ok' }]
+    };
+    const dots = (arr) => arr.map((k) => ({ style: 'width: 22px; height: 6px; border-radius: 999px; background: ' + (k ? '#F59E0B' : '#34D399') + ';' }));
+    const sys = (name, ink, bg, icon, d, summary) => ({ name, ink, icon, summary, dots: dots(d), tile: 'width: 38px; height: 38px; border-radius: 13px; display: flex; align-items: center; justify-content: center; background: ' + bg + ';' });
+    return {
+      tabs: tabDefs.map(([label, href], i) => ({ label, href, sel: i === 0 ? 'true' : 'false', style: 'height: 38px; border-radius: 999px; display: flex; align-items: center; justify-content: center; font-size: 12.5px; font-weight: 800; ' + (i === 0 ? 'background: #FFFFFF; color: #0C0494;' : 'color: #E0DEFF;') })),
+      lookPressed: show === 'look' ? 'true' : 'false', okPressed: show === 'ok' ? 'true' : 'false',
+      showLook: () => this.setState({ show: 'look' }), showOk: () => this.setState({ show: 'ok' }),
+      lookStyle: card(show === 'look', '#FFFBEB', '#92400E', '#F59E0B'),
+      okStyle: card(show === 'ok', '#ECFDF5', '#047857', '#10B981'),
+      tests: all[show].map((r) => ({ ...r, chip: chip(r.k) })),
+      systems: [
+        sys('Heart and blood', '#BE185D', '#FCE7F3', 'M20.8 5.6a5 5 0 0 0-7.1 0L12 7.3l-1.7-1.7a5 5 0 1 0-7.1 7.1L12 21.5l8.8-8.8a5 5 0 0 0 0-7.1z', [1, 0, 0, 0], '1 of 4 needs a look'),
+        sys('Blood sugar', '#1D4ED8', '#DBEAFE', 'M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z', [1, 0], '1 of 2 needs a look'),
+        sys('Vitamins', '#B45309', '#FEF3C7', 'M9 3h6v3H9zM7 6h10v13a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2z', [0, 0], 'All in range'),
+        sys('Thyroid', '#6D28D9', '#EDE9FE', 'M8 4c-2 3-2 13 4 16 6-3 6-13 4-16-1.5 2-6.5 2-8 0z', [0], 'In range')
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

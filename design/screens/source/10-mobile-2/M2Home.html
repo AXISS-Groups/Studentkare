@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Home · For You</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:#FAF8FF;color:#131B2E}
+a{color:#0C0494;text-decoration:none}a:hover{color:#2B20C9}
+button{font-family:inherit}
+a:focus-visible,button:focus-visible{outline:3px solid #6D5BFF;outline-offset:3px;border-radius:14px}
+@keyframes skRise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes skFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes skSpin{to{transform:rotate(360deg)}}
+@keyframes skPulse{0%{box-shadow:0 0 0 0 rgba(225,29,72,.45)}100%{box-shadow:0 0 0 14px rgba(225,29,72,0)}}
+@keyframes skShine{0%,60%{transform:translateX(-120%) rotate(18deg)}100%{transform:translateX(220%) rotate(18deg)}}
+@keyframes skBar{from{width:0}}
+@keyframes skRing{from{stroke-dashoffset:176}}
+.sk-tile{transition:transform .25s cubic-bezier(.2,.7,.3,1)}
+.sk-tile:hover{transform:translateY(-3px) scale(1.04)}
+.sk-card{transition:transform .25s cubic-bezier(.2,.7,.3,1),box-shadow .25s}
+.sk-card:hover{transform:translateY(-2px);box-shadow:0 14px 30px rgba(12,4,148,.12)}
+.sk-shine{position:absolute;top:-40%;left:0;width:38%;height:180%;background:linear-gradient(90deg,rgba(255,255,255,0),rgba(255,255,255,.28),rgba(255,255,255,0));animation:skShine 4.5s ease-in-out infinite}
+.sk-rail{scrollbar-width:none}.sk-rail::-webkit-scrollbar{display:none}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div style="width: 390px; height: 1640px; box-sizing: border-box; background: #FAF8FF; position: relative; overflow: hidden;">
+
+  <div aria-hidden="true" style="position: absolute; top: -120px; right: -90px; width: 300px; height: 300px; border-radius: 999px; background: radial-gradient(circle, rgba(109,91,255,.22), rgba(109,91,255,0) 70%);"></div>
+
+  <header style="position: relative; padding: 18px 20px 0; display: flex; align-items: center; gap: 12px; animation: skRise .5s both;">
+    <span aria-hidden="true" style="width: 44px; height: 44px; border-radius: 999px; background: linear-gradient(145deg, #EEF2FF, #DAD7FF); color: #0C0494; font-size: 15px; font-weight: 800; display: flex; align-items: center; justify-content: center;">AR</span>
+    <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 1px;">
+      <span style="font-size: 12px; font-weight: 600; color: #6B6980;">Good evening</span>
+      <span style="font-size: 18px; font-weight: 800; letter-spacing: -0.4px;">Asha Rao</span>
+    </div>
+    <a href="Orders.dc.html" aria-label="Cart, 2 items" style="position: relative; width: 44px; height: 44px; border-radius: 999px; background: #FFFFFF; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(12,4,148,.08);">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#131B2E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 7h13l-1.5 8.5a2 2 0 0 1-2 1.5H9.2a2 2 0 0 1-2-1.6L5 4H3"></path><circle cx="10" cy="20.5" r="1.2"></circle><circle cx="17" cy="20.5" r="1.2"></circle></svg>
+      <span style="position: absolute; top: 4px; right: 3px; min-width: 18px; height: 18px; border-radius: 999px; background: #0C0494; color: #FFFFFF; font-size: 10px; font-weight: 800; display: flex; align-items: center; justify-content: center; border: 2px solid #FAF8FF;">2</span>
+    </a>
+    <a href="#" aria-label="SOS, get help now" style="height: 44px; padding: 0 14px; border-radius: 999px; background: #E11D48; color: #FFFFFF; font-size: 13px; font-weight: 800; display: flex; align-items: center; gap: 6px; animation: skPulse 2s infinite;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6z"></path><path d="M12 8v5M12 16.5h.01"></path></svg>SOS
+    </a>
+  </header>
+
+  <div style="padding: 14px 20px 0; display: flex; align-items: center; gap: 8px; animation: skRise .5s .05s both;">
+    <button type="button" style="border: 0; background: none; padding: 0; display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; color: #131B2E; cursor: pointer;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0C0494" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"></path><circle cx="12" cy="9.5" r="2.5"></circle></svg>
+      Block C, VNR VJIET
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#131B2E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg>
+    </button>
+    <span style="margin-left: auto; padding: 5px 10px; border-radius: 999px; background: #ECFDF5; color: #047857; font-size: 11.5px; font-weight: 800; display: flex; align-items: center; gap: 5px;"><span style="width: 7px; height: 7px; border-radius: 999px; background: #10B981;"></span>Clinic pickup today</span>
+  </div>
+
+  <div style="padding: 14px 20px 0; display: flex; gap: 10px; animation: skRise .5s .1s both;">
+    <label style="flex-grow: 1; height: 52px; border-radius: 18px; background: #FFFFFF; box-shadow: 0 6px 18px rgba(12,4,148,.07); display: flex; align-items: center; gap: 10px; padding: 0 14px;">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#6B6980" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="M16 16l4.5 4.5"></path></svg>
+      <span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0);">Search</span>
+      <input type="search" placeholder="Search medicines, tests, doctors" style="flex-grow: 1; min-width: 0; border: 0; outline: none; background: transparent; font-family: inherit; font-size: 14px; font-weight: 600; color: #131B2E;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0C0494" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"></path></svg>
+    </label>
+    <a href="Medicines.dc.html" aria-label="Upload a prescription" style="width: 52px; height: 52px; border-radius: 18px; background: linear-gradient(145deg, #2B20C9, #0C0494); display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 22px rgba(12,4,148,.28);">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"></path><path d="M14 3v5h5M12 17v-6M9.5 13.5L12 11l2.5 2.5"></path></svg>
+    </a>
+  </div>
+
+  <nav aria-label="Services" class="sk-rail" style="margin-top: 18px; padding: 0 20px 4px; display: flex; gap: 14px; overflow-x: auto; animation: skRise .5s .15s both;">
+    <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="7">
+      <a href="{{ t.href }}" onClick="{{ t.pick }}" aria-current="{{ t.current }}" class="sk-tile" style="flex-shrink: 0; width: 64px; display: flex; flex-direction: column; align-items: center; gap: 7px; color: #131B2E;">
+        <span style="{{ t.tileStyle }}">
+          <sc-if value="{{ t.isYou }}" hint-placeholder-val="{{ true }}"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.9 4.6L19 8.3l-3.8 3.4L16.3 17 12 14.4 7.7 17l1.1-5.3L5 8.3l5.1-.7z"></path></svg></sc-if>
+          <sc-if value="{{ t.isMed }}" hint-placeholder-val="{{ false }}"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="8.5" width="18" height="7" rx="3.5" transform="rotate(-45 12 12)"></rect><path d="M9.5 9.5l5 5"></path></svg></sc-if>
+          <sc-if value="{{ t.isLab }}" hint-placeholder-val="{{ false }}"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.8 3h10.4A2 2 0 0 0 19 18l-5-9V3"></path><path d="M7.5 14h9"></path></svg></sc-if>
+          <sc-if value="{{ t.isDoc }}" hint-placeholder-val="{{ false }}"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3v6a5 5 0 0 0 10 0V3"></path><path d="M11 14v2a4 4 0 0 0 8 0v-1.5"></path><circle cx="19" cy="12.5" r="2"></circle></svg></sc-if>
+          <sc-if value="{{ t.isVac }}" hint-placeholder-val="{{ false }}"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 2l4 4M20 4l-6.5 6.5M15 6l3 3M5.5 15.5l-3.5 3.5M12 7l5 5-7.5 7.5a2.1 2.1 0 0 1-3 0l-2-2a2.1 2.1 0 0 1 0-3z"></path><path d="M9 12l3 3"></path></svg></sc-if>
+          <sc-if value="{{ t.isIns }}" hint-placeholder-val="{{ false }}"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6z"></path><path d="M8.5 12l2.5 2.5 4.5-5"></path></svg></sc-if>
+          <sc-if value="{{ t.isCampus }}" hint-placeholder-val="{{ false }}"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10l9-6 9 6M5 10v9h14v-9"></path><path d="M10 19v-5h4v5"></path></svg></sc-if>
+          <span class="sk-shine" aria-hidden="true"></span>
+        </span>
+        <span style="{{ t.labelStyle }}">{{ t.label }}</span>
+      </a>
+    </sc-for>
+  </nav>
+
+  <section aria-roledescription="carousel" aria-label="Highlights" style="padding: 18px 20px 0; animation: skRise .55s .2s both;">
+    <sc-for list="{{ slides }}" as="s" hint-placeholder-count="1">
+      <sc-if value="{{ s.on }}" hint-placeholder-val="{{ true }}">
+        <a href="{{ s.href }}" class="sk-card" style="{{ s.cardStyle }}">
+          <span aria-hidden="true" style="position: absolute; right: -40px; bottom: -60px; width: 190px; height: 190px; border-radius: 999px; border: 26px solid rgba(255,255,255,.12);"></span>
+          <span aria-hidden="true" style="position: absolute; right: 40px; top: -50px; width: 120px; height: 120px; border-radius: 999px; background: rgba(255,255,255,.10);"></span>
+          <span style="position: relative; align-self: flex-start; padding: 5px 11px; border-radius: 999px; background: rgba(0,0,0,.16); color: #FFFFFF; font-size: 11px; font-weight: 800; letter-spacing: .4px;">{{ s.tag }}</span>
+          <span style="position: relative; font-size: 23px; line-height: 28px; font-weight: 800; letter-spacing: -0.6px; color: #FFFFFF; max-width: 250px;">{{ s.title }}</span>
+          <span style="position: relative; font-size: 13px; line-height: 19px; font-weight: 600; color: #FFFFFF; max-width: 240px;">{{ s.body }}</span>
+          <span style="position: relative; align-self: flex-start; margin-top: 4px; height: 38px; padding: 0 16px; border-radius: 999px; background: #FFFFFF; color: {{ s.ink }}; font-size: 13px; font-weight: 800; display: flex; align-items: center; gap: 6px;">{{ s.cta }}
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></span>
+          <span aria-hidden="true" style="position: absolute; right: 22px; top: 52px; width: 64px; height: 64px; border-radius: 20px; background: rgba(255,255,255,.16); display: flex; align-items: center; justify-content: center; animation: skFloat 3.6s ease-in-out infinite;">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="{{ s.icon }}"></path></svg>
+          </span>
+        </a>
+      </sc-if>
+    </sc-for>
+    <div style="margin-top: 12px; display: flex; justify-content: center; gap: 6px;">
+      <sc-for list="{{ slides }}" as="s" hint-placeholder-count="3">
+        <button type="button" onClick="{{ s.pick }}" aria-label="{{ s.dotLabel }}" aria-pressed="{{ s.pressed }}" style="{{ s.dotStyle }}"></button>
+      </sc-for>
+    </div>
+  </section>
+
+  <section aria-labelledby="today" style="padding: 22px 20px 0; animation: skRise .55s .25s both;">
+    <h2 id="today" style="margin: 0 0 12px; font-size: 17px; font-weight: 800; letter-spacing: -0.3px;">Today for you</h2>
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: 104px; gap: 12px;">
+      <a href="Insights.dc.html" class="sk-card" style="grid-row: span 2; position: relative; overflow: hidden; border-radius: 24px; padding: 16px; background: linear-gradient(160deg, #2B20C9 0%, #0C0494 70%); color: #FFFFFF; display: flex; flex-direction: column; justify-content: space-between;">
+        <span style="font-size: 11px; font-weight: 800; letter-spacing: 1px; color: #C7C3FF;">MEDICINES TODAY</span>
+        <svg width="86" height="86" viewBox="0 0 64 64" aria-hidden="true" style="align-self: center;"><circle cx="32" cy="32" r="28" fill="none" stroke="rgba(255,255,255,.18)" stroke-width="7"></circle><circle cx="32" cy="32" r="28" fill="none" stroke="#82F5C1" stroke-width="7" stroke-linecap="round" stroke-dasharray="176" stroke-dashoffset="59" transform="rotate(-90 32 32)" style="animation: skRing 1.2s .4s both cubic-bezier(.2,.7,.3,1);"></circle><text x="32" y="37" text-anchor="middle" font-size="16" font-weight="800" fill="#FFFFFF" font-family="Plus Jakarta Sans">2/3</text></svg>
+        <span style="font-size: 14px; font-weight: 800; line-height: 19px;">Next: Vitamin D at 9:00 pm</span>
+        <span style="font-size: 12px; font-weight: 600; color: #C7C3FF;">Taken and missed doses only</span>
+      </a>
+      <a href="ReportUpload.dc.html" class="sk-card" style="border-radius: 24px; padding: 14px; background: #FFFFFF; box-shadow: 0 6px 18px rgba(12,4,148,.06); display: flex; flex-direction: column; justify-content: space-between; color: #131B2E;">
+        <span style="width: 38px; height: 38px; border-radius: 13px; background: #FFF4E5; display: flex; align-items: center; justify-content: center;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C2410C" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"></path><path d="M14 3v5h5M9 13h6M9 17h4"></path></svg></span>
+        <span style="font-size: 13.5px; font-weight: 800; line-height: 18px;">Upload a lab report</span>
+      </a>
+      <a href="Orders.dc.html" class="sk-card" style="border-radius: 24px; padding: 14px; background: #FFFFFF; box-shadow: 0 6px 18px rgba(12,4,148,.06); display: flex; flex-direction: column; justify-content: space-between; color: #131B2E;">
+        <span style="width: 38px; height: 38px; border-radius: 13px; background: #ECFDF5; display: flex; align-items: center; justify-content: center;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#047857" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 0 1 15.5-6.2L21 8M21 3v5h-5M21 12a9 9 0 0 1-15.5 6.2L3 16M3 21v-5h5"></path></svg></span>
+        <span style="font-size: 13.5px; font-weight: 800; line-height: 18px;">Buy again · 3 items</span>
+      </a>
+      <a href="Consults.dc.html" class="sk-card" style="grid-column: span 2; border-radius: 24px; padding: 14px 16px; background: #FFFFFF; box-shadow: 0 6px 18px rgba(12,4,148,.06); display: flex; align-items: center; gap: 14px; color: #131B2E;">
+        <span style="width: 52px; height: 52px; border-radius: 18px; background: linear-gradient(145deg, #DBEAFE, #BFDBFE); color: #1D4ED8; font-weight: 800; font-size: 16px; display: flex; align-items: center; justify-content: center;">SK</span>
+        <span style="flex-grow: 1; display: flex; flex-direction: column; gap: 3px;">
+          <span style="font-size: 11px; font-weight: 800; letter-spacing: 1px; color: #6B6980;">NEXT CONSULT</span>
+          <span style="font-size: 15px; font-weight: 800;">Fri, 4:30 pm · Video</span>
+          <span style="font-size: 12.5px; font-weight: 600; color: #464555;">Dr. S. Kumar · General medicine</span>
+        </span>
+        <span style="height: 36px; padding: 0 14px; border-radius: 999px; background: #EEF2FF; color: #0C0494; font-size: 12.5px; font-weight: 800; display: flex; align-items: center;">Details</span>
+      </a>
+    </div>
+  </section>
+
+  <section aria-labelledby="concern" style="padding: 24px 20px 0; animation: skRise .55s .3s both;">
+    <div style="display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 12px;">
+      <h2 id="concern" style="margin: 0; font-size: 17px; font-weight: 800; letter-spacing: -0.3px;">Shop by concern</h2>
+      <a href="Medicines.dc.html" style="font-size: 13px; font-weight: 800;">See all</a>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px 8px;">
+      <sc-for list="{{ concerns }}" as="c" hint-placeholder-count="8">
+        <a href="Medicines.dc.html" class="sk-tile" style="display: flex; flex-direction: column; align-items: center; gap: 7px; color: #131B2E;">
+          <span style="{{ c.tile }}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="{{ c.ink }}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{ c.icon }}"></path></svg></span>
+          <span style="font-size: 11.5px; font-weight: 700; text-align: center; line-height: 14px;">{{ c.label }}</span>
+        </a>
+      </sc-for>
+    </div>
+  </section>
+
+  <section aria-labelledby="recent" style="padding: 24px 0 0; animation: skRise .55s .35s both;">
+    <h2 id="recent" style="margin: 0 20px 12px; font-size: 17px; font-weight: 800; letter-spacing: -0.3px;">Recently viewed</h2>
+    <div class="sk-rail" style="display: flex; gap: 12px; overflow-x: auto; padding: 0 20px 8px;">
+      <sc-for list="{{ recent }}" as="p" hint-placeholder-count="3">
+        <a href="Product.dc.html" class="sk-card" style="flex-shrink: 0; width: 148px; border-radius: 22px; background: #FFFFFF; box-shadow: 0 6px 18px rgba(12,4,148,.06); padding: 12px; display: flex; flex-direction: column; gap: 6px; color: #131B2E;">
+          <span style="{{ p.art }}"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="{{ p.ink }}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{ p.icon }}"></path></svg></span>
+          <span style="font-size: 13px; font-weight: 800; line-height: 17px;">{{ p.name }}</span>
+          <span style="font-size: 11.5px; font-weight: 600; color: #6B6980;">{{ p.pack }}</span>
+          <span style="display: flex; align-items: center; justify-content: space-between; margin-top: 2px;">
+            <span style="font-size: 15px; font-weight: 800; font-variant-numeric: tabular-nums;">{{ p.price }}</span>
+            <span aria-hidden="true" style="width: 32px; height: 32px; border-radius: 11px; background: #0C0494; display: flex; align-items: center; justify-content: center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></span>
+          </span>
+        </a>
+      </sc-for>
+    </div>
+  </section>
+
+  <section aria-labelledby="campus" style="padding: 20px 20px 0; animation: skRise .55s .4s both;">
+    <h2 id="campus" style="margin: 0 0 12px; font-size: 17px; font-weight: 800; letter-spacing: -0.3px;">On campus</h2>
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px;">
+      <a href="Profile.dc.html" class="sk-card" style="position: relative; overflow: hidden; border-radius: 22px; padding: 14px; height: 112px; box-sizing: border-box; background: linear-gradient(155deg, #1E1B4B, #131B2E); color: #FFFFFF; display: flex; flex-direction: column; justify-content: space-between;">
+        <span style="display: flex; align-items: center; justify-content: space-between;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#82F5C1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3"></rect><path d="M7 15h4M15 10.5h2M7 10.5h4"></path></svg><span style="font-size: 10px; font-weight: 800; color: #82F5C1; letter-spacing: .6px;">OFFLINE READY</span></span>
+        <span style="font-size: 14px; font-weight: 800;">Emergency card</span>
+      </a>
+      <a href="Profile.dc.html" class="sk-card" style="border-radius: 22px; padding: 14px; height: 112px; box-sizing: border-box; background: #FFFFFF; box-shadow: 0 6px 18px rgba(12,4,148,.06); color: #131B2E; display: flex; flex-direction: column; justify-content: space-between;">
+        <span style="width: 38px; height: 38px; border-radius: 13px; background: #EEF2FF; display: flex; align-items: center; justify-content: center;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0C0494" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><path d="M14 14h3v3h-3zM20 14v.01M14 20h.01M20 20h.01M17 17h3v3"></path></svg></span>
+        <span style="font-size: 14px; font-weight: 800;">My check-in pass</span>
+      </a>
+      <a href="Consults.dc.html" class="sk-card" style="border-radius: 22px; padding: 14px; height: 112px; box-sizing: border-box; background: #FFFFFF; box-shadow: 0 6px 18px rgba(12,4,148,.06); color: #131B2E; display: flex; flex-direction: column; justify-content: space-between;">
+        <span style="width: 38px; height: 38px; border-radius: 13px; background: #E0F2FE; display: flex; align-items: center; justify-content: center;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0369A1" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10l9-6 9 6M5 10v9h14v-9M10 19v-5h4v5"></path></svg></span>
+        <span style="font-size: 14px; font-weight: 800;">Hostel visit</span>
+      </a>
+      <a href="Vaccines.dc.html" class="sk-card" style="border-radius: 22px; padding: 14px; height: 112px; box-sizing: border-box; background: #FFFFFF; box-shadow: 0 6px 18px rgba(12,4,148,.06); color: #131B2E; display: flex; flex-direction: column; justify-content: space-between;">
+        <span style="width: 38px; height: 38px; border-radius: 13px; background: #FEF3C7; display: flex; align-items: center; justify-content: center;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#B45309" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"></rect><path d="M3 10h18M8 3v4M16 3v4M8 15h3"></path></svg></span>
+        <span style="font-size: 14px; font-weight: 800;">Health camp · Sat</span>
+      </a>
+    </div>
+  </section>
+
+
+  <a href="tel:" aria-label="Call to order" style="position: absolute; right: 20px; bottom: 112px; height: 48px; padding: 0 16px 0 12px; border-radius: 999px; background: #FFFFFF; color: #0C0494; font-size: 13px; font-weight: 800; display: flex; align-items: center; gap: 8px; box-shadow: 0 12px 28px rgba(12,4,148,.22); animation: skFloat 4s ease-in-out infinite;">
+    <span style="width: 30px; height: 30px; border-radius: 999px; background: linear-gradient(145deg, #2B20C9, #0C0494); display: flex; align-items: center; justify-content: center;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"></path></svg></span>
+    Call to order
+  </a>
+
+  <nav aria-label="Main" style="position: absolute; left: 16px; right: 16px; bottom: 22px; height: 70px; border-radius: 999px; background: linear-gradient(160deg, #1A10B5, #0C0494); box-shadow: 0 18px 40px rgba(12,4,148,.35); display: flex; align-items: center; justify-content: space-between; padding: 0 10px;">
+    <a href="Main.dc.html" aria-current="page" style="height: 52px; padding: 0 18px; border-radius: 999px; background: #FFFFFF; color: #0C0494; font-size: 13.5px; font-weight: 800; display: flex; align-items: center; gap: 7px;">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#0C0494" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5L12 4l9 6.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"></path></svg>Home</a>
+    <a href="Orders.dc.html" aria-label="Orders" style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C7C3FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8l-9-5-9 5 9 5zM3 8v8l9 5 9-5V8M12 13v8"></path></svg></a>
+    <a href="AskAyush.dc.html" aria-label="Ask Ayush" style="width: 52px; height: 52px; border-radius: 999px; background: radial-gradient(circle at 35% 30%, #A5F3FC, #6D5BFF 55%, #2B20C9); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 4px rgba(255,255,255,.14);">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="animation: skSpin 12s linear infinite;"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M5.6 18.4l2.8-2.8M15.6 8.4l2.8-2.8"></path></svg></a>
+    <a href="Insights.dc.html" aria-label="My health" style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C7C3FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 5.6a5 5 0 0 0-7.1 0L12 7.3l-1.7-1.7a5 5 0 1 0-7.1 7.1L12 21.5l8.8-8.8a5 5 0 0 0 0-7.1z"></path><path d="M7 12h2.5l1.5-3 2 5 1.5-2H17"></path></svg></a>
+    <a href="Profile.dc.html" aria-label="Profile" style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C7C3FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21a8 8 0 0 1 16 0"></path></svg></a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1640}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { tab: 'you', slide: 0 }; }
+  componentDidMount() { this._t = setInterval(() => this.setState({ slide: (this.state.slide + 1) % 3 }), 4200); }
+  componentWillUnmount() { clearInterval(this._t); }
+  renderVals() {
+    const s = this.state;
+    const tabDefs = [
+      ['you', 'For You', 'Main.dc.html', '#6D5BFF', '#0C0494'],
+      ['med', 'Medicines', 'Medicines.dc.html', '#14B8A6', '#0F766E'],
+      ['lab', 'Lab tests', 'Labs.dc.html', '#A78BFA', '#6D28D9'],
+      ['doc', 'Consults', 'Consults.dc.html', '#60A5FA', '#1D4ED8'],
+      ['vac', 'Vaccines', 'Vaccines.dc.html', '#FBBF24', '#B45309'],
+      ['ins', 'Insurance', 'Insurance.dc.html', '#34D399', '#047857'],
+      ['campus', 'Campus', 'Profile.dc.html', '#38BDF8', '#0369A1']
+    ];
+    const tabs = tabDefs.map(([id, label, href, a, b]) => {
+      const on = s.tab === id;
+      return {
+        label, href, current: on ? 'page' : 'false',
+        isYou: id === 'you', isMed: id === 'med', isLab: id === 'lab', isDoc: id === 'doc', isVac: id === 'vac', isIns: id === 'ins', isCampus: id === 'campus',
+        pick: () => this.setState({ tab: id }),
+        tileStyle: 'position: relative; overflow: hidden; width: 60px; height: 60px; border-radius: 20px; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle at 28% 22%, rgba(255,255,255,.55), rgba(255,255,255,0) 46%), linear-gradient(150deg, ' + a + ', ' + b + '); box-shadow: 0 10px 20px ' + b + '40' + (on ? ', 0 0 0 3px #FAF8FF, 0 0 0 5px ' + b : '') + ';',
+        labelStyle: 'font-size: 11.5px; white-space: nowrap; ' + (on ? 'font-weight: 800; color: #0C0494;' : 'font-weight: 700; color: #464555;')
+      };
+    });
+    const slideDefs = [
+      { tag: 'SEMESTER HEALTH CHECK', title: 'Three checks, one visit to the campus clinic', body: 'Blood count, vitamin D and an eye test, booked together.', cta: 'Book the check', href: 'Labs.dc.html', a: '#2B20C9', b: '#0C0494', ink: '#0C0494', icon: 'M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.8 3h10.4A2 2 0 0 0 19 18l-5-9V3M7.5 14h9' },
+      { tag: 'GENERICS', title: 'Same medicine, a lower price', body: 'Same composition and strength. Your pharmacist confirms the swap.', cta: 'See generic options', href: 'Product.dc.html', a: '#047857', b: '#065F46', ink: '#065F46', icon: 'M5 12h14M12 5v14M7 7l10 10' },
+      { tag: 'ANY LAB, EXPLAINED', title: 'Upload a report from any lab', body: 'We read the values; a doctor writes what they mean for you.', cta: 'Upload a report', href: 'ReportUpload.dc.html', a: '#C2410C', b: '#9A3412', ink: '#C2410C', icon: 'M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5M12 17v-6M9.5 13.5L12 11l2.5 2.5' }
+    ];
+    const slides = slideDefs.map((d, i) => ({
+      ...d, on: s.slide === i, pressed: s.slide === i ? 'true' : 'false',
+      dotLabel: 'Show highlight ' + (i + 1),
+      pick: () => this.setState({ slide: i }),
+      cardStyle: 'position: relative; overflow: hidden; height: 214px; box-sizing: border-box; border-radius: 28px; padding: 20px; display: flex; flex-direction: column; gap: 8px; background: linear-gradient(150deg, ' + d.a + ' 0%, ' + d.b + ' 100%); box-shadow: 0 18px 36px ' + d.b + '55; animation: skRise .45s both;',
+      dotStyle: 'height: 8px; border: 0; padding: 0; cursor: pointer; border-radius: 999px; transition: width .3s; ' + (s.slide === i ? 'width: 24px; background: #0C0494;' : 'width: 8px; background: #C7C4D8;')
+    }));
+    const c = (label, ink, bg, icon) => ({ label, ink, icon, tile: 'width: 58px; height: 58px; border-radius: 20px; display: flex; align-items: center; justify-content: center; background: ' + bg + ';' });
+    const concerns = [
+      c('Fever and cold', '#C2410C', '#FFEDD5', 'M14 14.8V4a2 2 0 1 0-4 0v10.8a4 4 0 1 0 4 0zM12 9v6'),
+      c('Skin care', '#BE185D', '#FCE7F3', 'M9 3h6v4H9zM8 7h8l1 4v8a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2v-8z'),
+      c('Stress and sleep', '#5B21B6', '#EDE9FE', 'M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z'),
+      c('Sports injury', '#1D4ED8', '#DBEAFE', 'M4 14l6-6 4 4 6-6M14 6h6v6'),
+      c('Eye strain', '#0F766E', '#CCFBF1', 'M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12zM12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z'),
+      c('Sexual health', '#BE185D', '#FCE7F3', 'M12 21s-8-5.2-8-11.2A4.6 4.6 0 0 1 12 7a4.6 4.6 0 0 1 8 2.8C20 15.8 12 21 12 21z'),
+      c('Vitamins', '#B45309', '#FEF3C7', 'M9 3h6v3H9zM7 6h10v13a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2zM10 12h4M12 10v4'),
+      c('First aid', '#047857', '#D1FAE5', 'M4 7h16v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zM9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M12 11v6M9 14h6')
+    ];
+    const p = (name, pack, price, ink, bg, icon) => ({ name, pack, price, ink, icon, art: 'height: 84px; border-radius: 16px; display: flex; align-items: center; justify-content: center; background: ' + bg + ';' });
+    const recent = [
+      p('Paracetamol 650 mg', 'Strip of 15 tablets', '₹[price]', '#0F766E', 'linear-gradient(145deg, #CCFBF1, #99F6E4)', 'M3 8.5h18v7H3zM12 8.5v7'),
+      p('Vitamin D3 60K', '4 capsules', '₹[price]', '#B45309', 'linear-gradient(145deg, #FEF3C7, #FDE68A)', 'M9 3h6v3H9zM7 6h10v13a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2z'),
+      p('ORS sachets', 'Pack of 10', '₹[price]', '#1D4ED8', 'linear-gradient(145deg, #DBEAFE, #BFDBFE)', 'M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z')
+    ];
+    return { tabs, slides, concerns, recent };
+  }
+}
+</script>
+</body>
+</html>
