@@ -527,14 +527,62 @@
       "src/design-system/student-shell/studentNav.ts",
       "src/design-system/overlays/ConfirmDialog.tsx"
     ],
-    "WebVault": [],
-    "WebMyLabTests": [],
+    "WebVault": [
+      "src/features/studentweb/views/t1/WebVaultView.tsx",
+      "src/design-system/student-shell/StudentWebShell.tsx",
+      "src/design-system/student-shell/studentNav.ts",
+      "src/design-system/overlays/ConfirmDialog.tsx",
+      "src/features/studentweb/views/parts.tsx",
+      "src/features/studentweb/views/t1/shared.tsx",
+      "src/features/studentweb/views/t1/t1web.css"
+    ],
+    "WebMyLabTests": [
+      "src/features/studentweb/views/t1/WebMyLabTestsView.tsx",
+      "src/design-system/student-shell/StudentWebShell.tsx",
+      "src/design-system/student-shell/studentNav.ts",
+      "src/design-system/overlays/ConfirmDialog.tsx",
+      "src/features/studentweb/views/parts.tsx",
+      "src/features/studentweb/views/t1/shared.tsx",
+      "src/features/studentweb/views/t1/t1web.css",
+      "src/design-system/public-site/PublicSiteFooter.tsx",
+      "src/design-system/public-site/publicSiteNav.ts",
+      "src/design-system/public-site/NewsletterBand.tsx"
+    ],
     "WebReportInsights": [],
     "WebReportAssistant": [],
-    "WebAyush": [],
+    "WebAyush": [
+      "src/features/studentweb/views/t1/WebAyushView.tsx",
+      "src/features/ayush/AyushAnswer.tsx",
+      "src/features/ayush/useAyushConversation.ts",
+      "src/features/ayush/ayush.css",
+      "src/design-system/student-shell/StudentWebShell.tsx",
+      "src/design-system/student-shell/studentNav.ts",
+      "src/design-system/overlays/ConfirmDialog.tsx",
+      "src/features/studentweb/views/parts.tsx",
+      "src/features/studentweb/views/t1/shared.tsx",
+      "src/features/studentweb/views/t1/t1web.css"
+    ],
     "WebConsultSummary": [],
-    "WebEmergencyCard": [],
-    "WebPass": [],
+    "WebEmergencyCard": [
+      "src/features/studentweb/views/t1/WebEmergencyCardView.tsx",
+      "src/features/emergency/viewmodel/EmergencyCardViewModel.ts",
+      "src/design-system/student-shell/StudentWebShell.tsx",
+      "src/design-system/student-shell/studentNav.ts",
+      "src/design-system/overlays/ConfirmDialog.tsx",
+      "src/features/studentweb/views/parts.tsx",
+      "src/features/studentweb/views/t1/shared.tsx",
+      "src/features/studentweb/views/t1/t1web.css"
+    ],
+    "WebPass": [
+      "src/features/studentweb/views/t1/WebPassView.tsx",
+      "src/features/digital_id/viewmodel/livePass.ts",
+      "src/design-system/student-shell/StudentWebShell.tsx",
+      "src/design-system/student-shell/studentNav.ts",
+      "src/design-system/overlays/ConfirmDialog.tsx",
+      "src/features/studentweb/views/parts.tsx",
+      "src/features/studentweb/views/t1/shared.tsx",
+      "src/features/studentweb/views/t1/t1web.css"
+    ],
     "WebSearchResults": [
       "src/features/studentweb/views/shop/WebShopView.tsx",
       "src/features/studentweb/views/shop/WebSearchResultsView.tsx",
@@ -618,10 +666,40 @@
       "src/design-system/student-shell/studentNav.ts",
       "src/design-system/overlays/ConfirmDialog.tsx"
     ],
-    "WebRequests": [],
-    "WebLegal": [],
-    "WebLeaveCampus": [],
-    "WebDeleteAccount": [],
+    "WebRequests": [
+      "src/features/studentweb/views/t1/WebRequestsView.tsx",
+      "src/features/studentweb/views/t1/WebRequestsRoute.tsx",
+      "src/features/requests/viewmodel/RequestsViewModel.ts",
+      "src/design-system/student-shell/StudentWebShell.tsx",
+      "src/design-system/student-shell/studentNav.ts",
+      "src/design-system/overlays/ConfirmDialog.tsx",
+      "src/features/studentweb/views/parts.tsx",
+      "src/features/studentweb/views/t1/shared.tsx",
+      "src/features/studentweb/views/t1/t1web.css"
+    ],
+    "WebLegal": [
+      "src/features/legal/views/WebLegalView.tsx"
+    ],
+    "WebLeaveCampus": [
+      "src/features/studentweb/views/t1/WebLeaveCampusView.tsx",
+      "src/features/campus/viewmodel/LeaveCampusViewModel.ts",
+      "src/design-system/student-shell/StudentWebShell.tsx",
+      "src/design-system/student-shell/studentNav.ts",
+      "src/design-system/overlays/ConfirmDialog.tsx",
+      "src/features/studentweb/views/parts.tsx",
+      "src/features/studentweb/views/t1/shared.tsx",
+      "src/features/studentweb/views/t1/t1web.css"
+    ],
+    "WebDeleteAccount": [
+      "src/features/studentweb/views/t1/WebDeleteAccountView.tsx",
+      "src/features/account/viewmodel/DeleteAccountViewModel.ts",
+      "src/design-system/student-shell/StudentWebShell.tsx",
+      "src/design-system/student-shell/studentNav.ts",
+      "src/design-system/overlays/ConfirmDialog.tsx",
+      "src/features/studentweb/views/parts.tsx",
+      "src/features/studentweb/views/t1/shared.tsx",
+      "src/features/studentweb/views/t1/t1web.css"
+    ],
     "CampusAdminConsole": [
       "src/design-system/campus-shell/CampusShell.tsx",
       "src/design-system/campus-shell/campusNav.ts",
@@ -1107,7 +1185,12 @@
     ],
     "NavSheets": [],
     "StateScreens": [],
-    "AyushWidget": [],
+    "AyushWidget": [
+      "src/features/ayush/AyushWidget.tsx",
+      "src/features/ayush/AyushAnswer.tsx",
+      "src/features/ayush/useAyushConversation.ts",
+      "src/features/ayush/ayush.css"
+    ],
     "AyushSheet": [],
     "MotionSystem": [],
     "IconSystem": [],
@@ -1176,44 +1259,6 @@
       "src/design-system/public-site/PublicTrustBand.tsx",
       "src/design-system/public-site/PublicAppBand.tsx",
       "src/features/landing/views/landingWebKit.tsx"
-    ],
-    "WebVault": [
-      "src/screens/workspace/WorkspaceScreen.tsx",
-      "src/screens/vault/VaultWorkspaceHub.tsx",
-      "src/screens/workspace/MemberPanels.tsx",
-      "src/design-system/student-shell/StudentWebShell.tsx",
-      "src/design-system/student-shell/studentNav.ts"
-    ],
-    "WebMyLabTests": [
-      "src/screens/workspace/WorkspaceScreen.tsx",
-      "src/screens/workspace/MyPrescriptionsPanel.tsx"
-    ],
-    "WebAyush": [
-      "src/screens/workspace/WorkspaceScreen.tsx",
-      "src/screens/workspace/AgentAyushPanel.tsx"
-    ],
-    "WebEmergencyCard": [
-      "src/screens/workspace/WorkspaceScreen.tsx",
-      "src/features/emergency/views/WebEmergencyCard.tsx"
-    ],
-    "WebPass": [
-      "src/screens/workspace/WorkspaceScreen.tsx",
-      "src/features/digital_id/views/WebPass.tsx"
-    ],
-    "WebRequests": [
-      "src/screens/workspace/WorkspaceScreen.tsx",
-      "src/features/requests/views/RequestsViews.tsx"
-    ],
-    "WebLegal": [
-      "src/features/legal/views/LegalView.tsx"
-    ],
-    "WebLeaveCampus": [
-      "src/screens/workspace/WorkspaceScreen.tsx",
-      "src/features/campus/views/LeaveCampusView.tsx"
-    ],
-    "WebDeleteAccount": [
-      "src/screens/workspace/WorkspaceScreen.tsx",
-      "src/features/account/views/DeleteAccountView.tsx"
     ],
     "ClinicalReview": [
       "src/design-system/clinician-shell/ClinicianShell.tsx",
@@ -1446,19 +1491,35 @@
       "src/screens/workspace/admin/AdminPage.tsx",
       "src/screens/workspace/admin/SuperAdminScreens.tsx"
     ],
-    "AyushWidget": [
-      "src/screens/workspace/AgentAyushPanel.tsx"
-    ],
     "AyushSheet": [
       "src/features/chat/views/AyushChatNativeView.tsx"
     ],
     "WebConsultSummary": [
       "src/features/vault/views/VisitSummaryView.tsx",
-      "src/features/vault/viewmodel/VisitSummaryViewModel.ts"
+      "src/features/vault/viewmodel/VisitSummaryViewModel.ts",
+      "src/features/studentweb/views/t1/WebConsultSummaryView.tsx",
+      "src/design-system/student-shell/StudentWebShell.tsx",
+      "src/design-system/student-shell/studentNav.ts",
+      "src/design-system/overlays/ConfirmDialog.tsx",
+      "src/features/studentweb/views/parts.tsx",
+      "src/features/studentweb/views/t1/shared.tsx",
+      "src/features/studentweb/views/t1/t1web.css"
     ],
     "ClinicianLabOrder": [
       "src/screens/clinician/DoctorLabOrderDispatchScreen.tsx",
       "src/features/clinician/viewmodel/DoctorLabOrderViewModel.ts"
+    ],
+    "WebReportInsights": [
+      "src/features/studentweb/views/t1/WebReportInsightsView.tsx",
+      "src/design-system/student-shell/StudentWebShell.tsx",
+      "src/design-system/student-shell/studentNav.ts",
+      "src/design-system/overlays/ConfirmDialog.tsx",
+      "src/features/studentweb/views/parts.tsx",
+      "src/features/studentweb/views/t1/shared.tsx",
+      "src/features/studentweb/views/t1/t1web.css",
+      "src/design-system/public-site/PublicSiteFooter.tsx",
+      "src/design-system/public-site/publicSiteNav.ts",
+      "src/design-system/public-site/NewsletterBand.tsx"
     ]
   }
 }

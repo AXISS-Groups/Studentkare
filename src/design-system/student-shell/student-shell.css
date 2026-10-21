@@ -174,6 +174,12 @@
   padding: var(--sk-space-32) var(--sk-space-gutter-web) var(--sk-space-40);
 }
 
+/* ---- boards without a sidebar (WebAyush): top nav only on wide screens ---- */
+@media (min-width: 1025px) {
+  .sk-sshell.is-bare .sk-sshell__frame { display: block; }
+  .sk-sshell.is-bare .sk-sshell__sidebar { display: none; }
+}
+
 /* ---- tablet and phone: the sidebar becomes a drawer ---- */
 @media (max-width: 1024px) {
   .sk-sshell__top { gap: var(--sk-space-12); padding: 0 var(--sk-space-gutter-phone); }

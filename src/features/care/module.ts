@@ -26,8 +26,8 @@ export const careModule: FeatureModule = {
     },
     // Both of these rendered LiveMarketplaceScreen: following "Privacy" or
     // "Terms" on a product holding health records served the shop instead.
-    { path: '/privacy', public: true, load: () => import('@/features/legal/views/LegalView').then((m) => ({ default: m.LegalView })) },
-    { path: '/terms', public: true, load: () => import('@/features/legal/views/LegalView').then((m) => ({ default: m.LegalView })) },
+    { path: '/privacy', public: true, load: () => import('@/features/legal/views/WebLegalView').then((m) => ({ default: m.WebLegalView })) },
+    { path: '/terms', public: true, load: () => import('@/features/legal/views/WebLegalView').then((m) => ({ default: m.WebLegalView })) },
   ],
 };
 

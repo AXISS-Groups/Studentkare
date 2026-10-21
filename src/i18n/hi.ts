@@ -17,6 +17,7 @@ import { partnerHi } from './areas/partner';
 import { deviceHi } from './areas/device';
 import { studentshellHi } from './areas/studentshell';
 import { studentwebHi } from './areas/studentweb';
+import { studentwebT1Hi } from './areas/studentwebT1';
 import { payHi } from './areas/pay';
 import { labbookHi } from './areas/labbook';
 import { rewardsHi } from './areas/rewards';
@@ -841,6 +842,7 @@ export const hi: Catalog = {
   ...deviceHi,
   ...studentshellHi,
   ...studentwebHi,
+  ...studentwebT1Hi,
   ...payHi,
   ...labbookHi,
   ...rewardsHi,

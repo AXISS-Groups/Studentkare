@@ -27,6 +27,9 @@ const workspacePaths: { path: string; access?: (role: AccountRole | null) => boo
   // Signed-in student web (canvas 3b): the home and Buy again. Partners keep /reorder.
   { path: '/home', access: hasRole('STUDENT') },
   { path: '/buy-again', access: hasRole('STUDENT') },
+  // My lab tests and Report insights (canvas 3b, WP-09).
+  { path: '/my-lab-tests', access: hasRole('STUDENT') },
+  { path: '/report-insights', access: hasRole('STUDENT') },
   { path: '/care-navigator' },
   { path: '/preventive-care' },
   { path: '/report-reviews', access: hasRole('NMC_DOCTOR') },
