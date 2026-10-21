@@ -26,7 +26,15 @@ from sqlalchemy import func, select, update
 from sqlalchemy.orm import Session
 
 from core import workflow_models as M
-from services import activity_telemetry, agent_ayush, clinical_profile, ops_feed, payments, upload_files, vector_store
+from services import (
+    activity_telemetry,
+    agent_ayush,
+    clinical_profile,
+    ops_feed,
+    payments,
+    upload_files,
+    vector_store,
+)
 from services import clinical_fulfilment as F
 from services.workflow_auth import (
     authenticated_user,

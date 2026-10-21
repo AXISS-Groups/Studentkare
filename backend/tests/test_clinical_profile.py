@@ -4,7 +4,12 @@ import time
 
 import pytest
 from cryptography.fernet import Fernet
-from test_workflow_api import SIGNUP_CONSENT, harness, login, register  # noqa: F401 — pytest fixtures
+from test_workflow_api import (  # noqa: F401 — pytest fixtures
+    SIGNUP_CONSENT,
+    harness,
+    login,
+    register,
+)
 
 from core import rule_l
 from core import workflow_models as M
