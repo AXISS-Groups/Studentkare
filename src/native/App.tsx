@@ -63,6 +63,7 @@ import {
   ProductScreen,
   ProfileScreen,
   ReportUploadScreen,
+  StepsScreen,
   TrendsScreen,
   VaccinesScreen,
 } from './M2HealthScreens';
@@ -124,6 +125,7 @@ export type RootStackParamList = {
   Rewards: undefined;
   Search: undefined;
   SignIn: undefined;
+  Steps: undefined;
   Teleconsult: undefined;
   Trends: undefined;
   TwoFactorSetup: undefined;
@@ -434,6 +436,7 @@ function RootNavigator() {
           <Stack.Screen name="Insights" component={InsightsScreen} options={{ title: t('m2.nav.health'), headerShown: false }} />
           <Stack.Screen name="Profile" component={ProfileScreen} options={{ title: t('m2.nav.profile'), headerShown: false }} />
           <Stack.Screen name="Trends" component={TrendsScreen} options={{ title: t('m2v.tr.title'), headerShown: false }} />
+          <Stack.Screen name="Steps" component={StepsScreen} options={{ title: t('steps.title'), headerShown: false }} />
           <Stack.Screen name="ReportUpload" component={ReportUploadScreen} options={{ title: t('m2v.up.title'), headerShown: false }} />
           <Stack.Screen name="Vault" component={VaultRoute} options={{ title: t('nav.records') }} />
           <Stack.Screen name="CaptureRecord" component={CaptureRecordRoute} options={{ title: t('capture.title') }} />
