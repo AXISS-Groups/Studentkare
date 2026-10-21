@@ -44,6 +44,7 @@ import { EmergencyHelplinesDialog } from '../../components/interface/InterfaceBa
 import { NotificationCenterModal } from '../../components/health/NotificationCenterModal';
 
 const M2TrendsRoute = lazy(() => import('@/features/labResults/views/M2TrendsRoute').then(module => ({ default: module.M2TrendsRoute })));
+const M2ReportUploadRoute = lazy(() => import('@/features/labResults/views/M2ReportUploadRoute').then(module => ({ default: module.M2ReportUploadRoute })));
 const M2LabsRoute = lazy(() => import('@/features/m2store/views/M2LabsRoute').then(module => ({ default: module.M2LabsRoute })));
 const WebEmergencyCard = lazy(() => import('@/features/emergency/views/WebEmergencyCard').then(module => ({ default: module.WebEmergencyCard })));
 const WebPass = lazy(() => import('@/features/digital_id/views/WebPass').then(module => ({ default: module.WebPass })));
@@ -281,6 +282,7 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
       case 'your-care': return <YourCareWebPage />;
       // Mobile 2.0 My health (Tier 1): the same boards in the page column above phone width.
       case 'health/trends': return <M2TrendsRoute />;
+      case 'health/report-upload': return <M2ReportUploadRoute />;
       case 'account': return <AccountDetailsPage />;
       case 'data-export': return <DataExportPage />;
       case 'billing': return <MemberProfilePanel initialTab="plan" />;
