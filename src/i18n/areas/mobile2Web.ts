@@ -1,6 +1,6 @@
 /**
- * The web shop in the Mobile 2.0 language (tablet and desktop widths of /shop
- * and /checkout). Most copy is shared with the phone boards (m2.*, phone.*,
+ * The web shop and doctor consults in the Mobile 2.0 language (tablet and
+ * desktop widths of /shop, /checkout and /care). Most copy is shared with the phone boards (m2.*, phone.*,
  * sw.*, shopweb.*); these are the few lines only the wide layout needs.
  * English is the source; Telugu and Hindi are unreviewed first drafts.
  */
@@ -25,6 +25,25 @@ export const mobile2WebEn = {
   'm2w.checkout.date': 'Date',
   'm2w.checkout.time': 'Time',
   'm2w.catalogue': 'Catalogue',
+  // Doctor consults (/care) above phone width.
+  'm2wc.railLabel': 'Care services',
+  'm2wc.features': 'What a consult includes',
+  'm2wc.summary.title': 'Your consult',
+  'm2wc.summary.pick': 'Pick a doctor to see the price and the next free time here.',
+  'm2wc.summary.price': 'Price',
+  'm2wc.summary.next': 'Next free time',
+  'm2wc.summary.prep': 'Before your consult',
+  'm2wc.book': 'Book a slot',
+  'm2wc.bookSpoken': 'Book a slot with {name}, {service}',
+  'm2wc.signInBook': 'Sign in to book',
+  'm2wc.signInTimes': 'Sign in to see free times',
+  'm2wc.payAhead': 'Pay ahead at checkout',
+  'm2wc.payAheadNote': 'Or pay now: add it to your cart, pick a time at checkout, and the provider confirms it.',
+  'm2wc.inCart': 'In your cart',
+  'm2wc.details': 'Details',
+  'm2wc.detailsSpoken': 'Show {name}, {service} in the summary',
+  'm2wc.doctorsList': 'Doctors you can book',
+  'm2wc.emptyBody': 'Doctors show here as soon as they open bookings.',
 } as const;
 
 export const mobile2WebTe: Record<keyof typeof mobile2WebEn, string> = {
@@ -48,6 +67,24 @@ export const mobile2WebTe: Record<keyof typeof mobile2WebEn, string> = {
   'm2w.checkout.date': 'తేదీ',
   'm2w.checkout.time': 'సమయం',
   'm2w.catalogue': 'కేటలాగ్',
+  'm2wc.railLabel': 'కేర్ సేవలు',
+  'm2wc.features': 'కన్సల్ట్‌లో ఏమి ఉంటాయి',
+  'm2wc.summary.title': 'మీ కన్సల్ట్',
+  'm2wc.summary.pick': 'ధర, తదుపరి ఖాళీ సమయం ఇక్కడ చూడటానికి ఒక డాక్టర్‌ను ఎంచుకోండి.',
+  'm2wc.summary.price': 'ధర',
+  'm2wc.summary.next': 'తదుపరి ఖాళీ సమయం',
+  'm2wc.summary.prep': 'కన్సల్ట్‌కు ముందు',
+  'm2wc.book': 'స్లాట్ బుక్ చేయండి',
+  'm2wc.bookSpoken': '{name}, {service} తో స్లాట్ బుక్ చేయండి',
+  'm2wc.signInBook': 'బుక్ చేయడానికి సైన్ ఇన్ చేయండి',
+  'm2wc.signInTimes': 'ఖాళీ సమయాలు చూడటానికి సైన్ ఇన్ చేయండి',
+  'm2wc.payAhead': 'చెక్అవుట్‌లో ముందే చెల్లించండి',
+  'm2wc.payAheadNote': 'లేదా ఇప్పుడే చెల్లించండి: కార్ట్‌లో వేసి, చెక్అవుట్‌లో సమయం ఎంచుకోండి; ప్రొవైడర్ దాన్ని ఖరారు చేస్తారు.',
+  'm2wc.inCart': 'మీ కార్ట్‌లో ఉంది',
+  'm2wc.details': 'వివరాలు',
+  'm2wc.detailsSpoken': '{name}, {service} ను సారాంశంలో చూపండి',
+  'm2wc.doctorsList': 'మీరు బుక్ చేయగల డాక్టర్లు',
+  'm2wc.emptyBody': 'డాక్టర్లు బుకింగ్‌లు తెరిచిన వెంటనే ఇక్కడ కనిపిస్తారు.',
 };
 
 export const mobile2WebHi: Record<keyof typeof mobile2WebEn, string> = {
@@ -71,4 +108,22 @@ export const mobile2WebHi: Record<keyof typeof mobile2WebEn, string> = {
   'm2w.checkout.date': 'तारीख',
   'm2w.checkout.time': 'समय',
   'm2w.catalogue': 'कैटलॉग',
+  'm2wc.railLabel': 'केयर सेवाएँ',
+  'm2wc.features': 'कंसल्ट में क्या मिलता है',
+  'm2wc.summary.title': 'आपका कंसल्ट',
+  'm2wc.summary.pick': 'कीमत और अगला खाली समय यहाँ देखने के लिए एक डॉक्टर चुनें।',
+  'm2wc.summary.price': 'कीमत',
+  'm2wc.summary.next': 'अगला खाली समय',
+  'm2wc.summary.prep': 'कंसल्ट से पहले',
+  'm2wc.book': 'स्लॉट बुक करें',
+  'm2wc.bookSpoken': '{name}, {service} के साथ स्लॉट बुक करें',
+  'm2wc.signInBook': 'बुक करने के लिए साइन इन करें',
+  'm2wc.signInTimes': 'खाली समय देखने के लिए साइन इन करें',
+  'm2wc.payAhead': 'चेकआउट पर पहले भुगतान करें',
+  'm2wc.payAheadNote': 'या अभी भुगतान करें: कार्ट में डालें, चेकआउट पर समय चुनें, और प्रोवाइडर उसे पक्का करेंगे।',
+  'm2wc.inCart': 'आपके कार्ट में',
+  'm2wc.details': 'विवरण',
+  'm2wc.detailsSpoken': '{name}, {service} को सारांश में दिखाएँ',
+  'm2wc.doctorsList': 'जिन डॉक्टरों को आप बुक कर सकते हैं',
+  'm2wc.emptyBody': 'डॉक्टर बुकिंग खोलते ही यहाँ दिखेंगे।',
 };
