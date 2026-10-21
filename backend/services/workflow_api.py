@@ -333,7 +333,7 @@ def export_records(user=Depends(authenticated_user), db: Session = Depends(workf
     readings = db.scalars(select(M.Reading).where(M.Reading.account_id == user["id"]).order_by(M.Reading.recorded_at)).all()
     policies = db.scalars(select(M.Policy).where(M.Policy.account_id == user["id"])).all()
     return {
-        # The account's identity plus its own blood group and allergies (clinical plane).
+        # The account's identity plus its own blood group and allergies (services/clinical_profile.py).
         "user": {**dict(user.items()), **clinical_profile.read(db, user["id"])},
         "documents": [{"id": d.id, "title": d.title, "category": d.category, "filename": d.filename,
                        "mimeType": d.mime_type, "createdAt": d.created_at, "downloadUrl": f"/api/health/documents/{d.id}/file"} for d in docs],
