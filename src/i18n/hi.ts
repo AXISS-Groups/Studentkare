@@ -12,6 +12,7 @@ import { adminBoardHi } from './areas/adminBoard';
 import { campusHi } from './areas/campus';
 import { campusConsoleHi } from './areas/campusConsole';
 import { campusBoardsHi } from './areas/campusBoards';
+import { campusSafetyHi } from './areas/campusSafety';
 import { partnerHi } from './areas/partner';
 import { deviceHi } from './areas/device';
 import { studentshellHi } from './areas/studentshell';
@@ -835,6 +836,7 @@ export const hi: Catalog = {
   ...campusHi,
   ...campusConsoleHi,
   ...campusBoardsHi,
+  ...campusSafetyHi,
   ...partnerHi,
   ...deviceHi,
   ...studentshellHi,

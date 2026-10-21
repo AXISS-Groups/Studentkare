@@ -11,6 +11,7 @@ import { adminBoardEn } from './areas/adminBoard';
 import { campusEn } from './areas/campus';
 import { campusConsoleEn } from './areas/campusConsole';
 import { campusBoardsEn } from './areas/campusBoards';
+import { campusSafetyEn } from './areas/campusSafety';
 import { partnerEn } from './areas/partner';
 import { deviceEn } from './areas/device';
 import { studentshellEn } from './areas/studentshell';
@@ -834,6 +835,7 @@ export const en = {
   ...campusEn,
   ...campusConsoleEn,
   ...campusBoardsEn,
+  ...campusSafetyEn,
   ...partnerEn,
   ...deviceEn,
   ...studentshellEn,
