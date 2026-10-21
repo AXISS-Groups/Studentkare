@@ -1,63 +1,126 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { DestinationButton } from '@/design-system';
+import type { DataTableRow } from '@/design-system';
+import { useT } from '@/i18n';
+import type { MessageKey, Vars } from '@/i18n';
 import { navigate } from '@/lib/utils/workflowRouting';
 import { ConsoleTableScreen } from '../shared/ConsoleTableScreen';
-import { sampleInDevelopment } from '../shared/consoleTable';
 import type { ConsoleTableConfig, ConsoleTableData, ConsoleTableSource } from '../shared/consoleTable';
 import { muted, pill, strong } from '../shared/cells';
+import { addDays, clock24, isLive, loadBookings, startOfWeek } from '../shared/appointmentsSource';
+import type { Booking, BookingsLoader } from '../shared/appointmentsSource';
 
-/** ClinicianSchedule (design page 5, Tier 3). */
-export const scheduleConfig: ConsoleTableConfig = {
-  title: 'Schedule',
-  subtitle: 'Your week of consults and camp duty',
-  caption: 'Your slots this week: day, time, place, bookings and state',
-  tableTitle: 'This week',
-  hideColumnHeadings: true,
-  columns: [
-    { label: 'Day', width: '106px' },
-    { label: 'Time', width: '146px' },
-    { label: 'Where' },
-    { label: 'Bookings', width: '220px' },
-    { label: 'State', width: '130px', align: 'end' },
-  ],
-  footnote:
-    'Removing a slot never cancels a booking already in it. Students holding one are offered a new time before anything is released.',
-  empty: { title: 'No slots this week.', body: 'Slots you offer appear here with how many are booked.' },
-  unconnected: { title: 'Your schedule isn’t connected yet.', body: 'Your slots will appear here once scheduling is connected. Until then this page shows nothing rather than a guess.' },
-  errorTitle: 'Couldn’t load your schedule',
-  reference: 'Ref SCHEDULE · ClinicianSchedule',
-  statLabels: ['Slots offered this week', 'Booked', 'Camp duty', 'Median gap between shifts'],
-};
+type T = (key: MessageKey, vars?: Vars) => string;
 
-export function scheduleSample(): ConsoleTableData {
+/** ClinicianSchedule (design page 5, Tier 3). Copy from `clinSchedule.*` (en/te/hi). */
+export function scheduleConfig(t: T): ConsoleTableConfig {
   return {
-    subtitle: 'Week of 29 September · VNR VJIET',
-    stats: [
-      { value: '27', label: 'Slots offered this week' },
-      { value: '19', label: 'Booked' },
-      { value: '1', label: 'Camp duty', tone: 'attention' },
-      { value: '4h', label: 'Median gap between shifts' },
+    title: t('clinSchedule.title'),
+    subtitle: t('clinSchedule.subtitle'),
+    caption: t('clinSchedule.caption'),
+    tableTitle: t('clinSchedule.tableTitle'),
+    hideColumnHeadings: true,
+    columns: [
+      { label: t('clinSchedule.colDay'), width: '106px' },
+      { label: t('clinSchedule.colTime'), width: '146px' },
+      { label: t('clinSchedule.colWhere') },
+      { label: t('clinSchedule.colBookings'), width: '220px' },
+      { label: t('clinSchedule.colState'), width: '130px', align: 'end' },
     ],
-    rows: [
-      { id: 's1', cells: [strong('Mon 29'), strong('09:00–13:00'), strong('Campus clinic · Block A'), muted('8 of 12 booked'), pill('Open', 'positive')] },
-      { id: 's2', cells: [strong('Mon 29'), strong('18:00–20:00'), strong('Teleconsult'), muted('5 of 8 booked'), pill('Open', 'positive')] },
-      { id: 's3', cells: [strong('Tue 30'), strong('09:00–13:00'), strong('Campus clinic · Block A'), muted('12 of 12 booked'), pill('Full', 'action')] },
-      { id: 's4', cells: [strong('Wed 01'), strong('09:00–13:00'), strong('Not offered'), muted('—'), pill('Not offered', 'neutral')] },
-      { id: 's5', cells: [strong('Thu 02'), strong('14:00–18:00'), strong('Health camp · VNR VJIET'), muted('Camp duty, not bookable'), pill('Camp duty', 'attention')] },
-      { id: 's6', cells: [strong('Fri 03'), strong('18:00–20:00'), strong('Teleconsult'), muted('2 of 8 booked'), pill('Open', 'positive')] },
-    ],
+    footnote: t('clinSchedule.footnote'),
+    empty: { title: t('clinSchedule.emptyTitle'), body: t('clinSchedule.emptyBody') },
+    emptyIcon: 'stetho-alt--p4',
+    unconnected: { title: t('clinSchedule.unconnectedTitle'), body: t('clinSchedule.unconnectedBody') },
+    errorTitle: t('clinSchedule.errorTitle'),
+    reference: t('clinSchedule.reference'),
+    statLabels: [t('clinSchedule.statOffered'), t('clinSchedule.statBooked'), t('clinSchedule.statCamp'), t('clinSchedule.statGap')],
   };
 }
 
+const SHORT_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const DAYS_IN_WEEK = 7;
+
+/** "Mon 29" */
+function dayLabel(date: Date): string {
+  return `${date.toLocaleDateString('en-IN', { weekday: 'short' })} ${String(date.getDate()).padStart(2, '0')}`;
+}
+
+/** One booked slot this week: every live booking that shares its start and end. */
+interface SlotGroup { start: Date; end: Date | null; bookings: Booking[] }
+
+function groupBySlot(bookings: Booking[]): SlotGroup[] {
+  const groups = new Map<string, SlotGroup>();
+  for (const booking of bookings) {
+    const key = `${booking.start.getTime()}-${booking.end?.getTime() ?? ''}`;
+    const group = groups.get(key) ?? { start: booking.start, end: booking.end, bookings: [] };
+    group.bookings.push(booking);
+    groups.set(key, group);
+  }
+  return [...groups.values()].sort((a, b) => a.start.getTime() - b.start.getTime());
+}
+
+function slotState(group: SlotGroup, t: T): DataTableRow['cells'][number] {
+  const statuses = group.bookings.map((booking) => booking.status);
+  if (statuses.some((status) => status === 'CONFIRMED' || status === 'REQUESTED')) return pill(t('clinSchedule.stateBooked'), 'action');
+  if (statuses.some((status) => status === 'COMPLETED')) return pill(t('clinSchedule.stateDone'), 'positive');
+  return pill(t('clinSchedule.stateNoShow'), 'neutral');
+}
+
+/**
+ * This week's booked slots from the doctor's own bookings
+ * (`GET /work/appointments`). The API returns bookings, not the slots offered,
+ * their capacity, place or camp duty, so those figures stay "—" and empty
+ * slots are not listed. Nothing is filled in.
+ */
+export function mapSchedule(bookings: Booking[], now: Date, t: T): ConsoleTableData {
+  const from = startOfWeek(now);
+  const to = addDays(from, DAYS_IN_WEEK);
+  const week = bookings.filter((booking) => isLive(booking) && booking.start >= from && booking.start < to);
+  const rows: DataTableRow[] = groupBySlot(week).map((group) => {
+    const requested = group.bookings.filter((booking) => booking.status === 'REQUESTED').length;
+    const booked = group.bookings.filter((booking) => booking.status !== 'NO_SHOW').length;
+    const line = requested > 0 ? t('clinSchedule.bookedRequested', { booked, requested }) : t('clinSchedule.booked', { booked });
+    return {
+      id: `${group.start.getTime()}`,
+      cells: [
+        strong(dayLabel(group.start)),
+        strong(group.end ? `${clock24(group.start)}–${clock24(group.end)}` : clock24(group.start)),
+        muted(t('clinSchedule.whereUnreported')),
+        muted(line),
+        slotState(group, t),
+      ],
+    };
+  });
+  const bookedTotal = week.filter((booking) => booking.status !== 'NO_SHOW').length;
+  return {
+    subtitle: t('clinSchedule.weekOf', { date: `${from.getDate()} ${SHORT_MONTHS[from.getMonth()]}` }),
+    stats: [
+      { value: null, label: t('clinSchedule.statOffered') },
+      { value: String(bookedTotal), label: t('clinSchedule.statBooked') },
+      { value: null, label: t('clinSchedule.statCamp') },
+      { value: null, label: t('clinSchedule.statGap') },
+    ],
+    rows,
+  };
+}
+
+export function bookingsScheduleSource(t: T, load: BookingsLoader = loadBookings, now: () => Date = () => new Date()): ConsoleTableSource {
+  return { load: async () => mapSchedule(await load(), now(), t) };
+}
+
 export function ClinicianScheduleScreen({ source }: { source?: ConsoleTableSource }): React.ReactElement {
+  const t = useT();
+  const config = useMemo(() => scheduleConfig(t), [t]);
+  const [fallback] = React.useState(() => bookingsScheduleSource(t));
   return (
     <ConsoleTableScreen
       navId="schedule"
-      config={scheduleConfig}
-      source={source ?? sampleInDevelopment(scheduleSample)}
+      config={config}
+      source={source ?? fallback}
       headerAction={
+        // No endpoint lets a doctor publish their own slots from here yet.
         <DestinationButton route={null} onNavigate={navigate} className="sk-btn sk-btn--primary">
-          Add availability
+          {t('clinSchedule.addAvailability')}
         </DestinationButton>
       }
     />

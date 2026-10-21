@@ -1,0 +1,249 @@
+/* Campus / hostel admin console frame (design page 4). The same navy sidebar,
+   white current-page pill and drawer behaviour as the clinician and Super Admin
+   consoles; the canvas adds a white top bar with the scope picker and search.
+   Tokens only — see design-system.css. */
+
+.sk-cshell {
+  display: grid;
+  grid-template-columns: var(--sk-size-web-sidebar) minmax(0, 1fr);
+  min-height: 100vh; min-height: 100dvh;
+  font-family: var(--sk-font-sans);
+  background: var(--sk-color-canvas);
+  color: var(--sk-color-text);
+}
+
+/* ---- sidebar ---- */
+.sk-cshell__sidebar {
+  position: sticky; top: 0;
+  display: flex; flex-direction: column; gap: var(--sk-space-8);
+  height: 100vh; height: 100dvh; box-sizing: border-box;
+  margin: 0; overflow-y: auto; overscroll-behavior: contain;
+  padding: var(--sk-space-16) var(--sk-space-12);
+  background: var(--sk-color-sidebar);
+  color: var(--sk-color-sidebar-ink);
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--sk-color-sidebar-ink-3) 40%, transparent) transparent;
+  animation: skFade 400ms linear both;
+}
+.sk-cshell__brand {
+  display: flex; align-items: center; gap: var(--sk-space-10);
+  padding: 0 var(--sk-space-8) var(--sk-space-4);
+}
+.sk-cshell__wordmark { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.sk-cshell__name {
+  font-size: 14px; font-weight: 800; letter-spacing: -0.4px; line-height: 1.2;
+  color: var(--sk-color-sidebar-ink);
+}
+.sk-cshell__name em { font-family: Georgia, 'Times New Roman', serif; font-style: italic; font-weight: 700; }
+.sk-cshell__role {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.7px; line-height: 1.3;
+  text-transform: uppercase;
+  color: var(--sk-color-sidebar-ink-2);
+}
+.sk-cshell__drawer-close { display: none; }
+
+.sk-cshell__nav { display: flex; flex-direction: column; gap: 1px; }
+.sk-cshell__group { display: flex; flex-direction: column; gap: 1px; }
+.sk-cshell__group-label {
+  padding: var(--sk-space-8) var(--sk-space-12) var(--sk-space-2);
+  font-size: 9.5px; font-weight: 800; letter-spacing: 1.2px; line-height: 1.5;
+  text-transform: uppercase;
+  color: var(--sk-color-sidebar-ink-3);
+}
+.sk-cshell__link {
+  display: flex; align-items: center; gap: var(--sk-space-10);
+  width: 100%; min-height: var(--sk-size-touch-target); padding: 0 11px; box-sizing: border-box;
+  border: 0; border-radius: 9px; background: transparent;
+  font-family: inherit; font-size: 12.5px; font-weight: 600; line-height: 1.3; text-align: left;
+  color: var(--sk-color-sidebar-ink-2); text-decoration: none; cursor: pointer;
+  transition: background-color var(--sk-duration-fast) var(--sk-ease-standard);
+}
+.sk-cshell__link svg { flex-shrink: 0; }
+.sk-cshell__link > span:first-of-type { flex: 1 1 auto; min-width: 0; }
+.sk-cshell__link:hover {
+  background: color-mix(in srgb, var(--sk-color-sidebar-ink) 18%, transparent);
+  color: var(--sk-color-sidebar-ink);
+}
+.sk-cshell__link:focus-visible { outline: 3px solid var(--sk-color-focus); outline-offset: 3px; }
+/* On the navy the white pill is the only selected state (DESIGN.md §3). */
+.sk-cshell__link.is-current,
+.sk-cshell__link.is-current:hover {
+  background: var(--sk-color-sidebar-active);
+  color: var(--sk-color-on-nav-current);
+  font-weight: 700;
+}
+.sk-cshell__badge {
+  margin-left: auto; min-width: 18px; height: 18px; padding: 0 5px; box-sizing: border-box;
+  border-radius: var(--sk-radius-full);
+  background: var(--sk-color-on-hero-veil);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10.5px; font-weight: 800; color: var(--sk-color-sidebar-ink);
+}
+.sk-cshell__badge.is-urgent { background: var(--sk-color-danger-fill); color: var(--sk-color-on-danger-fill); }
+.is-current .sk-cshell__badge:not(.is-urgent) { background: var(--sk-color-surface-3); color: var(--sk-color-on-nav-current); }
+.sk-cshell__spacer { flex: 1; min-height: var(--sk-space-8); }
+.sk-cshell__footer {
+  display: flex; flex-direction: column; gap: 1px;
+  padding-top: var(--sk-space-8);
+  border-top: 1px solid var(--sk-color-on-hero-rule);
+}
+.sk-cshell__link--signout { color: var(--sk-color-nav-danger); }
+.sk-cshell__link--signout:hover { color: var(--sk-color-nav-danger); }
+
+/* The app-wide `.wf-application a { color: inherit }` outranks one-class rules on
+   links, so the console's links state their colour at a higher specificity. */
+.sk-cshell a.sk-cshell__link { color: var(--sk-color-sidebar-ink-2); }
+.sk-cshell a.sk-cshell__link:hover { color: var(--sk-color-sidebar-ink); }
+.sk-cshell a.sk-cshell__link.is-current,
+.sk-cshell a.sk-cshell__link.is-current:hover { color: var(--sk-color-on-nav-current); }
+.sk-cshell a.sk-cshell__icon-btn { color: var(--sk-color-text); }
+.sk-cshell a.sk-btn--primary { color: var(--sk-color-on-action); }
+.sk-cshell a.sk-btn--secondary { color: var(--sk-color-action); }
+
+/* ---- page column: top bar, then the page ---- */
+.sk-cshell__body { min-width: 0; display: flex; flex-direction: column; }
+.sk-cshell__topbar {
+  position: relative; z-index: 20;
+  display: flex; align-items: center; gap: var(--sk-space-16);
+  min-height: 64px; padding: var(--sk-space-10) 30px; box-sizing: border-box;
+  background: var(--sk-color-surface);
+  border-bottom: 1px solid var(--sk-color-rule-soft);
+  animation: skFade 400ms linear both;
+}
+/* Boards drawn without the top bar: nothing above the page on wide screens. */
+.sk-cshell__topbar.is-compact { display: none; }
+
+.sk-cshell__scope { position: relative; flex: none; }
+.sk-cshell__scope-btn {
+  display: flex; align-items: center; gap: var(--sk-space-8);
+  min-height: var(--sk-size-touch-target); padding: 0 var(--sk-space-14); box-sizing: border-box;
+  border: 1px solid var(--sk-color-rule); border-radius: 12px;
+  background: var(--sk-color-canvas);
+  font-family: inherit; font-size: 13px; font-weight: 700; color: var(--sk-color-text);
+  cursor: pointer; white-space: nowrap;
+}
+.sk-cshell__scope-btn > svg { color: var(--sk-color-text-3); }
+.sk-cshell__scope-dot { width: 8px; height: 8px; border-radius: var(--sk-radius-full); background: var(--sk-color-positive-fill); flex: none; }
+.sk-cshell__scope-value { color: var(--sk-color-action); }
+.sk-cshell__scope-pop {
+  position: absolute; top: calc(100% + 6px); left: 0; z-index: 40;
+  width: 300px; padding: var(--sk-space-8); box-sizing: border-box;
+  border-radius: 16px; background: var(--sk-color-surface);
+  border: 1px solid var(--sk-color-rule-soft); box-shadow: var(--sk-shadow-float);
+  animation: skFade 160ms linear both;
+}
+.sk-cshell__scope-option {
+  width: 100%; display: flex; align-items: center; gap: var(--sk-space-10);
+  min-height: var(--sk-size-touch-target); padding: var(--sk-space-10) var(--sk-space-12); box-sizing: border-box;
+  border: 0; border-radius: 11px; background: transparent;
+  font-family: inherit; color: var(--sk-color-text); text-align: left; cursor: pointer;
+}
+.sk-cshell__scope-option:hover, .sk-cshell__scope-option.is-selected { background: var(--sk-color-surface-3); }
+.sk-cshell__scope-option > svg { color: var(--sk-color-action); }
+.sk-cshell__scope-option-text { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.sk-cshell__scope-option-label { font-size: 13.5px; font-weight: 700; }
+.sk-cshell__scope-option-meta { font-size: 11.5px; font-weight: 500; color: var(--sk-color-text-3); }
+.sk-ds .sk-cshell__scope-note {
+  margin: var(--sk-space-6) var(--sk-space-4) var(--sk-space-4);
+  padding: var(--sk-space-8) var(--sk-space-8) 0;
+  border-top: 1px solid var(--sk-color-rule-soft);
+  font-size: 11.5px; line-height: 1.5; font-weight: 500; color: var(--sk-color-text-3);
+}
+
+.sk-cshell__search {
+  flex: 1 1 auto; max-width: 420px; display: flex; align-items: center; gap: var(--sk-space-10);
+  min-height: var(--sk-size-touch-target); padding: 0 var(--sk-space-14); box-sizing: border-box;
+  border-radius: 12px; background: var(--sk-color-surface-3); color: var(--sk-color-text-3);
+}
+.sk-cshell__search input {
+  flex: 1; min-width: 0; border: 0; outline: none; background: transparent;
+  font-family: inherit; font-size: 13.5px; color: var(--sk-color-text);
+}
+.sk-cshell__search input::placeholder { color: var(--sk-color-text-3); }
+.sk-cshell__search input:disabled { cursor: not-allowed; }
+.sk-cshell__grow { flex: 1; }
+.sk-cshell__twofa {
+  display: inline-flex; align-items: center; gap: 7px; flex: none;
+  height: 30px; padding: 0 11px; border-radius: var(--sk-radius-full);
+  background: var(--sk-color-positive-bg); color: var(--sk-color-positive);
+  font-size: 11.5px; font-weight: 800; white-space: nowrap;
+}
+.sk-cshell__icon-btn {
+  position: relative; flex: none;
+  width: var(--sk-size-touch-target); height: var(--sk-size-touch-target); box-sizing: border-box;
+  border: 1px solid var(--sk-color-rule-soft); border-radius: 12px;
+  background: var(--sk-color-surface); color: var(--sk-color-text);
+  display: grid; place-items: center; cursor: pointer;
+  transition: background-color var(--sk-duration-fast) var(--sk-ease-standard);
+}
+.sk-cshell__icon-btn:hover { background: var(--sk-color-surface-2); }
+.sk-cshell__icon-btn:focus-visible,
+.sk-cshell__scope-btn:focus-visible,
+.sk-cshell__scope-option:focus-visible,
+.sk-cshell__drawer-close:focus-visible { outline: 3px solid var(--sk-color-focus); outline-offset: 3px; }
+.sk-cshell__unread {
+  position: absolute; top: 8px; right: 9px; width: 8px; height: 8px;
+  border-radius: var(--sk-radius-full); background: var(--sk-color-danger-fill);
+  border: 2px solid var(--sk-color-surface);
+}
+.sk-cshell__menu-btn { display: none; }
+.sk-cshell__who { display: flex; align-items: center; gap: var(--sk-space-10); flex: none; }
+.sk-cshell__who-text { display: flex; flex-direction: column; gap: 1px; }
+.sk-cshell__who-name { font-size: 13px; font-weight: 800; color: var(--sk-color-text); }
+.sk-cshell__who-role { font-size: 11px; font-weight: 600; color: var(--sk-color-text-3); }
+
+.sk-cshell__main {
+  flex: 1; min-width: 0; box-sizing: border-box;
+  display: flex; flex-direction: column; gap: var(--sk-space-20);
+  padding: 26px 30px;
+}
+.sk-cshell__main > .care-page-enter { animation: sk-cshell-page-in var(--sk-duration-base) var(--sk-ease-standard) both; }
+@keyframes sk-cshell-page-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* ---- tablet and phone: the sidebar becomes a drawer (same breakpoint as the other consoles) ---- */
+@media (max-width: 1024px) {
+  .sk-cshell { grid-template-columns: minmax(0, 1fr); }
+  .sk-cshell__sidebar {
+    position: fixed; inset: 0 auto 0 0; z-index: 50;
+    width: min(300px, 86vw); height: auto;
+    transform: translateX(-100%); visibility: hidden;
+    transition: transform var(--sk-duration-sheet) var(--sk-ease-sheet), visibility 0s linear var(--sk-duration-sheet);
+    box-shadow: var(--sk-shadow-sheet);
+  }
+  .is-drawer-open .sk-cshell__sidebar {
+    transform: none; visibility: visible;
+    transition: transform var(--sk-duration-sheet) var(--sk-ease-sheet);
+  }
+  .sk-cshell__scrim { position: fixed; inset: 0; z-index: 40; background: var(--sk-color-scrim); }
+  .sk-cshell__drawer-close {
+    display: grid; place-items: center; margin-left: auto; flex: none;
+    width: var(--sk-size-touch-target); height: var(--sk-size-touch-target);
+    border: 0; border-radius: var(--sk-radius-md); background: transparent;
+    color: var(--sk-color-sidebar-ink); cursor: pointer;
+  }
+  .sk-cshell__menu-btn { display: grid; }
+  /* Without the top bar the menu button still needs a home. */
+  .sk-cshell__topbar.is-compact { display: flex; }
+  .sk-cshell__topbar { gap: var(--sk-space-10); padding: var(--sk-space-10) var(--sk-space-gutter-phone); }
+  .sk-cshell__main { padding: var(--sk-space-20) var(--sk-space-gutter-phone); }
+}
+@media (max-width: 860px) {
+  .sk-cshell__search, .sk-cshell__who-text { display: none; }
+}
+@media (max-width: 560px) {
+  .sk-cshell__twofa, .sk-cshell__scope-campus, .sk-cshell__scope-sep { display: none; }
+  .sk-cshell__scope-pop { width: min(300px, calc(100vw - 32px)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sk-cshell__main > .care-page-enter,
+  .sk-cshell__sidebar,
+  .sk-cshell__topbar,
+  .sk-cshell__scope-pop { animation: none; }
+  .sk-cshell__link,
+  .sk-cshell__sidebar,
+  .sk-cshell__icon-btn { transition: none; }
+}

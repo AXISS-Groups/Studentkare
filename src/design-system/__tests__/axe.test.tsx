@@ -7,7 +7,7 @@ vi.mock('../motion', async (importOriginal) => ({ ...(await importOriginal<typeo
 
 import {
   Button, Card, Checkbox, Chip, CodeInput, CrisisLinks, EmptyState, ErrorState, Eyebrow, ListRow, Note, PhoneInput,
-  RadioGroup, ResultMomentView, Select, Skeleton, SourceBadge, SwitchRow, Table, TextField, Toast, VerifiedBadge,
+  RadioGroup, ResultMomentCard, StateScreen, Select, Skeleton, SourceBadge, SwitchRow, Table, TextField, Toast, VerifiedBadge,
 } from '..';
 
 const noop = () => undefined;
@@ -27,7 +27,8 @@ const cases: [string, React.ReactElement][] = [
   ['Toast', <Toast message="Saved" tone="success" />],
   ['States', <><Skeleton label="Loading" lines={['80%']} /><EmptyState title="Nothing yet" body="Add one." /><ErrorState title="Couldn't load" body="Try again." retryLabel="Retry" onRetry={noop} /></>],
   ['Table', <Table caption="Orders" columns={[{ key: 'n', header: 'Name', render: (r: { id: string }) => r.id }]} rows={[{ id: 'a' }]} rowKey={(r) => r.id} empty={{ title: 'None', body: 'None yet.' }} />],
-  ['ResultMoment + badges', <><ResultMomentView moment={{ kind: 'pending' }} title="Waiting" body="The provider confirms." /><SourceBadge source="device" /><VerifiedBadge serverStatus="VERIFIED" /></>],
+  ['StateScreen', <StateScreen kind="offline" chip="Offline" title="No connection" body="Saved records still work." primary={{ label: 'Retry now', onPress: () => undefined }} secondary={{ label: 'Back', onPress: () => undefined }} />],
+  ['ResultMoment + badges', <><ResultMomentCard moment={{ kind: 'pending' }} title="Waiting" sub="The provider confirms." primary={{ label: 'Back to orders', onPress: () => undefined }} secondary={{ label: 'Check status', onPress: () => undefined }} /><SourceBadge source="device" /><VerifiedBadge serverStatus="VERIFIED" /></>],
   ['CrisisLinks', <CrisisLinks />],
 ];
 

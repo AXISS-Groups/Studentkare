@@ -182,11 +182,31 @@ declare("rewards.referral_claim_attempt_window_minutes", INT, 60, area="rewards"
 declare("rewards.ledger_entries_shown", INT, 50, area="rewards", unit="entries", minimum=1, maximum=500,
         description="Most recent points-ledger entries returned to a student by GET /api/points/me.")
 
+# --- shop (phone boards: search, product list, orders) -----------------------
+declare("shop.search_debounce_ms", INT, 250, area="shop", unit="milliseconds", minimum=0, maximum=2000, public=True,
+        description="How long the phone search waits after the last keystroke before asking the catalogue for suggestions.")
+declare("shop.search_suggestions_max", INT, 6, area="shop", unit="suggestions", minimum=1, maximum=20, public=True,
+        description="Most catalogue suggestions the phone search shows while the student types.")
+declare("shop.search_results_max", INT, 50, area="shop", unit="listings", minimum=1, maximum=100, public=True,
+        description="Most catalogue listings one phone search asks for (GET /api/catalog caps a page at 100).")
+declare("shop.recent_searches_max", INT, 6, area="shop", unit="searches", minimum=0, maximum=20, public=True,
+        description="Most recent searches the phone search entry lists. Kept in memory for the open session only.")
+declare("shop.product_list_page_size", INT, 24, area="shop", unit="listings", minimum=1, maximum=100, public=True,
+        description="Listings per page on the phone product list (GET /api/catalog caps a page at 100).")
+declare("shop.home_featured_count", INT, 6, area="shop", unit="listings", minimum=1, maximum=20, public=True,
+        description="Products in the phone shop home's first shelf.")
+declare("shop.orders_page_size", INT, 20, area="shop", unit="orders", minimum=1, maximum=100, public=True,
+        description="Orders per page on the phone order history (GET /api/orders caps a page at 100).")
+
 # --- medicines -------------------------------------------------------------
 declare("meds.dose_undo_minutes", INT, 30, area="meds", unit="minutes", minimum=0, maximum=240, public=True,
         description="How long after marking a dose taken or skipped the student can undo it.")
 declare("meds.times_per_day_max", INT, 6, area="meds", unit="doses per day", minimum=1, maximum=24, public=True,
         description="Most reminder times one medication plan may have in a day.")
+
+# --- student web (signed in) ----------------------------------------------
+declare("studentweb.report_ready_days", INT, 14, area="studentweb", unit="days", minimum=1, maximum=90, public=True,
+        description="How long a released lab report stays under Needs you on the student's Your Care page.")
 
 # --- wellness --------------------------------------------------------------
 declare("wellness.water_goal_ml_default", INT, 2000, area="wellness", unit="ml", minimum=100, maximum=10000,
@@ -267,6 +287,47 @@ declare("appearance.boot_wait_ms", INT, 1500, area="appearance", unit="ms", mini
 declare("pharmacy.quote_expiry_hours", INT, 0, area="pharmacy", unit="hours", minimum=0,
         maximum=720, public=True,
         description="Hours a pharmacy's price quote stays payable. 0 means quotes do not expire.")
+
+# --- public site -----------------------------------------------------------
+# Links in the public site footer (design board Landing). Empty means "not
+# published": the footer then shows no badge or icon for it, so a visitor is
+# never sent to a store listing or a social account that does not exist. The
+# client shows only https:// values.
+for _key, _what in (
+    ("app_store_url", "Apple App Store listing"),
+    ("play_store_url", "Google Play listing"),
+    ("instagram_url", "Instagram account"),
+    ("linkedin_url", "LinkedIn page"),
+    ("x_url", "X account"),
+    ("youtube_url", "YouTube channel"),
+):
+    declare(f"public_site.{_key}", STR, "", area="public_site", unit="https URL", public=True,
+            description=f"The {_what} linked from the public site footer. Empty hides the link.")
+
+
+# --- billing ---------------------------------------------------------------
+# Plan prices, set by the founder on 2026-10-20. Whole rupees. The server's plan
+# catalogue (GET /api/billing/plans) and the online checkout read these; the
+# client's defaults are generated from them. The amount Razorpay actually charges
+# is fixed on the Razorpay plan (RAZORPAY_PLUS_PLAN_ID): checkout refuses to start
+# when that plan's amount differs from billing.student_plus.monthly_inr.
+declare("billing.student_plus.monthly_inr", INT, 149, area="billing", unit="₹ per month", minimum=1,
+        maximum=100000, public=True, description="Price of the Student Plus membership, per month.")
+declare("billing.student_plus.quarter_package_inr", INT, 2199, area="billing", unit="₹ per 3 months", minimum=1,
+        maximum=1000000, public=True, description="Price of the Student Plus 3-month package, paid once.")
+declare("billing.premium.from_monthly_inr", INT, 499, area="billing", unit="₹ per month (starting price)",
+        minimum=1, maximum=100000, public=True,
+        description="Starting price of Premium, per month. Always shown as \"from\" this amount.")
+declare("billing.campus.per_student_yearly_inr", INT, 240, area="billing", unit="₹ per student per year",
+        minimum=0, maximum=1000000, description="Listed price of the institution-paid Campus plan.")
+declare("billing.student_plus.benefit_requests_per_month", INT, 2, area="billing", unit="requests per period",
+        minimum=0, maximum=100, description="Care coordination requests a Student Plus member may make each paid period.")
+# Not public. Members who subscribed before a price rise keep paying the old
+# amount on their existing Razorpay plan; their paid invoices must still count.
+# Raise this to the monthly price once every legacy subscription has moved.
+declare("billing.student_plus.min_entitling_receipt_inr", INT, 99, area="billing", unit="₹", minimum=1,
+        maximum=100000,
+        description="Smallest paid, unrefunded Student Plus invoice that grants membership (keeps earlier subscribers).")
 
 
 def get_declaration(key: str) -> Setting:

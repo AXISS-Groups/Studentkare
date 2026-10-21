@@ -1,12 +1,16 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 import type { ClinicianTodaySource } from './todaySource';
 import type { Availability, TodayData } from './todayModel';
-import { countdown, countdownLabel, daySummary } from './todayModel';
+import { countdown, countdownSpoken, isQuietDay } from './todayModel';
+import type { MessageKey, Vars } from '@/i18n';
+
+/** A message for the toast, translated by the view; `ok` draws the done tick. */
+export interface TodayToast { key: MessageKey; vars?: Vars; ok: boolean }
 
 /**
  * - `loading`: first load or a retry in flight
  * - `ready`: a day to show
- * - `empty`: connected, but nothing booked and no next consult
+ * - `empty`: connected, nothing booked today and nothing reported waiting
  * - `unconnected`: the source has no schedule behind it (production today)
  * - `error`: the load failed
  */
@@ -16,7 +20,7 @@ export class ClinicianTodayViewModel {
   status: TodayStatus = 'loading';
   data: TodayData | null = null;
   now: Date;
-  toast: string | null = null;
+  toast: TodayToast | null = null;
   availabilityBusy = false;
   private clock: ReturnType<typeof setInterval> | null = null;
 
@@ -36,7 +40,7 @@ export class ClinicianTodayViewModel {
         this.data = data;
         this.now = this.nowFn();
         if (data === null) this.status = 'unconnected';
-        else if (data.slots.length === 0 && data.next === null) this.status = 'empty';
+        else if (isQuietDay(data)) this.status = 'empty';
         else this.status = 'ready';
       });
     } catch {
@@ -63,10 +67,6 @@ export class ClinicianTodayViewModel {
     this.now = this.nowFn();
   }
 
-  get summary(): string {
-    return this.data ? daySummary(this.data) : '';
-  }
-
   get msToNext(): number | null {
     const next = this.data?.next;
     return next ? next.startsAt.getTime() - this.now.getTime() : null;
@@ -76,12 +76,12 @@ export class ClinicianTodayViewModel {
     return this.msToNext === null ? '' : countdown(this.msToNext);
   }
 
-  get countdownSpoken(): string {
-    return this.msToNext === null ? '' : countdownLabel(this.msToNext);
+  get countdownSpoken(): { key: MessageKey; vars?: Vars } | null {
+    return this.msToNext === null ? null : countdownSpoken(this.msToNext);
   }
 
   get canChangeAvailability(): boolean {
-    return this.status === 'ready' && typeof this.source.setAvailability === 'function';
+    return this.status === 'ready' && this.data?.availability != null && typeof this.source.setAvailability === 'function';
   }
 
   /**
@@ -91,18 +91,18 @@ export class ClinicianTodayViewModel {
   async toggleAvailability(): Promise<void> {
     const data = this.data;
     const set = this.source.setAvailability;
-    if (!data || !set || this.availabilityBusy) return;
+    if (!data || data.availability === null || !set || this.availabilityBusy) return;
     const next: Availability = data.availability === 'taking' ? 'paused' : 'taking';
     this.availabilityBusy = true;
     try {
       await set(next);
       runInAction(() => {
         if (this.data) this.data = { ...this.data, availability: next };
-        this.toast = next === 'paused' ? 'Paused — no new bookings' : 'Back online — taking consults';
+        this.toast = { key: next === 'paused' ? 'clinToday.toast.paused' : 'clinToday.toast.taking', ok: true };
       });
     } catch {
       runInAction(() => {
-        this.toast = 'Couldn’t change your availability. Nothing changed — try again.';
+        this.toast = { key: 'clinToday.toast.failed', ok: false };
       });
     } finally {
       runInAction(() => {

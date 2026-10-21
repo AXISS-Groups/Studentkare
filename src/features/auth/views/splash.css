@@ -1,139 +1,290 @@
-/* Splash — design page 1, Main ("Splash option A")
+/* Splash — design page 1, Main (by the time of day), SplashPulse, SplashVault.
  *
- * Colour, type, spacing, radius and size come from --sk-* only. No hex values.
- * The three time-of-day variants only shift the wash behind the halo; the
- * layout and every foreground colour stay put, so contrast holds in all three.
+ * Colour, type, spacing, radius and size come from --sk-* only. No hex values;
+ * tints are color-mix() of a token. The three parts of the day change the wash,
+ * the blobs and the art; every foreground colour stays put, so contrast holds
+ * in all three and in dark mode.
  */
 
 .sk-splash {
+  --sk-splash-wash-top: var(--sk-color-attention-bg);
+  --sk-splash-wash-mid: var(--sk-color-danger-bg);
+  --sk-splash-blob-1: var(--sk-color-illustration-peach);
+  --sk-splash-blob-2: var(--sk-color-illustration-indigo);
+  --sk-splash-blob-3: var(--sk-color-illustration-rose);
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: var(--sk-space-16);
   box-sizing: border-box;
-  min-height: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
   width: 100%;
   max-width: var(--sk-size-phone-width);
   margin-inline: auto;
-  padding: var(--sk-space-32) var(--sk-space-gutter-phone) var(--sk-space-32);
+  padding: var(--sk-space-40) var(--sk-space-gutter-phone) var(--sk-space-24);
   font-family: var(--sk-font-sans);
   color: var(--sk-color-text);
-  background: var(--sk-color-canvas);
   text-align: center;
+  background: linear-gradient(180deg, var(--sk-splash-wash-top) 0%, var(--sk-splash-wash-mid) 45%, var(--sk-color-canvas) 100%);
 }
+
+.sk-splash--afternoon {
+  --sk-splash-wash-top: var(--sk-color-danger-bg);
+  --sk-splash-wash-mid: var(--sk-color-attention-bg);
+  --sk-splash-blob-1: var(--sk-color-illustration-rose);
+  --sk-splash-blob-2: var(--sk-color-illustration-gold);
+  --sk-splash-blob-3: var(--sk-color-illustration-indigo);
+}
+
+.sk-splash--evening {
+  --sk-splash-wash-top: var(--sk-color-positive-bg);
+  --sk-splash-wash-mid: var(--sk-color-canvas);
+  --sk-splash-blob-1: var(--sk-color-illustration-mint);
+  --sk-splash-blob-2: var(--sk-color-illustration-gold);
+  --sk-splash-blob-3: var(--sk-color-illustration-indigo);
+}
+
+/* --- soft colour blobs behind everything (decorative) --- */
+
+.sk-splash__blob {
+  position: absolute;
+  z-index: -1;
+  border-radius: var(--sk-radius-full);
+  pointer-events: none;
+  animation: sk-splash-blob 9s ease-in-out infinite;
+}
+
+.sk-splash__blob--1 {
+  top: -90px;
+  right: -80px;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, color-mix(in srgb, var(--sk-splash-blob-1) 35%, transparent), transparent 68%);
+}
+
+.sk-splash__blob--2 {
+  bottom: 120px;
+  left: -110px;
+  width: 320px;
+  height: 320px;
+  background: radial-gradient(circle, color-mix(in srgb, var(--sk-splash-blob-2) 30%, transparent), transparent 68%);
+  animation-duration: 11s;
+  animation-delay: -3s;
+}
+
+.sk-splash__blob--3 {
+  top: 300px;
+  right: -60px;
+  width: 180px;
+  height: 180px;
+  background: radial-gradient(circle, color-mix(in srgb, var(--sk-splash-blob-3) 28%, transparent), transparent 70%);
+  animation-duration: 8s;
+  animation-delay: -5s;
+}
+
+/* --- brand and greeting --- */
 
 .sk-splash__brand {
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: var(--sk-space-10);
 }
 
-.sk-splash__greeting {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--sk-space-6);
-  margin: 0;
-  padding: var(--sk-space-8) var(--sk-space-14);
-  border-radius: var(--sk-radius-full);
-  background: var(--sk-color-surface);
-  box-shadow: var(--sk-shadow-card);
-  font-size: var(--sk-text-body-sm);
-  font-weight: 700;
+.sk-splash__wordmark {
+  font-size: var(--sk-text-title);
+  font-weight: 800;
+  letter-spacing: -0.015em;
   color: var(--sk-color-text);
 }
 
-/* The circular stage: the halo with the time-of-day illustration standing in
-   front of it (assets pulled from the canvas into public/assets/illustrations). */
+.sk-splash__wordmark em {
+  font-family: var(--sk-font-serif);
+  font-style: italic;
+  font-weight: 700;
+  margin-inline-start: 0.25em;
+}
+
+.sk-splash__greeting {
+  align-self: center;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sk-space-6);
+  margin: var(--sk-space-12) 0 0;
+  padding: var(--sk-space-6) var(--sk-space-12);
+  border-radius: var(--sk-radius-full);
+  background: color-mix(in srgb, var(--sk-color-surface) 80%, transparent);
+  box-shadow: var(--sk-shadow-hairline);
+  font-size: var(--sk-text-caption);
+  font-weight: 800;
+  color: var(--sk-color-text-2);
+}
+
+/* --- the art stage --- */
+
 .sk-splash__stage {
+  position: relative;
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 320px;
+}
+
+.sk-splash__disc {
+  position: absolute;
+  width: 270px;
+  height: 270px;
+  border-radius: var(--sk-radius-full);
+  background: radial-gradient(circle at 40% 35%, var(--sk-color-surface), var(--sk-color-attention-bg) 70%);
+  box-shadow: var(--sk-shadow-float);
+}
+
+.sk-splash__hero {
+  position: relative;
+  display: block;
+  width: 230px;
+  height: auto;
+}
+
+.sk-splash__satellite {
+  position: absolute;
+  display: block;
+  height: auto;
+}
+
+.sk-splash__satellite--top { top: 40px; right: 18px; width: 70px; animation: sk-splash-float2 4.4s ease-in-out 1.3s infinite; }
+.sk-splash__satellite--bottom { bottom: 44px; left: 10px; width: 64px; animation: sk-splash-float2 5.2s ease-in-out 1.5s infinite; }
+
+/* afternoon: concentric rings, the heart, the line and the chips */
+.sk-splash__stage--pulse { gap: var(--sk-space-6); }
+
+.sk-splash__rings {
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
-  max-width: 260px;
-  aspect-ratio: 1;
-  margin-block: var(--sk-space-8);
+  width: 250px;
+  height: 250px;
 }
 
-.sk-splash__halo {
-  width: 100%;
-  height: 100%;
-  border-radius: var(--sk-radius-full);
-  border: 1px dashed var(--sk-color-rule-strong);
-  background: radial-gradient(
-    circle at 50% 45%,
-    var(--sk-color-surface) 0%,
-    var(--sk-color-action-soft) 62%,
-    transparent 100%
-  );
-}
-
-.sk-splash__art {
+.sk-splash__ring {
   position: absolute;
-  width: 62%;
-  max-height: 92%;
+  inset: 0;
+  border-radius: var(--sk-radius-full);
+  border: 2px solid color-mix(in srgb, var(--sk-color-danger) 18%, transparent);
+  animation: sk-splash-beat 1.6s ease-in-out infinite;
+}
+
+.sk-splash__ring-fill {
+  position: absolute;
+  inset: 26px;
+  border-radius: var(--sk-radius-full);
+  background: radial-gradient(circle at 40% 35%, var(--sk-color-surface), var(--sk-color-danger-bg) 72%);
+  box-shadow: var(--sk-shadow-float);
+}
+
+.sk-splash__heart {
+  position: relative;
+  display: block;
+  width: 170px;
+  height: auto;
+  animation: sk-splash-beat 1.6s ease-in-out 1s infinite;
+}
+
+.sk-splash__beat {
+  display: block;
+  max-width: 100%;
+  margin-top: calc(var(--sk-space-6) * -1);
+}
+
+.sk-splash__beat > span { max-width: 100%; }
+
+.sk-splash__chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--sk-space-8);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sk-splash__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sk-space-6);
+  padding: var(--sk-space-6) var(--sk-space-12);
+  border-radius: var(--sk-radius-full);
+  background: var(--sk-color-surface);
+  box-shadow: var(--sk-shadow-hairline);
+  font-size: var(--sk-text-caption);
+  font-weight: 800;
+  color: var(--sk-color-text);
+}
+
+/* evening: the clinic in a soft disc with four pictures orbiting on a dashed ring */
+.sk-splash__orbit {
+  position: absolute;
+  width: 236px;
+  height: 236px;
+  border-radius: var(--sk-radius-full);
+  border: 1.5px dashed color-mix(in srgb, var(--sk-color-action) 30%, transparent);
+}
+
+.sk-splash__disc--vault {
+  width: 150px;
+  height: 150px;
+  background: radial-gradient(circle at 40% 35%, var(--sk-color-surface), var(--sk-color-positive-bg) 75%);
+}
+
+.sk-splash__clinic {
+  position: relative;
+  display: block;
+  width: 120px;
+  height: auto;
+}
+
+.sk-splash__orbiter {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 46px;
+  height: 46px;
+  margin: -23px 0 0 -23px;
+  animation: sk-splash-orbit 24s linear infinite;
+}
+
+.sk-splash__orbiter img {
+  display: block;
+  width: 46px;
+  height: 46px;
   object-fit: contain;
-  animation:
-    sk-splash-pop var(--sk-duration-base) var(--sk-ease-standard) 120ms both,
-    sk-splash-float 5s ease-in-out 1s infinite;
 }
 
-.sk-splash--morning .sk-splash__art { width: 54%; }
-.sk-splash--evening .sk-splash__art { width: 50%; }
+.sk-splash__orbiter--2 { animation-delay: -6s; }
+.sk-splash__orbiter--3 { animation-delay: -12s; }
+.sk-splash__orbiter--4 { animation-delay: -18s; }
 
-@keyframes sk-splash-pop {
-  from { opacity: 0; transform: translateY(14px) scale(0.96); }
-  to { opacity: 1; transform: none; }
-}
-
-@keyframes sk-splash-float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-7px); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .sk-splash__art { animation: none; }
-}
-
-.sk-splash--morning .sk-splash__halo {
-  background: radial-gradient(
-    circle at 50% 45%,
-    var(--sk-color-surface) 0%,
-    var(--sk-color-attention-bg) 62%,
-    transparent 100%
-  );
-}
-
-.sk-splash--afternoon .sk-splash__halo {
-  background: radial-gradient(
-    circle at 50% 45%,
-    var(--sk-color-surface) 0%,
-    var(--sk-color-danger-bg) 62%,
-    transparent 100%
-  );
-}
-
-.sk-splash--evening .sk-splash__halo {
-  background: radial-gradient(
-    circle at 50% 45%,
-    var(--sk-color-surface) 0%,
-    var(--sk-color-positive-bg) 62%,
-    transparent 100%
-  );
-}
+/* --- words --- */
 
 .sk-splash__words {
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: var(--sk-space-8);
+  margin-bottom: var(--sk-space-20);
 }
 
 .sk-splash__title {
   margin: 0;
   font-size: var(--sk-text-display);
-  line-height: 1.2;
+  line-height: 1.18;
   font-weight: 800;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.025em;
   text-wrap: balance;
   color: var(--sk-color-text);
 }
@@ -141,72 +292,135 @@
 .sk-splash__body {
   margin: 0;
   font-size: var(--sk-text-body);
-  line-height: 1.55;
+  line-height: 1.5;
   font-weight: 500;
   color: var(--sk-color-text-2);
 }
 
+.sk-splash__private {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sk-space-6);
+  padding: var(--sk-space-6) var(--sk-space-12);
+  border-radius: var(--sk-radius-full);
+  background: var(--sk-color-positive-bg);
+  font-size: var(--sk-text-caption);
+  font-weight: 800;
+  color: var(--sk-color-positive);
+}
+
+/* --- actions --- */
+
 .sk-splash__actions {
   display: flex;
   flex-direction: column;
-  gap: var(--sk-space-10);
-  width: 100%;
-  margin-top: auto;
+  gap: var(--sk-space-12);
 }
 
 .sk-splash__primary,
 .sk-splash__secondary {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: center;
   gap: var(--sk-space-8);
-  min-height: var(--sk-size-control-lg);
+  width: 100%;
   border-radius: var(--sk-radius-full);
-  cursor: pointer;
   font-family: inherit;
-  font-size: var(--sk-text-body);
-  font-weight: 700;
-  transition: background var(--sk-duration-fast) var(--sk-ease-standard);
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform var(--sk-duration-fast) var(--sk-ease-standard), background var(--sk-duration-fast) var(--sk-ease-standard);
 }
 
 .sk-splash__primary {
+  min-height: 56px;
   border: 0;
   background: var(--sk-color-action);
   color: var(--sk-color-on-action);
+  font-size: var(--sk-text-title-sm);
+  box-shadow: var(--sk-shadow-float), inset 0 1px 0 var(--sk-color-action-highlight);
 }
 
-.sk-splash__primary:hover {
-  background: var(--sk-color-action-hover);
-}
+.sk-splash__primary:hover { background: var(--sk-color-action-hover); }
 
 .sk-splash__secondary {
-  border: 1px solid var(--sk-color-rule-strong);
-  background: var(--sk-color-surface);
+  min-height: var(--sk-size-control);
+  border: 1.5px solid var(--sk-color-rule);
+  background: color-mix(in srgb, var(--sk-color-surface) 75%, transparent);
   color: var(--sk-color-action);
+  font-size: var(--sk-text-body);
 }
 
-.sk-splash__emergency {
+.sk-splash__primary:active,
+.sk-splash__secondary:active { transform: translateY(1px); }
+
+.sk-splash__primary:focus-visible,
+.sk-splash__secondary:focus-visible,
+.sk-splash__emergency:focus-visible {
+  outline: 3px solid var(--sk-color-focus);
+  outline-offset: 3px;
+}
+
+a.sk-splash__emergency {
+  align-self: center;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: var(--sk-space-6);
   min-height: var(--sk-size-touch-target);
   padding-inline: var(--sk-space-8);
   font-size: var(--sk-text-caption);
   font-weight: 700;
-  text-decoration: none;
   color: var(--sk-color-danger);
+  text-decoration: none;
+  border-radius: var(--sk-radius-sm);
 }
 
-.sk-splash :where(button, a):focus-visible {
-  outline: 3px solid var(--sk-color-focus);
-  outline-offset: 3px;
-  border-radius: var(--sk-radius-full);
+a.sk-splash__emergency:hover { text-decoration: underline; }
+
+/* --- motion: entrances, a float, a beat and the orbit; all stop under reduced motion --- */
+
+.sk-splash__in { animation: sk-splash-in var(--sk-duration-sheet) var(--sk-ease-standard) both; }
+.sk-splash__float { animation: sk-splash-float 5s ease-in-out 1s infinite; }
+
+@keyframes sk-splash-in {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes sk-splash-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+
+@keyframes sk-splash-float2 {
+  0%, 100% { transform: translateY(0) rotate(-6deg); }
+  50% { transform: translateY(-9px) rotate(4deg); }
+}
+
+@keyframes sk-splash-beat {
+  0%, 100% { transform: scale(1); }
+  14% { transform: scale(1.09); }
+  28% { transform: scale(1); }
+  42% { transform: scale(1.05); }
+}
+
+@keyframes sk-splash-blob {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(14px, -18px) scale(1.08); }
+}
+
+@keyframes sk-splash-orbit {
+  from { transform: rotate(0deg) translateX(118px) rotate(0deg); }
+  to { transform: rotate(360deg) translateX(118px) rotate(-360deg); }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .sk-splash__primary,
-  .sk-splash__secondary {
-    transition: none;
-  }
+  .sk-splash *,
+  .sk-splash__blob,
+  .sk-splash__in,
+  .sk-splash__float { animation: none !important; transition: none !important; }
+
+  /* The orbit stops with the four pictures spaced around the ring. */
+  .sk-splash__orbiter--1 { transform: rotate(-30deg) translateX(118px) rotate(30deg); }
+  .sk-splash__orbiter--2 { transform: rotate(60deg) translateX(118px) rotate(-60deg); }
+  .sk-splash__orbiter--3 { transform: rotate(150deg) translateX(118px) rotate(-150deg); }
+  .sk-splash__orbiter--4 { transform: rotate(240deg) translateX(118px) rotate(-240deg); }
 }

@@ -1,128 +1,82 @@
 import React from 'react';
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { PartnerStaffScreen } from '../PartnerStaffScreen';
+import type { LabCollector } from '@/features/partner/partnerApi';
 
-vi.mock('@/data/contexts/AuthContext', () => ({
-  useAuth: () => ({
-    user: {
-      id: 'demo-pharmacy',
-      fullName: 'MedPlus Bachupally',
-      role: 'VENDOR',
-      email: 'pharmacy@studentkare.test',
-    },
-    logout: vi.fn(),
-  }),
+const partner = { partnerKind: 'LAB' };
+vi.mock('@/data/contexts/AuthContext', () => ({ useAuth: () => ({ user: { id: 'acct-1', fullName: 'Vijaya Diagnostics', role: 'VENDOR', partnerKind: partner.partnerKind } }) }));
+vi.mock('@/lib/utils/workflowRouting', () => ({ navigate: vi.fn() }));
+const addCollector = vi.fn();
+const retireCollector = vi.fn();
+vi.mock('@/features/partner/partnerApi', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/features/partner/partnerApi')>()),
+  addCollector: (...args: unknown[]) => addCollector(...args),
+  retireCollector: (...args: unknown[]) => retireCollector(...args),
 }));
 
-vi.mock('@/lib/utils/workflowRouting', () => ({
-  navigate: vi.fn(),
-  homeForRole: vi.fn((role: string) => (role === 'SUPER_ADMIN' ? 'admin' : role === 'VENDOR' ? 'vendor' : 'health')),
-}));
+const person = (over: Partial<LabCollector> = {}): LabCollector => ({
+  id: 'col-1', accountId: 'a1', labId: 'lab-1', fullName: 'Imran Shaik', identifier: '9876543210', channel: 'WHATSAPP', active: true, createdAt: 1_760_000_000, ...over,
+});
 
-describe('PartnerStaffScreen', () => {
-  it('renders heading, subtitle, and table columns', () => {
-    render(<PartnerStaffScreen />);
-    expect(screen.getByRole('heading', { level: 1, name: 'Staff & roles' })).toBeInTheDocument();
-    expect(
-      screen.getByText('MedPlus Bachupally · everyone who can scan a student’s pass here')
-    ).toBeInTheDocument();
+describe('PartnerStaff', () => {
+  beforeEach(() => { partner.partnerKind = 'LAB'; addCollector.mockReset(); retireCollector.mockReset(); });
 
-    expect(screen.getByText('NAME')).toBeInTheDocument();
-    expect(screen.getByText('ROLE')).toBeInTheDocument();
-    expect(screen.getByText('COUNCIL REG.')).toBeInTheDocument();
-    expect(screen.getByText('STATUS')).toBeInTheDocument();
-    expect(screen.getByText('LAST SCAN')).toBeInTheDocument();
-    expect(screen.getByText('SCANS · 7D')).toBeInTheDocument();
-    expect(screen.getByText('STOPS')).toBeInTheDocument();
+  it('a lab sees its own collectors; counts with no source read "—"', async () => {
+    render(<PartnerStaffScreen source={vi.fn(async () => ({ items: [person(), person({ id: 'col-2', fullName: 'Deepa Rao', active: false })], total: 2 }))} />);
+    const table = await screen.findByRole('table');
+    expect(within(table).getByText('Imran Shaik')).toBeInTheDocument();
+    expect(within(table).getAllByText('Sample collector')).toHaveLength(2);
+    expect(within(table).getByText('Removed')).toBeInTheDocument();
+    expect(within(table).queryByText('42')).toBeNull();
+    // Only an active person can be removed.
+    expect(within(table).getAllByRole('button', { name: /^Remove / })).toHaveLength(1);
   });
 
-  it('renders initial staff rows and policy guidance cards', () => {
-    render(<PartnerStaffScreen />);
-    expect(screen.getByText('Ravi K.')).toBeInTheDocument();
-    expect(screen.getByText('TSPC 45821')).toBeInTheDocument();
-    expect(screen.getByText('Sunita M.')).toBeInTheDocument();
-    expect(screen.getByText('Imran S.')).toBeInTheDocument();
-    expect(screen.getByText('Deepa R.')).toBeInTheDocument();
-    expect(screen.getByText('Arjun P.')).toBeInTheDocument();
-
-    expect(screen.getByText(/Why roles matter:/i)).toBeInTheDocument();
-    expect(screen.getByText(/When someone leaves,/i)).toBeInTheDocument();
+  it('removing asks first, says they are signed out, then deactivates them', async () => {
+    retireCollector.mockResolvedValue(person({ active: false }));
+    const source = vi.fn(async () => ({ items: [person()], total: 1 }));
+    render(<PartnerStaffScreen source={source} />);
+    fireEvent.click(await screen.findByRole('button', { name: 'Remove Imran Shaik' }));
+    const dialog = await screen.findByRole('alertdialog', { name: 'Remove Imran Shaik?' });
+    expect(dialog).toHaveTextContent(/signed out of the staff app at once/);
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Remove' }));
+    await waitFor(() => expect(retireCollector).toHaveBeenCalledWith('col-1'));
+    await waitFor(() => expect(source).toHaveBeenCalledTimes(2));
   });
 
-  it('opens add staff drawer and sends invite for counter staff', () => {
-    render(<PartnerStaffScreen />);
-    const addStaffBtn = screen.getByRole('button', { name: 'Add staff' });
-    fireEvent.click(addStaffBtn);
-
-    expect(screen.getByRole('dialog', { name: 'Add staff' })).toBeInTheDocument();
-
-    // Fill form
-    const nameInput = screen.getByLabelText(/Staff member full name/i);
-    const phoneInput = screen.getByLabelText(/10-digit mobile number/i);
-    fireEvent.change(nameInput, { target: { value: 'Pooja V.' } });
-    fireEvent.change(phoneInput, { target: { value: '9876543210' } });
-
-    // Pick Counter staff role
-    const counterRoleBtn = screen.getByRole('button', { name: /Counter staff/i });
-    fireEvent.click(counterRoleBtn);
-
-    // Add to the list — no invite can be sent yet, and the screen must not claim one was.
-    const addBtn = screen.getByRole('button', { name: /Add to list/i });
-    fireEvent.click(addBtn);
-
-    expect(screen.getByText('Pooja V.')).toBeInTheDocument();
-    expect(screen.getByText(/Pooja V. added to this list only. No invite was sent/i)).toBeInTheDocument();
-    expect(screen.getByText('Not invited yet')).toBeInTheDocument();
-    expect(screen.queryByText(/Invite sent by SMS/i)).not.toBeInTheDocument();
+  it('adds a collector with their own sign-in, after validating the contact', async () => {
+    addCollector.mockResolvedValue(person({ id: 'col-9', fullName: 'Sunita M' }));
+    render(<PartnerStaffScreen source={vi.fn(async () => ({ items: [person()], total: 1 }))} />);
+    fireEvent.click(await screen.findByRole('button', { name: 'Add staff' }));
+    const drawer = await screen.findByRole('dialog', { name: 'Add a sample collector' });
+    fireEvent.change(within(drawer).getByLabelText('Full name'), { target: { value: 'Sunita M' } });
+    fireEvent.change(within(drawer).getByLabelText('Mobile number'), { target: { value: '12345' } });
+    fireEvent.click(within(drawer).getByRole('button', { name: 'Add collector' }));
+    expect(await within(drawer).findByText('Enter a 10-digit Indian mobile number.')).toBeInTheDocument();
+    expect(addCollector).not.toHaveBeenCalled();
+    fireEvent.change(within(drawer).getByLabelText('Mobile number'), { target: { value: '9123456780' } });
+    fireEvent.click(within(drawer).getByRole('button', { name: 'Add collector' }));
+    await waitFor(() => expect(addCollector).toHaveBeenCalledWith({ fullName: 'Sunita M', identifier: '9123456780', channel: 'WHATSAPP' }));
   });
 
-  it('requires state pharmacy council registration when adding a pharmacist', () => {
-    render(<PartnerStaffScreen />);
-    fireEvent.click(screen.getByRole('button', { name: 'Add staff' }));
-
-    const nameInput = screen.getByLabelText(/Staff member full name/i);
-    const phoneInput = screen.getByLabelText(/10-digit mobile number/i);
-    fireEvent.change(nameInput, { target: { value: 'Suresh N.' } });
-    fireEvent.change(phoneInput, { target: { value: '9848022338' } });
-
-    // Pick Pharmacist role
-    const pharmacistRoleBtn = screen.getByRole('button', { name: /Pharmacist/i });
-    fireEvent.click(pharmacistRoleBtn);
-
-    // Registration field should appear
-    const regInput = screen.getByLabelText(/State Pharmacy Council Registration/i);
-    expect(regInput).toBeInTheDocument();
-
-    // Invite button disabled without registration
-    const inviteBtn = screen.getByRole('button', { name: /Add to list/i });
-    expect(inviteBtn).toBeDisabled();
-    expect(screen.getByText(/We can’t check this against the council register yet/i)).toBeInTheDocument();
-
-    // Fill registration
-    fireEvent.change(regInput, { target: { value: 'TSPC 89012' } });
-    expect(inviteBtn).not.toBeDisabled();
-
-    fireEvent.click(inviteBtn);
-    expect(screen.getByText('Suresh N.')).toBeInTheDocument();
-    expect(screen.getByText('TSPC 89012')).toBeInTheDocument();
+  it('a pharmacy’s staff are not connected: no rows, Add staff unavailable, the pharmacist rule kept', () => {
+    partner.partnerKind = 'PHARMACY';
+    const source = vi.fn(async () => ({ items: [], total: 0 }));
+    render(<PartnerStaffScreen source={source} />);
+    expect(source).not.toHaveBeenCalled();
+    expect(screen.getByText('Staff for your partner type aren’t connected yet.')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Add staff/ })).toBeDisabled();
+    expect(screen.getByText(/only a pharmacist with a council registration can hand over prescription medicines/)).toBeInTheDocument();
+    expect(screen.getByText(/remove them the same day/)).toBeInTheDocument();
+    for (const fake of [/Ravi K/, /TSPC 45821/, /Sunita/]) expect(screen.queryByText(fake)).toBeNull();
   });
 
-  it('opens confirmation dialog and removes staff member', () => {
-    render(<PartnerStaffScreen />);
-    const removeSunitaBtn = screen.getByRole('button', { name: 'Remove Sunita M.' });
-    fireEvent.click(removeSunitaBtn);
-
-    expect(screen.getByRole('alertdialog')).toBeInTheDocument();
-    expect(screen.getByText(/Remove Sunita M.\?/i)).toBeInTheDocument();
-
-    // Confirm removal
-    const confirmBtn = screen.getByRole('button', { name: 'Remove' });
-    fireEvent.click(confirmBtn);
-
-    expect(screen.getByText(/Marked removed on this list only. Their access hasn’t changed./i)).toBeInTheDocument();
-    expect(screen.queryByText(/signed out of the staff app now/i)).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Remove Sunita M.' })).not.toBeInTheDocument();
+  it('error and empty states', async () => {
+    const { unmount } = render(<PartnerStaffScreen source={vi.fn(async () => { throw new Error('down'); })} />);
+    expect(await screen.findByRole('alert')).toHaveTextContent('Couldn’t load your staff');
+    unmount();
+    render(<PartnerStaffScreen source={vi.fn(async () => ({ items: [], total: 0 }))} />);
+    expect(await screen.findByRole('heading', { name: 'No staff yet.' })).toBeInTheDocument();
   });
-
 });

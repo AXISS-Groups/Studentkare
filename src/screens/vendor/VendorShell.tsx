@@ -2,7 +2,8 @@ import React, { ReactNode, useEffect, useRef, useState } from 'react';
 import { Icon } from '@/design-system/icons';
 import type { AccountRole, PartnerKind } from '../../data/types/workflowTypes';
 import { canAccessRoute, RoutePath } from '../../lib/utils/workflowRouting';
-import { StudentKareLogo, StudentKareShield } from '../../components/StudentKareLogo';
+import { ConsoleBrand, ConsoleNav, ConsoleSidebarLink } from '@/design-system/console-shell/ConsoleShell';
+import type { ConsoleNavGroup } from '@/design-system/console-shell/ConsoleShell';
 import { FormError } from '../../components/interface/WorkflowUI';
 import { isVendorNavActive, VENDOR_NAVIGATION } from './vendorNavigation';
 import type { VendorNavItem } from './vendorNavigation';
@@ -21,6 +22,8 @@ interface VendorShellProps {
   /** The type a super admin assigned, when `partnerKind` is a development preview of another. */
   assignedPartnerKind?: PartnerKind | null;
   onNavigate: (path: RoutePath) => void;
+  /** The signed-in partner's own name, shown on the sidebar's help link (canvas footer). */
+  accountName?: string;
   /** Omitted when there is no session to end. */
   onSignOut?: () => void;
   signingOut?: boolean;
@@ -40,7 +43,7 @@ function isListed(item: VendorNavItem, role: AccountRole | null, kind: PartnerKi
  * the Super Admin shell: one sticky sidebar mounted once for the whole area, the
  * active item derived from the URL (so a refresh keeps it), and a drawer below 1024 px.
  */
-export function VendorShell({ route, role, partnerKind = null, assignedPartnerKind = partnerKind, onNavigate, onSignOut, signingOut = false, signOutError = '', children }: VendorShellProps) {
+export function VendorShell({ route, role, partnerKind = null, assignedPartnerKind = partnerKind, onNavigate, accountName, onSignOut, signingOut = false, signOutError = '', children }: VendorShellProps) {
   const t = useT();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const menuButton = useRef<HTMLButtonElement>(null);
@@ -59,47 +62,45 @@ export function VendorShell({ route, role, partnerKind = null, assignedPartnerKi
     if (path !== route) onNavigate(path);
   };
 
+  const groups: ConsoleNavGroup[] = VENDOR_NAVIGATION.map(group => ({
+    id: group.title,
+    title: t(group.titleKey),
+    items: group.items.filter(item => isListed(item, role, partnerKind)).map(item => {
+      const target = item.route;
+      return {
+        id: item.label,
+        label: t(item.labelKey),
+        icon: item.icon,
+        current: isVendorNavActive(item, route),
+        onSelect: target ? () => go(target) : undefined,
+      };
+    }),
+  }));
+
   return <div className="sk-vendor-shell">
     <header className="sk-vendor-shell-mobilebar">
-      <StudentKareLogo size={26} darkVariant showStrapline={false} />
-      <button ref={menuButton} type="button" className="sk-vendor-shell-menu-button" aria-label={drawerOpen ? 'Close partner navigation' : 'Open partner navigation'} aria-expanded={drawerOpen} aria-controls="sk-vendor-shell-sidebar" onClick={() => setDrawerOpen(!drawerOpen)}>
+      <ConsoleBrand size={28} />
+      <button ref={menuButton} type="button" className="sk-vendor-shell-menu-button" aria-label={drawerOpen ? t('console.closeNav') : t('console.openNav')} aria-expanded={drawerOpen} aria-controls="sk-vendor-shell-sidebar" onClick={() => setDrawerOpen(!drawerOpen)}>
         <Icon name={drawerOpen ? 'x' : 'menu'} size={22} />
       </button>
     </header>
 
-    {drawerOpen && <button type="button" className="sk-vendor-shell-backdrop" aria-label="Close partner navigation" onClick={() => setDrawerOpen(false)} />}
+    {drawerOpen && <button type="button" className="sk-vendor-shell-backdrop" aria-label={t('console.closeNav')} onClick={() => setDrawerOpen(false)} />}
 
-    <aside id="sk-vendor-shell-sidebar" className={`sk-vendor-shell-sidebar${drawerOpen ? ' is-open' : ''}`} aria-label="Partner console sidebar">
+    <aside id="sk-vendor-shell-sidebar" className={`sk-vendor-shell-sidebar${drawerOpen ? ' is-open' : ''}`} aria-label={t('partner.vcon.nav.sidebarLabel')}>
       <div className="sk-vendor-shell-brand">
-        <StudentKareShield size={44} id="skVendorShield" />
-        <span className="sk-vendor-shell-wordmark"><strong>Student <em>Kare</em></strong><span>{role === 'VENDOR' && partnerKind ? `PARTNER · ${PARTNER_KIND_LABEL[partnerKind].toUpperCase()}` : 'PARTNER'}</span></span>
+        <ConsoleBrand role={t('partner.vcon.nav.badge')} />
       </div>
 
-      <nav aria-label="Partner links">
-        {VENDOR_NAVIGATION.map(group => ({ ...group, items: group.items.filter(item => isListed(item, role, partnerKind)) })).filter(group => group.items.length > 0).map(group => <div key={group.title} className="sk-vendor-shell-group">
-          <h2 className="sk-vendor-shell-group-title">{t(group.titleKey)}</h2>
-          <ul>
-            {group.items.map(item => {
-              const { label, labelKey, icon: Icon, route: target } = item;
-              return <li key={label}>
-                {target
-                  ? <button type="button" className="sk-vendor-shell-link" aria-current={isVendorNavActive(item, route) ? 'page' : undefined} onClick={() => go(target)}>
-                    <Icon size={16} aria-hidden="true" /><span>{t(labelKey)}</span>
-                  </button>
-                  : <span className="sk-vendor-shell-link is-unavailable" aria-disabled="true">
-                    <Icon size={16} aria-hidden="true" /><span>{t(labelKey)}</span><small>Not available yet</small>
-                  </span>}
-              </li>;
-            })}
-          </ul>
-        </div>)}
-      </nav>
+      <ConsoleNav label={t('partner.vcon.nav.label')} groups={groups} />
 
       <div className="sk-vendor-shell-sidebar-footer">
         {isDev() && role === 'VENDOR' && <PartnerPreviewControl assigned={assignedPartnerKind} />}
+        {/* The canvas footer: help, labelled with the partner's own name. */}
+        {accountName && <ConsoleSidebarLink icon="help-circle" label={accountName} hint={t('console.helpCentre')} onClick={() => go('support')} />}
         {onSignOut && <>
           <FormError message={signOutError} />
-          <button type="button" className="sk-vendor-shell-link" disabled={signingOut} onClick={onSignOut}><Icon name="log-out" size={16} /><span>{signingOut ? 'Signing out…' : 'Sign out'}</span></button>
+          <ConsoleSidebarLink icon="log-out" label={signingOut ? t('console.signingOut') : t('console.signOut')} disabled={signingOut} onClick={onSignOut} />
         </>}
       </div>
     </aside>

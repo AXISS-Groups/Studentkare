@@ -17,7 +17,7 @@ import time
 import uuid
 from collections.abc import Callable
 from datetime import datetime, timedelta
-from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
+from zoneinfo import ZoneInfo
 
 from sqlalchemy import case, func, select, update
 
@@ -405,9 +405,6 @@ URGENT_EVENT_TYPES = frozenset({"BLOOD_SOS", "CRISIS_ALERT", "SOS_ACKNOWLEDGED",
 # Event types a student can turn off under "consult and dose reminders".
 REMINDER_EVENT_TYPES = frozenset({"MEDICATION_REMINDER", "medication_refill", "appointment_reminder"})
 
-DEFAULT_TIMEZONE = "Asia/Kolkata"
-
-
 def in_quiet_hours(start: str, end: str, at: datetime) -> bool:
     """Whether ``at`` falls inside a HH:MM..HH:MM window that may wrap midnight."""
     try:
@@ -468,12 +465,11 @@ def defer_until(event, ts: float) -> None:
     event.next_attempt_at = max(float(ts), 0.0)
 
 
-def _recipient_zone(prefs) -> ZoneInfo:
-    zone = (getattr(prefs, "timezone", "") or DEFAULT_TIMEZONE) if prefs else DEFAULT_TIMEZONE
-    try:
-        return ZoneInfo(zone)
-    except (ZoneInfoNotFoundError, ValueError):
-        return ZoneInfo(DEFAULT_TIMEZONE)
+def _recipient_zone(prefs, db=None) -> ZoneInfo:
+    """The recipient's chosen zone, else the platform.default_timezone setting."""
+    from services import student_time
+
+    return student_time.zone_named(getattr(prefs, "timezone", None) if prefs else None, db)
 
 
 def _preference_verdict_for(db, event, channel: str | None = None) -> tuple[str, str, float]:
@@ -489,7 +485,7 @@ def _preference_verdict_for(db, event, channel: str | None = None) -> tuple[str,
     if not account_id:
         return "send", "", 0.0
     prefs = db.get(M.NotificationPreference, account_id)
-    local = datetime.fromtimestamp(now_seconds(), _recipient_zone(prefs))
+    local = datetime.fromtimestamp(now_seconds(), _recipient_zone(prefs, db))
     if channel is None:
         channel = (getattr(event, "payload", None) or {}).get("channel", "")
     verdict, why = preference_verdict(prefs, event.event_type or "", channel, local)
@@ -577,7 +573,7 @@ def reminder_timing(db, event, at: float | None = None) -> tuple[str, str]:
         return "suppress", "appointment_not_active"
     slot = db.get(M.AvailabilitySlot, appointment.slot_id)
     prefs = db.get(M.NotificationPreference, event.account_id)
-    start = _parse_slot_start(slot.slot_start, _recipient_zone(prefs)) if slot else None
+    start = _parse_slot_start(slot.slot_start, _recipient_zone(prefs, db)) if slot else None
     if start is None:
         return "fail", "appointment_time_unknown"
     try:

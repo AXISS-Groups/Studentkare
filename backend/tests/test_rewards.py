@@ -427,11 +427,10 @@ def test_ledger_entries_shown_override_limits_the_list(harness):
 
 def test_month_boundary_is_the_platform_time_zone():
     from datetime import datetime
-    from zoneinfo import ZoneInfo
 
-    from services.workflow_scheduler import DEFAULT_TIMEZONE
+    from services import student_time
 
-    zone = ZoneInfo(DEFAULT_TIMEZONE)
+    zone = student_time.default_zone()
     # Just after local midnight on the 1st: still the previous day in UTC.
     moment = datetime(2026, 11, 1, 0, 30, tzinfo=zone).timestamp()
     assert rewards.month_start(moment) == datetime(2026, 11, 1, tzinfo=zone).timestamp()

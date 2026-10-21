@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { consoleHasOwnChrome, pageTransitionKey } from '../App';
+import { consoleHasOwnChrome, drawsStudentWebShell, pageTransitionKey } from '../App';
 
 describe('page transition key', () => {
   it('is the same for every Super Admin section, so the console stays mounted', () => {
@@ -21,6 +21,16 @@ describe('page transition key', () => {
     }
   });
 
+  it('is the same for every campus console board, and for a campus admin\'s notifications and help', () => {
+    for (const path of ['/campus', '/campus/students', '/campus/water', '/campus-wellness', '/campus-access-requests', '/campus-break-glass']) {
+      expect(pageTransitionKey(path)).toBe('campus');
+    }
+    expect(pageTransitionKey('/notifications', 'CAMPUS_ADMIN')).toBe('campus');
+    expect(pageTransitionKey('/support', 'CAMPUS_ADMIN')).toBe('campus');
+    expect(pageTransitionKey('/notifications', 'NMC_DOCTOR')).toBe('clinician');
+    expect(pageTransitionKey('/campuses')).toBe('/campuses');
+  });
+
   it('still changes for other pages, which keep their full-page transition', () => {
     expect(pageTransitionKey('/health')).toBe('/health');
     expect(pageTransitionKey('/login')).toBe('/login');
@@ -37,13 +47,28 @@ describe('app bar above a console', () => {
     for (const path of ['/clinician', '/clinician/queue', '/earnings', '/clinical-review', '/notifications', '/support']) {
       expect(consoleHasOwnChrome(path, 'NMC_DOCTOR')).toBe(true);
     }
+    for (const path of ['/campus', '/campus/sla', '/campus-break-glass', '/notifications', '/support']) {
+      expect(consoleHasOwnChrome(path, 'CAMPUS_ADMIN')).toBe(true);
+    }
+    expect(consoleHasOwnChrome('/campus/reports', 'SUPER_ADMIN')).toBe(true);
   });
 
   it('is still drawn for everyone else, including a student on the shared pages', () => {
     expect(consoleHasOwnChrome('/notifications', 'STUDENT')).toBe(false);
-    expect(consoleHasOwnChrome('/support', 'CAMPUS_ADMIN')).toBe(false);
+    expect(consoleHasOwnChrome('/support', 'COUNSELLOR')).toBe(false);
+    expect(consoleHasOwnChrome('/campus', 'STUDENT')).toBe(false);
     expect(consoleHasOwnChrome('/clinical-review', 'SUPER_ADMIN')).toBe(false);
     expect(consoleHasOwnChrome('/health', 'NMC_DOCTOR')).toBe(false);
     expect(consoleHasOwnChrome('/administration', 'STUDENT')).toBe(false);
+  });
+
+  it('draws no app bar above the student web shell: its top nav carries Alerts and SOS', () => {
+    for (const path of ['/health', '/orders', '/profile', '/security', '/notification-settings', '/home', '/buy-again', '/shop', '/checkout']) {
+      expect(drawsStudentWebShell(path, 'STUDENT', false)).toBe(true);
+    }
+    // At phone width the phone frame draws its own header; other roles keep their chrome.
+    expect(drawsStudentWebShell('/health', 'STUDENT', true)).toBe(false);
+    expect(drawsStudentWebShell('/health', 'NMC_DOCTOR', false)).toBe(false);
+    expect(drawsStudentWebShell('/shop', null, false)).toBe(false);
   });
 });

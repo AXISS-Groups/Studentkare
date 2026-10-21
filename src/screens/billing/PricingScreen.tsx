@@ -3,8 +3,8 @@ import { Building, ChevronDown, Crown, Gift, Globe, GraduationCap, Rocket, Shopp
 import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
 import { pressable } from '@/lib/a11y/pressable';
-import { money } from '../../data/types/workflowTypes';
 import { getPlans, openSubscriptionCheckout, PlanCatalog } from '../../data/datasets/billing';
+import { planPackageLabels, planPriceLabel } from '../../data/datasets/billingPrices';
 import { useAuth } from '../../data/contexts/AuthContext';
 import { apiRequest } from '../../data/services/http';
 import { navigate } from '../../lib/utils/workflowRouting';
@@ -106,9 +106,13 @@ export function PricingScreen() {
     }));
   };
 
-  // The Student Plus price is the server's plan list, never a figure typed into this page.
+  // Plan prices are the server's plan list (settings registry), never a figure typed into this page.
   const plusPlan = catalog?.plans.find(plan => plan.id === 'STUDENT_PLUS');
-  const plusPrice = plusPlan && typeof plusPlan.price === 'number' ? `${money(plusPlan.price * 100)} ${plusPlan.period}` : t('shopweb.pricing.premium.priceUnavailable');
+  const plusPrice = plusPlan && typeof plusPlan.price === 'number' ? t('shopweb.plans.amountPerMonth', { price: planPriceLabel(plusPlan, t) }) : t('shopweb.pricing.premium.priceUnavailable');
+  const plusPackages = plusPlan ? planPackageLabels(plusPlan, t) : [];
+  const plusPackageMonths = plusPlan?.packages?.[0]?.months;
+  const premiumPlan = catalog?.plans.find(plan => plan.id === 'PREMIUM');
+  const premiumPrice = premiumPlan && typeof premiumPlan.price === 'number' ? t('shopweb.plans.amountPerMonth', { price: planPriceLabel(premiumPlan, t) }) : t('shopweb.pricing.premium.priceUnavailable');
 
   return <div className="wf-pricing-page wf-pricing">
     <div className="cm-pricing-wrapper">
@@ -146,7 +150,12 @@ export function PricingScreen() {
                 </div>
               </div>
               <p className="cm-card-desc"><strong>{plusPrice}</strong> — {catalog?.checkoutAvailable ? t('shopweb.pricing.premium.live') : t('shopweb.pricing.premium.notLive')}</p>
+              {plusPackages.map(label => <p key={label} className="cm-card-desc"><strong>{label}</strong></p>)}
+              {plusPackageMonths !== undefined && <p className="cm-card-desc">{t('shopweb.plans.packageOffline', { months: plusPackageMonths })}</p>}
             </div>
+
+            {/* Premium has a starting price only; it is not sold online, so its card explains rather than checks out. */}
+            {premiumPlan && <PlanCard title={t('shopweb.pricing.premiumTier.title')} price={premiumPrice} desc={t('shopweb.pricing.premiumTier.desc')} Icon={Crown} tone="attention" onActivate={() => setResult({ message: t('shopweb.pricing.premiumTier.notAvailable') })} />}
 
             {/* Gifting is proposed. It used to start the viewer's own Student Plus checkout. */}
             <PlanCard title={t(planKey('gift', 'title'))} price={t(planKey('gift', 'price'))} desc={t(planKey('gift', 'desc'))} Icon={Gift} tone="attention" proposed={t('shopweb.pricing.proposed')} onActivate={() => setResult({ message: t('shopweb.pricing.gift.notAvailable') })} />

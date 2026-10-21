@@ -21,6 +21,9 @@ import { AppRouter } from './core/routing/Router';
 import { isPublicPath } from './core/routing/registry';
 import { isVendorPath } from './screens/vendor/vendorRoutes';
 import { isClinicianConsolePath } from './features/clinician/shared/clinicianRoutes';
+import { isWorkspacePath } from './features/health/module';
+import { usePhoneFrame } from './design-system/navigation/usePhoneFrame';
+import { isCampusConsolePath, opensInCampusConsole } from './features/campus/console/campusConsoleRoutes';
 // Register route metadata without eagerly loading screen-exporting feature barrels.
 import './features/auth/module';
 import './features/landing/module';
@@ -40,6 +43,7 @@ function RouterShell() {
   const routePath = asRoutePath(location.pathname.replace(/^\//, ''));
   const mainContent = useRef<HTMLDivElement>(null);
   const previousPath = useRef(location.pathname);
+  const phoneFrame = usePhoneFrame();
 
   useEffect(() => {
     registerGlobalNavigator((to) => routerNav(to));
@@ -137,7 +141,9 @@ function RouterShell() {
       {/* Consoles with their own sidebar and top-right actions (SOS included) draw no
           app bar above them: it pushed their full-height sidebar below the window, so its
           footer could not be reached. */}
-      {!isPublicView && !hasOwnChrome && <InterfaceBar section={section} />}
+      {/* A student at phone width gets the phone frame's own header (SOS included) from the workspace;
+          wider, the student web shell's top nav carries Alerts and SOS, so no second bar is drawn above it. */}
+      {!isPublicView && !hasOwnChrome && !drawsStudentPhoneFrame(location.pathname, auth.user?.role ?? null, phoneFrame) && !drawsStudentWebShell(location.pathname, auth.user?.role ?? null, phoneFrame) && <InterfaceBar section={section} />}
       {auth.status === 'error' && isPublicPath(location.pathname) && (
         <div className="wf-connection-banner" role="status">
           {auth.error}
@@ -150,7 +156,7 @@ function RouterShell() {
             {/* Moving between Super Admin (or partner console) sections must not remount the
                 console: one key per area keeps the shell and sidebar (and its scroll) in place,
                 and only the section content fades in (see super-admin-shell.css, vendor-shell.css). */}
-            <PageTransition key={pageTransitionKey(location.pathname)}>
+            <PageTransition key={pageTransitionKey(location.pathname, auth.user?.role ?? null)}>
               <AppRouter />
             </PageTransition>
           </Suspense>
@@ -160,19 +166,39 @@ function RouterShell() {
   );
 }
 
+/** A signed-in student's workspace page at phone width draws the phone frame (header and tab bar), not the app bar. */
+export function drawsStudentPhoneFrame(pathname: string, role: string | null, phoneWidth: boolean): boolean {
+  // The shop and checkout are public pages, but a signed-in student at phone width gets them as phone boards in the frame.
+  return phoneWidth && role === 'STUDENT' && (isWorkspacePath(pathname) || STUDENT_PHONE_SHOP_PATHS.includes(pathname));
+}
+
+/** Public shop pages that a signed-in student at phone width sees in the student phone frame (see CareScreen). */
+export const STUDENT_PHONE_SHOP_PATHS: readonly string[] = ['/shop', '/checkout'];
+/** Pages a signed-in student gets in the student web shell (top nav with Alerts and SOS) above phone width. */
+export const STUDENT_SHELL_COMMERCE_PATHS: readonly string[] = ['/shop', '/checkout'];
+
+/** A signed-in student's page above phone width draws the student web shell (its own Alerts and SOS), not the app bar. */
+export function drawsStudentWebShell(pathname: string, role: string | null, phoneWidth: boolean): boolean {
+  return !phoneWidth && role === 'STUDENT' && (isWorkspacePath(pathname) || STUDENT_SHELL_COMMERCE_PATHS.includes(pathname));
+}
+
 /**
- * The Super Admin console, and the clinician console for a doctor, draw their own
+ * The Super Admin console, the clinician console for a doctor and the campus
+ * console for a campus admin (and the super admin), draw their own
  * sidebar and top-right actions (SOS included), so the app bar is not drawn above
  * them. (Partner console pages are already public views without it.)
  */
 export function consoleHasOwnChrome(pathname: string, role: string | null): boolean {
   if (/^\/admin(\/|$)/.test(pathname)) return true;
+  if (opensInCampusConsole(pathname, role)) return true;
   return role === 'NMC_DOCTOR' && isClinicianConsolePath(pathname);
 }
 
-/** One key each for the /admin area, the partner console and the clinician console, so no shell is remounted between sections. */
-export function pageTransitionKey(pathname: string): string {
+/** One key each for the /admin area, the partner, clinician and campus consoles, so no shell is remounted between sections. */
+export function pageTransitionKey(pathname: string, role: string | null = null): string {
   if (/^\/admin(\/|$)/.test(pathname)) return 'admin';
+  // A campus admin's notifications and help open in the campus console, so they share its key.
+  if (isCampusConsolePath(pathname) || opensInCampusConsole(pathname, role)) return 'campus';
   if (isClinicianConsolePath(pathname)) return 'clinician';
   return isVendorPath(pathname) ? 'vendor' : pathname;
 }

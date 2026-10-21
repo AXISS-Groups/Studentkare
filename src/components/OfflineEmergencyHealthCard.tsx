@@ -27,10 +27,10 @@ const OfflineEmergencyHealthCardUnwrapped: React.FC = () => {
   };
 
   return (
-    <Card variant="surface" style={{ padding: 20, marginBottom: 20, borderLeftWidth: 4, borderLeftColor: tokens.emergency }}>
+    <Card variant="surface" style={{ padding: 20, marginBottom: 20, borderLeftWidth: 4, borderLeftColor: tokens.action }}>
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-          <WifiOff size={20} color={tokens.emergency} />
+          <WifiOff size={20} color={tokens.action} />
           <Text style={{ fontSize: 16, fontWeight: '800', color: tokens.text, fontFamily: typography.fontFamily }}>
             Offline Emergency Health Card (PWA Mode)
           </Text>
@@ -54,7 +54,7 @@ const OfflineEmergencyHealthCardUnwrapped: React.FC = () => {
           </View>
           <View style={{ alignItems: 'flex-end' }}>
             <Text style={{ fontSize: 10, fontWeight: '800', color: tokens.text3, fontFamily: typography.fontMono }}>BLOOD GROUP</Text>
-            <Text style={{ fontSize: 16, fontWeight: '900', color: tokens.emergency, marginTop: 2 }}>{student.bloodGroup || 'O+ Positive'}</Text>
+            <Text style={{ fontSize: 16, fontWeight: '900', color: tokens.text, marginTop: 2 }}>{student.bloodGroup || 'O+ Positive'}</Text>
           </View>
         </View>
 
@@ -81,9 +81,9 @@ const OfflineEmergencyHealthCardUnwrapped: React.FC = () => {
         </View>
 
         {/* QR Code Visual Placeholder */}
-        <View style={{ alignItems: 'center', justifyContent: 'center', backgroundColor: '#ffffff', borderRadius: 12, padding: 16, marginTop: 8, border: `1px solid ${tokens.rule}` }}>
-          <QrCode size={120} color="#111827" />
-          <Text style={{ fontSize: 10, color: tokens.text3, fontFamily: typography.fontMono, marginTop: 8 }}>
+        <View style={{ alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--sk-color-qr-background)', borderRadius: 12, padding: 16, marginTop: 8, border: `1px solid ${tokens.rule}` }}>
+          <QrCode size={120} color="var(--sk-color-qr-foreground)" />
+          <Text style={{ fontSize: 10, color: 'var(--sk-color-qr-foreground)', fontFamily: typography.fontMono, marginTop: 8 }}>
             AES-256 PARAMEDIC SCAN PAYLOAD
           </Text>
         </View>
@@ -105,8 +105,8 @@ const OfflineEmergencyHealthCardUnwrapped: React.FC = () => {
           onPress={handleReEncryptOffline}
           style={{ flex: 1, backgroundColor: tokens.action, padding: 10, borderRadius: 10, alignItems: 'center', flexDirection: 'row', justifyContent: 'center', gap: 6 }}
         >
-          <Lock size={14} color="#ffffff" />
-          <Text style={{ fontSize: 12, fontWeight: '800', color: '#ffffff', fontFamily: typography.fontFamily }}>
+          <Lock size={14} color={tokens.onAction} />
+          <Text style={{ fontSize: 12, fontWeight: '800', color: tokens.onAction, fontFamily: typography.fontFamily }}>
             Re-Encrypt Offline
           </Text>
         </TouchableOpacity>

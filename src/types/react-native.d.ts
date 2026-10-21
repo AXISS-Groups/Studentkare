@@ -52,6 +52,8 @@ declare module 'react-native' {
     ease: EasingFunction;
     bezier: (x1: number, y1: number, x2: number, y2: number) => EasingFunction;
     inOut: (easing: EasingFunction) => EasingFunction;
+    out: (easing: EasingFunction) => EasingFunction;
+    cubic: EasingFunction;
   };
 
   interface AnimatedInterpolation {
@@ -67,7 +69,14 @@ declare module 'react-native' {
   }
   export const Animated: {
     Value: new (value: number) => AnimatedValue;
-    View: React.FC<{ style?: unknown; children?: React.ReactNode }>;
+    View: React.FC<{
+      style?: unknown;
+      children?: React.ReactNode;
+      testID?: string;
+      accessibilityElementsHidden?: boolean;
+      importantForAccessibility?: 'auto' | 'yes' | 'no' | 'no-hide-descendants';
+    }>;
+    multiply: (a: AnimatedValue | number, b: AnimatedValue | number) => AnimatedInterpolation;
     timing: (
       value: AnimatedValue,
       config: { toValue: number; duration: number; delay?: number; easing?: EasingFunction; useNativeDriver: boolean },
@@ -86,6 +95,13 @@ declare module 'react-native' {
   export const AccessibilityInfo: {
     isReduceMotionEnabled: () => Promise<boolean>;
     addEventListener: (event: 'reduceMotionChanged', handler: (enabled: boolean) => void) => { remove: () => void };
+  };
+
+  export const Keyboard: {
+    addListener: (
+      event: 'keyboardWillShow' | 'keyboardWillHide' | 'keyboardDidShow' | 'keyboardDidHide',
+      handler: () => void,
+    ) => { remove: () => void };
   };
 
   export interface PressableState {

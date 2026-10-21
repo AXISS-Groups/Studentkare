@@ -19,8 +19,9 @@ interface RefillRow { id: string; medicine: string; dosage: string; student: str
 const REASON: Record<string, string> = { WRONG_ITEM: 'Wrong item', DAMAGED: 'Damaged', NOT_NEEDED: 'Not needed', OTHER: 'Other' };
 const dt = (s: number) => new Date(s * 1000).toLocaleString(undefined, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 
-export function PartnerRequestsPanel() {
-  const returns = useApiResource<{ items: ReturnRow[] }>('/work/returns');
+/** `omitReturns`: the returns table is drawn by VendorReturns itself; only visits and refills show here. */
+export function PartnerRequestsPanel({ omitReturns = false }: { omitReturns?: boolean } = {}) {
+  const returns = useApiResource<{ items: ReturnRow[] }>(omitReturns ? null : '/work/returns');
   const visits = useApiResource<{ items: VisitRow[] }>('/work/hostel-visits');
   const refills = useApiResource<{ items: RefillRow[] }>('/work/refills');
   const mutation = useMutation();
@@ -35,12 +36,12 @@ export function PartnerRequestsPanel() {
   return <>
     <div className="wf-panel-heading"><div>
       <span className="care-eyebrow">STUDENT REQUESTS</span>
-      <h2>Returns, hostel visits & refills.</h2>
+      <h2>{omitReturns ? 'Hostel visits & refills.' : 'Returns, hostel visits & refills.'}</h2>
       <p>Only requests that involve you are listed. Students are notified of every decision.</p>
     </div></div>
     <FormError message={mutation.error} />
 
-    <section className="wf-card wf-section-gap" aria-labelledby="pr-returns"><h3 id="pr-returns">Returns</h3>
+    {!omitReturns && <section className="wf-card wf-section-gap" aria-labelledby="pr-returns"><h3 id="pr-returns">Returns</h3>
       <DataState {...returns} retry={returns.reload}>{returns.data?.items.length ? <div className="wf-order-list">{returns.data.items.map(r => <div className="wf-order-line" key={r.id}>
         <div><strong>{r.item} · {REASON[r.reason] ?? r.reason}</strong><small>{r.student} · {dt(r.createdAt)} · {r.status.replace('_', ' ').toLowerCase()}{r.note ? ` · “${r.note}”` : ''}{r.refundPaise ? ` · refund ₹${(r.refundPaise / 100).toFixed(2)} to arrange` : ''}</small>
           {r.hasPhoto && <a className="health-text-button" href={`${apiBaseUrl()}/work/returns/${r.id}/photo`} target="_blank" rel="noreferrer">View photo</a>}</div>
@@ -49,7 +50,7 @@ export function PartnerRequestsPanel() {
             <button type="button" className="health-button" onClick={() => { setDeciding({ row: r, decision: 'DECLINED' }); setNote(''); }}>Decline</button></>}
           {r.status === 'APPROVED' && <button type="button" className="health-button" disabled={mutation.busy} onClick={() => act(`/work/returns/${r.id}/picked-up`, {}, returns.reload)}>Mark picked up</button>}
         </div></div>)}</div> : <EmptyState title="No returns." description="Returns for items you supplied appear here." />}</DataState>
-    </section>
+    </section>}
 
     <section className="wf-card wf-section-gap" aria-labelledby="pr-visits"><h3 id="pr-visits">Hostel room visits</h3>
       <DataState {...visits} retry={visits.reload}>{visits.data?.items.length ? <div className="wf-order-list">{visits.data.items.map(v => <div className="wf-order-line" key={v.id}>

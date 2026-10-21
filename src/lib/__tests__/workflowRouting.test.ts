@@ -28,7 +28,9 @@ describe('Authenticated workspace routing', () => {
     expect(homeForRole('NMC_DOCTOR')).toBe('clinician');
     expect(canAccessRoute('vendor', 'STUDENT')).toBe(false);
     expect(canAccessRoute('clinician', 'VENDOR')).toBe(false);
-    for (const path of ['campus', 'campus-access-requests', 'campus-break-glass'] as const) expect(canAccessRoute(path, 'STUDENT')).toBe(false);
+    for (const path of ['campus', 'campus/students', 'campus/water', 'campus-access-requests', 'campus-break-glass'] as const) expect(canAccessRoute(path, 'STUDENT')).toBe(false);
+    // A campus administrator signs in to the campus console's Overview.
+    expect(homeForRole('CAMPUS_ADMIN')).toBe('campus');
   });
 
   it('sends a counsellor to the crisis queue, and keeps that queue from every campus admin', () => {
@@ -38,7 +40,7 @@ describe('Authenticated workspace routing', () => {
     for (const role of ['STUDENT', 'VENDOR', 'NMC_DOCTOR', 'CAMPUS_ADMIN'] as const) expect(canAccessRoute('counsellor', role)).toBe(false);
     expect(canAccessRoute('counsellor', null)).toBe(false);
     // A counsellor is not a campus administrator: no campus hub, access requests or break-glass.
-    for (const path of ['campus', 'campus-access-requests', 'campus-break-glass', 'campus-wellness'] as const) expect(canAccessRoute(path, 'COUNSELLOR')).toBe(false);
+    for (const path of ['campus', 'campus/counsellor', 'campus/insights', 'campus-access-requests', 'campus-break-glass', 'campus-wellness'] as const) expect(canAccessRoute(path, 'COUNSELLOR')).toBe(false);
   });
 
   it('keeps every clinician console page doctor-only', () => {

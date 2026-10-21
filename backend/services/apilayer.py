@@ -202,20 +202,10 @@ async def geolocate_ip_freegeoip(ip: str) -> Dict[str, Any]:
     api_key = get_apilayer_api_key()
 
     if not is_apilayer_enabled() or ip in ("127.0.0.1", "localhost", "testclient"):
-        return {
-            "ip": ip,
-            "country_code": "IN",
-            "country_name": "India",
-            "region_code": "TG",
-            "region_name": "Telangana",
-            "city": "Hyderabad",
-            "zip_code": "502285",
-            "time_zone": "Asia/Kolkata",
-            "latitude": 17.3850,
-            "longitude": 78.4867,
-            "is_campus_subnet": True,
-            "source": "fallback_mock",
-        }
+        # Not configured (or a loopback address): the location is unknown, not
+        # guessed. This used to answer with a made-up Hyderabad campus location,
+        # timezone and "is_campus_subnet": True.
+        return {"ip": ip, "located": False, "source": "unconfigured"}
 
     url = f"{APILAYER_BASE_URL}/freegeoip/json/{ip}"
     headers = {"apikey": api_key}
@@ -227,7 +217,7 @@ async def geolocate_ip_freegeoip(ip: str) -> Dict[str, Any]:
                 data = response.json()
                 data["source"] = "apilayer_freegeoip"
                 return data
-            return {"ip": ip, "country_code": "IN", "city": "Hyderabad", "source": "fallback"}
+            return {"ip": ip, "located": False, "source": "apilayer_freegeoip_error"}
     except Exception as e:
         return {"ip": ip, "error": str(e), "source": "exception_fallback"}
 

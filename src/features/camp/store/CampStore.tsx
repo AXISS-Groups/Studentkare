@@ -1,6 +1,5 @@
 import { makeAutoObservable } from 'mobx';
 import type { HealthCamp } from '@/types';
-import type { StudentStore } from '../../health/store/StudentStore';
 
 /** Domain store for the campus health camp day (stations, badge, check-in). */
 /**
@@ -25,7 +24,7 @@ const NO_CAMP: HealthCamp = {
 export class CampStore {
   camp: HealthCamp = NO_CAMP;
 
-  constructor(private readonly studentStore: StudentStore) {
+  constructor() {
     makeAutoObservable(this, {}, { autoBind: true });
   }
 
@@ -51,6 +50,7 @@ export class CampStore {
       completedCount,
       digitalBadgeEarned: completedCount === this.camp.totalStations,
     };
-    this.studentStore.addPoints(100);
+    // No points for a station: points come only from the server's ledger
+    // (GET /api/points/me), and a health check is not something to score.
   }
 }

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import { Plus } from 'lucide-react';
+import { Icon } from '@/design-system/icons';
 import { DataState, Field, FormError, Pagination, SubmitButton } from '@/components/interface/WorkflowUI';
 import { ShopDialog } from '@/components/marketplace/ShopDialog';
 import { ConfirmDialog } from '@/components/interface/ConfirmDialog';
@@ -14,7 +14,7 @@ import type { PartnerKind } from '@/data/types/workflowTypes';
 
 const isPartnerKind = (value: string): value is PartnerKind => PARTNER_KINDS.some(kind => kind === value);
 
-/** Accounts & roles → Manage accounts: list, search and filter accounts, and create staff accounts. */
+/** Accounts & roles, Manage accounts: list, search and filter accounts, and create staff accounts. */
 export const AccountsListView = observer(function AccountsListView() {
   const t = useT();
   const [vm] = useState(() => new AccountsListViewModel(accountsRepository));
@@ -24,7 +24,7 @@ export const AccountsListView = observer(function AccountsListView() {
   const [scopeFor, setScopeFor] = useState<StaffAccount | null>(null);
   const [scopeCampus, setScopeCampus] = useState('');
 
-  return <><div className="wf-panel-heading"><div><span className="care-eyebrow">{t('admin.accountsList.eyebrow')}</span><h2>{t('admin.accountsList.title')}</h2><p>{t('admin.accountsList.intro')}</p></div><button type="button" className="health-button health-button-primary" onClick={() => setAdding(true)}><Plus size={16} aria-hidden="true" />{t('admin.accountsList.create')}</button></div>
+  return <><div className="wf-panel-heading"><div><span className="care-eyebrow">{t('admin.accountsList.eyebrow')}</span><h2>{t('admin.accountsList.title')}</h2><p>{t('admin.accountsList.intro')}</p></div><button type="button" className="health-button health-button-primary" onClick={() => setAdding(true)}><Icon name="plus" size={16} />{t('admin.accountsList.create')}</button></div>
   <div style={{ display: 'flex', gap: '12px', marginBottom: '16px', flexWrap: 'wrap' }}>
     <input
       type="search"

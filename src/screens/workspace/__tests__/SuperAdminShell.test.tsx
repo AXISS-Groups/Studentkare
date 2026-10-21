@@ -93,6 +93,26 @@ describe('navigation structure', () => {
     ['admin/activity', 'admin/billing', 'admin/requests', 'admin/support', 'admin/telemetry', 'admin/preventive'].forEach(route => expect(routes).not.toContain(route));
   });
 
+  it('draws each entry with the icon the SuperAdminConsole brief names', () => {
+    renderShell();
+    const icons = Array.from(nav().querySelectorAll('svg')).map(icon => icon.getAttribute('data-icon'));
+    expect(icons).toEqual([
+      'users-small', 'alert-triangle-3', 'map', 'settings-2', 'users-2',
+      'box', 'plug', 'shield-2', 'settings-2',
+      'shield', 'hand-pointer', 'box', 'flask',
+      'banknote', 'bar-chart',
+      'message-circle', 'inbox', 'file', 'clipboard',
+      'rows-split', 'book', 'heart-plus', 'heart-plus', 'arrows-left-right', 'book', 'cpu', 'shield-2',
+    ]);
+  });
+
+  it('shows the brand mark and the SUPER ADMIN role line', () => {
+    renderShell();
+    const sidebar = document.getElementById('sk-admin-sidebar') as HTMLElement;
+    expect(sidebar.querySelector('[data-icon="brand:studentkare-logo"]')).not.toBeNull();
+    expect(within(sidebar).getByText('SUPER ADMIN')).toBeInTheDocument();
+  });
+
   it('renders every group heading', () => {
     renderShell();
     SUPER_ADMIN_NAVIGATION.forEach(group => expect(within(nav()).getByRole('heading', { name: group.title })).toBeInTheDocument());

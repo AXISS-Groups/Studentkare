@@ -1,11 +1,20 @@
+import type { SkColorRole } from '../../theme/tokens/generated/skTokens';
+
 export type MetricId = 'heart' | 'oxygen' | 'sleep' | 'steps';
 export type MetricPeriod = 7 | 30 | 90;
+/** A categorical chart-series token name. */
+export type ChartSeriesColor = Extract<SkColorRole, `chartCategorical${number}`>;
 
-export const healthMetrics = [
-  { id: 'heart' as const, label: 'Resting heart rate', unit: 'bpm', color: '#d96785', base: 72, amplitude: 5, precision: 0, description: 'Your resting pulse over time. Activity, stress, and sleep can influence this measurement.' },
-  { id: 'oxygen' as const, label: 'Blood oxygen', unit: '%', color: '#458dcb', base: 98, amplitude: 1, precision: 0, description: 'An oxygen saturation trend. Device fit and movement can affect the reading.' },
-  { id: 'sleep' as const, label: 'Sleep duration', unit: 'hrs', color: '#8270d8', base: 7.5, amplitude: 0.8, precision: 1, description: 'Time asleep each night. Look for a consistent routine rather than a single perfect night.' },
-  { id: 'steps' as const, label: 'Daily movement', unit: 'steps', color: '#269d89', base: 7200, amplitude: 1800, precision: 0, description: 'Daily steps in this sample history. Set an activity goal that fits your circumstances.' },
+/**
+ * Each metric's series colour is a token NAME (chart-categorical-1…4, DESIGN.md §3),
+ * not a value: the card resolves it with `color[metric.color]` from
+ * '@/design-system/theme', so the chart follows the light/dark scheme.
+ */
+export const healthMetrics: { id: MetricId; label: string; unit: string; color: ChartSeriesColor; base: number; amplitude: number; precision: number; description: string }[] = [
+  { id: 'heart' as const, label: 'Resting heart rate', unit: 'bpm', color: 'chartCategorical4', base: 72, amplitude: 5, precision: 0, description: 'Your resting pulse over time. Activity, stress, and sleep can influence this measurement.' },
+  { id: 'oxygen' as const, label: 'Blood oxygen', unit: '%', color: 'chartCategorical1', base: 98, amplitude: 1, precision: 0, description: 'An oxygen saturation trend. Device fit and movement can affect the reading.' },
+  { id: 'sleep' as const, label: 'Sleep duration', unit: 'hrs', color: 'chartCategorical2', base: 7.5, amplitude: 0.8, precision: 1, description: 'Time asleep each night. Look for a consistent routine rather than a single perfect night.' },
+  { id: 'steps' as const, label: 'Daily movement', unit: 'steps', color: 'chartCategorical3', base: 7200, amplitude: 1800, precision: 0, description: 'Daily steps in this sample history. Set an activity goal that fits your circumstances.' },
 ];
 
 // Fixed, reproducible sample history. Never presented as live device measurements.

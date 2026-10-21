@@ -63,6 +63,8 @@ describe('PayStepView', () => {
     fireEvent.click(await screen.findByRole('button', { name: 'Pay ₹450 · test' }));
     expect(await screen.findByTestId('pay-paid')).toHaveTextContent('Test payment of ₹450 done');
     expect(screen.getByTestId('pay-paid')).toHaveTextContent('No real money moved.');
+    expect(screen.getByTestId('pay-paid')).toHaveTextContent('Order reference ORD_1234');
+    expect(screen.getByRole('button', { name: 'Receipt, not available yet' })).toHaveAttribute('aria-disabled', 'true');
     fireEvent.click(screen.getByRole('button', { name: 'Track order' }));
     expect(onTrack).toHaveBeenCalled();
   });
@@ -77,8 +79,24 @@ describe('PayStepView', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Pay ₹450 · test' }));
     const failed = await screen.findByTestId('pay-failed');
     expect(failed).toHaveTextContent('Your bank declined it. Nothing was charged.');
-    fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
+    expect(screen.getByRole('alert')).toHaveTextContent('Payment failed');
+    fireEvent.click(screen.getByRole('button', { name: 'Try another method' }));
     expect(await screen.findByRole('button', { name: 'Pay ₹450 · test' })).toBeInTheDocument();
+  });
+
+  it('retries the same amount from a decline, on the same provider order', async () => {
+    const request = renderWith({
+      [`POST ${base}`]: MOCK_START,
+      [`POST ${base}/mock-checkout`]: { providerOrderId: 'mock_order_1', providerPaymentId: 'mock_pay_2', signature: 's', outcome: 'failed', errorCode: 'card_declined', testMode: true },
+      [`POST ${base}/verify`]: { ...PAID, outcome: 'FAILED', paymentStatus: 'UNPAID' },
+    });
+    fireEvent.click(await screen.findByRole('radio', { name: /Bank declines the payment/ }));
+    fireEvent.click(screen.getByRole('button', { name: 'Pay ₹450 · test' }));
+    await screen.findByTestId('pay-failed');
+    expect(screen.queryByTestId('result-confetti')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Retry ₹450' }));
+    expect(await screen.findByTestId('pay-failed')).toBeInTheDocument();
+    expect(request.onTrack).not.toHaveBeenCalled();
   });
 
   it('says when online payment is not connected', async () => {

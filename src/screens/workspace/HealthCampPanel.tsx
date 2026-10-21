@@ -14,6 +14,10 @@ import { apiRequest } from '../../data/services/http';
 import { FormError, useMutation } from '../../components/interface/WorkflowUI';
 import { DataState, EmptyState } from '../../components/interface/WorkflowUI';
 import { useT, type MessageKey, type Vars } from '@/i18n';
+import { useAuth } from '@/data/contexts/AuthContext';
+import { ResultCampBookedView } from '@/features/camp/views/ResultCampBookedView';
+import { CampDayView } from '@/features/camp/day/CampDayView';
+import { navigate } from '@/lib/utils/workflowRouting';
 import '../../theme/workflows.css';
 
 interface Camp {
@@ -151,6 +155,9 @@ export function HealthCampPanel() {
   const [selectedSlotId, setSelectedSlotId] = useState('');
   const [confirmation, setConfirmation] = useState<BookingResponse | null>(null);
   const [notice, setNotice] = useState<MessageKey | null>(null);
+  /** A booking made just now: the result moment (canvas ResultCampBooked) shows until "See camp day". */
+  const [justBooked, setJustBooked] = useState<BookingResponse | null>(null);
+  const { user } = useAuth();
   const mutation = useMutation();
 
   const selectedCamp = camps.data?.items.find(camp => camp.id === selected);
@@ -206,6 +213,8 @@ export function HealthCampPanel() {
       }),
       result => {
         setConfirmation(result);
+        setJustBooked(result);
+        window.scrollTo({ top: 0, behavior: 'instant' });
         setNotice('care.camp.confirmationTitle');
         status.reload();
         slots.reload();
@@ -229,6 +238,32 @@ export function HealthCampPanel() {
       status.reload();
     },
   );
+
+  // Just booked: the booking result (canvas ResultCampBooked, WP-04) comes before the camp day.
+  if (justBooked) {
+    return (
+      <ResultCampBookedView booking={justBooked} studentName={user?.fullName ?? ''}
+        onBack={() => setJustBooked(null)} onSeeCamp={() => setJustBooked(null)}
+        onCalendar={() => addBookingToCalendar(justBooked, t)} />
+    );
+  }
+
+  // Registered for the selected camp: the camp day itself (canvas CampDay), with
+  // the same check-in and station actions this panel always had.
+  if (selectedCamp && status.data?.registered && stations.data) {
+    return (
+      <CampDayView
+        data={{ camp: selectedCamp, status: status.data, stations: stations.data.items, slot: bookedSlot ?? null }}
+        busy={mutation.busy}
+        error={mutation.error}
+        onBack={() => { setSelected(''); setSelectedSlotId(''); setConfirmation(null); setNotice(null); }}
+        onCheckIn={checkIn}
+        onCompleteStation={complete}
+        onSeeResults={() => navigate('records')}
+        onAddToCalendar={confirmation ? () => addBookingToCalendar(confirmation, t) : undefined}
+      />
+    );
+  }
 
   return (
     <>

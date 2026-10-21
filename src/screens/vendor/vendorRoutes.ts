@@ -21,6 +21,7 @@ export const VENDOR_ROUTE_PATHS = [
   '/vendor-reorder',
   '/camp-intake',
   '/vendor-camp-intake',
+  '/camp-fast', // the staff app's camp fast mode: full screen, no sidebar
   '/lab-queue',
   '/vendor-lab-queue',
   '/dispensing',

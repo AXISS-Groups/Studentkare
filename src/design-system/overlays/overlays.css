@@ -1,40 +1,194 @@
-/* Drawer. Tokens only. */
+/* Overlays: bottom sheet, side panel (drawer) and dialog — boards Sheets,
+ * NavSheets, ConfirmDialogs. Tokens only; tints are color-mix() of a token. */
 
-@keyframes skDrawerIn { from { transform: translateX(100%); } to { transform: none; } }
+@keyframes skOvFade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes skOvSheet { from { transform: translateY(102%); } to { transform: none; } }
+@keyframes skOvSide { from { transform: translateX(100%); } to { transform: none; } }
+@keyframes skOvDialog { from { opacity: 0; transform: translateY(10px) scale(.94); } to { opacity: 1; transform: none; } }
+@keyframes skOvBadge { 0% { opacity: 0; transform: scale(.4) rotate(-20deg); } 60% { opacity: 1; transform: scale(1.12) rotate(6deg); } 100% { transform: none; } }
+@keyframes skOvSpin { to { transform: rotate(360deg); } }
+@keyframes skOvSpinIn { from { opacity: 0; } to { opacity: 1; } }
 
-.sk-drawer-layer { position: fixed; inset: 0; z-index: 70; font-family: var(--sk-font-sans); }
-.sk-drawer__scrim {
+.sk-ov {
+  position: fixed; inset: 0; z-index: 90;
+  display: flex; flex-direction: column; justify-content: flex-end;
+  font-family: var(--sk-font-sans); color: var(--sk-color-text);
+}
+.sk-ov__scrim {
   position: absolute; inset: 0;
-  background: color-mix(in srgb, var(--sk-color-text) 30%, transparent);
-  animation: skFade 300ms linear both;
+  background: var(--sk-color-scrim);
+  animation: skOvFade 300ms linear both;
 }
-.sk-drawer {
-  position: absolute; top: 0; right: 0; bottom: 0;
-  width: min(480px, 100vw); box-sizing: border-box;
-  padding: 30px 32px; overflow-y: auto;
-  display: flex; flex-direction: column; gap: var(--sk-space-16);
-  border-radius: 26px 0 0 26px;
-  background: var(--sk-color-surface); box-shadow: var(--sk-shadow-float);
-  animation: skDrawerIn var(--sk-duration-sheet) var(--sk-ease-sheet) both;
+.sk-ov__panel {
+  position: relative; box-sizing: border-box;
+  display: flex; flex-direction: column; gap: var(--sk-space-12);
+  max-height: 92vh; overflow-y: auto; overscroll-behavior: contain;
+  outline: none;
 }
-.sk-drawer__close {
-  position: absolute; top: 20px; right: 20px;
+.sk-ov__body { display: flex; flex-direction: column; gap: var(--sk-space-16); flex: 1 1 auto; min-height: 0; }
+
+/* Bottom sheet (phone): frosted glass — one blur, one tint, one hairline. */
+.sk-ov--sheet .sk-ov__panel,
+.sk-ov--dialog .sk-ov__panel {
+  width: 100%;
+  padding: var(--sk-space-12) var(--sk-space-20) calc(var(--sk-space-24) + env(safe-area-inset-bottom, 0px));
+  border-radius: 24px 24px 0 0;
+  box-shadow: var(--sk-shadow-sheet);
+  animation: skOvSheet var(--sk-duration-sheet) var(--sk-ease-sheet) both;
+}
+.sk-ov--sheet .sk-ov__panel {
+  background: color-mix(in srgb, var(--sk-color-surface) 74%, transparent);
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  border-top: 1px solid color-mix(in srgb, var(--sk-color-surface) 75%, transparent);
+}
+.sk-ov--dialog .sk-ov__panel { background: var(--sk-color-surface); }
+/* No backdrop-filter: solid surface, never a see-through grey. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .sk-ov--sheet .sk-ov__panel { background: var(--sk-color-surface); }
+}
+
+.sk-ov__grabber {
+  align-self: center; flex-shrink: 0;
+  width: 40px; height: 4px; border-radius: var(--sk-radius-full);
+  background: color-mix(in srgb, var(--sk-color-text) 18%, transparent);
+}
+
+.sk-ov__close {
+  position: absolute; top: var(--sk-space-16); right: var(--sk-space-16); z-index: 1;
   width: var(--sk-size-touch-target); height: var(--sk-size-touch-target);
+  display: flex; align-items: center; justify-content: center;
   border-radius: var(--sk-radius-md); border: 1px solid var(--sk-color-rule-soft);
-  background: var(--sk-color-surface); color: var(--sk-color-text);
-  display: flex; align-items: center; justify-content: center; cursor: pointer;
+  background: var(--sk-color-surface); color: var(--sk-color-text); cursor: pointer;
 }
-.sk-drawer__head { display: flex; flex-direction: column; gap: 6px; padding-right: 52px; }
-.sk-drawer__eyebrow { font-size: 11px; font-weight: 800; letter-spacing: 1.2px; }
-.sk-drawer__eyebrow--danger { color: var(--sk-color-danger); }
-.sk-drawer__eyebrow--action { color: var(--sk-color-action); }
-.sk-drawer__eyebrow--muted { color: var(--sk-color-text-3); }
-.sk-ds .sk-drawer__title { margin: 0; font-family: inherit; font-size: 21px; line-height: 1.25; font-weight: 800; letter-spacing: -.5px; color: var(--sk-color-text); }
-.sk-ds .sk-drawer__subtitle { margin: 0; font-size: 12.5px; line-height: 1.5; font-weight: 500; color: var(--sk-color-text-2); }
+.sk-ov__close:disabled { opacity: .45; cursor: not-allowed; }
+
+.sk-ov__head { display: flex; flex-direction: column; gap: 6px; }
+.sk-ov__head[data-close] { padding-right: 52px; }
+.sk-ov__eyebrow { font-size: 11px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; }
+.sk-ov__eyebrow--danger { color: var(--sk-color-danger); }
+.sk-ov__eyebrow--action { color: var(--sk-color-action); }
+.sk-ov__eyebrow--muted { color: var(--sk-color-text-3); }
+.sk-ds .sk-ov__title { margin: 0; font-family: inherit; font-size: var(--sk-text-title-sm); line-height: 1.3; font-weight: 800; letter-spacing: -.2px; color: var(--sk-color-text); text-wrap: balance; }
+.sk-ds .sk-ov__subtitle { margin: 0; font-size: var(--sk-text-body-sm); line-height: 1.5; font-weight: 500; color: var(--sk-color-text-2); }
+
+.sk-ov :where(button, a, input, [tabindex="0"]):focus-visible { outline: 3px solid var(--sk-color-focus); outline-offset: 3px; }
+
+/* Side panel: drawers always, sheets on a wide screen. 480 px, full height,
+   anchored right, 26 px radius on the left corners only; 440 ms from the right. */
+.sk-ov--drawer .sk-ov__panel {
+  position: absolute; top: 0; right: 0; bottom: 0;
+  width: min(480px, 100vw); max-height: none;
+  padding: 30px 32px; gap: var(--sk-space-16);
+  border-radius: 26px 0 0 26px;
+  background: color-mix(in srgb, var(--sk-color-surface) 94%, transparent);
+  box-shadow: var(--sk-shadow-float);
+  animation: skOvSide 440ms var(--sk-ease-sheet) both;
+}
+.sk-ov--drawer .sk-ov__grabber { display: none; }
+.sk-ov--drawer .sk-ov__close { top: 20px; right: 20px; }
+.sk-ds.sk-ov--drawer .sk-ov__title { font-size: 21px; line-height: 1.25; letter-spacing: -.5px; }
 
 @media (max-width: 560px) {
-  .sk-drawer { width: 100vw; border-radius: 0; padding: 24px 20px; }
+  .sk-ov--drawer .sk-ov__panel { width: 100vw; border-radius: 0; padding: 24px 20px; }
 }
+
+@media (min-width: 720px) {
+  .sk-ov--sheet .sk-ov__panel {
+    position: absolute; top: 0; right: 0; bottom: 0;
+    width: min(480px, 100vw); max-height: none;
+    padding: 30px 32px; gap: var(--sk-space-16);
+    border-radius: 26px 0 0 26px; border-top: 0;
+    background: color-mix(in srgb, var(--sk-color-surface) 94%, transparent);
+    box-shadow: var(--sk-shadow-float);
+    animation: skOvSide 440ms var(--sk-ease-sheet) both;
+  }
+  .sk-ov--sheet .sk-ov__grabber { display: none; }
+  .sk-ov--sheet .sk-ov__close { top: 20px; right: 20px; }
+
+  .sk-ov--dialog { justify-content: center; align-items: center; padding: var(--sk-space-24); }
+  .sk-ov--dialog .sk-ov__panel {
+    width: 560px; max-width: calc(100% - 32px);
+    padding: 32px 32px 26px; border-radius: 22px;
+    box-shadow: var(--sk-shadow-float);
+    animation: skOvDialog 300ms var(--sk-ease-sheet) both;
+  }
+}
+.sk-ov--dialog .sk-ov__grabber { display: none; }
+
+/* ---- Confirm dialog content (board ConfirmDialogs) ---- */
+.sk-confirm { display: flex; flex-direction: column; align-items: center; gap: var(--sk-space-16); text-align: center; }
+.sk-confirm__badge {
+  width: 64px; height: 64px; flex-shrink: 0; border-radius: var(--sk-radius-full);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: inset 0 -3px 6px color-mix(in srgb, var(--sk-color-text) 6%, transparent);
+  animation: skOvBadge 550ms 80ms cubic-bezier(.2, .7, .3, 1.3) both;
+}
+.sk-confirm__badge[data-tone='attention'] { background: var(--sk-color-attention-bg); color: var(--sk-color-attention); }
+.sk-confirm__badge[data-tone='danger'] { background: var(--sk-color-danger-bg); color: var(--sk-color-danger); }
+.sk-confirm__badge[data-tone='privacy'] { background: var(--sk-color-action-soft); color: var(--sk-color-action); }
+.sk-confirm__badge[data-tone='positive'] { background: var(--sk-color-positive-bg); color: var(--sk-color-positive); }
+.sk-ds .sk-confirm__title { margin: 0; font-family: inherit; font-size: 22px; line-height: 1.3; font-weight: 800; letter-spacing: -.4px; color: var(--sk-color-text); text-wrap: balance; }
+.sk-confirm__body { max-width: 440px; font-size: 14px; line-height: 1.55; font-weight: 500; color: var(--sk-color-text-2); text-align: center; }
+.sk-confirm__body:empty { display: none; }
+.sk-confirm__extra { align-self: stretch; text-align: left; }
+.sk-confirm__rule { align-self: stretch; height: 1px; margin: 6px 0 4px; background: var(--sk-color-rule-soft); }
+.sk-confirm__actions { display: flex; gap: 14px; justify-content: center; align-self: stretch; }
+.sk-confirm__btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  min-height: var(--sk-size-control); min-width: 128px; padding: 0 22px;
+  border-radius: var(--sk-radius-md); font-family: inherit; font-size: 15px; font-weight: 800; cursor: pointer;
+  transition: background var(--sk-duration-fast) var(--sk-ease-standard);
+}
+/* The safe choice: outlined, on the left, the same size as the action. */
+.sk-confirm__btn--safe { border: 1.5px solid var(--sk-color-action); background: var(--sk-color-surface); color: var(--sk-color-action); }
+.sk-confirm__btn--safe:hover:not(:disabled) { background: var(--sk-color-action-soft); }
+.sk-confirm__btn--safe:disabled { opacity: .5; cursor: not-allowed; }
+/* The action: filled, with a ring. Navy for an ordinary confirm, danger when it removes or ends something. */
+.sk-confirm__btn--primary {
+  border: 0; background: var(--sk-color-action); color: var(--sk-color-on-action);
+  box-shadow: 0 0 0 3px var(--sk-color-surface), 0 0 0 5px color-mix(in srgb, var(--sk-color-action) 40%, transparent);
+}
+.sk-confirm__btn--primary:hover:not([aria-disabled]) { background: var(--sk-color-action-hover); }
+.sk-confirm[data-tone='danger'] .sk-confirm__btn--primary {
+  background: var(--sk-color-danger-fill); color: var(--sk-color-on-danger-fill);
+  box-shadow: 0 0 0 3px var(--sk-color-surface), 0 0 0 5px color-mix(in srgb, var(--sk-color-danger-fill) 40%, transparent);
+}
+.sk-confirm[data-state='done'] .sk-confirm__btn--primary { background: var(--sk-color-action); color: var(--sk-color-on-action); }
+.sk-confirm__btn--primary[aria-busy] { cursor: progress; opacity: .85; }
+/* Spinner only past 400 ms: quick actions never flash one. */
+.sk-confirm__spin { display: inline-flex; animation: skOvSpinIn 1ms var(--sk-duration-spinner-delay) both; }
+.sk-confirm__spin svg { animation: skOvSpin 800ms linear infinite; }
+.sk-confirm__spin circle { stroke-dasharray: 40 60; }
+
+@media (max-width: 719px) {
+  .sk-confirm__actions { flex-direction: column-reverse; }
+  .sk-confirm__btn { width: 100%; }
+}
+
+/* ---- Sheet choice rows (board Sheets) ---- */
+.sk-ov-option {
+  display: flex; align-items: center; gap: var(--sk-space-12);
+  width: 100%; min-height: var(--sk-size-touch-target); box-sizing: border-box;
+  padding: 10px 14px; border-radius: var(--sk-radius-md);
+  border: 1px solid var(--sk-color-rule-soft); background: var(--sk-color-surface);
+  font-family: inherit; text-align: left; color: var(--sk-color-text); cursor: pointer;
+}
+.sk-ov-option[data-selected] { border: 1.5px solid var(--sk-color-action); background: color-mix(in srgb, var(--sk-color-action) 5%, var(--sk-color-surface)); }
+.sk-ov-option[aria-disabled] { cursor: default; }
+.sk-ov-option__mark {
+  width: 20px; height: 20px; flex-shrink: 0; box-sizing: border-box;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 6px; border: 1.5px solid var(--sk-color-rule-strong); color: var(--sk-color-on-action);
+}
+.sk-ov-option[data-kind='radio'] .sk-ov-option__mark { border-radius: var(--sk-radius-full); }
+.sk-ov-option[data-selected] .sk-ov-option__mark { border-color: var(--sk-color-action); background: var(--sk-color-action); }
+.sk-ov-option__text { flex: 1 1 auto; display: flex; flex-direction: column; gap: 2px; }
+.sk-ov-option__label { font-size: 13.5px; font-weight: 700; }
+.sk-ov-option__meta { font-size: 12px; font-weight: 500; color: var(--sk-color-text-2); }
+.sk-ov-option__tag { flex-shrink: 0; padding: 4px 8px; border-radius: var(--sk-radius-full); background: var(--sk-color-action-soft); color: var(--sk-color-action); font-size: 10px; font-weight: 800; letter-spacing: .7px; }
+
 @media (prefers-reduced-motion: reduce) {
-  .sk-drawer, .sk-drawer__scrim { animation: none; }
+  .sk-ov__scrim, .sk-ov__panel, .sk-confirm__badge, .sk-confirm__spin, .sk-confirm__spin svg { animation: none !important; }
+  .sk-confirm__btn { transition: none; }
 }

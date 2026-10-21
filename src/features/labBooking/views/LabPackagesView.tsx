@@ -3,7 +3,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { observer } from 'mobx-react-lite';
 import { useLanguage, useT } from '@/i18n';
 import {
-  Button, EmptyState, ErrorState, Eyebrow, Note, RadioGroup, Rise, Sheet, Skeleton, TextField,
+  Button, ErrorState, Eyebrow, Note, RadioGroup, Rise, Sheet, Skeleton, StateScreen, TextField, useOnline,
 } from '@/design-system';
 import { Icon } from '@/design-system/icons';
 import { color, focusRing, font, fontWeight, radius, size, space } from '@/design-system/theme';
@@ -173,6 +173,7 @@ export const LabPackagesView = observer(function LabPackagesView({ viewModel: vm
   onReports: () => void;
 }) {
   const t = useT();
+  const online = useOnline();
   return (
     <View style={styles.screen} testID="lab-packages">
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
@@ -201,13 +202,24 @@ export const LabPackagesView = observer(function LabPackagesView({ viewModel: vm
           <Text style={styles.introText}>{t('labbook.intro')}</Text>
         </View>
 
-        {vm.phase === 'loading' ? <Skeleton label={t('labbook.loading')} lines={['90%', '70%', '90%', '70%']} /> : null}
-        {vm.phase === 'error' ? (
-          <ErrorState title={t('labbook.errorTitle')} body={t('labbook.errorBody')} retryLabel={t('labbook.retry')}
-            onRetry={() => void vm.load()} />
+        {/* Full-screen states (canvas StateScreens): each names what happened and gives a way forward. */}
+        {vm.phase === 'loading' ? (
+          <StateScreen kind="loading" label={t('labbook.loading')} lines={['90%', '70%', '90%', '70%']} testID="lab-state-loading" />
+        ) : null}
+        {vm.phase === 'error' && !online ? (
+          <StateScreen kind="offline" testID="lab-state-offline" chip={t('labbook.state.offline')} title={t('labbook.offlineTitle')}
+            body={t('labbook.offlineBody')} primary={{ label: t('labbook.retryNow'), onPress: () => void vm.load() }}
+            secondary={{ label: t('labbook.back'), onPress: onBack }} />
+        ) : null}
+        {vm.phase === 'error' && online ? (
+          <StateScreen kind="failure" testID="lab-state-error" chip={t('labbook.state.failed')} title={t('labbook.errorTitle')}
+            body={t('labbook.errorBody')} primary={{ label: t('labbook.retry'), onPress: () => void vm.load() }}
+            secondary={{ label: t('labbook.back'), onPress: onBack }} />
         ) : null}
         {vm.phase === 'ready' && vm.packages.length === 0 ? (
-          <EmptyState title={t('labbook.emptyTitle')} body={t('labbook.emptyBody')} action={{ label: t('labbook.back'), onPress: onBack }} />
+          <StateScreen kind="empty" testID="lab-state-empty" chip={t('labbook.state.empty')} title={t('labbook.emptyTitle')}
+            body={t('labbook.emptyBody')} primary={{ label: t('labbook.back'), onPress: onBack }}
+            secondary={{ label: t('labbook.myReports'), onPress: onReports }} />
         ) : null}
         {vm.phase === 'ready' && vm.packages.length > 0 ? (
           <Rise>

@@ -2,7 +2,7 @@ import React, { useCallback, useState } from 'react';
 import { LanguageProvider, useT } from '@/i18n';
 import { color } from '@/design-system/theme';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { AppStoresProvider } from '@/store/AppStores';
 import { NavigationProvider, useNavigate } from './navigation';
@@ -49,10 +49,16 @@ import { LeaveCampusRoute } from '@/features/campus/views/LeaveCampusView';
 import { DeleteAccountRoute } from '@/features/account/views/DeleteAccountView';
 import { RewardsRoute } from '@/features/rewards/views/RewardsView';
 import { MyRequestsRoute, NewRequestRoute } from '@/features/requests/views/RequestsViews';
+import { OrdersScreen, ReturnRequestBoardScreen, SearchScreen } from './PhoneBoardsScreens';
 import { NativeSessionProvider, useNativeSession } from './session';
 import { StudentHomeScreen } from './StudentHomeScreen';
+import { StudentShell } from './StudentTabBar';
 import { SessionCheckingScreen } from './SessionCheckingScreen';
 import { OfflineBanner } from '@/design-system';
+import { YourCareBoard } from '@/features/yourcare/views/YourCareBoard';
+import { AppointmentsBoard } from '@/features/appointments/views/AppointmentsBoard';
+import { MoreHubBoard } from '@/features/account/views/MoreHubBoard';
+import { BoardScreen } from '@/design-system/board/BoardKit';
 
 export type RootStackParamList = {
   Landing: undefined;
@@ -72,6 +78,9 @@ export type RootStackParamList = {
   Verify: undefined;
   VerifyGate: undefined;
   Home: undefined;
+  YourCare: undefined;
+  More: undefined;
+  BookAppointment: undefined;
   Camp: undefined;
   PreventiveCare: undefined;
   Vault: undefined;
@@ -95,6 +104,8 @@ export type RootStackParamList = {
   ReturnRequest: undefined;
   HostelVisit: undefined;
   RefillRequest: undefined;
+  Search: undefined;
+  Orders: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -103,7 +114,7 @@ function CampRoute() {
   const navigate = useNavigate();
   return (
     <SafeAreaView edges={['left', 'right', 'bottom']} style={{ flex: 1 }}>
-      <CampScreen onOpenProviders={() => navigate('PreventiveCare')} />
+      <CampScreen onOpenProviders={() => navigate('PreventiveCare')} onSeeResults={() => navigate('Vault')} />
     </SafeAreaView>
   );
 }
@@ -149,14 +160,87 @@ function EmergencyRoute() {
 }
 
 function DigitalIdRoute() {
+  const navigation = useNavigation();
   return (
-    <SafeAreaView edges={['left', 'right', 'bottom']} style={{ flex: 1 }}>
-      <DigitalIdScreen />
+    <BoardFrame>
+      <DigitalIdScreen links={{ back: () => navigation.goBack() }} />
+    </BoardFrame>
+  );
+}
+
+/**
+ * A phone board draws its own canvas header (BoardHeader), so its stack screen
+ * hides the native one and the board takes the top safe area itself.
+ */
+function BoardFrame({ children }: { children: React.ReactNode }) {
+  return (
+    <SafeAreaView edges={['top', 'left', 'right', 'bottom']} style={{ flex: 1, backgroundColor: color.canvas }}>
+      {children}
+    </SafeAreaView>
+  );
+}
+
+function YourCareRoute() {
+  const navigate = useNavigate();
+  return (
+    <BoardFrame>
+      <YourCareBoard links={{
+        appointments: () => navigate('Appointments'),
+        records: () => navigate('Vault'),
+        refill: () => navigate('RefillRequest'),
+        crisis: () => navigate('Emergency'),
+        more: () => navigate('More'),
+      }} />
+    </BoardFrame>
+  );
+}
+
+function MoreRoute() {
+  const navigate = useNavigate();
+  const { user, signOut } = useNativeSession();
+  const [signingOut, setSigningOut] = useState(false);
+  if (!user) return null;
+  return (
+    <SafeAreaView edges={['left', 'right', 'bottom']} style={{ flex: 1, backgroundColor: color.canvas }}>
+      <BoardScreen>
+        <MoreHubBoard
+          account={{ fullName: user.fullName, university: user.university, role: user.role, isVerifiedStudent: user.isVerifiedStudent }}
+          links={{
+            open: {
+              records: () => navigate('Vault'),
+              requests: () => navigate('MyRequests'),
+              notifications: () => navigate('NotificationSettings'),
+              campus: () => navigate('DigitalId'),
+              crisis: () => navigate('Emergency'),
+            },
+            signOut: () => { setSigningOut(true); return signOut().finally(() => setSigningOut(false)); },
+            signingOut,
+          }}
+        />
+      </BoardScreen>
     </SafeAreaView>
   );
 }
 
 function AppointmentsRoute() {
+  const navigate = useNavigate();
+  const navigation = useNavigation();
+  // Coming back from booking shows the new request: each visit loads afresh.
+  const [visit, setVisit] = useState(0);
+  useFocusEffect(useCallback(() => setVisit((v) => v + 1), []));
+  return (
+    <BoardFrame>
+      <AppointmentsBoard reloadKey={visit} links={{
+        book: () => navigate('BookAppointment'),
+        back: () => navigation.goBack(),
+        join: () => navigate('Teleconsult'),
+        crisis: () => navigate('Emergency'),
+      }} />
+    </BoardFrame>
+  );
+}
+
+function BookAppointmentRoute() {
   const [vm] = useState(() => new AppointmentBookingViewModel());
   return (
     <SafeAreaView edges={['left', 'right', 'bottom']} style={{ flex: 1 }}>
@@ -215,11 +299,13 @@ function AiChatRoute() {
 }
 
 function NotificationsRoute() {
+  const navigate = useNavigate();
+  const navigation = useNavigation();
   const [vm] = useState(() => new NotificationViewModel());
   return (
-    <SafeAreaView edges={['left', 'right', 'bottom']} style={{ flex: 1 }}>
-      <NotificationNativeView viewModel={vm} />
-    </SafeAreaView>
+    <BoardFrame>
+      <NotificationNativeView viewModel={vm} links={{ back: () => navigation.goBack(), settings: () => navigate('NotificationSettings') }} />
+    </BoardFrame>
   );
 }
 
@@ -233,22 +319,24 @@ function AppearanceRoute() {
 
 function MyRequestsScreen() {
   const navigate = useNavigate();
-  return <MyRequestsRoute links={{ newReturn: () => navigate('ReturnRequest'), newHostelVisit: () => navigate('HostelVisit'), newRefill: () => navigate('RefillRequest') }} />;
-}
-
-function ReturnRequestScreen() {
-  const navigate = useNavigate();
-  return <NewRequestRoute kind="RETURN" links={{ done: () => navigate('MyRequests') }} />;
+  const navigation = useNavigation();
+  return (
+    <BoardFrame>
+      <MyRequestsRoute links={{ newReturn: () => navigate('ReturnRequest'), newHostelVisit: () => navigate('HostelVisit'), newRefill: () => navigate('RefillRequest'), back: () => navigation.goBack(), crisis: () => navigate('Emergency') }} />
+    </BoardFrame>
+  );
 }
 
 function HostelVisitScreen() {
   const navigate = useNavigate();
-  return <NewRequestRoute kind="HOSTEL_VISIT" links={{ done: () => navigate('MyRequests') }} />;
+  const navigation = useNavigation();
+  return <BoardFrame><NewRequestRoute kind="HOSTEL_VISIT" links={{ done: () => navigate('MyRequests'), back: () => navigation.goBack(), crisis: () => navigate('Emergency') }} /></BoardFrame>;
 }
 
 function RefillRequestScreen() {
   const navigate = useNavigate();
-  return <NewRequestRoute kind="REFILL" links={{ done: () => navigate('MyRequests') }} />;
+  const navigation = useNavigation();
+  return <BoardFrame><NewRequestRoute kind="REFILL" links={{ done: () => navigate('MyRequests'), back: () => navigation.goBack() }} /></BoardFrame>;
 }
 
 function DeleteAccountScreen() {
@@ -257,7 +345,13 @@ function DeleteAccountScreen() {
 
 function LeaveCampusScreen() {
   const navigate = useNavigate();
-  return <LeaveCampusRoute links={{ openRecords: () => navigate('Vault') }} />;
+  const navigation = useNavigation();
+  return <BoardFrame><LeaveCampusRoute links={{ openRecords: () => navigate('Vault'), back: () => navigation.goBack() }} /></BoardFrame>;
+}
+
+function NotificationSettingsScreen() {
+  const navigation = useNavigation();
+  return <BoardFrame><NotificationSettingsRoute links={{ back: () => navigation.goBack() }} /></BoardFrame>;
 }
 
 /**
@@ -276,12 +370,18 @@ function RootNavigator() {
   const held = session.status === 'twoFactorSetup';
   const signedIn = session.status === 'signedIn' && session.user !== null;
   const isDoctor = session.user?.role === 'NMC_DOCTOR';
+  const isStudent = signedIn && session.user?.role === 'STUDENT';
 
   return (
     <Stack.Navigator
       key={held ? 'held' : signedIn ? 'signed-in' : 'signed-out'}
       initialRouteName={held ? 'TwoFactorSetup' : signedIn ? 'Home' : 'Landing'}
       screenOptions={{ animation: 'none', headerTintColor: color.action }}
+      layout={isStudent ? ({ state, navigation, children }) => (
+        <StudentShell currentRoute={state.routes[state.index]?.name ?? ''} navigate={(route) => navigation.navigate(route)}>
+          {children}
+        </StudentShell>
+      ) : undefined}
     >
       {held ? (
         <Stack.Group>
@@ -293,21 +393,26 @@ function RootNavigator() {
           <Stack.Screen name="Vault" component={VaultRoute} options={{ title: t('nav.records') }} />
           <Stack.Screen name="CaptureRecord" component={CaptureRecordRoute} options={{ title: t('capture.title') }} />
           <Stack.Screen name="MedicineReminders" component={MedicineRemindersRoute} options={{ title: t('reminders.title') }} />
-          <Stack.Screen name="Appointments" component={AppointmentsRoute} options={{ title: t('nav.appointments') }} />
-          <Stack.Screen name="DigitalId" component={DigitalIdRoute} options={{ title: t('onboard.nav.healthId') }} />
+          <Stack.Screen name="YourCare" component={YourCareRoute} options={{ title: t('tabbar.yourCare'), headerShown: false }} />
+          <Stack.Screen name="More" component={MoreRoute} options={{ title: t('ws.tab.more') }} />
+          <Stack.Screen name="Appointments" component={AppointmentsRoute} options={{ title: t('nav.appointments'), headerShown: false }} />
+          <Stack.Screen name="BookAppointment" component={BookAppointmentRoute} options={{ title: t('care.appts.book') }} />
+          <Stack.Screen name="DigitalId" component={DigitalIdRoute} options={{ title: t('onboard.nav.healthId'), headerShown: false }} />
           <Stack.Screen name="Checkout" component={CheckoutRoute} options={{ title: t('onboard.nav.checkout') }} />
           <Stack.Screen name="Teleconsult" component={TeleconsultRoute} options={{ title: t('onboard.nav.videoConsult') }} />
           <Stack.Screen name="AiChat" component={AiChatRoute} options={{ title: t('nav.ayush') }} />
-          <Stack.Screen name="Notifications" component={NotificationsRoute} options={{ title: t('nav.notifications') }} />
-          <Stack.Screen name="NotificationSettings" component={NotificationSettingsRoute} options={{ title: t('onboard.nav.notificationSettings') }} />
+          <Stack.Screen name="Notifications" component={NotificationsRoute} options={{ title: t('nav.notifications'), headerShown: false }} />
+          <Stack.Screen name="NotificationSettings" component={NotificationSettingsScreen} options={{ title: t('onboard.nav.notificationSettings'), headerShown: false }} />
           <Stack.Screen name="Appearance" component={AppearanceRoute} options={{ title: t('appearance.title') }} />
-          <Stack.Screen name="LeaveCampus" component={LeaveCampusScreen} options={{ title: t('onboard.nav.leaveCampus') }} />
+          <Stack.Screen name="LeaveCampus" component={LeaveCampusScreen} options={{ title: t('onboard.nav.leaveCampus'), headerShown: false }} />
           <Stack.Screen name="DeleteAccount" component={DeleteAccountScreen} options={{ title: t('onboard.nav.deleteAccount') }} />
           <Stack.Screen name="Rewards" component={RewardsRoute} options={{ title: t('nav.rewards') }} />
-          <Stack.Screen name="MyRequests" component={MyRequestsScreen} options={{ title: t('nav.myRequests') }} />
-          <Stack.Screen name="ReturnRequest" component={ReturnRequestScreen} options={{ title: t('onboard.nav.returnRequest') }} />
-          <Stack.Screen name="HostelVisit" component={HostelVisitScreen} options={{ title: t('onboard.nav.hostelVisit') }} />
-          <Stack.Screen name="RefillRequest" component={RefillRequestScreen} options={{ title: t('onboard.nav.refill') }} />
+          <Stack.Screen name="MyRequests" component={MyRequestsScreen} options={{ title: t('nav.myRequests'), headerShown: false }} />
+          <Stack.Screen name="ReturnRequest" component={ReturnRequestBoardScreen} options={{ title: t('onboard.nav.returnRequest') }} />
+          <Stack.Screen name="Search" component={SearchScreen} options={{ title: t('phone.search.title') }} />
+          <Stack.Screen name="Orders" component={OrdersScreen} options={{ title: t('phone.orders.title') }} />
+          <Stack.Screen name="HostelVisit" component={HostelVisitScreen} options={{ title: t('onboard.nav.hostelVisit'), headerShown: false }} />
+          <Stack.Screen name="RefillRequest" component={RefillRequestScreen} options={{ title: t('onboard.nav.refill'), headerShown: false }} />
           <Stack.Screen name="Verify" component={IdentityVerifyScreen} options={{ title: t('verify.title') }} />
           <Stack.Screen name="VerifyGate" component={VerifyGateScreen} options={{ title: t('gate.eyebrow') }} />
           {isDoctor ? <Stack.Screen name="ClinicianConsole" component={ClinicianConsoleRoute} options={{ title: t('onboard.nav.clinicianConsole') }} /> : null}

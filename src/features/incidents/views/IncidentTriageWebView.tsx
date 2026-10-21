@@ -35,9 +35,9 @@ export const IncidentTriageWebView: React.FC<IncidentTriageWebViewProps> = obser
       <div className={`incident-outcome-card ${viewModel.triageOutcome.sosTriggered ? 'is-sos' : ''}`}>
         <div className="incident-outcome-header">
           {viewModel.triageOutcome.sosTriggered ? (
-            <ShieldAlert size={36} color="#dc2626" />
+            <ShieldAlert size={36} color="var(--sk-color-danger)" />
           ) : (
-            <CheckCircle2 size={36} color="#16a34a" />
+            <CheckCircle2 size={36} color="var(--sk-color-positive)" />
           )}
           <div>
             <h3>Triage Report Registered</h3>
@@ -75,7 +75,7 @@ export const IncidentTriageWebView: React.FC<IncidentTriageWebViewProps> = obser
       {/* Emergency Immediate SOS Strip */}
       <div className="incident-sos-hero">
         <div className="incident-sos-info">
-          <AlertTriangle size={24} color="#ef4444" />
+          <AlertTriangle size={24} color="var(--sk-color-danger)" />
           <div>
             <h3>Campus Emergency Assistance</h3>
             <p>Press for immediate medical emergency dispatch to your current location.</p>

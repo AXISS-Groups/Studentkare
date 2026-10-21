@@ -21,10 +21,11 @@ const SERVER = {
 };
 
 const onDone = vi.fn();
+const onBack = vi.fn();
 
 async function open(overrides: Partial<typeof SERVER> = {}) {
   mocked.mockResolvedValueOnce({ ...SERVER, ...overrides } as never);
-  render(<PermissionsView onDone={onDone} />);
+  render(<PermissionsView onDone={onDone} onBack={onBack} />);
   // The switches render before the fetch resolves, so waiting for one to
   // appear is not waiting for the stored choices to be applied. Flush the
   // resolved promise and the effect it triggers instead of racing them.
@@ -141,7 +142,7 @@ describe('when the current choices cannot be loaded', () => {
   it('says so and does not let anything be saved', async () => {
     // Showing every switch as off would be a claim about their settings.
     mocked.mockRejectedValueOnce(new Error('offline'));
-    render(<PermissionsView onDone={onDone} />);
+    render(<PermissionsView onDone={onDone} onBack={onBack} />);
     await screen.findByRole('alert');
     expect(screen.getByRole('button', { name: /finish setup/i })).toBeDisabled();
     for (const control of screen.getAllByRole('switch')) expect(control).toBeDisabled();
@@ -164,5 +165,35 @@ describe('accessibility', () => {
     for (const svg of container.querySelectorAll('svg')) {
       expect(svg).toHaveAttribute('aria-hidden', 'true');
     }
+  });
+});
+
+describe('the board (canvas Permissions)', () => {
+  it('draws each row with its icon, the explanation before the control', async () => {
+    await open();
+    for (const icon of ['arrow-left', 'shield-2', 'bell-dome', 'pin-drop', 'sparkle']) {
+      expect(document.querySelector(`[data-icon="${icon}"]`)).not.toBeNull();
+    }
+    for (const control of screen.getAllByRole('switch')) {
+      const row = control.closest('li');
+      const detail = row?.querySelector('.sk-permissions__row-detail');
+      expect(detail).not.toBeNull();
+      // DOCUMENT_POSITION_FOLLOWING: the control comes after its explanation.
+      expect((detail?.compareDocumentPosition(control) ?? 0) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    }
+  });
+
+  it('draws crisis alerts as always on, never as a switch', async () => {
+    await open();
+    expect(screen.getByRole('img', { name: 'Always on' })).toBeInTheDocument();
+    const switches = await screen.findAllByRole('switch');
+    expect(switches.map((sw) => sw.getAttribute('aria-labelledby'))).not.toContain('always-title');
+  });
+
+  it('shows the real setup position and goes back', async () => {
+    await open();
+    expect(screen.getByRole('progressbar', { name: 'Setup step 4 of 4' })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Back' }));
+    expect(onBack).toHaveBeenCalled();
   });
 });

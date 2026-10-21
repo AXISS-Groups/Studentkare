@@ -6,6 +6,7 @@ import pytest
 from test_workflow_scheduler_bounds import factory  # noqa: F401
 
 from core import workflow_models as M
+from services import student_time
 from services import workflow_scheduler as scheduler
 
 T0 = 1_800_000_000.0
@@ -147,7 +148,7 @@ def test_quiet_hours_defer_until_the_window_ends_and_free_the_batch(factory, clo
         assert first["deferred"] == 25 and sent == []
         held = db.get(M.OutboxEvent, "held-00")
         assert held.status == "PENDING" and held.next_attempt_at > T0
-        local = datetime.fromtimestamp(held.next_attempt_at, ZoneInfo(scheduler.DEFAULT_TIMEZONE))
+        local = datetime.fromtimestamp(held.next_attempt_at, student_time.default_zone(db))
         assert (local.hour, local.minute) == (7, 0)
         # The deferred rows no longer occupy the 25 slots.
         second = scheduler._process_outbox(db)

@@ -52,7 +52,7 @@ export const LiveWebcamDocScanner: React.FC = () => {
       </Text>
 
       {/* Camera Stream Frame Simulator */}
-      <View style={{ backgroundColor: '#111827', borderRadius: radius.lg, height: 200, padding: 16, position: 'relative', overflow: 'hidden', marginBottom: 16 }}>
+      <View style={{ backgroundColor: 'var(--sk-color-camera-bg)', borderRadius: radius.lg, height: 200, padding: 16, position: 'relative', overflow: 'hidden', marginBottom: 16 }}>
         <View style={{ position: 'absolute', top: 12, right: 12, zIndex: 10 }}>
           <Badge label={scanning ? 'SCANNING FRAME...' : overlays.length > 0 ? '3 BOUNDING BOXES DETECTED' : 'CAMERA READY'} variant={overlays.length > 0 ? 'positive' : 'mono'} />
         </View>
@@ -68,14 +68,14 @@ export const LiveWebcamDocScanner: React.FC = () => {
               width: ov.box.width,
               height: ov.box.height,
               borderWidth: 2,
-              borderColor: tokens.action,
-              backgroundColor: 'rgba(0, 177, 255, 0.15)',
+              borderColor: 'var(--sk-color-camera-accent)',
+              backgroundColor: 'color-mix(in srgb, var(--sk-color-camera-accent) 15%, transparent)',
               borderRadius: 6,
               paddingHorizontal: 6,
               justifyContent: 'center',
             }}
           >
-            <Text style={{ fontSize: 10, fontWeight: '800', color: '#ffffff', fontFamily: typography.fontMono }}>
+            <Text style={{ fontSize: 10, fontWeight: '800', color: 'var(--sk-color-on-hero)', fontFamily: typography.fontMono }}>
               {ov.label}: {ov.value} ({ov.confidence}%)
             </Text>
           </View>
@@ -83,8 +83,8 @@ export const LiveWebcamDocScanner: React.FC = () => {
 
         {!scanning && overlays.length === 0 && (
           <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-            <Camera size={40} color="#4b5563" />
-            <Text style={{ color: '#9ca3af', fontSize: 12, marginTop: 8, fontFamily: typography.fontMono }}>
+            <Camera size={40} color="color-mix(in srgb, var(--sk-color-on-camera) 55%, var(--sk-color-camera-bg))" />
+            <Text style={{ color: 'var(--sk-color-on-camera)', fontSize: 12, marginTop: 8, fontFamily: typography.fontMono }}>
               Align printed lab report under camera lens
             </Text>
           </View>
@@ -97,8 +97,8 @@ export const LiveWebcamDocScanner: React.FC = () => {
         disabled={scanning}
         style={{ backgroundColor: tokens.action, padding: 12, borderRadius: 12, alignItems: 'center', flexDirection: 'row', justifyContent: 'center', gap: 8 }}
       >
-        <Scan size={18} color="#ffffff" />
-        <Text style={{ color: '#ffffff', fontWeight: '800', fontSize: 13, fontFamily: typography.fontFamily }}>
+        <Scan size={18} color={tokens.onAction} />
+        <Text style={{ color: tokens.onAction, fontWeight: '800', fontSize: 13, fontFamily: typography.fontFamily }}>
           {scanning ? 'Scanning Frame & Drawing Overlays...' : 'Capture & Extract Pixel Bounding Boxes'}
         </Text>
       </TouchableOpacity>

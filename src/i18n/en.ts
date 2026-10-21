@@ -2,16 +2,27 @@ import { memberEn } from './areas/member';
 import { careEn } from './areas/care';
 import { assistEn } from './areas/assist';
 import { shopwebEn } from './areas/shopweb';
+import { phonestoreEn } from './areas/phonestore';
 import { onboardEn } from './areas/onboard';
+import { launchEn } from './areas/launch';
 import { landingEn } from './areas/landing';
 import { adminEn } from './areas/admin';
+import { adminBoardEn } from './areas/adminBoard';
 import { campusEn } from './areas/campus';
+import { campusConsoleEn } from './areas/campusConsole';
+import { campusBoardsEn } from './areas/campusBoards';
 import { partnerEn } from './areas/partner';
 import { deviceEn } from './areas/device';
+import { studentshellEn } from './areas/studentshell';
+import { studentwebEn } from './areas/studentweb';
 import { payEn } from './areas/pay';
 import { labbookEn } from './areas/labbook';
 import { rewardsEn } from './areas/rewards';
 import { wellnessEn } from './areas/wellness';
+import { consoleEn } from './areas/console';
+import { phoneboardsEn } from './areas/phoneboards';
+import { clinicianWorkEn } from './areas/clinicianWork';
+import { partnerConsoleEn } from './areas/partnerConsole';
 /**
  * English — the source catalogue. Telugu and Hindi must define every key
  * (enforced by the `Catalog` type). Names, phone numbers, "WhatsApp", "ABHA"
@@ -324,6 +335,8 @@ export const en = {
   'auth.remembered.forget': "Forget this device",
   'auth.signin.hint.EMAIL': "Use your institute email to unlock campus pricing and Edu ID perks.",
   'auth.signin.hint.WHATSAPP': "We send a 6-digit code on WhatsApp. Standard message rates apply.",
+  'auth.signin.invalid.EMAIL': 'Enter a full email address, like you@campus.edu.in.',
+  'auth.signin.invalid.WHATSAPP': 'Enter your WhatsApp number to continue.',
   'auth.continue': "Continue",
   'auth.continueToCode': "Continue to verification code",
   'auth.lostPhone': "Lost your phone? Unbind device",
@@ -727,6 +740,10 @@ export const en = {
   'bar.alerts': "Alerts",
   'bar.sos': "SOS",
   'common.cancel': "Cancel",
+  'ds.overlay.close': 'Close',
+  'ds.overlay.closePanel': 'Close panel',
+  'ds.toast.dismiss': 'Dismiss',
+  'ds.field.valid': 'Looks right',
   'page.prev': "Previous",
   'page.next': "Next",
   'page.of': "Page {page} of {pages} ({total} items)",
@@ -756,6 +773,17 @@ export const en = {
   'nav.earnings': "Earnings",
   'nav.support': "Support",
   'nav.wellnessTraining': "Wellness training",
+  // Phone tab bar (canvas HomeDiscover bottom bar)
+  'tabbar.label': "Main sections",
+  'tabbar.discover': "Discover",
+  'tabbar.wellness': "Wellness",
+  'tabbar.ayush': "Ayush AI",
+  'tabbar.records': "Records",
+  'tabbar.appointments': "Appointments",
+  'tabbar.labTests': "Lab Tests",
+  'tabbar.yourCare': "Your Care",
+  // Phone header on the web at phone width (canvas phone boards)
+  'phone.brand': "Student Kare",
   'nav.campusWellness': "Campus wellness",
   'nav.devices': "Devices & sensors",
   'nav.plan': "Plan",
@@ -771,6 +799,7 @@ export const en = {
   'role.VENDOR': "Provider workspace",
   'role.NMC_DOCTOR': "Clinician workspace",
   'ws.signOutTitle': "Sign out of this device?",
+  'ws.signOutBody': 'You’ll need your OTP to get back in. Your records, orders and bookings stay exactly as they are.',
   'ws.staySignedIn': "Stay signed in",
   'ws.closeNav': "Close menu",
   'ws.openNav': "Open menu",
@@ -794,16 +823,27 @@ export const en = {
   ...careEn,
   ...assistEn,
   ...shopwebEn,
+  ...phonestoreEn,
   ...onboardEn,
+  ...launchEn,
   ...landingEn,
   ...adminEn,
+  ...adminBoardEn,
   ...campusEn,
+  ...campusConsoleEn,
+  ...campusBoardsEn,
   ...partnerEn,
   ...deviceEn,
+  ...studentshellEn,
+  ...studentwebEn,
   ...payEn,
   ...labbookEn,
   ...rewardsEn,
   ...wellnessEn,
+  ...consoleEn,
+  ...phoneboardsEn,
+  ...clinicianWorkEn,
+  ...partnerConsoleEn,
 } as const;
 
 export type MessageKey = keyof typeof en;

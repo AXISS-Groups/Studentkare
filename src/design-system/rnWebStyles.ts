@@ -13,6 +13,8 @@ declare module 'react-native' {
     transitionProperty?: string;
     transitionDuration?: string;
     transitionTimingFunction?: string;
+    /** A CSS gradient built from token variables (web only; native draws a flat tint). */
+    backgroundImage?: string;
   }
 }
 

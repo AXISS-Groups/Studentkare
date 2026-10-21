@@ -1,5 +1,6 @@
 import React from 'react';
-import { ArrowRight, CheckCircle2, FlaskConical, LifeBuoy, Stethoscope, type LucideIcon } from 'lucide-react';
+import { Icon } from '@/design-system/icons';
+import type { SkIconName } from '@/design-system/icons';
 import { useT, type MessageKey } from '@/i18n';
 import { useApiResource } from '@/hooks/api/useApiResource';
 import './account-ready.css';
@@ -28,14 +29,16 @@ const VERIFICATION_TONE: Record<VerificationStatus, string> = {
 
 /** "24×7 crisis support" was not true of the campus; the helplines are what is always there. */
 const UNLOCKED = [
-  { icon: FlaskConical, key: 'onboard.ready.labs' },
-  { icon: Stethoscope, key: 'onboard.ready.telehealth' },
-  { icon: LifeBuoy, key: 'onboard.ready.crisis' },
-] as const satisfies readonly { icon: LucideIcon; key: MessageKey }[];
+  { icon: 'flask-2', tone: 'lab', key: 'onboard.ready.labs' },
+  { icon: 'stethoscope', tone: 'care', key: 'onboard.ready.telehealth' },
+  { icon: 'shield-2', tone: 'safety', key: 'onboard.ready.crisis' },
+] as const satisfies readonly { icon: SkIconName; tone: string; key: MessageKey }[];
 
 export interface AccountReadyViewProps {
   /** Go to the workspace. */
   onEnter: () => void;
+  /** Open Help & support (the board's "Need a hand?" line). */
+  onHelp?: () => void;
 }
 
 /**
@@ -55,7 +58,7 @@ export interface AccountReadyViewProps {
  * data explicitly marked as a concept. Both the duration and the price would
  * be invented, so the capability is named without a price.
  */
-export function AccountReadyView({ onEnter }: AccountReadyViewProps): React.ReactElement {
+export function AccountReadyView({ onEnter, onHelp }: AccountReadyViewProps): React.ReactElement {
   const verification = useApiResource<Verification>('/campus/verification');
   const profile = useApiResource<Profile>('/profile');
   const t = useT();
@@ -69,8 +72,11 @@ export function AccountReadyView({ onEnter }: AccountReadyViewProps): React.Reac
 
   return (
     <section className="sk-ready" aria-labelledby="sk-ready-title">
+      {/* The account exists: that is the fact the tick marks. It says nothing about the body. */}
       <span className="sk-ready__tick">
-        <CheckCircle2 size={40} aria-hidden="true" />
+        <span className="sk-ready__tick-inner">
+          <Icon name="check" size={36} strokeWidth={2.6} />
+        </span>
       </span>
 
       <h1 className="sk-ready__title" id="sk-ready-title">
@@ -86,12 +92,16 @@ export function AccountReadyView({ onEnter }: AccountReadyViewProps): React.Reac
         </p>
       ) : null}
 
+      <span className="sk-ready__shield" aria-hidden="true">
+        <Icon name="shield-2" size={52} strokeWidth={1.8} />
+      </span>
+
       <h2 className="sk-ready__eyebrow">{t('onboard.ready.unlocked')}</h2>
       <ul className="sk-ready__list">
-        {UNLOCKED.map(({ icon: Icon, key }) => (
+        {UNLOCKED.map(({ icon, tone, key }) => (
           <li className="sk-ready__row" key={key}>
-            <span className="sk-ready__row-icon">
-              <Icon size={18} aria-hidden="true" />
+            <span className={`sk-ready__row-icon sk-ready__row-icon--${tone}`}>
+              <Icon name={icon} size={18} />
             </span>
             {t(key)}
           </li>
@@ -100,8 +110,14 @@ export function AccountReadyView({ onEnter }: AccountReadyViewProps): React.Reac
 
       <button type="button" className="sk-ready__primary" onClick={onEnter}>
         {t('onboard.ready.enter')}
-        <ArrowRight size={18} aria-hidden="true" />
+        <Icon name="arrow-right" size={18} strokeWidth={2.4} />
       </button>
+
+      {onHelp ? (
+        <button type="button" className="sk-ready__help" onClick={onHelp}>
+          {t('launch.ready.help')}
+        </button>
+      ) : null}
     </section>
   );
 }

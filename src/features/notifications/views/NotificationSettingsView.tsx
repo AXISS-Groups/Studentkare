@@ -1,40 +1,38 @@
 import React, { useEffect, useState } from 'react';
 import { useT } from '@/i18n';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { observer } from 'mobx-react-lite';
-import { Button, Card, ErrorState, Eyebrow, Note, Rise, Skeleton, SwitchRow, TextField } from '@/design-system';
-import { color, font, fontWeight, space } from '@/design-system/theme';
-import { NotificationSettingsViewModel } from '../viewmodel/NotificationSettingsViewModel';
+import { Button, ErrorState, Note, Rise, Skeleton, SwitchRow, TextField } from '@/design-system';
+import { Icon } from '@/design-system/icons';
+import { BoardHeader } from '@/design-system/navigation/BoardHeader';
+import { BoardCard, BoardScreen, BoardSection } from '@/design-system/board/BoardKit';
+import { color, font, fontWeight, radius, space } from '@/design-system/theme';
+import { NotificationSettingsViewModel, isClockTime } from '../viewmodel/NotificationSettingsViewModel';
 
 /**
- * Notification settings (design page 2, NotificationSettings, Tier 3), one
+ * Notification settings (design page 2, NotificationSettings, Tier 2), one
  * source for web and native.
  *
  * Built from what the backend stores today. The design's per-category ×
- * per-channel grid and the lock-screen switch have no column behind them, so
- * they are not drawn — a toggle that saves nothing would be a lie.
+ * per-channel grid, its lock-screen preview and the "hide health details"
+ * switch have no column behind them, so they are not drawn — a toggle that
+ * saves nothing would be a lie. What the board calls "Safety & account, always
+ * on" is drawn as it is: on, and not a switch.
  */
 export const NotificationSettingsView = observer(function NotificationSettingsView({
   viewModel,
+  links = {},
 }: {
   viewModel: NotificationSettingsViewModel;
+  links?: { back?: () => void };
 }) {
   const vm = viewModel;
   const d = vm.draft;
   const t = useT();
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-      <Rise>
-        <Eyebrow>{t('notif.title')}</Eyebrow>
-        <Text accessibilityRole="header" style={styles.title}>
-          {t('nset.title')}
-        </Text>
-      </Rise>
-
-      <Note tone="info" title={t('always.title')}>
-        {t('always.detail')}
-      </Note>
+    <BoardScreen testID="notification-settings">
+      <BoardHeader title={t('notif.title')} backIcon="chevron-left" backLabel={t('common.back')} onBack={links.back} />
 
       {vm.phase === 'loading' ? <Skeleton label={t('nset.loading')} lines={['70%', '100%', '100%', '60%']} /> : null}
 
@@ -47,10 +45,21 @@ export const NotificationSettingsView = observer(function NotificationSettingsVi
         />
       ) : null}
 
-      {vm.phase === 'ready' && d ? (
-        <>
+      <BoardSection label={t('pb.nset.whatWhere')}>
+        <BoardCard testID="notification-settings-always">
+          <View style={styles.cardHead}>
+            <Text style={[styles.cardTitle, styles.flex]}>{t('always.title')}</Text>
+            <View style={styles.always}>
+              <Icon name="lock-7" size={space.s14} color={color.positive} />
+              <Text style={styles.alwaysText}>{t('pb.nset.alwaysOn')}</Text>
+            </View>
+          </View>
+          <Text style={styles.body}>{t('always.detail')}</Text>
+        </BoardCard>
+
+        {vm.phase === 'ready' && d ? (
           <Rise index={1}>
-            <Card>
+            <BoardCard>
               <SwitchRow
                 label={t('nset.push')}
                 detail={t('nset.pushDetail')}
@@ -69,12 +78,16 @@ export const NotificationSettingsView = observer(function NotificationSettingsVi
                 value={d.remindersEnabled}
                 onChange={(v) => vm.setSwitch('remindersEnabled', v)}
               />
-            </Card>
+            </BoardCard>
           </Rise>
+        ) : null}
+      </BoardSection>
 
+      {vm.phase === 'ready' && d ? (
+        <>
           <Rise index={2}>
-            <Card>
-              <Text style={styles.cardTitle}>{t('nset.quiet')}</Text>
+            <BoardCard>
+              <Text style={styles.cardTitle}>{isClockTime(d.quietStart) && isClockTime(d.quietEnd) ? t('pb.nset.quietRange', { from: d.quietStart, to: d.quietEnd }) : t('nset.quiet')}</Text>
               <Text style={styles.body}>{t('nset.quietBody')}</Text>
               <View style={styles.times}>
                 <View style={styles.time}>
@@ -101,7 +114,7 @@ export const NotificationSettingsView = observer(function NotificationSettingsVi
                 </View>
               </View>
               <Text style={styles.meta}>{t('nset.tz', { tz: d.timezone })}</Text>
-            </Card>
+            </BoardCard>
           </Rise>
 
           <Text style={styles.meta}>
@@ -114,25 +127,26 @@ export const NotificationSettingsView = observer(function NotificationSettingsVi
           <Button label={t('nset.save')} size="cta" fullWidth busy={vm.saving} disabled={!vm.canSave && !vm.saving} onPress={() => void vm.save()} />
         </>
       ) : null}
-    </ScrollView>
+    </BoardScreen>
   );
 });
 
 /** Owns the view model's lifetime for a route on either platform. */
-export function NotificationSettingsRoute(): React.ReactElement {
+export function NotificationSettingsRoute({ links }: { links?: { back?: () => void } } = {}): React.ReactElement {
   const [vm] = useState(() => new NotificationSettingsViewModel());
   useEffect(() => {
     void vm.load();
     return () => vm.dispose();
   }, [vm]);
-  return <NotificationSettingsView viewModel={vm} />;
+  return <NotificationSettingsView viewModel={vm} links={links} />;
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: color.canvas },
-  content: { padding: space.gutterPhone, gap: space.s16, maxWidth: 640 },
-  title: { fontFamily: font.family.sans, fontSize: font.size.heading, fontWeight: fontWeight(font.weight.heavy), color: color.text, marginTop: space.s4 },
+  flex: { flex: 1, minWidth: 0 },
+  cardHead: { flexDirection: 'row', alignItems: 'center', gap: space.s8 },
   cardTitle: { fontFamily: font.family.sans, fontSize: font.size.titleSm, fontWeight: fontWeight(font.weight.strong), color: color.text },
+  always: { flexDirection: 'row', alignItems: 'center', gap: space.s4, borderRadius: radius.full, backgroundColor: color.positiveBg, paddingHorizontal: space.s10, paddingVertical: space.s4 },
+  alwaysText: { fontFamily: font.family.sans, fontSize: font.size.caption, fontWeight: fontWeight(font.weight.heavy), color: color.positive },
   body: { fontFamily: font.family.sans, fontSize: font.size.bodySm, color: color.text2, lineHeight: font.size.bodySm * font.lineHeight.body },
   times: { flexDirection: 'row', gap: space.s12 },
   time: { flex: 1, minWidth: 0 },

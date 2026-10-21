@@ -158,7 +158,7 @@ export function WeatherSeasonalAlertBanner() {
           border: `1px solid ${alertContent.borderColor}`,
           borderRadius: 16,
           padding: '18px 20px',
-          boxShadow: '0 4px 16px rgba(0, 0, 0, 0.04)',
+          boxShadow: 'var(--sk-shadow-card)',
           position: 'relative'
         }}
       >
@@ -221,14 +221,14 @@ export function WeatherSeasonalAlertBanner() {
           <div style={{ background: 'var(--sk-color-surface)', border: '1px solid var(--sk-color-rule)', borderRadius: 10, padding: '8px 12px' }}>
             <span style={{ fontSize: '0.7rem', color: 'var(--sk-color-text-3)', display: 'block' }}>Temp & Feeling</span>
             <strong style={{ fontSize: '0.95rem', color: 'var(--sk-color-text)', display: 'flex', alignItems: 'center', gap: 4 }}>
-              <Thermometer size={14} color="#e11d48" /> {telemetry.temperature}°C
+              <Thermometer size={14} color="var(--sk-color-chart-categorical-4)" /> {telemetry.temperature}°C
             </strong>
           </div>
 
           <div style={{ background: 'var(--sk-color-surface)', border: '1px solid var(--sk-color-rule)', borderRadius: 10, padding: '8px 12px' }}>
             <span style={{ fontSize: '0.7rem', color: 'var(--sk-color-text-3)', display: 'block' }}>Humidity</span>
-            <strong style={{ fontSize: '0.95rem', color: '#0284c7', display: 'flex', alignItems: 'center', gap: 4 }}>
-              <Droplets size={14} color="#0284c7" /> {telemetry.humidity}%
+            <strong style={{ fontSize: '0.95rem', color: 'var(--sk-color-text)', display: 'flex', alignItems: 'center', gap: 4 }}>
+              <Droplets size={14} color="var(--sk-color-chart-categorical-5)" /> {telemetry.humidity}%
             </strong>
           </div>
 
@@ -241,8 +241,8 @@ export function WeatherSeasonalAlertBanner() {
 
           <div style={{ background: 'var(--sk-color-surface)', border: '1px solid var(--sk-color-rule)', borderRadius: 10, padding: '8px 12px' }}>
             <span style={{ fontSize: '0.7rem', color: 'var(--sk-color-text-3)', display: 'block' }}>Rain Probability</span>
-            <strong style={{ fontSize: '0.95rem', color: '#7c3aed', display: 'flex', alignItems: 'center', gap: 4 }}>
-              <Umbrella size={14} color="#7c3aed" /> {telemetry.rainChance}%
+            <strong style={{ fontSize: '0.95rem', color: 'var(--sk-color-text)', display: 'flex', alignItems: 'center', gap: 4 }}>
+              <Umbrella size={14} color="var(--sk-color-chart-categorical-7)" /> {telemetry.rainChance}%
             </strong>
           </div>
         </div>

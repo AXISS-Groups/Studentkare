@@ -1,9 +1,11 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { pressable } from '@/lib/a11y/pressable';
 import { getPlans } from '@/data/datasets/billing';
-import type { BillingPlan } from '@/data/datasets/billing';
+import { planPackageLabels, planPriceLabel } from '@/data/datasets/billingPrices';
+import type { BillingPackage, BillingPlan } from '@/data/datasets/billing';
 import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
+import { PublicSiteHeader, PublicSitePage } from '@/design-system/public-site';
 import './landing.css';
 
 /**
@@ -22,8 +24,10 @@ type PlansState =
 
 const PAGE_X = 'clamp(16px, 3.5vw, 44px)';
 
-function priceLabel(price: BillingPlan['price']): string {
-  return typeof price === 'number' ? `₹${price.toLocaleString('en-IN')}` : price;
+function isPackage(value: unknown): value is BillingPackage {
+  if (typeof value !== 'object' || value === null) return false;
+  const v = value as Record<string, unknown>;
+  return typeof v.id === 'string' && typeof v.months === 'number' && typeof v.price === 'number';
 }
 
 function footKey(plan: BillingPlan): MessageKey | null {
@@ -39,7 +43,9 @@ function isPlan(value: unknown): value is BillingPlan {
   return typeof v.id === 'string' && typeof v.name === 'string' && typeof v.period === 'string' &&
     typeof v.description === 'string' && typeof v.audience === 'string' &&
     (typeof v.price === 'number' || typeof v.price === 'string') &&
-    Array.isArray(v.benefits) && v.benefits.every((b) => typeof b === 'string');
+    Array.isArray(v.benefits) && v.benefits.every((b) => typeof b === 'string') &&
+    (v.priceFrom === undefined || typeof v.priceFrom === 'boolean') &&
+    (v.packages === undefined || (Array.isArray(v.packages) && v.packages.every(isPackage)));
 }
 
 /** Fail closed: one malformed plan and no price is shown at all. */
@@ -73,16 +79,6 @@ export function LandingPlansView(): React.ReactElement {
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const { state, reload } = usePlanCatalog();
 
-  const nav: { label: MessageKey; href: string; on: boolean }[] = [
-    { label: 'landing.plans.nav.discover', href: '/landing', on: false },
-    { label: 'landing.plans.nav.wellness', href: '/shop', on: false },
-    { label: 'landing.plans.nav.training', href: '/wellness', on: false },
-    { label: 'landing.plans.nav.labTests', href: '/lab-tests', on: false },
-    { label: 'landing.plans.nav.findDoctor', href: '/consult', on: false },
-    { label: 'landing.plans.nav.programmes', href: '/programs', on: false },
-    { label: 'landing.plans.nav.plans', href: '/plans', on: true }
-  ];
-
   const payPerUse: { label: MessageKey; note: MessageKey }[] = [
     { label: 'landing.plans.ppu.labLabel', note: 'landing.plans.ppu.labNote' },
     { label: 'landing.plans.ppu.medicinesLabel', note: 'landing.plans.ppu.medicinesNote' },
@@ -112,47 +108,8 @@ export function LandingPlansView(): React.ReactElement {
     { title: 'landing.plans.pillars.priceTitle', body: 'landing.plans.pillars.priceBody' }
   ];
 
-  const footerLink: React.CSSProperties = { display: 'flex', alignItems: 'center', minHeight: '44px', fontSize: '14px', color: 'var(--sk-color-sidebar-ink-2)', textDecoration: 'none' };
-
   return (
-    <div style={{ width: '100%', minHeight: '100vh', margin: 0, padding: 0, background: 'var(--sk-color-canvas)', display: 'flex', flexDirection: 'column', position: 'relative', overflowX: 'hidden' }}>
-
-      {/* 1. Header */}
-      <header style={{ minHeight: '66px', padding: `0 ${PAGE_X}`, background: 'var(--sk-color-surface)', display: 'flex', alignItems: 'center', gap: '24px', borderBottom: '1px solid var(--sk-color-rule-soft)', flexWrap: 'wrap', boxSizing: 'border-box' }}>
-        <a href="/landing" aria-label={t('landing.plans.homeLink')} style={{ display: 'flex', alignItems: 'center', gap: '10px', minHeight: '44px', textDecoration: 'none' }}>
-          <span style={{ width: '30px', height: '30px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <img src="/brand/sk-mark.png" alt="" aria-hidden="true" width={25} height={30} style={{ display: 'block' }} />
-          </span>
-          <span style={{ fontSize: '17px', fontWeight: 800, color: 'var(--sk-color-text)', letterSpacing: '-0.4px' }}>
-            Student<em style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', fontWeight: 700 }}>&nbsp;Kare</em>
-          </span>
-        </a>
-        <nav style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }} aria-label={t('landing.plans.navLabel')}>
-          {nav.map((n) => (
-            <a
-              key={n.label}
-              href={n.href}
-              aria-current={n.on ? 'page' : undefined}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                height: '44px',
-                padding: '0 14px',
-                borderRadius: '11px',
-                fontSize: '13.5px',
-                textDecoration: 'none',
-                ...(n.on ? { background: 'var(--sk-color-surface-3)', color: 'var(--sk-color-action)', fontWeight: 800 } : { color: 'var(--sk-color-text-2)', fontWeight: 600 })
-              }}
-            >
-              {t(n.label)}
-            </a>
-          ))}
-        </nav>
-        <span style={{ flexGrow: 1 }} />
-        <a href="/login" style={{ display: 'flex', alignItems: 'center', minHeight: '44px', fontSize: '13.5px', fontWeight: 600, color: 'var(--sk-color-text-2)', textDecoration: 'none' }}>
-          {t('landing.plans.signIn')}
-        </a>
-      </header>
+    <PublicSitePage header={<PublicSiteHeader current="plans" variant="compact" />}>
 
       {/* 2. Top Banner with Background Video */}
       <section
@@ -252,12 +209,18 @@ export function LandingPlansView(): React.ReactElement {
 
               <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', flexWrap: 'wrap' }}>
                 <span style={{ fontSize: '38px', fontWeight: 800, letterSpacing: '-1.4px', color: 'var(--sk-color-text)' }}>
-                  {priceLabel(p.price)}
+                  {planPriceLabel(p, t)}
                 </span>
                 <span style={{ fontSize: '12.5px', fontWeight: 600, color: 'var(--sk-color-text-3)' }}>
                   {p.period}
                 </span>
               </div>
+
+              {planPackageLabels(p, t).map((label) => (
+                <span key={label} style={{ fontSize: '13px', fontWeight: 700, color: 'var(--sk-color-text)' }}>
+                  {label}
+                </span>
+              ))}
 
               <span style={{ fontSize: '12px', lineHeight: 1.55, fontWeight: 500, color: 'var(--sk-color-text-3)' }}>
                 {p.description}
@@ -461,36 +424,6 @@ export function LandingPlansView(): React.ReactElement {
           </div>
         ))}
       </section>
-
-      {/* 10. Footer. The newsletter form that used to sit here said "Subscribed!" without sending anything. */}
-      <footer style={{ background: 'var(--sk-color-brand-navy)', padding: '0 clamp(16px, 4vw, 72px)', marginTop: '40px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '32px', padding: '52px 0 40px' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-            <span style={{ fontSize: '19px', fontWeight: 800, color: 'var(--sk-color-sidebar-ink)' }}>Student Kare</span>
-            <span style={{ fontSize: '13px', lineHeight: 1.6, color: 'var(--sk-color-sidebar-ink-3)' }}>{t('landing.campus.footer.tagline')}</span>
-          </div>
-          <nav aria-label="Student Kare" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-            <span style={{ fontSize: '12px', fontWeight: 800, color: 'var(--sk-color-sidebar-ink-3)' }}>STUDENT KARE</span>
-            <a href="/campuses" style={footerLink}>{t('landing.campus.nav.forCampuses')}</a>
-            <a href="/plans" style={footerLink}>{t('landing.plans.footer.howWeMakeMoney')}</a>
-            <a href="/partnerships" style={footerLink}>{t('landing.campus.nav.partnerships')}</a>
-          </nav>
-          <nav aria-label={t('landing.plans.footer.groupStudents')} style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-            <span style={{ fontSize: '12px', fontWeight: 800, color: 'var(--sk-color-sidebar-ink-3)' }}>{t('landing.plans.footer.groupStudents')}</span>
-            <a href="/lab-tests" style={footerLink}>{t('landing.plans.footer.bookLab')}</a>
-            <a href="/consult" style={footerLink}>{t('landing.plans.footer.consult')}</a>
-            <a href="/wellness" style={footerLink}>{t('landing.plans.footer.wellness')}</a>
-          </nav>
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: '22px', padding: '22px 0 28px', borderTop: '1px solid rgba(255,255,255,0.12)', flexWrap: 'wrap' }}>
-          <span style={{ fontSize: '12.5px', fontWeight: 600, color: 'var(--sk-color-sidebar-ink-3)' }}>© 2026 AVKS AI · studentkare.co</span>
-          <span style={{ flexGrow: 1 }} />
-          <a href="/crisis" style={{ display: 'flex', alignItems: 'center', minHeight: '44px', fontSize: '12.5px', fontWeight: 800, color: 'var(--sk-color-sidebar-ink)', textDecoration: 'none' }}>
-            {t('landing.plans.footer.crisis', { emergency: '112', telemanas: '14416' })}
-          </a>
-        </div>
-      </footer>
-    </div>
+    </PublicSitePage>
   );
 }

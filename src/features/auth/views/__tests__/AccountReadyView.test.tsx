@@ -115,3 +115,20 @@ describe('accessibility', () => {
     }
   });
 });
+
+describe('the board (canvas AccountReady)', () => {
+  it('draws the tick, the shield, the unlocked rows with their icons and the way in', async () => {
+    await open({ status: 'PENDING', university: 'VNR VJIET', rollNumber: 'R1' }, { fullName: 'A', hostelBlock: 'North Dorm, Block B' });
+    for (const icon of ['check', 'shield-2', 'flask-2', 'stethoscope', 'arrow-right']) {
+      expect(document.querySelector(`[data-icon="${icon}"]`)).not.toBeNull();
+    }
+    expect(screen.getByText(/VNR VJIET · North Dorm, Block B/)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /enter studentkare/i }));
+    expect(onEnter).toHaveBeenCalled();
+  });
+
+  it('offers help only when there is somewhere to send the student', async () => {
+    await open();
+    expect(screen.queryByRole('button', { name: /need a hand/i })).toBeNull();
+  });
+});

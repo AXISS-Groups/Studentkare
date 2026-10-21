@@ -28,7 +28,7 @@ describe('Intake & OCR', () => {
   it('groups the queue by document and shows the waiting count in the header', async () => {
     apiAnswers[QUEUE] = () => Promise.resolve(queue);
     render(<IntakeView />);
-    expect(screen.getByText('Loading the intake queue…')).toBeInTheDocument();
+    expect(screen.getByRole('status', { name: 'Loading the intake queue…' })).toBeInTheDocument();
     expect(await screen.findByText('3 fields waiting')).toBeInTheDocument();
     expect(queueRequests()).toHaveLength(1);
     const list = screen.getByRole('region', { name: /Needs a human · 2/ });
@@ -55,6 +55,7 @@ describe('Intake & OCR', () => {
     expect(apiRequest).toHaveBeenCalledWith('/ops/intake/review/f1', { method: 'PATCH', body: JSON.stringify({ approved: true, correctedValue: '22/09/2026' }) });
     expect(apiRequest).toHaveBeenCalledWith('/ops/intake/review/f2', { method: 'PATCH', body: JSON.stringify({ approved: true, correctedValue: '11,800' }) });
     expect(apiRequest).not.toHaveBeenCalledWith('/ops/intake/review/f3', expect.anything());
+    expect(await screen.findByText('Fields confirmed. The decision is in the audit log.')).toBeInTheDocument();
   });
 
   it('rejects the document’s fields', async () => {
@@ -82,12 +83,14 @@ describe('Intake & OCR', () => {
     const { unmount } = render(<IntakeView />);
     expect(await screen.findByText('Nothing waiting for a person.')).toBeInTheDocument();
     expect(screen.queryByText(/waiting$/)).toBeNull();
+    expect(screen.getByRole('button', { name: 'Back to overview' })).toBeInTheDocument();
     unmount();
     apiRequest.mockClear();
     apiAnswers[QUEUE] = () => Promise.reject(new Error('Network error'));
     render(<IntakeView />);
     const alert = await screen.findByRole('alert');
-    expect(alert).toHaveTextContent('Couldn’t load the intake queue');
+    expect(alert).toHaveTextContent('Couldn’t load intake & OCR');
+    expect(alert).toHaveTextContent('Ref ERR-503 · AdminIntake');
     expect(alert).toHaveTextContent('Network error');
     fireEvent.click(within(alert).getByRole('button', { name: /try again/i }));
     await waitFor(() => expect(queueRequests()).toHaveLength(2));

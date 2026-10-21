@@ -7,6 +7,10 @@
 export const partnerEn = {
   // clin
   "partner.clin.hub.eyebrow": "CLINICIAN WORKSPACE",
+  "partner.ops.balanceUnavailableTitle": "No prepaid balance to show",
+  "partner.ops.balanceUnavailableBody": "Partner wallets are not set up yet, so there is no balance. Nothing here is an estimate.",
+  "partner.ops.keyUnavailableTitle": "No API key issued",
+  "partner.ops.keyUnavailableBody": "Partner API keys are not issued yet. A key will appear here once one is created for you.",
   "partner.clin.hub.title": "Your practice and patient care",
   "partner.clin.hub.intro": "Consultations, e-prescriptions, your clinical inbox and decision support.",
   "partner.clin.home.introTitle": "Your patients, today.",
@@ -1732,6 +1736,10 @@ export const partnerEn = {
 export const partnerTe: Record<keyof typeof partnerEn, string> = {
   // clin
   "partner.clin.hub.eyebrow": "క్లినిషియన్ వర్క్‌స్పేస్",
+  "partner.ops.balanceUnavailableTitle": "చూపడానికి ప్రీపెయిడ్ బ్యాలెన్స్ లేదు",
+  "partner.ops.balanceUnavailableBody": "పార్ట్‌నర్ వాలెట్లు ఇంకా ఏర్పాటు కాలేదు, కాబట్టి బ్యాలెన్స్ లేదు. ఇక్కడ ఏదీ అంచనా కాదు.",
+  "partner.ops.keyUnavailableTitle": "API కీ జారీ కాలేదు",
+  "partner.ops.keyUnavailableBody": "పార్ట్‌నర్ API కీలు ఇంకా జారీ కాలేదు. మీ కోసం కీ సృష్టించిన తర్వాత ఇక్కడ కనిపిస్తుంది.",
   "partner.clin.hub.title": "మీ ప్రాక్టీస్, పేషెంట్ల సంరక్షణ",
   "partner.clin.hub.intro": "కన్సల్టేషన్లు, ఇ-ప్రిస్క్రిప్షన్లు, మీ క్లినికల్ ఇన్‌బాక్స్, నిర్ణయాలకు సహాయం.",
   "partner.clin.home.introTitle": "ఈరోజు మీ రోగులు.",
@@ -3457,6 +3465,10 @@ export const partnerTe: Record<keyof typeof partnerEn, string> = {
 export const partnerHi: Record<keyof typeof partnerEn, string> = {
   // clin
   "partner.clin.hub.eyebrow": "क्लिनिशियन वर्कस्पेस",
+  "partner.ops.balanceUnavailableTitle": "दिखाने के लिए कोई प्रीपेड बैलेंस नहीं",
+  "partner.ops.balanceUnavailableBody": "पार्टनर वॉलेट अभी सेट नहीं हुए हैं, इसलिए कोई बैलेंस नहीं है। यहाँ कुछ भी अनुमान नहीं है।",
+  "partner.ops.keyUnavailableTitle": "कोई API कुंजी जारी नहीं हुई",
+  "partner.ops.keyUnavailableBody": "पार्टनर API कुंजियाँ अभी जारी नहीं हुई हैं। आपके लिए कुंजी बनने के बाद वह यहाँ दिखेगी।",
   "partner.clin.hub.title": "आपकी प्रैक्टिस और मरीज़ों की देखभाल",
   "partner.clin.hub.intro": "परामर्श, ई-प्रिस्क्रिप्शन, आपका क्लिनिकल इनबॉक्स और फ़ैसलों में मदद।",
   "partner.clin.home.introTitle": "आज के आपके मरीज़।",

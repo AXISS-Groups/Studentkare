@@ -2,10 +2,18 @@ import { apiRequest } from '../services/http';
 import { openRazorpay } from '../services/razorpayCheckout';
 import { skTokens } from '../../theme/tokens/generated/skTokens';
 
-export type BillingPlanId = 'FREE' | 'STUDENT_PLUS' | 'CAMPUS' | 'ENTERPRISE';
+export type BillingPlanId = 'FREE' | 'STUDENT_PLUS' | 'PREMIUM' | 'CAMPUS' | 'ENTERPRISE';
+/** A prepaid bundle of a plan (Student Plus 3-month package). `price` is whole rupees. */
+export interface BillingPackage { id: string; months: number; price: number }
+/**
+ * A plan from GET /billing/plans. A numeric `price` is whole rupees from the
+ * server's settings registry; `priceFrom` marks a starting price, which must
+ * always be shown as "from".
+ */
 export interface BillingPlan {
   id: BillingPlanId; name: string; price: number | string; period: string;
   audience: string; benefits: string[]; description: string;
+  priceFrom?: boolean; packages?: BillingPackage[];
 }
 export interface BillingReceipt {
   invoiceId: string; amountPaise: number; currency: string; paidAt: number;

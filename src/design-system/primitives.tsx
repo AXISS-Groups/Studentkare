@@ -184,7 +184,13 @@ export function ErrorStateView({
  * A polite status message that clears itself. Rendered through a persistent
  * live region so screen readers announce each new message.
  */
-export function Toast({ message, onDone, durationMs = 2600 }: { message: string | null; onDone: () => void; durationMs?: number }): React.ReactElement {
+export function Toast({ message, onDone, durationMs = 2600, icon }: {
+  message: string | null;
+  onDone: () => void;
+  durationMs?: number;
+  /** Drawn before the message, e.g. the canvas's `check-2` on a done toast. Decorative. */
+  icon?: React.ReactNode;
+}): React.ReactElement {
   const [shown, setShown] = useState(message);
   useEffect(() => {
     setShown(message);
@@ -194,7 +200,7 @@ export function Toast({ message, onDone, durationMs = 2600 }: { message: string 
   }, [message, onDone, durationMs]);
   return (
     <div role="status" aria-live="polite">
-      {shown ? <div className="sk-toast">{shown}</div> : null}
+      {shown ? <div className="sk-toast">{icon ? <span className="sk-toast__icon" aria-hidden="true">{icon}</span> : null}{shown}</div> : null}
     </div>
   );
 }

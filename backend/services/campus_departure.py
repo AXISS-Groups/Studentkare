@@ -16,7 +16,6 @@ import time
 import uuid
 from datetime import date, datetime, timedelta
 from typing import Literal
-from zoneinfo import ZoneInfo
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import Field, field_validator, model_validator
@@ -25,18 +24,20 @@ from sqlalchemy.orm import Session
 
 from core import billing_models as B
 from core import workflow_models as M
-from services import ops_feed
+from services import ops_feed, student_time
 from services.workflow_auth import StrictModel, authenticated_user, workflow_db
 
 router = APIRouter(prefix="/api", tags=["Campus departure"])
 
-CAMPUS_TZ = ZoneInfo("Asia/Kolkata")
 MAX_DAYS_AHEAD = 400
 COLLEGE_EMAIL_SUFFIXES = (".ac.in", ".edu", ".edu.in")
 
 
-def today_on_campus() -> date:
-    return datetime.now(CAMPUS_TZ).date()
+def today_on_campus(db=None) -> date:
+    """Today's date on campus. No campus stores its own timezone, so every campus
+    uses the ``platform.default_timezone`` setting, the same zone the scheduler
+    uses to complete departures (one zone, so a date never means two days)."""
+    return datetime.now(student_time.default_zone(db)).date()
 
 
 def _new_id() -> str:
@@ -104,7 +105,7 @@ def complete_departure(db: Session, departure: M.CampusDeparture) -> None:
 
 def complete_due_departures(db: Session, *, on: date | None = None, limit: int = 50) -> dict:
     """Scheduler entry point: complete every departure whose date has arrived. Never commits."""
-    cutoff = (on or today_on_campus()).isoformat()
+    cutoff = (on or today_on_campus(db)).isoformat()
     due = db.scalars(select(M.CampusDeparture).where(
         M.CampusDeparture.status == "SCHEDULED", M.CampusDeparture.effective_on <= cutoff,
     ).order_by(M.CampusDeparture.effective_on, M.CampusDeparture.id).limit(limit)).all()
@@ -127,7 +128,7 @@ def get_departure(user=Depends(authenticated_user), db: Session = Depends(workfl
         "campus": {"university": verification.university, "status": verification.status} if verification else None,
         "collegePlan": _college_plan(db, user["id"]),
         "signsInWithCollegeEmail": _signs_in_with_college_email(account),
-        "today": today_on_campus().isoformat(),
+        "today": today_on_campus(db).isoformat(),
     }
 
 
@@ -164,7 +165,7 @@ def create_departure(body: DepartureInput, user=Depends(authenticated_user), db:
         raise HTTPException(409, "Your account isn't linked to a campus, so there's nothing to leave.")
     if _scheduled(db, user["id"]):
         raise HTTPException(409, "You've already told us you're leaving. Undo that first to change it.")
-    today = today_on_campus()
+    today = today_on_campus(db)
     if body.effectiveOn is None:
         effective = today
     else:

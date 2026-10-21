@@ -24,6 +24,9 @@ const workspacePaths: { path: string; access?: (role: AccountRole | null) => boo
   { path: '/leave-campus', access: hasRole('STUDENT') },
   // Invite friends, points and medals: student accounts only.
   { path: '/rewards', access: hasRole('STUDENT') },
+  // Signed-in student web (canvas 3b): the home and Buy again. Partners keep /reorder.
+  { path: '/home', access: hasRole('STUDENT') },
+  { path: '/buy-again', access: hasRole('STUDENT') },
   { path: '/care-navigator' },
   { path: '/preventive-care' },
   { path: '/report-reviews', access: hasRole('NMC_DOCTOR') },
@@ -63,6 +66,7 @@ const workspacePaths: { path: string; access?: (role: AccountRole | null) => boo
   { path: '/vendor-reorder', access: hasRole('VENDOR', 'SUPER_ADMIN') },
   { path: '/camp-intake', access: hasRole('VENDOR', 'SUPER_ADMIN') },
   { path: '/vendor-camp-intake', access: hasRole('VENDOR', 'SUPER_ADMIN') },
+  { path: '/camp-fast', access: hasRole('VENDOR', 'SUPER_ADMIN') },
   { path: '/settlement', access: hasRole('VENDOR', 'SUPER_ADMIN') },
   { path: '/settlements', access: hasRole('VENDOR', 'SUPER_ADMIN') },
   { path: '/vendor-settlement', access: hasRole('VENDOR', 'SUPER_ADMIN') },
@@ -110,8 +114,13 @@ const workspacePaths: { path: string; access?: (role: AccountRole | null) => boo
   { path: '/admin/case', access: hasRole('SUPER_ADMIN') },
   { path: '/admin/price-fix', access: hasRole('SUPER_ADMIN') },
   { path: '/admin/lab-reviews', access: hasRole('SUPER_ADMIN') },
+  { path: '/admin/claims', access: hasRole('SUPER_ADMIN') },
   { path: '/admin/outbox', access: hasRole('SUPER_ADMIN') },
   { path: '/delete-account', access: hasRole('STUDENT') },
+  // The student's Your Care overview (the phone tab), account details and data export.
+  { path: '/your-care', access: hasRole('STUDENT') },
+  { path: '/account' },
+  { path: '/data-export' },
   { path: '/my-requests', access: hasRole('STUDENT') },
   { path: '/return-request', access: hasRole('STUDENT') },
   { path: '/hostel-visit', access: hasRole('STUDENT') },
@@ -133,13 +142,23 @@ const workspacePaths: { path: string; access?: (role: AccountRole | null) => boo
   { path: '/clinician/encounter-note', access: hasRole('NMC_DOCTOR') },
   { path: '/clinician/prescribe', access: hasRole('NMC_DOCTOR') },
   { path: '/campus', access: hasRole('CAMPUS_ADMIN', 'SUPER_ADMIN') },
+  // The campus console's boards (design page 4); one shell, see CampusConsole.
+  ...['students', 'blocks', 'verification', 'leave', 'scorecard', 'insights', 'camps', 'certificates', 'sos', 'incidents', 'ambulance', 'counsellor', 'isolation', 'discharge', 'outbreak', 'water', 'sanitary', 'mess', 'sla', 'team', 'announcements', 'reports', 'settings', 'aggregate']
+    .map((board) => ({ path: `/campus/${board}`, access: hasRole('CAMPUS_ADMIN', 'SUPER_ADMIN') })),
   { path: '/campus-access-requests', access: hasRole('CAMPUS_ADMIN', 'SUPER_ADMIN') },
   { path: '/campus-break-glass', access: hasRole('CAMPUS_ADMIN', 'SUPER_ADMIN') },
   // Crisis follow-up: counsellors (own campus, server-scoped) and the super admin only.
   { path: '/counsellor', access: hasRole('COUNSELLOR', 'SUPER_ADMIN') },
   { path: '/emergency-card' },
   { path: '/pass' },
+  // Phone search (design page 2: SearchEntry … DoctorResults). The catalogue is public; the boards need a session for booking.
+  { path: '/search' },
 ];
+
+/** True for a URL drawn by the member workspace (WorkspaceRouteScreen). */
+export function isWorkspacePath(pathname: string): boolean {
+  return workspacePaths.some((entry) => entry.path === pathname);
+}
 
 const LEGACY_REDIRECTS: ReadonlyArray<readonly [string, string]> = [
   ['/vault', '/records'],

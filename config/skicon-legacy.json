@@ -1,11 +1,5 @@
 [
-  "src/design-system/clinician-shell/ClinicianShell.tsx",
-  "src/design-system/clinician-shell/clinicianNav.ts",
-  "src/design-system/overlays/Drawer.tsx",
   "src/design-system/primitives.tsx",
-  "src/features/clinician/apply/DoctorApplyView.tsx",
   "src/features/clinician/consult-room/ConsultRoomScreen.tsx",
-  "src/features/clinician/prescribe/PrescribeScreen.tsx",
-  "src/features/clinician/queue/ClinicianQueueView.tsx",
-  "src/features/clinician/today/ClinicianTodayView.tsx"
+  "src/features/clinician/prescribe/PrescribeScreen.tsx"
 ]

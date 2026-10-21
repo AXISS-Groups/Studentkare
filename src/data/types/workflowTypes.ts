@@ -14,6 +14,8 @@ export interface SessionResponse { user: Account | null; csrfToken: string; requ
 export interface MemberProfile extends Account {
   emergencyContactName: string; emergencyContactPhone: string; emergencyContactRelation: string;
   allergies: string[]; chronicConditions: string[]; updatedAt: number | null;
+  /** Where the student lives on campus (GET /profile; "" until set). Older servers omit them. */
+  hostelBlock?: string; room?: string;
 }
 export interface IdentitySummary {
   memberId: string; fullName: string; university: string; rollNumber: string;

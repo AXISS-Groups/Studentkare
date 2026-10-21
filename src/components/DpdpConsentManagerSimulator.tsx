@@ -77,7 +77,7 @@ export const DpdpConsentManagerSimulator: React.FC = () => {
                   width: 20,
                   height: 20,
                   borderRadius: 10,
-                  backgroundColor: '#ffffff',
+                  backgroundColor: tokens.surface,
                   alignSelf: consentScopes[item.key] ? 'flex-end' : 'flex-start',
                 }}
               />

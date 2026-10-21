@@ -24,6 +24,8 @@ import { ScreenLoading } from '@/components/health/ScreenLoading';
 import { PageTransition } from '@/components/interface/PageTransition';
 import { ClinicianConsoleFrame, ClinicianConsoleLayout } from '@/features/clinician/shared/ClinicianConsoleFrame';
 import type { ClinicianNavId } from '@/design-system';
+import { CampusConsole, hasCampusPage } from '@/features/campus/console/CampusConsole';
+import { opensInCampusConsole } from '@/features/campus/console/campusConsoleRoutes';
 import type { RoutePath } from '@/lib/utils/workflowRouting';
 
 /**
@@ -82,6 +84,8 @@ export function WorkspaceRouteScreen() {
   const { user } = useAuth();
   const routePath = useRoutePath();
   const route = asRoutePath(routePath);
+  // Campus boards (design page 4) have their own console. Role gates still run before this screen.
+  if (opensInCampusConsole(`/${route}`, user?.role ?? null) && hasCampusPage(route)) return <CampusConsole route={route} />;
   const ClinicianPage = CLINICIAN_SCREENS[route];
   const consolePanel = user?.role === 'NMC_DOCTOR' && CONSOLE_PANELS[route] !== undefined;
   if (ClinicianPage || consolePanel) {

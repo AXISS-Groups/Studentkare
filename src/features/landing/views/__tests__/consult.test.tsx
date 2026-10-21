@@ -42,7 +42,7 @@ describe('LandingConsultView', () => {
     expect(text).not.toMatch(/App Store|Google Play|Subscribe/);
     expect(screen.queryByRole('textbox')).toBeNull();
     expect(text).toMatch(/Fee set by the doctor/);
-    expect(text).toMatch(/not in the app stores yet/i);
+    expect(text).toMatch(/no Studentkare app to download yet/i);
   });
 
   it('says honestly that nobody is on shift', () => {

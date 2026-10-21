@@ -74,7 +74,7 @@ export function AppointmentsPanel() {
   </>;
 }
 
-function BookAppointmentDialog({ onClose, onDone }: { onClose: () => void; onDone: () => void }) {
+export function BookAppointmentDialog({ onClose, onDone }: { onClose: () => void; onDone: () => void }) {
   const t = useT();
   const catalog = useApiResource<{ items: { id: string; name: string; kind: string; brand: string }[] }>('/catalog?kind=consultation&limit=50');
   const [catalogItemId, setCatalogItemId] = useState('');
@@ -122,7 +122,7 @@ function ReminderSettingsDialog({ onClose, prefs, mutation }: { onClose: () => v
   const [emailEnabled, setEmailEnabled] = useState(prefs?.emailEnabled ?? true);
   const [pushEnabled, setPushEnabled] = useState(prefs?.pushEnabled ?? true);
   const [remindersEnabled, setRemindersEnabled] = useState(prefs?.remindersEnabled ?? true);
-  const [timezone, setTimezone] = useState(prefs?.timezone ?? 'Asia/Kolkata');
+  const [timezone, setTimezone] = useState(prefs?.timezone ?? '');
   const [quietStart, setQuietStart] = useState(prefs?.quietStart ?? '22:00');
   const [quietEnd, setQuietEnd] = useState(prefs?.quietEnd ?? '08:00');
   const [saved, setSaved] = useState(false);
@@ -132,7 +132,7 @@ function ReminderSettingsDialog({ onClose, prefs, mutation }: { onClose: () => v
       setEmailEnabled(prefs.emailEnabled ?? true);
       setPushEnabled(prefs.pushEnabled ?? true);
       setRemindersEnabled(prefs.remindersEnabled ?? true);
-      setTimezone(prefs.timezone ?? 'Asia/Kolkata');
+      setTimezone(prefs.timezone ?? '');
       setQuietStart(prefs.quietStart ?? '22:00');
       setQuietEnd(prefs.quietEnd ?? '08:00');
     }
@@ -146,7 +146,7 @@ function ReminderSettingsDialog({ onClose, prefs, mutation }: { onClose: () => v
     // and if they never loaded it would write defaults over the student's
     // choices — so it refuses to save rather than guess, and says so.
     if (!prefs) { mutation.setError(t('care.appts.prefs.notLoaded')); return; }
-    mutation.run(() => apiRequest('/notifications/preferences', { method: 'PUT', body: JSON.stringify({ ...prefs, emailEnabled, pushEnabled, remindersEnabled, timezone, quietStart, quietEnd }) }), () => setSaved(true));
+    mutation.run(() => apiRequest('/notifications/preferences', { method: 'PUT', body: JSON.stringify({ ...prefs, emailEnabled, pushEnabled, remindersEnabled, timezone: timezone || undefined, quietStart, quietEnd }) }), () => setSaved(true));
   };
 
   return <ShopDialog title={t('care.appts.reminderSettings')} onClose={onClose}>

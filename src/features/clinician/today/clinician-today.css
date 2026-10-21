@@ -120,3 +120,12 @@
 .ct-blank { display: flex; flex-direction: column; gap: var(--sk-space-6); padding: var(--sk-space-32) var(--sk-space-16); text-align: center; }
 .ct-blank strong { font-size: 14px; font-weight: 800; color: var(--sk-color-text); }
 .ct-blank span { font-size: 12.5px; line-height: 1.55; font-weight: 500; color: var(--sk-color-text-3); }
+
+/* Camp duty note: the canvas's info line on a soft panel. */
+.sk-ds .ct-camp-note {
+  margin: 0; display: flex; align-items: flex-start; gap: var(--sk-space-10);
+  padding: var(--sk-space-14) var(--sk-space-16); border-radius: var(--sk-radius-lg);
+  background: var(--sk-color-surface-3); color: var(--sk-color-info);
+  font-size: 13px; line-height: 1.55; font-weight: 600;
+}
+.ct-camp-note svg { margin-top: 1px; }

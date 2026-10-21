@@ -1,0 +1,215 @@
+/* Signed-in student web shell (canvas page 3b: WebDashboard, WebVault).
+   Tokens only — no hex, rgb() or hsl() (npm run lint:css-colours).
+   The canvas draws the sidebar light; it stays the founder's navy with the
+   white pill for the current item (PR #152, DESIGN.md §3). */
+
+.sk-sshell {
+  --sk-sshell-top: calc(var(--sk-size-touch-target) + var(--sk-space-32));
+  min-height: 100vh; min-height: 100dvh;
+  font-family: var(--sk-font-sans);
+  background: var(--sk-color-canvas);
+  color: var(--sk-color-text);
+}
+
+/* ---- top nav ---- */
+.sk-sshell__top {
+  position: sticky; top: 0; z-index: 30;
+  display: flex; align-items: center; gap: var(--sk-space-24);
+  height: var(--sk-sshell-top); box-sizing: border-box;
+  padding: 0 var(--sk-space-gutter-web);
+  background: var(--sk-color-surface);
+  border-bottom: 1px solid var(--sk-color-rule-soft);
+}
+.sk-sshell__brand {
+  display: inline-flex; align-items: center; gap: var(--sk-space-10);
+  min-height: var(--sk-size-touch-target); padding: 0 var(--sk-space-4);
+  border: 0; border-radius: var(--sk-radius-md); background: transparent; cursor: pointer;
+}
+.sk-sshell__wordmark {
+  font-size: var(--sk-text-title-sm); font-weight: 800; letter-spacing: -0.4px;
+  color: var(--sk-color-text); white-space: nowrap;
+}
+.sk-sshell__wordmark em { font-family: var(--sk-font-serif); font-style: italic; font-weight: 700; }
+.sk-sshell__topnav { display: flex; align-items: center; gap: var(--sk-space-8); }
+.sk-sshell__toplink {
+  display: inline-flex; align-items: center;
+  min-height: var(--sk-size-touch-target); padding: 0 var(--sk-space-8);
+  border: 0; border-radius: var(--sk-radius-sm); background: transparent;
+  font-family: inherit; font-size: var(--sk-text-body-sm); font-weight: 600; white-space: nowrap;
+  color: var(--sk-color-text-2); cursor: pointer;
+  transition: color var(--sk-duration-fast) var(--sk-ease-standard);
+}
+.sk-sshell__toplink:hover { color: var(--sk-color-action); }
+.sk-sshell__toplink[aria-current='page'] { color: var(--sk-color-action); font-weight: 800; }
+.sk-sshell__grow { flex: 1 1 auto; }
+.sk-sshell__icon-btn {
+  position: relative; flex: none;
+  display: inline-flex; align-items: center; justify-content: center;
+  width: var(--sk-size-touch-target); height: var(--sk-size-touch-target);
+  border: 0; border-radius: var(--sk-radius-full);
+  background: var(--sk-color-surface-2); color: var(--sk-color-text); cursor: pointer;
+}
+.sk-sshell__icon-btn:hover { background: var(--sk-color-surface-3); }
+.sk-sshell__menu-btn { display: none; }
+.sk-sshell__badge {
+  position: absolute; top: calc(-1 * var(--sk-space-2)); right: calc(-1 * var(--sk-space-2));
+  min-width: 19px; height: 19px; padding: 0 var(--sk-space-4); box-sizing: border-box;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: var(--sk-radius-full);
+  background: var(--sk-color-action); color: var(--sk-color-on-action);
+  font-size: 10.5px; font-weight: 800; line-height: 1;
+}
+.sk-sshell__avatar {
+  flex: none; display: inline-flex; align-items: center; justify-content: center;
+  width: 42px; height: 42px; border-radius: var(--sk-radius-full);
+  font-size: var(--sk-text-body-sm); font-weight: 800;
+  /* On the navy: 18% sidebar-ink tint (navyContrast.test.ts "avatar initial"). */
+  background: color-mix(in srgb, var(--sk-color-sidebar-ink) 18%, var(--sk-color-sidebar));
+  color: var(--sk-color-sidebar-ink);
+}
+.sk-sshell__avatar--top {
+  width: var(--sk-size-touch-target); height: var(--sk-size-touch-target);
+  border: 0; cursor: pointer; font-family: inherit; font-size: var(--sk-text-caption);
+  background: var(--sk-color-action); color: var(--sk-color-on-action);
+}
+.sk-sshell__avatar--top:hover { background: var(--sk-color-action-hover); }
+
+/* SOS: the one red control in the top nav (DESIGN.md §3: red only for SOS and danger). */
+.sk-sshell__sos {
+  flex: none; display: inline-flex; align-items: center; justify-content: center; gap: var(--sk-space-6);
+  min-height: var(--sk-size-touch-target); min-width: var(--sk-size-touch-target);
+  padding: 0 var(--sk-space-16); box-sizing: border-box;
+  border: 0; border-radius: var(--sk-radius-full);
+  background: var(--sk-color-danger-fill); color: var(--sk-color-on-danger-fill);
+  font-family: inherit; font-size: var(--sk-text-body-sm); font-weight: 800; letter-spacing: 0.4px;
+  cursor: pointer;
+  transition: background-color var(--sk-duration-fast) var(--sk-ease-standard);
+}
+.sk-sshell__sos:hover { background: color-mix(in srgb, var(--sk-color-danger-fill) 88%, var(--sk-color-text)); }
+.sk-sshell__top :where(button):focus-visible { outline: 3px solid var(--sk-color-focus); outline-offset: 3px; }
+
+/* ---- frame ---- */
+.sk-sshell__frame {
+  display: grid;
+  grid-template-columns: var(--sk-size-web-sidebar) minmax(0, 1fr);
+  min-height: calc(100vh - var(--sk-sshell-top));
+}
+
+/* ---- sidebar ---- */
+.sk-sshell__sidebar {
+  position: sticky; top: var(--sk-sshell-top);
+  display: flex; flex-direction: column; gap: var(--sk-space-2);
+  height: calc(100vh - var(--sk-sshell-top)); box-sizing: border-box;
+  overflow-y: auto; overscroll-behavior: contain;
+  padding: var(--sk-space-20) var(--sk-space-16) var(--sk-space-24) var(--sk-space-24);
+  background: var(--sk-color-sidebar);
+  color: var(--sk-color-nav-text);
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--sk-color-sidebar-ink-3) 40%, transparent) transparent;
+}
+.sk-sshell__drawer-head { display: none; }
+.sk-sshell__who {
+  display: flex; align-items: center; gap: var(--sk-space-12);
+  padding: 0 var(--sk-space-6) var(--sk-space-10);
+}
+.sk-sshell__who-text { display: flex; flex-direction: column; gap: var(--sk-space-2); min-width: 0; }
+.sk-sshell__who-name {
+  font-size: var(--sk-text-body-sm); font-weight: 800; color: var(--sk-color-sidebar-ink);
+  overflow-wrap: anywhere;
+}
+.sk-sshell__who-meta { font-size: var(--sk-text-caption); font-weight: 600; color: var(--sk-color-sidebar-ink-2); }
+
+.sk-sshell__nav { display: flex; flex-direction: column; }
+.sk-sshell__group { display: flex; flex-direction: column; gap: var(--sk-space-2); }
+.sk-sshell__group-label {
+  padding: var(--sk-space-14) var(--sk-space-14) var(--sk-space-4);
+  font-size: var(--sk-text-caption); font-weight: 800; letter-spacing: 1.2px; line-height: 1.4;
+  text-transform: uppercase;
+  color: var(--sk-color-sidebar-ink-3);
+}
+.sk-sshell__drawer-only { display: none; }
+.sk-sshell__link {
+  display: flex; align-items: center; gap: var(--sk-space-12);
+  width: 100%; min-height: var(--sk-size-touch-target); padding: 0 var(--sk-space-14); box-sizing: border-box;
+  border: 0; border-radius: var(--sk-radius-md); background: transparent;
+  font-family: inherit; font-size: var(--sk-text-body-sm); font-weight: 600; line-height: 1.3; text-align: left;
+  color: var(--sk-color-nav-text); cursor: pointer;
+  transition: background-color var(--sk-duration-fast) var(--sk-ease-standard);
+}
+.sk-sshell__link > span:first-of-type { flex: 1 1 auto; min-width: 0; }
+.sk-sshell__link:hover {
+  background: color-mix(in srgb, var(--sk-color-sidebar-ink) 12%, var(--sk-color-sidebar));
+  color: var(--sk-color-sidebar-ink);
+}
+.sk-sshell__sidebar :where(a, button):focus-visible { outline: 3px solid var(--sk-color-focus); outline-offset: 3px; }
+.sk-sshell__link.is-current[aria-current='page'] {
+  background: var(--sk-color-nav-current);
+  color: var(--sk-color-on-nav-current);
+  font-weight: 800;
+}
+.sk-sshell__link.is-unavailable { color: var(--sk-color-sidebar-ink-3); cursor: not-allowed; }
+.sk-sshell__link.is-unavailable > svg,
+.sk-sshell__link.is-unavailable > span { opacity: 0.7; }
+.sk-sshell__link.is-unavailable:hover { background: transparent; color: var(--sk-color-sidebar-ink-3); }
+
+.sk-sshell__footer {
+  display: flex; flex-direction: column; gap: var(--sk-space-8);
+  margin-top: var(--sk-space-24); padding-top: var(--sk-space-20);
+  border-top: 1px solid color-mix(in srgb, var(--sk-color-sidebar-ink-3) 35%, transparent);
+}
+.sk-sshell__logout { color: var(--sk-color-nav-danger); font-weight: 700; }
+.sk-sshell__logout:hover { color: var(--sk-color-nav-danger); }
+.sk-sshell__logout:disabled { cursor: progress; opacity: 0.8; }
+/* Plain danger text is not AA on the navy: the error sits on the danger fill. */
+.sk-sshell__error {
+  margin: 0; padding: var(--sk-space-8) var(--sk-space-12);
+  border-radius: var(--sk-radius-sm);
+  background: var(--sk-color-danger-fill); color: var(--sk-color-on-danger-fill);
+  font-size: var(--sk-text-caption); font-weight: 600;
+}
+
+/* ---- page ---- */
+.sk-sshell__main {
+  min-width: 0; box-sizing: border-box;
+  padding: var(--sk-space-32) var(--sk-space-gutter-web) var(--sk-space-40);
+}
+
+/* ---- tablet and phone: the sidebar becomes a drawer ---- */
+@media (max-width: 1024px) {
+  .sk-sshell__top { gap: var(--sk-space-12); padding: 0 var(--sk-space-gutter-phone); }
+  .sk-sshell__menu-btn { display: inline-flex; }
+  .sk-sshell__topnav { display: none; }
+  .sk-sshell__frame { display: block; }
+  .sk-sshell__sidebar {
+    /* Above the app bar (interface.css .care-interface-bar, z-index 120) while open. */
+    position: fixed; inset: 0 auto 0 0; z-index: 130;
+    width: min(320px, 86vw); height: 100vh; height: 100dvh;
+    padding-top: var(--sk-space-12);
+    transform: translateX(-100%); visibility: hidden;
+    box-shadow: var(--sk-shadow-sheet);
+    transition: transform var(--sk-duration-sheet) var(--sk-ease-sheet), visibility 0s linear var(--sk-duration-sheet);
+  }
+  .is-drawer-open .sk-sshell__sidebar {
+    transform: none; visibility: visible;
+    transition: transform var(--sk-duration-sheet) var(--sk-ease-sheet);
+  }
+  .sk-sshell__drawer-head { display: flex; justify-content: flex-end; }
+  .sk-sshell__drawer-close {
+    background: color-mix(in srgb, var(--sk-color-sidebar-ink) 12%, var(--sk-color-sidebar));
+    color: var(--sk-color-sidebar-ink);
+  }
+  .sk-sshell__drawer-close:hover { background: color-mix(in srgb, var(--sk-color-sidebar-ink) 18%, var(--sk-color-sidebar)); }
+  .sk-sshell__drawer-only { display: flex; }
+  .sk-sshell__scrim { position: fixed; inset: 0; z-index: 125; background: var(--sk-color-scrim); }
+  .sk-sshell__main { padding: var(--sk-space-24) var(--sk-space-gutter-phone) var(--sk-space-40); }
+}
+@media (max-width: 560px) {
+  .sk-sshell__orders { display: none; }
+  .sk-sshell__sos { padding: 0 var(--sk-space-12); }
+  .sk-sshell__wordmark { font-size: var(--sk-text-body); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sk-sshell__sidebar, .is-drawer-open .sk-sshell__sidebar,
+  .sk-sshell__link, .sk-sshell__toplink, .sk-sshell__sos { transition: none; }
+}

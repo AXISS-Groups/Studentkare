@@ -9,10 +9,41 @@ import { referralsConfig, referralsSample } from '../../referrals/ClinicianRefer
 import { renewalsConfig, renewalsSample } from '../../renewals/ClinicianRenewalsScreen';
 import { ayushConfig, ayushSample } from '../../ayush/ClinicianAyushScreen';
 import { decisionSupportConfig, decisionSupportSample } from '../../decision-support/ClinicianDecisionSupportScreen';
-import { patientsConfig, patientsSample } from '../../patients/ClinicianPatientsScreen';
-import { scheduleConfig, scheduleSample } from '../../schedule/ClinicianScheduleScreen';
-import { earningsConfig, earningsSample } from '../../earnings/ClinicianEarningsConsoleScreen';
+import { patientsConfig as patientsConfigFor } from '../../patients/ClinicianPatientsScreen';
+import { translate } from '@/i18n';
+import type { MessageKey, Vars } from '@/i18n';
+import { mapSchedule, scheduleConfig as scheduleConfigFor } from '../../schedule/ClinicianScheduleScreen';
+import { earningsConfig as earningsConfigFor, mapEarnings } from '../../earnings/ClinicianEarningsConsoleScreen';
+import { muted, pill, strong } from '../cells';
+import { bookingsFor } from '../../queue/__tests__/queueFixture';
 import { chronicConfig, chronicSample } from '../../chronic/ClinicianChronicConsoleScreen';
+
+const en = (key: MessageKey, vars?: Vars) => translate('en', key, vars);
+const patientsConfig = patientsConfigFor(en);
+const scheduleConfig = scheduleConfigFor(en);
+const earningsConfig = earningsConfigFor(en);
+const NOW = new Date(2026, 8, 24, 9, 46);
+
+/** Test fixtures only: no build serves these rows. A consent-reporting patients source does not exist yet. */
+function patientsSample(): ConsoleTableData {
+  return {
+    stats: [
+      { value: '2', label: 'Live shares', tone: 'positive' },
+      { value: '1', label: 'Expiring within a week', tone: 'attention' },
+      { value: '2', label: 'Lapsed — read-only history' },
+      { value: '1', label: 'In a care programme' },
+    ],
+    rows: [
+      { id: 'p1', cells: [strong('Krishna C.'), muted('B-214 · 3rd year'), strong('Shared lab report'), muted('Share expires 04 Oct'), pill('14 days', 'positive')] },
+      { id: 'p3', muted: true, cells: [strong('Rahul M.'), muted('A-331 · 4th year'), strong('Post-fever follow-up'), muted('Share expired 21 Sep'), pill('Lapsed', 'neutral')] },
+    ],
+  };
+}
+const scheduleSample = (): ConsoleTableData => mapSchedule(bookingsFor(NOW), NOW, en);
+const earningsSample = (): ConsoleTableData => mapEarnings({
+  periods: [{ start: '2026-09-01', end: '2026-09-15', consults: 42, grossPaise: 835800 }, { start: '2026-08-16', end: '2026-08-31', consults: 1, grossPaise: 19900 }],
+  grossPaise: 855700, consults: 43, windowDays: 180, commissionRate: null, settlementConfigured: false,
+}, en);
 
 async function renderWith(config: ConsoleTableConfig, source: ConsoleTableSource) {
   const vm = new ConsoleTableViewModel(source);
@@ -55,7 +86,7 @@ describe.each(SCREENS)('%s screen', (_name, config, sample) => {
     expect(screen.getByRole('heading', { level: 1, name: config.title })).toBeInTheDocument();
     expect(screen.getByText(config.unconnected.title)).toBeInTheDocument();
     const table = screen.getByRole('table', { name: config.caption });
-    for (const column of config.columns) expect(within(table).getByRole('columnheader', { name: column.label.toUpperCase() })).toBeInTheDocument();
+    for (const column of config.columns) expect(within(table).getByRole('columnheader', { name: column.label })).toBeInTheDocument();
     expect(within(table).getAllByRole('row')).toHaveLength(2);
     for (const label of config.statLabels) expect(screen.getByText(label)).toBeInTheDocument();
     expect(screen.getAllByText('—').length).toBeGreaterThanOrEqual(config.statLabels.length);
@@ -63,10 +94,28 @@ describe.each(SCREENS)('%s screen', (_name, config, sample) => {
 });
 
 describe('ConsoleTableView states', () => {
-  it('keeps its layout when connected with no rows, saying so in the table', async () => {
-    await renderWith(labOrdersConfig, { load: async () => ({ stats: [], rows: [] }) });
-    expect(screen.getByRole('heading', { level: 1, name: labOrdersConfig.title })).toBeInTheDocument();
-    expect(within(screen.getByRole('table')).getByText(labOrdersConfig.empty.title)).toBeInTheDocument();
+  it('shows the board’s empty state when connected with no rows (canvas: 3D tile, title, body)', async () => {
+    const { onNavigate } = await renderWith(patientsConfig, { load: async () => ({ stats: [], rows: [] }) });
+    expect(screen.getByRole('heading', { level: 1, name: patientsConfig.empty.title })).toBeInTheDocument();
+    expect(screen.getByText(patientsConfig.empty.body)).toBeInTheDocument();
+    expect(document.querySelector('[data-icon="3d:stetho-alt--p4"]')).not.toBeNull();
+    expect(screen.queryByRole('table')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Open your schedule' }));
+    expect(onNavigate).toHaveBeenCalledWith('clinician/schedule');
+  });
+
+  it('matches the canvas copy for My patients', () => {
+    expect(patientsConfig.title).toBe('My patients');
+    expect(patientsConfig.errorTitle).toBe('Couldn’t load my patients');
+    expect(patientsConfig.empty.title).toBe('No patients yet. They appear after a first consult.');
+    expect(patientsConfig.columns.map((column) => column.label)).toEqual(['Student', 'Block', 'Why you have access', 'Consent', 'Left']);
+  });
+
+  it('error state draws the alert-triangle icon and sends help to support', async () => {
+    const { onNavigate } = await renderWith(patientsConfig, { load: async () => { throw new Error('down'); } });
+    expect(screen.getByRole('alert').querySelector('[data-icon="alert-triangle"]')).not.toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Status & help' }));
+    expect(onNavigate).toHaveBeenCalledWith('support');
   });
 
   it('shows a calm error with the screen’s reference, and retries', async () => {
@@ -85,7 +134,7 @@ describe('ConsoleTableView states', () => {
 
   it('uses the data’s subtitle over the configured one', async () => {
     await renderWith(scheduleConfig, { load: async () => scheduleSample() });
-    expect(screen.getByText('Week of 29 September · VNR VJIET')).toBeInTheDocument();
+    expect(screen.getByText('Week of 21 Sep · booked slots')).toBeInTheDocument();
   });
 
   it('labels each cell with its column, so the phone layout reads', async () => {

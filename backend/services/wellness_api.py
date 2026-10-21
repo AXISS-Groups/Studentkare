@@ -272,8 +272,13 @@ def _day_payload(day: Date, values: dict[str, float]) -> dict:
     return out
 
 
-@router.post("/activity/entries", status_code=201)
-def save_activity_day(body: ActivityDayInput, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+def _store_day(db, user, body: ActivityDayInput, source: str, audit_action: str) -> dict:
+    """Replace ``source``'s values for ``body.date`` with the ones given; return the merged day.
+
+    Shared by manual entry (source MANUAL) and device sync (one source per
+    provider), so a re-sync of the same day replaces that provider's numbers
+    instead of adding to them, and never touches another source's rows.
+    """
     _check_activity(db, body)
     zone = student_time.student_zone(db, user["id"])
     today = student_time.local_today(zone)
@@ -287,16 +292,49 @@ def save_activity_day(body: ActivityDayInput, user=Depends(authenticated_user), 
     stamp = (start + (end - start) / 2).isoformat()
     given = {metric: getattr(body, field) for metric, field in ACTIVITY_FIELDS.items()
              if getattr(body, field) is not None}
-    existing = [row for row in _rows_between(db, user["id"], set(given), start, end) if row.source == "MANUAL"]
+    existing = [row for row in _rows_between(db, user["id"], set(given), start, end) if row.source == source]
     for row in existing:
         db.delete(row)
     for metric, value in given.items():
         db.add(M.Reading(id=_new_id(), account_id=user["id"], metric=metric, value=float(value),
-                         recorded_at=stamp, source="MANUAL"))
-    _audit(db, user, "ACTIVITY_DAY_SAVED", body.date.isoformat())
+                         recorded_at=stamp, source=source))
+    _audit(db, user, audit_action, body.date.isoformat())
     db.commit()
     rows = _rows_between(db, user["id"], set(ACTIVITY_FIELDS), start, end)
     return _day_payload(body.date, _activity_day_values(rows, zone).get(body.date, {}))
+
+
+@router.post("/activity/entries", status_code=201)
+def save_activity_day(body: ActivityDayInput, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+    return _store_day(db, user, body, "MANUAL", "ACTIVITY_DAY_SAVED")
+
+
+# --- Device sync (Apple Health / Health Connect) ------------------------------
+
+# Provider -> care_readings.source. Only real platform health stores; there is
+# no "web pedometer" (a browser has no step source), so none is accepted.
+SYNC_SOURCES: dict[str, str] = {"healthkit": "HEALTHKIT", "health_connect": "HEALTH_CONNECT"}
+
+
+class DeviceSyncInput(ActivityDayInput):
+    """One local day's totals read from the phone's health store, as the app read them.
+
+    The app sends only values the platform returned; a metric it could not read
+    is left out, never filled with a guess. Bounds are the manual ones.
+    """
+    provider: Literal["healthkit", "health_connect"]
+
+
+@router.post("/v1/movement/background-sync", status_code=201)
+def sync_device_day(body: DeviceSyncInput, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+    """Persist a day's device totals to care_readings (owner only, clinical plane).
+
+    They appear in GET /activity/trends beside manual entries; within a day the
+    larger source wins rather than adding, so the same steps typed in and synced
+    are not counted twice. Re-sending a day replaces that provider's values.
+    """
+    day = _store_day(db, user, body, SYNC_SOURCES[body.provider], "ACTIVITY_DAY_SYNCED")
+    return {"status": "SYNCED", "provider": body.provider, "day": day}
 
 
 @router.delete("/activity/entries/{day}")

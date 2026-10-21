@@ -1,10 +1,21 @@
 import React, { useEffect, useReducer, useRef, useState } from 'react';
 import { ArrowRight, Check, Pause, Play, RotateCcw, SkipForward } from 'lucide-react';
-import { ExerciseRoutine, exercises, exerciseCategories } from '../../data/datasets/exerciseLibrary';
+import { ExerciseCategory, ExerciseRoutine, exercises, exerciseCategories } from '../../data/datasets/exerciseLibrary';
+import { color } from '@/design-system/theme';
 import { useExerciseStore } from '../../data/contexts/ExerciseStore';
 import { createSession, sessionReducer, formatSessionTime } from '../../lib/utils/exerciseSession';
 import { ExerciseIllustration } from './ExerciseIllustration';
 import { useT } from '@/i18n';
+
+/**
+ * A category's art colours, resolved from its token name at render time:
+ * `color` is the art tint, `background` the same tint mixed into the surface.
+ */
+export function exerciseTheme(category: ExerciseCategory) {
+  const entry = exerciseCategories.find(item => item.id === category) ?? exerciseCategories[0];
+  const accent = color[entry.tint];
+  return { ...entry, color: accent, background: `color-mix(in srgb, ${accent} 16%, ${color.surface})` };
+}
 
 export function GuidedExerciseSession({ routine, onClose }: { routine: ExerciseRoutine; onClose: () => void }) {
   const t = useT();
@@ -14,7 +25,7 @@ export function GuidedExerciseSession({ routine, onClose }: { routine: ExerciseR
   const { recordSession, savedSessionIds, sessionError, retrySession } = useExerciseStore();
   const step = routine.steps[state.index];
   const exercise = exercises.find(item => item.id === step.exerciseId)!;
-  const theme = exerciseCategories.find(item => item.id === exercise.category)!;
+  const theme = exerciseTheme(exercise.category);
 
   useEffect(() => {
     if (state.phase !== 'running') return;

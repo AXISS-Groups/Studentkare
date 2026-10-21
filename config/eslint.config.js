@@ -8,7 +8,8 @@ import unusedImports from 'eslint-plugin-unused-imports';
  * hex-colour-legacy.json, which predate it. Migrating a file means removing it
  * from that list; nothing may be added to it.
  */
-const HEX = '#[0-9a-fA-F]{3}([0-9a-fA-F]{3})?([0-9a-fA-F]{2})?\\b';
+// CSS hex colours are 3, 4, 6 or 8 digits; '#99238' in copy is an ID, not a colour.
+const HEX = '#([0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{3,4})\\b';
 const hexLegacy = JSON.parse(readFileSync(new URL('./hex-colour-legacy.json', import.meta.url), 'utf8'));
 const noRawHex = ['error',
   { selector: `Literal[value=/${HEX}/]`, message: 'Use a design token (skTokens / --sk-*) instead of a raw hex colour. See DESIGN.md §3.' },

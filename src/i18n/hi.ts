@@ -3,16 +3,27 @@ import { memberHi } from './areas/member';
 import { careHi } from './areas/care';
 import { assistHi } from './areas/assist';
 import { shopwebHi } from './areas/shopweb';
+import { phonestoreHi } from './areas/phonestore';
 import { onboardHi } from './areas/onboard';
+import { launchHi } from './areas/launch';
 import { landingHi } from './areas/landing';
 import { adminHi } from './areas/admin';
+import { adminBoardHi } from './areas/adminBoard';
 import { campusHi } from './areas/campus';
+import { campusConsoleHi } from './areas/campusConsole';
+import { campusBoardsHi } from './areas/campusBoards';
 import { partnerHi } from './areas/partner';
 import { deviceHi } from './areas/device';
+import { studentshellHi } from './areas/studentshell';
+import { studentwebHi } from './areas/studentweb';
 import { payHi } from './areas/pay';
 import { labbookHi } from './areas/labbook';
 import { rewardsHi } from './areas/rewards';
 import { wellnessHi } from './areas/wellness';
+import { consoleHi } from './areas/console';
+import { phoneboardsHi } from './areas/phoneboards';
+import { clinicianWorkHi } from './areas/clinicianWork';
+import { partnerConsoleHi } from './areas/partnerConsole';
 
 /**
  * हिंदी — machine-assisted first draft, NOT yet reviewed by a native speaker
@@ -325,6 +336,8 @@ export const hi: Catalog = {
   'auth.remembered.forget': "यह डिवाइस भूल जाएँ",
   'auth.signin.hint.EMAIL': "कैंपस कीमतों और Edu ID लाभों के लिए अपने संस्थान का ईमेल इस्तेमाल करें।",
   'auth.signin.hint.WHATSAPP': "हम WhatsApp पर 6 अंकों का कोड भेजते हैं। सामान्य मैसेज शुल्क लागू हो सकता है।",
+  'auth.signin.invalid.EMAIL': 'पूरा ईमेल पता लिखें, जैसे you@campus.edu.in.',
+  'auth.signin.invalid.WHATSAPP': 'जारी रखने के लिए अपना WhatsApp नंबर लिखें।',
   'auth.continue': "जारी रखें",
   'auth.continueToCode': "सत्यापन कोड पर जाएँ",
   'auth.lostPhone': "फ़ोन खो गया? डिवाइस हटाएँ",
@@ -728,6 +741,10 @@ export const hi: Catalog = {
   'bar.alerts': "अलर्ट",
   'bar.sos': "SOS",
   'common.cancel': "रद्द करें",
+  'ds.overlay.close': 'बंद करें',
+  'ds.overlay.closePanel': 'पैनल बंद करें',
+  'ds.toast.dismiss': 'हटाएँ',
+  'ds.field.valid': 'सही है',
   'page.prev': "पिछला",
   'page.next': "अगला",
   'page.of': "पेज {page} / {pages} ({total} आइटम)",
@@ -757,6 +774,17 @@ export const hi: Catalog = {
   'nav.earnings': "कमाई",
   'nav.support': "सहायता",
   'nav.wellnessTraining': "वेलनेस प्रशिक्षण",
+  // Phone tab bar (canvas HomeDiscover bottom bar)
+  'tabbar.label': "मुख्य विभाग",
+  'tabbar.discover': "खोजें",
+  'tabbar.wellness': "वेलनेस",
+  'tabbar.ayush': "Ayush AI",
+  'tabbar.records': "रिकॉर्ड",
+  'tabbar.appointments': "अपॉइंटमेंट",
+  'tabbar.labTests': "लैब टेस्ट",
+  'tabbar.yourCare': "आपकी देखभाल",
+  // Phone header on the web at phone width (canvas phone boards)
+  'phone.brand': "Student Kare",
   'nav.campusWellness': "कैंपस वेलनेस",
   'nav.devices': "डिवाइस और सेंसर",
   'nav.plan': "प्लान",
@@ -772,6 +800,7 @@ export const hi: Catalog = {
   'role.VENDOR': "प्रोवाइडर वर्कस्पेस",
   'role.NMC_DOCTOR': "डॉक्टर वर्कस्पेस",
   'ws.signOutTitle': "इस डिवाइस से साइन आउट करें?",
+  'ws.signOutBody': 'वापस आने के लिए आपको OTP चाहिए होगा। आपके रिकॉर्ड, ऑर्डर और बुकिंग जैसे हैं वैसे ही रहेंगे।',
   'ws.staySignedIn': "साइन इन रहें",
   'ws.closeNav': "मेन्यू बंद करें",
   'ws.openNav': "मेन्यू खोलें",
@@ -795,14 +824,25 @@ export const hi: Catalog = {
   ...careHi,
   ...assistHi,
   ...shopwebHi,
+  ...phonestoreHi,
   ...onboardHi,
+  ...launchHi,
   ...landingHi,
   ...adminHi,
+  ...adminBoardHi,
   ...campusHi,
+  ...campusConsoleHi,
+  ...campusBoardsHi,
   ...partnerHi,
   ...deviceHi,
+  ...studentshellHi,
+  ...studentwebHi,
   ...payHi,
   ...labbookHi,
   ...rewardsHi,
   ...wellnessHi,
+  ...consoleHi,
+  ...phoneboardsHi,
+  ...clinicianWorkHi,
+  ...partnerConsoleHi,
 };

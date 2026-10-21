@@ -3,16 +3,27 @@ import { memberTe } from './areas/member';
 import { careTe } from './areas/care';
 import { assistTe } from './areas/assist';
 import { shopwebTe } from './areas/shopweb';
+import { phonestoreTe } from './areas/phonestore';
 import { onboardTe } from './areas/onboard';
+import { launchTe } from './areas/launch';
 import { landingTe } from './areas/landing';
 import { adminTe } from './areas/admin';
+import { adminBoardTe } from './areas/adminBoard';
 import { campusTe } from './areas/campus';
+import { campusConsoleTe } from './areas/campusConsole';
+import { campusBoardsTe } from './areas/campusBoards';
 import { partnerTe } from './areas/partner';
 import { deviceTe } from './areas/device';
+import { studentshellTe } from './areas/studentshell';
+import { studentwebTe } from './areas/studentweb';
 import { payTe } from './areas/pay';
 import { labbookTe } from './areas/labbook';
 import { rewardsTe } from './areas/rewards';
 import { wellnessTe } from './areas/wellness';
+import { consoleTe } from './areas/console';
+import { phoneboardsTe } from './areas/phoneboards';
+import { clinicianWorkTe } from './areas/clinicianWork';
+import { partnerConsoleTe } from './areas/partnerConsole';
 
 /**
  * తెలుగు — machine-assisted first draft, NOT yet reviewed by a native speaker
@@ -325,6 +336,8 @@ export const te: Catalog = {
   'auth.remembered.forget': "ఈ డివైస్‌ను మర్చిపో",
   'auth.signin.hint.EMAIL': "క్యాంపస్ ధరలు మరియు Edu ID ప్రయోజనాల కోసం మీ సంస్థ ఇమెయిల్ వాడండి.",
   'auth.signin.hint.WHATSAPP': "మేము WhatsApp లో 6 అంకెల కోడ్ పంపుతాం. సాధారణ సందేశ ఛార్జీలు వర్తిస్తాయి.",
+  'auth.signin.invalid.EMAIL': 'పూర్తి ఈమెయిల్ చిరునామా ఇవ్వండి, ఉదా. you@campus.edu.in.',
+  'auth.signin.invalid.WHATSAPP': 'కొనసాగడానికి మీ WhatsApp నంబర్ ఇవ్వండి.',
   'auth.continue': "కొనసాగించండి",
   'auth.continueToCode': "ధృవీకరణ కోడ్‌కు కొనసాగించండి",
   'auth.lostPhone': "ఫోన్ పోయిందా? పరికరాన్ని తొలగించండి",
@@ -728,6 +741,10 @@ export const te: Catalog = {
   'bar.alerts': "అలర్ట్‌లు",
   'bar.sos': "SOS",
   'common.cancel': "రద్దు చేయండి",
+  'ds.overlay.close': 'మూసివేయండి',
+  'ds.overlay.closePanel': 'ప్యానెల్ మూసివేయండి',
+  'ds.toast.dismiss': 'తీసివేయండి',
+  'ds.field.valid': 'సరిగ్గా ఉంది',
   'page.prev': "మునుపటి",
   'page.next': "తదుపరి",
   'page.of': "పేజీ {page} / {pages} ({total} అంశాలు)",
@@ -757,6 +774,17 @@ export const te: Catalog = {
   'nav.earnings': "ఆదాయం",
   'nav.support': "సహాయం",
   'nav.wellnessTraining': "వెల్‌నెస్ శిక్షణ",
+  // Phone tab bar (canvas HomeDiscover bottom bar)
+  'tabbar.label': "ప్రధాన విభాగాలు",
+  'tabbar.discover': "కనుగొనండి",
+  'tabbar.wellness': "వెల్‌నెస్",
+  'tabbar.ayush': "Ayush AI",
+  'tabbar.records': "రికార్డులు",
+  'tabbar.appointments': "అపాయింట్‌మెంట్లు",
+  'tabbar.labTests': "ల్యాబ్ టెస్టులు",
+  'tabbar.yourCare': "మీ సంరక్షణ",
+  // Phone header on the web at phone width (canvas phone boards)
+  'phone.brand': "Student Kare",
   'nav.campusWellness': "క్యాంపస్ వెల్‌నెస్",
   'nav.devices': "పరికరాలు, సెన్సర్లు",
   'nav.plan': "ప్లాన్",
@@ -772,6 +800,7 @@ export const te: Catalog = {
   'role.VENDOR': "ప్రొవైడర్ వర్క్‌స్పేస్",
   'role.NMC_DOCTOR': "వైద్యుల వర్క్‌స్పేస్",
   'ws.signOutTitle': "ఈ పరికరం నుండి సైన్ అవుట్ చేయాలా?",
+  'ws.signOutBody': 'మళ్లీ లోపలికి రావడానికి మీకు OTP అవసరం. మీ రికార్డులు, ఆర్డర్లు, బుకింగ్\u200cలు ఉన్నవి ఉన్నట్లే ఉంటాయి.',
   'ws.staySignedIn': "సైన్ ఇన్‌లోనే ఉండండి",
   'ws.closeNav': "మెనూ మూసివేయండి",
   'ws.openNav': "మెనూ తెరవండి",
@@ -795,14 +824,25 @@ export const te: Catalog = {
   ...careTe,
   ...assistTe,
   ...shopwebTe,
+  ...phonestoreTe,
   ...onboardTe,
+  ...launchTe,
   ...landingTe,
   ...adminTe,
+  ...adminBoardTe,
   ...campusTe,
+  ...campusConsoleTe,
+  ...campusBoardsTe,
   ...partnerTe,
   ...deviceTe,
+  ...studentshellTe,
+  ...studentwebTe,
   ...payTe,
   ...labbookTe,
   ...rewardsTe,
   ...wellnessTe,
+  ...consoleTe,
+  ...phoneboardsTe,
+  ...clinicianWorkTe,
+  ...partnerConsoleTe,
 };

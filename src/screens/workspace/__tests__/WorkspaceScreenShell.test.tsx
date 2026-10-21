@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import type { AccountRole } from '../../../data/types/workflowTypes';
 
 const auth: { user: { fullName: string; role: AccountRole; university?: string; isVerifiedStudent?: boolean; partnerKind?: string } | null } = { user: null };
@@ -41,12 +41,28 @@ describe('which shell a route gets', () => {
     expect(screen.getByText(/good to see you, demo/i)).toBeInTheDocument();
   });
 
-  it('keeps the old workspace for students', () => {
-    auth.user = { fullName: 'Asha Rao', role: 'STUDENT', isVerifiedStudent: true };
+  it('opens student pages inside the student web shell', () => {
+    auth.user = { fullName: 'Asha Rao', role: 'STUDENT', isVerifiedStudent: true, university: 'VNR VJIET' };
     render(<WorkspaceScreen route="health" />);
-    expect(screen.getByRole('navigation', { name: 'Main menu' })).toBeInTheDocument();
+    expect(screen.getAllByRole('navigation', { name: 'My Student Kare' }).length).toBeGreaterThan(0);
+    expect(screen.getByRole('navigation', { name: 'Main' })).toBeInTheDocument();
+    expect(screen.queryByRole('navigation', { name: 'Main menu' })).toBeNull();
     expect(screen.queryByRole('navigation', { name: 'Super admin navigation' })).toBeNull();
-    expect(screen.getByText(/good to see you, asha/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Your Care' })).toHaveAttribute('aria-current', 'page');
+    expect(screen.getByText('VNR VJIET · Edu ID verified')).toBeInTheDocument();
+  });
+
+  it('log out in the student shell opens the one confirm dialog with the WebSignOut board wording', () => {
+    auth.user = { fullName: 'Asha Rao', role: 'STUDENT', isVerifiedStudent: true };
+    render(<WorkspaceScreen route="records" />);
+    fireEvent.click(screen.getByRole('button', { name: 'Log out' }));
+    const dialog = screen.getByRole('alertdialog', { name: 'Sign out of this browser?' });
+    expect(dialog).toHaveAttribute('aria-modal', 'true');
+    expect(within(dialog).getByText('Signed in as Asha Rao')).toBeInTheDocument();
+    expect(within(dialog).getByText('What signing out does')).toBeInTheDocument();
+    expect(within(dialog).getByRole('button', { name: 'Sign out here' })).toBeInTheDocument();
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Stay signed in' }));
+    expect(screen.queryByRole('alertdialog')).toBeNull();
   });
 
   it.each([['vendor', 'PHARMACY'], ['lab-queue', 'LAB'], ['orders', 'CLINIC']] as const)('%s opens inside the partner console shell for a %s partner', async (route, partnerKind) => {
@@ -60,7 +76,7 @@ describe('which shell a route gets', () => {
   it('keeps the member orders page for students', () => {
     auth.user = { fullName: 'Asha Rao', role: 'STUDENT', isVerifiedStudent: true };
     render(<WorkspaceScreen route="orders" />);
-    expect(screen.getByRole('navigation', { name: 'Main menu' })).toBeInTheDocument();
+    expect(screen.getAllByRole('navigation', { name: 'My Student Kare' }).length).toBeGreaterThan(0);
     expect(screen.queryByRole('navigation', { name: 'Partner links' })).toBeNull();
   });
 });

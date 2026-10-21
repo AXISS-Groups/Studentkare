@@ -316,7 +316,7 @@ export function VendorHandoverScreen({ initialHandovers, initialCounterOrder, on
             color: 'var(--sk-color-surface)',
             padding: '12px 20px',
             borderRadius: 12,
-            boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
+            boxShadow: 'var(--sk-shadow-float)',
             fontSize: 13,
             fontWeight: 700,
             display: 'flex',

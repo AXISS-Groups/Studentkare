@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import { DataTable, ErrorStateView, SkSkeleton as Skeleton, StatRow, StatusPill } from '@/design-system';
-import type { ClinicianNavId } from '@/design-system';
+import { ConsoleTablePage } from '@/design-system';
+import type { ClinicianNavId, ConsoleTableStatus } from '@/design-system';
+import { useT } from '@/i18n';
 import { navigate } from '@/lib/utils/workflowRouting';
 import type { RoutePath } from '@/lib/utils/workflowRouting';
 import { ClinicianConsoleFrame } from './ClinicianConsoleFrame';
 import { ConsoleTableViewModel } from './consoleTable';
 import type { ConsoleTableConfig, ConsoleTableSource } from './consoleTable';
-import './console-table.css';
 
 export interface ConsoleTableViewProps {
   viewModel: ConsoleTableViewModel;
@@ -17,68 +17,49 @@ export interface ConsoleTableViewProps {
   onNavigate: (route: RoutePath) => void;
 }
 
+/**
+ * A clinician list board on the design-system console table page. Not connected
+ * shows the real layout with blank figures and an empty table — never sample rows.
+ */
 export const ConsoleTableView = observer(function ConsoleTableView({ viewModel, config, headerAction, onNavigate }: ConsoleTableViewProps): React.ReactElement {
+  const t = useT();
   const { status, data } = viewModel;
-
-  if (status === 'loading') {
-    return (
-      <div className="ctb-skeleton" aria-busy="true" aria-label={`Loading ${config.title.toLowerCase()}`}>
-        <div className="ctb-head">
-          <div className="ctb-head__titles"><Skeleton width={240} height={28} /><Skeleton width={360} height={14} /></div>
-          <Skeleton width={180} height={40} />
-        </div>
-        <div className="ctb-skeleton__stats">{Array.from({ length: 4 }, (_, i) => <Skeleton key={i} height={78} />)}</div>
-        <div className="ctb-skeleton__table">{Array.from({ length: 5 }, (_, i) => <Skeleton key={i} height={44} />)}</div>
-      </div>
-    );
-  }
-  if (status === 'error') {
-    return (
-      <ErrorStateView
-        title={config.errorTitle}
-        onRetry={() => { void viewModel.load(); }}
-        onHelp={() => onNavigate('support')}
-        reference={config.reference}
-      />
-    );
-  }
-  // Not connected, or connected with nothing yet: the screen's real layout with blank
-  // figures and an empty table (as on the Super Admin screens) — never sample rows.
-  if (status === 'unconnected' || status === 'empty' || !data) {
-    const message = status === 'unconnected' ? config.unconnected : config.empty;
-    return (
-      <>
-        <div className="ctb-head sk-fade">
-          <div className="ctb-head__titles">
-            <h1 className="ctb-title">{config.title}</h1>
-            <p className="ctb-subtitle">{data?.subtitle ?? config.subtitle}</p>
-          </div>
-        </div>
-        <StatRow stats={data?.stats.length ? data.stats : config.statLabels.map((label) => ({ label, value: '—' }))} />
-        <DataTable caption={config.caption} title={config.tableTitle} hideHeadings={config.hideColumnHeadings} columns={config.columns} rows={[]} footnote={config.footnote} emptyMessage={message} />
-      </>
-    );
-  }
-
+  const pageStatus: ConsoleTableStatus = status;
+  const emptyAction = config.emptyAction;
   return (
-    <>
-      <div className="ctb-head sk-fade">
-        <div className="ctb-head__titles">
-          <h1 className="ctb-title">{config.title}</h1>
-          <p className="ctb-subtitle">{data.subtitle ?? config.subtitle}</p>
-        </div>
-        <div className="ctb-head__side">
-          {data.badge ? (
-            <StatusPill tone={data.badge.tone} dot={data.badge.tone === 'danger' ? 'live' : true} className={`ctb-badge ctb-badge--${data.badge.tone}`}>
-              {data.badge.label}
-            </StatusPill>
-          ) : null}
-          {headerAction}
-        </div>
-      </div>
-      <StatRow stats={data.stats} />
-      <DataTable caption={config.caption} title={config.tableTitle} hideHeadings={config.hideColumnHeadings} columns={config.columns} rows={data.rows} footnote={config.footnote} />
-    </>
+    <ConsoleTablePage
+      status={pageStatus}
+      header={{
+        title: config.title,
+        subtitle: data?.subtitle ?? config.subtitle,
+        badge: data?.badge,
+        actions: status === 'ready' ? headerAction : undefined,
+      }}
+      stats={data?.stats}
+      statLabels={config.statLabels}
+      table={{
+        caption: config.caption,
+        title: config.tableTitle,
+        hideHeadings: config.hideColumnHeadings,
+        columns: config.columns,
+        rows: data?.rows ?? [],
+        footnote: config.footnote,
+      }}
+      empty={{
+        title: config.empty.title,
+        body: config.empty.body,
+        icon3d: config.emptyIcon ?? 'stetho-alt--p4',
+        action: emptyAction ? { label: emptyAction.label, onSelect: () => onNavigate(emptyAction.route) } : undefined,
+      }}
+      unconnected={config.unconnected}
+      error={{
+        title: config.errorTitle,
+        reference: config.reference,
+        onRetry: () => { void viewModel.load(); },
+        onHelp: () => onNavigate('support'),
+      }}
+      loadingLabel={t('console.loading', { title: config.title.toLowerCase() })}
+    />
   );
 });
 

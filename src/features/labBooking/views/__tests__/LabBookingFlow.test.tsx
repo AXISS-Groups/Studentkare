@@ -77,7 +77,7 @@ describe('LabBookingFlow', () => {
     expect(screen.getByText('Test payment ₹649')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Receipt, not available yet' })).toHaveAttribute('aria-disabled', 'true');
     fireEvent.click(screen.getByRole('button', { name: 'Show more details' }));
-    expect(screen.getByTestId('lab-more')).toHaveTextContent('Reviewed by a doctor before you see it, about 24 hours');
+    expect(screen.getByTestId('result-more')).toHaveTextContent('Reviewed by a doctor before you see it, about 24 hours');
     fireEvent.click(screen.getByRole('button', { name: 'View booking' }));
     expect(links.onViewBooking).toHaveBeenCalled();
   });
@@ -92,7 +92,9 @@ describe('LabBookingFlow', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Pay ₹649 · test' }));
     expect(await screen.findByTestId('pay-failed')).toHaveTextContent('Your bank declined it. Nothing was charged.');
     expect(screen.queryByText('Lab test booked')).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Go to my lab tests' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Retry ₹649' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Try another method' })).toBeInTheDocument();
+    expect(screen.queryByTestId('result-confetti')).not.toBeInTheDocument();
   });
 
   it('Pay goes back to the slot, not to delivery', async () => {
@@ -127,5 +129,27 @@ describe('LabBookingFlow', () => {
     renderFlow({ 'GET /lab-packages': new ApiError('down', 502) });
     expect(await screen.findByText('Lab tests didn\'t load')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Try again' })).toBeInTheDocument();
+    expect(screen.getByTestId('lab-state-error')).toHaveAttribute('role', 'alert');
+  });
+
+  it('empty state gives two ways out', async () => {
+    const { links } = renderFlow({ 'GET /lab-packages': { items: [] } });
+    expect(await screen.findByTestId('lab-state-empty')).toHaveTextContent('Empty');
+    fireEvent.click(screen.getByRole('button', { name: 'My reports' }));
+    expect(links.onReports).toHaveBeenCalled();
+  });
+
+  it('says offline, not broken, when the list fails with no connection', async () => {
+    const onLine = vi.spyOn(window.navigator, 'onLine', 'get').mockReturnValue(false);
+    try {
+      renderFlow({ 'GET /lab-packages': new ApiError('down', 0) });
+      const state = await screen.findByTestId('lab-state-offline');
+      expect(state).toHaveTextContent('No connection');
+      expect(state).toHaveTextContent('Nothing was booked or charged.');
+      expect(screen.getByRole('button', { name: 'Retry now' })).toBeInTheDocument();
+      expect(screen.queryByTestId('lab-state-error')).not.toBeInTheDocument();
+    } finally {
+      onLine.mockRestore();
+    }
   });
 });

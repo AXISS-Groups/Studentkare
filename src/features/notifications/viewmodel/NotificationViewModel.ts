@@ -8,6 +8,8 @@ export type NotificationCategory = 'EMERGENCY' | 'MEDICATION' | 'APPOINTMENT' | 
 
 export interface NotificationItem {
   id: string;
+  /** The server's event name (e.g. `appointment_reminder`), for wording and the board's icon. */
+  eventType?: string;
   category: NotificationCategory;
   title: string;
   body: string;
@@ -18,6 +20,18 @@ export interface NotificationItem {
 }
 
 export type NotificationFilter = 'all' | 'unread' | 'emergency';
+
+/** The Notifications board's tabs (canvas: All, Care, Orders, Records). */
+export type NotificationTab = 'all' | 'care' | 'orders' | 'records';
+
+/** Which board tab an event belongs to; 'all' when it fits none (safety and account messages). */
+export function tabOf(eventType: string): Exclude<NotificationTab, 'all'> | null {
+  const type = eventType.toLowerCase();
+  if (/(order|return|refund|deliver|dispatch|payment|handover)/.test(type)) return 'orders';
+  if (/(document|record|report|share|consent|lab_|result)/.test(type)) return 'records';
+  if (/(medication|refill|appointment|encounter|consult|camp|reminder|prescription|visit)/.test(type)) return 'care';
+  return null;
+}
 
 /**
  * Earlier builds cached notification text on the device under this key.
@@ -52,6 +66,7 @@ export function toNotificationItem(event: InboxEvent): NotificationItem {
   const summary = typeof event.payload?.summary === 'string' ? event.payload.summary : '';
   return {
     id: event.id,
+    eventType: event.eventType,
     category: categoryOf(event.eventType),
     title: label,
     body: summary || label,
@@ -71,6 +86,7 @@ export class NotificationViewModel implements ViewModel {
   loading = false;
   error: Said | null = null;
   filter: NotificationFilter = 'all';
+  tab: NotificationTab = 'all';
   isConnected = true;
 
   constructor() {
@@ -97,6 +113,16 @@ export class NotificationViewModel implements ViewModel {
       default:
         return this.items;
     }
+  }
+
+  /** The board's list: the chosen tab, newest first as the server sends them. */
+  get tabItems(): NotificationItem[] {
+    if (this.tab === 'all') return this.items;
+    return this.items.filter(item => tabOf(item.eventType ?? '') === this.tab);
+  }
+
+  setTab(tab: NotificationTab): void {
+    this.tab = tab;
   }
 
   async fetchNotifications(): Promise<void> {
@@ -155,6 +181,7 @@ export class NotificationViewModel implements ViewModel {
     this.loading = false;
     this.error = null;
     this.filter = 'all';
+    this.tab = 'all';
   }
 
   dispose(): void {
