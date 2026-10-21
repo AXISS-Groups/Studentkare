@@ -21,6 +21,7 @@ import { rewardsEn } from './areas/rewards';
 import { wellnessEn } from './areas/wellness';
 import { consoleEn } from './areas/console';
 import { phoneboardsEn } from './areas/phoneboards';
+import { safetyEn } from './areas/safety';
 import { clinicianWorkEn } from './areas/clinicianWork';
 import { partnerConsoleEn } from './areas/partnerConsole';
 /**
@@ -842,6 +843,7 @@ export const en = {
   ...wellnessEn,
   ...consoleEn,
   ...phoneboardsEn,
+  ...safetyEn,
   ...clinicianWorkEn,
   ...partnerConsoleEn,
 } as const;

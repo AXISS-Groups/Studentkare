@@ -3,7 +3,7 @@ import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-nati
 import { color, focusRing, font, fontWeight, motion, radius, size, space, webOnly } from './theme';
 import { useReducedMotion } from './motion';
 
-export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
+export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'dangerOutline';
 
 export interface ButtonProps {
   label: string;
@@ -26,10 +26,13 @@ const palette: Record<ButtonVariant, { bg: string; bgHover: string; fg: string; 
   secondary: { bg: color.surface, bgHover: color.surface2, fg: color.action, border: color.rule },
   ghost: { bg: 'transparent', bgHover: color.surface2, fg: color.action, border: 'transparent' },
   danger: { bg: color.danger, bgHover: color.danger, fg: color.onAction, border: color.danger },
+  /** The quieter red step before a destructive or crisis action ("Continue to delete", "Still not okay?"). */
+  dangerOutline: { bg: color.surface, bgHover: color.dangerBg, fg: color.danger, border: color.danger },
 };
 
 /**
- * The design-system button (DESIGN.md §4): primary, secondary, ghost, danger ·
+ * The design-system button (DESIGN.md §4): primary, secondary, ghost, danger,
+ * danger outline ·
  * default, hover, focus, busy, disabled.
  *
  * Press drops it 1 px so a tap is acknowledged before a slow route change

@@ -264,6 +264,12 @@ declare("wellness.bmi_cutoff_high", FLOAT, 25.0, area="clinical", unit="kg/m²",
 declare("health.readings_list_cap", INT, 1000, area="health", unit="rows", minimum=1, maximum=10000,
         description="Most readings GET /health/readings returns in one response.")
 
+# --- emergency -------------------------------------------------------------
+# The SOS screen re-reads an open alert so "your campus has seen it" appears
+# without a reload (SosBeacon). The server pushes nothing; this is a read.
+declare("emergency.sos_poll_seconds", INT, 15, area="emergency", unit="seconds", minimum=5, maximum=120, public=True,
+        description="How often the SOS screen re-reads an open alert from GET /api/emergency/sos/current.")
+
 # --- platform --------------------------------------------------------------
 # A name zoneinfo does not know (in an override or a student's preference) is
 # never used: the student's day then falls back to this declared default.

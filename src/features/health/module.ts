@@ -150,6 +150,10 @@ const workspacePaths: { path: string; access?: (role: AccountRole | null) => boo
   // Crisis follow-up: counsellors (own campus, server-scoped) and the super admin only.
   { path: '/counsellor', access: hasRole('COUNSELLOR', 'SUPER_ADMIN') },
   { path: '/emergency-card' },
+  // Tier 1 phone boards (WP-06): emergency contacts, the consent inbox and the care circle.
+  { path: '/ice-contacts', access: hasRole('STUDENT') },
+  { path: '/consent', access: hasRole('STUDENT') },
+  { path: '/care-circle', access: hasRole('STUDENT') },
   { path: '/pass' },
   // Phone search (design page 2: SearchEntry … DoctorResults). The catalogue is public; the boards need a session for booking.
   { path: '/search' },

@@ -15,6 +15,8 @@ export interface PublicSettings {
   "consult.media_join_after_minutes": number;
   /** How early before the slot starts a video consult can be joined. (minutes) */
   "consult.media_join_before_minutes": number;
+  /** How often the SOS screen re-reads an open alert from GET /api/emergency/sos/current. (seconds) */
+  "emergency.sos_poll_seconds": number;
   /** How long after marking a dose taken or skipped the student can undo it. (minutes) */
   "meds.dose_undo_minutes": number;
   /** Most reminder times one medication plan may have in a day. (doses per day) */
@@ -104,6 +106,7 @@ export const publicSettingDefaults: Readonly<PublicSettings> = {
   "billing.student_plus.quarter_package_inr": 2199,
   "consult.media_join_after_minutes": 30,
   "consult.media_join_before_minutes": 15,
+  "emergency.sos_poll_seconds": 15,
   "meds.dose_undo_minutes": 30,
   "meds.times_per_day_max": 6,
   "pharmacy.quote_expiry_hours": 0,
@@ -147,6 +150,7 @@ export const publicSettingSpecs: Readonly<Record<PublicSettingKey, PublicSetting
   "billing.student_plus.quarter_package_inr": { type: "int", min: 1, max: 1000000, allowed: [], unit: "\u20b9 per 3 months" },
   "consult.media_join_after_minutes": { type: "int", min: 0, max: 240, allowed: [], unit: "minutes" },
   "consult.media_join_before_minutes": { type: "int", min: 0, max: 120, allowed: [], unit: "minutes" },
+  "emergency.sos_poll_seconds": { type: "int", min: 5, max: 120, allowed: [], unit: "seconds" },
   "meds.dose_undo_minutes": { type: "int", min: 0, max: 240, allowed: [], unit: "minutes" },
   "meds.times_per_day_max": { type: "int", min: 1, max: 24, allowed: [], unit: "doses per day" },
   "pharmacy.quote_expiry_hours": { type: "int", min: 0, max: 720, allowed: [], unit: "hours" },
