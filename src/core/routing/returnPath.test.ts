@@ -6,6 +6,15 @@ describe('authentication return destinations', () => {
     expect(readReturnPath(`?next=${encodeURIComponent(path)}`)).toBe(path);
   });
 
+  // A signed-out partner bounced off a console page by RouteGuard comes back to it.
+  it.each(['dispensing', 'rx-review'])('preserves the partner console destination %s', path => {
+    expect(readReturnPath(`?next=${encodeURIComponent(path)}`)).toBe(path);
+  });
+
+  it.each(['?next=/dispensing', '?next=https://example.com/dispensing', '?next=dispensing&next=rx-review', '?next=dispensing%3Fnext%3Dadmin'])('rejects a malformed partner destination: %s', search => {
+    expect(readReturnPath(search)).toBeNull();
+  });
+
   it.each(['', '?next=', '?next=login', '?next=signup', '?next=shop', '?next=https://example.com', '?next=//example.com', '?next=../admin', '?next=unknown', '?next=records&next=checkout', '?next=records%3Fnext%3Dadmin'])('rejects an invalid or ambiguous return query: %s', search => {
     expect(readReturnPath(search)).toBeNull();
   });

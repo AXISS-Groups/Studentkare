@@ -56,6 +56,18 @@ describe('AuthViewModel — remembered device', () => {
     expect(routing.navigate).toHaveBeenCalledWith('records');
   });
 
+  it.each([['VENDOR', 'dispensing'], ['STUDENT', 'health']])('a remembered partner console page sends a %s to %s', async (role, expected) => {
+    const vm = new AuthViewModel('login', null);
+    api.apiRequest.mockResolvedValueOnce({ ...HINT, lastRoute: 'dispensing' });
+    await vm.loadRemembered();
+    api.apiRequest.mockResolvedValueOnce({ targetMasked: 'm•••@example.test' });
+    await vm.continueRemembered();
+    vm.setCode('123456');
+    api.apiRequest.mockResolvedValueOnce(signedIn(role));
+    await vm.verify(() => undefined);
+    expect(routing.navigate).toHaveBeenCalledWith(expected);
+  });
+
   it('ignores a remembered page the signed-in role may not open', async () => {
     const vm = new AuthViewModel('login', null);
     api.apiRequest.mockResolvedValueOnce({ ...HINT, lastRoute: 'admin/accounts' });
