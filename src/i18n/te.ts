@@ -22,6 +22,7 @@ import { rewardsTe } from './areas/rewards';
 import { wellnessTe } from './areas/wellness';
 import { consoleTe } from './areas/console';
 import { phoneboardsTe } from './areas/phoneboards';
+import { identityTe } from './areas/identity';
 import { clinicianWorkTe } from './areas/clinicianWork';
 import { partnerConsoleTe } from './areas/partnerConsole';
 
@@ -843,6 +844,7 @@ export const te: Catalog = {
   ...wellnessTe,
   ...consoleTe,
   ...phoneboardsTe,
+  ...identityTe,
   ...clinicianWorkTe,
   ...partnerConsoleTe,
 };

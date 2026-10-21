@@ -313,6 +313,9 @@ class OtpSend(StrictModel):
     channel: Literal["EMAIL", "WHATSAPP"]
     intent: Literal["LOGIN", "SIGNUP"]
     fallbackEmail: str | None = Field(default=None, max_length=254)
+    # The staff sign-in page (AdminSignIn) asks for STAFF: a code is then sent
+    # only to an active account whose role is not STUDENT, by email only.
+    audience: Literal["STUDENT", "STAFF"] = "STUDENT"
 
 
 class OtpVerify(StrictModel):
@@ -404,10 +407,15 @@ def auth_options():
     return {"channels": available_channels()}
 
 
+STAFF_NOT_FOUND = "No staff account uses this email. Staff accounts are created by an administrator."
+
+
 @router.post("/otp/send")
 def send_otp(body: OtpSend, request: Request, response: Response, db: DBSession = Depends(workflow_db)):
     check_origin(request)
     identifier = normalize_identifier(body.identifier, body.channel)
+    if body.audience == "STAFF" and (body.intent != "LOGIN" or body.channel != "EMAIL"):
+        raise HTTPException(422, "Staff sign in with a work email.")
     if body.intent == "LOGIN":
         account = db.scalar(
             select(M.Account).where(
@@ -415,6 +423,10 @@ def send_otp(body: OtpSend, request: Request, response: Response, db: DBSession 
                 M.Account.active.is_(True)
             )
         )
+        if body.audience == "STAFF" and (not account or account.role == "STUDENT"):
+            # One answer for "no account" and "a student account": the staff page
+            # never tells anyone which emails belong to students.
+            raise HTTPException(404, STAFF_NOT_FOUND)
         if not account:
             raise HTTPException(
                 404,
