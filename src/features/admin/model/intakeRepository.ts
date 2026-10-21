@@ -1,14 +1,15 @@
 import { apiRequest } from '@/data/services/http';
-import type { FieldDecision, IntakeQueue } from './types';
+import type { IntakeQueue } from './types';
 
-/** The OCR intake review queue. The only place that knows the intake review endpoints. */
+/**
+ * The intake queue. The only place that knows the intake queue endpoint. It is
+ * read-only: the extracted values belong to the student, so there is no
+ * super-admin decision on them.
+ */
 export interface IntakeRepository {
   reviewQueue(signal?: AbortSignal): Promise<IntakeQueue>;
-  /** The review endpoint takes one field at a time. */
-  decideField(fieldId: string, decision: FieldDecision): Promise<unknown>;
 }
 
 export const intakeRepository: IntakeRepository = {
   reviewQueue: signal => apiRequest<IntakeQueue>('/ops/intake/review', { signal }),
-  decideField: (fieldId, decision) => apiRequest(`/ops/intake/review/${fieldId}`, { method: 'PATCH', body: JSON.stringify(decision) }),
 };

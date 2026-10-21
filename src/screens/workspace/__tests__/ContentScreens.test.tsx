@@ -21,68 +21,44 @@ beforeEach(() => {
 
 describe('Intake & OCR', () => {
   const QUEUE = '/ops/intake/review';
-  const field = (id: string, intakeId: string, name: string, value: string, confidence: number) => ({ id, intakeId, field: name, value, confidence, documentId: `doc-${intakeId}-0000` });
-  const queue = { items: [field('f1', 'i1', 'report_date', '22/09/2026', 0.98), field('f2', 'i1', 'wbc_count', '11,900', 0.68), field('f3', 'i2', 'patient_name', 'sample', 0.64)] };
+  const intake = (id: string, kind: string, status: string, processedAt: number | null = null) => ({ id, kind, status, createdAt: 1_760_000_000, processedAt });
+  const queue = { items: [intake('int_a1', 'LAB', 'DRAFT'), intake('int_b2', 'PRESCRIPTION', 'FAILED', 1_760_000_100), intake('int_c3', 'SCAN', 'QUEUED')] };
   const queueRequests = () => apiRequest.mock.calls.filter(([path]) => path === QUEUE);
 
-  it('groups the queue by document and shows the waiting count in the header', async () => {
+  it('lists each open intake with its kind, state and times, and the count in the header', async () => {
     apiAnswers[QUEUE] = () => Promise.resolve(queue);
     render(<IntakeView />);
     expect(screen.getByRole('status', { name: 'Loading the intake queue…' })).toBeInTheDocument();
-    expect(await screen.findByText('3 fields waiting')).toBeInTheDocument();
+    expect(await screen.findByText('3 open')).toBeInTheDocument();
     expect(queueRequests()).toHaveLength(1);
-    const list = screen.getByRole('region', { name: /Needs a human · 2/ });
-    expect(within(list).getAllByRole('button')).toHaveLength(2);
-    expect(within(list).getAllByRole('button')[0]).toHaveTextContent('Lowest confidence 68%');
+    const table = screen.getByRole('table', { name: 'Intake & OCR' });
+    const rows = within(table).getAllByRole('row').slice(1);
+    expect(rows).toHaveLength(3);
+    expect(rows[0]).toHaveTextContent('int_a1');
+    expect(rows[0]).toHaveTextContent('Lab report');
+    expect(rows[0]).toHaveTextContent('Waiting for review');
+    expect(rows[1]).toHaveTextContent('Reading failed');
+    // An unknown kind falls back to its readable code, never a guess.
+    expect(rows[2]).toHaveTextContent('Scan');
+    expect(screen.getByText(/never shows a title, a value or the document itself/)).toBeInTheDocument();
   });
 
-  it('shows the selected document’s fields with their confidence, and no preview it cannot load', async () => {
+  it('offers no extracted fields, no original and no confirm or reject', async () => {
     apiAnswers[QUEUE] = () => Promise.resolve(queue);
     render(<IntakeView />);
-    const fields = await screen.findByRole('region', { name: 'Extracted fields' });
-    expect(within(fields).getByLabelText(/Wbc count/)).toHaveValue('11,900');
-    expect(within(fields).getByText('68%')).toBeInTheDocument();
-    expect(screen.getByRole('region', { name: 'Original' })).toHaveTextContent('No preview.');
-    expect(screen.queryByRole('button', { name: /ask the lab/i })).toBeNull();
-  });
-
-  it('confirms every field of the document, with corrections, through the existing review endpoint', async () => {
-    apiAnswers[QUEUE] = () => Promise.resolve(queue);
-    render(<IntakeView />);
-    fireEvent.change(await screen.findByLabelText(/Wbc count/), { target: { value: '11,800' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Confirm fields' }));
-    await waitFor(() => expect(queueRequests()).toHaveLength(2));
-    expect(apiRequest).toHaveBeenCalledWith('/ops/intake/review/f1', { method: 'PATCH', body: JSON.stringify({ approved: true, correctedValue: '22/09/2026' }) });
-    expect(apiRequest).toHaveBeenCalledWith('/ops/intake/review/f2', { method: 'PATCH', body: JSON.stringify({ approved: true, correctedValue: '11,800' }) });
-    expect(apiRequest).not.toHaveBeenCalledWith('/ops/intake/review/f3', expect.anything());
-    expect(await screen.findByText('Fields confirmed. The decision is in the audit log.')).toBeInTheDocument();
-  });
-
-  it('rejects the document’s fields', async () => {
-    apiAnswers[QUEUE] = () => Promise.resolve(queue);
-    render(<IntakeView />);
-    fireEvent.click((await screen.findAllByRole('button', { pressed: false }))[0]);
-    fireEvent.click(screen.getByRole('button', { name: 'Reject' }));
-    await waitFor(() => expect(apiRequest).toHaveBeenCalledWith('/ops/intake/review/f3', { method: 'PATCH', body: JSON.stringify({ approved: false, correctedValue: '' }) }));
-  });
-
-  it('keeps the edits and shows the error when a decision fails', async () => {
-    apiAnswers[QUEUE] = () => Promise.resolve(queue);
-    apiAnswers['/ops/intake/review/f1'] = () => Promise.reject(new Error('Review service unavailable'));
-    render(<IntakeView />);
-    fireEvent.change(await screen.findByLabelText(/Wbc count/), { target: { value: '11,800' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Confirm fields' }));
-    expect(await screen.findByRole('alert')).toHaveTextContent('Review service unavailable');
-    expect(screen.getByLabelText(/Wbc count/)).toHaveValue('11,800');
-    expect(queueRequests()).toHaveLength(1);
-    expect(apiRequest).not.toHaveBeenCalledWith('/ops/intake/review/f2', expect.anything());
+    await screen.findByText('3 open');
+    expect(screen.queryByRole('region', { name: 'Extracted fields' })).toBeNull();
+    expect(screen.queryByRole('region', { name: 'Original' })).toBeNull();
+    expect(screen.queryByRole('textbox')).toBeNull();
+    expect(screen.queryByRole('button', { name: /confirm|reject/i })).toBeNull();
+    expect(apiRequest.mock.calls.every(([path, init]) => path === QUEUE && !init?.method)).toBe(true);
   });
 
   it('shows empty and error states, and Retry requests the queue again', async () => {
     apiAnswers[QUEUE] = () => Promise.resolve({ items: [] });
     const { unmount } = render(<IntakeView />);
     expect(await screen.findByText('Nothing waiting for a person.')).toBeInTheDocument();
-    expect(screen.queryByText(/waiting$/)).toBeNull();
+    expect(screen.queryByText(/open$/)).toBeNull();
     expect(screen.getByRole('button', { name: 'Back to overview' })).toBeInTheDocument();
     unmount();
     apiRequest.mockClear();

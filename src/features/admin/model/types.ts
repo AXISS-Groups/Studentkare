@@ -7,14 +7,15 @@ export interface AuditPage { items: AuditEvent[]; total: number }
 /** GET /ops/agents/ayush/quality — Agent Ayush's recorded turns, summarised. Rates are 0–1. */
 export interface AyushQuality { turns: number; groundedRate: number; answerRate: number; refusalBreakdown: Record<string, number>; avgLatencyMs: number; avgTopScore: number }
 
-/** One OCR-extracted field the reader wasn't sure of. Confidence is 0–1. */
-export interface ReviewItem { id: string; intakeId: string; field: string; value: string; confidence: number; documentId: string }
+/**
+ * GET /ops/intake/review — one uploaded document's intake, operational state only.
+ * A super admin never sees what the document says: no title, no document id, no
+ * extracted field or value. `kind` is the document category; times are Unix seconds.
+ */
+export interface IntakeQueueItem { id: string; kind: string; status: string; createdAt: number | null; processedAt: number | null }
 
-/** GET /ops/intake/review — fields waiting for a person, across documents. */
-export interface IntakeQueue { items: ReviewItem[] }
-
-/** A person's decision on one field: confirm it (with the value to keep) or reject it. */
-export interface FieldDecision { approved: boolean; correctedValue: string }
+/** GET /ops/intake/review */
+export interface IntakeQueue { items: IntakeQueueItem[] }
 
 /** A knowledge source Agent Ayush may quote. expiresAt is in Unix seconds. */
 export interface KnowledgeSource { id: string; title: string; category: string; version: number; author: string; reviewed: boolean; expiresAt: number | null }

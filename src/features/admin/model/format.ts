@@ -23,9 +23,6 @@ const OUTCOME_LABEL: Record<string, string> = {
 /** Where an Agent Ayush turn ended, in words. Unknown outcomes fall back to their readable code. */
 export const outcomeLabel = (outcome: string) => OUTCOME_LABEL[outcome] ?? readable(outcome);
 
-/** Tag tone for an OCR confidence: sure at 90% and above, attention from 70%, otherwise danger. */
-export const confidenceTone = (confidence: number) => confidence >= 0.9 ? 'is-positive' : confidence >= 0.7 ? 'is-attention' : 'is-danger';
-
 /** A knowledge source's state for Ayush: expired sources are hidden, unreviewed ones wait, approved ones need indexing. */
 export function sourceState(source: KnowledgeSource, missing: Set<string>, now: number): { label: string; tone: string } {
   if (source.expiresAt !== null && source.expiresAt * 1000 < now) return { label: 'Expired · hidden', tone: 'is-neutral' };
