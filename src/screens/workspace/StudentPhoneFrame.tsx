@@ -34,6 +34,7 @@ export const STUDENT_NAV_ROUTES: Readonly<Record<PillNavKey, RoutePath>> = {
 const HOME_STORE_ROUTES: ReadonlySet<RoutePath> = new Set<RoutePath>([
   // keep-sorted start
   'care',
+  'find-care',
   'insurance',
   'lab-tests',
   'preventive-care',
@@ -135,7 +136,7 @@ export function StudentPhoneFrame({ route, title, menu, menuPanel, ownBack = fal
       <div style={dock}>
         <PillNav current={current} onSelect={(key) => navigate(STUDENT_NAV_ROUTES[key])} />
       </div>
-      {sosOpen && <EmergencyHelplinesDialog onClose={() => setSosOpen(false)} onSendSos={() => { setSosOpen(false); navigate('sos'); }} />}
+      {sosOpen && <EmergencyHelplinesDialog onClose={() => setSosOpen(false)} onSendSos={() => { setSosOpen(false); navigate('sos'); }} onFindCare={() => { setSosOpen(false); navigate('find-care'); }} />}
     </div>
   );
 }
