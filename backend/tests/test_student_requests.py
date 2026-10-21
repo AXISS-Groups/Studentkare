@@ -123,3 +123,36 @@ def test_my_requests_lists_everything_newest_first(harness):
     client.post("/api/returns", headers=headers, json={"orderLineId": "l1", "reason": "WRONG_ITEM"})
     kinds = [i["kind"] for i in client.get("/api/my-requests").json()["items"]]
     assert kinds[0] == "RETURN" and "ORDER" in kinds
+
+
+def test_refill_plans_carry_a_due_date_only_when_the_server_can_compute_it(harness):
+    """dueAt is the last dispense plus its days supply; without a days supply it is null, never guessed."""
+    client, factory, codes = harness
+    pharm = partner(client, codes, factory)
+    user, headers = register(client, codes, "stu@x.test")
+    with factory() as db:
+        db.add(M.MedicationPlan(id="p1", account_id=user["id"], name="Vitamin D3", dosage="60K", frequency="weekly",
+                                times_per_day=1, created_at=time.time()))
+        db.add(M.MedicationPlan(id="p2", account_id=user["id"], name="Iron", dosage="", frequency="daily", created_at=time.time()))
+        db.commit()
+    plans = client.get("/api/refills/plans").json()["items"]
+    assert [(p["id"], p["dueAt"]) for p in plans] == [("p2", None), ("p1", None)]
+    # A dispensed (READY) refill gives a date but, in packs, no days supply: still null.
+    rid = client.post("/api/refills", headers=headers, json={"planId": "p1", "providerId": pharm["id"], "quantity": 3}).json()["refill"]["id"]
+    client.post("/api/auth/logout", headers=headers)
+    ph = login(client, codes, "pharmacy@x.test")
+    client.post(f"/api/work/refills/{rid}", headers=ph, json={"action": "ACCEPT"})
+    assert client.post(f"/api/work/refills/{rid}", headers=ph, json={"action": "READY"}).status_code == 200
+    login(client, codes, "stu@x.test")
+    assert {p["id"]: p["dueAt"] for p in client.get("/api/refills/plans").json()["items"]} == {"p1": None, "p2": None}
+
+
+def test_refill_due_at_needs_both_inputs():
+    from services.student_requests import SECONDS_PER_DAY, refill_due_at
+
+    assert refill_due_at(1_000.0, 30) == 1_000.0 + 30 * SECONDS_PER_DAY
+    assert refill_due_at(None, 30) is None
+    assert refill_due_at(0, 30) is None
+    assert refill_due_at(1_000.0, None) is None
+    assert refill_due_at(1_000.0, 0) is None
+    assert refill_due_at(1_000.0, -5) is None

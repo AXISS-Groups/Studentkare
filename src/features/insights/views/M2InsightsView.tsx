@@ -15,6 +15,7 @@ import { CardError, HeroStat, NavyHero, TileIcon } from '@/features/m2health/Hea
 import type { BodySystem, LabValue } from '@/features/labResults/data/LabResultsRepository';
 import { toneOf } from '@/features/labResults/viewmodel/labValueModels';
 import type { BodySystemRow, ValueTone } from '@/features/labResults/viewmodel/labValueModels';
+import { refillLine } from '../viewmodel/InsightsViewModel';
 import type { InsightsViewModel } from '../viewmodel/InsightsViewModel';
 
 /**
@@ -317,7 +318,7 @@ export const M2InsightsView = observer(function M2InsightsView({ vm, name, links
           {vm.refills.phase === 'error' ? <View style={styles.half}><CardError title={t('m2.ins.refills')} onRetry={() => void vm.refills.load()} testID="m2-ins-refills-error" /></View> : (
             <View style={styles.half}>
               <CareCard icon="refresh" fill={color.surface3} ink={color.action} title={t('m2.ins.refills')} testID="m2-ins-refills"
-                lines={vm.refills.data ? vm.refills.data.items.map((p) => [p.name, p.dosage].filter(Boolean).join(' · ')) : null}
+                lines={vm.refills.data ? vm.refills.data.items.map((p) => refillLine(p, (date) => t('m2.ins.refillDue', { date }), shortDate)) : null}
                 empty={t('m2.ins.refillsNone')} action={links.refill ? { label: t('m2.ins.requestRefill'), onPress: links.refill } : undefined} />
             </View>
           )}

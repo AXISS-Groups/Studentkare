@@ -27,7 +27,18 @@ import { Resource } from '@/features/m2health/resource';
 
 interface Appointment { id: string; slotStart: string; status: string }
 interface Share { id: string; active: boolean }
-export interface RefillPlan { id: string; name: string; dosage: string }
+/**
+ * GET /refills/plans. `dueAt` (Unix seconds) is the server's: the last dispense
+ * plus its days supply, null when it cannot know (older servers omit it). Never
+ * computed or guessed here.
+ */
+export interface RefillPlan { id: string; name: string; dosage: string; dueAt?: number | null }
+
+/** One refill line: name, dosage, and the due date only when the server sent one. */
+export function refillLine(plan: RefillPlan, due: (date: string) => string, date: (seconds: number) => string): string {
+  const when = typeof plan.dueAt === 'number' ? date(plan.dueAt) : '';
+  return [plan.name, plan.dosage, when ? due(when) : ''].filter(Boolean).join(' · ');
+}
 export interface LabOrder {
   id: string; status: string; testPanel: string[]; orderedByDoctor?: string; collectedAt: number | null; slotStart: string | null; createdAt: number;
 }
