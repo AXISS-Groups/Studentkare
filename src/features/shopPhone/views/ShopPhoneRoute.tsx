@@ -40,6 +40,7 @@ export function ShopPhoneRoute({ route }: { route: 'shop' | 'checkout' }): React
     openRewards: () => navigate('rewards'),
     openRefill: () => navigate('refill-request'),
     openPrescriptions: () => navigate('prescriptions'),
+    openRecords: () => navigate('records'),
     openLabTests: () => navigate('lab-tests'),
     bookLab: setLabItemId,
     trackOrder: (orderId) => routerNavigate(`/orders?order=${encodeURIComponent(orderId)}`),

@@ -84,14 +84,15 @@ describe('shop boards', () => {
     expect(screen.getByRole('button', { name: /When/ })).toBeInTheDocument();
   });
 
-  it('shows a product with its pack, the caution note, and no add button for a prescription medicine', async () => {
+  it('opens the Mobile 2.0 medicine page: the caution note, and no add button for a prescription medicine', async () => {
     const vm = setup({ name: 'list', category: 'vitamins', query: '' }, { '/catalog': VITAMINS });
     await screen.findByTestId('product-rx');
     act(() => vm.openProduct(VITAMINS.items[1]));
-    const detail = await screen.findByTestId('product-detail');
-    expect(within(detail).getAllByText('Needs a prescription').length).toBeGreaterThan(0);
+    const detail = await screen.findByTestId('m2-product');
+    expect(within(detail).getByTestId('m2-prod-rx')).toHaveTextContent('Prescription needed');
     expect(within(detail).getByText(/not a substitute for medical advice/)).toBeInTheDocument();
-    expect(within(detail).getByTestId('detail-add')).toHaveAttribute('aria-disabled', 'true');
+    expect(within(detail).queryByTestId('m2-prod-add')).toBeNull();
+    expect(within(detail).getByRole('link', { name: 'Send your prescription to a pharmacy' })).toBeInTheDocument();
   });
 });
 

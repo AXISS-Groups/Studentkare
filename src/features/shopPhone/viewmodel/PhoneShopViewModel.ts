@@ -129,7 +129,7 @@ export class PhoneShopViewModel implements ViewModel {
   private enter(screen: ShopScreen): void {
     if (screen.name === 'home' && this.homePhase !== 'ready') void this.loadHome();
     if (screen.name === 'list') { this.listPage = 0; void this.loadList(); }
-    if (screen.name === 'detail') void this.loadDetail(screen.itemId);
+    // The medicine page (M2Product) loads its own listing, stock and other makers (M2ProductViewModel).
   }
 
   push(screen: ShopScreen): void {

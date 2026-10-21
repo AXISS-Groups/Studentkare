@@ -5,7 +5,8 @@ import { PayStepView } from '@/features/payments/views/PayStepView';
 import type { CartPort, PhoneShopViewModel } from '../viewmodel/PhoneShopViewModel';
 import { M2MedicinesBoard } from '@/features/m2store/views/M2MedicinesBoard';
 import { ProductListView } from './ProductListView';
-import { ProductDetailView } from './ProductDetailView';
+import { M2ProductBoard } from './M2ProductBoard';
+import { M2ProductViewModel } from '../viewmodel/M2ProductViewModel';
 import { CartView } from './CartView';
 import { CheckoutView } from './CheckoutView';
 import { OrderSuccessView } from './OrderSuccessView';
@@ -39,7 +40,17 @@ export const ShopFlow = observer(function ShopFlow({ vm, cart, links, orderArt }
 
   switch (screen.name) {
     case 'list': return <ProductListView vm={vm} cart={cart} links={links} />;
-    case 'detail': return <ProductDetailView vm={vm} cart={cart} />;
+    // Mobile 2.0 medicine page (M2Product, Tier 1, plan package A) replaces ProductDetail.
+    case 'detail': return (
+      <M2ProductBoard key={screen.itemId} itemId={screen.itemId} cart={cart} links={{
+        back: () => { if (!vm.back()) links.exit?.(); },
+        cart: () => vm.push({ name: 'cart' }),
+        open: (alt) => vm.openProduct(M2ProductViewModel.asItem(alt, '')),
+        addRx: links.openRecords,
+        sendRx: links.openPrescriptions,
+        afterAdd: () => vm.push({ name: 'cart' }),
+      }} />
+    );
     case 'cart': return <CartView vm={vm} cart={cart} />;
     case 'checkout': return <CheckoutView vm={vm} cart={cart} />;
     case 'pay':
