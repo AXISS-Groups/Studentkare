@@ -1,187 +1,209 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
 import { Icon } from '@/design-system/icons';
-import type { SkIconName } from '@/design-system/icons';
-import { CanvasVideo } from '@/design-system/art';
+import { useOnline } from '@/design-system';
+import { ServiceRail } from '@/design-system/m2';
+import type { ServiceTile } from '@/design-system/m2';
 import { useSearchParams } from '@/core/navigation';
 import { useApiResource } from '@/hooks/api/useApiResource';
-import { money } from '@/data/types/workflowTypes';
 import type { LiveCatalogItem } from '@/data/types/workflowTypes';
 import { LabBookingOverlay } from '@/features/labBooking/views/LabBookingOverlay';
+import { rememberListing } from '@/features/phoneKit/listingCache';
+import type { ShopFilter } from '@/features/m2store/data/storeArt';
 import { navigate } from '@/lib/utils/workflowRouting';
-import { shopArt } from '../catalogArt';
-import { ErrorPanel, EmptyPanel, LoadingRows } from '../parts';
-import { DiscountBadge, ShopSearch, cannotAdd, kindLabel, useAddToCart } from './shopShared';
-import { WebSearchResultsView } from './WebSearchResultsView';
+import { sortItems } from '../../data/studentWebData';
+import type { SortOrder } from '../../data/studentWebData';
+import { EmptyPanel, ErrorPanel, LoadingRows, OfflinePanel } from '../parts';
+import { ShopSearch, useAddToCart } from './shopShared';
+import { ProductCard } from './m2WebParts';
+import { CartBar, CartRail, showCartRail } from './ShopCartRail';
+import { GenericsTable, WebShopFront } from './WebShopFront';
+import { SHOP_KINDS, ShopFilterPanel, ShopHelpRail, asShopKind } from './WebSearchResultsView';
+import type { ShopKind } from './WebSearchResultsView';
 import { WebProductView } from './WebProductView';
 
-/** Cards per catalogue page (two rows of five on the board). */
-const PAGE_SIZE = 10;
-type ShopKind = 'all' | 'product' | 'lab' | 'consultation' | 'vaccine';
-const KINDS: readonly ShopKind[] = ['all', 'product', 'lab', 'consultation', 'vaccine'];
-/** Categories the catalogue uses (`shopweb.category.<id>` labels). */
-const CATEGORIES = ['vitamins', 'skin', 'devices', 'nutrition', 'first-aid', 'ayurveda', 'medicines', 'labs', 'general-care', 'diabetes', 'heart', 'stomach', 'liver', 'bone-joint', 'kidney', 'respiratory', 'eye', 'vaccines'] as const;
+/** Listings per page: fills three and four columns. */
+const PAGE_SIZE = 12;
 
-interface Tile { id: string; label: MessageKey; art?: string; icon?: SkIconName; onPress: () => void }
+interface Filters { q: string; kind: ShopKind; category: string }
+type FilterPatch = Partial<Filters> & { product?: string | null };
 
 /**
- * The shop in the student web shell (canvas 3b: WebShop, WebSearchResults,
- * WebProduct). /shop shows the catalogue; /shop?q= the search results; a card
- * opens the product. Everything is the published catalogue (`GET /catalog`,
- * commerce plane): nothing is ordered or chosen using health records, and no
- * placement is for sale (Rule L).
+ * /shop above phone width, in the Mobile 2.0 language (canvas 3b WebShop,
+ * WebSearchResults and WebProduct, merged with M2Medicines and M2Product;
+ * plan docs/plans/m2-web-shop-2026-10-21.md). One page for the signed-in
+ * student (inside the student web shell) and for a visitor (inside the public
+ * site's header and footer): the catalogue, its search (`?q=`), filters
+ * (`?kind=`, `?category=`) and a listing (`?product=`), with the cart beside it.
+ *
+ * Everything is the published catalogue (`GET /catalog`, commerce plane):
+ * nothing is ordered or chosen using health records, and no placement is for
+ * sale (Rule L). Prices are the catalogue's.
  */
-export function WebShopView() {
+export function WebShopView({ signedIn = true }: { signedIn?: boolean }) {
   const [params, setParams] = useSearchParams();
-  const query = params.get('q') ?? '';
-  const [product, setProduct] = useState<LiveCatalogItem | null>(null);
+  const filters: Filters = { q: params.get('q') ?? '', kind: asShopKind(params.get('kind')), category: params.get('category') ?? 'all' };
+  const productId = params.get('product');
   const [labItem, setLabItem] = useState<LiveCatalogItem | null>(null);
-  const search = (next: string) => { setProduct(null); setParams(next ? { q: next } : {}); };
+  // A lab test is booked as a lab order (slot, address, pay), never a cart line; signing in comes first.
+  const bookLab = (item: LiveCatalogItem) => { if (signedIn) setLabItem(item); else navigate('login', 'shop'); };
 
-  let page: React.ReactNode;
-  if (product) page = <WebProductView item={product} onBack={() => setProduct(null)} onBookLab={setLabItem} />;
-  else if (query) page = <WebSearchResultsView query={query} onSearch={search} onOpen={setProduct} onBookLab={setLabItem} />;
-  else page = <ShopCatalogue onSearch={search} onOpen={setProduct} onBookLab={setLabItem} />;
+  const update = (patch: FilterPatch) => {
+    const next = new URLSearchParams(params);
+    const set = (key: string, value: string | null | undefined, empty: string) => {
+      if (value === undefined) return;
+      if (value === null || value === empty) next.delete(key); else next.set(key, value);
+    };
+    set('q', patch.q, '');
+    set('kind', patch.kind, 'all');
+    set('category', patch.category, 'all');
+    set('product', patch.product, '');
+    if (patch.product === undefined) next.delete('product');
+    setParams(next);
+  };
+  const open = (item: LiveCatalogItem) => { rememberListing(item); update({ product: item.id }); };
 
   return (
     <>
-      {page}
-      {/* A lab test is booked as a lab order (slot, address, pay), never a cart line. */}
+      {productId ? (
+        <WebProductView key={productId} itemId={productId} signedIn={signedIn} onBack={() => update({ product: null })} onOpen={(id) => update({ product: id })} onBookLab={bookLab} />
+      ) : (
+        <ShopBrowse signedIn={signedIn} filters={filters} onFilter={update} onOpen={open} onBookLab={bookLab} />
+      )}
       {labItem ? <LabBookingOverlay itemId={labItem.id} onClose={() => setLabItem(null)} /> : null}
     </>
   );
 }
 
-function ShopCatalogue({ onSearch, onOpen, onBookLab }: { onSearch: (query: string) => void; onOpen: (item: LiveCatalogItem) => void; onBookLab: (item: LiveCatalogItem) => void }) {
-  const t = useT();
-  const [kind, setKind] = useState<ShopKind>('all');
-  const [category, setCategory] = useState('all');
-  const [page, setPage] = useState(0);
-  const resource = useApiResource<{ items: LiveCatalogItem[]; total: number }>(
-    `/catalog?limit=${PAGE_SIZE}&offset=${page * PAGE_SIZE}${kind !== 'all' ? `&kind=${kind}` : ''}${category !== 'all' ? `&category=${encodeURIComponent(category)}` : ''}`,
-  );
-  const { add, inCart, toast } = useAddToCart(onBookLab);
-  const browse = (nextKind: ShopKind, nextCategory = 'all') => { setKind(nextKind); setCategory(nextCategory); setPage(0); };
-  const categoryLabel = (value: string) => t(`shopweb.category.${value}` as MessageKey);
+const countPath = (filters: Filters, kind: ShopKind) => `/catalog?limit=1&offset=0${query(filters, kind)}`;
+function query(filters: Filters, kind: ShopKind): string {
+  return `${filters.q ? `&query=${encodeURIComponent(filters.q)}` : ''}${kind !== 'all' ? `&kind=${kind}` : ''}${filters.category !== 'all' ? `&category=${encodeURIComponent(filters.category)}` : ''}`;
+}
 
-  // The board's eight tiles. "Nearby pharmacy" and "Ask a pharmacist" have no
-  // service behind them, so those two places hold lab tests and vaccines, which do.
-  const tiles: Tile[] = [
-    { id: 'medicines', label: 'shopweb.front.tile.medicines', art: 'everyday-medicines', onPress: () => browse('product', 'medicines') },
-    { id: 'prescription', label: 'shopweb.front.tile.prescription', art: 'upload-prescription', onPress: () => navigate('prescriptions') },
-    { id: 'devices', label: 'shopweb.front.tile.devices', art: 'health-devices', onPress: () => browse('product', 'devices') },
-    { id: 'ayurveda', label: 'shopweb.front.tile.ayurveda', art: 'ayurveda', onPress: () => browse('product', 'ayurveda') },
-    { id: 'cold', label: 'shopweb.front.tile.cold', art: 'cold-allergy', onPress: () => browse('all', 'respiratory') },
-    { id: 'heart', label: 'shopweb.front.tile.heart', art: 'heart-care', onPress: () => browse('all', 'heart') },
-    { id: 'labs', label: 'shopweb.front.tile.labs', icon: 'file-text-2', onPress: () => browse('lab') },
-    { id: 'vaccines', label: 'shopweb.front.tile.vaccines', icon: 'pipette', onPress: () => browse('vaccine') },
+function ShopBrowse({ signedIn, filters, onFilter, onOpen, onBookLab }: {
+  signedIn: boolean; filters: Filters; onFilter: (patch: FilterPatch) => void; onOpen: (item: LiveCatalogItem) => void; onBookLab: (item: LiveCatalogItem) => void;
+}) {
+  const t = useT();
+  const online = useOnline();
+  const [page, setPage] = useState(0);
+  const [sort, setSort] = useState<SortOrder>('name');
+  const filterKey = `${filters.q}|${filters.kind}|${filters.category}`;
+  useEffect(() => { setPage(0); }, [filterKey]);
+  const results = useApiResource<{ items: LiveCatalogItem[]; total: number }>(`/catalog?limit=${PAGE_SIZE}&offset=${page * PAGE_SIZE}${query(filters, filters.kind)}`);
+  const all = useApiResource<{ total: number }>(countPath(filters, 'all'));
+  const products = useApiResource<{ total: number }>(countPath(filters, 'product'));
+  const labs = useApiResource<{ total: number }>(countPath(filters, 'lab'));
+  const consults = useApiResource<{ total: number }>(countPath(filters, 'consultation'));
+  const vaccines = useApiResource<{ total: number }>(countPath(filters, 'vaccine'));
+  const counts = { all: all.data?.total, product: products.data?.total, lab: labs.data?.total, consultation: consults.data?.total, vaccine: vaccines.data?.total };
+  const items = useMemo(() => sortItems(results.data?.items ?? [], sort), [results.data, sort]);
+  const total = results.data?.total ?? 0;
+  const { add, inCart, toast } = useAddToCart(onBookLab, signedIn ? undefined : showCartRail);
+  const filtered = filters.kind !== 'all' || filters.category !== 'all';
+  const front = !filters.q && !filtered && page === 0;
+
+  const applyFilter = (filter: ShopFilter | { kind: 'product' | 'lab' }) => {
+    if ('kind' in filter) onFilter({ kind: filter.kind, category: 'all', q: '' });
+    else if ('category' in filter) onFilter({ kind: 'product', category: filter.category, q: '' });
+    else onFilter({ q: filter.query, kind: 'all', category: 'all' });
+  };
+
+  const rail: ServiceTile[] = [
+    ...SHOP_KINDS.map((id): ServiceTile => ({
+      key: id,
+      label: t(({ all: 'm2w.rail.all', product: 'm2.svc.medicines', lab: 'm2.svc.labs', consultation: 'm2.svc.consults', vaccine: 'm2.svc.vaccines' } as const)[id]),
+      icon: ({ all: 'star', product: 'pill-3', lab: 'lab', consultation: 'stetho', vaccine: 'syringe' } as const)[id],
+      hue: ({ all: 'indigo', product: 'teal', lab: 'violet', consultation: 'blue', vaccine: 'amber' } as const)[id],
+      onPress: () => onFilter({ kind: id, category: 'all' }),
+    })),
+    { key: 'rx', label: t('m2w.rail.rx'), icon: 'doc-upload', hue: 'green', onPress: () => navigate('prescriptions') },
   ];
 
-  const items = resource.data?.items ?? [];
-  const total = resource.data?.total ?? 0;
+  let heading: string;
+  if (filters.q) heading = t('sw.search.heading', { query: filters.q });
+  else heading = filters.kind === 'all' ? t('shopweb.catalog.heading.shopAll') : t(`shopweb.catalog.heading.${filters.kind}` as MessageKey);
+  const countLine = results.data ? (filters.q ? t('sw.search.count', { count: total }) : t('shopweb.catalog.countShop', { count: total })) : t('shopweb.catalog.loading');
+
+  let body: React.ReactNode = null;
+  if (!online && (results.error || results.loading)) body = <OfflinePanel onRetry={results.reload} />;
+  else if (results.loading) body = <LoadingRows label={t('shopweb.catalog.loading')} rows={4} />;
+  else if (results.error) body = <ErrorPanel title={t('shopweb.catalog.errorTitle')} body={t('sw.shop.errorBody')} onRetry={results.reload} />;
+  else if (results.data && !items.length) {
+    body = filters.q ? (
+      <EmptyPanel title={t('sw.search.emptyTitle', { query: filters.q })} body={t('sw.search.emptyBody')} action={{ label: t('sw.search.askAyush'), onPress: () => navigate('ayush') }} secondary={{ label: t('sw.search.clear'), onPress: () => onFilter({ q: '' }) }} />
+    ) : (
+      <EmptyPanel
+        title={filtered ? t('shopweb.empty.filteredTitle') : t('shopweb.empty.title')}
+        body={filtered ? t('shopweb.empty.filteredBody') : t('shopweb.empty.body')}
+        action={filtered ? { label: t('shopweb.filter.clear'), onPress: () => onFilter({ kind: 'all', category: 'all' }) } : undefined}
+      />
+    );
+  } else if (items.length) {
+    body = (
+      <ul className="sk-m2w-grid" aria-label={t('m2w.catalogue')}>
+        {items.map((item, index) => (
+          <ProductCard key={item.id} item={item} index={index} inCart={inCart(item)} onOpen={() => onOpen(item)} onAdd={() => add(item)} />
+        ))}
+      </ul>
+    );
+  }
 
   return (
-    <div className="sk-sw-page sk-sw-shop">
-      <ShopSearch initial="" onSearch={onSearch} />
+    <div className="sk-sw-page sk-m2w" data-testid="m2w-shop">
+      <div className="sk-m2w-top sk-m2w-rise">
+        <ShopSearch initial={filters.q} onSearch={(next) => onFilter({ q: next })} />
+      </div>
+      <div className="sk-m2w-railwrap sk-m2w-rise">
+        <ServiceRail label={t('m2w.railLabel')} tiles={rail} current={filters.kind} testID="m2w-rail" />
+      </div>
 
-      <section className="sk-sw-shopbanner" aria-labelledby="sk-sw-shopbanner-title">
-        <CanvasVideo name="video-93a060.mp4" className="sk-sw-shopbanner__video" />
-        <div className="sk-sw-shopbanner__copy">
-          <span className="sk-sw-shopbanner__eyebrow">{t('shopweb.front.eyebrow')}</span>
-          <h1 id="sk-sw-shopbanner-title">{t('shopweb.front.title')}</h1>
-          <ul className="sk-sw-shopbanner__chips" aria-label={t('shopweb.front.chipsLabel')}>
-            <li>{t('shopweb.front.chipPrice')}</li>
-            <li>{t('shopweb.front.chipTiming')}</li>
-            <li>{t('shopweb.front.chipPlacement')}</li>
-          </ul>
-        </div>
-      </section>
+      {front ? <div className="sk-m2w-cq"><WebShopFront signedIn={signedIn} onFilter={applyFilter} /></div> : null}
 
-      <nav className="sk-sw-tiles" aria-label={t('shopweb.front.tilesLabel')}>
-        {tiles.map((tile) => (
-          <button key={tile.id} type="button" className="sk-sw-tile" onClick={tile.onPress}>
-            <span className="sk-sw-tile__art" aria-hidden="true">
-              {tile.art ? <img src={`/brand/shop/${tile.art}.png`} alt="" width={64} height={64} /> : tile.icon ? <Icon name={tile.icon} size={34} color="var(--sk-color-action)" /> : null}
-            </span>
-            <span className="sk-sw-tile__label">{t(tile.label)}</span>
-          </button>
-        ))}
-      </nav>
-
-      <section aria-labelledby="sk-sw-catalog-title">
-        <div className="sk-sw-catalog-head">
-          <div>
-            <h2 id="sk-sw-catalog-title" className="sk-sw-h2">{kind === 'all' ? t('shopweb.catalog.heading.shopAll') : t(`shopweb.catalog.heading.${kind}` as MessageKey)}</h2>
-            <p className="sk-sw-muted">{resource.data ? t('shopweb.catalog.countShop', { count: total }) : t('shopweb.catalog.loading')}</p>
-          </div>
-          <div className="sk-sw-catalog-tools">
-            <div className="sk-sw-tabs" role="group" aria-label={t('shopweb.tabs.label')}>
-              {KINDS.map((id) => <button key={id} type="button" className="sk-sw-tab" aria-pressed={kind === id} onClick={() => browse(id, category)}>{t(`shopweb.tabs.${id}` as MessageKey)}</button>)}
+      <div className="sk-m2w-cq">
+      <div className="sk-m2w-browse">
+        <ShopFilterPanel
+          kind={filters.kind}
+          category={filters.category}
+          sort={sort}
+          counts={counts}
+          onKind={(kind) => onFilter({ kind })}
+          onCategory={(category) => onFilter({ category })}
+          onSort={setSort}
+        />
+        <section className="sk-m2w-results" aria-labelledby="sk-m2w-results-title">
+          <div className="sk-m2w-results__head">
+            <div>
+              {front ? <h2 id="sk-m2w-results-title" className="sk-m2w-h2">{heading}</h2> : <h1 id="sk-m2w-results-title" className="sk-m2w-h1">{heading}</h1>}
+              <p className="sk-m2w-meta">{countLine}</p>
             </div>
-            <label className="sk-sw-select">
-              <span className="sk-visually-hidden">{t('shopweb.catalog.category')}</span>
-              <select value={category} onChange={(event) => { setCategory(event.target.value); setPage(0); }}>
-                <option value="all">{t('shopweb.catalog.allCategories')}</option>
-                {CATEGORIES.map((value) => <option key={value} value={value}>{categoryLabel(value)}</option>)}
-              </select>
-              <Icon name="chevron-down" size={16} />
-            </label>
+            {filters.category !== 'all' || filters.q ? (
+              <div className="sk-m2w-active">
+                <span>{t('shopweb.filter.showing', { what: filters.q ? `“${filters.q}”` : t(`shopweb.category.${filters.category}` as MessageKey) })}</span>
+                <button type="button" className="sk-m2w-chip" onClick={() => onFilter({ q: '', kind: 'all', category: 'all' })}>{t('shopweb.filter.clear')}<Icon name="x" size={14} /></button>
+              </div>
+            ) : null}
           </div>
+          {body}
+          {total > PAGE_SIZE ? (
+            <div className="sk-m2w-pager">
+              <button type="button" className="sk-m2w-btn sk-m2w-btn--ghost" disabled={page === 0} onClick={() => setPage((value) => value - 1)}><Icon name="arrow-left" size={16} />{t('sw.page.previous')}</button>
+              <span>{t('sw.page.of', { page: page + 1, pages: Math.ceil(total / PAGE_SIZE) })}</span>
+              <button type="button" className="sk-m2w-btn sk-m2w-btn--ghost" disabled={(page + 1) * PAGE_SIZE >= total} onClick={() => setPage((value) => value + 1)}>{t('sw.page.next')}<Icon name="arrow-right" size={16} /></button>
+            </div>
+          ) : null}
+          <p className="sk-m2w-fine">{t('shopweb.shopNote')}</p>
+        </section>
+        <div className="sk-m2w-side">
+          <CartRail signedIn={signedIn} />
+          <ShopHelpRail />
         </div>
+      </div>
+      </div>
 
-        {resource.loading ? <LoadingRows label={t('shopweb.catalog.loading')} rows={4} /> : null}
-        {resource.error ? <ErrorPanel title={t('shopweb.catalog.errorTitle')} body={t('sw.shop.errorBody')} onRetry={resource.reload} /> : null}
-        {resource.data && !items.length ? (
-          <EmptyPanel
-            title={category !== 'all' || kind !== 'all' ? t('shopweb.empty.filteredTitle') : t('shopweb.empty.title')}
-            body={category !== 'all' || kind !== 'all' ? t('shopweb.empty.filteredBody') : t('shopweb.empty.body')}
-            action={category !== 'all' || kind !== 'all' ? { label: t('shopweb.filter.clear'), onPress: () => browse('all') } : undefined}
-          />
-        ) : null}
-        {items.length ? (
-          <ul className="sk-sw-grid">
-            {items.map((item) => (
-              <li key={item.id} className="sk-sw-card sk-sw-product">
-                <button type="button" className="sk-sw-product__visual" aria-label={t('shopweb.view', { name: item.name })} onClick={() => onOpen(item)}>
-                  <DiscountBadge item={item} />
-                  <Icon name={shopArt(item)} size={40} strokeWidth={1.6} />
-                  <span className="sk-sw-product__artnote">{t('shopweb.card.illustration')}</span>
-                </button>
-                <div className="sk-sw-product__body">
-                  <span className="sk-sw-product__brand">{item.brand}</span>
-                  <button type="button" className="sk-sw-product__name" onClick={() => onOpen(item)}>{item.name}</button>
-                  <span className="sk-sw-muted">{item.pack}</span>
-                  <span className="sk-sw-price"><strong>{money(item.pricePaise)}</strong>{item.mrpPaise > item.pricePaise ? <del>{money(item.mrpPaise)}</del> : null}</span>
-                  <span className={item.kind === 'product' ? 'sk-sw-muted' : 'sk-sw-positive'}>
-                    {item.kind === 'product' ? (item.stock > 0 ? t('shopweb.card.available', { count: item.stock }) : t('shop.outOfStock')) : item.kind === 'vaccine' ? t('shopweb.card.eligibility') : t('shopweb.card.providerBooking')}
-                  </span>
-                  <div className="sk-sw-product__foot">
-                    <span className="sk-sw-muted">{item.requiresPrescription ? t('shopweb.card.rxRequired') : t(kindLabel(item.kind))}</span>
-                    {item.kind === 'product' ? (
-                      <button type="button" className="sk-sw-btn sk-sw-btn--outline sk-sw-btn--sm" disabled={cannotAdd(item)} aria-label={t('shop.addSpoken', { name: item.name })} onClick={() => add(item)}>
-                        {inCart(item) ? t('shopweb.card.inCart') : t('shopweb.card.add')}
-                      </button>
-                    ) : (
-                      <button type="button" className="sk-sw-btn sk-sw-btn--positive sk-sw-btn--sm" disabled={cannotAdd(item)} onClick={() => add(item)} aria-label={t('sw.shop.bookSpoken', { name: item.name })}>
-                        {item.kind === 'lab' ? t('shopweb.card.bookSlot') : inCart(item) ? t('shopweb.card.inCart') : t('shopweb.card.bookSlot')}
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </li>
-            ))}
-          </ul>
-        ) : null}
-        {total > PAGE_SIZE ? (
-          <div className="sk-sw-pager">
-            <button type="button" className="sk-sw-btn sk-sw-btn--ghost" disabled={page === 0} onClick={() => setPage((value) => value - 1)}><Icon name="arrow-left" size={16} />{t('sw.page.previous')}</button>
-            <span>{t('sw.page.of', { page: page + 1, pages: Math.ceil(total / PAGE_SIZE) })}</span>
-            <button type="button" className="sk-sw-btn sk-sw-btn--ghost" disabled={(page + 1) * PAGE_SIZE >= total} onClick={() => setPage((value) => value + 1)}>{t('sw.page.next')}<Icon name="arrow-right" size={16} /></button>
-          </div>
-        ) : null}
-        <p className="sk-sw-fine">{t('shopweb.shopNote')}</p>
-      </section>
+      {front ? <GenericsTable /> : null}
+      <p className="sk-m2w-firewall"><Icon name="shield-check" size={16} />{t('phone.shop.firewall')}</p>
+      <CartBar signedIn={signedIn} />
       {toast}
     </div>
   );
