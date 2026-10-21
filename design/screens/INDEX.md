@@ -1,6 +1,6 @@
 # Student Kare — every screen
 
-252 screens on 10 canvas pages. Each row links to a brief that lists every icon, picture, link and state the screen needs.
+256 screens: 252 on 10 canvas pages, and 4 new Find care screens with no board yet. Each row links to a brief that lists every icon, picture, link and state the screen needs.
 
 | # | Screen | What it is | Platform | Tier | Tickets | Icons | 3D | Glyphs | Pictures |
 |---|---|---|---|---|---|---|---|---|---|
@@ -266,3 +266,8 @@
 | 250 | [M2ReportUpload](briefs/M2ReportUpload.md) | Upload a report from any lab | Phone 390x1250 | 1 | SK-046, SK-047 | 6 | 0 | 0 | 0 |
 | 251 | [M2AskAyush](briefs/M2AskAyush.md) | Ask Ayush about my records | Phone 390x844 | 1 | SK-048 | 4 | 0 | 0 | 0 |
 | 252 | [M2Profile](briefs/M2Profile.md) | Profile · documents · family | Phone 390x1400 | 1 | SK-050, SK-057, SK-068 | 16 | 0 | 0 | 0 |
+| | **New · Find care near you (2026-10-21, no canvas board)** | | | | | | | | |
+| 253 | [M2FindCare](briefs/M2FindCare.md) | Find care near you (hospitals, pharmacies, ambulance, doctors by department) | Phone 390x1700 | 2 | Find care | 16 | 0 | 0 | 0 |
+| 254 | [M2FacilityDetail](briefs/M2FacilityDetail.md) | One place in the care directory | Phone 390x1200 | 2 | Find care | 13 | 0 | 0 | 0 |
+| 255 | [WebFindCare](briefs/WebFindCare.md) | Public /find-care page | Web 1440x1400 | 2 | Find care | 16 | 0 | 0 | 0 |
+| 256 | [AdminCareDirectory](briefs/AdminCareDirectory.md) | Care directory listings (super admin and campus console) | Web 1440x1100 | 3 | Find care | 7 | 0 | 0 | 0 |

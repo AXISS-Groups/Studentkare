@@ -27,7 +27,7 @@ These are the rules every StudentKare build ticket follows, human or agent. They
 - Rule L commerce firewall: no health data on shop screens (only "Medicines today" dose counts on Home).
 - Tier 1 screens (safety, consent, identity, clinical values) need an approved plan in `docs/plans/`.
   Approved so far: every `tier1-canvas-wp*.md`, `tier1-ayush-container-2026-10-20.md`,
-  `tier1-mobile2-health-2026-10-21.md`. Anything a plan routes to the clinical lead, legal or the
+  `tier1-mobile2-health-2026-10-21.md`, `tier1-care-directory-2026-10-21.md`. Anything a plan routes to the clinical lead, legal or the
   AI-constitution owner stays unavailable until they sign.
 - Keep every existing feature reachable (SOS, emergency card, check-in pass, crisis lines 112 / Tele-MANAS 14416).
 - Motion respects reduced motion and stops off-screen/unmounted.
