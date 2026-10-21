@@ -374,7 +374,7 @@
   .sk-m2w .sk-m2w-checkout { grid-template-columns: minmax(0, 1fr); }
   .sk-m2w .sk-m2w-checkout__side { position: static; }
   .sk-m2w .sk-m2w-pdp__layout { grid-template-columns: minmax(0, 1fr); }
-  .sk-m2w .sk-m2w-pdp__hero { position: static; min-height: 300px; }
+  .sk-m2w .sk-m2w-pdp__hero { position: relative; top: auto; min-height: 300px; }
   .sk-m2w .sk-m2w-pdp__side { grid-template-columns: minmax(0, 1fr); }
   .sk-m2w .sk-m2w-pdp__side .sk-m2w-advice, .sk-m2w .sk-m2w-pdp__side .sk-m2w-cart { grid-column: auto; }
 }
@@ -398,3 +398,4 @@
   .sk-m2w .sk-m2w-pdp__name, .sk-m2w .sk-m2w-buy__price strong { font-size: var(--sk-text-heading); }
   .sk-m2w .sk-m2w-placed { padding: var(--sk-space-20); }
 }
+.sk-m2w .sk-sw-state__title { letter-spacing: 0; }
