@@ -71,7 +71,7 @@ export function EmergencyStrip({ compact = false, testID = 'fc-emergency' }: { c
             <Icon name={line.icon} size={20} color={color.onDangerFill} strokeWidth={2.2} />
             <View style={styles.grow}>
               <Text style={styles.callLabel}>{t(line.label)}</Text>
-              {compact ? null : <Text numberOfLines={2} style={styles.callSub}>{t(line.sub)}</Text>}
+              {compact ? null : <Text style={styles.callSub}>{t(line.sub)}</Text>}
             </View>
           </Pressable>
         ))}
