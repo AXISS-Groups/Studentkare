@@ -14,6 +14,11 @@ export interface SessionResponse { user: Account | null; csrfToken: string; requ
 export interface MemberProfile extends Account {
   emergencyContactName: string; emergencyContactPhone: string; emergencyContactRelation: string;
   allergies: string[]; chronicConditions: string[]; updatedAt: number | null;
+  /**
+   * True only when the student said they have no known allergies. An empty
+   * `allergies` without it means "not answered". Older servers omit it.
+   */
+  noKnownAllergies?: boolean;
   /** Where the student lives on campus (GET /profile; "" until set). Older servers omit them. */
   hostelBlock?: string; room?: string;
 }

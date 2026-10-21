@@ -38,11 +38,11 @@ def put_in_care(factory, doctor_id, patient_id, status="CONFIRMED"):
 
 
 def set_allergies(factory, account_id, allergies):
+    # Allergies are on the clinical plane (services/clinical_profile.py), not the identity row.
+    from services import clinical_profile
+
     with factory() as db:
-        account = db.get(M.Account, account_id)
-        profile = dict(account.profile or {})
-        profile["allergies"] = allergies
-        account.profile = profile
+        clinical_profile.write(db, account_id, {"allergies": allergies})
         db.commit()
 
 

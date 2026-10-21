@@ -18,7 +18,7 @@ from sqlalchemy.orm import Session as DBSession
 
 from core import workflow_models as M
 from core.app_env import is_dev_or_test, is_production, is_testing
-from services import twofa_store
+from services import clinical_profile, twofa_store
 from services.db_sql import SessionLocal
 from services.demo_seed import is_demo_identifier
 from services.email_deliverability import check_email_deliverable
@@ -134,7 +134,7 @@ def account_payload(account: M.Account) -> dict:
             "email": account.identifier if account.channel == "EMAIL" else "",
             "phone": account.identifier if account.channel == "WHATSAPP" else "",
             "dob": profile.get("dob", ""), "university": profile.get("university", ""),
-            "rollNumber": profile.get("rollNumber", ""), "bloodGroup": profile.get("bloodGroup", ""),
+            "rollNumber": profile.get("rollNumber", ""),
             "ageVerified": profile.get("ageVerified") is True,
             "isVerifiedStudent": profile.get("isVerifiedStudent") is True}
 
@@ -180,8 +180,14 @@ def two_factor_setup_required(db: DBSession, account: M.Account) -> bool:
 
 
 def session_payload(db: DBSession, account: M.Account) -> dict:
-    """The signed-in user, plus whether the session is held to 2FA set-up."""
-    return {**account_payload(account), "twoFactorSetupRequired": two_factor_setup_required(db, account)}
+    """The signed-in user, plus whether the session is held to 2FA set-up.
+
+    bloodGroup is the account's own, read from the clinical plane
+    (services/clinical_profile.py) so the session shape the apps read is unchanged.
+    It is not in account_payload: that is the identity every handler receives.
+    """
+    return {**account_payload(account), "bloodGroup": clinical_profile.blood_group(db, account.id),
+            "twoFactorSetupRequired": two_factor_setup_required(db, account)}
 
 
 def _signed_in(request: Request, db: DBSession) -> M.Account:
@@ -542,10 +548,13 @@ def signup(body: Signup, request: Request, response: Response, db: DBSession = D
         db.rollback()
         raise HTTPException(409, "This registration verification has already been used.")
     account = M.Account(id=str(uuid.uuid4()), identifier=grant.identifier, channel=grant.channel, full_name=body.fullName,
-                         role="STUDENT", active=True, profile={**body.model_dump(mode="json", exclude={"consent", "referralCode"}), "ageVerified": False, "isVerifiedStudent": False}, created_at=time.time())
+                         role="STUDENT", active=True, profile={**body.model_dump(mode="json", exclude={"consent", "referralCode", "bloodGroup"}), "ageVerified": False, "isVerifiedStudent": False}, created_at=time.time())
     try:
         db.add(account)
         db.flush()
+        # Blood group is clinical: it goes to care_clinical_profiles, never the identity row.
+        if body.bloodGroup:
+            clinical_profile.write(db, account.id, {"bloodGroup": body.bloodGroup})
         # Same transaction as the account: there is never an account without its consent record.
         db.add(M.ConsentRecord(id=str(uuid.uuid4()), account_id=account.id, version=body.consent.version,
                                purposes=body.consent.purposes, language=body.consent.language, recorded_at=time.time()))

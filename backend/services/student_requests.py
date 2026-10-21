@@ -399,12 +399,58 @@ def _pharmacies(cdb: Session, idb: Session) -> list[dict]:
     return [{"id": a.id, "name": a.full_name} for a in sorted(rows, key=lambda a: a.full_name)]
 
 
+SECONDS_PER_DAY = 86400
+
+
+def refill_due_at(dispensed_at: float | None, days_supply: int | None) -> float | None:
+    """When a plan's next refill falls due: the last dispense plus the days it covers.
+
+    None unless both are known. Never a guess: no default course length, no
+    "monthly" schedule, nothing derived from a free-text frequency.
+    """
+    if not dispensed_at or not days_supply or days_supply <= 0:
+        return None
+    return dispensed_at + days_supply * SECONDS_PER_DAY
+
+
+def _days_supply(_refill: M.RefillRequest, _plan: M.MedicationPlan) -> int | None:
+    """How many days a dispensed refill covers, or None when the server cannot know.
+
+    Today it never knows: a refill's quantity is in packs (the request form's
+    "Quantity (packs, 1–12)"), and no pack size, unit count or days supply is
+    stored for a plan or a refill, while ``times_per_day`` alone says nothing
+    about how much was handed over. A plan is not linked to a prescription
+    item either, so a prescription's ``duration_days`` cannot be used. When a
+    days supply is recorded at dispense, read it here.
+    """
+    return None
+
+
+def _last_dispensed(db: Session, plan_ids: list[str]) -> dict[str, M.RefillRequest]:
+    """Each plan's latest refill the pharmacy marked ready, the only dispense linked to a plan."""
+    latest: dict[str, M.RefillRequest] = {}
+    if not plan_ids:
+        return latest
+    rows = db.scalars(select(M.RefillRequest).where(M.RefillRequest.plan_id.in_(plan_ids), M.RefillRequest.status == "READY")
+                      .order_by(M.RefillRequest.updated_at)).all()
+    for refill in rows:
+        latest[refill.plan_id] = refill
+    return latest
+
+
 @router.get("/refills/plans")
 def refillable_plans(user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
-    """The student's own active medication plans."""
+    """The student's own active medication plans, each with ``dueAt`` (Unix seconds) when the
+    server can compute it from the last dispense and its days supply, else null."""
     rows = db.scalars(select(M.MedicationPlan).where(M.MedicationPlan.account_id == user["id"], M.MedicationPlan.active.is_(True))
                       .order_by(M.MedicationPlan.name)).all()
-    return {"items": [{"id": p.id, "name": p.name, "dosage": p.dosage} for p in rows]}
+    dispensed = _last_dispensed(db, [p.id for p in rows])
+    items = []
+    for p in rows:
+        refill = dispensed.get(p.id)
+        due = refill_due_at(refill.updated_at, _days_supply(refill, p)) if refill else None
+        items.append({"id": p.id, "name": p.name, "dosage": p.dosage, "dueAt": due})
+    return {"items": items}
 
 
 class RefillInput(StrictModel):

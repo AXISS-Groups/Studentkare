@@ -24,8 +24,9 @@ export interface Plan { id: string; name: string; price: number | string; period
 
 /**
  * The profile details the completeness ring counts, declared once. Allergies
- * are not on the list: the server stores an empty list both for "no allergies"
- * and for "not answered", so counting it would punish a true "none".
+ * are not on the list: an empty list means "not answered", and the server's
+ * `noKnownAllergies` ("none") has no control on this board yet, so counting
+ * allergies would punish a student who has none.
  */
 export const PROFILE_FIELDS = ['name', 'dob', 'university', 'rollNumber', 'hostel', 'emergencyContact', 'bloodGroup'] as const;
 export type ProfileField = (typeof PROFILE_FIELDS)[number];

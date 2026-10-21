@@ -17,7 +17,7 @@ import { list, value } from '@/features/labResults/viewmodel/__tests__/labFixtur
 import { ProfileViewModel, completeness, PROFILE_FIELDS } from '@/features/m2profile/viewmodel/ProfileViewModel';
 import { M2ProfileView } from '@/features/m2profile/views/M2ProfileView';
 import type { M2ProfileLinks } from '@/features/m2profile/views/M2ProfileView';
-import { InsightsViewModel, latestNote, orderedTests } from '@/features/insights/viewmodel/InsightsViewModel';
+import { InsightsViewModel, latestNote, orderedTests, refillLine } from '@/features/insights/viewmodel/InsightsViewModel';
 import type { LabOrder } from '@/features/insights/viewmodel/InsightsViewModel';
 import { M2InsightsView } from '@/features/insights/views/M2InsightsView';
 import type { M2InsightsLinks } from '@/features/insights/views/M2InsightsView';
@@ -208,6 +208,27 @@ describe('M2Insights', () => {
     expect(links.refill).toHaveBeenCalled();
     expect(links.collection).toHaveBeenCalled();
     expect(noData(links.refill) && noData(links.collection)).toBe(true);
+  });
+
+  it('shows a refill’s due date only when the server sent one, and never makes one up', async () => {
+    const due = (date: string) => `due ${date}`;
+    const date = (seconds: number) => `D${seconds}`;
+    expect(refillLine({ id: 'p', name: 'Vitamin D3', dosage: '60K', dueAt: 1_793_000_000 }, due, date)).toBe('Vitamin D3 · 60K · due D1793000000');
+    expect(refillLine({ id: 'p', name: 'Vitamin D3', dosage: '60K', dueAt: null }, due, date)).toBe('Vitamin D3 · 60K');
+    expect(refillLine({ id: 'p', name: 'Iron', dosage: '' }, due, date)).toBe('Iron');
+    const { request } = fakeRequest(insightsRoutes({ '/refills/plans': { items: [
+      { id: 'p1', name: 'Cetirizine', dosage: '10 mg', dueAt: null },
+      { id: 'p2', name: 'Vitamin D3', dosage: '60K', dueAt: 1_793_000_000 },
+    ] } }));
+    const vm = new InsightsViewModel(request);
+    vm.load();
+    wrap(<M2InsightsView vm={vm} name="Asha Rao" links={insightsLinks()} />);
+    const card = await screen.findByTestId('m2-ins-refills');
+    await waitFor(() => expect(card).toHaveTextContent('Vitamin D3'));
+    const shown = new Date(1_793_000_000 * 1000).toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
+    expect(card).toHaveTextContent(`Vitamin D3 · 60K · due ${shown}`);
+    expect(card).toHaveTextContent('Cetirizine · 10 mg');
+    expect(card.textContent?.match(/due /g)).toHaveLength(1);
   });
 
   it('first time: no stored values asks for a report; one failing read does not blank the page', async () => {

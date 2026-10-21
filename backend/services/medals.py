@@ -21,6 +21,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from core import workflow_models as M
+from services import clinical_profile
 from services.workflow_auth import normalize_identifier
 
 # Order is the order the student sees them in.
@@ -57,7 +58,9 @@ def earned(db: Session, account: M.Account) -> dict[str, bool]:
     campus = db.get(M.CampusVerification, account.id)
     return {
         "PROFILE_VERIFIED": profile.get("isVerifiedStudent") is True and bool(campus) and campus.status == "VERIFIED",
-        "EMERGENCY_CARD_COMPLETE": _emergency_card_complete(profile),
+        # Blood group is on the clinical plane; the test reads it with the contact fields.
+        "EMERGENCY_CARD_COMPLETE": _emergency_card_complete(
+            {**profile, "bloodGroup": clinical_profile.blood_group(db, account.id)}),
         "FIRST_HEALTH_CAMP": db.scalar(select(M.CampAttendance.id).where(
             M.CampAttendance.account_id == account.id, M.CampAttendance.checked_in.is_(True)).limit(1)) is not None,
         "FRIEND_JOINED": db.scalar(select(M.Referral.id).where(

@@ -29,6 +29,7 @@ from core import workflow_models as M
 from core.rule_l import COMMERCE_ROLE, commerce_role_usable, rule_l_status
 from core.settings_registry import setting
 from services import (
+    clinical_profile,
     lab_results,
     livekit_media,
     medicine_master,
@@ -301,33 +302,26 @@ def intake_status(intake_id: str, user=Depends(authenticated_user), db: Session 
 
 @router.get("/ops/intake/review")
 def intake_review_queue(user=Depends(require_super_admin), db: Session = Depends(workflow_db)):
-    """Super-admin review queue: extracted fields awaiting human confirmation."""
+    """Super-admin intake queue: operational state only, never document content.
+
+    A document and the fields read from it belong to the student who uploaded it
+    (GET /intake/{id} is owner-only). A super admin sees, per intake, its opaque
+    id, the document's kind, its state and its times: no title, no document id,
+    no extracted field name, value or confidence. There is no super-admin
+    decision on extracted values either, since nobody can judge a value they may
+    not read. Intakes are listed while a field still waits for review or while
+    extraction is queued or failed.
+    """
+    waiting = select(M.IntakeReviewItem.intake_id).where(M.IntakeReviewItem.status == "PENDING")
     rows = db.execute(
-        select(M.IntakeReviewItem, M.DocumentIntake).join(M.DocumentIntake, M.DocumentIntake.id == M.IntakeReviewItem.intake_id)
-        .where(M.IntakeReviewItem.status == "PENDING").order_by(M.IntakeReviewItem.reviewed_at)
+        select(M.DocumentIntake.id, M.DocumentIntake.status, M.DocumentIntake.created_at,
+               M.DocumentIntake.processed_at, M.Document.category)
+        .join(M.Document, M.Document.id == M.DocumentIntake.document_id)
+        .where(or_(M.DocumentIntake.id.in_(waiting), M.DocumentIntake.status.in_(("QUEUED", "FAILED"))))
+        .order_by(M.DocumentIntake.created_at)
     ).all()
-    return {"items": [{"id": item.id, "intakeId": item.intake_id, "field": item.field, "value": item.value,
-                       "confidence": item.confidence, "documentId": intake.document_id} for item, intake in rows]}
-
-
-class ReviewItemInput(StrictModel):
-    approved: bool
-    correctedValue: str = ""
-
-
-@router.patch("/ops/intake/review/{item_id}")
-def review_intake_item(item_id: str, body: ReviewItemInput, user=Depends(require_super_admin), db: Session = Depends(workflow_db)):
-    item = db.get(M.IntakeReviewItem, item_id)
-    if not item:
-        raise HTTPException(404, "Review item not found.")
-    item.status = "APPROVED" if body.approved else "REJECTED"
-    if body.approved and body.correctedValue:
-        item.value = body.correctedValue.strip()[:500]
-    item.reviewed_by = user["id"]
-    item.reviewed_at = time.time()
-    audit(db, user, f"INTAKE_{item.status}", item_id)
-    db.commit()
-    return {"status": item.status}
+    return {"items": [{"id": row.id, "kind": row.category, "status": row.status, "createdAt": row.created_at or None,
+                       "processedAt": row.processed_at or None} for row in rows]}
 
 
 # --- Records privacy: export, consent sharing, and deletion requests ---
@@ -339,7 +333,8 @@ def export_records(user=Depends(authenticated_user), db: Session = Depends(workf
     readings = db.scalars(select(M.Reading).where(M.Reading.account_id == user["id"]).order_by(M.Reading.recorded_at)).all()
     policies = db.scalars(select(M.Policy).where(M.Policy.account_id == user["id"])).all()
     return {
-        "user": dict(user.items()),
+        # The account's identity plus its own blood group and allergies (services/clinical_profile.py).
+        "user": {**dict(user.items()), **clinical_profile.read(db, user["id"])},
         "documents": [{"id": d.id, "title": d.title, "category": d.category, "filename": d.filename,
                        "mimeType": d.mime_type, "createdAt": d.created_at, "downloadUrl": f"/api/health/documents/{d.id}/file"} for d in docs],
         "readings": [{"id": r.id, "metric": r.metric, "value": r.value, "recordedAt": r.recorded_at, "source": r.source} for r in readings],

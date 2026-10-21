@@ -147,6 +147,9 @@ DEMO_CATALOG = [
     ] + demo_medicine_listings()   # demo medicines, each linked to its demo master record
 
 
+DEMO_BLOOD_GROUP = "O+"
+
+
 def seed_demo_data(db: Session, include_demo_users: bool = True) -> dict:
     """Create demo accounts and the sample catalog. Idempotent: skips existing rows.
 
@@ -158,12 +161,12 @@ def seed_demo_data(db: Session, include_demo_users: bool = True) -> dict:
     created = {"accounts": 0, "catalog": 0, "medicines": 0, "content": 0, "articles": 0}
 
     accounts = [
-        (DEMO_STUDENT, "Demo Student", "STUDENT", "EMAIL", {"dob": "2000-01-01", "university": "Demo University", "rollNumber": "DEMO-001", "bloodGroup": "O+", "ageVerified": False, "isVerifiedStudent": False}),
+        (DEMO_STUDENT, "Demo Student", "STUDENT", "EMAIL", {"dob": "2000-01-01", "university": "Demo University", "rollNumber": "DEMO-001", "ageVerified": False, "isVerifiedStudent": False}),
         (DEMO_ADMIN, "Demo Administrator", "SUPER_ADMIN", "EMAIL", {}),
         (DEMO_VENDOR, "Demo Wellness Store", "VENDOR", "EMAIL", {}),
         (DEMO_DOCTOR, "Demo Clinician", "NMC_DOCTOR", "EMAIL", {}),
         (DEMO_CAMPUS, "Demo Campus Admin", "CAMPUS_ADMIN", "EMAIL", {"university": "Demo University"}),
-        (DEMO_STUDENT_PHONE, "Demo Student (Mobile)", "STUDENT", "WHATSAPP", {"dob": "2000-01-01", "university": "Demo University", "rollNumber": "DEMO-002", "bloodGroup": "O+", "ageVerified": False, "isVerifiedStudent": False}),
+        (DEMO_STUDENT_PHONE, "Demo Student (Mobile)", "STUDENT", "WHATSAPP", {"dob": "2000-01-01", "university": "Demo University", "rollNumber": "DEMO-002", "ageVerified": False, "isVerifiedStudent": False}),
         (DEMO_ADMIN_PHONE, "Demo Administrator (Mobile)", "SUPER_ADMIN", "WHATSAPP", {}),
         (DEMO_VENDOR_PHONE, "Demo Wellness Store (Mobile)", "VENDOR", "WHATSAPP", {}),
         (DEMO_DOCTOR_PHONE, "Demo Clinician (Mobile)", "NMC_DOCTOR", "WHATSAPP", {}),
@@ -181,6 +184,10 @@ def seed_demo_data(db: Session, include_demo_users: bool = True) -> dict:
                                          # The demo store sells an OTC catalogue, so it gets the pharmacy dashboard.
                                          partner_kind="PHARMACY" if role == "VENDOR" else "")
             db.add(vendor_candidate)
+            if role == "STUDENT":
+                # The demo students' typed blood group, on the clinical plane (services/clinical_profile.py).
+                db.add(M.ClinicalProfile(account_id=acc_id, blood_group=DEMO_BLOOD_GROUP, allergies=[],
+                                         no_known_allergies=False, updated_at=now))
             created["accounts"] += 1
             if identifier == DEMO_VENDOR:
                 vendor = vendor_candidate

@@ -8,6 +8,7 @@ migrated to head, then sk_commerce is refused every clinical table while the
 marketplace still works end to end under that role.
 """
 import glob
+import json
 import os
 import re
 import subprocess
@@ -67,6 +68,7 @@ def test_every_plane_is_valid():
 
 
 @pytest.mark.parametrize("table", ["care_readings", "care_documents", "care_lab_orders", "care_prescriptions",
+                                   "care_clinical_profiles",
                                    "care_prescription_items", "care_dispenses", "care_encounter_notes",
                                    "care_consent_records", "care_crisis_events", "care_medication_plans",
                                    "care_appointments", "care_record_shares"])
@@ -448,6 +450,55 @@ def test_pg_migrations_downgrade_move_images_and_upgrade_again(pg_db):
     with engine.begin() as conn:
         conn.exec_driver_sql("SET LOCAL ROLE sk_commerce")
         assert conn.execute(text("SELECT count(*) FROM care_catalog_images")).scalar() >= 1
+
+
+def test_pg_blood_group_and_allergies_move_to_the_clinical_plane_and_back(pg_db):
+    """Down to before care_clinical_profiles, seed the old identity-side keys,
+    upgrade: values are copied to the clinical table and stripped from
+    care_accounts.profile, and sk_commerce is refused the new table. Downgrade
+    puts them back; upgrade again converges."""
+    engine, _admin, _url, raw = pg_db
+    _alembic(raw, "downgrade", "c3d7e2a9f4b1")
+    now = time.time()
+    seeds = {
+        "mig-both": {"university": "U", "bloodGroup": "O+", "allergies": ["Penicillin", " ", 7]},
+        "mig-blood": {"bloodGroup": "AB-"},
+        "mig-empty": {"bloodGroup": "", "allergies": []},
+        "mig-none": {"university": "U"},
+    }
+    with engine.begin() as conn:
+        for account_id, profile in seeds.items():
+            conn.execute(text("INSERT INTO care_accounts (id, identifier, channel, full_name, role, active, profile, created_at) "
+                              "VALUES (:id, :ident, 'EMAIL', 'M', 'STUDENT', true, CAST(:profile AS json), :now)"),
+                         {"id": account_id, "ident": f"{account_id}@example.test", "profile": json.dumps(profile), "now": now})
+    _alembic(raw, "upgrade", "head")
+    with sessionmaker(bind=engine)() as db:
+        both = db.get(M.ClinicalProfile, "mig-both")
+        assert (both.blood_group, both.allergies, both.no_known_allergies) == ("O+", ["Penicillin"], False)
+        assert db.get(M.ClinicalProfile, "mig-blood").blood_group == "AB-"
+        assert db.get(M.ClinicalProfile, "mig-empty") is None        # nothing was answered
+        assert db.get(M.ClinicalProfile, "mig-none") is None
+        for account_id in seeds:
+            profile = db.get(M.Account, account_id).profile
+            assert "bloodGroup" not in profile and "allergies" not in profile
+        assert db.get(M.Account, "mig-both").profile == {"university": "U"}
+    with engine.begin() as conn:
+        conn.exec_driver_sql("SET LOCAL ROLE sk_commerce")
+        assert _denied(conn, "SELECT blood_group FROM care_clinical_profiles LIMIT 1")
+        assert _denied(conn, "SELECT allergies FROM care_clinical_profiles LIMIT 1")
+    _alembic(raw, "downgrade", "c3d7e2a9f4b1")
+    with engine.connect() as conn:
+        restored = dict(conn.execute(text("SELECT id, profile FROM care_accounts WHERE id LIKE 'mig-%'")).all())
+        assert restored["mig-both"] == {"university": "U", "bloodGroup": "O+", "allergies": ["Penicillin"]}
+        assert restored["mig-blood"] == {"bloodGroup": "AB-", "allergies": []}
+        assert restored["mig-none"] == {"university": "U"}
+        assert conn.execute(text("SELECT to_regclass('public.care_clinical_profiles')")).scalar() is None
+    _alembic(raw, "upgrade", "head")
+    with sessionmaker(bind=engine)() as db:
+        assert db.get(M.ClinicalProfile, "mig-both").allergies == ["Penicillin"]
+        assert "allergies" not in db.get(M.Account, "mig-both").profile
+    with engine.connect() as conn:
+        assert rule_l.rule_l_status(conn)["enforced"] is True
 
 
 def test_pg_commerce_session_runs_as_sk_commerce_and_is_refused_clinical(pg_db):

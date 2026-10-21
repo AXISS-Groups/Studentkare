@@ -99,9 +99,6 @@ export const adminBoardEn = {
   'adminBoard.billing.prices': 'Plan prices in force, from the billing catalogue: {prices}',
 
   'adminBoard.intake.what': 'intake & OCR',
-  'adminBoard.intake.confirmed': 'Fields confirmed. The decision is in the audit log.',
-  'adminBoard.intake.rejected': 'Fields rejected. The decision is in the audit log.',
-  'adminBoard.intake.footnote': 'Every decision is recorded per field with who made it. “Ask the lab” has no endpoint, so it is not offered.',
 
   'adminBoard.contracts.loading': 'Loading inquiries and contracts…',
   'adminBoard.contracts.error': 'Couldn’t load inquiries and contracts',
@@ -208,9 +205,6 @@ export const adminBoardTe: Record<keyof typeof adminBoardEn, string> = {
   'adminBoard.billing.prices': 'అమలులో ఉన్న ప్లాన్ ధరలు, బిల్లింగ్ క్యాటలాగ్ నుంచి: {prices}',
 
   'adminBoard.intake.what': 'ఇన్‌టేక్ & OCR',
-  'adminBoard.intake.confirmed': 'ఫీల్డ్‌లు నిర్ధారించబడ్డాయి. నిర్ణయం ఆడిట్ లాగ్‌లో ఉంది.',
-  'adminBoard.intake.rejected': 'ఫీల్డ్‌లు తిరస్కరించబడ్డాయి. నిర్ణయం ఆడిట్ లాగ్‌లో ఉంది.',
-  'adminBoard.intake.footnote': 'ప్రతి నిర్ణయం ఒక్కో ఫీల్డ్‌కు, ఎవరు తీసుకున్నారో సహా నమోదవుతుంది. “ల్యాబ్‌ను అడగండి”కు endpoint లేదు, కాబట్టి అది చూపించబడదు.',
 
   'adminBoard.contracts.loading': 'విచారణలు, కాంట్రాక్టులు లోడ్ అవుతున్నాయి…',
   'adminBoard.contracts.error': 'విచారణలు, కాంట్రాక్టులు లోడ్ కాలేదు',
@@ -317,9 +311,6 @@ export const adminBoardHi: Record<keyof typeof adminBoardEn, string> = {
   'adminBoard.billing.prices': 'लागू प्लान कीमतें, बिलिंग कैटलॉग से: {prices}',
 
   'adminBoard.intake.what': 'इनटेक और OCR',
-  'adminBoard.intake.confirmed': 'फ़ील्ड पुष्ट हुए। फ़ैसला ऑडिट लॉग में है।',
-  'adminBoard.intake.rejected': 'फ़ील्ड अस्वीकार हुए। फ़ैसला ऑडिट लॉग में है।',
-  'adminBoard.intake.footnote': 'हर फ़ैसला हर फ़ील्ड के लिए, किसने लिया उसके साथ दर्ज होता है। “लैब से पूछें” के लिए कोई endpoint नहीं है, इसलिए यह नहीं दिया जाता।',
 
   'adminBoard.contracts.loading': 'पूछताछ और कॉन्ट्रैक्ट लोड हो रहे हैं…',
   'adminBoard.contracts.error': 'पूछताछ और कॉन्ट्रैक्ट लोड नहीं हो सके',
