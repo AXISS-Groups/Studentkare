@@ -24,9 +24,10 @@ from __future__ import annotations
 import time
 import uuid
 
-from sqlalchemy import func, select
+from sqlalchemy import func, or_, select
 
 from core import workflow_models as M
+from core.team_scope import team_sandboxed
 
 DOMAINS = {"MARKETPLACE", "CLINICAL", "PHARMACY", "LAB", "CAMPUS", "SAFETY", "ACCOUNT", "SUPPORT"}
 SEVERITIES = {"INFO", "ATTENTION", "CRITICAL"}
@@ -131,6 +132,12 @@ def _visible_statement(db, user: dict):
     # (/ops/crisis-events), and no campus admin or clinician sees another college's.
     statement = statement.where(M.OpsEvent.kind.not_in(sorted(SUPER_ADMIN_ONLY_KINDS)),
                                 M.OpsEvent.resource_type != CRISIS_RESOURCE_TYPE)
+
+    if team_sandboxed(user) and role != "VENDOR":
+        # A team account (core/team_scope.py) sees only events it took part in: the
+        # domain-wide slice is about real students on real campuses.
+        return statement.where(or_(M.OpsEvent.actor_id == user.get("id", ""),
+                                   M.OpsEvent.subject_id == user.get("id", "")))
 
     if role == "VENDOR":
         # A vendor sees only their own queues: events tagged with a provider they own,

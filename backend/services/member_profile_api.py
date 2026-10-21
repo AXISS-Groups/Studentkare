@@ -15,6 +15,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from core import workflow_models as M
+from core.team_scope import RESERVED_CAMPUS_MESSAGE, is_reserved_campus
 from services import check_in_pass, clinical_profile
 from services.workflow_auth import (
     StrictModel,
@@ -55,6 +56,14 @@ class ProfileUpdate(StrictModel):
             return value.strip()
         if isinstance(value, list):
             return [item.strip() if isinstance(item, str) else item for item in value]
+        return value
+
+    @field_validator("university")
+    @classmethod
+    def not_the_team_campus(cls, value: str | None) -> str | None:
+        # The team test campus holds no real student (core/team_scope.py).
+        if is_reserved_campus(value):
+            raise ValueError(RESERVED_CAMPUS_MESSAGE)
         return value
 
     @field_validator("dob")
