@@ -376,7 +376,8 @@ def my_record_shares(user=Depends(authenticated_user), db: Session = Depends(wor
         .join(M.Document, M.Document.id == M.RecordShare.document_id)
         .where(M.RecordShare.owner_id == user["id"]).order_by(M.RecordShare.granted_at.desc())
     ).all()
-    return {"items": [{"id": r.id, "clinician": account.full_name, "document": doc.title,
+    # documentId lets the vault show, per document, whether it is shared right now.
+    return {"items": [{"id": r.id, "clinician": account.full_name, "document": doc.title, "documentId": doc.id,
                        "grantedAt": r.granted_at, "expiresAt": r.expires_at, "revoked": r.revoked,
                        "active": (not r.revoked) and r.expires_at > time.time()} for r, account, doc in rows]}
 
