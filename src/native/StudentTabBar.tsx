@@ -6,26 +6,29 @@ import type { PillNavKey } from '@/design-system/m2';
 import { color } from '@/design-system/theme';
 
 /** A pill-nav destination opens the native screen registered under this route. */
-export type StudentTabRoute = 'Home' | 'Orders' | 'AiChat' | 'YourCare' | 'More';
+export type StudentTabRoute = 'Home' | 'Orders' | 'AiChat' | 'Insights' | 'Profile';
 
 /**
  * The student's Mobile 2.0 pill nav (canvas page 9, approved 2026-10-21):
  * Home · Orders · Ask Ayush (the orb) · My health · Profile, replacing the
  * five-tab bar (Discover · Wellness · Ayush AI · Records · Your Care). My
- * health opens Your Care and Profile the More hub until M2Insights and
- * M2Profile (Tier 1) are built. The vault and the wellness shop are reached
- * from Home (service rail, "Upload a lab report") and More.
+ * health opens M2Insights and Profile M2Profile (whose Settings opens the More
+ * hub). The vault and the wellness shop are reached from Home (service rail,
+ * "Upload a lab report"), My health and More.
  */
 export const STUDENT_NAV: Readonly<Record<PillNavKey, StudentTabRoute>> = {
   home: 'Home',
   orders: 'Orders',
   ayush: 'AiChat',
-  health: 'YourCare',
-  profile: 'More',
+  health: 'Insights',
+  profile: 'Profile',
 };
 
 /** Store boards opened from Home: the nav shows there with Home current (as on the boards). */
-const HOME_STORE_ROUTES: ReadonlySet<string> = new Set(['Medicines', 'Labs', 'Consults', 'Insurance']);
+const HOME_STORE_ROUTES: ReadonlySet<string> = new Set(['Medicines', 'Labs', 'Consults', 'Insurance', 'Vaccines']);
+
+/** My health's own screens (M2Trends, M2ReportUpload): the nav shows My health there. */
+const HEALTH_ROUTES: ReadonlySet<string> = new Set(['Trends', 'ReportUpload']);
 
 export function isStudentTabRoute(route: string): route is StudentTabRoute {
   return (Object.values(STUDENT_NAV) as string[]).includes(route);
@@ -35,6 +38,7 @@ export function isStudentTabRoute(route: string): route is StudentTabRoute {
 export function studentNavKeyFor(route: string): PillNavKey | null {
   const key = (Object.keys(STUDENT_NAV) as PillNavKey[]).find((k) => STUDENT_NAV[k] === route);
   if (key) return key;
+  if (HEALTH_ROUTES.has(route)) return 'health';
   return HOME_STORE_ROUTES.has(route) ? 'home' : null;
 }
 

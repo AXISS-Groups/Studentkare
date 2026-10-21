@@ -197,6 +197,11 @@ declare("shop.home_featured_count", INT, 6, area="shop", unit="listings", minimu
         description="Products in the phone shop home's first shelf.")
 declare("shop.orders_page_size", INT, 20, area="shop", unit="orders", minimum=1, maximum=100, public=True,
         description="Orders per page on the phone order history (GET /api/orders caps a page at 100).")
+# Mobile 2.0 product page quantity stepper (M2Product, plan D-M2-2): the most of one
+# listing a cart line may hold. POST /cart/validate and POST /orders refuse more. The
+# order API's own schema bound (10) is the ceiling.
+declare("shop.cart_line_max", INT, 10, area="shop", unit="units", minimum=1, maximum=10, public=True,
+        description="The most of one listing a cart line may hold (the product page's quantity stepper).")
 # Mobile 2.0 "Call to order" / "Call to book" (M2Home, M2Medicines, M2Labs). No
 # order line exists yet, so the default is empty and the app says "not
 # available yet"; the client dials it only when it is a plain phone number.
@@ -275,6 +280,22 @@ declare("health.readings_list_cap", INT, 1000, area="health", unit="rows", minim
 # without a reload (SosBeacon). The server pushes nothing; this is a read.
 declare("emergency.sos_poll_seconds", INT, 15, area="emergency", unit="seconds", minimum=5, maximum=120, public=True,
         description="How often the SOS screen re-reads an open alert from GET /api/emergency/sos/current.")
+# --- lab results (services/lab_results.py; Mobile 2.0 plan Gap 1) ------------
+# Input bounds only. None of these is a clinical threshold: whether a value is
+# in range is decided by the range the lab printed, stored with the value.
+declare("lab_results.max_rows_per_report", INT, 60, area="lab_results", unit="values", minimum=1, maximum=200,
+        public=True, description="Most values one lab report (document) may hold, drafts and confirmed together.")
+declare("lab_results.value_abs_max", FLOAT, 10000000.0, area="lab_results", unit="any unit", minimum=1,
+        maximum=1000000000, public=True,
+        description="Largest magnitude a typed value or printed range limit may have (catches typing slips).")
+declare("lab_results.collected_on_max_age_years", INT, 30, area="lab_results", unit="years", minimum=1,
+        maximum=100, public=True, description="How far back a typed report's collection date may be.")
+declare("lab_results.list_cap", INT, 1000, area="lab_results", unit="values", minimum=1, maximum=10000,
+        description="Most stored values GET /health/lab-results and the trends endpoints read in one response.")
+declare("lab_results.pinned_max", INT, 8, area="lab_results", unit="tests", minimum=1, maximum=50, public=True,
+        description="Most tests a student may bookmark on Trends.")
+declare("trends.min_points_for_line", INT, 2, area="trends", unit="values", minimum=2, maximum=20, public=True,
+        description="Fewest values of one test, in one unit, before Trends draws a line between them.")
 
 # --- platform --------------------------------------------------------------
 # A name zoneinfo does not know (in an override or a student's preference) is

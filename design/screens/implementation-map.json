@@ -1647,7 +1647,20 @@
       "src/screens/workspace/StudentPhoneFrame.tsx",
       "src/native/StudentTabBar.tsx"
     ],
-    "M2Product": [],
+    "M2Product": [
+      "src/features/shopPhone/views/M2ProductView.tsx",
+      "src/features/shopPhone/views/M2ProductBoard.tsx",
+      "src/features/shopPhone/viewmodel/M2ProductViewModel.ts",
+      "src/features/shopPhone/views/ShopFlow.tsx",
+      "src/design-system/m2/PillNav.tsx",
+      "src/design-system/m2/M2Parts.tsx",
+      "src/design-system/m2/Gradient.tsx",
+      "src/design-system/m2/m2Motion.ts",
+      "src/screens/workspace/StudentPhoneFrame.tsx",
+      "src/native/StudentTabBar.tsx",
+      "src/features/phoneKit/studentPhoneBoards.tsx",
+      "src/native/M2HealthScreens.tsx"
+    ],
     "M2Labs": [
       "src/features/m2store/views/M2LabsView.tsx",
       "src/features/m2store/views/M2LabsRoute.tsx",
@@ -1679,7 +1692,21 @@
       "src/screens/workspace/StudentPhoneFrame.tsx",
       "src/native/StudentTabBar.tsx"
     ],
-    "M2Vaccines": [],
+    "M2Vaccines": [
+      "src/features/preventive/views/M2VaccinesView.tsx",
+      "src/features/preventive/views/M2VaccinesRoute.tsx",
+      "src/features/preventive/viewmodel/VaccinesViewModel.ts",
+      "src/features/m2health/HealthParts.tsx",
+      "src/features/m2health/resource.ts",
+      "src/design-system/m2/PillNav.tsx",
+      "src/design-system/m2/M2Parts.tsx",
+      "src/design-system/m2/Gradient.tsx",
+      "src/design-system/m2/m2Motion.ts",
+      "src/screens/workspace/StudentPhoneFrame.tsx",
+      "src/native/StudentTabBar.tsx",
+      "src/features/phoneKit/studentPhoneBoards.tsx",
+      "src/native/M2HealthScreens.tsx"
+    ],
     "M2Insurance": [
       "src/features/m2store/views/M2InsuranceView.tsx",
       "src/features/m2store/views/M2InsuranceRoute.tsx",
@@ -1711,11 +1738,52 @@
       "src/screens/workspace/StudentPhoneFrame.tsx",
       "src/native/StudentTabBar.tsx"
     ],
-    "M2Insights": [],
+    "M2Insights": [
+      "src/features/insights/views/M2InsightsView.tsx",
+      "src/features/insights/views/M2InsightsRoute.tsx",
+      "src/features/insights/viewmodel/InsightsViewModel.ts",
+      "src/features/labResults/viewmodel/LabValuesViewModels.ts",
+      "src/features/m2health/HealthParts.tsx",
+      "src/features/m2health/resource.ts",
+      "src/design-system/m2/PillNav.tsx",
+      "src/design-system/m2/M2Parts.tsx",
+      "src/design-system/m2/Gradient.tsx",
+      "src/design-system/m2/m2Motion.ts",
+      "src/screens/workspace/StudentPhoneFrame.tsx",
+      "src/native/StudentTabBar.tsx",
+      "src/features/phoneKit/studentPhoneBoards.tsx",
+      "src/native/M2HealthScreens.tsx"
+    ],
     "M2Trends": [],
     "M2ReportUpload": [],
-    "M2AskAyush": [],
-    "M2Profile": []
+    "M2AskAyush": [
+      "src/features/chat/views/M2AskAyushView.tsx",
+      "src/features/chat/views/M2AskAyushRoute.tsx",
+      "src/features/chat/viewmodel/AyushViewModel.ts",
+      "src/design-system/m2/PillNav.tsx",
+      "src/design-system/m2/M2Parts.tsx",
+      "src/design-system/m2/Gradient.tsx",
+      "src/design-system/m2/m2Motion.ts",
+      "src/screens/workspace/StudentPhoneFrame.tsx",
+      "src/native/StudentTabBar.tsx",
+      "src/features/phoneKit/studentPhoneBoards.tsx",
+      "src/native/M2HealthScreens.tsx"
+    ],
+    "M2Profile": [
+      "src/features/m2profile/views/M2ProfileView.tsx",
+      "src/features/m2profile/views/M2ProfileRoute.tsx",
+      "src/features/m2profile/viewmodel/ProfileViewModel.ts",
+      "src/features/m2health/HealthParts.tsx",
+      "src/features/m2health/resource.ts",
+      "src/design-system/m2/PillNav.tsx",
+      "src/design-system/m2/M2Parts.tsx",
+      "src/design-system/m2/Gradient.tsx",
+      "src/design-system/m2/m2Motion.ts",
+      "src/screens/workspace/StudentPhoneFrame.tsx",
+      "src/native/StudentTabBar.tsx",
+      "src/features/phoneKit/studentPhoneBoards.tsx",
+      "src/native/M2HealthScreens.tsx"
+    ]
   },
   "inProgress": {
     "Teleconsult": [
@@ -1792,12 +1860,7 @@
       "src/design-system/public-site/publicSiteNav.ts",
       "src/design-system/public-site/NewsletterBand.tsx"
     ],
-    "M2Product": [],
-    "M2Vaccines": [],
-    "M2Insights": [],
     "M2Trends": [],
-    "M2ReportUpload": [],
-    "M2AskAyush": [],
-    "M2Profile": []
+    "M2ReportUpload": []
   }
 }

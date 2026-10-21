@@ -35,6 +35,8 @@ export interface PhoneHeaderSlot {
   setOwnChrome?: (own: boolean) => void;
   /** Opens the frame's SOS helplines (the same dialog as the header's SOS). */
   openSos?: () => void;
+  /** Asks to sign out (the workspace's confirm dialog), for a board with its own Sign out (M2Profile). */
+  askSignOut?: () => void;
 }
 
 const SlotContext = createContext<PhoneHeaderSlot | null>(null);

@@ -8,7 +8,7 @@ export type AyushOutcome = 'ANSWERED' | 'NO_SOURCE' | 'REFUSED_SCOPE' | 'REFUSED
 export interface AyushCitation { sourceId: string; title: string; category: string; version: number; snippet: string; score: number; stale: boolean }
 export interface AyushCrisisResource { label: string; number: string; detail: string }
 
-/** POST /api/agents/ayush/ask (backend/services/clinical_api.py → agent_ayush). */
+/** POST /api/agents/ayush/ask (backend/services/clinical_api.py, then agent_ayush). */
 export interface AyushReply {
   agent: string;
   outcome: AyushOutcome;
@@ -18,6 +18,9 @@ export interface AyushReply {
   refusedFor?: string;
   crisis?: { kind: string; resources: AyushCrisisResource[] };
 }
+
+/** One earlier question (GET /agents/ayush/history), kept only while the student's history setting is on. */
+export interface AyushTurn { id: string; question: string; answer: string; outcome: AyushOutcome; createdAt: number }
 
 /** Why Ayush declined, said plainly — same wording as the web panel. */
 export const REFUSAL_NOTE: Partial<Record<AyushOutcome, MessageKey>> = {
@@ -40,6 +43,8 @@ export class AyushViewModel implements ViewModel {
   sending = false;
   /** A message key, translated by the view. */
   error: MessageKey | null = null;
+  /** Earlier questions, newest last; empty when history is off or could not be read (never guessed). */
+  history: AyushTurn[] = [];
 
   constructor(private readonly request: typeof apiRequest = apiRequest) {
     makeAutoObservable<AyushViewModel, 'request'>(this, { request: false, conversationId: false }, { autoBind: true });
@@ -77,11 +82,22 @@ export class AyushViewModel implements ViewModel {
     }
   }
 
+  /** The student's own earlier questions, when their history setting keeps them. A failure leaves the list empty. */
+  async loadHistory(limit = 10): Promise<void> {
+    try {
+      const res = await this.request<{ items: AyushTurn[] }>(`/agents/ayush/history?limit=${limit}`);
+      runInAction(() => { this.history = Array.isArray(res.items) ? res.items : []; });
+    } catch {
+      runInAction(() => { this.history = []; });
+    }
+  }
+
   dispose(): void {}
 
   reset(): void {
     this.question = '';
     this.thread = [];
     this.error = null;
+    this.history = [];
   }
 }

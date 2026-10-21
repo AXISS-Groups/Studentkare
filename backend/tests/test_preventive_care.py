@@ -291,3 +291,42 @@ def test_preference_validation_and_withdrawal_isolated(harness):
     repeated = client.post(f"{ROOT}/report-reviews/{review['id']}/withdraw", headers=headers).json()
     assert repeated["version"] == withdrawn["version"]
     assert client.post(f"{ROOT}/report-reviews", headers=headers, json={"documentId": doc}).json()["status"] == "WITHDRAWN"
+
+
+def test_structured_next_steps_are_back_compatible(harness):
+    """D-M2-11: a doctor may give a step a kind and their own often / when; plain lines still work."""
+    client, factory, codes = harness
+    user, doc, review, share = assigned_review(harness)
+    doctor_headers = login(client, codes, "doctor@example.test")
+    body = guidance(review["version"])
+    body["nextSteps"] = [
+        "Arrange a follow-up consultation.",
+        {"text": "Repeat the test your doctor named.", "kind": "TEST", "when": "In 3 months"},
+        {"text": "Walk after meals.", "kind": "ACTIVITY", "often": "Daily"},
+    ]
+    approved = client.post(f"{ROOT}/work/report-reviews/{review['id']}/review", headers=doctor_headers, json=body)
+    assert approved.status_code == 200, approved.text
+    shown = approved.json()["guidance"]
+    assert shown["nextSteps"] == ["Arrange a follow-up consultation.", "Repeat the test your doctor named.",
+                                  "Walk after meals."]
+    assert shown["steps"] == [
+        {"text": "Arrange a follow-up consultation.", "kind": "OTHER", "often": None, "when": None},
+        {"text": "Repeat the test your doctor named.", "kind": "TEST", "often": None, "when": "In 3 months"},
+        {"text": "Walk after meals.", "kind": "ACTIVITY", "often": "Daily", "when": None},
+    ]
+
+
+@pytest.mark.parametrize("step", [
+    {"text": "Walk.", "kind": "EXERCISE"},          # not a kind
+    {"text": "", "kind": "TEST"},
+    {"text": "Walk.", "often": "x" * 81},
+    {"text": "Walk.", "icon": "walk"},               # unknown field
+    {"kind": "TEST"},
+])
+def test_structured_next_step_validation(harness, step):
+    client, factory, codes = harness
+    user, doc, review, share = assigned_review(harness)
+    doctor_headers = login(client, codes, "doctor@example.test")
+    body = {**guidance(review["version"]), "nextSteps": [step]}
+    assert client.post(f"{ROOT}/work/report-reviews/{review['id']}/review", headers=doctor_headers,
+                       json=body).status_code == 422

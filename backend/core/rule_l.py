@@ -59,6 +59,7 @@ TABLE_PLANES: dict[str, str] = {
     "care_rx_upload_reviews": CLINICAL,           # a student's prescription file sent to a pharmacist
     "care_substitution_requests": CLINICAL,
     "care_lab_orders": CLINICAL,
+    "care_lab_results": CLINICAL,                 # a student's lab values (typed and confirmed, or lab-released)
     "care_hostel_visit_requests": CLINICAL,       # sample pickup / nurse visit
     "care_programmes": CLINICAL,                  # chronic care enrolment
     "care_followup_tasks": CLINICAL,
@@ -143,6 +144,7 @@ TABLE_PLANES: dict[str, str] = {
     "care_reviewed_benefits": PLATFORM,
     "care_service_providers": PLATFORM,
     "care_availability_slots": PLATFORM,
+    "care_lab_test_reference": PLATFORM,          # test names and body-system groups; no person, no range
     "care_lab_collectors": PLATFORM,              # which staff account collects for which lab
     "care_health_camps": PLATFORM,
     "care_health_camp_slots": PLATFORM,
