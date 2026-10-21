@@ -78,7 +78,7 @@ INTEGRATIONS_DB: dict = {
     # connector says plainly that live lookups are not built (services/hfr_registry.py).
     "abdm_hfr": {
         "enabled": os.getenv("ABDM_HFR_ENABLED", "false").lower() == "true",
-        "base_url": os.getenv("ABDM_HFR_BASE_URL", ""),
+        "registry_url": os.getenv("ABDM_HFR_REGISTRY_URL", ""),
         "client_id": os.getenv("ABDM_HFR_CLIENT_ID", ""),
         "client_secret": os.getenv("ABDM_HFR_CLIENT_SECRET", ""),
     },

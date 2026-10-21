@@ -8,7 +8,7 @@ against the real service from this codebase (AGENTS.md: never invent an API).
 So this module only reports, honestly, one of two states:
 
 * ``NOT_CONFIGURED`` — credentials are not set in Super admin → Integrations
-  (``abdm_hfr``: enabled, base_url, client_id, client_secret);
+  (``abdm_hfr``: enabled, registry_url, client_id, client_secret);
 * ``NOT_BUILT`` — credentials are set, but the live search is not built yet.
 
 It never returns a facility, never pretends to have reached HFR, and never adds
@@ -19,7 +19,7 @@ from __future__ import annotations
 from services.integration_config import INTEGRATIONS_DB
 
 PROVIDER = "abdm_hfr"
-REQUIRED_FIELDS = ("base_url", "client_id", "client_secret")
+REQUIRED_FIELDS = ("registry_url", "client_id", "client_secret")
 
 NOT_CONFIGURED = "NOT_CONFIGURED"
 NOT_BUILT = "NOT_BUILT"

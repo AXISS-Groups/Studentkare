@@ -53,7 +53,7 @@ def names(response):
 
 @pytest.fixture(autouse=True)
 def _no_hfr(monkeypatch):
-    monkeypatch.setitem(INTEGRATIONS_DB, "abdm_hfr", {"enabled": False, "base_url": "", "client_id": "", "client_secret": ""})
+    monkeypatch.setitem(INTEGRATIONS_DB, "abdm_hfr", {"enabled": False, "registry_url": "", "client_id": "", "client_secret": ""})
 
 
 def test_signed_out_sees_only_verified_every_campus_places(harness):
@@ -253,7 +253,7 @@ def test_hfr_is_honestly_not_configured(harness):
 
 def test_hfr_with_credentials_still_returns_nothing_it_did_not_fetch(harness, monkeypatch):
     client, factory, codes = harness
-    monkeypatch.setitem(INTEGRATIONS_DB, "abdm_hfr", {"enabled": True, "base_url": "https://hfr.example.test",
+    monkeypatch.setitem(INTEGRATIONS_DB, "abdm_hfr", {"enabled": True, "registry_url": "https://hfr.example.test",
                                                       "client_id": "id", "client_secret": "s3cret-value"})
     assert hfr_registry.status()["state"] == "NOT_BUILT"
     with pytest.raises(hfr_registry.RegistryUnavailable):
