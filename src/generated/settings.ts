@@ -39,6 +39,8 @@ export interface PublicSettings {
   "rewards.referral_points": number;
   /** Products in the phone shop home's first shelf. (listings) */
   "shop.home_featured_count": number;
+  /** The order line students call to order medicines or book a lab test. Empty shows the call buttons as not available yet. (phone number (digits, optional leading +)) */
+  "shop.order_line_phone": string;
   /** Orders per page on the phone order history (GET /api/orders caps a page at 100). (orders) */
   "shop.orders_page_size": number;
   /** Listings per page on the phone product list (GET /api/catalog caps a page at 100). (listings) */
@@ -116,6 +118,7 @@ export const publicSettingDefaults: Readonly<PublicSettings> = {
   "rewards.referral_claim_window_hours": 24,
   "rewards.referral_points": 50,
   "shop.home_featured_count": 6,
+  "shop.order_line_phone": "",
   "shop.orders_page_size": 20,
   "shop.product_list_page_size": 24,
   "shop.recent_searches_max": 6,
@@ -159,6 +162,7 @@ export const publicSettingSpecs: Readonly<Record<PublicSettingKey, PublicSetting
   "rewards.referral_claim_window_hours": { type: "int", min: 1, max: 720, allowed: [], unit: "hours" },
   "rewards.referral_points": { type: "int", min: 0, max: 10000, allowed: [], unit: "points" },
   "shop.home_featured_count": { type: "int", min: 1, max: 20, allowed: [], unit: "listings" },
+  "shop.order_line_phone": { type: "str", min: null, max: null, allowed: [], unit: "phone number (digits, optional leading +)" },
   "shop.orders_page_size": { type: "int", min: 1, max: 100, allowed: [], unit: "orders" },
   "shop.product_list_page_size": { type: "int", min: 1, max: 100, allowed: [], unit: "listings" },
   "shop.recent_searches_max": { type: "int", min: 0, max: 20, allowed: [], unit: "searches" },

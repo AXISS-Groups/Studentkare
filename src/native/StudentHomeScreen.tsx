@@ -1,13 +1,18 @@
 import React from 'react';
 import { LanguageSetting } from '@/i18n/LanguageSetting';
 import { Linking, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useIsFocused } from '@react-navigation/native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, Card, Eyebrow, Note, Rise } from '@/design-system';
 import { color, font, fontWeight, space } from '@/design-system/theme';
 import { destinationsFor } from './homeDestinations';
 import { useNavigate } from './navigation';
 import { useNativeSession } from './session';
 import { useT } from '@/i18n';
-import { HomeDiscoverView } from '@/features/discover/views/HomeDiscoverView';
+import { M2ActiveProvider } from '@/design-system/m2';
+import { M2HomeView } from '@/features/m2store/views/M2HomeView';
+import { useM2HomeData } from '@/features/m2store/data/useM2Home';
+import type { DestinationRoute } from './homeDestinations';
 
 /**
  * The signed-in hub of the native app. Before this, signing in landed on the
@@ -27,22 +32,14 @@ export function StudentHomeScreen(): React.ReactElement {
   const destinations = destinationsFor(user.role);
   const firstName = user.fullName.split(' ')[0] ?? user.fullName;
 
-  // A student's home is the Discover board (canvas HomeDiscover); the rest of
-  // the app stays reachable from the list under it, and the tab bar.
+  // A student's home is Mobile 2.0 Home (canvas page 9 M2Home); the rest of the
+  // app stays reachable from the list under it, and the pill nav.
   if (user.role === 'STUDENT') {
     return (
-      <HomeDiscoverView
-        brandRow
+      <StudentM2Home
+        name={user.fullName}
         campus={user.university ?? ''}
         verified={user.isVerifiedStudent === true}
-        links={{
-          openSearch: () => navigate('Search'),
-          openCrisis: () => navigate('Emergency'),
-          call112: () => void Linking.openURL('tel:112'),
-          openShop: () => navigate('Marketplace'),
-          openAyush: () => navigate('AiChat'),
-          openNotifications: () => navigate('Notifications'),
-        }}
         footer={(
           <View style={styles.list}>
             {destinations.map((d) => (
@@ -99,6 +96,52 @@ export function StudentHomeScreen(): React.ReactElement {
       <LanguageSetting />
       <Button label={t('home.signOut')} variant="secondary" fullWidth onPress={() => void signOut()} />
     </ScrollView>
+  );
+}
+
+/** Mobile 2.0 Home with the app's screens behind each part (no cart badge: the app's cart lives in Checkout). */
+function StudentM2Home({ name, campus, verified, footer }: { name: string; campus: string; verified: boolean; footer: React.ReactNode }): React.ReactElement {
+  const navigate = useNavigate();
+  const focused = useIsFocused();
+  const data = useM2HomeData();
+  const go = (route: DestinationRoute | 'Emergency' | 'Checkout' | 'Medicines' | 'Labs' | 'Consults' | 'PreventiveCare' | 'More' | 'HostelVisit' | 'Camp') => () => navigate(route);
+  return (
+    <SafeAreaView edges={['top', 'left', 'right']} style={styles.screen}>
+    <M2ActiveProvider value={focused}>
+      <M2HomeView
+        name={name}
+        campus={campus}
+        verified={verified}
+        data={data}
+        recent={[]}
+        footer={footer}
+        links={{
+          sos: go('Emergency'),
+          menu: go('More'),
+          notifications: go('Notifications'),
+          cart: go('Checkout'),
+          search: go('Search'),
+          uploadRx: go('Vault'),
+          place: go('More'),
+          // No insurance screen in the app yet: that tile is left off the rail.
+          services: { medicines: go('Medicines'), labs: go('Labs'), consults: go('Consults'), vaccines: go('PreventiveCare'), campus: go('DigitalId') },
+          labs: go('Labs'),
+          generics: go('Medicines'),
+          uploadReport: go('Vault'),
+          meds: go('MedicineReminders'),
+          buyAgain: go('Orders'),
+          consult: go('Appointments'),
+          bookConsult: go('Consults'),
+          concern: go('Medicines'),
+          product: go('Marketplace'),
+          emergencyCard: go('Emergency'),
+          pass: go('DigitalId'),
+          hostelVisit: go('HostelVisit'),
+          camp: go('Camp'),
+        }}
+      />
+    </M2ActiveProvider>
+    </SafeAreaView>
   );
 }
 
