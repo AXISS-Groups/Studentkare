@@ -11,7 +11,6 @@ import {
   Dumbbell,
   FileText,
   FlaskConical,
-  GlassWater,
   GraduationCap,
   HeartHandshake,
   HeartPulse,
@@ -278,8 +277,6 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
     ...(user.role === 'STUDENT' ? [{ path: 'my-requests' as RoutePath, label: 'nav.myRequests' as MessageKey, icon: ClipboardList }] : []),
     { path: 'appointments' as RoutePath, label: 'nav.appointments' as MessageKey, icon: CalendarDays },
     { path: 'medications' as RoutePath, label: 'nav.medications' as MessageKey, icon: Pill },
-    // Mobile 2.0 Water (the same board as the phone, in the page column).
-    ...(user.role === 'STUDENT' ? [{ path: 'health/water' as RoutePath, label: 'nav.water' as MessageKey, icon: GlassWater }] : []),
     { path: 'prescriptions' as RoutePath, label: 'nav.prescriptions' as MessageKey, icon: FlaskConical },
     { path: 'campus' as RoutePath, label: 'nav.campus' as MessageKey, icon: GraduationCap },
     { path: 'health-camp' as RoutePath, label: 'nav.healthCamp' as MessageKey, icon: ClipboardList },

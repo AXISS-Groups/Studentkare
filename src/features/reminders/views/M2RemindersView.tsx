@@ -37,7 +37,8 @@ export const M2RemindersView = observer(function M2RemindersView({ vm, reminders
   const t = useT();
   useOwnPhoneChrome();
   const left = vm.left;
-  const headline = !vm.today.data ? '' : vm.plans.length === 0 ? t('m2r.meds.emptyTitle')
+  // Empty: the card below says so; the hero keeps only its note.
+  const headline = !vm.today.data || vm.plans.length === 0 ? ''
     : left === null ? t('m2r.meds.noCount') : left === 0 ? t('m2r.meds.allLogged') : left === 1 ? t('m2r.meds.leftOne') : t('m2r.meds.left', { count: left });
 
   const header = (
@@ -108,8 +109,9 @@ export const M2RemindersView = observer(function M2RemindersView({ vm, reminders
       {header}
       <Rise style={styles.gutter}>
         <Gradient colors={heroStops('teal')} angle={150} style={styles.hero} testID="m2-rem-hero">
-          <Text style={styles.heroEyebrow}>{t('m2r.meds.title')}</Text>
-          {headline ? <Text style={styles.heroLine} aria-live="polite" testID="m2-rem-headline">{headline}</Text> : <Skeleton label={t('m2r.meds.loading')} lines={['70%']} />}
+          <Text style={styles.heroEyebrow}>{t('m2r.meds.heroEyebrow')}</Text>
+          {headline ? <Text style={styles.heroLine} aria-live="polite" testID="m2-rem-headline">{headline}</Text> : null}
+          {!vm.today.data && vm.today.phase === 'loading' ? <Skeleton label={t('m2r.meds.loading')} lines={['70%']} /> : null}
           <Text style={styles.heroNote}>{t('m2r.meds.noScore')}</Text>
         </Gradient>
       </Rise>

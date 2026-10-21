@@ -8,7 +8,7 @@ import type { RoutePath } from '@/lib/utils/workflowRouting';
  * Icon names are the brief's; labels are i18n keys (studentshell area).
  */
 export type StudentNavId =
-  | 'your-care' | 'vault' | 'lab-tests' | 'insights' | 'emergency' | 'pass'
+  | 'your-care' | 'vault' | 'lab-tests' | 'insights' | 'medicines' | 'water' | 'emergency' | 'pass'
   | 'orders' | 'buy-again' | 'ayush' | 'requests'
   | 'account' | 'verify' | 'security' | 'notifications' | 'plan';
 
@@ -31,6 +31,9 @@ export const STUDENT_NAV: StudentNavGroup[] = [
       { id: 'vault', label: 'shell.item.vault', icon: 'lock-2', route: 'records' },
       { id: 'lab-tests', label: 'shell.item.labTests', icon: 'flask', route: 'my-lab-tests' },
       { id: 'insights', label: 'shell.item.insights', icon: 'bar-chart', route: 'report-insights' },
+      // Mobile 2.0 Medicines today and Water (reminders ticket; not on the WebDashboard board): the phone boards in the page column.
+      { id: 'medicines', label: 'm2r.meds.title', icon: 'pill-3', route: 'health/medicines' },
+      { id: 'water', label: 'nav.water', icon: 'glass', route: 'health/water' },
       { id: 'emergency', label: 'shell.item.emergency', icon: 'heart-plus', route: 'emergency-card' },
       { id: 'pass', label: 'shell.item.pass', icon: 'qr-code', route: 'pass' },
     ],
