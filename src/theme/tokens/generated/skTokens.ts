@@ -384,7 +384,10 @@ export const skTokens = {
       "base": 320,
       "sheet": 420,
       "toast": 4000,
-      "spinnerDelay": 400
+      "spinnerDelay": 400,
+      "carousel": 4200,
+      "ambient": 4000,
+      "orbit": 12000
     },
     "easing": {
       "standard": "cubic-bezier(0.16, 1, 0.3, 1)",

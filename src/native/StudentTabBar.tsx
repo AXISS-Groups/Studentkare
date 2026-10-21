@@ -1,42 +1,41 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { TabBar } from '@/design-system';
-import type { SkIconName } from '@/design-system/icons';
+import { PillNav } from '@/design-system/m2';
+import type { PillNavKey } from '@/design-system/m2';
 import { color } from '@/design-system/theme';
-import { useT } from '@/i18n';
-import type { MessageKey } from '@/i18n';
-import type { DestinationRoute } from './homeDestinations';
 
-/** A tab opens the native screen registered under this route. */
-export type StudentTabRoute = 'Home' | Extract<DestinationRoute, 'Marketplace' | 'AiChat' | 'Vault' | 'YourCare'>;
-
-export interface StudentTab {
-  route: StudentTabRoute;
-  label: `tabbar.${string}` & MessageKey;
-  icon: SkIconName;
-}
+/** A pill-nav destination opens the native screen registered under this route. */
+export type StudentTabRoute = 'Home' | 'Orders' | 'AiChat' | 'YourCare' | 'More';
 
 /**
- * The student tab bar, in the canvas's HomeDiscover bottom-bar order and
- * icons: Discover (compass), Wellness (map-pin, opening ShopHome), Ayush AI
- * (sparkle, opening AyushChat) and Your Care (YourCare), under the same
- * `stethoscope` as the web phone frame. Lab Tests (LabPackages) has no native
- * screen, so its slot holds the vault, under the canvas's own "Records" tab
- * (lock-5, the YourCare bar). (The consult rows' doctor-2 was tried for Your
- * Care, but its SVG only draws a stethoscope's U-shaped tube, which reads as a
- * letter at tab-bar size.)
+ * The student's Mobile 2.0 pill nav (canvas page 9, approved 2026-10-21):
+ * Home · Orders · Ask Ayush (the orb) · My health · Profile, replacing the
+ * five-tab bar (Discover · Wellness · Ayush AI · Records · Your Care). My
+ * health opens Your Care and Profile the More hub until M2Insights and
+ * M2Profile (Tier 1) are built. The vault and the wellness shop are reached
+ * from Home (service rail, "Upload a lab report") and More.
  */
-export const STUDENT_TABS: readonly StudentTab[] = [
-  { route: 'Home', label: 'tabbar.discover', icon: 'compass' },
-  { route: 'Marketplace', label: 'tabbar.wellness', icon: 'map-pin' },
-  { route: 'AiChat', label: 'tabbar.ayush', icon: 'sparkle' },
-  { route: 'Vault', label: 'tabbar.records', icon: 'lock-5' },
-  { route: 'YourCare', label: 'tabbar.yourCare', icon: 'stethoscope' },
-];
+export const STUDENT_NAV: Readonly<Record<PillNavKey, StudentTabRoute>> = {
+  home: 'Home',
+  orders: 'Orders',
+  ayush: 'AiChat',
+  health: 'YourCare',
+  profile: 'More',
+};
+
+/** Store boards opened from Home: the nav shows there with Home current (as on the boards). */
+const HOME_STORE_ROUTES: ReadonlySet<string> = new Set(['Medicines', 'Labs', 'Consults']);
 
 export function isStudentTabRoute(route: string): route is StudentTabRoute {
-  return STUDENT_TABS.some((tab) => tab.route === route);
+  return (Object.values(STUDENT_NAV) as string[]).includes(route);
+}
+
+/** The destination a route shows as current, or null where the nav is not drawn. */
+export function studentNavKeyFor(route: string): PillNavKey | null {
+  const key = (Object.keys(STUDENT_NAV) as PillNavKey[]).find((k) => STUDENT_NAV[k] === route);
+  if (key) return key;
+  return HOME_STORE_ROUTES.has(route) ? 'home' : null;
 }
 
 export interface StudentTabBarProps {
@@ -46,22 +45,14 @@ export interface StudentTabBarProps {
   bottomInset?: number;
 }
 
-/** Shown on the tab roots only; screens opened from them keep the full height. */
+/** Shown on the nav roots and the store boards; other screens keep the full height. */
 export function StudentTabBar({ currentRoute, navigate, bottomInset }: StudentTabBarProps): React.ReactElement | null {
-  const t = useT();
-  if (!isStudentTabRoute(currentRoute)) return null;
-  return (
-    <TabBar
-      label={t('tabbar.label')}
-      items={STUDENT_TABS.map((tab) => ({ key: tab.route, label: t(tab.label), icon: tab.icon }))}
-      selected={currentRoute}
-      onSelect={navigate}
-      bottomInset={bottomInset}
-    />
-  );
+  const current = studentNavKeyFor(currentRoute);
+  if (!current) return null;
+  return <PillNav current={current} onSelect={(key) => { if (currentRoute !== STUDENT_NAV[key]) navigate(STUDENT_NAV[key]); }} bottomInset={bottomInset} />;
 }
 
-/** The signed-in student's stack with the tab bar under it (navigator `layout`). */
+/** The signed-in student's stack with the pill nav under it (navigator `layout`). */
 export function StudentShell({ currentRoute, navigate, children }: Omit<StudentTabBarProps, 'bottomInset'> & { children: React.ReactNode }): React.ReactElement {
   const insets = useSafeAreaInsets();
   return (

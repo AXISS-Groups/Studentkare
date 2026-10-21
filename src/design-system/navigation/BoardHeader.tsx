@@ -28,6 +28,13 @@ export interface PhoneHeaderSlot {
   set: (config: BoardHeaderConfig | null) => void;
   /** Opens the frame's More panel (the student menu). */
   openMore: () => void;
+  /**
+   * A Mobile 2.0 board draws its whole header itself (its own back, cart and
+   * SOS): true hides the frame's header while that board is shown.
+   */
+  setOwnChrome?: (own: boolean) => void;
+  /** Opens the frame's SOS helplines (the same dialog as the header's SOS). */
+  openSos?: () => void;
 }
 
 const SlotContext = createContext<PhoneHeaderSlot | null>(null);
@@ -38,6 +45,20 @@ export const PhoneHeaderSlotProvider = SlotContext.Provider;
 /** The frame's slot, or null when the board is drawn on its own (Expo, tests). */
 export function usePhoneHeaderSlot(): PhoneHeaderSlot | null {
   return useContext(SlotContext);
+}
+
+/**
+ * A Mobile 2.0 board draws its own header (back, cart, SOS): inside the web
+ * phone frame this hides the frame's header while the board is mounted.
+ * Drawn on its own (Expo, tests) it does nothing.
+ */
+export function useOwnPhoneChrome(): void {
+  const slot = usePhoneHeaderSlot();
+  useLayoutEffect(() => {
+    if (!slot?.setOwnChrome) return undefined;
+    slot.setOwnChrome(true);
+    return () => slot.setOwnChrome?.(false);
+  }, [slot]);
 }
 
 /** What decides whether the frame's header must change: everything but the callbacks. */
