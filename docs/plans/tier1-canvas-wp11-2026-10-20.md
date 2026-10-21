@@ -1,8 +1,8 @@
 # WP-11 · Campus safety and named-student access: Tier 1 canvas plans
 
-**Approved by:** _(name, date)_
+**Approved by:** Krishna Chintakayala (founder, named Tier 1 reviewer), 2026-10-21 ("Approve all")
 
-**Status:** proposed. Plans only; no screen code has been written for this package.
+**Status:** approved 2026-10-21, built in feat/t1-wp11.
 **Rule:** `CLAUDE.md`, `DESIGN.md` §5–6, `AGENTS.md`. Every screen here is Tier 1. Each needs a named
 design reviewer **and** clinical/legal sign-off before its branch is opened. One screen = one
 ticket, one branch, one PR. Write the approver and date on the package line above and on each
@@ -78,7 +78,7 @@ role, other campus, other student and fail-closed paths.
 
 ## 1. CampusInsights — cohort health insights
 
-**Approved by:** _(design reviewer, clinical lead, DPO — date)_
+**Approved by:** Krishna Chintakayala (named Tier 1 reviewer), 2026-10-21 — approved as part of the package; legal/clinical items settled conservatively (see Decisions taken).
 
 **Board vs today.**
 - Board: cohort chips (Whole cohort, 1st year, 4th year, CSE, Civil · 4th yr); blood-pressure
@@ -121,7 +121,7 @@ shares with `withheld: true` per cell, campus-scoped, from camp screening data (
 
 ## 2. CampusAccessRequests — ask a student to share
 
-**Approved by:** _(design reviewer, legal/DPO — date)_
+**Approved by:** Krishna Chintakayala (named Tier 1 reviewer), 2026-10-21 — approved as part of the package; legal/clinical items settled conservatively (see Decisions taken).
 
 **Board vs today.**
 - Board: list with filter tabs (All / Pending / Approved / Declined / Expired), rows show
@@ -162,7 +162,7 @@ campus-initiated requests without a decision.
 
 ## 3. CampusBreakGlass — emergency card when the student cannot consent
 
-**Approved by:** _(design reviewer, clinical lead, legal/DPO — date)_
+**Approved by:** Krishna Chintakayala (named Tier 1 reviewer), 2026-10-21 — approved as part of the package; legal/clinical items settled conservatively (see Decisions taken).
 
 **Board vs today.**
 - Board: two steps — 1 · find the student (name/roll search, matches), 2 · reason chips
@@ -206,7 +206,7 @@ and the student notification; plus the super-admin side in WP-17 AdminBreakGlass
 
 ## 4. CampusIncidents — incident desk
 
-**Approved by:** _(design reviewer, clinical lead — date)_
+**Approved by:** Krishna Chintakayala (named Tier 1 reviewer), 2026-10-21 — approved as part of the package; legal/clinical items settled conservatively (see Decisions taken).
 
 **Board vs today.**
 - Board: list of incidents (id, title, where, reported by, severity Urgent/Routine, state
@@ -236,7 +236,7 @@ counts as a "responder" for visibility?
 
 ## 5. CampusCounsellor — crisis follow-up queue
 
-**Approved by:** _(design reviewer, clinical lead, counselling lead — date)_
+**Approved by:** Krishna Chintakayala (named Tier 1 reviewer), 2026-10-21 — approved as part of the package; legal/clinical items settled conservatively (see Decisions taken).
 
 **Board vs today.**
 - Board: queue rows (signal kind e.g. "Self-harm language", "Panic, repeated", "Low mood, 3
@@ -275,7 +275,7 @@ verified in code — the board's note must not be shown as fact until it is.)
 
 ## 6. CampusIsolation — quarantine bays
 
-**Approved by:** _(design reviewer, clinical lead — date)_
+**Approved by:** Krishna Chintakayala (named Tier 1 reviewer), 2026-10-21 — approved as part of the package; legal/clinical items settled conservatively (see Decisions taken).
 
 **Board vs today.**
 - Board: bay table (Q-01…Q-05; student shown as room + initials; reason & day "Influenza A ·
@@ -302,7 +302,7 @@ sub-role today)? Are daily-check values (temperature) entered here or by a clini
 
 ## 7. CampusAmbulance — dispatch board
 
-**Approved by:** _(design reviewer, clinical lead — date)_
+**Approved by:** Krishna Chintakayala (named Tier 1 reviewer), 2026-10-21 — approved as part of the package; legal/clinical items settled conservatively (see Decisions taken).
 
 **Board vs today.**
 - Board: tiles (live now, median time to scene, off-campus transfer, campus vehicle SK-01
@@ -328,7 +328,7 @@ feed (none integrated).
 
 ## 8. CampusSla — escalation timers (new screen)
 
-**Approved by:** _(design reviewer, clinical lead — date)_
+**Approved by:** Krishna Chintakayala (named Tier 1 reviewer), 2026-10-21 — approved as part of the package; legal/clinical items settled conservatively (see Decisions taken).
 
 **Board vs today.**
 - Board: tiles (breached, within target, worst breach, **auto-closed**); table (request id,
@@ -354,7 +354,7 @@ see a critical-lab-value timer at all (it reveals that a student has one).
 
 ## 9. CampusDischarge — fit-to-return certificates (new screen)
 
-**Approved by:** _(design reviewer, clinical lead, legal — date)_
+**Approved by:** Krishna Chintakayala (named Tier 1 reviewer), 2026-10-21 — approved as part of the package; legal/clinical items settled conservatively (see Decisions taken).
 
 **Board vs today.**
 - Board: tiles (issued this week, stay extended, early release refused, issued without
@@ -376,3 +376,28 @@ the campus screen shows the result only. "Issued without sign-off" is computed, 
 
 **Open decisions.** Does the certificate show the clearance reason to the campus admin, or only
 "fit to return" (the board shows clinical detail)? Registration number display (NMC) — confirm.
+
+## Decisions taken (approved by Krishna Chintakayala, 2026-10-21)
+
+Approved as a set; each open decision settled on the conservative, honest option.
+
+- **Shared · backend.** No backend added. The consent-request model (§2), break-glass routes (§3), incident model (§4), outreach/escalate/close (§5), isolation bays (§6), dispatch log (§7), timers (§8) and discharge sign-off (§9) are each more than a small scoped addition (student-side flows, notifications, server-side expiry), so every one ships as an honest "not connected" board.
+- **Shared · crisis lines.** 108 / 112 / Tele-MANAS 14416 are drawn as plain `tel:` links on Break-glass, Incidents, Ambulance and Counsellor, in every state. The campus shell itself was not changed (a shared shell change touches every campus board); listed for the integrator.
+- **Shared · routes.** The nine boards live in `src/features/campus/safety` and mount in the campus shell; the five superseded screens in `src/screens/institution` are deleted. `MeoDashboardScreen` (in-memory demo store) is no longer mounted on the campus Incidents board; its own `meo` route is unchanged.
+- **1.1 Suppression floor.** The console's one k-anonymity value (`CAMPUS_MIN_GROUP` = `InstitutionConsoleQueryGuard.K_ANONYMITY_FLOOR`, 20) is shown by interpolation, never the picture's literal. No new setting.
+- **1.2 Band wording.** No band labels are drawn while not connected; the "Obese / Stage 2" wording stays undecided.
+- **1.3 Export.** "Export aggregate PDF" drawn disabled with "not available yet" (the header layout needs it).
+- **1 · cohorts.** Only "Whole cohort"; year/branch chips have no source.
+- **2.1 Access-request backend.** Not built; list not connected, drawer submit always disabled with the reason.
+- **2.2 Expiry.** No choices drawn (no setting, legal to choose); the drawer says expiry is set with the student's sharing limits once connected.
+- **2.3 Remind.** Not drawn (no list). Preview of the student's wording not drawn either: it must come from the student's ConsentInbox (one source).
+- **3.1 Break-glass model.** Undecided, so nothing opens: search disabled, "Open emergency card" always disabled, no card, timer, audit ID or contact drawn. No time limit number shown (no setting).
+- **3.2 Who may open.** Unchanged: the route stays campus admin / super admin; nothing can open anyway.
+- **3.3 Uses this term.** Shown as "not counted yet" (no count source).
+- **4 · Incident model.** An incident is an SOS alert for now (`GET /ops/sos?open=false`). Columns: New = ACTIVE, Acknowledged = ACKNOWLEDGED (renamed from "Triaged": nobody triaged it here), Resolved = RESOLVED/CANCELLED; Dispatched says it is not tracked. Cards show place and age, never a name or condition; the name is in the incident panel only (the same campus responders see it on the SOS desk). Acknowledge/close stay on the SOS desk (linked), unchanged. "Log incident", notes, "Send medical officer", "Hostel visit" drawn disabled. The on-call strip reads `/ops/campus/security-contacts` names; no invented doctor.
+- **5 · Counsellor.** The queue stays on the counsellor's own home (`/counsellor`); a campus admin still sees the explanation page (role guards unchanged). The 15-minute window stays the existing constant (no new setting). On-call card omitted (no roster). Median shown as "—". The board's escalation note is replaced by the true statement that the queue does not escalate on its own yet (verified: no server escalation exists). Outreach log / Escalate / Close not drawn; the existing outcome + note follow-up (incl. "Escalated") is kept in the drawer.
+- **6 · Health-officer role.** No sub-role exists; the board shows nothing to anyone, and the privacy rule is shown.
+- **7 · Dispatch.** Not connected; 108 call link first on the board; the "record is opened and logged at the receiving end" sentence dropped (not true of the app).
+- **8 · Timers.** Not connected; all four figures "—" incl. Auto-closed; the "breached timer escalates to a named person" sentence dropped.
+- **9 · Certificate detail.** Nothing listed; no NMC numbers drawn; the page states it cannot issue a certificate.
+

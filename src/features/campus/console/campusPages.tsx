@@ -30,7 +30,6 @@ const named = <K extends string>(load: () => Promise<Record<K, React.ComponentTy
   lazy(() => load().then((module) => ({ default: module[name] })));
 
 const CampusOverviewScreen = named(() => import('@/features/campus/overview/CampusOverviewScreen'), 'CampusOverviewScreen');
-const CampusHealthInsightsScreen = named(() => import('@/screens/institution/CampusHealthInsightsScreen'), 'CampusHealthInsightsScreen');
 const CampusSosDesk = named(() => import('@/screens/institution/CampusSosDesk'), 'CampusSosDesk');
 const CampusIncidentsDeskScreen = named(() => import('@/screens/institution/CampusIncidentsDeskScreen'), 'CampusIncidentsDeskScreen');
 const AmbulanceDispatchTrackerScreen = named(() => import('@/screens/institution/AmbulanceDispatchTrackerScreen'), 'AmbulanceDispatchTrackerScreen');
@@ -56,6 +55,8 @@ const CampusAggregateScreen = named(() => import('@/features/campus/boards'), 'C
 const MedicalLeaveApprovalsScreen = named(() => import('@/screens/institution/MedicalLeaveApprovalsScreen'), 'MedicalLeaveApprovalsScreen');
 const CampusHealthScorecardScreen = named(() => import('@/screens/institution/CampusHealthScorecardScreen'), 'CampusHealthScorecardScreen');
 const CounsellorOnlyPage = named(() => import('./CampusPendingPage'), 'CampusCounsellorOnlyPage');
+// WP-11 boards (design page 4, Tier 1, approved 2026-10-21), built to the canvas in src/features/campus/safety.
+const CampusInsightsScreen = named(() => import('@/features/campus/safety'), 'CampusInsightsScreen');
 const NotificationInboxPanel = named(() => import('@/screens/workspace/NotificationInboxPanel'), 'NotificationInboxPanel');
 const SupportPanel = lazy(() => import('@/screens/workspace/MemberPanels').then((module) => ({ default: () => <module.SupportPanel /> })));
 
@@ -66,7 +67,7 @@ export const CAMPUS_PAGES: Partial<Record<RoutePath, CampusPage>> = {
   'campus/verification': { current: 'verification', board: 'CampusApprovals', title: 'campusShell.nav.verification', topBar: false, screen: CampusApprovalsScreen },
   // No board on the canvas; the old hub's Medical leave tab, mounted unchanged beside Verification (CampusApprovals).
   'campus/leave': { current: 'leave', board: 'CampusApprovals', title: 'campusShell.nav.leave', topBar: false, screen: MedicalLeaveApprovalsScreen },
-  'campus/insights': { current: 'insights', board: 'CampusInsights', title: 'campusShell.nav.insights', topBar: true, screen: CampusHealthInsightsScreen },
+  'campus/insights': { current: 'insights', board: 'CampusInsights', title: 'campusShell.nav.insights', topBar: true, screen: CampusInsightsScreen },
   'campus/camps': { current: 'camps', board: 'CampusCamps', title: 'campusShell.nav.camps', topBar: false, screen: CampusCampsScreen },
   'campus/certificates': { current: 'certificates', board: 'CampusCertificates', title: 'campusShell.nav.certificates', topBar: true, screen: CampusCertificatesScreen },
   'campus-wellness': { current: 'wellness', board: 'CampusWellness', title: 'campusShell.nav.wellness', topBar: false, screen: CampusWellnessScreen },
