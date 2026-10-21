@@ -63,7 +63,6 @@
   "src/design-system/Table.tsx",
   "src/design-system/primitives.tsx",
   "src/features/admin/views/AccountsListView.tsx",
-  "src/features/admin/views/KnowledgeView.tsx",
   "src/features/auth/screens/AuthenticatedFlowScreen.tsx",
   "src/features/auth/views/CreateAccountNativeView.tsx",
   "src/features/auth/views/ProfileSetupView.tsx",

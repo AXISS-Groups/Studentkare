@@ -1,8 +1,8 @@
 # WP-17 · Super admin governance, safety and money: Tier 1 canvas plans
 
-**Approved by:** _(name, date)_
+**Approved by:** Krishna Chintakayala (founder, named Tier 1 reviewer), 2026-10-21 ("Approve all")
 
-**Status:** proposed. Plans only; no screen code has been written for this package.
+**Status:** approved 2026-10-21, built in feat/t1-wp17.
 **Rule:** `CLAUDE.md`, `DESIGN.md` §5–6, `AGENTS.md` (guardrails 1, 4, 6, 9, 11). These screens
 govern break-glass, consent policy, erasure, the Rule L firewall, prices and keys. Each needs a
 named design reviewer **and** legal/DPO (or clinical, where marked) sign-off before its branch
@@ -65,7 +65,7 @@ source; `check-icons --screen`; implementation-map entry moved to `screens`.
 
 ## 1. SuperAdminConsole — platform overview
 
-**Approved by:** _(design reviewer, legal/DPO — date)_
+**Approved by:** Krishna Chintakayala (named Tier 1 reviewer), 2026-10-21 — approved as part of the package; legal, clinical and finance items settled conservatively (see Decisions taken).
 
 **Board vs today.** Board: header "3 tenants · 4,940 activated seats · all services nominal";
 "Audit ledger writing · Append-only · DELETE revoked for every role"; a **break-glass request
@@ -89,7 +89,7 @@ board's single-actor 15-minute emergency card (WP-11 §3) — one model or two? 
 
 ## 2. AuditExplorer
 
-**Approved by:** _(design reviewer, legal/DPO — date)_
+**Approved by:** Krishna Chintakayala (named Tier 1 reviewer), 2026-10-21 — approved as part of the package; legal, clinical and finance items settled conservatively (see Decisions taken).
 
 **Board vs today.** Board: tabs All access / Break-glass / Denied; rows actor · outcome · rule
 ("Rule-K1") · what · hash · when; "Chain integrity · Verified to tip · 1,284,902 entries
@@ -107,7 +107,7 @@ the design?
 
 ## 3. AiGovernance
 
-**Approved by:** _(design reviewer, AI governance owner, clinical lead — date)_
+**Approved by:** Krishna Chintakayala (named Tier 1 reviewer), 2026-10-21 — approved as part of the package; legal, clinical and finance items settled conservatively (see Decisions taken).
 
 **Board vs today.** Board: "Agent Ayush · seven stages, five can refuse"; where-the-pipeline-stops
 bars (crisis gate etc., last 7 days); grounding note ("Retrieval is character n-gram hashing…");
@@ -125,7 +125,7 @@ row to display — the register needs a computed import check.
 
 ## 4. Integrations
 
-**Approved by:** _(design reviewer — date)_
+**Approved by:** Krishna Chintakayala (named Tier 1 reviewer), 2026-10-21 — approved as part of the package; legal, clinical and finance items settled conservatively (see Decisions taken).
 
 **Board vs today.** Board: dependency table (ABDM/ABHA gateway… "if it stops", state); note
 "Eight third-party proxies from a previous product are still mounted"; knowledge index card (184
@@ -142,7 +142,7 @@ rather than describe it.
 
 ## 5. DpdpQueue — erasure requests
 
-**Approved by:** _(design reviewer, legal/DPO — date)_
+**Approved by:** Krishna Chintakayala (named Tier 1 reviewer), 2026-10-21 — approved as part of the package; legal, clinical and finance items settled conservatively (see Decisions taken).
 
 **Board vs today.** Board: rows account · requested · statutory clock bar (days left / breached) ·
 action; "1 past the window"; note that the ledger keeps the fact of an erasure, not the data.
@@ -158,7 +158,7 @@ Today: `ErasurePanel` (copy 34%) on real `/ops/erasure`.
 
 ## 6. AdminOps — operations & SOS
 
-**Approved by:** _(design reviewer, clinical lead — date)_
+**Approved by:** Krishna Chintakayala (named Tier 1 reviewer), 2026-10-21 — approved as part of the package; legal, clinical and finance items settled conservatively (see Decisions taken).
 
 **Board vs today.** Board: tiles SOS live / campuses up / API availability 30 days / median SOS to
 first responder; rows alert · campus & detail · raised · responders · state; note "never the
@@ -173,7 +173,7 @@ computed (availability has no source → "—").
 
 ## 7. AdminSurveillance
 
-**Approved by:** _(design reviewer, clinical/public-health lead, legal — date)_
+**Approved by:** Krishna Chintakayala (named Tier 1 reviewer), 2026-10-21 — approved as part of the package; legal, clinical and finance items settled conservatively (see Decisions taken).
 
 **Board vs today.** Board: clusters (region, campuses, signal "Fever rate 3.1× baseline, 72 h",
 cohort n, state); "n ≥ 80 smallest cohort released"; "Campuses named to each other: 0"; "Mental
@@ -189,7 +189,7 @@ health authority.
 
 ## 8. AdminRuleL — firewall
 
-**Approved by:** _(design reviewer, security lead — date)_
+**Approved by:** Krishna Chintakayala (named Tier 1 reviewer), 2026-10-21 — approved as part of the package; legal, clinical and finance items settled conservatively (see Decisions taken).
 
 **Board vs today.** Board: "7 of 7 holding"; grants table (commerce ranking service reading
 clinical tables, recommendation job, analytics export, campus dashboard below k = 5, Ayush agent
@@ -210,7 +210,7 @@ enforced in this environment" (the endpoint reports it).
 
 ## 9. AdminConsentPolicy
 
-**Approved by:** _(design reviewer, legal/DPO — date)_
+**Approved by:** Krishna Chintakayala (named Tier 1 reviewer), 2026-10-21 — approved as part of the package; legal, clinical and finance items settled conservatively (see Decisions taken).
 
 **Board vs today.** Board: rules with "set to", "changeable by", state (max share 90 days,
 default 7 days, artefact retention 7 years — statutory/locked, Ayush transcript retention 30 days
@@ -227,7 +227,7 @@ values; transcript retention.
 
 ## 10. AdminHandover — casualty handover
 
-**Approved by:** _(design reviewer, clinical lead, legal — date)_
+**Approved by:** Krishna Chintakayala (named Tier 1 reviewer), 2026-10-21 — approved as part of the package; legal, clinical and finance items settled conservatively (see Decisions taken).
 
 **Board vs today.** Board: transfers (case, route + reason, authorised by, record opened —
 emergency override / consent already active, audit — countersigned / awaiting countersign 19 h);
@@ -241,7 +241,7 @@ emergency override / consent already active, audit — countersigned / awaiting 
 
 ## 11. AdminBreakGlassLog
 
-**Approved by:** _(design reviewer, legal/DPO — date)_
+**Approved by:** Krishna Chintakayala (named Tier 1 reviewer), 2026-10-21 — approved as part of the package; legal, clinical and finance items settled conservatively (see Decisions taken).
 
 **Board vs today.** Board: tiles openings this term / needs review (oldest 26 h) / pattern
 alerts / median open time ("auto-closes at 15"); filters All / Needs review / Pattern alerts /
@@ -261,7 +261,7 @@ format.
 
 ## 12. AdminPlansPricing
 
-**Approved by:** _(design reviewer, founder/finance — date)_
+**Approved by:** Krishna Chintakayala (named Tier 1 reviewer), 2026-10-21 — approved as part of the package; legal, clinical and finance items settled conservatively (see Decisions taken).
 
 **Board vs today.** Board: plan cards Basic (₹0 forever) / Premium / Care Circle / Enterprise;
 mismatch banner ("checkout charges ₹99 for Premium, the plans page says ₹199"); "Where prices
@@ -291,7 +291,7 @@ server Free / Student Plus / Premium / Campus / Enterprise (same question as WP-
 
 ## 13. AdminTemplates — message templates
 
-**Approved by:** _(design reviewer, legal — date)_
+**Approved by:** Krishna Chintakayala (named Tier 1 reviewer), 2026-10-21 — approved as part of the package; legal, clinical and finance items settled conservatively (see Decisions taken).
 
 **Board vs today.** Board: template list (refill_due, otp_login, collection_slot, camp_invite,
 crisis_followup with category and Meta status), editor, checks ("no health value ever leaves the
@@ -308,7 +308,7 @@ medicine name or value in a template body.
 
 ## 14. AdminKnowledge — knowledge base
 
-**Approved by:** _(design reviewer, clinical lead — date)_
+**Approved by:** Krishna Chintakayala (named Tier 1 reviewer), 2026-10-21 — approved as part of the package; legal, clinical and finance items settled conservatively (see Decisions taken).
 
 **Board vs today.** Board: "412 chunks live · last index 06:00"; sources with owner, signer and
 state (Live / Needs sign-off / Expired · hidden); "Test a question" retrieval preview ("No
@@ -326,7 +326,7 @@ answer generation)?
 
 ## 15. AdminCheckins — check-in audit
 
-**Approved by:** _(design reviewer, legal/DPO — date)_
+**Approved by:** Krishna Chintakayala (named Tier 1 reviewer), 2026-10-21 — approved as part of the package; legal, clinical and finance items settled conservatively (see Decisions taken).
 
 **Board vs today.** Board: tiles check-ins today / matched first time / stopped — mismatch /
 "this wasn't me" reports / manual checks; rows time · provider · visit · result · reason ·
@@ -345,7 +345,7 @@ rule as a setting.
 
 ## 16. AdminCase — "This wasn't me" case
 
-**Approved by:** _(design reviewer, legal/DPO — date)_
+**Approved by:** Krishna Chintakayala (named Tier 1 reviewer), 2026-10-21 — approved as part of the package; legal, clinical and finance items settled conservatively (see Decisions taken).
 
 **Board vs today.** Board: case header with SLA; timeline; evidence (on-file photo vs counter
 photo, "Opening it is logged. It's deleted when the case closes"); partner's counter log; call
@@ -361,7 +361,7 @@ commerce side learning the order's clinical contents.
 
 ## 17. AdminPriceFix — SK-006
 
-**Approved by:** _(design reviewer, founder/finance — date)_
+**Approved by:** Krishna Chintakayala (named Tier 1 reviewer), 2026-10-21 — approved as part of the package; legal, clinical and finance items settled conservatively (see Decisions taken).
 
 **Board vs today.** Board: three steps (point every surface at the catalogue; set the Premium
 price; second admin approves), surface table ("₹99 hard-coded in Checkout.tsx"…), "412 students
@@ -376,7 +376,7 @@ admin approves" button must never ship.
 
 ## 18. AdminApiKeys — API access & keys
 
-**Approved by:** _(design reviewer, security lead — date)_
+**Approved by:** Krishna Chintakayala (named Tier 1 reviewer), 2026-10-21 — approved as part of the package; legal, clinical and finance items settled conservatively (see Decisions taken).
 
 **Board vs today.** Board: "All 14 proxy routes now need a signed service token"; route table
 (route, used for, auth, key age, calls 24 h, blocked); rotate key (second admin, reveal once,
@@ -393,3 +393,31 @@ The revealed key is never stored client-side.
 
 **Open decisions.** Remove the old-product proxy routes (backend change, recommended) before
 building this screen?
+
+## Decisions taken (approved by Krishna Chintakayala, 2026-10-21)
+
+Settled as a set, taking the conservative, honest option for each. No backend was added.
+
+- **1.1 SuperAdminConsole, break-glass model:** the dual-custody request is drawn disabled with a "Not available yet" note (no named second approver, no server session). One model for now: the campus emergency card (WP-11). Why: needs a named person and a backend we don't have.
+- **1.2 SuperAdminConsole, claims:** "Section 12 compliant", "all services nominal" and "DELETE revoked for every role" are dropped; the services line is the real probe result. The commerce guardrail is computed from `/ops/rule-l`; the other guardrails read "—". Why: guardrail 6.
+- **2 AuditExplorer, hash chain:** not built. The integrity panel says "Not verified" and why; hash, rule and outcome columns are not shown; the tabs narrow the loaded page (the endpoint has no action filter). Why: no chain or signing key exists.
+- **3 AiGovernance, module register:** not connected (needs a computed import check). Stage counts come from `/ops/agents/ayush/quality` (latest 500 turns, not 7 days); the n-gram note shows only when the index reports non-semantic retrieval; transcript retention reads "Not set". Why: computed sources only.
+- **4 Integrations, legacy panel:** kept as the second tab ("Provider settings & probes") instead of retired: it is the only place to configure a provider. Reindex-on-publish is not changed; the warning appears only when the index status reports missing sources. Why: retiring it would remove a working control; the reindex fix is a backend change not in the plan.
+- **5 DpdpQueue, statutory window:** no number set. The clock runs to the server's scheduled erasure date; a request still pending after it is "Overdue" (red). No "complete now" action (no endpoint). Archives still open only with a written reason. Why: legal must fix the number.
+- **6 AdminOps, sources:** SOS rows from `/ops/sos` (all campuses), live first, never paginated; "live" = raised and not yet acknowledged. Campuses up and API availability read "—"; the median tile is "SOS to campus acknowledgement", computed. Student name, contact, hostel, location note and closing note are never read. Why: honest figures; no condition on this board.
+- **7 AdminSurveillance:** not connected; the cohort floor and the legal basis for telling a state health authority are left undecided. Why: legal/public-health input we don't have.
+- **8 AdminRuleL, interval:** wired to `/ops/rule-l`; the interval reads "On request" (no schedule added). Board rows naming services we don't run are not shown. Why: the check runs on request.
+- **9 AdminConsentPolicy:** no rule is a setting yet, so no row is shown; no settings were added (the values are legal decisions). The 18+ gate is stated as enforced in code. Why: rows need an enforcing source.
+- **10 AdminHandover:** not connected; the countersign model and window are undecided. Why: clinical/legal input we don't have.
+- **11 AdminBreakGlassLog:** not connected (no `break_glass_sessions` route); the review drawer is not built, its three decisions are described; export is disabled; the 48 h window and pattern rule are not hard-coded. Why: needs the WP-11 §3 backend.
+- **12.1 AdminPlansPricing, approval:** prices change through the existing `PATCH /api/ops/settings/{key}` (validated, reason required, audited, history kept), single admin; the drawer says a second admin's approval isn't built. No pending/approve backend added. Why: not a small, fully specified addition.
+- **12.2 AdminPlansPricing, "Where prices appear":** dropped (nothing checks the surfaces); the mismatch banner is not shown (nothing computes one). "New plan" is drawn disabled.
+- **12.3 AdminPlansPricing, plan names:** the server's names (Free Student Account, Student Plus, Premium, Campus, Enterprise). Prices from the registry: Student Plus ₹149/month, 3-month ₹2,199, Premium from ₹499. The doctors' commission share reads "Not set" (not decided).
+- **13 AdminTemplates:** not connected; no template model or Meta submission. The checks are named, not run; the preview never renders a medicine or value.
+- **14 AdminKnowledge, retrieval preview:** no endpoint added; "Test a question" is drawn disabled. Retire/Sign off/Restore are not offered. The board's "reviewed by a clinician" is not claimed (finding: `POST /ops/knowledge` marks a source reviewed when the super admin publishes it; there is no clinician sign-off step).
+- **15 AdminCheckins:** not connected; audit rows are not used as a check-in source. Why: conservative; needs a check-in record.
+- **16 AdminCase:** not connected; outcome choices and "Close case" drawn disabled.
+- **17 AdminPriceFix:** retired to a short page that shows the price settings in force and links to Plans & pricing; no price field or approval button.
+- **18 AdminApiKeys:** the old proxy routes are not removed (backend change awaiting a decision). The table lists the routes `/apilayer/status` reports, auth "Super admin session"; calls, blocks and key age read "—"; no rotate or remove.
+- **Colour:** red only for live SOS, overdue erasure, Rule L failures, denied audit entries, the crisis gate and output guard, and the break-glass card; everything else uses role tokens.
+
