@@ -23,6 +23,7 @@ import { labbookEn } from './areas/labbook';
 import { rewardsEn } from './areas/rewards';
 import { mobile2En } from './areas/mobile2';
 import { mobile2OrdersEn } from './areas/mobile2Orders';
+import { mobile2WebEn } from './areas/mobile2Web';
 import { mobile2HealthEn } from './areas/mobile2health';
 import { m2valuesEn } from './areas/m2values';
 import { wellnessEn } from './areas/wellness';
@@ -855,6 +856,7 @@ export const en = {
   ...rewardsEn,
   ...mobile2En,
   ...mobile2OrdersEn,
+  ...mobile2WebEn,
   ...mobile2HealthEn,
   ...m2valuesEn,
   ...wellnessEn,

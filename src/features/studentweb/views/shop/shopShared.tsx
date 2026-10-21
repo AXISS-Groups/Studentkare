@@ -3,7 +3,6 @@ import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
 import { Icon } from '@/design-system/icons';
 import { useLiveCart } from '@/data/contexts/LiveCartContext';
-import { discountPercent } from '@/data/types/workflowTypes';
 import type { LiveCatalogItem } from '@/data/types/workflowTypes';
 import { navigate } from '@/lib/utils/workflowRouting';
 
@@ -15,8 +14,8 @@ export const cannotAdd = (item: LiveCatalogItem): boolean => item.requiresPrescr
 
 export const kindLabel = (kind: LiveCatalogItem['kind']): MessageKey => `shopweb.kind.${kind}` as MessageKey;
 
-/** Adds to the cart (labs open their own booking) and echoes it once, politely. */
-export function useAddToCart(onBookLab: (item: LiveCatalogItem) => void) {
+/** Adds to the cart (labs open their own booking) and echoes it once, politely. "View cart" opens the checkout unless the page says otherwise. */
+export function useAddToCart(onBookLab: (item: LiveCatalogItem) => void, onViewCart: () => void = () => navigate('checkout')) {
   const t = useT();
   const cart = useLiveCart();
   const [notice, setNotice] = useState('');
@@ -32,33 +31,28 @@ export function useAddToCart(onBookLab: (item: LiveCatalogItem) => void) {
     if (quantity > 1) cart.setQuantity(item.id, quantity);
     setNotice(t('shopweb.notice.added', { name: item.name }));
   };
+  /** Says an item went in when the caller added it itself (the product page adds a chosen quantity). */
+  const announce = (item: LiveCatalogItem) => setNotice(t('shopweb.notice.added', { name: item.name }));
   const inCart = (item: LiveCatalogItem) => cart.lines.some((line) => line.item.id === item.id);
   const toast = (
-    <div className="sk-sw-toast" role="status" aria-live="polite">
-      {notice ? <><span>{notice}</span><button type="button" className="sk-sw-link is-light" onClick={() => navigate('checkout')}>{t('sw.viewCart')}</button></> : null}
+    <div className="sk-m2w-toast" role="status" aria-live="polite">
+      {notice ? <><Icon name="cart" size={18} /><span>{notice}</span><button type="button" className="sk-m2w-toast__link" onClick={() => { setNotice(''); onViewCart(); }}>{t('sw.viewCart')}</button></> : null}
     </div>
   );
-  return { add, inCart, toast };
+  return { add, announce, inCart, toast };
 }
 
-/** "42% OFF" corner badge, only when the listing really has an MRP above its price. */
-export function DiscountBadge({ item }: { item: LiveCatalogItem }) {
-  const t = useT();
-  const percent = discountPercent(item.mrpPaise, item.pricePaise);
-  return percent > 0 ? <span className="sk-sw-off">{t('shopweb.percentOffBadge', { percent })}</span> : null;
-}
-
-/** The search field used on the shop and its results. */
+/** The Mobile 2.0 search field used on the shop and its results (white, rounded, the magnifier first). */
 export function ShopSearch({ initial, onSearch }: { initial: string; onSearch: (query: string) => void }) {
   const t = useT();
   const [value, setValue] = useState(initial);
   useEffect(() => { setValue(initial); }, [initial]);
   return (
-    <form className="sk-sw-search sk-sw-search--bar" role="search" onSubmit={(event) => { event.preventDefault(); onSearch(value.trim()); }}>
+    <form className="sk-m2w-search" role="search" onSubmit={(event) => { event.preventDefault(); onSearch(value.trim()); }}>
       <Icon name="search-2" size={20} color="var(--sk-color-text-3)" />
       <input type="search" value={value} onChange={(event) => setValue(event.target.value)} placeholder={t('sw.search.placeholder')} aria-label={t('sw.search.label')} />
       {value ? (
-        <button type="button" className="sk-sw-icon-btn" aria-label={t('shopweb.search.clear')} onClick={() => { setValue(''); onSearch(''); }}>
+        <button type="button" className="sk-m2w-iconbtn" aria-label={t('shopweb.search.clear')} onClick={() => { setValue(''); onSearch(''); }}>
           <Icon name="x" size={18} />
         </button>
       ) : null}

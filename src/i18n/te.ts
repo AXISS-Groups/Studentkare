@@ -24,6 +24,7 @@ import { labbookTe } from './areas/labbook';
 import { rewardsTe } from './areas/rewards';
 import { mobile2Te } from './areas/mobile2';
 import { mobile2OrdersTe } from './areas/mobile2Orders';
+import { mobile2WebTe } from './areas/mobile2Web';
 import { mobile2HealthTe } from './areas/mobile2health';
 import { m2valuesTe } from './areas/m2values';
 import { wellnessTe } from './areas/wellness';
@@ -856,6 +857,7 @@ export const te: Catalog = {
   ...rewardsTe,
   ...mobile2Te,
   ...mobile2OrdersTe,
+  ...mobile2WebTe,
   ...mobile2HealthTe,
   ...m2valuesTe,
   ...wellnessTe,
