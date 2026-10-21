@@ -2,8 +2,8 @@
 
 **Approved by:** _(design reviewer, date)_ · _(clinical lead, date)_ · _(AI-constitution owner, date: M2AskAyush and the Ayush consent only)_
 
-**Status:** plan only. No screen code is written until the named reviewers sign this file (`DESIGN.md` §5,
-`CLAUDE.md`). One screen per ticket, branch and PR.
+**Status:** approved 2026-10-21 (Krishna Chintakayala, all 18 recommended decisions). Package B screens
+M2ReportUpload and M2Trends built in `feat/m2-healthB`.
 **Boards:** canvas page 9 · Mobile 2.0 (folder `10-mobile-2`, approved by the founder 2026-10-21):
 M2Product, M2Vaccines, M2Insights, M2Trends, M2ReportUpload, M2AskAyush, M2Profile. Briefs
 `design/screens/briefs/M2*.md`, pictures `design/screens/screenshots/10-mobile-2/`, sources
@@ -590,3 +590,18 @@ accordion.
 ## Approval
 
 Krishna Chintakayala (founder, named Tier 1 reviewer) approved all 18 recommended decisions on 2026-10-21, including #9 (care links go to RefillRequest and the existing order's slot booking, not the store). Items the plan routes to the clinical lead or the AI-constitution owner still need their sign-off before those parts ship.
+
+## Decisions taken (approved by Krishna Chintakayala, 2026-10-21)
+
+Package B screens, built in `feat/m2-healthB` (M2ReportUpload, M2Trends; web phone frame and Expo).
+
+- D-M2-6: student-confirmed values only; no lab-entered (`LAB_RELEASED`) rows exist yet, so every value reads "Typed by you from your report". "From a StudentKare lab" opens a released report's own vault document on the Check step (nothing uploaded); the student still types the values.
+- D-M2-10: bookmark built on the server (`PUT /health/lab-results/pinned`); the button shows only the server's saved list (`aria-pressed`), and a refusal shows the server's message.
+- D-M2-11: steps from the newest APPROVED review of a report the test's values come from, verbatim, with `walk` / `bowl` / `flask` from `kind` (none for OTHER) and the doctor's often / when as chips. The header reads "from {name}" once the review payload carries `reviewedByName` (package A); until then "reviewed {date}". Hidden without steps.
+- D-M2-12: Add, Check, Saved. No Read step, no scanning line, no progress bar (no reader exists). Hero copy changed from the board's "We read the values. You check them." to "Add your report. Then type in its values." because nothing is read. Rows start unticked; only ticked rows are saved (server confirm, all or nothing). Uploading shows a plain status, no percentage (the upload reports no progress).
+- D-M2-17: amber / green from each row's own printed range (`rangeState`, computed by the server); range always shown next to the value; neutral without a range. No red on either screen.
+- D-M2-18 (D7-8): no direction words, no projection, no target on Trends. "Too few reports for a trend" [CL copy] below `trends.min_points_for_line`.
+- Chart: `chart-test-trend` in `src/design-system/charts/`, text alternative per test, the table as its equivalent; band only when every plotted value shares one range; other units and written results in the table only. The line draws in on the web only when motion is allowed; native draws it at rest.
+- Upload limits: the server's file-size limit is not exposed as a setting, so the screen names the accepted formats only and shows the server's own message when it refuses a file.
+- Expo: "Upload a PDF" is shown as not available on the device (no document picker is bundled); "Take a photo" uses the camera on the screen, as RecordCaptureScreen. Web takes both through the browser's file picker.
+- Pill nav: on every M2 board the current "My health" pill draws the plain heart (`heart-3`) and the idle icon the heart with a pulse (`heart`); PillNav now does the same (`currentIcon`).

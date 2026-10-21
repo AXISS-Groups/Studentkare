@@ -26,6 +26,8 @@ export const STUDENT_NAV: Readonly<Record<PillNavKey, StudentTabRoute>> = {
 
 /** Store boards opened from Home: the nav shows there with Home current (as on the boards). */
 const HOME_STORE_ROUTES: ReadonlySet<string> = new Set(['Medicines', 'Labs', 'Consults']);
+/** My health's own boards: Trends draws the nav with My health current (as on its board). */
+const MY_HEALTH_ROUTES: ReadonlySet<string> = new Set(['Trends']);
 
 export function isStudentTabRoute(route: string): route is StudentTabRoute {
   return (Object.values(STUDENT_NAV) as string[]).includes(route);
@@ -35,6 +37,7 @@ export function isStudentTabRoute(route: string): route is StudentTabRoute {
 export function studentNavKeyFor(route: string): PillNavKey | null {
   const key = (Object.keys(STUDENT_NAV) as PillNavKey[]).find((k) => STUDENT_NAV[k] === route);
   if (key) return key;
+  if (MY_HEALTH_ROUTES.has(route)) return 'health';
   return HOME_STORE_ROUTES.has(route) ? 'home' : null;
 }
 

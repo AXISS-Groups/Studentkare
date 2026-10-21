@@ -32,11 +32,14 @@ export const STUDENT_NAV_ROUTES: Readonly<Record<PillNavKey, RoutePath>> = {
 
 /** The store boards opened from Home's rail: the boards draw Home as current there. */
 const HOME_STORE_ROUTES: ReadonlySet<RoutePath> = new Set<RoutePath>(['shop', 'lab-tests', 'care']);
+/** My health's own boards (M2Trends, M2ReportUpload): the boards draw My health as current there. */
+const MY_HEALTH_ROUTES: ReadonlySet<RoutePath> = new Set<RoutePath>(['health/trends', 'health/report-upload']);
 
 /** The pill-nav destination a route belongs to (null: none is current). */
 export function studentNavFor(route: RoutePath): PillNavKey | null {
   const key = (Object.keys(STUDENT_NAV_ROUTES) as PillNavKey[]).find((k) => STUDENT_NAV_ROUTES[k] === route);
   if (key) return key;
+  if (MY_HEALTH_ROUTES.has(route)) return 'health';
   return HOME_STORE_ROUTES.has(route) ? 'home' : null;
 }
 

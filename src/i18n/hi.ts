@@ -20,6 +20,7 @@ import { payHi } from './areas/pay';
 import { labbookHi } from './areas/labbook';
 import { rewardsHi } from './areas/rewards';
 import { mobile2Hi } from './areas/mobile2';
+import { m2valuesHi } from './areas/m2values';
 import { wellnessHi } from './areas/wellness';
 import { consoleHi } from './areas/console';
 import { phoneboardsHi } from './areas/phoneboards';
@@ -842,6 +843,7 @@ export const hi: Catalog = {
   ...labbookHi,
   ...rewardsHi,
   ...mobile2Hi,
+  ...m2valuesHi,
   ...wellnessHi,
   ...consoleHi,
   ...phoneboardsHi,

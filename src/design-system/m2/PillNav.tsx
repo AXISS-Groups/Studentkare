@@ -28,6 +28,8 @@ export interface PillNavDestination {
   key: PillNavKey;
   label: MessageKey;
   icon: SkIconName;
+  /** The drawing in the white pill when this is the current destination, where the boards draw another (My health: plain heart). */
+  currentIcon?: SkIconName;
 }
 
 /** In the boards' order, with the icons from their briefs (`ayush-spark` in the orb). */
@@ -35,7 +37,7 @@ export const PILL_NAV: readonly PillNavDestination[] = [
   { key: 'home', label: 'm2.nav.home', icon: 'home' },
   { key: 'orders', label: 'm2.nav.orders', icon: 'box' },
   { key: 'ayush', label: 'm2.nav.ayush', icon: 'ayush-spark' },
-  { key: 'health', label: 'm2.nav.health', icon: 'heart' },
+  { key: 'health', label: 'm2.nav.health', icon: 'heart', currentIcon: 'heart-3' },
   { key: 'profile', label: 'm2.nav.profile', icon: 'user-5' },
 ];
 
@@ -110,7 +112,7 @@ export function PillNav({ current, onSelect, bottomInset = 0, testID = 'pill-nav
                 onPress={() => onSelect(item.key)}
                 style={({ focused }: PressState) => [styles.item, isCurrent ? styles.current : null, focused ? focusRing : null]}
               >
-                <Icon name={item.icon} size={isCurrent ? 19 : 22} strokeWidth={isCurrent ? 2.3 : 2} color={isCurrent ? color.onHeroCurrent : color.navText} />
+                <Icon name={isCurrent ? item.currentIcon ?? item.icon : item.icon} size={isCurrent ? 19 : 22} strokeWidth={isCurrent ? 2.3 : 2} color={isCurrent ? color.onHeroCurrent : color.navText} />
                 {isCurrent ? <Text numberOfLines={1} style={styles.currentLabel}>{label}</Text> : null}
               </Pressable>
             );
