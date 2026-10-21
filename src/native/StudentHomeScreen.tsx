@@ -13,6 +13,10 @@ import { M2ActiveProvider } from '@/design-system/m2';
 import { M2HomeView } from '@/features/m2store/views/M2HomeView';
 import { useM2HomeData } from '@/features/m2store/data/useM2Home';
 import type { DestinationRoute } from './homeDestinations';
+import { getSetting } from '@/data/services/config';
+
+/** Values the destination hints may name (the Delete account hint states the grace period). */
+const HINT_VARS = () => ({ graceDays: getSetting('privacy.deletion_grace_days') });
 
 /**
  * The signed-in hub of the native app. Before this, signing in landed on the
@@ -45,7 +49,7 @@ export function StudentHomeScreen(): React.ReactElement {
             {destinations.map((d) => (
               <Card key={d.route}>
                 <Text style={styles.cardTitle}>{t(d.label)}</Text>
-                <Text style={styles.hint}>{t(d.hint)}</Text>
+                <Text style={styles.hint}>{t(d.hint, HINT_VARS())}</Text>
                 <Button label={t('home.open', { label: t(d.label) })} variant="ghost" onPress={() => navigate(d.route)} />
               </Card>
             ))}
@@ -85,7 +89,7 @@ export function StudentHomeScreen(): React.ReactElement {
             <Rise key={d.route} index={i + 2}>
               <Card>
                 <Text style={styles.cardTitle}>{t(d.label)}</Text>
-                <Text style={styles.hint}>{t(d.hint)}</Text>
+                <Text style={styles.hint}>{t(d.hint, HINT_VARS())}</Text>
                 <Button label={t('home.open', { label: t(d.label) })} variant="ghost" onPress={() => navigate(d.route)} />
               </Card>
             </Rise>

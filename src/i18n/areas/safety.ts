@@ -134,7 +134,7 @@ export const safetyEn = {
   'sf.pass.failedBody': 'This is on our side, not yours. Try again.',
 
   // Delete account
-  'sf.del.intro': 'Before you go, here’s exactly what happens. You can cancel for 7 days.',
+  'sf.del.intro': 'Before you go, here’s exactly what happens. You can cancel for {graceDays} days.',
   'sf.del.exportTitle': 'First, download your records',
   'sf.del.exportMeta': 'Your records, readings and policies as one file',
   'sf.del.goneTitle': 'Deleted from Student Kare',
@@ -345,7 +345,7 @@ export const safetyTe: Record<keyof typeof safetyEn, string> = {
   'sf.pass.failedTitle': 'మీ పాస్ లోడ్ కాలేదు',
   'sf.pass.failedBody': 'ఇది మా వైపు సమస్య, మీది కాదు. మళ్లీ ప్రయత్నించండి.',
 
-  'sf.del.intro': 'వెళ్లే ముందు, సరిగ్గా ఏమవుతుందో ఇది. 7 రోజుల వరకు మీరు రద్దు చేయవచ్చు.',
+  'sf.del.intro': 'వెళ్లే ముందు, సరిగ్గా ఏమవుతుందో ఇది. {graceDays} రోజుల వరకు మీరు రద్దు చేయవచ్చు.',
   'sf.del.exportTitle': 'ముందుగా, మీ రికార్డులను డౌన్‌లోడ్ చేయండి',
   'sf.del.exportMeta': 'మీ రికార్డులు, రీడింగ్‌లు, పాలసీలు ఒకే ఫైల్‌గా',
   'sf.del.goneTitle': 'Student Kare నుండి తొలగించబడేవి',
@@ -552,7 +552,7 @@ export const safetyHi: Record<keyof typeof safetyEn, string> = {
   'sf.pass.failedTitle': 'आपका पास लोड नहीं हुआ',
   'sf.pass.failedBody': 'गड़बड़ी हमारी तरफ़ है, आपकी नहीं। फिर से कोशिश करें।',
 
-  'sf.del.intro': 'जाने से पहले, ठीक-ठीक क्या होगा यह जान लें। आप 7 दिन तक रद्द कर सकते हैं।',
+  'sf.del.intro': 'जाने से पहले, ठीक-ठीक क्या होगा यह जान लें। आप {graceDays} दिन तक रद्द कर सकते हैं।',
   'sf.del.exportTitle': 'पहले, अपने रिकॉर्ड डाउनलोड करें',
   'sf.del.exportMeta': 'आपके रिकॉर्ड, रीडिंग और पॉलिसी एक फ़ाइल में',
   'sf.del.goneTitle': 'Student Kare से हटाया जाएगा',

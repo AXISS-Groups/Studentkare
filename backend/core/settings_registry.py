@@ -297,6 +297,15 @@ declare("lab_results.pinned_max", INT, 8, area="lab_results", unit="tests", mini
 declare("trends.min_points_for_line", INT, 2, area="trends", unit="values", minimum=2, maximum=20, public=True,
         description="Fewest values of one test, in one unit, before Trends draws a line between them.")
 
+# --- privacy (DPDP erasure, services/erasure.py) ----------------------------
+# The window a student has to change their mind after asking to delete their
+# account. Public: the delete screens state the number of days and draw
+# "Day n of N". A request's due time is computed from this value when it is
+# read, so an edit applies to requests already waiting: lengthen it freely,
+# shorten it only with the DPDP owner's sign-off quoted in the override reason.
+declare("privacy.deletion_grace_days", INT, 7, area="privacy", unit="days", minimum=1, maximum=30, public=True,
+        description="Days between a student's account-deletion request and its erasure; they can cancel until then.")
+
 # --- platform --------------------------------------------------------------
 # A name zoneinfo does not know (in an override or a student's preference) is
 # never used: the student's day then falls back to this declared default.
