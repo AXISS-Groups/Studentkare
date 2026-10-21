@@ -33,6 +33,7 @@ export function M2InsightsRoute(): React.ReactElement {
       addVaccineCard: () => navigate('records'),
       appointments: () => navigate('appointments'),
       movement: () => navigate('movement'),
+      steps: () => navigate('health/steps'),
       devices: () => navigate('devices'),
       emergencyCard: () => navigate('emergency-card'),
       pass: () => navigate('pass'),

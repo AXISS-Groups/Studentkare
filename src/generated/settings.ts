@@ -89,14 +89,18 @@ export interface PublicSettings {
   "wellness.activity_energy_kcal_max": number;
   /** Most floors climbed one day's manual entry may record. (floors) */
   "wellness.activity_floors_max": number;
-  /** Most steps one day's manual entry may record. (steps) */
+  /** Most steps one day's total may record, typed in or synced from the phone. (steps) */
   "wellness.activity_steps_max": number;
+  /** How far back a day's totals read on the phone (Apple Health, Health Connect, the phone's motion sensor) may be synced. (days) */
+  "wellness.activity_sync_backdate_days": number;
   /** How far back a water entry or a body measurement may be dated. (days) */
   "wellness.entry_backdate_days": number;
   /** Highest height the weight & BMI form accepts and BMI is computed from. (cm) */
   "wellness.height_cm_max": number;
   /** Lowest height the weight & BMI form accepts and BMI is computed from. (cm) */
   "wellness.height_cm_min": number;
+  /** While the Steps screen is open, how often the app re-reads today's total from a connected source and syncs it. (seconds) */
+  "wellness.steps_live_sync_seconds": number;
   /** Largest amount one water entry may record. (ml) */
   "wellness.water_entry_ml_max": number;
   /** Smallest amount one water entry may record. (ml) */
@@ -188,9 +192,11 @@ export const publicSettingDefaults: Readonly<PublicSettings> = {
   "wellness.activity_energy_kcal_max": 10000.0,
   "wellness.activity_floors_max": 500,
   "wellness.activity_steps_max": 100000,
+  "wellness.activity_sync_backdate_days": 7,
   "wellness.entry_backdate_days": 7,
   "wellness.height_cm_max": 250.0,
   "wellness.height_cm_min": 100.0,
+  "wellness.steps_live_sync_seconds": 60,
   "wellness.water_entry_ml_max": 2000,
   "wellness.water_entry_ml_min": 10,
   "wellness.water_glass_ml": 250,
@@ -254,9 +260,11 @@ export const publicSettingSpecs: Readonly<Record<PublicSettingKey, PublicSetting
   "wellness.activity_energy_kcal_max": { type: "float", min: 100, max: 50000, allowed: [], unit: "kcal" },
   "wellness.activity_floors_max": { type: "int", min: 1, max: 5000, allowed: [], unit: "floors" },
   "wellness.activity_steps_max": { type: "int", min: 1000, max: 1000000, allowed: [], unit: "steps" },
+  "wellness.activity_sync_backdate_days": { type: "int", min: 0, max: 30, allowed: [], unit: "days" },
   "wellness.entry_backdate_days": { type: "int", min: 0, max: 366, allowed: [], unit: "days" },
   "wellness.height_cm_max": { type: "float", min: 150, max: 300, allowed: [], unit: "cm" },
   "wellness.height_cm_min": { type: "float", min: 30, max: 150, allowed: [], unit: "cm" },
+  "wellness.steps_live_sync_seconds": { type: "int", min: 15, max: 3600, allowed: [], unit: "seconds" },
   "wellness.water_entry_ml_max": { type: "int", min: 10, max: 5000, allowed: [], unit: "ml" },
   "wellness.water_entry_ml_min": { type: "int", min: 1, max: 1000, allowed: [], unit: "ml" },
   "wellness.water_glass_ml": { type: "int", min: 10, max: 2000, allowed: [], unit: "ml" },

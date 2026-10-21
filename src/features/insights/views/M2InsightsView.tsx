@@ -15,8 +15,7 @@ import { CardError, HeroStat, NavyHero, TileIcon } from '@/features/m2health/Hea
 import type { BodySystem, LabValue } from '@/features/labResults/data/LabResultsRepository';
 import { toneOf } from '@/features/labResults/viewmodel/labValueModels';
 import type { BodySystemRow, ValueTone } from '@/features/labResults/viewmodel/labValueModels';
-import { MedsTodayCard, WaterCard } from '@/features/reminders/views/TodayCards';
-import { useUndoClock } from '@/features/reminders/views/useUndoClock';
+import { StepsCard } from '@/features/steps/views/StepsCard';
 import { refillLine } from '../viewmodel/InsightsViewModel';
 import type { InsightsViewModel } from '../viewmodel/InsightsViewModel';
 
@@ -47,6 +46,8 @@ export interface M2InsightsLinks {
   addVaccineCard?: () => void;
   appointments?: () => void;
   movement?: () => void;
+  /** The Steps screen (the Steps card). */
+  steps?: () => void;
   devices?: () => void;
   emergencyCard?: () => void;
   pass?: () => void;
@@ -181,7 +182,11 @@ function CareCard({ icon, fill, ink, title, lines, empty, action, testID }: {
   );
 }
 
-export const M2InsightsView = observer(function M2InsightsView({ vm, name, links }: { vm: InsightsViewModel; name: string; links: M2InsightsLinks }) {
+export const M2InsightsView = observer(function M2InsightsView({ vm, name, links, stepsOnPhone = false }: {
+  vm: InsightsViewModel; name: string; links: M2InsightsLinks;
+  /** True in the phone app, which can count steps itself; the web says to open the phone app. */
+  stepsOnPhone?: boolean;
+}) {
   const t = useT();
   useOwnPhoneChrome();
   const online = useOnline();
@@ -347,6 +352,12 @@ export const M2InsightsView = observer(function M2InsightsView({ vm, name, links
           )}
         </View>
       </Rise>
+
+      {links.steps ? (
+        <Rise index={4} style={styles.gutter}>
+          <StepsCard week={vm.steps} onPhone={stepsOnPhone} onPress={links.steps} />
+        </Rise>
+      ) : null}
 
       {values.phase === 'ready' && values.bodySystems.length > 0 ? (
         <Rise index={4} style={styles.gutter}>

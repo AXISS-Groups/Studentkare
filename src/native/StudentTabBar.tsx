@@ -35,11 +35,12 @@ const HOME_STORE_ROUTES: ReadonlySet<string> = new Set([
   // keep-sorted end
 ]);
 
-/** My health's own screens (M2Trends, M2ReportUpload, M2Reminders, M2Water): the nav shows My health there. */
+/** My health's own screens (M2Trends, M2ReportUpload, M2Steps): the nav shows My health there. */
 const HEALTH_ROUTES: ReadonlySet<string> = new Set([
   // keep-sorted start
   'MedicineReminders',
   'ReportUpload',
+  'Steps',
   'Trends',
   'Water',
   // keep-sorted end

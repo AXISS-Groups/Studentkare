@@ -144,6 +144,7 @@
     "LoggedOut",
     "LostPhone",
     "M2ReportUpload",
+    "M2Steps",
     "M2Vaccines",
     "Medications",
     "MyPass",
@@ -265,6 +266,7 @@
     "CatalogOps",
     "DpdpQueue",
     "Integrations",
+    "M2Steps",
     "SuperAdminConsole",
     "WebAccount",
     "WebConsultSummary",
@@ -1126,6 +1128,7 @@
     "M2Medicines",
     "M2Product",
     "M2ReportUpload",
+    "M2Steps",
     "M2Trends",
     "M2Vaccines",
     "Medications",
@@ -3807,6 +3810,7 @@
    "uses": 19,
    "screens": [
     "ConfirmDialogs",
+    "M2Steps",
     "WebAccount",
     "WebConsultSummary",
     "WebDashboard",
@@ -3849,6 +3853,7 @@
    "uses": 19,
    "screens": [
     "ConfirmDialogs",
+    "M2Steps",
     "WebAccount",
     "WebConsultSummary",
     "WebDashboard",
@@ -5374,7 +5379,8 @@
     "CampusRoster",
     "CampusSettings",
     "ClinicianConsultRoom",
-    "ClinicianToday"
+    "ClinicianToday",
+    "M2Steps"
    ],
    "elements": [
     [
@@ -9482,9 +9488,10 @@
    "screens": [
     "M2Consults",
     "M2Home",
+    "M2Insights",
     "M2Medicines",
-    "OtpVerify",
-    "M2Insights"
+    "M2Steps",
+    "OtpVerify"
    ],
    "elements": [
     [
@@ -10929,6 +10936,8 @@
    "source": "kit",
    "uses": 1,
    "screens": [
+    "M2Insights",
+    "M2Steps",
     "M2Trends"
    ],
    "elements": [
@@ -20619,64 +20628,8 @@
     "skip-forward",
     "stetho",
     "thyroid",
-    "undo",
-    "user-5"
-   ],
-   "icons3d": [],
-   "glyphs": [],
-   "illustrations": [],
-   "charts": [],
-   "brand": [],
-   "assets": [],
-   "textGlyphs": []
-  },
-  "M2Reminders": {
-   "page": "9 \u00b7 Mobile 2.0 (approved 2026-10-21)",
-   "size": "390x1400",
-   "icons": [
-    "arrow-left",
-    "ayush-spark",
-    "bell",
-    "bell-off",
-    "box",
-    "check",
-    "chevron-right",
-    "doc-upload",
-    "glass",
-    "heart-3",
-    "home",
-    "pill-3",
-    "plus",
-    "shield-alert",
-    "skip-forward",
-    "undo",
-    "user-5"
-   ],
-   "icons3d": [],
-   "glyphs": [],
-   "illustrations": [],
-   "charts": [],
-   "brand": [],
-   "assets": [],
-   "textGlyphs": []
-  },
-  "M2Water": {
-   "page": "9 \u00b7 Mobile 2.0 (approved 2026-10-21)",
-   "size": "390x1400",
-   "icons": [
-    "arrow-left",
-    "ayush-spark",
-    "bell",
-    "bell-off",
-    "box",
-    "glass",
-    "heart-3",
-    "home",
-    "minus",
-    "plus",
-    "shield-alert",
-    "undo",
-    "user-5"
+    "user-5",
+    "walk"
    ],
    "icons3d": [],
    "glyphs": [],
@@ -20773,6 +20726,29 @@
    "illustrations": [],
    "charts": [
     "chart-profile-complete-ring"
+   ],
+   "brand": [],
+   "assets": [],
+   "textGlyphs": []
+  },
+  "M2Steps": {
+   "page": "9 \u00b7 Mobile 2.0 \u2014 new screen, no canvas board (ticket approved 2026-10-21)",
+   "size": "390x1500",
+   "icons": [
+    "arrow-left",
+    "check",
+    "devices",
+    "heart-plus",
+    "info",
+    "pencil",
+    "refresh",
+    "walk"
+   ],
+   "icons3d": [],
+   "glyphs": [],
+   "illustrations": [],
+   "charts": [
+    "chart-steps-week"
    ],
    "brand": [],
    "assets": [],

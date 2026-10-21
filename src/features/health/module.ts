@@ -135,9 +135,8 @@ const workspacePaths: { path: string; access?: (role: AccountRole | null) => boo
   // Mobile 2.0 My health (Tier 1): Trends and Add a lab report, on the student's own stored lab values.
   { path: '/health/trends', access: hasRole('STUDENT') },
   { path: '/health/report-upload', access: hasRole('STUDENT') },
-  // Mobile 2.0 Medicines today and Water (reminders ticket): the student's own doses and water log.
-  { path: '/health/medicines', access: hasRole('STUDENT') },
-  { path: '/health/water', access: hasRole('STUDENT') },
+  // Steps (Mobile 2.0, Tier 2): the student's own step totals; a browser counts none, typed entry only.
+  { path: '/health/steps', access: hasRole('STUDENT') },
   { path: '/vendor', access: hasRole('VENDOR') },
   { path: '/clinician', access: hasRole('NMC_DOCTOR') },
   { path: '/clinician/queue', access: hasRole('NMC_DOCTOR') },
