@@ -1,63 +1,87 @@
 import React, { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import { AdminEmpty, AdminEmptySection, AdminError, AdminLoading, AdminPage } from '@/screens/workspace/admin/AdminPage';
-import { auditRepository } from '../model/auditRepository';
-import { count, readable, when } from '../model/format';
-import { AuditExplorerViewModel } from '../viewmodels/AuditExplorerViewModel';
+import { ConsoleEmptyState, ConsolePageHeader } from '@/design-system';
 import { useT } from '@/i18n';
+import type { MessageKey } from '@/i18n';
+import { auditRepository } from '../model/auditRepository';
+import { count, readable } from '../model/format';
+import { AuditExplorerViewModel, isBreakGlass, isDenied } from '../viewmodels/AuditExplorerViewModel';
+import type { AuditTab } from '../viewmodels/AuditExplorerViewModel';
+import { BoardChips, boardEmpty } from './AdminBoard';
+import { BoardFailure, BoardLoading, GovCard, GovLines, GovPill, ago } from './GovBoard';
+import './gov-board.css';
 
+const TABS: readonly { id: AuditTab; label: MessageKey }[] = [
+  { id: 'all', label: 'gov.audit.tabAll' },
+  { id: 'break-glass', label: 'gov.audit.tabBreakGlass' },
+  { id: 'denied', label: 'gov.audit.tabDenied' },
+];
+/** Counters the board says should read zero. None is computed yet, so each reads "—". */
+const GUARDRAILS: readonly MessageKey[] = ['gov.audit.guardNoEntry', 'gov.audit.guardNoReason', 'gov.audit.guardPastWindow', 'gov.audit.guardSuppressed'];
+const shortId = (id: string) => `${id.slice(0, 4)}…${id.slice(-4)}`;
+
+/**
+ * Audit explorer (design: AuditExplorer, Tier 1), on GET /ops/audit: actor, action,
+ * resource and time, newest first, a page at a time. The tabs narrow the loaded page
+ * (the endpoint has no action filter). The board's rule and outcome columns have no
+ * source and are not shown; the short code under each row is the entry's id, not a
+ * hash. There is no hash chain or signing key behind the ledger, so chain integrity is
+ * reported as not verified (guardrail 6), and the guardrail counters read "—".
+ */
 export const AuditExplorerView = observer(function AuditExplorerView() {
   const t = useT();
   const [vm] = useState(() => new AuditExplorerViewModel(auditRepository));
   useEffect(() => { void vm.load(); return vm.dispose; }, [vm]);
-  const { page, items, total, filtered, selected, lastPage } = vm;
+  const { page, filtered, total, lastPage } = vm;
 
-  return <AdminPage eyebrow={t('admin.eyebrow.governance')} title={t('admin.audit.title')} description={t('admin.audit.description')}>
-    <div className="sk-admin-card sk-admin-filters" role="search" aria-label={t('admin.audit.filterLabel')}>
-      <label>{t('admin.audit.search')}<input type="search" value={vm.search} onChange={event => vm.setSearch(event.target.value)} placeholder={t('admin.audit.searchPlaceholder')} /></label>
-      <label>{t('admin.audit.from')}<input type="date" value={vm.from} onChange={event => vm.setFrom(event.target.value)} /></label>
-      <label>{t('admin.audit.to')}<input type="date" value={vm.to} onChange={event => vm.setTo(event.target.value)} /></label>
-      <label>{t('admin.audit.actor')}<select value={vm.actor} onChange={event => vm.setActor(event.target.value)}><option value="">{t('admin.audit.allActors')}</option>{vm.actors.map(value => <option key={value} value={value}>{value}</option>)}</select></label>
-      <label>{t('admin.audit.eventType')}<select value={vm.eventType} onChange={event => vm.setEventType(event.target.value)}><option value="">{t('admin.audit.allEvents')}</option>{vm.eventTypes.map(value => <option key={value} value={value}>{readable(value)}</option>)}</select></label>
-    </div>
-    <p className="sk-admin-note" aria-live="polite">{t('admin.audit.pageOnly', { count: count(items.length) })}{vm.filtering ? ` ${t('admin.audit.matches', { count: count(filtered.length) })}` : ''}</p>
+  if (vm.loading) return <BoardLoading label={t('admin.audit.loading')} />;
+  if (vm.error) return <BoardFailure t={t} what={t('gov.audit.what')} screen="AuditExplorer" onRetry={vm.reload} detail={vm.error} />;
+  if (total === 0) return <div className="sk-ds sk-ctp"><ConsoleEmptyState empty={boardEmpty(t, t('admin.audit.empty'), t('admin.audit.emptyBody'))} headingLevel={1} /></div>;
 
-    {vm.loading ? <div className="sk-admin-card"><AdminLoading label={t('admin.audit.loading')} /></div>
-      : vm.error ? <AdminError title={t('admin.audit.error')} message={vm.error} onRetry={vm.reload} />
-        : total === 0 ? <div className="sk-admin-card"><AdminEmpty title={t('admin.audit.empty')} description={t('admin.audit.emptyBody')} /></div>
-          : <div className="sk-admin-split">
-            <div className="sk-admin-card sk-admin-table-card">
-              <table className="sk-admin-table">
-                <caption className="sk-admin-visually-hidden">{t('admin.audit.caption')}</caption>
-                <thead><tr><th scope="col">{t('admin.audit.colTime')}</th><th scope="col">{t('admin.audit.colEvent')}</th><th scope="col">{t('admin.audit.actor')}</th><th scope="col">{t('admin.audit.colResource')}</th></tr></thead>
-                <tbody>{filtered.length ? filtered.map(item => <tr key={item.id} className={selected?.id === item.id ? 'is-selected' : undefined}>
-                  <td><time dateTime={new Date(item.createdAt * 1000).toISOString()}>{when(item.createdAt)}</time></td>
-                  <td><button type="button" className="sk-admin-row-button" aria-pressed={selected?.id === item.id} onClick={() => vm.select(item)}>{readable(item.action)}</button></td>
-                  <td className="sk-admin-mono">{item.actorId}</td>
-                  <td className="sk-admin-mono">{item.resourceId}</td>
-                </tr>) : <tr><td colSpan={4}><AdminEmpty title={t('admin.audit.noMatch')} description={t('admin.audit.noMatchBody')} /></td></tr>}</tbody>
-              </table>
-              <div className="sk-admin-pagination">
-                <button type="button" className="sk-admin-button" disabled={page === 0} onClick={() => vm.goTo(page - 1)}>{t('admin.audit.previous')}</button>
-                <span>{t('admin.audit.pageOf', { page: count(page + 1), pages: count(lastPage + 1), total: count(total) })}</span>
-                <button type="button" className="sk-admin-button" disabled={page >= lastPage} onClick={() => vm.goTo(page + 1)}>{t('admin.audit.next')}</button>
-              </div>
+  return <div className="sk-ds sk-admin-page sk-gov">
+    <div className="sk-gov-grid sk-gov-grid--main-side">
+      <div className="sk-gov-stack">
+        <ConsolePageHeader eyebrow={t('gov.audit.eyebrow')} title={t('admin.audit.title')} />
+        <div className="sk-gov-toolbar">
+          <BoardChips label={t('gov.audit.tabsLabel')} options={TABS.map(tab => ({ id: tab.id, label: t(tab.label) }))} value={vm.tab} onChange={vm.setTab} />
+          <label className="sk-gov-searchbox">
+            <span className="sk-board-visually-hidden">{t('admin.audit.search')}</span>
+            <input type="search" value={vm.search} onChange={event => vm.setSearch(event.target.value)} placeholder={t('admin.audit.searchPlaceholder')} />
+          </label>
+        </div>
+        <p className="sk-gov-fine" aria-live="polite">{t('admin.audit.pageOnly', { count: count(vm.items.length) })}</p>
+        {filtered.length ? <ol className="sk-gov-events" aria-label={t('admin.audit.caption')}>{filtered.map(item => {
+          const denied = isDenied(item.action);
+          const breakGlass = isBreakGlass(item.action);
+          return <li key={item.id} className="sk-gov-event sk-gov-event--wide">
+            <span className={`sk-gov-dot${denied ? ' sk-gov-dot--danger' : breakGlass ? ' sk-gov-dot--attention' : ''}`} aria-hidden="true" />
+            <div className="sk-gov-event__copy">
+              <strong><span className="sk-mono">{item.actorId || t('gov.audit.system')}</span>{' '}
+                {denied ? <GovPill tone="danger">{t('gov.audit.denied')}</GovPill> : breakGlass ? <GovPill tone="attention">{t('gov.audit.breakGlass')}</GovPill> : null}</strong>
+              <span>{readable(item.action)} · <span className="sk-mono">{item.resourceId}</span></span>
+              <span className="sk-mono" aria-label={t('gov.audit.entryId', { id: item.id })}>{shortId(item.id)}</span>
             </div>
-            <aside className="sk-admin-card sk-admin-detail" aria-label={t('admin.audit.detail')}>
-              <h3 className="sk-admin-eyebrow">{t('admin.audit.detail')}</h3>
-              {selected ? <dl>
-                <dt>{t('admin.audit.colEvent')}</dt><dd>{readable(selected.action)}</dd>
-                <dt>{t('admin.audit.colTime')}</dt><dd>{when(selected.createdAt)}</dd>
-                <dt>{t('admin.audit.actor')}</dt><dd className="sk-admin-mono">{selected.actorId}</dd>
-                <dt>{t('admin.audit.colResource')}</dt><dd className="sk-admin-mono">{selected.resourceId}</dd>
-                <dt>{t('admin.audit.eventId')}</dt><dd className="sk-admin-mono">{selected.id}</dd>
-              </dl> : <AdminEmpty title={t('admin.audit.noneSelected')} description={t('admin.audit.noneSelectedBody')} />}
-            </aside>
-          </div>}
-    <div className="sk-admin-sections">
-      <AdminEmptySection title={t('admin.audit.chain')} description={t('admin.audit.chainBody')} emptyTitle={t('admin.notReported')} emptyDescription={t('admin.audit.chainEmptyBody')} />
-      <AdminEmptySection title={t('admin.audit.key')} description={t('admin.audit.keyBody')} emptyTitle={t('admin.notReported')} emptyDescription={t('admin.audit.keyEmptyBody')} />
-      <AdminEmptySection title={t('admin.audit.guardrails')} description={t('admin.audit.guardrailsBody')} emptyTitle={t('admin.notReported')} emptyDescription={t('admin.audit.guardrailsEmptyBody')} />
+            <time className="sk-gov-event__when" dateTime={new Date(item.createdAt * 1000).toISOString()}>{ago(t, item.createdAt)}</time>
+          </li>;
+        })}</ol> : <div className="sk-gov-empty"><strong>{t('admin.audit.noMatch')}</strong><p className="sk-gov-fine">{t('admin.audit.noMatchBody')}</p></div>}
+        <nav className="sk-ctp-pages" aria-label={t('console.pagination.label')}>
+          <span className="sk-ctp-pages__summary">{t('admin.audit.pageOf', { page: count(page + 1), pages: count(lastPage + 1), total: count(total) })}</span>
+          <span className="sk-ctp-pages__buttons">
+            <button type="button" className="sk-ctp-pages__button" disabled={page === 0} onClick={() => vm.goTo(page - 1)}>{t('admin.audit.previous')}</button>
+            <button type="button" className="sk-ctp-pages__button" disabled={page >= lastPage} onClick={() => vm.goTo(page + 1)}>{t('admin.audit.next')}</button>
+          </span>
+        </nav>
+      </div>
+      <div className="sk-gov-stack">
+        <GovCard eyebrow={t('admin.audit.chain')}>
+          <p className="sk-gov-big"><strong className="sk-gov-muted">{t('gov.audit.notVerified')}</strong></p>
+          <p className="sk-gov-text">{t('gov.audit.chainBody')}</p>
+        </GovCard>
+        <GovCard eyebrow={t('gov.audit.guardrails')}>
+          <GovLines label={t('gov.audit.guardrails')} lines={GUARDRAILS.map(key => ({ label: t(key), value: null }))} />
+          <p className="sk-gov-fine">{t('admin.audit.guardrailsEmptyBody')}</p>
+        </GovCard>
+      </div>
     </div>
-  </AdminPage>;
+  </div>;
 });
