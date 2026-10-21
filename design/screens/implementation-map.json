@@ -598,7 +598,13 @@
       "src/features/campus/boards/CampusAdminTeamScreen.tsx",
       "src/features/campus/boards/boardKit.tsx"
     ],
-    "CampusIsolation": [],
+    "CampusIsolation": [
+      "src/design-system/campus-shell/CampusShell.tsx",
+      "src/design-system/campus-shell/campusNav.ts",
+      "src/features/campus/console/campusPages.tsx",
+      "src/features/campus/safety/safetyBoards.tsx",
+      "src/features/campus/safety/safetyKit.tsx"
+    ],
     "CampusOutbreak": [
       "src/design-system/campus-shell/CampusShell.tsx",
       "src/design-system/campus-shell/campusNav.ts",
@@ -623,15 +629,33 @@
       "src/features/campus/console/campusPages.tsx",
       "src/features/campus/boards/radarBoards.tsx"
     ],
-    "CampusAmbulance": [],
-    "CampusSla": [],
+    "CampusAmbulance": [
+      "src/design-system/campus-shell/CampusShell.tsx",
+      "src/design-system/campus-shell/campusNav.ts",
+      "src/features/campus/console/campusPages.tsx",
+      "src/features/campus/safety/safetyBoards.tsx",
+      "src/features/campus/safety/safetyKit.tsx"
+    ],
+    "CampusSla": [
+      "src/design-system/campus-shell/CampusShell.tsx",
+      "src/design-system/campus-shell/campusNav.ts",
+      "src/features/campus/console/campusPages.tsx",
+      "src/features/campus/safety/safetyBoards.tsx",
+      "src/features/campus/safety/safetyKit.tsx"
+    ],
     "CampusBlocks": [
       "src/design-system/campus-shell/CampusShell.tsx",
       "src/design-system/campus-shell/campusNav.ts",
       "src/features/campus/console/campusPages.tsx",
       "src/features/campus/boards/radarBoards.tsx"
     ],
-    "CampusDischarge": [],
+    "CampusDischarge": [
+      "src/design-system/campus-shell/CampusShell.tsx",
+      "src/design-system/campus-shell/campusNav.ts",
+      "src/features/campus/console/campusPages.tsx",
+      "src/features/campus/safety/safetyBoards.tsx",
+      "src/features/campus/safety/safetyKit.tsx"
+    ],
     "CampusWellness": [
       "src/design-system/campus-shell/CampusShell.tsx",
       "src/design-system/campus-shell/campusNav.ts",
@@ -1181,18 +1205,6 @@
     "CampusCounsellor": [
       "src/screens/workspace/WorkspaceScreen.tsx",
       "src/screens/institution/CounsellorQueueScreen.tsx"
-    ],
-    "CampusIsolation": [
-      "src/screens/institution/InstitutionWorkspaceHub.tsx",
-      "src/screens/institution/OutbreakIsolationDeskScreen.tsx",
-      "src/design-system/campus-shell/CampusShell.tsx",
-      "src/design-system/campus-shell/campusNav.ts"
-    ],
-    "CampusAmbulance": [
-      "src/screens/institution/InstitutionWorkspaceHub.tsx",
-      "src/screens/institution/AmbulanceDispatchTrackerScreen.tsx",
-      "src/design-system/campus-shell/CampusShell.tsx",
-      "src/design-system/campus-shell/campusNav.ts"
     ],
     "ClinicalReview": [
       "src/design-system/clinician-shell/ClinicianShell.tsx",
