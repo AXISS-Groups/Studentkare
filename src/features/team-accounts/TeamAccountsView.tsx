@@ -78,7 +78,7 @@ export const TeamAccountsView = observer(function TeamAccountsView({ repository 
                   <span className="sk-team-accounts__id">{account.identifier}</span>
                 </td>
                 <td>{roleLabel(account, t)}</td>
-                <td>{account.scope || t('team.scope.platform')}</td>
+                <td>{account.scope || t(account.role === 'SUPER_ADMIN' ? 'team.scope.platform' : 'team.scope.own')}</td>
                 <td><StateTag account={account} /></td>
                 <td>{account.lastSignInAt ? when(account.lastSignInAt) : t('team.lastSignIn.never')}</td>
                 <td><div className="sk-team-accounts__actions">
@@ -113,7 +113,7 @@ export const TeamAccountsView = observer(function TeamAccountsView({ repository 
           <span className="sk-team-accounts__pin-label" id="sk-team-new-pin-label">{t('team.rotate.pinLabel')}</span>
           <output className="sk-team-accounts__pin" aria-labelledby="sk-team-new-pin-label">{vm.shownPin.pin}</output>
           <p>{t('team.rotate.doneBody')}</p>
-          <button type="button" className="sk-admin-button" onClick={() => copy(vm.shownPin?.pin ?? '')}>
+          <button type="button" className="sk-team-accounts__copy" onClick={() => copy(vm.shownPin?.pin ?? '')}>
             <Icon name="copy" size={16} />{copied ? t('team.rotate.copied') : t('team.rotate.copy')}
           </button>
         </div>,

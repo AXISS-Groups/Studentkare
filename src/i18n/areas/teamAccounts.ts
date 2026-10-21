@@ -42,6 +42,7 @@ export const teamAccountsEn = {
   'team.col.actions': 'Actions',
 
   'team.scope.platform': 'Whole platform',
+  'team.scope.own': 'Only what is assigned to it',
   'team.state.active': 'Active',
   'team.state.locked': 'Locked',
   'team.state.disabled': 'Disabled',
@@ -121,6 +122,7 @@ export const teamAccountsTe: Record<keyof typeof teamAccountsEn, string> = {
   'team.col.actions': 'చర్యలు',
 
   'team.scope.platform': 'మొత్తం ప్లాట్‌ఫామ్',
+  'team.scope.own': 'దానికి కేటాయించినవి మాత్రమే',
   'team.state.active': 'యాక్టివ్',
   'team.state.locked': 'లాక్ అయింది',
   'team.state.disabled': 'నిలిపివేయబడింది',
@@ -200,6 +202,7 @@ export const teamAccountsHi: Record<keyof typeof teamAccountsEn, string> = {
   'team.col.actions': 'कार्रवाई',
 
   'team.scope.platform': 'पूरा प्लेटफ़ॉर्म',
+  'team.scope.own': 'केवल उसे सौंपा गया काम',
   'team.state.active': 'सक्रिय',
   'team.state.locked': 'लॉक',
   'team.state.disabled': 'बंद',
