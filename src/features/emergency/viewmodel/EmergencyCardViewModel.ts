@@ -20,7 +20,23 @@ export interface EmergencyCardDraft {
   contactRelation: string;
 }
 
-const splitList = (text: string): string[] => text.split(',').map((s) => s.trim()).filter(Boolean);
+/** Who the card belongs to: the identity strip at the top of the phone card. */
+export interface EmergencyCardOwner {
+  name: string;
+  campus: string;
+  /** Hostel block and room, '' until set on the profile. */
+  hostel: string;
+}
+
+function ownerFrom(profile: MemberProfile): EmergencyCardOwner {
+  return {
+    name: profile.fullName,
+    campus: profile.university,
+    hostel: [profile.hostelBlock ?? '', profile.room ?? ''].filter(Boolean).join(' · '),
+  };
+}
+
+export const splitList = (text: string): string[] => text.split(',').map((s) => s.trim()).filter(Boolean);
 const isBloodGroup = (value: string): value is BloodGroup => (BLOOD_GROUPS as readonly string[]).includes(value);
 
 function draftFrom(profile: MemberProfile): EmergencyCardDraft {
@@ -48,6 +64,7 @@ function draftFrom(profile: MemberProfile): EmergencyCardDraft {
  */
 export class EmergencyCardViewModel implements ViewModel {
   saved: EmergencyCardDraft | null = null;
+  owner: EmergencyCardOwner | null = null;
   draft: EmergencyCardDraft | null = null;
   loadFailed = false;
   saving = false;
@@ -92,7 +109,7 @@ export class EmergencyCardViewModel implements ViewModel {
     try {
       const profile = await this.request<MemberProfile>('/profile');
       if (this.disposed) return;
-      runInAction(() => { this.saved = draftFrom(profile); this.draft = draftFrom(profile); });
+      runInAction(() => { this.saved = draftFrom(profile); this.draft = draftFrom(profile); this.owner = ownerFrom(profile); });
     } catch {
       if (!this.disposed) runInAction(() => { this.loadFailed = true; });
     }
@@ -130,6 +147,7 @@ export class EmergencyCardViewModel implements ViewModel {
       runInAction(() => {
         this.saved = draftFrom(profile);
         this.draft = draftFrom(profile);
+        this.owner = ownerFrom(profile);
         this.saving = false;
         this.notice = 'ice.saved';
       });
@@ -145,6 +163,7 @@ export class EmergencyCardViewModel implements ViewModel {
 
   reset(): void {
     this.saved = null;
+    this.owner = null;
     this.draft = null;
     this.loadFailed = false;
     this.error = null;
