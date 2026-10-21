@@ -150,12 +150,18 @@ function MedicineRemindersRoute() {
 
 function EmergencyRoute() {
   const navigate = useNavigate();
+  const navigation = useNavigation();
   const { status } = useNativeSession();
   const signedIn = status === 'signedIn';
+  // The board draws its own header (SosBeacon / SosDebrief); crisis support has no Expo screen yet.
   return (
-    <SafeAreaView edges={['left', 'right', 'bottom']} style={{ flex: 1 }}>
-      <EmergencySosNativeView signedIn={signedIn} links={{ signIn: signedIn ? undefined : () => navigate('SignIn') }} />
-    </SafeAreaView>
+    <BoardFrame>
+      <EmergencySosNativeView signedIn={signedIn} links={{
+        signIn: signedIn ? undefined : () => navigate('SignIn'),
+        home: signedIn ? () => navigate('Home') : undefined,
+        back: () => navigation.goBack(),
+      }} />
+    </BoardFrame>
   );
 }
 
@@ -340,7 +346,8 @@ function RefillRequestScreen() {
 }
 
 function DeleteAccountScreen() {
-  return <DeleteAccountRoute links={{}} />;
+  const navigation = useNavigation();
+  return <BoardFrame><DeleteAccountRoute links={{ back: () => navigation.goBack() }} /></BoardFrame>;
 }
 
 function LeaveCampusScreen() {
@@ -405,7 +412,7 @@ function RootNavigator() {
           <Stack.Screen name="NotificationSettings" component={NotificationSettingsScreen} options={{ title: t('onboard.nav.notificationSettings'), headerShown: false }} />
           <Stack.Screen name="Appearance" component={AppearanceRoute} options={{ title: t('appearance.title') }} />
           <Stack.Screen name="LeaveCampus" component={LeaveCampusScreen} options={{ title: t('onboard.nav.leaveCampus'), headerShown: false }} />
-          <Stack.Screen name="DeleteAccount" component={DeleteAccountScreen} options={{ title: t('onboard.nav.deleteAccount') }} />
+          <Stack.Screen name="DeleteAccount" component={DeleteAccountScreen} options={{ title: t('onboard.nav.deleteAccount'), headerShown: false }} />
           <Stack.Screen name="Rewards" component={RewardsRoute} options={{ title: t('nav.rewards') }} />
           <Stack.Screen name="MyRequests" component={MyRequestsScreen} options={{ title: t('nav.myRequests'), headerShown: false }} />
           <Stack.Screen name="ReturnRequest" component={ReturnRequestBoardScreen} options={{ title: t('onboard.nav.returnRequest') }} />
@@ -436,7 +443,7 @@ function RootNavigator() {
 
       {/* Either way: help, the shop and public care information. */}
       <Stack.Group>
-        <Stack.Screen name="Emergency" component={EmergencyRoute} options={{ title: t('home.sos') }} />
+        <Stack.Screen name="Emergency" component={EmergencyRoute} options={{ title: t('home.sos'), headerShown: false }} />
         <Stack.Screen name="LostPhone" component={LostPhoneScreen} options={{ title: t('onboard.nav.lostPhone') }} />
         <Stack.Screen name="Marketplace" component={MarketplaceRoute} options={{ title: t('onboard.nav.marketplace') }} />
         <Stack.Screen name="PreventiveCare" component={PreventiveCareScreen} options={{ title: t('onboard.nav.vaccines') }} />
