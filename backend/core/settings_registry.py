@@ -325,6 +325,14 @@ declare("platform.default_timezone", STR, "Asia/Kolkata", area="platform", unit=
 # identifier per 5 minutes, services/workflow_auth.py) still refuses extra sends.
 declare("auth.otp_resend_seconds", INT, 45, area="auth", unit="seconds", minimum=10, maximum=300, public=True,
         description="How long the code screen waits before offering to send a new sign-in code.")
+# WhatsApp is offered for sign-in codes only while its OpenWA session is connected
+# (services/otp_delivery.py). The session check and a failed send are remembered
+# for this long, so /auth/options stays cheap and a failing channel drops out
+# until a later success or a fresh check. Not public: the server decides.
+declare("auth.whatsapp_status_cache_seconds", INT, 60, area="auth", unit="seconds", minimum=5, maximum=900,
+        description="How long a WhatsApp session check (or a failed WhatsApp send) is trusted before checking again.")
+declare("auth.whatsapp_status_timeout_seconds", INT, 3, area="auth", unit="seconds", minimum=1, maximum=10,
+        description="Longest the server waits for OpenWA to answer the WhatsApp session check.")
 
 # --- consultations ---------------------------------------------------------
 declare("consult.media_join_before_minutes", INT, 15, area="consult", unit="minutes", minimum=0, maximum=120,

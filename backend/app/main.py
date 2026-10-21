@@ -76,7 +76,7 @@ from services.lab_booking import router as lab_booking_router
 from services.lab_results import router as lab_results_router
 from services.medicine_master import router as medicine_master_router
 from services.member_profile_api import router as member_profile_router
-from services.otp_delivery import available_channels
+from services.otp_delivery import available_channels, whatsapp_status
 from services.preventive_care import router as preventive_router
 from services.rewards_api import router as rewards_router
 from services.rx_uploads import router as rx_uploads_router
@@ -297,7 +297,9 @@ async def unhandled_error(request, exc):
 def health(db=Depends(workflow_db)):
     db.execute(text("SELECT 1"))
     return {"status": "healthy", "persistent": is_persistent(), "integrations": {
-        "otpChannels": available_channels(), "payments": False, "insurer": False,
+        # "not_connected": OpenWA is configured but its WhatsApp session can't deliver (ops must re-link it).
+        "otpChannels": available_channels(db), "whatsapp": whatsapp_status(db)["state"],
+        "payments": False, "insurer": False,
         "deviceSync": False, "prescriptionReview": False,
     }}
 

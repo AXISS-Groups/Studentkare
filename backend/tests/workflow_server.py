@@ -33,8 +33,8 @@ def test_delivery(identifier, code, channel):
 
 
 workflow_auth.deliver_code = test_delivery
-workflow_auth.available_channels = lambda: ["EMAIL"]
-main.available_channels = lambda: ["EMAIL"]
+workflow_auth.available_channels = lambda db=None: ["EMAIL"]
+main.available_channels = lambda db=None: ["EMAIL"]
 create_all_tables()
 with SessionLocal() as db:
     for identifier, role, name in [

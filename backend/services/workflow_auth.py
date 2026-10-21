@@ -305,7 +305,7 @@ def deliver_code(identifier: str, code: str, channel: str) -> bool:
     # The identifier is a phone number or email: never written to logs (guardrail 9).
     print(f"[OTP] dispatch failed via {channel}: {reason}", flush=True)
     if dev_console_delivery_enabled():
-        print(f"[DEV OTP] verification code for {identifier} via {channel}: {code}", flush=True)
+        print(f"[DEV OTP] verification code for {mask_identifier(identifier, channel)} via {channel}: {code}", flush=True)
         return True
     return False
 
@@ -409,8 +409,20 @@ def signup_consent_terms():
 
 
 @router.get("/options")
-def auth_options():
-    return {"channels": available_channels()}
+def auth_options(db: DBSession = Depends(workflow_db)):
+    """The channels a code can be sent on right now. WhatsApp only while its session is connected."""
+    return {"channels": available_channels(db)}
+
+
+CHANNEL_UNAVAILABLE = "CHANNEL_UNAVAILABLE"
+CHANNEL_UNAVAILABLE_MESSAGE = "We couldn't send your code that way just now. Try another way, or try again in a few minutes."
+
+
+def channel_unavailable(channel: str, db: DBSession) -> HTTPException:
+    """503 the screens can act on: which channel failed and what still works (never the identifier)."""
+    remaining = [c for c in available_channels(db) if c != channel]
+    return HTTPException(503, {"code": CHANNEL_UNAVAILABLE, "channel": channel, "channels": remaining,
+                               "message": CHANNEL_UNAVAILABLE_MESSAGE})
 
 
 STAFF_NOT_FOUND = "No staff account uses this email. Staff accounts are created by an administrator."
@@ -469,7 +481,7 @@ def send_otp(body: OtpSend, request: Request, response: Response, db: DBSession 
                 fallback_sent, fallback_channel = True, "EMAIL"
                 fallback_masked = mask_email(fallback)
     if not delivered:
-        raise HTTPException(503, "Verification delivery is unavailable. Please contact the administrator or try another configured channel.")
+        raise channel_unavailable(body.channel, db)
     old = request.cookies.get(CHALLENGE_COOKIE)
     if old:
         db.execute(delete(M.OtpChallenge).where(M.OtpChallenge.token_hash == digest(old)))
