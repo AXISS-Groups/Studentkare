@@ -11,7 +11,7 @@
 
 ## Icons this screen must show (all of them)
 
-- **Line / solid icons (38):** `arrow-right`, `ayush-spark`, `bottle`, `box`, `calendar-2`, `card-lines`, `cart`, `chevron-down`, `doc`, `doc-upload`, `droplet`, `eye`, `first-aid-kit`, `heart`, `heart-3`, `home`, `home-2`, `lab`, `map-pin-2`, `med-bottle`, `mic`, `moon-2`, `phone`, `pill-3`, `pill-alt`, `plus`, `plus-slash`, `qr-code-2`, `refresh`, `search`, `shield`, `shield-alert`, `star`, `stetho`, `syringe`, `thermo`, `trend-arrow`, `user-5`
+- **Line / solid icons (37):** `arrow-right`, `ayush-spark`, `bottle`, `box`, `calendar-2`, `card-lines`, `cart`, `chevron-down`, `doc`, `doc-upload`, `droplet`, `eye`, `first-aid-kit`, `heart-3`, `home`, `home-2`, `lab`, `map-pin-2`, `med-bottle`, `mic`, `moon-2`, `phone`, `pill-3`, `pill-alt`, `plus`, `plus-slash`, `qr-code-2`, `refresh`, `search`, `shield`, `shield-alert`, `star`, `stetho`, `syringe`, `thermo`, `trend-arrow`, `user-5`
 - **3D icon tiles (0):** —
 - **Small glyphs (0):** —
 - **Brand mark:** —

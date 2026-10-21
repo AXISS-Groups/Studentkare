@@ -31,7 +31,7 @@ export const STUDENT_NAV_ROUTES: Readonly<Record<PillNavKey, RoutePath>> = {
 };
 
 /** The store boards opened from Home's rail: the boards draw Home as current there. */
-const HOME_STORE_ROUTES: ReadonlySet<RoutePath> = new Set<RoutePath>(['shop', 'lab-tests', 'care']);
+const HOME_STORE_ROUTES: ReadonlySet<RoutePath> = new Set<RoutePath>(['shop', 'lab-tests', 'care', 'insurance']);
 
 /** The pill-nav destination a route belongs to (null: none is current). */
 export function studentNavFor(route: RoutePath): PillNavKey | null {

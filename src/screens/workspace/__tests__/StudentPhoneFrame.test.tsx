@@ -42,7 +42,7 @@ afterEach(() => { window.matchMedia = original; });
 describe('student pill nav (Mobile 2.0, approved 2026-10-21)', () => {
   it('has the boards’ destinations, order and brief icon names, all in the manifest', () => {
     expect(PILL_NAV.map(item => item.key)).toEqual(['home', 'orders', 'ayush', 'health', 'profile']);
-    expect(PILL_NAV.map(item => item.icon)).toEqual(['home', 'box', 'ayush-spark', 'heart', 'user-5']);
+    expect(PILL_NAV.map(item => item.icon)).toEqual(['home', 'box', 'ayush-spark', 'heart-3', 'user-5']);
     const names = new Set((manifest as { icons: { name: string }[] }).icons.map(icon => icon.name));
     for (const item of PILL_NAV) expect(names.has(item.icon)).toBe(true);
   });

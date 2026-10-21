@@ -35,7 +35,7 @@ export const PILL_NAV: readonly PillNavDestination[] = [
   { key: 'home', label: 'm2.nav.home', icon: 'home' },
   { key: 'orders', label: 'm2.nav.orders', icon: 'box' },
   { key: 'ayush', label: 'm2.nav.ayush', icon: 'ayush-spark' },
-  { key: 'health', label: 'm2.nav.health', icon: 'heart' },
+  { key: 'health', label: 'm2.nav.health', icon: 'heart-3' },
   { key: 'profile', label: 'm2.nav.profile', icon: 'user-5' },
 ];
 

@@ -25,7 +25,7 @@ export const STUDENT_NAV: Readonly<Record<PillNavKey, StudentTabRoute>> = {
 };
 
 /** Store boards opened from Home: the nav shows there with Home current (as on the boards). */
-const HOME_STORE_ROUTES: ReadonlySet<string> = new Set(['Medicines', 'Labs', 'Consults']);
+const HOME_STORE_ROUTES: ReadonlySet<string> = new Set(['Medicines', 'Labs', 'Consults', 'Insurance']);
 
 export function isStudentTabRoute(route: string): route is StudentTabRoute {
   return (Object.values(STUDENT_NAV) as string[]).includes(route);

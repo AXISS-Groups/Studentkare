@@ -104,7 +104,7 @@ function StudentM2Home({ name, campus, verified, footer }: { name: string; campu
   const navigate = useNavigate();
   const focused = useIsFocused();
   const data = useM2HomeData();
-  const go = (route: DestinationRoute | 'Emergency' | 'Checkout' | 'Medicines' | 'Labs' | 'Consults' | 'PreventiveCare' | 'More' | 'HostelVisit' | 'Camp') => () => navigate(route);
+  const go = (route: DestinationRoute | 'Emergency' | 'Checkout' | 'Medicines' | 'Labs' | 'Consults' | 'Insurance' | 'PreventiveCare' | 'More' | 'HostelVisit' | 'Camp') => () => navigate(route);
   return (
     <SafeAreaView edges={['top', 'left', 'right']} style={styles.screen}>
     <M2ActiveProvider value={focused}>
@@ -123,8 +123,7 @@ function StudentM2Home({ name, campus, verified, footer }: { name: string; campu
           search: go('Search'),
           uploadRx: go('Vault'),
           place: go('More'),
-          // No insurance screen in the app yet: that tile is left off the rail.
-          services: { medicines: go('Medicines'), labs: go('Labs'), consults: go('Consults'), vaccines: go('PreventiveCare'), campus: go('DigitalId') },
+          services: { medicines: go('Medicines'), labs: go('Labs'), consults: go('Consults'), vaccines: go('PreventiveCare'), insurance: go('Insurance'), campus: go('DigitalId') },
           labs: go('Labs'),
           generics: go('Medicines'),
           uploadReport: go('Vault'),

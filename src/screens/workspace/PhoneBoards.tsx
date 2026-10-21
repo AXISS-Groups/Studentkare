@@ -14,7 +14,7 @@ import { DataExportBoard } from '@/features/account/views/DataExportBoard';
 import type { RecordsExport } from '@/features/account/views/DataExportBoard';
 import { DigitalIdRoute } from '@/features/digital_id/views/DigitalIdNativeView';
 import { ScreenLoading } from '@/components/health/ScreenLoading';
-import { ClaimsHubBoard } from '@/features/claims/views/ClaimsHubBoard';
+import { M2InsuranceRoute } from '@/features/m2store/views/M2InsuranceRoute';
 import { HelpCentreBoard } from '@/features/support/views/HelpCentreBoard';
 import { PreventiveCareBoard } from '@/features/preventive/views/PreventiveCareBoard';
 import { MovementBoard } from '@/features/movement/views/MovementBoard';
@@ -96,11 +96,12 @@ function DigitalIdPage(): React.ReactElement {
   );
 }
 
-function ClaimsHubPage(): React.ReactElement {
-  const [open, openForm] = usePanel();
+/** Mobile 2.0 Insurance (M2Insurance, replaces ClaimsHub); "Manage" opens the full insurance page under it. */
+function InsurancePage(): React.ReactElement {
+  const [open, openPanel] = usePanel();
   return (
     <>
-      <ClaimsHubBoard links={{ newClaim: openForm }} />
+      <M2InsuranceRoute manage={openPanel} />
       {open ? <WebPanel tab="insurance" /> : null}
     </>
   );
@@ -219,7 +220,7 @@ export function phoneBoardFor(route: RoutePath): React.ReactElement | null {
     case 'account': return <AccountDetailsPage />;
     case 'data-export': return <DataExportPage />;
     case 'digital-id': return <DigitalIdPage />;
-    case 'insurance': return <ClaimsHubPage />;
+    case 'insurance': return <InsurancePage />;
     case 'support': return <HelpCentrePage />;
     case 'preventive-care': return <PreventiveCarePage />;
     case 'movement': return <MovementPage />;
