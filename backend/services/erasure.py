@@ -9,8 +9,9 @@ including the number of days — a deletion that silently kept a full copy would
 be a false statement to them.
 
 Flow:
-1. POST /records/deletion-request: scheduled for 7 days later; cancellable.
-2. The `account_erasure` job processes requests whose 7 days have passed:
+1. POST /records/deletion-request: scheduled for the grace period later
+   (settings registry ``privacy.deletion_grace_days``, default 7); cancellable.
+2. The `account_erasure` job processes requests whose grace period has passed:
    every row reachable from the account through foreign keys (50+ columns
    across the schema, discovered from the metadata so a new table cannot be
    missed), plus notifications and sign-in challenges keyed by the account's
@@ -39,12 +40,23 @@ from sqlalchemy import Table, delete, func, select
 from sqlalchemy.orm import Session
 
 from core import workflow_models as M
+from core.settings_registry import setting
 from services import ops_feed
 from services.workflow_auth import StrictModel, authenticated_user, require_super_admin, workflow_db
 
 router = APIRouter(prefix="/api", tags=["Erasure"])
 
-GRACE_SECONDS = 7 * 86400
+DAY_SECONDS = 86400
+GRACE_SETTING = "privacy.deletion_grace_days"
+
+
+def grace_days(db: Session | None = None) -> int:
+    """The deletion grace period in days, from the settings registry."""
+    return setting(GRACE_SETTING, db)
+
+
+def grace_seconds(db: Session | None = None) -> int:
+    return grace_days(db) * DAY_SECONDS
 MAX_RETENTION_DAYS = 3650
 
 
@@ -171,7 +183,7 @@ def _alert_blocked(db: Session, at: float, blocker: str) -> None:
     request is due, and a new event is raised only after the last is acknowledged.
     """
     waiting = db.scalar(select(func.count()).select_from(M.DeletionRequest).where(
-        M.DeletionRequest.status == "PENDING", M.DeletionRequest.requested_at <= at - GRACE_SECONDS)) or 0
+        M.DeletionRequest.status == "PENDING", M.DeletionRequest.requested_at <= at - grace_seconds(db))) or 0
     if not waiting:
         return
     open_alert = db.scalar(select(M.OpsEvent.id).where(M.OpsEvent.kind == ERASURE_BLOCKED_ALERT_KIND,
@@ -196,7 +208,7 @@ def process_due_erasures(db: Session, *, now: float | None = None, limit: int = 
         _alert_blocked(db, at, blocker)
         return {"summary": {"erased": 0, "archivesDestroyed": destroyed, "blocked": blocker}}
     due = db.scalars(select(M.DeletionRequest).where(M.DeletionRequest.status == "PENDING",
-                                                     M.DeletionRequest.requested_at <= at - GRACE_SECONDS).limit(limit)).all()
+                                                     M.DeletionRequest.requested_at <= at - grace_seconds(db)).limit(limit)).all()
     erased = 0
     for request in due:
         account = db.get(M.Account, request.account_id)
@@ -215,26 +227,28 @@ def process_due_erasures(db: Session, *, now: float | None = None, limit: int = 
 
 # --- student ----------------------------------------------------------------------------
 
-def _request_payload(request: M.DeletionRequest | None) -> dict:
+def _request_payload(request: M.DeletionRequest | None, db: Session) -> dict:
     days = retention_days()
+    grace = grace_days(db)
     return {
         "status": request.status if request else "NONE",
         "requestedAt": request.requested_at if request else None,
-        "scheduledFor": (request.requested_at + GRACE_SECONDS) if request else None,
+        "scheduledFor": (request.requested_at + grace * DAY_SECONDS) if request else None,
+        "graceDays": grace,
         "archiveRetentionDays": days,
     }
 
 
 @router.get("/records/deletion-request")
 def deletion_status(user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
-    return _request_payload(db.get(M.DeletionRequest, user["id"]))
+    return _request_payload(db.get(M.DeletionRequest, user["id"]), db)
 
 
 @router.post("/records/deletion-request")
 def request_deletion(user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
     existing = db.get(M.DeletionRequest, user["id"])
     if existing and existing.status == "PENDING":
-        return _request_payload(existing)
+        return _request_payload(existing, db)
     if existing:
         existing.status, existing.requested_at = "PENDING", time.time()
         request = existing
@@ -243,11 +257,11 @@ def request_deletion(user=Depends(authenticated_user), db: Session = Depends(wor
         db.add(request)
     _audit(db, user["id"], "DELETION_REQUESTED", user["id"])
     ops_feed.publish(db, "DELETION_REQUESTED", "ACCOUNT", severity="CRITICAL",
-                     summary="Erasure request received — scheduled in 7 days unless cancelled",
+                     summary=f"Erasure request received — scheduled in {grace_days(db)} days unless cancelled",
                      actor_id=user["id"], actor_role=user.get("role", ""), subject_id=user["id"],
                      resource_type="deletion_request", resource_id=user["id"])
     db.commit()
-    return _request_payload(request)
+    return _request_payload(request, db)
 
 
 @router.delete("/records/deletion-request")
@@ -261,7 +275,7 @@ def cancel_deletion(user=Depends(authenticated_user), db: Session = Depends(work
                      actor_id=user["id"], actor_role=user.get("role", ""), subject_id=user["id"],
                      resource_type="deletion_request", resource_id=user["id"])
     db.commit()
-    return _request_payload(request)
+    return _request_payload(request, db)
 
 
 # --- super admin -------------------------------------------------------------------------
@@ -271,10 +285,12 @@ def erasure_queue(user=Depends(require_super_admin), db: Session = Depends(workf
     pending = db.scalars(select(M.DeletionRequest).where(M.DeletionRequest.status == "PENDING")
                          .order_by(M.DeletionRequest.requested_at)).all()
     archives = db.scalars(select(M.ErasureArchive).order_by(M.ErasureArchive.archived_at.desc()).limit(100)).all()
+    grace = grace_seconds(db)
     return {
         "blocked": erasure_blocker() or None,
         "retentionDays": retention_days(),
-        "pending": [{"accountId": r.account_id, "requestedAt": r.requested_at, "scheduledFor": r.requested_at + GRACE_SECONDS}
+        "graceDays": grace // DAY_SECONDS,
+        "pending": [{"accountId": r.account_id, "requestedAt": r.requested_at, "scheduledFor": r.requested_at + grace}
                     for r in pending],
         "archives": [{"id": a.id, "formerAccountId": a.former_account_id, "rowCount": a.row_count,
                       "archivedAt": a.archived_at, "destroyAfter": a.destroy_after, "destroyed": bool(a.destroyed_at)}

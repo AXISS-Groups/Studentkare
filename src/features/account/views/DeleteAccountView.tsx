@@ -8,7 +8,7 @@ import { Icon } from '@/design-system/icons';
 import { BoardHeader } from '@/design-system/navigation/BoardHeader';
 import { BoardScreen, TextLink, boardText } from '@/design-system/board/BoardKit';
 import { color, focusRing, font, fontWeight, radius, size, space } from '@/design-system/theme';
-import { CONFIRM_WORD, DeleteAccountViewModel } from '../viewmodel/DeleteAccountViewModel';
+import { CONFIRM_WORD, DeleteAccountViewModel, deletionGraceDays } from '../viewmodel/DeleteAccountViewModel';
 import type { DeletionStatus } from '../viewmodel/DeleteAccountViewModel';
 
 export interface DeleteAccountLinks {
@@ -26,10 +26,14 @@ const DAY = 86400;
 
 const date = (s: number | null) => (s ? new Date(s * 1000).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }) : '');
 
-/** Day n of the grace period, from the server's own request and schedule times (never a client constant). */
+/**
+ * Day n of N: N is the grace period from the settings registry
+ * (privacy.deletion_grace_days, sent by the server with the request), n counts
+ * from the server's own request time. Never a client constant.
+ */
 export function graceDay(state: DeletionStatus, nowSeconds: number): { day: number; of: number } | null {
   if (!state.requestedAt || !state.scheduledFor || state.scheduledFor <= state.requestedAt) return null;
-  const of = Math.round((state.scheduledFor - state.requestedAt) / DAY);
+  const of = deletionGraceDays(state);
   const day = Math.min(of, Math.max(1, Math.floor((nowSeconds - state.requestedAt) / DAY) + 1));
   return { day, of };
 }
@@ -99,7 +103,7 @@ export const DeleteAccountView = observer(function DeleteAccountView({ viewModel
 
       {s && !vm.scheduled && !cancelledNow && step === 'info' ? (
         <View style={styles.block} testID="delete-info">
-          <Text style={boardText.body}>{t('sf.del.intro')}</Text>
+          <Text style={boardText.body}>{t('sf.del.intro', { graceDays: deletionGraceDays(s) })}</Text>
           {links.exportData ? (
             <Pressable testID="delete-export" accessibilityRole="link" accessibilityLabel={t('sf.del.exportTitle')} onPress={links.exportData}
               style={({ focused }: PressState) => [styles.export, focused ? focusRing : null]}>
@@ -155,7 +159,7 @@ export const DeleteAccountView = observer(function DeleteAccountView({ viewModel
           ) : null}
           <TextField label={t('del.typeToConfirm', { word: CONFIRM_WORD })} value={vm.confirmText} onChangeText={vm.setConfirmText} maxLength={10} testID="delete-word" />
           {vm.error ? <Note tone="danger">{t(vm.error)}</Note> : null}
-          <Button testID="delete-confirm-button" label={t('del.confirm')} variant="danger" size="cta" fullWidth busy={vm.busy} disabled={!vm.canConfirm && !vm.busy} onPress={() => void vm.confirm()} />
+          <Button testID="delete-confirm-button" label={t('del.confirm', { graceDays: deletionGraceDays(s) })} variant="danger" size="cta" fullWidth busy={vm.busy} disabled={!vm.canConfirm && !vm.busy} onPress={() => void vm.confirm()} />
           <Button label={t('common.back')} variant="secondary" fullWidth onPress={() => setStep('info')} />
         </View>
       ) : null}

@@ -4,7 +4,7 @@ import { useT } from '@/i18n';
 import { Icon } from '@/design-system/icons';
 import { useOnline } from '@/design-system';
 import { navigate } from '@/lib/utils/workflowRouting';
-import { CONFIRM_WORD, DeleteAccountViewModel } from '@/features/account/viewmodel/DeleteAccountViewModel';
+import { CONFIRM_WORD, DeleteAccountViewModel, deletionGraceDays } from '@/features/account/viewmodel/DeleteAccountViewModel';
 import { ErrorPanel, LoadingRows, OfflinePanel, PageHead } from '../parts';
 import { CrisisLine, IconNote } from './shared';
 import '../../studentweb.css';
@@ -55,7 +55,7 @@ export const WebDeleteAccountView = observer(function WebDeleteAccountView({ vie
         <section className="sk-swt-list is-danger" aria-labelledby="sk-swt-del-what">
           <h2 id="sk-swt-del-what">{t('del.what')}</h2>
           <ul>
-            <li><Icon name="x" size={15} />{t('del.p1')}</li>
+            <li><Icon name="x" size={15} />{t('del.p1', { graceDays: deletionGraceDays(s) })}</li>
             <li><Icon name="x" size={15} />{t('del.p2')}</li>
           </ul>
         </section>
@@ -77,7 +77,7 @@ export const WebDeleteAccountView = observer(function WebDeleteAccountView({ vie
             {vm.error ? <p className="sk-sw-error" role="alert">{t(vm.error)}</p> : null}
             <div className="sk-sw-head__actions">
               <button type="button" className="sk-sw-btn sk-sw-btn--ghost" disabled={vm.busy} onClick={() => { setConfirming(false); vm.setConfirmText(''); }}>{t('common.back')}</button>
-              <button type="submit" className="sk-sw-btn sk-swt-danger-btn" disabled={!vm.canConfirm || !online} aria-busy={vm.busy}>{t('del.confirm')}</button>
+              <button type="submit" className="sk-sw-btn sk-swt-danger-btn" disabled={!vm.canConfirm || !online} aria-busy={vm.busy}>{t('del.confirm', { graceDays: deletionGraceDays(s) })}</button>
             </div>
             <IconNote icon="shield-half">{t('swt.del.crisisNote')}</IconNote>
             <CrisisLine />

@@ -72,6 +72,22 @@ def make_provider(factory, provider_id, account_id, kind, pincode="500001", **kw
             make_collector(factory, provider_id, f"{provider_id}-col-{index}", name)
 
 
+def counter_verified(factory, order_id, counter_id="labco"):
+    """Record that ``counter_id`` verified the order's student's live pass just now.
+
+    Exactly the row POST /identity/verify writes on a 200 (DIGITAL_ID_VERIFIED,
+    actor = the counter account, subject = the student). A lab may record a
+    sample as collected only after one (services.clinical_api
+    .student_verified_at_counter); test_lab_collect_verification.py drives the
+    real endpoint end to end.
+    """
+    with factory() as db:
+        student = db.get(M.LabOrder, order_id).patient_id
+        db.add(M.WorkflowAudit(id=f"verify-{order_id}-{time.time_ns()}", actor_id=counter_id,
+                               action="DIGITAL_ID_VERIFIED", resource_id=student, created_at=time.time()))
+        db.commit()
+
+
 def make_collector(factory, lab_id, account_id, name):
     with factory() as db:
         db.add(M.Account(id=account_id, identifier=f"{account_id}@example.test", channel="EMAIL", full_name=name,
@@ -683,7 +699,8 @@ def file_report(client, order_id, lab_headers, critical_note=""):
                        data=data, headers=lab_headers)
 
 
-def run_to_analysis(client, order_id, lab_headers):
+def run_to_analysis(client, order_id, lab_headers, factory):
+    counter_verified(factory, order_id)
     for payload in [{"status": "ASSIGNED", "collectorName": "P. Rao"},
                     {"status": "SAMPLE_COLLECTED", "sampleId": "SMP-0001"},
                     {"status": "IN_TRANSIT"}, {"status": "RECEIVED_AT_LAB"}, {"status": "IN_ANALYSIS"}]:
@@ -695,7 +712,7 @@ def test_full_lab_run_and_critical_value_sorts_to_the_front(harness):
     client, factory, codes = harness
     order, _headers, patient = book_lab(client, factory, codes)
     lab_headers = login(client, codes, "labco@example.test")
-    run_to_analysis(client, order["id"], lab_headers)
+    run_to_analysis(client, order["id"], lab_headers, factory)
     filed = file_report(client, order["id"], lab_headers, critical_note="Potassium 6.8 mmol/L")
     assert filed.status_code == 200, filed.text
     assert filed.json()["status"] == "REPORT_READY"
@@ -713,7 +730,7 @@ def test_a_report_is_filed_as_a_file_never_by_status_alone(harness):
     client, factory, codes = harness
     order, _headers, patient = book_lab(client, factory, codes)
     lab_headers = login(client, codes, "labco@example.test")
-    run_to_analysis(client, order["id"], lab_headers)
+    run_to_analysis(client, order["id"], lab_headers, factory)
 
     assert client.patch(f"/api/lab-orders/{order['id']}", json={"status": "REPORT_READY"}, headers=lab_headers).status_code == 409
     bad = client.post(f"/api/work/lab-orders/{order['id']}/report",
@@ -728,7 +745,7 @@ def test_a_report_is_filed_as_a_file_never_by_status_alone(harness):
 def _filed_for_review(client, factory, codes, critical_note=""):
     order, patient_headers, patient = book_lab(client, factory, codes)
     lab_headers = login(client, codes, "labco@example.test")
-    run_to_analysis(client, order["id"], lab_headers)
+    run_to_analysis(client, order["id"], lab_headers, factory)
     assert file_report(client, order["id"], lab_headers, critical_note).status_code == 200
     return order, patient, lab_headers
 

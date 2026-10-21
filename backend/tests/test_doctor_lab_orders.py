@@ -136,7 +136,7 @@ def test_the_ordering_doctor_becomes_the_reviewer_when_the_lab_files(harness):
     put_in_care(factory, "other", patient["id"])
 
     lab = login(client, codes, "labco@example.test")
-    run_to_analysis(client, order["id"], lab)
+    run_to_analysis(client, order["id"], lab, factory)
     filed = file_report(client, order["id"], lab)
     assert filed.status_code == 200 and filed.json()["reviewerId"] == "doc"
     client.post("/api/auth/logout", headers=lab)
@@ -155,7 +155,7 @@ def test_the_student_sees_who_released_the_report_only_after_release(harness):
     order = client.post("/api/work/doctor-lab-orders", json=body(patient["id"]), headers=doc).json()
     client.post("/api/auth/logout", headers=doc)
     lab = login(client, codes, "labco@example.test")
-    run_to_analysis(client, order["id"], lab)
+    run_to_analysis(client, order["id"], lab, factory)
     assert file_report(client, order["id"], lab).status_code == 200
     client.post("/api/auth/logout", headers=lab)
 

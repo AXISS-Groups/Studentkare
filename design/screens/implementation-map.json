@@ -1,5 +1,5 @@
 {
-  "_readme": "List the source files that implement each canvas screen. check-icons.mjs reads this file. `inProgress` lists the files of screens that are built but do not yet match the canvas (docs/plans/canvas-gap-audit-2026-10-20.md); check-icons ignores it. Move a screen into `screens` when check-icons passes for it.",
+  "_readme": "List the source files that implement each canvas screen. check-icons.mjs reads this file. `inProgress` lists the files of screens that are built but do not yet match the canvas (docs/plans/canvas-gap-audit-2026-10-20.md); check-icons ignores it. Move a screen into `screens` when check-icons passes for it. `superseded` lists canvas boards replaced by newer ones (not built): `by` names the screens that replace them, `source` where the decision is recorded, `redirects` the old app URLs that now land on the replacement. check-icons passes a superseded screen by naming its successor, reports it as superseded, and fails if an entry is inconsistent.",
   "screens": {
     "WebSignOut": [
       "src/features/auth/views/SignOutConsequences.tsx",
@@ -303,8 +303,6 @@
       "src/features/account/views/AccountDetailsBoard.tsx",
       "src/screens/workspace/PhoneBoards.tsx"
     ],
-    "MyReports": [],
-    "ReportInsights": [],
     "ConsentInbox": [
       "src/features/vault/views/ConsentInboxBoard.tsx"
     ],
@@ -324,7 +322,6 @@
       "src/features/vault/views/FamilyCircleBoard.tsx"
     ],
     "RefillRequest": [],
-    "VitalTrends": [],
     "HostelVisit": [
       "src/features/requests/views/RequestsViews.tsx"
     ],
@@ -561,8 +558,6 @@
       "src/design-system/public-site/publicSiteNav.ts",
       "src/design-system/public-site/NewsletterBand.tsx"
     ],
-    "WebReportInsights": [],
-    "WebReportAssistant": [],
     "WebAyush": [
       "src/features/studentweb/views/t1/WebAyushView.tsx",
       "src/features/ayush/AyushAnswer.tsx",
@@ -1849,7 +1844,10 @@
       "src/native/StudentTabBar.tsx",
       "src/features/phoneKit/studentPhoneBoards.tsx",
       "src/native/M2HealthScreens.tsx"
-    ]
+    ],
+    "VitalTrends": [],
+    "WebReportInsights": [],
+    "WebReportAssistant": []
   },
   "inProgress": {
     "Teleconsult": [
@@ -1926,5 +1924,23 @@
       "src/design-system/public-site/publicSiteNav.ts",
       "src/design-system/public-site/NewsletterBand.tsx"
     ]
+  },
+  "superseded": {
+    "MyReports": {
+      "by": [
+        "M2Insights",
+        "M2ReportUpload"
+      ],
+      "source": "design/screens/mobile-2-supersedes.md §1 (M2Insights replaces MyReports, ReportInsights)",
+      "redirects": {}
+    },
+    "ReportInsights": {
+      "by": [
+        "M2Insights",
+        "M2Trends"
+      ],
+      "source": "design/screens/mobile-2-supersedes.md §1 (M2Insights replaces MyReports, ReportInsights)",
+      "redirects": {}
+    }
   }
 }

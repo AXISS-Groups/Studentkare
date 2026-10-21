@@ -26,6 +26,11 @@ import { StaffPhone, VerifiedBanner } from './StaffPhone';
  * the test needs no fasting. Fasting confirmation is not recorded anywhere yet
  * (approved decision), so a fasting test cannot be collected from this board.
  * Scanning the tube barcode is not connected: the label is typed.
+ *
+ * The verification gate is also the server's rule: `PATCH /lab-orders/{id}`
+ * refuses SAMPLE_COLLECTED (409) unless this signed-in account verified this
+ * student's live pass recently (`lab.collect_verification_minutes`), so the
+ * gate here only mirrors it.
  */
 
 export type CollectSource = (signal: AbortSignal) => Promise<LabQueue>;

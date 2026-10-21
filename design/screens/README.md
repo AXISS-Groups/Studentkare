@@ -31,6 +31,8 @@ Use the prompt in `prompts/IMPLEMENT_SCREEN.md`. One screen (or one small flow) 
 3. **Tier 1 safety screens**: only after the design owner confirms the picture is final; each needs a named reviewer.
 4. **Tier 3 screens**: let Claude compose them from components; review in the browser.
 
+**Superseded boards.** A board replaced by a newer one (e.g. MyReports by Mobile 2.0 M2Insights) is not built. Move it out of `screens` / `inProgress` in `implementation-map.json` into `superseded`, with `by` (the screens that replace it, which must be built), `source` (where the decision is recorded) and `redirects` (old app URLs and where they now land). `check-icons --screen <Old>` then names the successor and passes, `--all` lists it as *superseded* in `icon-coverage.md`, and an inconsistent entry fails every mode.
+
 ## Review checklist (paste into the PR)
 
 - [ ] Matches the picture in `screens/` (layout, copy, hierarchy)

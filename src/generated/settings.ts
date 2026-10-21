@@ -33,6 +33,8 @@ export interface PublicSettings {
   "meds.times_per_day_max": number;
   /** Hours a pharmacy's price quote stays payable. 0 means quotes do not expire. (hours) */
   "pharmacy.quote_expiry_hours": number;
+  /** Days between a student's account-deletion request and its erasure; they can cancel until then. (days) */
+  "privacy.deletion_grace_days": number;
   /** The Apple App Store listing linked from the public site footer. Empty hides the link. (https URL) */
   "public_site.app_store_url": string;
   /** The Instagram account linked from the public site footer. Empty hides the link. (https URL) */
@@ -131,6 +133,7 @@ export const publicSettingDefaults: Readonly<PublicSettings> = {
   "meds.dose_undo_minutes": 30,
   "meds.times_per_day_max": 6,
   "pharmacy.quote_expiry_hours": 0,
+  "privacy.deletion_grace_days": 7,
   "public_site.app_store_url": "",
   "public_site.instagram_url": "",
   "public_site.linkedin_url": "",
@@ -183,6 +186,7 @@ export const publicSettingSpecs: Readonly<Record<PublicSettingKey, PublicSetting
   "meds.dose_undo_minutes": { type: "int", min: 0, max: 240, allowed: [], unit: "minutes" },
   "meds.times_per_day_max": { type: "int", min: 1, max: 24, allowed: [], unit: "doses per day" },
   "pharmacy.quote_expiry_hours": { type: "int", min: 0, max: 720, allowed: [], unit: "hours" },
+  "privacy.deletion_grace_days": { type: "int", min: 1, max: 30, allowed: [], unit: "days" },
   "public_site.app_store_url": { type: "str", min: null, max: null, allowed: [], unit: "https URL" },
   "public_site.instagram_url": { type: "str", min: null, max: null, allowed: [], unit: "https URL" },
   "public_site.linkedin_url": { type: "str", min: null, max: null, allowed: [], unit: "https URL" },

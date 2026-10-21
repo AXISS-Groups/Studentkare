@@ -1867,6 +1867,30 @@ def _lab_collector_for(db: Session, lab_id: str, collector_id: str, collector_na
     return matches[0]
 
 
+COLLECT_NEEDS_VERIFICATION = ("Verify this student's live pass at this counter before recording the sample "
+                              "as collected.")
+
+
+def student_verified_at_counter(db: Session, counter_account_id: str, student_id: str,
+                                now: float | None = None) -> bool:
+    """True when this signed-in counter account verified this student's live pass recently.
+
+    The proof is the DIGITAL_ID_VERIFIED audit row that POST /identity/verify
+    writes (a fresh, single-use pass step), with this account as the actor and
+    the student as the subject, within lab.collect_verification_minutes. A
+    verification by another account (another partner's counter), of another
+    student, a refused (stale) scan, or an older one does not count. WP-15:
+    the app's counter gate is a convenience; this is the rule.
+    """
+    at = time.time() if now is None else now
+    window = setting("lab.collect_verification_minutes", db) * 60
+    found = db.scalar(select(M.WorkflowAudit.id).where(
+        M.WorkflowAudit.action == "DIGITAL_ID_VERIFIED", M.WorkflowAudit.actor_id == counter_account_id,
+        M.WorkflowAudit.resource_id == student_id, M.WorkflowAudit.created_at >= at - window,
+        M.WorkflowAudit.created_at <= at).limit(1))
+    return found is not None
+
+
 @router.patch("/lab-orders/{order_id}")
 def advance_lab_order(order_id: str, body: LabTransition, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
     """Move a lab order along its lifecycle, keeping the chain of custody intact."""
@@ -1903,6 +1927,8 @@ def advance_lab_order(order_id: str, body: LabTransition, user=Depends(authentic
     if body.status == "SAMPLE_COLLECTED":
         if not body.sampleId.strip():
             raise HTTPException(422, "A collected sample needs an identifier.")
+        if not student_verified_at_counter(db, user["id"], row.patient_id):
+            raise HTTPException(409, COLLECT_NEEDS_VERIFICATION)
         row.sample_id = body.sampleId.strip()
     if body.status in F.LAB_REQUIRES_SAMPLE_ID and not (row.sample_id or body.sampleId.strip()):
         raise HTTPException(409, "The chain of custody is broken: no sample identifier was recorded.")

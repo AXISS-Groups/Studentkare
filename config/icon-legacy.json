@@ -50,7 +50,6 @@
   "src/screens/fabric/M21PartnerOpsScreen.tsx",
   "src/screens/health/HealthCampBookingScreen.tsx",
   "src/screens/health/VaccinationScheduleScreen.tsx",
-  "src/screens/health/VitalTrendsTelemetryScreen.tsx",
   "src/screens/institution/BreakGlassEmergencyModal.tsx",
   "src/screens/institution/CampusAdminTeamScreen.tsx",
   "src/screens/institution/CampusSosDesk.tsx",

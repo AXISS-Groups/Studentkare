@@ -11,6 +11,11 @@
 // a new gap, a newly mapped screen with gaps, or a raw <svg>/lucide/text-glyph problem fails. Gaps that
 // have since been fixed are reported so they can be removed from the list.
 //
+// A screen listed under `superseded` in the implementation map (a board replaced by a newer one,
+// e.g. MyReports by Mobile 2.0 M2Insights) is not built: --screen names its successor and passes,
+// --all reports it as "superseded" instead of "not started", and every mode fails if the entry is
+// inconsistent (unknown screen, also mapped, no successor, or a successor that is not built).
+//
 // A required icon counts as used when its name appears as a string literal ('name', "name" or `name`)
 // in the screen's files — e.g. <Icon name="bell" />. Exact-drawing variants can be consolidated in
 // design/icons/aliases.json ({ "lock-3": "lock" }): either name then satisfies the check.
@@ -26,7 +31,9 @@ const list = (f) => { const i = args.indexOf(f); if (i < 0) return []; const out
 
 const m = JSON.parse(readFileSync(join(D, 'icons', 'icon-manifest.json'), 'utf8'));
 const mapPath = join(D, 'screens', 'implementation-map.json');
-const implMap = existsSync(mapPath) ? JSON.parse(readFileSync(mapPath, 'utf8')).screens : {};
+const mapJson = existsSync(mapPath) ? JSON.parse(readFileSync(mapPath, 'utf8')) : {};
+const implMap = mapJson.screens || {};
+const superseded = Object.fromEntries(Object.entries(mapJson.superseded || {}).filter(([k]) => !k.startsWith('_')));
 const aliasPath = join(D, 'icons', 'aliases.json');
 const aliases = existsSync(aliasPath) ? JSON.parse(readFileSync(aliasPath, 'utf8')) : {};
 const alts = (n) => [n, aliases[n]].filter(Boolean);
@@ -58,6 +65,26 @@ function checkScreen(screen, files) {
   return { screen, files, missing, total, problems, required: need };
 }
 
+// Every superseded entry must name a canvas screen that is not also mapped, and successors that are
+// canvas screens built under `screens` (files listed). Returns one message per problem.
+function supersededProblems() {
+  const out = [];
+  for (const [screen, entry] of Object.entries(superseded)) {
+    const by = Array.isArray(entry?.by) ? entry.by : [];
+    if (!m.screens[screen]) out.push(`superseded ${screen}: not a canvas screen (names are in design/screens/INDEX.md)`);
+    if ((implMap[screen] || []).length) out.push(`superseded ${screen}: also has files under "screens"; a superseded board is not built`);
+    if ((mapJson.inProgress?.[screen] || []).length) out.push(`superseded ${screen}: still listed under "inProgress"`);
+    if (!by.length) out.push(`superseded ${screen}: "by" must name the screen(s) that replace it`);
+    for (const next of by) {
+      if (!m.screens[next]) out.push(`superseded ${screen}: successor ${next} is not a canvas screen`);
+      else if (superseded[next]) out.push(`superseded ${screen}: successor ${next} is itself superseded`);
+      else if (!(implMap[next] || []).length) out.push(`superseded ${screen}: successor ${next} has no files under "screens"`);
+    }
+    if (!entry?.source) out.push(`superseded ${screen}: "source" must say where the decision is recorded`);
+  }
+  return out;
+}
+
 function print(r) {
   if (r.error) { console.log(`✗ ${r.error}`); return; }
   const ok = r.total === 0 && r.problems.length === 0;
@@ -73,6 +100,7 @@ if (flag('--ratchet')) {
   const gapsOf = (r) => Object.entries(r.missing).flatMap(([k, v]) => v.map((n) => `${k}:${n}`));
   let failed = 0;
   let fixed = 0;
+  for (const p of supersededProblems()) { failed++; console.log(`✗ ${p}`); }
   for (const screen of Object.keys(m.screens)) {
     const files = implMap[screen] || [];
     if (!files.length) continue;
@@ -93,7 +121,7 @@ if (flag('--ratchet')) {
     if (gone.length) { fixed += gone.length; console.log(`    fixed, remove from the legacy list: ${gone.join(', ')}`); }
   }
   for (const screen of Object.keys(legacy)) {
-    if (!(implMap[screen] || []).length) { failed++; console.log(`✗ ${screen} is in config/icon-coverage-legacy.json but no longer mapped; remove it from the list`); }
+    if (!(implMap[screen] || []).length) { failed++; console.log(`✗ ${screen} is in config/icon-coverage-legacy.json but no longer mapped${superseded[screen] ? ' (superseded)' : ''}; remove it from the list`); }
   }
   if (fixed) console.log(`\n${fixed} listed gap${fixed === 1 ? ' is' : 's are'} fixed; remove ${fixed === 1 ? 'it' : 'them'} from config/icon-coverage-legacy.json.`);
   process.exit(failed ? 1 : 0);
@@ -102,19 +130,31 @@ if (flag('--ratchet')) {
     const files = implMap[screen] || [];
     if (files.length) results.push(checkScreen(screen, files));
   }
-  const notStarted = Object.keys(m.screens).filter((s) => !(implMap[s] || []).length);
+  const retired = Object.keys(m.screens).filter((s) => superseded[s] && !(implMap[s] || []).length);
+  const notStarted = Object.keys(m.screens).filter((s) => !(implMap[s] || []).length && !superseded[s]);
+  const mapProblems = supersededProblems();
   results.forEach(print);
+  for (const p of mapProblems) console.log(`✗ ${p}`);
   const done = results.filter((r) => !r.error && r.total === 0 && r.problems.length === 0).length;
-  const lines = ['# Icon coverage', '', `Screens built and passing: **${done} / ${Object.keys(m.screens).length}** · built with gaps: ${results.length - done} · not started: ${notStarted.length}`, '',
+  const live = Object.keys(m.screens).length - retired.length;
+  const lines = ['# Icon coverage', '', `Screens built and passing: **${done} / ${live}** · built with gaps: ${results.length - done} · not started: ${notStarted.length} · superseded: ${retired.length}`, '',
     '| Screen | Status | Missing |', '|---|---|---|',
     ...results.map((r) => `| ${r.screen} | ${r.total === 0 && !r.problems?.length ? 'pass' : 'gaps'} | ${r.error || Object.entries(r.missing).filter(([, v]) => v.length).map(([k, v]) => `${k}: ${v.join(', ')}`).concat(r.problems).join('; ') || '—'} |`),
-    ...notStarted.map((s) => `| ${s} | not started | — |`)];
+    ...notStarted.map((s) => `| ${s} | not started | — |`),
+    ...retired.map((s) => `| ${s} | superseded | by ${superseded[s].by.join(', ')} |`),
+    ...mapProblems.map((p) => `| — | map problem | ${p} |`)];
   writeFileSync(join(D, 'screens', 'icon-coverage.md'), lines.join('\n') + '\n');
-  console.log(`\n${done}/${Object.keys(m.screens).length} screens pass · report: design/screens/icon-coverage.md`);
-  process.exit(results.some((r) => r.error || r.total || r.problems.length) ? 1 : 0);
+  console.log(`\n${done}/${live} screens pass (${retired.length} superseded) · report: design/screens/icon-coverage.md`);
+  process.exit(results.some((r) => r.error || r.total || r.problems.length) || mapProblems.length ? 1 : 0);
 } else {
   const screen = val('--screen');
   if (!screen) { console.log('Usage: --screen <Name> [--files a.tsx b.tsx]  |  --all'); process.exit(2); }
+  if (superseded[screen] && !list('--files').length) {
+    const own = supersededProblems().filter((p) => p.startsWith(`superseded ${screen}:`));
+    if (own.length) { own.forEach((p) => console.log(`✗ ${p}`)); process.exit(1); }
+    console.log(`↷ ${screen} is superseded by ${superseded[screen].by.join(', ')} (${superseded[screen].source}); nothing to build. Check ${superseded[screen].by.join(', ')} instead.`);
+    process.exit(0);
+  }
   const files = list('--files').length ? list('--files') : implMap[screen] || [];
   if (!files.length) { console.log(`No files for ${screen}. Pass --files or add them to design/screens/implementation-map.json.`); process.exit(2); }
   const r = checkScreen(screen, files);
