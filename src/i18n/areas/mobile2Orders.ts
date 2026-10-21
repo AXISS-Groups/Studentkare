@@ -46,6 +46,7 @@ export const mobile2OrdersEn = {
   'm2.ord.emptyPastBody': 'Finished, cancelled and declined orders show here.',
 
   // Insurance
+  'm2.ins.eyebrow': 'Cover and claims',
   'm2.ins.title': 'Insurance',
   'm2.ins.policyEyebrow': 'Student health policy',
   'm2.ins.active': 'Active',
@@ -133,6 +134,7 @@ export const mobile2OrdersTe: Record<keyof typeof mobile2OrdersEn, string> = {
   'm2.ord.emptyPast': 'ఇంకా గత ఆర్డర్లు లేవు',
   'm2.ord.emptyPastBody': 'పూర్తయిన, రద్దయిన, తిరస్కరించిన ఆర్డర్లు ఇక్కడ కనిపిస్తాయి.',
 
+  'm2.ins.eyebrow': 'కవర్, క్లెయిమ్‌లు',
   'm2.ins.title': 'ఇన్సూరెన్స్',
   'm2.ins.policyEyebrow': 'స్టూడెంట్ హెల్త్ పాలసీ',
   'm2.ins.active': 'యాక్టివ్',
@@ -220,6 +222,7 @@ export const mobile2OrdersHi: Record<keyof typeof mobile2OrdersEn, string> = {
   'm2.ord.emptyPast': 'अभी कोई पुराना ऑर्डर नहीं',
   'm2.ord.emptyPastBody': 'पूरे, रद्द और मना किए गए ऑर्डर यहाँ दिखते हैं।',
 
+  'm2.ins.eyebrow': 'कवर और क्लेम',
   'm2.ins.title': 'बीमा',
   'm2.ins.policyEyebrow': 'छात्र स्वास्थ्य पॉलिसी',
   'm2.ins.active': 'चालू',

@@ -193,7 +193,7 @@ export const M2InsightsView = observer(function M2InsightsView({ vm, name, links
           <View style={styles.head}>
             <View style={styles.avatar} accessibilityElementsHidden importantForAccessibility="no-hide-descendants"><Text style={styles.avatarText}>{initials(name)}</Text></View>
             <View style={styles.grow}>
-              <Text style={styles.eyebrow}>{t('m2.ins.eyebrow')}</Text>
+              <Text style={styles.eyebrow}>{t('m2.insights.eyebrow')}</Text>
               <M2Heading level={1} style={styles.title}>{t('m2.nav.health')}</M2Heading>
             </View>
             <SosButton label={t('m2.sos')} spoken={t('m2.sosSpoken')} onPress={links.sos} testID="m2-ins-sos" />
