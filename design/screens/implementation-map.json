@@ -1722,7 +1722,14 @@
       "src/design-system/m2/servicePalette.ts",
       "src/design-system/m2/m2Motion.ts",
       "src/screens/workspace/StudentPhoneFrame.tsx",
-      "src/native/StudentTabBar.tsx"
+      "src/native/StudentTabBar.tsx",
+      "src/features/studentweb/views/care/WebCareView.tsx",
+      "src/features/studentweb/views/care/PublicCarePage.tsx",
+      "src/features/studentweb/views/care/m2webcare.css",
+      "src/features/studentweb/views/shop/m2WebParts.tsx",
+      "src/features/studentweb/views/shop/m2webshop.css",
+      "src/features/studentweb/views/shop/ShopCartRail.tsx",
+      "src/design-system/m2/ServiceRail.tsx"
     ],
     "M2Vaccines": [
       "src/features/preventive/views/M2VaccinesView.tsx",

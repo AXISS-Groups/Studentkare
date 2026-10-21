@@ -5,9 +5,8 @@ import { CareScreen } from '../CareScreen';
 
 const state = vi.hoisted(() => ({ role: null as string | null, phone: false, path: 'shop' }));
 vi.mock('@/data/contexts/AuthContext', () => ({ useAuth: () => ({ user: state.role ? { role: state.role } : null }) }));
-vi.mock('@/design-system/navigation/usePhoneFrame', () => ({ usePhoneFrame: () => state.phone }));
 vi.mock('@/core/navigation', () => ({ useRoutePath: () => state.path }));
-vi.mock('@/screens/marketplace/LiveMarketplaceScreen', () => ({ LiveMarketplaceScreen: () => <p>public marketplace</p> }));
+vi.mock('@/features/studentweb/views/care/PublicCarePage', () => ({ PublicCarePage: ({ signedIn }: { signedIn: boolean }) => <p>public m2 care {signedIn ? 'signed in' : 'signed out'}</p> }));
 vi.mock('@/features/studentweb/views/shop/PublicShopPage', () => ({ PublicShopPage: ({ route, signedIn }: { route: string; signedIn: boolean }) => <p>public m2 shop {route} {signedIn ? 'signed in' : 'signed out'}</p> }));
 vi.mock('@/screens/workspace/WorkspaceScreen', () => ({ WorkspaceScreen: ({ route }: { route: string }) => <p>student shell {route}</p> }));
 
@@ -17,8 +16,8 @@ describe('CareScreen: who gets the student workspace', () => {
   it.each([
     { path: 'shop', phone: false }, { path: 'checkout', phone: false },
     { path: 'shop', phone: true }, { path: 'checkout', phone: true },
-    // Mobile 2.0 Doctor consults (M2Consults) is a phone board.
-    { path: 'care', phone: true },
+    // Mobile 2.0 Doctor consults: M2Consults in the phone frame, the wide layout in the shell.
+    { path: 'care', phone: true }, { path: 'care', phone: false },
   ])('a signed-in student gets /$path in the workspace (phone: $phone)', async ({ path, phone }) => {
     Object.assign(state, { role: 'STUDENT', phone, path });
     render(<CareScreen />);
@@ -39,11 +38,15 @@ describe('CareScreen: who gets the student workspace', () => {
     }
   });
 
-  it('/care above phone width keeps the public marketplace', () => {
-    for (const next of [{ role: 'STUDENT', phone: false, path: 'care' }, { role: null, phone: false, path: 'care' }]) {
+  it('visitors and other roles get Mobile 2.0 Doctor consults in the public frame, at any width', async () => {
+    for (const next of [
+      { role: null, phone: false, path: 'care', text: 'public m2 care signed out' },
+      { role: null, phone: true, path: 'care', text: 'public m2 care signed out' },
+      { role: 'VENDOR', phone: false, path: 'care', text: 'public m2 care signed in' },
+    ]) {
       Object.assign(state, next);
       const { unmount } = render(<CareScreen />);
-      expect(screen.getByText('public marketplace')).toBeInTheDocument();
+      expect(await screen.findByText(next.text)).toBeInTheDocument();
       unmount();
     }
   });
