@@ -86,6 +86,7 @@ Translucent tokens (`scrim*`, `on-hero-veil/track/rule`, `on-action-2`, `action-
 
 ### Motion
 - 160 ms for taps and toggles, 320 ms for entrances, 420 ms for sheets and drawers; `standard` easing `cubic-bezier(.16, 1, .3, 1)`.
+- Mobile 2.0 (canvas page 9): `carousel` 4200 ms per highlight (stops on hover, focus, a dot tap, off-screen), `ambient` 4000 ms for slow decorative loops (tile shine, floating art, live dots), `orbit` 12 s for the Ayush orb's spark. Built once in `src/design-system/m2` (`useLoop`, `useAutoAdvance`, `useAmbientMotion`); every loop rests at its drawn state under reduced motion, while its screen is not in front, and when unmounted. Never on clinical content.
 - **Everything stops under `prefers-reduced-motion`.** Motion explains a change; it is never decoration on clinical content.
 
 ---

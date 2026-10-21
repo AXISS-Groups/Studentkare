@@ -3,7 +3,7 @@ import type { ArtSource } from '@/features/phoneKit/artSource';
 import { observer } from 'mobx-react-lite';
 import { PayStepView } from '@/features/payments/views/PayStepView';
 import type { CartPort, PhoneShopViewModel } from '../viewmodel/PhoneShopViewModel';
-import { ShopHomeView } from './ShopHomeView';
+import { M2MedicinesBoard } from '@/features/m2store/views/M2MedicinesBoard';
 import { ProductListView } from './ProductListView';
 import { ProductDetailView } from './ProductDetailView';
 import { CartView } from './CartView';
@@ -19,8 +19,8 @@ import type { ShopLinks } from './shopParts';
  * has the payment as paid, the order summary (OrderSuccess) replaces it.
  * Shared by the web phone frame and the Expo app.
  */
-export const ShopFlow = observer(function ShopFlow({ vm, cart, links, refillArt, orderArt }: {
-  vm: PhoneShopViewModel; cart: CartPort; links: ShopLinks; refillArt?: React.ReactNode; orderArt?: ArtSource;
+export const ShopFlow = observer(function ShopFlow({ vm, cart, links, orderArt }: {
+  vm: PhoneShopViewModel; cart: CartPort; links: ShopLinks; orderArt?: ArtSource;
 }) {
   const screen = vm.screen;
   const payment = vm.payment;
@@ -50,6 +50,7 @@ export const ShopFlow = observer(function ShopFlow({ vm, cart, links, refillArt,
       return vm.order ? (
         <OrderSuccessView order={vm.order} savedPaise={saved} art={orderArt} onTrack={() => links.trackOrder(vm.order?.id ?? '')} onShop={vm.home} />
       ) : null;
-    default: return <ShopHomeView vm={vm} cart={cart} links={links} refillArt={refillArt} />;
+    // Mobile 2.0 Medicines (canvas page 9, 2026-10-21) replaces ShopHome as the shop's first board.
+    default: return <M2MedicinesBoard vm={vm} cart={cart} links={links} />;
   }
 });

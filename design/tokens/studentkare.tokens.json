@@ -425,7 +425,10 @@
       "base": { "$value": "320ms", "$description": "Page and card entrances" },
       "sheet":{ "$value": "420ms", "$description": "Sheets and drawers" },
       "toast": { "$value": "4000ms", "$description": "How long a confirming toast stays before it dismisses itself. Errors and warnings never auto-dismiss (board Feedback)" },
-      "spinner-delay": { "$value": "400ms", "$description": "A spinner appears only after this, so a quick action never flashes one (board Feedback)" }
+      "spinner-delay": { "$value": "400ms", "$description": "A spinner appears only after this, so a quick action never flashes one (board Feedback)" },
+      "carousel": { "$value": "4200ms", "$description": "Mobile 2.0 highlight carousel: how long each highlight shows before the next. Stops under reduced motion, while hovered or focused, off-screen, and for good once the student picks a dot" },
+      "ambient": { "$value": "4000ms", "$description": "One cycle of a slow decorative loop on Mobile 2.0 (tile shine, floating art, live dot). Never on clinical content; off under reduced motion and when unmounted" },
+      "orbit": { "$value": "12000ms", "$description": "One turn of the Ayush orb's spark in the pill nav; off under reduced motion" }
     },
     "easing": {
       "$type": "cubicBezier",

@@ -201,6 +201,9 @@
   --sk-duration-sheet: 420ms;
   --sk-duration-toast: 4000ms;
   --sk-duration-spinner-delay: 400ms;
+  --sk-duration-carousel: 4200ms;
+  --sk-duration-ambient: 4000ms;
+  --sk-duration-orbit: 12000ms;
   --sk-ease-standard: cubic-bezier(0.16, 1, 0.3, 1);
   --sk-ease-sheet: cubic-bezier(0.2, 0.8, 0.3, 1);
 }

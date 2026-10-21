@@ -7,8 +7,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 vi.mock('react-native-safe-area-context', () => ({ useSafeAreaInsets: () => ({ top: 0, right: 0, bottom: 0, left: 0 }) }));
 vi.mock('@/design-system/motion', async (importOriginal) => ({ ...(await importOriginal<typeof import('@/design-system/motion')>()), useReducedMotion: () => true }));
 
-import { STUDENT_TABS, StudentTabBar } from '../StudentTabBar';
-import { destinationsFor } from '../homeDestinations';
+import { STUDENT_NAV, StudentTabBar, studentNavKeyFor } from '../StudentTabBar';
+import { PILL_NAV } from '@/design-system/m2';
 import { LanguageProvider, translate } from '@/i18n';
 
 afterEach(cleanup);
@@ -27,47 +27,53 @@ function renderBar(currentRoute: string, navigate = vi.fn()) {
   return navigate;
 }
 
-describe('student tab bar destinations', () => {
-  it('has five tabs, each a registered native screen', () => {
-    expect(STUDENT_TABS).toHaveLength(5);
-    for (const tab of STUDENT_TABS) expect(screens.has(tab.route), tab.route).toBe(true);
+describe('student pill nav destinations (Mobile 2.0)', () => {
+  it('has five destinations, each a registered native screen', () => {
+    expect(Object.keys(STUDENT_NAV)).toEqual(['home', 'orders', 'ayush', 'health', 'profile']);
+    for (const route of Object.values(STUDENT_NAV)) expect(screens.has(route), route).toBe(true);
+    for (const store of ['Medicines', 'Labs', 'Consults']) expect(screens.has(store), store).toBe(true);
   });
 
   it('only uses icons from the icon manifest', () => {
-    for (const tab of STUDENT_TABS) expect(iconNames.has(tab.icon), tab.icon).toBe(true);
+    for (const item of PILL_NAV) expect(iconNames.has(item.icon), item.icon).toBe(true);
   });
 
-  it('every tab beyond Home is a student destination on the home list', () => {
-    const student = new Set(destinationsFor('STUDENT').map((d) => d.route));
-    for (const tab of STUDENT_TABS.filter((t) => t.route !== 'Home')) expect(student.has(tab.route as never), tab.route).toBe(true);
+  it('shows Home current on the store boards, and nothing on other screens', () => {
+    expect(studentNavKeyFor('Home')).toBe('home');
+    expect(studentNavKeyFor('Labs')).toBe('home');
+    expect(studentNavKeyFor('YourCare')).toBe('health');
+    expect(studentNavKeyFor('More')).toBe('profile');
+    expect(studentNavKeyFor('Checkout')).toBeNull();
   });
 
-  it.each(['en', 'te', 'hi'] as const)('%s: the list name and every tab label have copy', (lang) => {
-    expect(translate(lang, 'tabbar.label')).toMatch(/\S/);
-    for (const tab of STUDENT_TABS) expect(translate(lang, tab.label), tab.label).toMatch(/\S/);
+  it.each(['en', 'te', 'hi'] as const)('%s: the nav name and every destination have copy', (lang) => {
+    expect(translate(lang, 'm2.nav.label')).toMatch(/\S/);
+    for (const item of PILL_NAV) expect(translate(lang, item.label), item.label).toMatch(/\S/);
   });
 });
 
-describe('StudentTabBar', () => {
-  it('names each tab from the i18n catalogue and marks the current route selected', () => {
-    renderBar('Vault');
-    expect(screen.getByRole('tablist', { name: translate('en', 'tabbar.label') })).toBeInTheDocument();
-    for (const tab of STUDENT_TABS) {
-      const el = screen.getByRole('tab', { name: translate('en', tab.label) });
-      expect(el).toHaveAttribute('aria-selected', tab.route === 'Vault' ? 'true' : 'false');
+describe('StudentTabBar (the pill nav)', () => {
+  it('names each destination from the i18n catalogue and marks the current route', () => {
+    renderBar('YourCare');
+    expect(screen.getByRole('navigation', { name: translate('en', 'm2.nav.label') })).toBeInTheDocument();
+    for (const item of PILL_NAV) {
+      const el = screen.getByRole('link', { name: translate('en', item.label) });
+      if (item.key === 'health') expect(el).toHaveAttribute('aria-current', 'page');
+      else expect(el).not.toHaveAttribute('aria-current');
     }
   });
 
-  it('navigates to the pressed tab’s route', () => {
-    const navigate = renderBar('Home');
-    fireEvent.click(screen.getByRole('tab', { name: translate('en', 'tabbar.ayush') }));
-    fireEvent.click(screen.getByRole('tab', { name: translate('en', 'tabbar.yourCare') }));
-    expect(navigate.mock.calls).toEqual([['AiChat'], ['YourCare']]);
+  it('navigates to the pressed destination’s route; Home from a store board goes Home', () => {
+    const navigate = renderBar('Labs');
+    fireEvent.click(screen.getByRole('link', { name: translate('en', 'm2.nav.ayush') }));
+    fireEvent.click(screen.getByRole('link', { name: translate('en', 'm2.nav.health') }));
+    fireEvent.click(screen.getByRole('link', { name: translate('en', 'm2.nav.home') }));
+    expect(navigate.mock.calls).toEqual([['AiChat'], ['YourCare'], ['Home']]);
   });
 
-  it('is not drawn over a screen opened from a tab', () => {
+  it('is not drawn over a screen opened from a destination', () => {
     renderBar('Checkout');
-    expect(screen.queryByRole('tablist')).toBeNull();
+    expect(screen.queryByRole('navigation')).toBeNull();
   });
 
   it('is wired as the layout of the signed-in student stack only', () => {

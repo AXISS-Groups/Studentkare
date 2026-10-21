@@ -1,29 +1,13 @@
 import React, { useMemo, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
 import { useNavigate, useSearchParams } from '@/core/navigation';
 import { useLiveCart } from '@/data/contexts/LiveCartContext';
 import { navigate } from '@/lib/utils/workflowRouting';
-import { useReducedMotion } from '@/design-system';
-import { radius } from '@/design-system/theme';
 import { LabBookingOverlay } from '@/features/labBooking/views/LabBookingOverlay';
-import { phoneArt, refillVideoUrl } from '@/features/phoneKit/phoneArt';
+import { phoneArt } from '@/features/phoneKit/phoneArt';
 import { PhoneShopViewModel } from '../viewmodel/PhoneShopViewModel';
 import type { CartPort, ShopScreen } from '../viewmodel/PhoneShopViewModel';
 import { ShopFlow } from './ShopFlow';
 import type { ShopLinks } from './shopParts';
-
-/** The refill card's loop (canvas video-379108.mp4): decoration, muted, still under reduced motion. */
-function RefillVideo() {
-  const reduced = useReducedMotion();
-  return (
-    <View style={styles.video} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-      <video src={refillVideoUrl} aria-hidden="true" muted loop playsInline autoPlay={!reduced} preload="auto" style={videoFill} />
-    </View>
-  );
-}
-
-const videoFill: React.CSSProperties = { width: '100%', height: '100%', objectFit: 'cover' };
-const styles = StyleSheet.create({ video: { width: 96, height: 96, borderRadius: radius.md, overflow: 'hidden' } });
 
 /** The board a URL opens: `/checkout` the cart, `?product=` a product, `?category=` / `?q=` a list. */
 export function initialShopScreen(route: 'shop' | 'checkout', params: URLSearchParams): ShopScreen {
@@ -50,6 +34,8 @@ export function ShopPhoneRoute({ route }: { route: 'shop' | 'checkout' }): React
   const cart: CartPort = useMemo(() => ({ lines: live.lines, add: live.add, setQuantity: live.setQuantity, clear: live.clear }), [live]);
 
   const links: ShopLinks = {
+    exit: () => navigate('health'),
+    openMyHealth: () => navigate('your-care'),
     openSearch: () => navigate('search'),
     openRewards: () => navigate('rewards'),
     openRefill: () => navigate('refill-request'),
@@ -62,7 +48,7 @@ export function ShopPhoneRoute({ route }: { route: 'shop' | 'checkout' }): React
 
   return (
     <>
-      <ShopFlow vm={vm} cart={cart} links={links} refillArt={<RefillVideo />} orderArt={phoneArt.orderPlaced} />
+      <ShopFlow vm={vm} cart={cart} links={links} orderArt={phoneArt.orderPlaced} />
       {labItemId ? <LabBookingOverlay itemId={labItemId} onClose={() => setLabItemId(null)} /> : null}
     </>
   );

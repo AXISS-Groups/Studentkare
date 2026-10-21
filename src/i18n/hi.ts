@@ -22,6 +22,7 @@ import { studentwebT1Hi } from './areas/studentwebT1';
 import { payHi } from './areas/pay';
 import { labbookHi } from './areas/labbook';
 import { rewardsHi } from './areas/rewards';
+import { mobile2Hi } from './areas/mobile2';
 import { wellnessHi } from './areas/wellness';
 import { consoleHi } from './areas/console';
 import { phoneboardsHi } from './areas/phoneboards';
@@ -850,6 +851,7 @@ export const hi: Catalog = {
   ...payHi,
   ...labbookHi,
   ...rewardsHi,
+  ...mobile2Hi,
   ...wellnessHi,
   ...consoleHi,
   ...phoneboardsHi,

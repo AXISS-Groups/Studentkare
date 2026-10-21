@@ -197,6 +197,12 @@ declare("shop.home_featured_count", INT, 6, area="shop", unit="listings", minimu
         description="Products in the phone shop home's first shelf.")
 declare("shop.orders_page_size", INT, 20, area="shop", unit="orders", minimum=1, maximum=100, public=True,
         description="Orders per page on the phone order history (GET /api/orders caps a page at 100).")
+# Mobile 2.0 "Call to order" / "Call to book" (M2Home, M2Medicines, M2Labs). No
+# order line exists yet, so the default is empty and the app says "not
+# available yet"; the client dials it only when it is a plain phone number.
+declare("shop.order_line_phone", STR, "", area="shop", unit="phone number (digits, optional leading +)", public=True,
+        description="The order line students call to order medicines or book a lab test. Empty shows the call "
+                    "buttons as not available yet.")
 
 # --- medicines -------------------------------------------------------------
 declare("meds.dose_undo_minutes", INT, 30, area="meds", unit="minutes", minimum=0, maximum=240, public=True,

@@ -10,6 +10,8 @@ declare module 'react-native' {
   export interface ImageStyle {
     [key: string]: any;
   }
+  /** A style, an array of styles, or nothing (falsy entries are skipped). */
+  export type StyleProp<T> = T | readonly StyleProp<T>[] | false | null | undefined;
 
   export interface TouchableOpacityProps extends React.AriaAttributes {
     dataSet?: Record<string, string | number | boolean | null | undefined>;
@@ -38,6 +40,7 @@ declare module 'react-native' {
     create: <T extends Record<string, any>>(styles: T) => T;
     flatten: (style: any) => any;
     absoluteFill: object;
+    absoluteFillObject: { position: 'absolute'; left: 0; right: 0; top: 0; bottom: 0 };
   };
 
   export const Dimensions: {
@@ -61,7 +64,8 @@ declare module 'react-native' {
   }
   interface AnimatedValue {
     setValue: (value: number) => void;
-    interpolate: (config: { inputRange: number[]; outputRange: number[] }) => AnimatedInterpolation;
+    stopAnimation: () => void;
+    interpolate: (config: { inputRange: number[]; outputRange: number[] | string[] }) => AnimatedInterpolation;
   }
   interface AnimatedComposite {
     start: () => void;
@@ -73,14 +77,16 @@ declare module 'react-native' {
       style?: unknown;
       children?: React.ReactNode;
       testID?: string;
+      pointerEvents?: 'box-none' | 'none' | 'box-only' | 'auto';
       accessibilityElementsHidden?: boolean;
       importantForAccessibility?: 'auto' | 'yes' | 'no' | 'no-hide-descendants';
     }>;
     multiply: (a: AnimatedValue | number, b: AnimatedValue | number) => AnimatedInterpolation;
     timing: (
       value: AnimatedValue,
-      config: { toValue: number; duration: number; delay?: number; easing?: EasingFunction; useNativeDriver: boolean },
+      config: { toValue: number; duration: number; delay?: number; easing?: EasingFunction; useNativeDriver: boolean; isInteraction?: boolean },
     ) => AnimatedComposite;
+    delay: (time: number) => AnimatedComposite;
     sequence: (animations: AnimatedComposite[]) => AnimatedComposite;
     loop: (animation: AnimatedComposite) => AnimatedComposite;
   };
@@ -123,6 +129,12 @@ declare module 'react-native' {
       role?: string;
     }
   >;
+
+  export type AppStateStatus = 'active' | 'background' | 'inactive' | 'unknown' | 'extension';
+  export const AppState: {
+    currentState: AppStateStatus | null;
+    addEventListener: (event: 'change', handler: (state: AppStateStatus) => void) => { remove: () => void };
+  };
 
   export const Appearance: {
     getColorScheme: () => 'light' | 'dark' | null | undefined;

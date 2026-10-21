@@ -2091,8 +2091,7 @@
     "WebRequests",
     "WebSecurity",
     "WebVault",
-    "WebVerify",
-    "YourCare"
+    "WebVerify"
    ],
    "elements": [
     [
@@ -5791,8 +5790,7 @@
     "Onboarding2",
     "Payment",
     "PrescriptionUpload",
-    "WebVault",
-    "YourCare"
+    "WebVault"
    ],
    "elements": [
     [
@@ -6104,11 +6102,7 @@
    "file": "icons/line/compass.svg",
    "source": "canvas",
    "uses": 3,
-   "screens": [
-    "HomeDiscover",
-    "SearchEntry",
-    "YourCare"
-   ],
+   "screens": [],
    "elements": [
     [
      "circle",
@@ -6519,7 +6513,6 @@
    "uses": 3,
    "screens": [
     "AccountReady",
-    "HomeDiscover",
     "WebHome"
    ],
    "elements": [
@@ -16181,15 +16174,13 @@
    "size": "390x844",
    "icons": [
     "arrow-right",
-    "compass",
     "flask-2",
     "map-pin",
     "map-pin-4",
     "mic",
     "search-2",
     "shield-2",
-    "sparkle",
-    "stethoscope"
+    "sparkle"
    ],
    "icons3d": [],
    "glyphs": [],
@@ -17769,7 +17760,6 @@
     "arrow-left",
     "arrow-right",
     "clock-2",
-    "compass",
     "droplet-2",
     "file-text",
     "first-aid-kit",
@@ -20295,12 +20285,9 @@
    "size": "390x1034",
    "icons": [
     "activity-3",
-    "compass",
     "doctor-2",
     "flask-2",
     "heart-pulse-2",
-    "lock-5",
-    "map-pin",
     "menu",
     "pill-2",
     "zap"

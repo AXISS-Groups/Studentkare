@@ -44,6 +44,7 @@ import { EmergencyHelplinesDialog } from '../../components/interface/InterfaceBa
 import { NotificationCenterModal } from '../../components/health/NotificationCenterModal';
 import { AyushWidget, ayushWidgetShownOn } from '@/features/ayush/AyushWidget';
 
+const M2LabsRoute = lazy(() => import('@/features/m2store/views/M2LabsRoute').then(module => ({ default: module.M2LabsRoute })));
 const WebEmergencyCard = lazy(() => import('@/features/emergency/views/WebEmergencyCard').then(module => ({ default: module.WebEmergencyCard })));
 const IdentityVerifyView = lazy(() => import('@/features/auth/views/IdentityVerifyView').then(module => ({ default: module.IdentityVerifyView })));
 const WebPass = lazy(() => import('@/features/digital_id/views/WebPass').then(module => ({ default: module.WebPass })));
@@ -296,6 +297,8 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
       case 'my-requests': return <WebRequestsRoute />;
       case 'leave-campus': return <WebLeaveCampusRoute />;
       case 'delete-account': return <WebDeleteAccountRoute />;
+      // Mobile 2.0 Lab tests: the student shell had no lab tests page (its nav item had no route).
+      case 'lab-tests': return <M2LabsRoute />;
       default: return null;
     }
   };
