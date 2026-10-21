@@ -91,12 +91,14 @@ function Row({ icon, fill, ink, title, meta, onPress, trailing, testID }: {
 }
 
 const groupInr = new Intl.NumberFormat('en-IN', { maximumFractionDigits: 2 });
+/** Indian digit grouping for a catalogue price; a non-numeric price is shown as the server sent it. */
+const inr = (value: number | string): string => (typeof value === 'number' ? groupInr.format(value) : value);
 
 function plusLine(plan: Plan, t: ReturnType<typeof useT>): string {
   const quarter = plan.packages[0];
-  const price = groupInr.format(plan.price);
+  const price = inr(plan.price);
   return quarter
-    ? t('m2.prof.plusPrices', { price, months: quarter.months, total: groupInr.format(quarter.price) })
+    ? t('m2.prof.plusPrices', { price, months: quarter.months, total: inr(quarter.price) })
     : t('m2.prof.plusPrice', { price });
 }
 
