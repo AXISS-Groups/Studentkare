@@ -43,8 +43,9 @@ const page = (items: Facility[]) => ({ items, total: items.length, rankedBy: 'yo
 const granted: Locate = () => Promise.resolve({ status: 'granted', coordinates: HERE });
 const denied: Locate = () => Promise.resolve({ status: 'denied' });
 
-function links(): FindCareLinks & { book: ReturnType<typeof vi.fn>; sos: ReturnType<typeof vi.fn> } {
-  return { back: vi.fn(), sos: vi.fn(), book: vi.fn() };
+function links() {
+  const l = { back: vi.fn<() => void>(), sos: vi.fn<() => void>(), book: vi.fn<FindCareLinks['book']>() };
+  return l satisfies FindCareLinks;
 }
 
 function setup(routes: Record<string, unknown>, opts: { locate?: Locate; signedIn?: boolean } = {}) {
