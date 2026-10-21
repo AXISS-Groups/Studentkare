@@ -27,6 +27,9 @@ const workspacePaths: { path: string; access?: (role: AccountRole | null) => boo
   // Signed-in student web (canvas 3b): the home and Buy again. Partners keep /reorder.
   { path: '/home', access: hasRole('STUDENT') },
   { path: '/buy-again', access: hasRole('STUDENT') },
+  // My lab tests and Report insights (canvas 3b, WP-09).
+  { path: '/my-lab-tests', access: hasRole('STUDENT') },
+  { path: '/report-insights', access: hasRole('STUDENT') },
   { path: '/care-navigator' },
   { path: '/preventive-care' },
   { path: '/report-reviews', access: hasRole('NMC_DOCTOR') },
@@ -67,6 +70,10 @@ const workspacePaths: { path: string; access?: (role: AccountRole | null) => boo
   { path: '/camp-intake', access: hasRole('VENDOR', 'SUPER_ADMIN') },
   { path: '/vendor-camp-intake', access: hasRole('VENDOR', 'SUPER_ADMIN') },
   { path: '/camp-fast', access: hasRole('VENDOR', 'SUPER_ADMIN') },
+  { path: '/lab-reporting', access: hasRole('VENDOR', 'SUPER_ADMIN') },
+  { path: '/staff-verify', access: hasRole('VENDOR', 'SUPER_ADMIN') },
+  { path: '/staff-handover', access: hasRole('VENDOR', 'SUPER_ADMIN') },
+  { path: '/staff-collect', access: hasRole('VENDOR', 'SUPER_ADMIN') },
   { path: '/settlement', access: hasRole('VENDOR', 'SUPER_ADMIN') },
   { path: '/settlements', access: hasRole('VENDOR', 'SUPER_ADMIN') },
   { path: '/vendor-settlement', access: hasRole('VENDOR', 'SUPER_ADMIN') },
@@ -125,6 +132,9 @@ const workspacePaths: { path: string; access?: (role: AccountRole | null) => boo
   { path: '/return-request', access: hasRole('STUDENT') },
   { path: '/hostel-visit', access: hasRole('STUDENT') },
   { path: '/refill-request', access: hasRole('STUDENT') },
+  // Mobile 2.0 My health (Tier 1): Trends and Add a lab report, on the student's own stored lab values.
+  { path: '/health/trends', access: hasRole('STUDENT') },
+  { path: '/health/report-upload', access: hasRole('STUDENT') },
   { path: '/vendor', access: hasRole('VENDOR') },
   { path: '/clinician', access: hasRole('NMC_DOCTOR') },
   { path: '/clinician/queue', access: hasRole('NMC_DOCTOR') },
@@ -149,7 +159,13 @@ const workspacePaths: { path: string; access?: (role: AccountRole | null) => boo
   { path: '/campus-break-glass', access: hasRole('CAMPUS_ADMIN', 'SUPER_ADMIN') },
   // Crisis follow-up: counsellors (own campus, server-scoped) and the super admin only.
   { path: '/counsellor', access: hasRole('COUNSELLOR', 'SUPER_ADMIN') },
+  // Verify it's you (VerifyIdentity / WebVerify): in the student frame at every width.
+  { path: '/verify' },
   { path: '/emergency-card' },
+  // Tier 1 phone boards (WP-06): emergency contacts, the consent inbox and the care circle.
+  { path: '/ice-contacts', access: hasRole('STUDENT') },
+  { path: '/consent', access: hasRole('STUDENT') },
+  { path: '/care-circle', access: hasRole('STUDENT') },
   { path: '/pass' },
   // Phone search (design page 2: SearchEntry … DoctorResults). The catalogue is public; the boards need a session for booking.
   { path: '/search' },

@@ -5,6 +5,8 @@
 export interface PublicSettings {
   /** Longest the app waits at boot for the saved appearance before rendering with the default. (ms) */
   "appearance.boot_wait_ms": number;
+  /** How long the code screen waits before offering to send a new sign-in code. (seconds) */
+  "auth.otp_resend_seconds": number;
   /** Starting price of Premium, per month. Always shown as "from" this amount. (₹ per month (starting price)) */
   "billing.premium.from_monthly_inr": number;
   /** Price of the Student Plus membership, per month. (₹ per month) */
@@ -15,6 +17,16 @@ export interface PublicSettings {
   "consult.media_join_after_minutes": number;
   /** How early before the slot starts a video consult can be joined. (minutes) */
   "consult.media_join_before_minutes": number;
+  /** How often the SOS screen re-reads an open alert from GET /api/emergency/sos/current. (seconds) */
+  "emergency.sos_poll_seconds": number;
+  /** How far back a typed report's collection date may be. (years) */
+  "lab_results.collected_on_max_age_years": number;
+  /** Most values one lab report (document) may hold, drafts and confirmed together. (values) */
+  "lab_results.max_rows_per_report": number;
+  /** Most tests a student may bookmark on Trends. (tests) */
+  "lab_results.pinned_max": number;
+  /** Largest magnitude a typed value or printed range limit may have (catches typing slips). (any unit) */
+  "lab_results.value_abs_max": number;
   /** How long after marking a dose taken or skipped the student can undo it. (minutes) */
   "meds.dose_undo_minutes": number;
   /** Most reminder times one medication plan may have in a day. (doses per day) */
@@ -37,8 +49,12 @@ export interface PublicSettings {
   "rewards.referral_claim_window_hours": number;
   /** Points credited to the referrer when a friend who joined with their code is verified as a student. (points) */
   "rewards.referral_points": number;
+  /** The most of one listing a cart line may hold (the product page's quantity stepper). (units) */
+  "shop.cart_line_max": number;
   /** Products in the phone shop home's first shelf. (listings) */
   "shop.home_featured_count": number;
+  /** The order line students call to order medicines or book a lab test. Empty shows the call buttons as not available yet. (phone number (digits, optional leading +)) */
+  "shop.order_line_phone": string;
   /** Orders per page on the phone order history (GET /api/orders caps a page at 100). (orders) */
   "shop.orders_page_size": number;
   /** Listings per page on the phone product list (GET /api/catalog caps a page at 100). (listings) */
@@ -53,6 +69,8 @@ export interface PublicSettings {
   "shop.search_suggestions_max": number;
   /** How long a released lab report stays under Needs you on the student's Your Care page. (days) */
   "studentweb.report_ready_days": number;
+  /** Fewest values of one test, in one unit, before Trends draws a line between them. (values) */
+  "trends.min_points_for_line": number;
   /** How far back a day's manual activity totals may be entered. (days) */
   "wellness.activity_backdate_days": number;
   /** Longest distance one day's manual entry may record. (km) */
@@ -99,11 +117,17 @@ export interface PublicSettingSpec {
 
 export const publicSettingDefaults: Readonly<PublicSettings> = {
   "appearance.boot_wait_ms": 1500,
+  "auth.otp_resend_seconds": 45,
   "billing.premium.from_monthly_inr": 499,
   "billing.student_plus.monthly_inr": 149,
   "billing.student_plus.quarter_package_inr": 2199,
   "consult.media_join_after_minutes": 30,
   "consult.media_join_before_minutes": 15,
+  "emergency.sos_poll_seconds": 15,
+  "lab_results.collected_on_max_age_years": 30,
+  "lab_results.max_rows_per_report": 60,
+  "lab_results.pinned_max": 8,
+  "lab_results.value_abs_max": 10000000.0,
   "meds.dose_undo_minutes": 30,
   "meds.times_per_day_max": 6,
   "pharmacy.quote_expiry_hours": 0,
@@ -115,7 +139,9 @@ export const publicSettingDefaults: Readonly<PublicSettings> = {
   "public_site.youtube_url": "",
   "rewards.referral_claim_window_hours": 24,
   "rewards.referral_points": 50,
+  "shop.cart_line_max": 10,
   "shop.home_featured_count": 6,
+  "shop.order_line_phone": "",
   "shop.orders_page_size": 20,
   "shop.product_list_page_size": 24,
   "shop.recent_searches_max": 6,
@@ -123,6 +149,7 @@ export const publicSettingDefaults: Readonly<PublicSettings> = {
   "shop.search_results_max": 50,
   "shop.search_suggestions_max": 6,
   "studentweb.report_ready_days": 14,
+  "trends.min_points_for_line": 2,
   "wellness.activity_backdate_days": 366,
   "wellness.activity_distance_km_max": 200.0,
   "wellness.activity_energy_kcal_max": 10000.0,
@@ -142,11 +169,17 @@ export const publicSettingDefaults: Readonly<PublicSettings> = {
 
 export const publicSettingSpecs: Readonly<Record<PublicSettingKey, PublicSettingSpec>> = {
   "appearance.boot_wait_ms": { type: "int", min: 0, max: 10000, allowed: [], unit: "ms" },
+  "auth.otp_resend_seconds": { type: "int", min: 10, max: 300, allowed: [], unit: "seconds" },
   "billing.premium.from_monthly_inr": { type: "int", min: 1, max: 100000, allowed: [], unit: "\u20b9 per month (starting price)" },
   "billing.student_plus.monthly_inr": { type: "int", min: 1, max: 100000, allowed: [], unit: "\u20b9 per month" },
   "billing.student_plus.quarter_package_inr": { type: "int", min: 1, max: 1000000, allowed: [], unit: "\u20b9 per 3 months" },
   "consult.media_join_after_minutes": { type: "int", min: 0, max: 240, allowed: [], unit: "minutes" },
   "consult.media_join_before_minutes": { type: "int", min: 0, max: 120, allowed: [], unit: "minutes" },
+  "emergency.sos_poll_seconds": { type: "int", min: 5, max: 120, allowed: [], unit: "seconds" },
+  "lab_results.collected_on_max_age_years": { type: "int", min: 1, max: 100, allowed: [], unit: "years" },
+  "lab_results.max_rows_per_report": { type: "int", min: 1, max: 200, allowed: [], unit: "values" },
+  "lab_results.pinned_max": { type: "int", min: 1, max: 50, allowed: [], unit: "tests" },
+  "lab_results.value_abs_max": { type: "float", min: 1, max: 1000000000, allowed: [], unit: "any unit" },
   "meds.dose_undo_minutes": { type: "int", min: 0, max: 240, allowed: [], unit: "minutes" },
   "meds.times_per_day_max": { type: "int", min: 1, max: 24, allowed: [], unit: "doses per day" },
   "pharmacy.quote_expiry_hours": { type: "int", min: 0, max: 720, allowed: [], unit: "hours" },
@@ -158,7 +191,9 @@ export const publicSettingSpecs: Readonly<Record<PublicSettingKey, PublicSetting
   "public_site.youtube_url": { type: "str", min: null, max: null, allowed: [], unit: "https URL" },
   "rewards.referral_claim_window_hours": { type: "int", min: 1, max: 720, allowed: [], unit: "hours" },
   "rewards.referral_points": { type: "int", min: 0, max: 10000, allowed: [], unit: "points" },
+  "shop.cart_line_max": { type: "int", min: 1, max: 10, allowed: [], unit: "units" },
   "shop.home_featured_count": { type: "int", min: 1, max: 20, allowed: [], unit: "listings" },
+  "shop.order_line_phone": { type: "str", min: null, max: null, allowed: [], unit: "phone number (digits, optional leading +)" },
   "shop.orders_page_size": { type: "int", min: 1, max: 100, allowed: [], unit: "orders" },
   "shop.product_list_page_size": { type: "int", min: 1, max: 100, allowed: [], unit: "listings" },
   "shop.recent_searches_max": { type: "int", min: 0, max: 20, allowed: [], unit: "searches" },
@@ -166,6 +201,7 @@ export const publicSettingSpecs: Readonly<Record<PublicSettingKey, PublicSetting
   "shop.search_results_max": { type: "int", min: 1, max: 100, allowed: [], unit: "listings" },
   "shop.search_suggestions_max": { type: "int", min: 1, max: 20, allowed: [], unit: "suggestions" },
   "studentweb.report_ready_days": { type: "int", min: 1, max: 90, allowed: [], unit: "days" },
+  "trends.min_points_for_line": { type: "int", min: 2, max: 20, allowed: [], unit: "values" },
   "wellness.activity_backdate_days": { type: "int", min: 0, max: 3660, allowed: [], unit: "days" },
   "wellness.activity_distance_km_max": { type: "float", min: 1, max: 1000, allowed: [], unit: "km" },
   "wellness.activity_energy_kcal_max": { type: "float", min: 100, max: 50000, allowed: [], unit: "kcal" },

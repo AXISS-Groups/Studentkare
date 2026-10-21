@@ -1,8 +1,11 @@
 """Persistent account, clinical-self-service, and operational workflow tables."""
+from datetime import date
+
 from sqlalchemy import (
     JSON,
     Boolean,
     CheckConstraint,
+    Date,
     Float,
     ForeignKey,
     Index,
@@ -14,6 +17,9 @@ from sqlalchemy import (
 )
 from sqlalchemy import (
     false as sa_false,
+)
+from sqlalchemy import (
+    true as sa_true,
 )
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -132,6 +138,10 @@ class Preference(Base):
     # Daily water goal the owner set, in ml (bounds: wellness.water_goal_ml_*
     # settings). NULL = never set; the API then uses its default and says so.
     water_goal_ml: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    # Test keys the owner bookmarked on Trends (services/lab_results.py, D-M2-10).
+    # A test name is health data, so it lives here (clinical plane), never in
+    # client storage. NULL = never set (read as no bookmarks).
+    pinned_lab_tests: Mapped[list | None] = mapped_column(JSON, nullable=True)
 
 
 class WellnessGoal(Base):
@@ -1219,6 +1229,71 @@ class LabOrder(Base):
     review_note: Mapped[str] = mapped_column(String(1000), default="")
     created_at: Mapped[float] = mapped_column(Float, index=True)
     updated_at: Mapped[float] = mapped_column(Float, default=0.0)
+
+
+LAB_BODY_SYSTEMS = ("HEART_BLOOD", "BLOOD_SUGAR", "VITAMINS", "THYROID", "KIDNEY", "LIVER", "BLOOD_COUNT", "OTHER")
+LAB_RESULT_SOURCES = ("LAB_RELEASED", "STUDENT_CONFIRMED")
+LAB_RESULT_STATUSES = ("DRAFT", "CONFIRMED")
+
+
+class LabTestReference(Base):
+    """A lab test the app can name and group: no person, no value, no range.
+
+    Platform plane. ``body_system`` is the clinical lead's grouping and rows are
+    added only by a clinician-reviewed migration (``reviewed_by`` / ``reviewed_at``).
+    There is deliberately no reference range here: a value is only ever compared
+    with the range printed by the lab that measured it (care_lab_results).
+    """
+    __tablename__ = "care_lab_test_reference"
+    __table_args__ = (
+        CheckConstraint("body_system IN ('" + "', '".join(LAB_BODY_SYSTEMS) + "')",
+                        name="ck_care_lab_test_reference_body_system"),
+    )
+    code: Mapped[str] = mapped_column(String(40), primary_key=True)
+    display_name: Mapped[str] = mapped_column(String(120))
+    body_system: Mapped[str] = mapped_column(String(20))
+    default_unit: Mapped[str] = mapped_column(String(40), default="", server_default="")
+    active: Mapped[bool] = mapped_column(Boolean, default=True, server_default=sa_true())
+    reviewed_by: Mapped[str] = mapped_column(String(120), default="", server_default="")
+    reviewed_at: Mapped[float] = mapped_column(Float, default=0.0, server_default="0")
+
+
+class LabResult(Base):
+    """One value from one lab report, owned by the student it is about.
+
+    Clinical plane. A row typed by the student starts as DRAFT and is never
+    listed, trended or read by anything until the student confirms it
+    (``status`` CONFIRMED). ``ref_low`` / ``ref_high`` / ``ref_text`` are the
+    range exactly as the lab printed it; whether the value is inside it is
+    computed on every read and never stored. Rows with a ``lab_order_id`` are
+    visible only once that order is REPORT_RELEASED (the doctor's release gate).
+    """
+    __tablename__ = "care_lab_results"
+    __table_args__ = (
+        CheckConstraint("source IN ('" + "', '".join(LAB_RESULT_SOURCES) + "')", name="ck_care_lab_results_source"),
+        CheckConstraint("status IN ('" + "', '".join(LAB_RESULT_STATUSES) + "')", name="ck_care_lab_results_status"),
+        Index("ix_care_lab_results_account_status", "account_id", "status"),
+    )
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    account_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"), index=True)
+    test_code: Mapped[str | None] = mapped_column(ForeignKey("care_lab_test_reference.code"), nullable=True,
+                                                  index=True)
+    test_name_as_printed: Mapped[str] = mapped_column(String(120))
+    value_numeric: Mapped[float | None] = mapped_column(Float, nullable=True)
+    value_text: Mapped[str] = mapped_column(String(60), default="", server_default="")
+    unit: Mapped[str] = mapped_column(String(40), default="", server_default="")
+    ref_low: Mapped[float | None] = mapped_column(Float, nullable=True)
+    ref_high: Mapped[float | None] = mapped_column(Float, nullable=True)
+    ref_text: Mapped[str] = mapped_column(String(80), default="", server_default="")
+    collected_on: Mapped[date] = mapped_column(Date)
+    lab_name: Mapped[str] = mapped_column(String(120), default="", server_default="")
+    source: Mapped[str] = mapped_column(String(20))
+    document_id: Mapped[str | None] = mapped_column(ForeignKey("care_documents.id", ondelete="CASCADE"),
+                                                    nullable=True, index=True)
+    lab_order_id: Mapped[str | None] = mapped_column(ForeignKey("care_lab_orders.id"), nullable=True, index=True)
+    status: Mapped[str] = mapped_column(String(12), default="DRAFT")
+    created_at: Mapped[float] = mapped_column(Float)
+    confirmed_at: Mapped[float | None] = mapped_column(Float, nullable=True)
 
 
 class OpsEvent(Base):

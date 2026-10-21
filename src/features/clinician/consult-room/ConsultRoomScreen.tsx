@@ -1,328 +1,256 @@
-import React, { useEffect, useState } from 'react';
-import { actionBound, computed, makeObservable, observable, runInAction } from 'mobx';
+import React, { useEffect, useId, useState } from 'react';
+import { actionBound, computed, makeObservable, observable } from 'mobx';
 import { observer } from 'mobx-react-lite';
-import { demoDataEnabled } from '@/core/env';
-import { ConfirmDialog } from '@/components/interface/ConfirmDialog';
-import { Avatar, DestinationButton, EmptyStateView, ErrorStateView, SkButton, SkIcon, SkSkeleton as Skeleton, StatusPill, Tabs, SkToast as Toast } from '@/design-system';
+import { ConsultCallPanel } from '@/components/health/consult/ConsultCallPanel';
+import { ConfirmDialog, SkButton, SkSkeleton as Skeleton, StatusPill, Tabs, SkToast as Toast, useOnline } from '@/design-system';
+import { Icon } from '@/design-system/icons';
+import { useT } from '@/i18n';
 import { navigate } from '@/lib/utils/workflowRouting';
 import type { RoutePath } from '@/lib/utils/workflowRouting';
 import { ClinicianConsoleFrame } from '../shared/ClinicianConsoleFrame';
+import { ClinicianEmptyState, ClinicianErrorState } from '../shared/ClinicianStates';
 import { LoadableViewModel } from '../shared/LoadableViewModel';
-import type { Loadable } from '../shared/LoadableViewModel';
-import { initialsOf } from '../shared/names';
+import { OfflineNote } from '../shared/OfflineNote';
+import { slotLabel } from '../shared/clinicalData';
+import type { T } from '../shared/clinicalData';
+import { handOff, takeHandoff } from '../shared/handoff';
 import { REVIEW_ROUTES } from '../shared/reviewRoutes';
+import { SOAP_KEYS } from '../encounter-note/encounterModel';
+import { consultApiSource } from './consultModel';
+import type { ConsultData, ConsultSource } from './consultModel';
 import './consult-room.css';
-
-/**
- * ClinicianConsultRoom (design page 5). TIER 1 (live consult, shared records,
- * prescribing): awaiting a named design reviewer and clinical sign-off.
- *
- * No media is connected here: the stage shows the student's initials, and the
- * mic / camera buttons change only this screen's state.
- */
-
-export interface SharedRecord { id: string; name: string; meta: string }
-
-export interface ConsultData {
-  appointmentId: string;
-  patientName: string;
-  age: number;
-  /** "Video consult · started 10:02 · follow-up for fever" */
-  summary: string;
-  startedAt: Date;
-  checkIn?: { time: string; photoMatched: boolean };
-  /** Transport facts reported by the call service — never assumed. */
-  transport?: { encrypted: boolean; recorded: boolean };
-  records: SharedRecord[];
-  allergies: string[];
-  conditions: string[];
-  soap: { subjective: string; objective: string; assessment: string; plan: string };
-  medicines: { name: string; sig: string }[];
-  prescriptionSigned: boolean;
-  allergyChecked: boolean;
-  followUpHours: number | null;
-}
-
-export interface ConsultSource extends Loadable<ConsultData> {
-  end?: (appointmentId: string) => Promise<void>;
-  draftCertificate?: (appointmentId: string) => Promise<void>;
-}
-
-export function consultSample(): ConsultData {
-  return {
-    appointmentId: 'sample-rv',
-    patientName: 'Rohan Varma',
-    age: 19,
-    summary: 'Video consult · started 10:02 · follow-up for fever',
-    startedAt: new Date(Date.now() - 754 * 1000),
-    checkIn: { time: '09:58', photoMatched: true },
-    transport: { encrypted: true, recorded: false },
-    records: [
-      { id: 'r1', name: 'CBC report', meta: 'Released 18 Sep · reviewed' },
-      { id: 'r2', name: 'Previous consult note', meta: 'Dr. Reddy · 02 Sep' },
-      { id: 'r3', name: 'Vaccination record', meta: 'Hep B complete' },
-    ],
-    allergies: ['penicillin'],
-    conditions: [],
-    soap: {
-      subjective: 'Fever 3 days, max 101°F, body ache, no cough.',
-      objective: 'Looks well on video. Temp self-reported 100.2°F.',
-      assessment: 'Likely viral fever. No red flags.',
-      plan: 'Paracetamol, fluids, rest. CBC if fever > 5 days. Follow-up chat 72 h.',
-    },
-    medicines: [
-      { name: 'Paracetamol 650 mg', sig: '1 tablet · up to 3×/day after food · 3 days' },
-      { name: 'ORS sachet', sig: '1 in 1 L water · sip through the day · 3 days' },
-    ],
-    prescriptionSigned: true,
-    allergyChecked: true,
-    followUpHours: 72,
-  };
-}
-
-export const sampleConsultSource: ConsultSource = { load: async () => consultSample(), end: async () => undefined, draftCertificate: async () => undefined };
-const unconnectedConsultSource: ConsultSource = { load: async () => null };
 
 export type ConsultTab = 'records' | 'notes' | 'prescription';
 
-export interface EndCheck { label: string; done: boolean }
+export interface EndCheck { id: 'note' | 'rx' | 'allergy'; done: boolean }
 
+/**
+ * ClinicianConsultRoom (design page 5). Tier 1, approved by Krishna
+ * Chintakayala on 2026-10-21. Every end-of-call check is computed from the
+ * server's records, never asserted.
+ */
 export class ConsultRoomViewModel extends LoadableViewModel<ConsultData> {
   tab: ConsultTab = 'records';
-  micOn = true;
-  cameraOn = true;
   confirmingEnd = false;
-  ending = false;
   ended = false;
-  now: Date;
-  private clock: ReturnType<typeof setInterval> | null = null;
+  online = true;
+  private readonly wanted: { id: string | null };
 
-  constructor(private readonly source: ConsultSource, private readonly nowFn: () => Date = () => new Date()) {
-    super(source);
-    this.now = nowFn();
-    makeObservable<ConsultRoomViewModel, 'tick'>(this, {
-      tab: observable, micOn: observable, cameraOn: observable, confirmingEnd: observable, ending: observable, ended: observable, now: observable,
-      elapsed: computed, checks: computed,
-      setTab: actionBound, toggleMic: actionBound, toggleCamera: actionBound, askEnd: actionBound, cancelEnd: actionBound, tick: actionBound,
+  constructor(private readonly source: ConsultSource, private readonly t: T, preferredAppointment: string | null = null) {
+    const wanted = { id: preferredAppointment };
+    super({ load: () => source.load(wanted.id) });
+    this.wanted = wanted;
+    makeObservable(this, {
+      tab: observable, confirmingEnd: observable, ended: observable, online: observable,
+      checks: computed,
+      setTab: actionBound, askEnd: actionBound, cancelEnd: actionBound, end: actionBound, setOnline: actionBound,
     });
   }
 
-  protected isEmpty(): boolean { return false; }
-
-  startClock(): () => void {
-    this.clock = setInterval(() => this.tick(), 1000);
-    return () => { if (this.clock) clearInterval(this.clock); this.clock = null; };
+  /** Connected with no confirmed appointment: nothing to open. */
+  protected isEmpty(data: ConsultData): boolean {
+    return data.current === null;
   }
 
-  private tick(): void { this.now = this.nowFn(); }
+  setOnline(online: boolean): void { this.online = online; }
+  setTab(tab: ConsultTab): void { this.tab = tab; }
 
-  /** "12:34" since the consult started. */
-  get elapsed(): string {
-    const start = this.data?.startedAt;
-    if (!start) return '0:00';
-    const total = Math.max(0, Math.floor((this.now.getTime() - start.getTime()) / 1000));
-    return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, '0')}`;
+  /** Open another of today's confirmed appointments. */
+  async choose(appointmentId: string): Promise<void> {
+    if (this.ended) return;
+    this.wanted.id = appointmentId;
+    await this.load();
   }
 
-  /** Computed from the consult, never asserted: an unmet item shows as not done. */
   get checks(): EndCheck[] {
     const d = this.data;
     if (!d) return [];
-    const notesComplete = Object.values(d.soap).every((section) => section.trim().length > 0);
-    return [
-      { label: 'Notes complete', done: notesComplete },
-      { label: 'Prescription signed', done: d.medicines.length === 0 || d.prescriptionSigned },
-      { label: 'Allergy checked against medicines', done: d.allergyChecked },
-      { label: d.followUpHours ? `Follow-up window: ${d.followUpHours} h` : 'Follow-up window set', done: d.followUpHours !== null },
+    const checks: EndCheck[] = [
+      { id: 'note', done: d.note?.status === 'FINAL' },
+      { id: 'rx', done: d.prescriptions.length > 0 },
     ];
+    // The allergy line only means something when there is a prescription to check.
+    if (d.prescriptions.length > 0) checks.push({ id: 'allergy', done: d.prescriptions.every((p) => typeof p.allergyCheck.checkedAt === 'number') });
+    return checks;
   }
 
-  setTab(tab: ConsultTab): void { this.tab = tab; }
-  toggleMic(): void { this.micOn = !this.micOn; }
-  toggleCamera(): void { this.cameraOn = !this.cameraOn; }
   askEnd(): void { this.confirmingEnd = true; }
-  cancelEnd(): void { if (!this.ending) this.confirmingEnd = false; }
+  cancelEnd(): void { this.confirmingEnd = false; }
 
-  async end(): Promise<void> {
-    const end = this.source.end;
-    const id = this.data?.appointmentId;
-    if (!end || !id || this.ending) return;
-    this.ending = true;
-    try {
-      await end(id);
-      runInAction(() => { this.ending = false; this.confirmingEnd = false; this.ended = true; this.say('Summary sent · record access closed'); });
-    } catch {
-      runInAction(() => { this.ending = false; this.say('Couldn’t end the consult cleanly. The call is still open — try again.'); });
-    }
+  /** Leaves the call: the call panel unmounts and disconnects. Nothing on the server is closed by it. */
+  end(): void {
+    this.confirmingEnd = false;
+    this.ended = true;
+    this.say(this.t('clinConsult.toast.left'));
   }
 
-  async certificate(): Promise<void> {
-    const draft = this.source.draftCertificate;
-    const id = this.data?.appointmentId;
-    if (!draft || !id) return;
-    try {
-      await draft(id);
-      runInAction(() => this.say('Medical certificate drafted — review and sign it before it is sent'));
-    } catch {
-      runInAction(() => this.say('Couldn’t draft the certificate. Nothing was created.'));
-    }
+  async joinAsProvider(): Promise<void> {
+    const join = this.source.joinAsProvider;
+    const id = this.data?.current?.id;
+    if (!join || !id) throw new Error(this.t('clinConsult.cannotJoin'));
+    if (!this.online) throw new Error(this.t('clinShared.offlineWrite'));
+    await join(id);
   }
 }
 
-const TABS: { id: ConsultTab; label: string }[] = [
-  { id: 'records', label: 'Shared records' },
-  { id: 'notes', label: 'Notes (SOAP)' },
-  { id: 'prescription', label: 'Prescription' },
-];
+const SOAP_LABEL = { subjective: 'clinNote.subjective', objective: 'clinNote.objective', assessment: 'clinNote.assessment', plan: 'clinNote.plan' } as const;
+
+const CHECK_KEYS = {
+  note: { done: 'clinConsult.check.noteDone', missing: 'clinConsult.check.noteMissing' },
+  rx: { done: 'clinConsult.check.rxDone', missing: 'clinConsult.check.rxNone' },
+  allergy: { done: 'clinConsult.check.allergyDone', missing: 'clinConsult.check.allergyMissing' },
+} as const;
 
 export const ConsultRoomView = observer(function ConsultRoomView({ viewModel, onNavigate }: { viewModel: ConsultRoomViewModel; onNavigate: (route: RoutePath) => void }): React.ReactElement {
+  const t = useT();
+  const pickerId = useId();
   const { status, data } = viewModel;
-  useEffect(() => viewModel.startClock(), [viewModel]);
+  const tabs: { id: ConsultTab; label: string }[] = [
+    { id: 'records', label: t('clinConsult.tab.records') },
+    { id: 'notes', label: t('clinConsult.tab.notes') },
+    { id: 'prescription', label: t('clinConsult.tab.prescription') },
+  ];
+  const back = (
+    <button type="button" className="co-back" onClick={() => onNavigate('clinician')}>
+      <Icon name="arrow-left" size={16} />{t('clinConsult.backToday')}
+    </button>
+  );
 
   let body: React.ReactNode;
   if (status === 'loading') {
-    body = <div className="co-grid" aria-busy="true" aria-label="Opening the consult room"><Skeleton height={620} /><Skeleton height={620} /></div>;
+    body = <div className="co-grid" aria-busy="true" aria-label={t('clinConsult.loading')}><Skeleton height={620} /><Skeleton height={620} /></div>;
   } else if (status === 'error') {
-    body = <ErrorStateView title="Couldn’t open the consult room" onRetry={() => { void viewModel.load(); }} onHelp={() => onNavigate('support')} reference="Ref CONSULT · ClinicianConsultRoom" />;
-  } else if (status === 'unconnected' || !data) {
-    // The consult room layout with no consult in it, like the Super Admin screens.
-    body = (
-      <>
-        <div className="co-head sk-fade">
-          <h1 className="co-title">Consult room</h1>
-          <p className="co-sub">Open a consult from your queue. The call, the student’s shared records, your notes and the prescription sit side by side.</p>
-          <StatusPill tone="neutral" className="co-verified">No consult in progress</StatusPill>
-        </div>
-        <div className="co-grid">
-          <section className="co-stage co-stage--idle" aria-label="Video call">
-            <div className="co-idle" role="status">
-              <strong>The consult room isn’t connected yet.</strong>
-              <span>Video consults will open here once scheduling and calls are connected. No sample data is shown.</span>
-            </div>
-          </section>
-          <section className="co-panel" aria-label="Consult details">
-            <div className="co-panel__tabs"><Tabs label="Consult details" options={TABS} value={viewModel.tab} onChange={viewModel.setTab} controls="co-tabpanel" /></div>
-            <div id="co-tabpanel" className="co-panel__body" role="tabpanel">
-              <p className="co-idle__note">Shared records, notes and the prescription appear here for the student in the consult — and only while they share them.</p>
-            </div>
-          </section>
-        </div>
-      </>
-    );
+    body = <ClinicianErrorState title={t('clinConsult.errorTitle')} reference={t('clinConsult.reference')} onRetry={() => { void viewModel.load(); }} onHelp={() => onNavigate('support')} />;
+  } else if (status === 'unconnected' || status === 'empty' || !data || !data.current) {
+    body = <ClinicianEmptyState title={t('clinConsult.emptyTitle')} body={t('clinConsult.emptyBody')} action={{ label: t('clinConsult.openSchedule'), onSelect: () => onNavigate('clinician/schedule') }} />;
   } else if (viewModel.ended) {
-    body = <EmptyStateView title="Consult ended." body={`The summary went to ${data.patientName.split(' ')[0]} and your access to their shared records has closed.`} action={{ label: 'Back to Today', onClick: () => onNavigate('clinician') }} />;
+    // Shared material leaves the DOM with the call.
+    body = <ClinicianEmptyState title={t('clinConsult.endedTitle')} body={t('clinConsult.endedBody')} action={{ label: t('clinShared.backToday'), onSelect: () => onNavigate('clinician') }} />;
   } else {
-    const first = data.patientName.split(' ')[0];
+    const appt = data.current;
+    const state = data.state;
+    const note = data.note;
+    const first = appt.customer.split(' ')[0] || appt.customer;
+    const waiting = state?.studentJoined ? t('clinConsult.studentWaiting') : t('clinConsult.studentNotJoined');
+    const openNote = () => { handOff({ appointmentId: appt.id }); onNavigate(REVIEW_ROUTES.encounterNote()); };
+    const addMedicine = () => { handOff({ patientId: appt.patientId, encounterId: note?.id }); onNavigate(REVIEW_ROUTES.prescribe()); };
     body = (
       <>
         <div className="co-head sk-fade">
-          <h1 className="co-title">Consult · {data.patientName}, {data.age}</h1>
-          <p className="co-sub">{data.summary}</p>
-          {data.checkIn ? (
-            data.checkIn.photoMatched
-              ? <StatusPill tone="positive" className="co-verified"><SkIcon name="check" size={13} strokeWidth={2.6} />Verified at check-in · {data.checkIn.time} · photo matched</StatusPill>
-              : <StatusPill tone="danger" className="co-verified"><SkIcon name="alert" size={13} strokeWidth={2.4} />Photo did not match at check-in · {data.checkIn.time}</StatusPill>
-          ) : <StatusPill tone="neutral" className="co-verified">Not checked in</StatusPill>}
+          <h1 className="co-title">{t('clinConsult.title', { name: appt.customer })}</h1>
+          <p className="co-sub">{t('clinConsult.sub', { when: slotLabel(appt.slotStart), state: waiting })}</p>
+          {data.appointments.length > 1 ? (
+            <span className="co-picker">
+              <label htmlFor={pickerId} className="co-picker__label">{t('clinConsult.switch')}</label>
+              <select id={pickerId} className="co-picker__select" value={appt.id} onChange={(e) => { void viewModel.choose(e.target.value); }}>
+                {data.appointments.map((a) => <option key={a.id} value={a.id}>{t('clinConsult.option', { name: a.customer, when: slotLabel(a.slotStart) })}</option>)}
+              </select>
+            </span>
+          ) : null}
         </div>
+        <OfflineNote online={viewModel.online} loadedAt={viewModel.loadedAt} />
 
         <div className="co-grid">
-          <section className="co-stage" aria-label={`Video call with ${data.patientName}`}>
-            <div className="co-stage__top">
-              <span className="co-live"><span className="co-live__dot" aria-hidden="true" />LIVE</span>
-              <span className="co-timer sk-mono" role="timer" aria-label={`Call time ${viewModel.elapsed}`}>{viewModel.elapsed}</span>
-              <span className="co-grow" />
-              {data.transport ? <span className="co-transport">{data.transport.encrypted ? 'Encrypted' : 'Not encrypted'} · {data.transport.recorded ? 'recorded' : 'not recorded'}</span> : null}
-            </div>
-            <Avatar initials={initialsOf(data.patientName)} className="co-remote" />
-            <span className="co-self" aria-label={viewModel.cameraOn ? 'Your camera is on' : 'Your camera is off'}>{viewModel.cameraOn ? 'You · on camera' : 'Camera off'}</span>
+          <section className="co-stage" aria-label={t('clinConsult.stageLabel', { name: appt.customer })}>
+            {state?.liveMedia ? (
+              <ConsultCallPanel
+                key={appt.id}
+                appointmentId={appt.id}
+                party={first}
+                beforeJoin={() => viewModel.joinAsProvider()}
+                unavailableNote={<p className="co-idle" role="status"><strong>{t('clinConsult.mediaOff')}</strong></p>}
+              />
+            ) : (
+              <div className="co-idle" role="status">
+                <strong>{t('clinConsult.mediaOff')}</strong>
+                <span>{t('clinConsult.mediaOffBody')}</span>
+              </div>
+            )}
             <div className="co-controls">
-              <button type="button" className={`co-ctl${viewModel.micOn ? '' : ' is-off'}`} aria-pressed={!viewModel.micOn} aria-label={viewModel.micOn ? 'Mute microphone' : 'Unmute microphone'} onClick={viewModel.toggleMic}>
-                <SkIcon name={viewModel.micOn ? 'mic' : 'micOff'} size={20} />
+              {/* Screen sharing is not part of the call service yet. */}
+              <button type="button" className="co-ctl is-unavailable" aria-disabled="true" title={t('clinConsult.shareUnavailable')}>
+                <Icon name="monitor" size={20} /><span className="sk-visually-hidden">{t('clinConsult.shareUnavailable')}</span>
               </button>
-              <button type="button" className={`co-ctl${viewModel.cameraOn ? '' : ' is-danger'}`} aria-pressed={!viewModel.cameraOn} aria-label={viewModel.cameraOn ? 'Turn camera off' : 'Turn camera on'} onClick={viewModel.toggleCamera}>
-                <SkIcon name="video" size={20} />
-              </button>
-              <DestinationButton route={null} onNavigate={onNavigate} className="co-ctl"><SkIcon name="screen" size={20} /><span className="sk-visually-hidden">Share screen</span></DestinationButton>
-              <SkButton variant="danger" className="co-end" onClick={viewModel.askEnd}>End</SkButton>
+              <SkButton variant="on-hero" className="co-end" onClick={viewModel.askEnd}><Icon name="phone-off" size={18} />{t('clinConsult.end')}</SkButton>
             </div>
           </section>
 
-          <section className="co-panel" aria-label="Consult details">
-            <div className="co-panel__tabs"><Tabs label="Consult details" options={TABS} value={viewModel.tab} onChange={viewModel.setTab} controls="co-tabpanel" /></div>
+          <section className="co-panel" aria-label={t('clinConsult.details')}>
+            <div className="co-panel__tabs"><Tabs label={t('clinConsult.details')} options={tabs} value={viewModel.tab} onChange={viewModel.setTab} controls="co-tabpanel" /></div>
             <div id="co-tabpanel" className="co-panel__body" role="tabpanel">
               {viewModel.tab === 'records' ? (
-                <>
-                  <p className="co-note"><SkIcon name="info" size={15} />Shared by {first} for this consult only. Access ends when you end the call.</p>
-                  <ul className="co-records">
-                    {data.records.map((record) => (
-                      <li key={record.id} className="co-record">
-                        <span className="co-record__icon" aria-hidden="true"><SkIcon name="doc" size={18} /></span>
-                        <span className="co-record__text"><span className="co-record__name">{record.name}</span><span className="co-record__meta">{record.meta}</span></span>
-                        <DestinationButton route={null} onNavigate={onNavigate} className="sk-link">Open<span className="sk-visually-hidden"> {record.name}</span></DestinationButton>
-                      </li>
-                    ))}
-                  </ul>
-                  <div className="co-chips">
-                    {data.allergies.map((a) => <StatusPill key={a} tone="danger">Allergy: {a}</StatusPill>)}
-                    {data.conditions.length === 0 ? <StatusPill tone="neutral">No long-term conditions recorded</StatusPill> : data.conditions.map((c) => <StatusPill key={c} tone="neutral">{c}</StatusPill>)}
-                  </div>
-                </>
+                <p className="co-note co-note--info"><Icon name="info" size={15} />{t('clinConsult.recordsUnconnected', { name: first })}</p>
               ) : viewModel.tab === 'notes' ? (
                 <>
-                  <dl className="co-soap">
-                    {Object.entries(data.soap).map(([key, value]) => (<div key={key}><dt>{key.toUpperCase()}</dt><dd>{value || 'Not written yet'}</dd></div>))}
-                  </dl>
-                  <DestinationButton route={REVIEW_ROUTES.encounterNote()} onNavigate={onNavigate} className="sk-link">Open the full note</DestinationButton>
+                  {note ? (
+                    <dl className="co-soap">
+                      {SOAP_KEYS.map((key) => (<div key={key}><dt>{t(SOAP_LABEL[key]).toUpperCase()}</dt><dd>{note[key] || t('clinConsult.notWritten')}</dd></div>))}
+                    </dl>
+                  ) : <p className="co-idle__note">{t('clinConsult.noNote')}</p>}
+                  <SkButton variant="secondary" onClick={openNote}>{t(note ? 'clinConsult.openNote' : 'clinConsult.startNote')}</SkButton>
                 </>
               ) : (
                 <>
-                  <ul className="co-meds">
-                    {data.medicines.map((m) => <li key={m.name}><span className="co-record__name">{m.name}</span><span className="co-record__meta">{m.sig}</span></li>)}
-                  </ul>
-                  <StatusPill tone={data.prescriptionSigned ? 'positive' : 'attention'}>{data.prescriptionSigned ? 'Signed' : 'Not signed yet'}</StatusPill>
-                  <DestinationButton route={REVIEW_ROUTES.prescribe()} onNavigate={onNavigate} className="sk-link">Open the prescription</DestinationButton>
+                  {data.prescriptions.length > 0 ? (
+                    <ul className="co-meds">
+                      {data.prescriptions.flatMap((p) => p.items).map((item) => (
+                        <li key={item.id}>
+                          <span className="co-record__name">{[item.genericName, item.strength].filter(Boolean).join(' ')}</span>
+                          <span className="co-record__meta">{t('clinConsult.sig', { dose: item.dose, frequency: item.frequency, days: item.durationDays })}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : <p className="co-idle__note">{t(note ? 'clinConsult.noRx' : 'clinConsult.noRxNoNote')}</p>}
+                  {data.prescriptions.length > 0 ? <StatusPill tone="positive"><Icon name="check-2" size={13} />{t('clinConsult.rxIssued')}</StatusPill> : null}
                 </>
               )}
             </div>
             <div className="co-panel__actions">
-              <DestinationButton route="clinician/lab-orders" onNavigate={onNavigate} className="sk-btn sk-btn--secondary co-action">Order test</DestinationButton>
-              <DestinationButton route="clinician/referrals" onNavigate={onNavigate} className="sk-btn sk-btn--secondary co-action">Refer</DestinationButton>
-              <SkButton variant="secondary" className="co-action" onClick={() => { void viewModel.certificate(); }}>Certificate</SkButton>
+              <SkButton variant="secondary" className="co-action" onClick={addMedicine}><Icon name="plus" size={16} />{t('clinConsult.addMedicine')}</SkButton>
+              <SkButton variant="secondary" className="co-action" onClick={() => onNavigate('clinician/lab-orders')}>{t('clinConsult.orderTest')}</SkButton>
+              <SkButton variant="secondary" className="co-action" onClick={() => onNavigate('clinician/referrals')}>{t('clinConsult.refer')}</SkButton>
+              <SkButton variant="secondary" className="co-action" disabled aria-describedby="co-cert-why">{t('clinConsult.certificate')}</SkButton>
             </div>
+            <p id="co-cert-why" className="co-idle__note co-panel__why">{t('clinConsult.certificateUnavailable')}</p>
           </section>
         </div>
 
         <ConfirmDialog
           open={viewModel.confirmingEnd}
-          tone="destructive"
-          title={`End the consult with ${first}?`}
+          tone="action"
+          title={t('clinConsult.endTitle', { name: first })}
           body={
-            <ul className="co-checks" aria-label="Before you end">
-              {viewModel.checks.map((c) => (
-                <li key={c.label} className={c.done ? 'is-done' : 'is-missing'}>
-                  <SkIcon name={c.done ? 'check' : 'alert'} size={15} strokeWidth={2.4} />
-                  <span>{c.label}{c.done ? '' : ' — not done'}</span>
-                </li>
-              ))}
-            </ul>
+            <>
+              <ul className="co-checks" aria-label={t('clinConsult.beforeYouEnd')}>
+                {viewModel.checks.map((c) => (
+                  <li key={c.id} className={c.done ? 'is-done' : 'is-missing'}>
+                    <Icon name={c.done ? 'check-2' : 'alert-triangle'} size={15} strokeWidth={2.4} />
+                    <span>{t(c.done ? CHECK_KEYS[c.id].done : CHECK_KEYS[c.id].missing)}</span>
+                  </li>
+                ))}
+              </ul>
+              <p className="co-idle__note">{t('clinConsult.endBody')}</p>
+            </>
           }
-          confirmLabel="End consult"
-          cancelLabel="Stay in the call"
-          busy={viewModel.ending}
-          onConfirm={() => { void viewModel.end(); }}
+          confirmLabel={t('clinConsult.endConfirm')}
+          cancelLabel={t('clinConsult.stay')}
+          onConfirm={viewModel.end}
           onCancel={viewModel.cancelEnd}
         />
       </>
     );
   }
-  return <>{body}<Toast message={viewModel.toast} onDone={viewModel.clearToast} /></>;
+  return <div className="co-page">{back}{body}<Toast message={viewModel.toast} onDone={viewModel.clearToast} /></div>;
 });
 
 export function ConsultRoomScreen({ source }: { source?: ConsultSource }): React.ReactElement {
-  const [viewModel] = useState(() => new ConsultRoomViewModel(source ?? (demoDataEnabled() ? sampleConsultSource : unconnectedConsultSource)));
+  const t = useT();
+  const online = useOnline();
+  const [viewModel] = useState(() => new ConsultRoomViewModel(source ?? consultApiSource(), t, takeHandoff()?.appointmentId ?? null));
   useEffect(() => { void viewModel.load(); }, [viewModel]);
+  useEffect(() => { viewModel.setOnline(online); }, [viewModel, online]);
   return (
-    <ClinicianConsoleFrame current="consult-room" context="Consult room" contextShort="Consult" reviewPending>
+    <ClinicianConsoleFrame current="consult-room" context={t('clinConsult.context')} contextShort={t('clinConsult.contextShort')}>
       <ConsultRoomView viewModel={viewModel} onNavigate={navigate} />
     </ClinicianConsoleFrame>
   );

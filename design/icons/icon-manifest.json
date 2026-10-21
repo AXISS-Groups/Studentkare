@@ -143,6 +143,8 @@
     "LeaveCampus",
     "LoggedOut",
     "LostPhone",
+    "M2ReportUpload",
+    "M2Vaccines",
     "Medications",
     "MyPass",
     "NewDevice",
@@ -355,6 +357,7 @@
     "HomeDiscover",
     "Integrations",
     "Landing",
+    "M2Profile",
     "MoreHub",
     "NavSheets",
     "Notifications",
@@ -512,6 +515,10 @@
     "Landing",
     "LandingCampus",
     "LandingClinician",
+    "M2Product",
+    "M2Profile",
+    "M2ReportUpload",
+    "M2Trends",
     "PartnerStaff",
     "Prescribe",
     "ReportReviews",
@@ -1112,6 +1119,15 @@
     "IceContacts",
     "LabPackages",
     "LabResults",
+    "M2AskAyush",
+    "M2Consults",
+    "M2Insurance",
+    "M2Labs",
+    "M2Medicines",
+    "M2Product",
+    "M2ReportUpload",
+    "M2Trends",
+    "M2Vaccines",
     "Medications",
     "Movement",
     "MyReports",
@@ -1192,6 +1208,15 @@
     "CatalogOps",
     "DpdpQueue",
     "Integrations",
+    "M2Consults",
+    "M2Home",
+    "M2Insights",
+    "M2Insurance",
+    "M2Labs",
+    "M2Medicines",
+    "M2Orders",
+    "M2Trends",
+    "M2Vaccines",
     "SuperAdminConsole"
    ],
    "elements": [
@@ -1294,6 +1319,9 @@
     "CatalogOps",
     "DpdpQueue",
     "Integrations",
+    "M2AskAyush",
+    "M2Consults",
+    "M2Home",
     "SuperAdminConsole",
     "VerifyGate",
     "VerifyIdentity",
@@ -1897,6 +1925,7 @@
     "LabCollection",
     "LabQueue",
     "LabReporting",
+    "M2Profile",
     "PartnerStaff",
     "Prescribe",
     "ReportReviews",
@@ -2062,8 +2091,7 @@
     "WebRequests",
     "WebSecurity",
     "WebVault",
-    "WebVerify",
-    "YourCare"
+    "WebVerify"
    ],
    "elements": [
     [
@@ -2204,6 +2232,7 @@
     "CatalogOps",
     "DpdpQueue",
     "Integrations",
+    "M2Medicines",
     "SuperAdminConsole",
     "WebMyLabTests"
    ],
@@ -2301,6 +2330,10 @@
     "CampusSla",
     "CampusWater",
     "CampusWellness",
+    "M2Home",
+    "M2Insights",
+    "M2Labs",
+    "M2Medicines",
     "WebMyLabTests"
    ],
    "elements": [
@@ -2467,6 +2500,10 @@
     "CampusRoster",
     "HomeDiscover",
     "Landing",
+    "M2AskAyush",
+    "M2Consults",
+    "M2Home",
+    "M2Medicines",
     "Main",
     "Onboarding1",
     "Onboarding2",
@@ -2918,7 +2955,7 @@
    "kind": "line",
    "file": "icons/line/file-check.svg",
    "source": "canvas",
-   "uses": 25,
+   "uses": 24,
    "screens": [
     "CampusAccessRequests",
     "CampusAdminConsole",
@@ -2944,7 +2981,8 @@
     "CampusSettings",
     "CampusSla",
     "CampusWater",
-    "CampusWellness"
+    "CampusWellness",
+    "M2Consults"
    ],
    "elements": [
     [
@@ -3327,6 +3365,9 @@
     "CampusReports",
     "CampusRoster",
     "CampusSettings",
+    "M2Consults",
+    "M2Home",
+    "M2Product",
     "PaymentResult",
     "ResultCampBooked",
     "ResultLabBooked",
@@ -3380,7 +3421,11 @@
     "CampusSettings",
     "CampusSla",
     "CampusWater",
-    "CampusWellness"
+    "CampusWellness",
+    "M2Home",
+    "M2Insights",
+    "M2Labs",
+    "M2Medicines"
    ],
    "elements": [
     [
@@ -3601,6 +3646,9 @@
     "ClinicianConsultRoom",
     "ClinicianInbox",
     "ClinicianToday",
+    "M2Home",
+    "M2Labs",
+    "M2Medicines",
     "VendorHome",
     "VendorRxReview",
     "WebReportAssistant",
@@ -3871,6 +3919,7 @@
     "ClinicianSchedule",
     "ClinicianToday",
     "EncounterNote",
+    "M2Consults",
     "Prescribe",
     "ReportReviews"
    ],
@@ -3900,6 +3949,7 @@
    "source": "canvas",
    "uses": 19,
    "screens": [
+    "M2Profile",
     "StatusMoments",
     "WebAccount",
     "WebConsultSummary",
@@ -4318,6 +4368,9 @@
     "LabCollection",
     "LabQueue",
     "LabReporting",
+    "M2Home",
+    "M2Insurance",
+    "M2Orders",
     "PartnerStaff",
     "VendorCampIntake",
     "VendorCatalogue",
@@ -4545,11 +4598,15 @@
    "kind": "line",
    "file": "icons/line/chevron-right.svg",
    "source": "canvas",
-   "uses": 18,
+   "uses": 19,
    "screens": [
     "AccountDetails",
     "Checkout",
     "HelpCentre",
+    "M2Consults",
+    "M2Insights",
+    "M2Profile",
+    "M2ReportUpload",
     "MoreHub",
     "ProductDetail",
     "ReportInsights",
@@ -4559,7 +4616,8 @@
     "WebAccount",
     "WebMyLabTests",
     "WebReportInsights",
-    "WebSignIn"
+    "WebSignIn",
+    "M2Medicines"
    ],
    "elements": [
     [
@@ -4771,6 +4829,7 @@
     "ClinicianSchedule",
     "ClinicianToday",
     "EncounterNote",
+    "M2Home",
     "Prescribe",
     "ReportReviews",
     "WebReportInsights"
@@ -4857,6 +4916,7 @@
     "ClinicianSchedule",
     "ClinicianToday",
     "EncounterNote",
+    "M2Home",
     "Prescribe",
     "ReportReviews"
    ],
@@ -4897,6 +4957,8 @@
     "ClinicianSchedule",
     "ClinicianToday",
     "EncounterNote",
+    "M2Home",
+    "M2Profile",
     "Prescribe",
     "ReportReviews"
    ],
@@ -5347,6 +5409,10 @@
     "CampusOverview",
     "CampusSettings",
     "ClinicianConsultRoom",
+    "M2Home",
+    "M2Insurance",
+    "M2Product",
+    "M2Profile",
     "ProductList",
     "Teleconsult",
     "WebDashboard",
@@ -5457,6 +5523,8 @@
     "Landing",
     "LandingCampus",
     "LandingClinician",
+    "M2Home",
+    "M2Profile",
     "WebConsult",
     "WebLabList",
     "WebLabTests",
@@ -5492,6 +5560,7 @@
     "Landing",
     "LandingCampus",
     "LandingClinician",
+    "M2Profile",
     "WebConsult",
     "WebLabList",
     "WebLabTests",
@@ -5615,6 +5684,10 @@
     "CampusBreakGlass",
     "CampusIncidents",
     "HostelVisit",
+    "M2AskAyush",
+    "M2Home",
+    "M2Labs",
+    "M2Medicines",
     "WebAccount"
    ],
    "elements": [
@@ -5693,6 +5766,7 @@
    "screens": [
     "CampusAdminConsole",
     "ClinicianConsole",
+    "M2Profile",
     "VendorConsole",
     "WebAyush"
    ],
@@ -5716,8 +5790,7 @@
     "Onboarding2",
     "Payment",
     "PrescriptionUpload",
-    "WebVault",
-    "YourCare"
+    "WebVault"
    ],
    "elements": [
     [
@@ -5960,6 +6033,7 @@
    "uses": 4,
    "screens": [
     "HelpCentre",
+    "M2Profile",
     "SignIn",
     "Teleconsult",
     "WebLabTests"
@@ -6000,6 +6074,7 @@
    "source": "canvas",
    "uses": 3,
    "screens": [
+    "M2Medicines",
     "ReportInsights",
     "WebReportAssistant",
     "WebReportInsights"
@@ -6027,11 +6102,7 @@
    "file": "icons/line/compass.svg",
    "source": "canvas",
    "uses": 3,
-   "screens": [
-    "HomeDiscover",
-    "SearchEntry",
-    "YourCare"
-   ],
+   "screens": [],
    "elements": [
     [
      "circle",
@@ -6393,6 +6464,9 @@
    "uses": 3,
    "screens": [
     "ClaimsHub",
+    "M2Home",
+    "M2Medicines",
+    "M2Orders",
     "SearchEntry",
     "ShopHome"
    ],
@@ -6439,7 +6513,6 @@
    "uses": 3,
    "screens": [
     "AccountReady",
-    "HomeDiscover",
     "WebHome"
    ],
    "elements": [
@@ -6466,6 +6539,7 @@
    "source": "canvas",
    "uses": 3,
    "screens": [
+    "M2Labs",
     "ReportInsights",
     "WebReportAssistant",
     "WebReportInsights"
@@ -6678,6 +6752,7 @@
    "screens": [
     "ClinicianConsultRoom",
     "HomeDiscover",
+    "M2Home",
     "SearchEntry"
    ],
    "elements": [
@@ -6767,7 +6842,8 @@
    "source": "IconSystem",
    "uses": 2,
    "screens": [
-    "IconSystem"
+    "IconSystem",
+    "M2Profile"
    ],
    "elements": [
     [
@@ -6835,7 +6911,8 @@
    "source": "IconSystem",
    "uses": 2,
    "screens": [
-    "IconSystem"
+    "IconSystem",
+    "M2Home"
    ],
    "elements": [
     [
@@ -6989,7 +7066,9 @@
    "source": "IconSystem",
    "uses": 2,
    "screens": [
-    "IconSystem"
+    "IconSystem",
+    "M2Home",
+    "M2Insights"
    ],
    "elements": [
     [
@@ -7234,6 +7313,7 @@
    "source": "canvas",
    "uses": 2,
    "screens": [
+    "M2Labs",
     "WebConsult",
     "WebLabTests"
    ],
@@ -7278,6 +7358,8 @@
    "uses": 2,
    "screens": [
     "AccountDetails",
+    "M2Home",
+    "M2Profile",
     "WebAccount"
    ],
    "elements": [
@@ -7438,7 +7520,10 @@
    "source": "IconSystem",
    "uses": 2,
    "screens": [
-    "IconSystem"
+    "IconSystem",
+    "M2Home",
+    "M2Profile",
+    "M2Vaccines"
    ],
    "elements": [
     [
@@ -7500,7 +7585,8 @@
    "source": "canvas",
    "uses": 2,
    "screens": [
-    "Landing"
+    "Landing",
+    "M2Home"
    ],
    "elements": [
     [
@@ -7695,7 +7781,16 @@
    "source": "IconSystem",
    "uses": 2,
    "screens": [
-    "IconSystem"
+    "IconSystem",
+    "M2Consults",
+    "M2Home",
+    "M2Insights",
+    "M2Insurance",
+    "M2Labs",
+    "M2Medicines",
+    "M2Orders",
+    "M2Trends",
+    "M2Vaccines"
    ],
    "elements": [
     [
@@ -7725,7 +7820,8 @@
    "source": "canvas",
    "uses": 2,
    "screens": [
-    "Landing"
+    "Landing",
+    "M2Trends"
    ],
    "elements": [
     [
@@ -7917,7 +8013,10 @@
    "source": "IconSystem",
    "uses": 2,
    "screens": [
-    "IconSystem"
+    "IconSystem",
+    "M2Home",
+    "M2Medicines",
+    "M2Product"
    ],
    "elements": [
     [
@@ -7976,7 +8075,8 @@
    "source": "IconSystem",
    "uses": 2,
    "screens": [
-    "IconSystem"
+    "IconSystem",
+    "M2Home"
    ],
    "elements": [
     [
@@ -8113,6 +8213,7 @@
    "uses": 2,
    "screens": [
     "ClinicianConsultRoom",
+    "M2Medicines",
     "WebLoggedOut"
    ],
    "elements": [
@@ -8658,7 +8759,17 @@
    "source": "canvas",
    "uses": 1,
    "screens": [
-    "CreateAccount"
+    "CreateAccount",
+    "M2Consults",
+    "M2Home",
+    "M2Insights",
+    "M2Insurance",
+    "M2Labs",
+    "M2Medicines",
+    "M2Orders",
+    "M2Profile",
+    "M2Trends",
+    "M2Vaccines"
    ],
    "elements": [
     [
@@ -8936,6 +9047,8 @@
    "source": "canvas",
    "uses": 1,
    "screens": [
+    "M2Labs",
+    "M2Medicines",
     "WebReorder"
    ],
    "elements": [
@@ -9004,6 +9117,8 @@
    "source": "canvas",
    "uses": 1,
    "screens": [
+    "M2Home",
+    "M2Insurance",
     "SuperAdminConsole"
    ],
    "elements": [
@@ -9274,7 +9389,9 @@
    "source": "canvas",
    "uses": 1,
    "screens": [
-    "CampusBreakGlass"
+    "CampusBreakGlass",
+    "M2Home",
+    "M2Medicines"
    ],
    "elements": [
     [
@@ -9318,6 +9435,15 @@
    "source": "canvas",
    "uses": 1,
    "screens": [
+    "M2Consults",
+    "M2Home",
+    "M2Insights",
+    "M2Insurance",
+    "M2Labs",
+    "M2Medicines",
+    "M2Orders",
+    "M2Trends",
+    "M2Vaccines",
     "Onboarding1"
    ],
    "elements": [
@@ -9352,9 +9478,13 @@
    "kind": "line",
    "file": "icons/line/refresh.svg",
    "source": "canvas",
-   "uses": 1,
+   "uses": 2,
    "screens": [
-    "OtpVerify"
+    "M2Consults",
+    "M2Home",
+    "M2Medicines",
+    "OtpVerify",
+    "M2Insights"
    ],
    "elements": [
     [
@@ -9498,6 +9628,7 @@
    "source": "canvas",
    "uses": 1,
    "screens": [
+    "M2Home",
     "MoreHub"
    ],
    "elements": [
@@ -9550,7 +9681,8 @@
    "source": "canvas",
    "uses": 1,
    "screens": [
-    "Landing"
+    "Landing",
+    "M2Medicines"
    ],
    "elements": [
     [
@@ -9706,6 +9838,7 @@
    "source": "canvas",
    "uses": 1,
    "screens": [
+    "M2ReportUpload",
     "StaffHandover"
    ],
    "elements": [
@@ -9942,7 +10075,8 @@
    "source": "canvas",
    "uses": 1,
    "screens": [
-    "Landing"
+    "Landing",
+    "M2Home"
    ],
    "elements": [
     [
@@ -10447,7 +10581,10 @@
    "file": "icons/line/pill-alt.svg",
    "source": "IconSystem",
    "uses": 0,
-   "screens": [],
+   "screens": [
+    "M2Home",
+    "M2Medicines"
+   ],
    "elements": [
     [
      "rect",
@@ -10587,6 +10724,500 @@
      "path",
      {
       "d": "M 12 14 v 3"
+     }
+    ]
+   ]
+  },
+  {
+   "name": "doc-upload",
+   "kind": "line",
+   "file": "icons/line/doc-upload.svg",
+   "source": "kit",
+   "uses": 4,
+   "screens": [
+    "M2Home",
+    "M2Labs",
+    "M2Medicines",
+    "M2ReportUpload"
+   ],
+   "elements": [
+    [
+     "path",
+     {
+      "d": "M 14 3 H 7 a 2 2 0 0 0 -2 2 v 14 a 2 2 0 0 0 2 2 h 10 a 2 2 0 0 0 2 -2 V 8 z M 14 3 v 5 h 5"
+     }
+    ],
+    [
+     "path",
+     {
+      "d": "M 12 18 v -6 M 9.5 14.5 L 12 12 l 2.5 2.5"
+     }
+    ]
+   ]
+  },
+  {
+   "name": "thyroid",
+   "kind": "line",
+   "file": "icons/line/thyroid.svg",
+   "source": "kit",
+   "uses": 2,
+   "screens": [
+    "M2Insights",
+    "M2Labs"
+   ],
+   "elements": [
+    [
+     "path",
+     {
+      "d": "M 12 12 C 11 7.5 9.5 4 7.5 4 C 5.5 4 4 8.5 4 13 C 4 17.5 5.5 20 8 20 C 10 20 11 18.5 12 17 C 13 18.5 14 20 16 20 C 18.5 20 20 17.5 20 13 C 20 8.5 18.5 4 16.5 4 C 14.5 4 13 7.5 12 12 z"
+     }
+    ],
+    [
+     "path",
+     {
+      "d": "M 12 3 v 9"
+     }
+    ]
+   ]
+  },
+  {
+   "name": "card-lines",
+   "kind": "line",
+   "file": "icons/line/card-lines.svg",
+   "source": "kit",
+   "uses": 2,
+   "screens": [
+    "M2Home",
+    "M2Insurance"
+   ],
+   "elements": [
+    [
+     "rect",
+     {
+      "x": "3",
+      "y": "5",
+      "width": "18",
+      "height": "14",
+      "rx": "2.5"
+     }
+    ],
+    [
+     "path",
+     {
+      "d": "M 7 10 h 10 M 7 14 h 6"
+     }
+    ]
+   ]
+  },
+  {
+   "name": "ayush-spark",
+   "kind": "line",
+   "file": "icons/line/ayush-spark.svg",
+   "source": "kit",
+   "uses": 9,
+   "screens": [
+    "M2Consults",
+    "M2Home",
+    "M2Insights",
+    "M2Insurance",
+    "M2Labs",
+    "M2Medicines",
+    "M2Orders",
+    "M2Trends",
+    "M2Vaccines"
+   ],
+   "elements": [
+    [
+     "path",
+     {
+      "d": "M 12 3 v 4 M 12 17 v 4 M 3 12 h 4 M 17 12 h 4 M 5.6 5.6 l 2.8 2.8 M 15.6 15.6 l 2.8 2.8 M 5.6 18.4 l 2.8 -2.8 M 15.6 8.4 l 2.8 -2.8"
+     }
+    ]
+   ]
+  },
+  {
+   "name": "med-bottle",
+   "kind": "line",
+   "file": "icons/line/med-bottle.svg",
+   "source": "kit",
+   "uses": 1,
+   "screens": [
+    "M2Home"
+   ],
+   "elements": [
+    [
+     "rect",
+     {
+      "x": "8",
+      "y": "3",
+      "width": "8",
+      "height": "3.5",
+      "rx": "1"
+     }
+    ],
+    [
+     "path",
+     {
+      "d": "M 7 6.5 h 10 V 19 a 2 2 0 0 1 -2 2 H 9 a 2 2 0 0 1 -2 -2 z"
+     }
+    ],
+    [
+     "path",
+     {
+      "d": "M 10 13.5 h 4 M 12 11.5 v 4"
+     }
+    ]
+   ]
+  },
+  {
+   "name": "tray-open",
+   "kind": "line",
+   "file": "icons/line/tray-open.svg",
+   "source": "kit",
+   "uses": 0,
+   "screens": [],
+   "elements": [
+    [
+     "path",
+     {
+      "d": "M 3 9 h 18 M 5 9 V 6 a 2 2 0 0 1 2 -2 h 10 a 2 2 0 0 1 2 2 v 3 M 5 9 v 9 a 2 2 0 0 0 2 2 h 10 a 2 2 0 0 0 2 -2 V 9"
+     }
+    ],
+    [
+     "path",
+     {
+      "d": "M 10 13 h 4"
+     }
+    ]
+   ]
+  },
+  {
+   "name": "sprout",
+   "kind": "line",
+   "file": "icons/line/sprout.svg",
+   "source": "kit",
+   "uses": 2,
+   "screens": [
+    "M2Labs",
+    "M2Medicines"
+   ],
+   "elements": [
+    [
+     "path",
+     {
+      "d": "M 12 21 v -9"
+     }
+    ],
+    [
+     "path",
+     {
+      "d": "M 12 12 C 12 7.5 9.5 5 4.5 5 C 4.5 9.5 7 12 12 12 z"
+     }
+    ],
+    [
+     "path",
+     {
+      "d": "M 12 15 C 12 11 14.5 8.5 19.5 8.5 C 19.5 12.5 17 15 12 15 z"
+     }
+    ]
+   ]
+  },
+  {
+   "name": "walk",
+   "kind": "line",
+   "file": "icons/line/walk.svg",
+   "source": "kit",
+   "uses": 1,
+   "screens": [
+    "M2Trends"
+   ],
+   "elements": [
+    [
+     "circle",
+     {
+      "cx": "13",
+      "cy": "4.5",
+      "r": "2"
+     }
+    ],
+    [
+     "path",
+     {
+      "d": "M 12 8.5 L 10.5 14.5 L 7 21 M 10.5 14.5 L 14 17 L 14.5 21 M 7.5 12.5 L 9.5 9.5 L 12 8.5 L 14 11.5 L 17 12.5"
+     }
+    ]
+   ]
+  },
+  {
+   "name": "scooter",
+   "kind": "line",
+   "file": "icons/line/scooter.svg",
+   "source": "kit",
+   "uses": 1,
+   "screens": [
+    "M2Orders"
+   ],
+   "elements": [
+    [
+     "circle",
+     {
+      "cx": "6",
+      "cy": "17.5",
+      "r": "2.5"
+     }
+    ],
+    [
+     "circle",
+     {
+      "cx": "18.5",
+      "cy": "17.5",
+      "r": "2.5"
+     }
+    ],
+    [
+     "path",
+     {
+      "d": "M 15 6 h 3 M 16.5 6 L 18.5 17.5 M 8.5 17.5 H 13 l 4.2 -4.2 M 3.5 15.5 C 3.5 13.5 5 12 7 12 h 4.5"
+     }
+    ]
+   ]
+  },
+  {
+   "name": "bookmark",
+   "kind": "line",
+   "file": "icons/line/bookmark.svg",
+   "source": "kit",
+   "uses": 1,
+   "screens": [
+    "M2Trends"
+   ],
+   "elements": [
+    [
+     "path",
+     {
+      "d": "M 6 5 a 2 2 0 0 1 2 -2 h 8 a 2 2 0 0 1 2 2 v 16 l -6 -4 l -6 4 z"
+     }
+    ]
+   ]
+  },
+  {
+   "name": "plus-slash",
+   "kind": "line",
+   "file": "icons/line/plus-slash.svg",
+   "source": "kit",
+   "uses": 1,
+   "screens": [
+    "M2Home"
+   ],
+   "elements": [
+    [
+     "path",
+     {
+      "d": "M 12 5 v 14 M 5 12 h 14"
+     }
+    ],
+    [
+     "path",
+     {
+      "d": "M 7 7 l 10 10"
+     }
+    ]
+   ]
+  },
+  {
+   "name": "female",
+   "kind": "line",
+   "file": "icons/line/female.svg",
+   "source": "kit",
+   "uses": 1,
+   "screens": [
+    "M2Labs"
+   ],
+   "elements": [
+    [
+     "circle",
+     {
+      "cx": "12",
+      "cy": "9",
+      "r": "5"
+     }
+    ],
+    [
+     "path",
+     {
+      "d": "M 12 14 v 7 M 9 18 h 6"
+     }
+    ]
+   ]
+  },
+  {
+   "name": "male",
+   "kind": "line",
+   "file": "icons/line/male.svg",
+   "source": "kit",
+   "uses": 1,
+   "screens": [
+    "M2Labs"
+   ],
+   "elements": [
+    [
+     "circle",
+     {
+      "cx": "10",
+      "cy": "14",
+      "r": "5"
+     }
+    ],
+    [
+     "path",
+     {
+      "d": "M 13.5 10.5 L 20 4 M 15 4 h 5 v 5"
+     }
+    ]
+   ]
+  },
+  {
+   "name": "translate",
+   "kind": "line",
+   "file": "icons/line/translate.svg",
+   "source": "kit",
+   "uses": 1,
+   "screens": [
+    "M2Profile"
+   ],
+   "elements": [
+    [
+     "path",
+     {
+      "d": "M 3 5 h 10 M 8 3 v 2 M 5 5 c 1 4 3.5 6.5 7 7.5 M 11 5 c -1 4 -3.5 6.5 -7 7.5"
+     }
+    ],
+    [
+     "path",
+     {
+      "d": "M 13 21 l 4 -9 l 4 9 M 14.5 18 h 5"
+     }
+    ]
+   ]
+  },
+  {
+   "name": "plane",
+   "kind": "line",
+   "file": "icons/line/plane.svg",
+   "source": "kit",
+   "uses": 1,
+   "screens": [
+    "M2Insurance"
+   ],
+   "elements": [
+    [
+     "path",
+     {
+      "d": "M 12 3 c 0.8 0 1.5 1 1.5 2.5 V 10 l 7.5 4.5 V 16 l -7.5 -2 v 4 l 2.5 2 V 21 L 12 20 l -4 1 v -1 l 2.5 -2 v -4 L 3 16 v -1.5 L 10.5 10 V 5.5 C 10.5 4 11.2 3 12 3 z"
+     }
+    ]
+   ]
+  },
+  {
+   "name": "stomach",
+   "kind": "line",
+   "file": "icons/line/stomach.svg",
+   "source": "kit",
+   "uses": 1,
+   "screens": [
+    "M2Medicines"
+   ],
+   "elements": [
+    [
+     "path",
+     {
+      "d": "M 13 3 v 3 c 0 1.5 1 2 2.5 2 c 2.5 0 4.5 2 4.5 5 c 0 4.5 -3.5 8 -8.5 8 c -3 0 -5.5 -1.5 -6.5 -4 M 10 3 v 3.5 c 0 2 1 3.5 3 4.5 c 1.5 0.8 2 2 1.5 3.5 c -0.6 1.7 -2.6 2.3 -4.5 1.5 c -1.5 -0.6 -3 -0.9 -4.5 -0.5"
+     }
+    ]
+   ]
+  },
+  {
+   "name": "trend-arrow",
+   "kind": "line",
+   "file": "icons/line/trend-arrow.svg",
+   "source": "kit",
+   "uses": 3,
+   "screens": [
+    "M2Home",
+    "M2Labs",
+    "M2Medicines"
+   ],
+   "elements": [
+    [
+     "path",
+     {
+      "d": "M 3 17 l 6 -6 l 4 4 l 8 -8"
+     }
+    ],
+    [
+     "path",
+     {
+      "d": "M 15 7 h 6 v 6"
+     }
+    ]
+   ]
+  },
+  {
+   "name": "chart-line-axes",
+   "kind": "line",
+   "file": "icons/line/chart-line-axes.svg",
+   "source": "kit",
+   "uses": 1,
+   "screens": [
+    "M2Labs"
+   ],
+   "elements": [
+    [
+     "path",
+     {
+      "d": "M 4 4 v 16 h 16"
+     }
+    ],
+    [
+     "path",
+     {
+      "d": "M 8 15 l 3 -4 l 3 2 l 5 -6"
+     }
+    ]
+   ]
+  },
+  {
+   "name": "trend-zigzag",
+   "kind": "line",
+   "file": "icons/line/trend-zigzag.svg",
+   "source": "kit",
+   "uses": 1,
+   "screens": [
+    "M2Labs"
+   ],
+   "elements": [
+    [
+     "path",
+     {
+      "d": "M 3 17 l 6 -6 l 4 4 l 8 -8"
+     }
+    ]
+   ]
+  },
+  {
+   "name": "minus",
+   "kind": "line",
+   "file": "icons/line/minus.svg",
+   "source": "kit",
+   "uses": 1,
+   "screens": [
+    "M2Product"
+   ],
+   "elements": [
+    [
+     "path",
+     {
+      "d": "M 5 12 h 14"
      }
     ]
    ]
@@ -12073,6 +12704,46 @@
     "WebVerify"
    ],
    "hash": "91782db4d6"
+  },
+  {
+   "name": "chart-medicines-today-ring",
+   "kind": "chart",
+   "viewBox": "0 0 64 64",
+   "file": null,
+   "screens": [
+    "M2Home"
+   ],
+   "hash": "72a55774c7"
+  },
+  {
+   "name": "chart-order-route",
+   "kind": "chart",
+   "viewBox": "0 0 390 150",
+   "file": null,
+   "screens": [
+    "M2Orders"
+   ],
+   "hash": "a39df48fd7"
+  },
+  {
+   "name": "chart-test-trend",
+   "kind": "chart",
+   "viewBox": "0 0 314 190",
+   "file": null,
+   "screens": [
+    "M2Trends"
+   ],
+   "hash": "e2566dc9ab"
+  },
+  {
+   "name": "chart-profile-complete-ring",
+   "kind": "chart",
+   "viewBox": "0 0 92 92",
+   "file": null,
+   "screens": [
+    "M2Profile"
+   ],
+   "hash": "704628144f"
   }
  ],
  "screens": {
@@ -15503,15 +16174,13 @@
    "size": "390x844",
    "icons": [
     "arrow-right",
-    "compass",
     "flask-2",
     "map-pin",
     "map-pin-4",
     "mic",
     "search-2",
     "shield-2",
-    "sparkle",
-    "stethoscope"
+    "sparkle"
    ],
    "icons3d": [],
    "glyphs": [],
@@ -17091,7 +17760,6 @@
     "arrow-left",
     "arrow-right",
     "clock-2",
-    "compass",
     "droplet-2",
     "file-text",
     "first-aid-kit",
@@ -19617,12 +20285,9 @@
    "size": "390x1034",
    "icons": [
     "activity-3",
-    "compass",
     "doctor-2",
     "flask-2",
     "heart-pulse-2",
-    "lock-5",
-    "map-pin",
     "menu",
     "pill-2",
     "zap"
@@ -19640,6 +20305,360 @@
    "textGlyphs": [
     "\u2713"
    ]
+  },
+  "M2Home": {
+   "page": "9 \u00b7 Mobile 2.0 (approved 2026-10-21)",
+   "size": "390x1640",
+   "icons": [
+    "arrow-right",
+    "ayush-spark",
+    "bottle",
+    "box",
+    "calendar-2",
+    "card-lines",
+    "cart",
+    "chevron-down",
+    "doc",
+    "doc-upload",
+    "droplet",
+    "eye",
+    "first-aid-kit",
+    "heart-3",
+    "home",
+    "home-2",
+    "lab",
+    "map-pin-2",
+    "med-bottle",
+    "mic",
+    "moon-2",
+    "phone",
+    "pill-3",
+    "pill-alt",
+    "plus",
+    "plus-slash",
+    "qr-code-2",
+    "refresh",
+    "search",
+    "shield",
+    "shield-alert",
+    "star",
+    "stetho",
+    "syringe",
+    "thermo",
+    "trend-arrow",
+    "user-5"
+   ],
+   "icons3d": [],
+   "glyphs": [],
+   "illustrations": [],
+   "charts": [
+    "chart-medicines-today-ring"
+   ],
+   "brand": [],
+   "assets": [],
+   "textGlyphs": []
+  },
+  "M2Medicines": {
+   "page": "9 \u00b7 Mobile 2.0 (approved 2026-10-21)",
+   "size": "390x1640",
+   "icons": [
+    "arrow-left",
+    "arrow-right",
+    "ayush-spark",
+    "bottle",
+    "box",
+    "cart",
+    "chevron-right",
+    "doc-upload",
+    "droplet",
+    "eye",
+    "first-aid-kit",
+    "heart-3",
+    "home",
+    "message-circle",
+    "monitor",
+    "phone",
+    "pill-alt",
+    "refresh",
+    "search",
+    "sprout",
+    "stomach",
+    "sun",
+    "thermometer",
+    "trend-arrow",
+    "user-5",
+    "wind"
+   ],
+   "icons3d": [],
+   "glyphs": [],
+   "illustrations": [],
+   "charts": [],
+   "brand": [],
+   "assets": [],
+   "textGlyphs": []
+  },
+  "M2Product": {
+   "page": "9 \u00b7 Mobile 2.0 (approved 2026-10-21)",
+   "size": "390x1300",
+   "icons": [
+    "arrow-left",
+    "cart",
+    "chevron-down",
+    "flask",
+    "minus",
+    "plus"
+   ],
+   "icons3d": [],
+   "glyphs": [],
+   "illustrations": [],
+   "charts": [],
+   "brand": [],
+   "assets": [],
+   "textGlyphs": []
+  },
+  "M2Labs": {
+   "page": "9 \u00b7 Mobile 2.0 (approved 2026-10-21)",
+   "size": "390x1640",
+   "icons": [
+    "arrow-left",
+    "ayush-spark",
+    "bottle",
+    "box",
+    "chart-line-axes",
+    "doc-upload",
+    "droplet",
+    "dumbbell",
+    "female",
+    "heart-3",
+    "home",
+    "male",
+    "person-badge",
+    "phone",
+    "search",
+    "sprout",
+    "thermometer",
+    "thyroid",
+    "trend-arrow",
+    "trend-zigzag",
+    "user-5"
+   ],
+   "icons3d": [],
+   "glyphs": [],
+   "illustrations": [],
+   "charts": [],
+   "brand": [],
+   "assets": [],
+   "textGlyphs": []
+  },
+  "M2Consults": {
+   "page": "9 \u00b7 Mobile 2.0 (approved 2026-10-21)",
+   "size": "390x1640",
+   "icons": [
+    "arrow-left",
+    "arrow-right",
+    "ayush-spark",
+    "box",
+    "chevron-down",
+    "chevron-right",
+    "file-check",
+    "heart-3",
+    "home",
+    "refresh",
+    "shield",
+    "user-5",
+    "video-2"
+   ],
+   "icons3d": [],
+   "glyphs": [],
+   "illustrations": [],
+   "charts": [],
+   "brand": [],
+   "assets": [],
+   "textGlyphs": []
+  },
+  "M2Vaccines": {
+   "page": "9 \u00b7 Mobile 2.0 (approved 2026-10-21)",
+   "size": "390x1400",
+   "icons": [
+    "arrow-left",
+    "ayush-spark",
+    "box",
+    "check",
+    "heart-3",
+    "home",
+    "syringe",
+    "user-5"
+   ],
+   "icons3d": [],
+   "glyphs": [],
+   "illustrations": [],
+   "charts": [],
+   "brand": [],
+   "assets": [],
+   "textGlyphs": []
+  },
+  "M2Insurance": {
+   "page": "9 \u00b7 Mobile 2.0 (approved 2026-10-21)",
+   "size": "390x1200",
+   "icons": [
+    "arrow-left",
+    "ayush-spark",
+    "box",
+    "card-lines",
+    "heart-3",
+    "home",
+    "home-2",
+    "plane",
+    "plus",
+    "shield-alert",
+    "user-5"
+   ],
+   "icons3d": [],
+   "glyphs": [],
+   "illustrations": [],
+   "charts": [],
+   "brand": [],
+   "assets": [],
+   "textGlyphs": []
+  },
+  "M2Orders": {
+   "page": "9 \u00b7 Mobile 2.0 (approved 2026-10-21)",
+   "size": "390x1100",
+   "icons": [
+    "ayush-spark",
+    "box",
+    "first-aid-kit",
+    "heart-3",
+    "home",
+    "home-2",
+    "scooter",
+    "user-5"
+   ],
+   "icons3d": [],
+   "glyphs": [],
+   "illustrations": [],
+   "charts": [
+    "chart-order-route"
+   ],
+   "brand": [],
+   "assets": [],
+   "textGlyphs": []
+  },
+  "M2Insights": {
+   "page": "9 \u00b7 Mobile 2.0 (approved 2026-10-21)",
+   "size": "390x1780",
+   "icons": [
+    "ayush-spark",
+    "bottle",
+    "box",
+    "chevron-right",
+    "droplet",
+    "heart-3",
+    "home",
+    "refresh",
+    "stetho",
+    "thyroid",
+    "user-5"
+   ],
+   "icons3d": [],
+   "glyphs": [],
+   "illustrations": [],
+   "charts": [],
+   "brand": [],
+   "assets": [],
+   "textGlyphs": []
+  },
+  "M2Trends": {
+   "page": "9 \u00b7 Mobile 2.0 (approved 2026-10-21)",
+   "size": "390x1300",
+   "icons": [
+    "arrow-left",
+    "ayush-spark",
+    "bookmark",
+    "bowl",
+    "box",
+    "flask",
+    "heart-3",
+    "home",
+    "user-5",
+    "walk"
+   ],
+   "icons3d": [],
+   "glyphs": [],
+   "illustrations": [],
+   "charts": [
+    "chart-test-trend"
+   ],
+   "brand": [],
+   "assets": [],
+   "textGlyphs": []
+  },
+  "M2ReportUpload": {
+   "page": "9 \u00b7 Mobile 2.0 (approved 2026-10-21)",
+   "size": "390x1250",
+   "icons": [
+    "arrow-left",
+    "camera-2",
+    "check",
+    "chevron-right",
+    "doc-upload",
+    "flask"
+   ],
+   "icons3d": [],
+   "glyphs": [],
+   "illustrations": [],
+   "charts": [],
+   "brand": [],
+   "assets": [],
+   "textGlyphs": []
+  },
+  "M2AskAyush": {
+   "page": "9 \u00b7 Mobile 2.0 (approved 2026-10-21)",
+   "size": "390x844",
+   "icons": [
+    "arrow-left",
+    "arrow-right",
+    "phone",
+    "shield"
+   ],
+   "icons3d": [],
+   "glyphs": [],
+   "illustrations": [],
+   "charts": [],
+   "brand": [],
+   "assets": [],
+   "textGlyphs": []
+  },
+  "M2Profile": {
+   "page": "9 \u00b7 Mobile 2.0 (approved 2026-10-21)",
+   "size": "390x1400",
+   "icons": [
+    "chevron-right",
+    "credit-card",
+    "doc",
+    "flask",
+    "lock-4",
+    "map-pin-2",
+    "message-circle-3",
+    "plus",
+    "plus-square",
+    "scan",
+    "settings",
+    "shield-2",
+    "star",
+    "syringe",
+    "translate",
+    "user-5"
+   ],
+   "icons3d": [],
+   "glyphs": [],
+   "illustrations": [],
+   "charts": [
+    "chart-profile-complete-ring"
+   ],
+   "brand": [],
+   "assets": [],
+   "textGlyphs": []
   }
  },
  "assets": {
@@ -20047,6 +21066,7 @@
   "06-doctor": "5 \u00b7 Doctor",
   "07-partner-pharmacy-lab-clinic": "6 \u00b7 Partner \u2014 pharmacy, lab, clinic",
   "08-super-admin": "7 \u00b7 Super admin",
-  "09-design-system-flow-map": "8 \u00b7 Design system & flow map"
+  "09-design-system-flow-map": "8 \u00b7 Design system & flow map",
+  "10-mobile-2": "9 \u00b7 Mobile 2.0 (approved 2026-10-21)"
  }
 }

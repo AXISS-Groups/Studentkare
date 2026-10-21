@@ -18,7 +18,8 @@ vi.mock('@/lib/utils/workflowRouting', async (importOriginal) => ({
 
 import { BrowserRouter } from '@/core/navigation';
 import { WorkspaceScreen } from '../WorkspaceScreen';
-import { STUDENT_WEB_TABS, studentTabFor } from '../StudentPhoneFrame';
+import { STUDENT_NAV_ROUTES, isStudentNavRoot, studentNavFor } from '../StudentPhoneFrame';
+import { PILL_NAV } from '@/design-system/m2';
 import { drawsStudentPhoneFrame } from '../../../App';
 import manifest from '../../../../design/icons/icon-manifest.json';
 
@@ -38,58 +39,71 @@ beforeEach(() => {
 });
 afterEach(() => { window.matchMedia = original; });
 
-describe('student tab set (canvas HomeDiscover bottom bar)', () => {
-  it('has the canvas tabs, order and brief icon names, all in the manifest', () => {
-    expect(STUDENT_WEB_TABS.map(tab => tab.key)).toEqual(['discover', 'wellness', 'ayush', 'labTests', 'yourCare']);
-    expect(STUDENT_WEB_TABS.map(tab => tab.icon)).toEqual(['compass', 'map-pin', 'sparkle', 'flask-2', 'stethoscope']);
+describe('student pill nav (Mobile 2.0, approved 2026-10-21)', () => {
+  it('has the boards’ destinations, order and brief icon names, all in the manifest', () => {
+    expect(PILL_NAV.map(item => item.key)).toEqual(['home', 'orders', 'ayush', 'health', 'profile']);
+    expect(PILL_NAV.map(item => item.icon)).toEqual(['home', 'box', 'ayush-spark', 'heart-3', 'user-5']);
     const names = new Set((manifest as { icons: { name: string }[] }).icons.map(icon => icon.name));
-    for (const tab of STUDENT_WEB_TABS) expect(names.has(tab.icon)).toBe(true);
+    for (const item of PILL_NAV) expect(names.has(item.icon)).toBe(true);
   });
 
-  it('maps each tab to its route, and only tab routes to a tab', () => {
-    expect(STUDENT_WEB_TABS.map(tab => tab.path)).toEqual(['health', 'shop', 'ayush', 'lab-tests', 'your-care']);
-    expect(studentTabFor('health')).toBe('discover');
-    expect(studentTabFor('your-care')).toBe('yourCare');
-    expect(studentTabFor('appointments')).toBeNull();
-    expect(studentTabFor('notifications')).toBeNull();
+  it('maps each destination to its route; the store boards show Home as current', () => {
+    expect(Object.values(STUDENT_NAV_ROUTES)).toEqual(['health', 'orders', 'ayush', 'your-care', 'profile']);
+    expect(studentNavFor('health')).toBe('home');
+    expect(studentNavFor('your-care')).toBe('health');
+    for (const store of ['shop', 'lab-tests', 'care'] as const) expect(studentNavFor(store)).toBe('home');
+    expect(isStudentNavRoot('shop')).toBe(false);
+    expect(studentNavFor('appointments')).toBeNull();
+    expect(studentNavFor('notifications')).toBeNull();
   });
 });
 
 describe('student workspace at phone width', () => {
-  it('draws the phone header and the tab bar instead of the desktop shell', () => {
+  it('draws the pill nav instead of the desktop shell; Home draws its own header', async () => {
     render(<WorkspaceScreen route="health" />);
-    const bar = screen.getByRole('tablist', { name: 'Main sections' });
-    expect(within(bar).getAllByRole('tab').map(tab => tab.getAttribute('aria-label'))).toEqual(['Discover', 'Wellness', 'Ayush AI', 'Lab Tests', 'Your Care']);
-    expect(screen.getByRole('tab', { name: 'Discover' })).toHaveAttribute('aria-selected', 'true');
-    expect(screen.getByRole('heading', { name: 'Student Kare' })).toBeInTheDocument();
-    // Desktop shell pieces are gone: sidebar (until More is opened), greeting, old bottom nav.
+    const nav = screen.getByRole('navigation', { name: 'Main' });
+    expect(within(nav).getAllByRole('link').map(link => link.getAttribute('aria-label'))).toEqual(['Home', 'Orders', 'Ask Ayush', 'My health', 'Profile']);
+    expect(within(nav).getByRole('link', { name: 'Home' })).toHaveAttribute('aria-current', 'page');
+    expect(await screen.findByTestId('m2-home')).toBeInTheDocument();
+    // The board's header replaces the frame's: no frame title, no menu button.
+    expect(screen.queryByRole('heading', { name: 'Student Kare' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Open menu' })).toBeNull();
+    // Desktop shell pieces are gone: sidebar (until More is opened), greeting, old bottom nav, the old tab bar.
     expect(screen.queryByRole('navigation', { name: 'Main menu' })).toBeNull();
-    expect(screen.queryByText(/good to see you/i)).toBeNull();
+    expect(screen.queryByRole('tablist')).toBeNull();
     expect(document.querySelector('.wf-mobile-bottom-nav')).toBeNull();
   });
 
-  it('keeps SOS and notifications on Discover, and opens the helplines from SOS', () => {
+  it('keeps SOS and notifications on Home, and opens the helplines from SOS', async () => {
     // jsdom has no modal dialogs.
     HTMLDialogElement.prototype.showModal = function showModal(this: HTMLDialogElement) { this.setAttribute('open', ''); };
     HTMLDialogElement.prototype.close = function close(this: HTMLDialogElement) { this.removeAttribute('open'); };
     render(<WorkspaceScreen route="health" />);
+    await screen.findByTestId('m2-home');
     expect(screen.getByRole('button', { name: 'Notifications' })).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'SOS' }));
+    fireEvent.click(screen.getByRole('button', { name: 'SOS, get help now' }));
     expect(screen.getByRole('dialog')).toBeInTheDocument();
   });
 
-  it('gives a screen opened from a tab a back button and its own title, with no tab selected', () => {
+  it('opens the account menu (More) from the avatar on Home', async () => {
+    render(<WorkspaceScreen route="health" />);
+    fireEvent.click(await screen.findByRole('button', { name: 'Open your account menu' }));
+    expect(screen.getByTestId('more-hub')).toBeInTheDocument();
+  });
+
+  it('gives a screen opened from Home a back button and its own title, with no destination current', () => {
     render(<WorkspaceScreen route="notifications" />);
     expect(screen.getByRole('button', { name: 'Back' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Notifications' })).toBeInTheDocument();
-    for (const tab of screen.getAllByRole('tab')) expect(tab).toHaveAttribute('aria-selected', 'false');
+    for (const link of within(screen.getByRole('navigation', { name: 'Main' })).getAllByRole('link')) expect(link).not.toHaveAttribute('aria-current');
   });
 
-  it('opens the route of the pressed tab', () => {
+  it('opens the route of the pressed destination', () => {
     render(<WorkspaceScreen route="health" />);
-    fireEvent.click(screen.getByRole('tab', { name: 'Lab Tests' }));
-    fireEvent.click(screen.getByRole('tab', { name: 'Your Care' }));
-    expect(nav.calls).toEqual(['lab-tests', 'your-care']);
+    fireEvent.click(screen.getByRole('link', { name: 'Orders' }));
+    fireEvent.click(screen.getByRole('link', { name: 'My health' }));
+    fireEvent.click(screen.getByRole('link', { name: 'Ask Ayush' }));
+    expect(nav.calls).toEqual(['orders', 'your-care', 'ayush']);
   });
 
   it('opens the More panel (MoreHub board) from More, with log out in reach', () => {
@@ -115,25 +129,24 @@ describe('student workspace at phone width', () => {
   it('keeps the desktop shell above 430 px, and for staff', () => {
     phoneWidth(false);
     const { unmount } = render(<WorkspaceScreen route="health" />);
-    expect(screen.queryByRole('tablist')).toBeNull();
+    expect(screen.queryByTestId('pill-nav')).toBeNull();
     // Above the phone width a student gets the student web shell (S1), not the phone frame.
     expect(screen.getByRole('navigation', { name: translate('en', 'shell.sidebar.aria') })).toBeInTheDocument();
     unmount();
     phoneWidth(true);
     auth.user = { fullName: 'Demo Administrator', role: 'SUPER_ADMIN' };
     render(<WorkspaceScreen route="profile" />);
-    expect(screen.queryByRole('tablist')).toBeNull();
+    expect(screen.queryByTestId('pill-nav')).toBeNull();
   });
 });
 
 describe('phone boards in the frame (WP-04)', () => {
-  it('draws the Discover board on /health, with crisis support before search', async () => {
+  it('draws Mobile 2.0 Home on /health: SOS before search, and no health data beyond today’s medicines', async () => {
     render(<WorkspaceScreen route="health" />);
-    const board = await screen.findByTestId('home-discover');
-    const crisis = within(board).getByRole('link', { name: /Crisis support/ });
+    const board = await screen.findByTestId('m2-home');
+    const sos = within(board).getByRole('button', { name: 'SOS, get help now' });
     const search = within(board).getByRole('search', { name: 'Open search' });
-    expect(crisis.compareDocumentPosition(search) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(within(board).getByRole('button', { name: 'Call 112' })).toBeInTheDocument();
+    expect(sos.compareDocumentPosition(search) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
   it('lets a board with its own back control leave the header without one', async () => {
@@ -160,6 +173,9 @@ describe('app bar above the frame', () => {
     expect(drawsStudentPhoneFrame('/checkout', 'STUDENT', true)).toBe(true);
     expect(drawsStudentPhoneFrame('/checkout', 'STUDENT', false)).toBe(false);
     expect(drawsStudentPhoneFrame('/shop', null, true)).toBe(false);
-    expect(drawsStudentPhoneFrame('/lab-tests', 'STUDENT', true)).toBe(false);
+    // Mobile 2.0 Lab tests and Doctor consults are store boards in the frame too.
+    expect(drawsStudentPhoneFrame('/lab-tests', 'STUDENT', true)).toBe(true);
+    expect(drawsStudentPhoneFrame('/care', 'STUDENT', true)).toBe(true);
+    expect(drawsStudentPhoneFrame('/care', 'STUDENT', false)).toBe(false);
   });
 });

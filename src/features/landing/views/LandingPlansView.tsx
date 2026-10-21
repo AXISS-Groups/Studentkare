@@ -1,429 +1,268 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { pressable } from '@/lib/a11y/pressable';
-import { getPlans } from '@/data/datasets/billing';
+import React from 'react';
 import { planPackageLabels, planPriceLabel } from '@/data/datasets/billingPrices';
-import type { BillingPackage, BillingPlan } from '@/data/datasets/billing';
+import type { BillingPlan } from '@/data/datasets/billing';
 import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
+import { Icon, Illustration } from '@/design-system/icons';
 import { PublicSiteHeader, PublicSitePage } from '@/design-system/public-site';
-import './landing.css';
+import { PUBLIC_ROUTES } from '@/design-system/public-site/publicSiteNav';
+import { LwFaq, LwRulesPanel } from './landingWebKit';
+import { isInstitutionPlan, isNotSoldOnline, ONLINE_PLAN, usePlanCatalog } from './planCatalog';
+import './landingWeb.css';
+import './landingPlans.css';
 
 /**
- * Public plans page.
+ * Public plans page (design board WebPlans, Tier 1; approved by Krishna
+ * Chintakayala on 2026-10-21, plan docs/plans/tier1-canvas-wp01-2026-10-20.md).
  *
- * Plan names, prices and benefits come only from the server catalogue
- * (`GET /billing/plans`) — the same source the checkout uses. This page used
- * to hard-code "Premium ₹199" and "Care Circle ₹249" with features (unlimited
- * tracking, dose reminders, 5-member plans) that no plan on the server
- * offers. If the catalogue cannot be read, no price is shown at all.
+ * Every plan name, price, package and benefit comes from the server catalogue
+ * (`GET /billing/plans`, priced from the settings registry): the same source
+ * the checkout uses. One malformed plan and no price is shown at all. The
+ * board's own prices, its family plan, its pay-per-use "from" prices, its
+ * commission bars and its "most students" badge have no source, so they are
+ * not drawn. The hero art keeps its shapes and drops its lettering, which
+ * carried the board's prices.
  */
-type PlansState =
-  | { status: 'loading' }
-  | { status: 'error' }
-  | { status: 'ready'; plans: BillingPlan[] };
 
-const PAGE_X = 'clamp(16px, 3.5vw, 44px)';
+const INSTITUTION_HREF = '/partnerships';
 
-function isPackage(value: unknown): value is BillingPackage {
-  if (typeof value !== 'object' || value === null) return false;
-  const v = value as Record<string, unknown>;
-  return typeof v.id === 'string' && typeof v.months === 'number' && typeof v.price === 'number';
-}
+/** Policy rows: the same on every plan (statements kept in i18n, not pricing). */
+const SAME_ROWS: ReadonlyArray<{ label: MessageKey; note: MessageKey; value: MessageKey }> = [
+  { label: 'landing.plans.table.records', note: 'landing.plans.table.recordsNote', value: 'landing.plans.table.included' },
+  { label: 'landing.plans.table.card', note: 'landing.plans.table.cardNote', value: 'landing.plans.table.included' },
+  { label: 'landing.plans.table.crisis', note: 'landing.plans.table.crisisNote', value: 'landing.plans.table.alwaysFree' },
+  { label: 'landing.plans.table.critical', note: 'landing.plans.table.criticalNote', value: 'landing.plans.table.same' },
+  { label: 'landing.plans.table.export', note: 'landing.plans.table.exportNote', value: 'landing.plans.table.anyTime' },
+];
 
-function footKey(plan: BillingPlan): MessageKey | null {
-  if (plan.audience === 'institution') return 'landing.plans.foot.institution';
-  if (plan.id === 'FREE') return 'landing.plans.foot.free';
-  if (plan.id === 'STUDENT_PLUS') return 'landing.plans.foot.paid';
+const PAY_PER_USE: ReadonlyArray<{ label: MessageKey; note: MessageKey }> = [
+  { label: 'landing.plans.ppu.labLabel', note: 'landing.plans.ppu.labNote' },
+  { label: 'landing.plans.ppu.medicinesLabel', note: 'landing.plans.ppu.medicinesNote' },
+  { label: 'landing.plans.ppu.teleconsultLabel', note: 'landing.plans.ppu.teleconsultNote' },
+  { label: 'landing.plans.ppu.visitLabel', note: 'landing.plans.ppu.visitNote' },
+];
+
+const NEVER_RULES: ReadonlyArray<{ label: MessageKey; pays: boolean }> = [
+  { label: 'landing.plans.never.critical', pays: false },
+  { label: 'landing.plans.never.crisis', pays: false },
+  { label: 'landing.plans.never.access', pays: false },
+  { label: 'landing.plans.never.export', pays: false },
+  { label: 'landing.plans.never.benefits', pays: true },
+];
+
+const FAQS: ReadonlyArray<{ q: MessageKey; a: MessageKey }> = [
+  { q: 'landing.plans.faq.q1', a: 'landing.plans.faq.a1' },
+  { q: 'landing.plans.faq.q2', a: 'landing.plans.faq.a2' },
+  { q: 'landing.plans.faq.q3', a: 'landing.plans.faq.a3' },
+  { q: 'landing.plans.faq.q4', a: 'landing.plans.faq.a4' },
+];
+
+const SKELETON_CARDS = [1, 2, 3, 4] as const;
+
+function badgeKey(plan: BillingPlan): MessageKey | null {
+  if (isInstitutionPlan(plan)) return 'landing.plans.badge.institution';
+  if (isNotSoldOnline(plan)) return 'landing.plans.badge.notOnline';
+  if (typeof plan.price !== 'number') return 'landing.plans.badge.everyAccount';
   return null;
 }
 
-function isPlan(value: unknown): value is BillingPlan {
-  if (typeof value !== 'object' || value === null) return false;
-  const v = value as Record<string, unknown>;
-  return typeof v.id === 'string' && typeof v.name === 'string' && typeof v.period === 'string' &&
-    typeof v.description === 'string' && typeof v.audience === 'string' &&
-    (typeof v.price === 'number' || typeof v.price === 'string') &&
-    Array.isArray(v.benefits) && v.benefits.every((b) => typeof b === 'string') &&
-    (v.priceFrom === undefined || typeof v.priceFrom === 'boolean') &&
-    (v.packages === undefined || (Array.isArray(v.packages) && v.packages.every(isPackage)));
+function footKey(plan: BillingPlan): MessageKey | null {
+  if (isInstitutionPlan(plan)) return 'landing.plans.foot.institution';
+  if (isNotSoldOnline(plan)) return 'landing.plans.foot.notOnline';
+  if (typeof plan.price !== 'number') return 'landing.plans.foot.free';
+  if (plan.id === ONLINE_PLAN) return 'landing.plans.foot.paid';
+  return null;
 }
 
-/** Fail closed: one malformed plan and no price is shown at all. */
-function parsePlans(value: unknown): BillingPlan[] | null {
-  if (typeof value !== 'object' || value === null) return null;
-  const plans = (value as Record<string, unknown>).plans;
-  return Array.isArray(plans) && plans.every(isPlan) ? plans : null;
-}
-
-function usePlanCatalog(): { state: PlansState; reload: () => void } {
-  const [state, setState] = useState<PlansState>({ status: 'loading' });
-  const [attempt, setAttempt] = useState(0);
-  useEffect(() => {
-    let live = true;
-    setState({ status: 'loading' });
-    getPlans()
-      .then((catalog: unknown) => {
-        if (!live) return;
-        const plans = parsePlans(catalog);
-        setState(plans ? { status: 'ready', plans } : { status: 'error' });
-      })
-      .catch(() => { if (live) setState({ status: 'error' }); });
-    return () => { live = false; };
-  }, [attempt]);
-  const reload = useCallback(() => setAttempt((n) => n + 1), []);
-  return { state, reload };
+function PlanCard({ plan }: { plan: BillingPlan }): React.ReactElement {
+  const t = useT();
+  const institution = isInstitutionPlan(plan);
+  const free = !institution && typeof plan.price !== 'number';
+  const notOnline = isNotSoldOnline(plan);
+  const badge = badgeKey(plan);
+  const foot = footKey(plan);
+  const headingId = `lp-plan-${plan.id}`;
+  const tone = institution ? ' lp-plan--institution' : free ? ' lp-plan--free' : '';
+  return (
+    <article className={`lp-plan${tone}`} aria-labelledby={headingId}>
+      {badge ? <span className="lp-plan__badge">{t(badge)}</span> : null}
+      <h3 className="lp-plan__name" id={headingId}>{plan.name}</h3>
+      <p className="lp-plan__price">
+        <span className="lp-plan__amount">{planPriceLabel(plan, t)}</span>
+        <span className="lp-plan__period">{plan.period}</span>
+      </p>
+      {planPackageLabels(plan, t).map((label) => (
+        <span key={label} className="lp-plan__package">{label}</span>
+      ))}
+      <p className="lp-plan__desc">{plan.description}</p>
+      <span className="lp-plan__rule" aria-hidden="true" />
+      {plan.benefits.length > 0 ? (
+        <ul className="lp-plan__benefits">
+          {plan.benefits.map((b) => (
+            <li key={b} className="lp-plan__benefit">
+              <Icon name="check" size={15} strokeWidth={2.6} className="lp-plan__tick" />
+              <span>{b}</span>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="lp-plan__pending">{t('landing.plans.benefitsPending')}</p>
+      )}
+      <span className="lp-plan__spacer" />
+      {notOnline ? null : (
+        <a
+          className={`lp-plan__cta${free ? ' lp-plan__cta--primary' : institution ? ' lp-plan__cta--light' : ''}`}
+          href={institution ? INSTITUTION_HREF : PUBLIC_ROUTES.signIn}
+        >
+          {free ? t('landing.plans.ctaStudent') : institution ? t('landing.plans.ctaInstitution') : t('landing.plans.choose', { name: plan.name })}
+        </a>
+      )}
+      {foot ? <p className="lp-plan__foot">{t(foot)}</p> : null}
+    </article>
+  );
 }
 
 export function LandingPlansView(): React.ReactElement {
   const t = useT();
-  const [openFaq, setOpenFaq] = useState<number | null>(0);
   const { state, reload } = usePlanCatalog();
-
-  const payPerUse: { label: MessageKey; note: MessageKey }[] = [
-    { label: 'landing.plans.ppu.labLabel', note: 'landing.plans.ppu.labNote' },
-    { label: 'landing.plans.ppu.medicinesLabel', note: 'landing.plans.ppu.medicinesNote' },
-    { label: 'landing.plans.ppu.teleconsultLabel', note: 'landing.plans.ppu.teleconsultNote' },
-    { label: 'landing.plans.ppu.visitLabel', note: 'landing.plans.ppu.visitNote' }
-  ];
-
-  const neverRules: { label: MessageKey; on: boolean }[] = [
-    { label: 'landing.plans.never.critical', on: false },
-    { label: 'landing.plans.never.crisis', on: false },
-    { label: 'landing.plans.never.access', on: false },
-    { label: 'landing.plans.never.export', on: false },
-    { label: 'landing.plans.never.benefits', on: true }
-  ];
-
-  const faqs: { q: MessageKey; a: MessageKey }[] = [
-    { q: 'landing.plans.faq.q1', a: 'landing.plans.faq.a1' },
-    { q: 'landing.plans.faq.q2', a: 'landing.plans.faq.a2' },
-    { q: 'landing.plans.faq.q3', a: 'landing.plans.faq.a3' },
-    { q: 'landing.plans.faq.q4', a: 'landing.plans.faq.a4' }
-  ];
-
-  const pillars: { title: MessageKey; body: MessageKey }[] = [
-    { title: 'landing.plans.pillars.privateTitle', body: 'landing.plans.pillars.privateBody' },
-    { title: 'landing.plans.pillars.listedTitle', body: 'landing.plans.pillars.listedBody' },
-    { title: 'landing.plans.pillars.nearTitle', body: 'landing.plans.pillars.nearBody' },
-    { title: 'landing.plans.pillars.priceTitle', body: 'landing.plans.pillars.priceBody' }
-  ];
+  const plans = state.status === 'ready' ? state.plans : [];
+  const studentPlans = plans.filter((p) => !isInstitutionPlan(p));
 
   return (
-    <PublicSitePage header={<PublicSiteHeader current="plans" variant="compact" />}>
-
-      {/* 2. Top Banner with Background Video */}
-      <section
-        aria-label={t('landing.plans.nav.plans')}
-        style={{
-          flexShrink: 0,
-          position: 'relative',
-          margin: `22px ${PAGE_X} 0`,
-          height: '240px',
-          borderRadius: '28px',
-          background: 'var(--sk-color-brand-navy)',
-          display: 'flex',
-          alignItems: 'center',
-          overflow: 'hidden'
-        }}
-      >
-        <video
-          src="/assets/fabac8217d14af9d87dd5d5244554ee7.mp4"
-          autoPlay
-          muted
-          loop
-          playsInline
-          aria-hidden="true"
-          style={{ position: 'absolute', top: 0, right: 0, width: '72%', height: '100%', objectFit: 'cover' }}
-        />
-        <span
-          aria-hidden="true"
-          style={{
-            position: 'absolute',
-            inset: 0,
-            background: 'linear-gradient(90deg, var(--sk-color-brand-navy) 0%, var(--sk-color-brand-navy) 30%, rgba(6,5,26,0.55) 52%, rgba(6,5,26,0) 78%)'
-          }}
-        />
-        <div style={{ position: 'relative', zIndex: 1, width: '480px', padding: '0 0 0 clamp(20px, 3vw, 40px)', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          <span style={{ fontSize: '11.5px', fontWeight: 800, letterSpacing: '1.4px', color: 'var(--sk-color-sidebar-ink-2)' }}>
-            {t('landing.plans.banner.eyebrow')}
-          </span>
-          <span style={{ fontSize: '32px', lineHeight: 1.2, fontWeight: 800, color: 'var(--sk-color-sidebar-ink)', letterSpacing: '-0.8px' }}>
-            {t('landing.plans.banner.title')}
-          </span>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', paddingTop: '4px' }}>
-            {(['landing.plans.chip.cancel', 'landing.plans.chip.perUse', 'landing.plans.chip.crisis'] as const).map((chip) => (
-              <span key={chip} style={{ height: '30px', padding: '0 12px', borderRadius: '999px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.22)', display: 'flex', alignItems: 'center', fontSize: '12px', fontWeight: 700, color: 'var(--sk-color-sidebar-ink)' }}>
-                {t(chip)}
-              </span>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* 3. Centered Header */}
-      <section style={{ padding: `50px ${PAGE_X} 0`, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', textAlign: 'center' }}>
-        <h1 style={{ margin: 0, maxWidth: '820px', fontSize: 'clamp(32px, 4vw, 46px)', lineHeight: 1.1, fontWeight: 800, color: 'var(--sk-color-text)', letterSpacing: '-1.5px' }}>
-          {t('landing.plans.h1')}
-        </h1>
-        <p style={{ margin: 0, maxWidth: '640px', fontSize: '16px', lineHeight: 1.6, fontWeight: 500, color: 'var(--sk-color-text-2)' }}>
-          {t('landing.plans.intro')}
-        </p>
-      </section>
-
-      {/* 4. Plan Cards — only what the server catalogue publishes */}
-      <section aria-live="polite" style={{ padding: `34px ${PAGE_X} 0`, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '20px', alignItems: 'stretch' }}>
-        {state.status === 'loading' ? (
-          <p role="status" style={{ margin: 0, fontSize: '14px', color: 'var(--sk-color-text-3)' }}>{t('landing.plans.loading')}</p>
-        ) : null}
-        {state.status === 'error' ? (
-          <div role="alert" style={{ padding: '24px', borderRadius: '20px', background: 'var(--sk-color-surface)', border: '1px solid var(--sk-color-rule)', display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-start' }}>
-            <span style={{ fontSize: '15px', fontWeight: 800, color: 'var(--sk-color-text)' }}>{t('landing.plans.loadFailedTitle')}</span>
-            <span style={{ fontSize: '13.5px', lineHeight: 1.6, color: 'var(--sk-color-text-2)' }}>{t('landing.plans.loadFailedBody')}</span>
-            <button type="button" onClick={reload} style={{ minHeight: '44px', padding: '0 20px', borderRadius: '12px', border: 'none', background: 'var(--sk-color-action)', color: 'var(--sk-color-on-action)', fontSize: '13.5px', fontWeight: 800, cursor: 'pointer' }}>
-              {t('common.tryAgain')}
-            </button>
-          </div>
-        ) : null}
-        {state.status === 'ready' && state.plans.length === 0 ? (
-          <p style={{ margin: 0, fontSize: '14px', color: 'var(--sk-color-text-3)' }}>{t('landing.plans.empty')}</p>
-        ) : null}
-        {state.status === 'ready' ? state.plans.map((p) => {
-          const institution = p.audience === 'institution';
-          const foot = footKey(p);
-          return (
-            <div
-              key={p.id}
-              style={{
-                padding: '26px',
-                borderRadius: '22px',
-                background: 'var(--sk-color-surface)',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '8px',
-                border: '1px solid var(--sk-color-rule-soft)'
-              }}
-            >
-              <h2 style={{ margin: 0, fontSize: '16px', fontWeight: 800, color: 'var(--sk-color-text)' }}>
-                {p.name}
-              </h2>
-
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', flexWrap: 'wrap' }}>
-                <span style={{ fontSize: '38px', fontWeight: 800, letterSpacing: '-1.4px', color: 'var(--sk-color-text)' }}>
-                  {planPriceLabel(p, t)}
-                </span>
-                <span style={{ fontSize: '12.5px', fontWeight: 600, color: 'var(--sk-color-text-3)' }}>
-                  {p.period}
-                </span>
-              </div>
-
-              {planPackageLabels(p, t).map((label) => (
-                <span key={label} style={{ fontSize: '13px', fontWeight: 700, color: 'var(--sk-color-text)' }}>
-                  {label}
-                </span>
+    <PublicSitePage header={<PublicSiteHeader current="plans" variant="compact" />} art="alternate">
+      <section className="lp-hero" aria-label={t('landing.plans.hero.eyebrow')}>
+        <div className="lp-hero__copy">
+          <span className="lw-eyebrow">{t('landing.plans.hero.eyebrow')}</span>
+          <p className="lp-hero__title" aria-hidden="true">{t('landing.plans.hero.title')}</p>
+          {studentPlans.length > 0 ? (
+            <ul className="lp-hero__chips" aria-label={t('landing.plans.hero.chipsAria')}>
+              {studentPlans.map((p) => (
+                <li key={p.id} className="lp-hero__chip">
+                  {t('landing.plans.hero.chip', { name: p.name, price: planPriceLabel(p, t) })}
+                </li>
               ))}
+            </ul>
+          ) : null}
+        </div>
+        <div className="lp-hero__art">
+          <Illustration name="illustration-care-circle-network" width={640} height={187} withoutText />
+        </div>
+      </section>
 
-              <span style={{ fontSize: '12px', lineHeight: 1.55, fontWeight: 500, color: 'var(--sk-color-text-3)' }}>
-                {p.description}
-              </span>
+      <section className="lp-intro" aria-labelledby="lp-title">
+        <h1 className="lw-h1 lp-intro__title" id="lp-title">{t('landing.plans.hero.title')}</h1>
+        <p className="lw-lede lp-intro__lede">{t('landing.plans.intro')}</p>
+        <span className="lp-intro__lock" aria-hidden="true">
+          <Icon name="lock-6" size={44} strokeWidth={1.9} />
+        </span>
+      </section>
 
-              <span style={{ height: '1px', background: 'var(--sk-color-rule-soft)', margin: '10px 0 4px' }} />
-
-              <ul style={{ display: 'flex', flexDirection: 'column', gap: '6px', margin: 0, padding: 0, listStyle: 'none' }}>
-                {p.benefits.map((i) => (
-                  <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', padding: '4px 0' }}>
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--sk-color-positive)" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: '3px' }} aria-hidden="true">
-                      <path d="M5 12.5l4.5 4.5L19 7" />
-                    </svg>
-                    <span style={{ fontSize: '12.5px', lineHeight: 1.5, fontWeight: 500, color: 'var(--sk-color-text)' }}>
-                      {i}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-
-              <span style={{ flexGrow: 1 }} />
-
-              <a
-                href={institution ? '/partnerships' : '/login'}
-                style={{
-                  marginTop: '16px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  height: '48px',
-                  borderRadius: '12px',
-                  fontSize: '13.5px',
-                  fontWeight: 800,
-                  textDecoration: 'none',
-                  background: 'var(--sk-color-surface-3)',
-                  color: 'var(--sk-color-action)'
-                }}
-              >
-                {t(institution ? 'landing.plans.ctaInstitution' : 'landing.plans.ctaStudent')}
-              </a>
-
-              {foot ? (
-                <span style={{ paddingTop: '9px', fontSize: '11px', lineHeight: 1.5, fontWeight: 600, color: 'var(--sk-color-text-3)' }}>
-                  {t(foot)}
-                </span>
-              ) : null}
+      <section className="lw-section lp-cards-section" aria-label={t('landing.plans.cardsAria')}>
+        <div aria-live="polite">
+          {state.status === 'loading' ? (
+            <div role="status" aria-label={t('landing.plans.loading')} className="lp-cards">
+              {SKELETON_CARDS.map((n) => (
+                <div key={n} className="lp-plan lp-plan--skeleton" aria-hidden="true">
+                  <span className="lp-skel lp-skel--short" />
+                  <span className="lp-skel lp-skel--price" />
+                  <span className="lp-skel" />
+                  <span className="lp-skel" />
+                  <span className="lp-skel lp-skel--short" />
+                </div>
+              ))}
             </div>
-          );
-        }) : null}
+          ) : null}
+          {state.status === 'error' ? (
+            <div role="alert" className="lw-state lw-state--error lp-error">
+              <span className="lw-state__title">{t('landing.plans.loadFailedTitle')}</span>
+              <span className="lw-state__body">{t('landing.plans.loadFailedBody')}</span>
+              <button type="button" className="lw-btn lw-btn--primary" onClick={reload}>
+                {t('common.tryAgain')}
+              </button>
+              <span className="lp-error__ref">{t('landing.plans.errorRef')}</span>
+            </div>
+          ) : null}
+          {state.status === 'ready' && plans.length === 0 ? (
+            <p className="lw-state">{t('landing.plans.empty')}</p>
+          ) : null}
+          {plans.length > 0 ? (
+            <ul className="lp-cards">
+              {plans.map((p) => (
+                <li key={p.id} className="lp-cards__item">
+                  <PlanCard plan={p} />
+                </li>
+              ))}
+            </ul>
+          ) : null}
+        </div>
       </section>
 
-      {/* 5. Pay Per Use Grid — no prices typed here; each is shown where you book */}
-      <section style={{ margin: `44px ${PAGE_X} 0`, padding: '34px 40px', borderRadius: '24px', background: 'var(--sk-color-surface)', border: '1px solid var(--sk-color-rule-soft)', display: 'flex', gap: '46px', alignItems: 'flex-start', flexWrap: 'wrap' }}>
-        <div style={{ flex: '1 1 340px', maxWidth: '400px', display: 'flex', flexDirection: 'column', gap: '11px' }}>
-          <span style={{ fontSize: '11.5px', fontWeight: 800, color: 'var(--sk-color-action)', letterSpacing: '1.3px' }}>{t('landing.plans.payPerUse.eyebrow')}</span>
-          <h2 style={{ margin: 0, fontSize: '28px', lineHeight: 1.16, fontWeight: 800, color: 'var(--sk-color-text)', letterSpacing: '-0.9px' }}>
-            {t('landing.plans.payPerUse.title')}
-          </h2>
-          <p style={{ margin: 0, fontSize: '14px', lineHeight: 1.6, fontWeight: 500, color: 'var(--sk-color-text-2)' }}>
-            {t('landing.plans.payPerUse.body')}
-          </p>
-        </div>
-        <div style={{ flex: '1 1 400px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px' }}>
-          {payPerUse.map((p) => (
-            <span key={p.label} style={{ padding: '18px', borderRadius: '14px', background: 'var(--sk-color-surface-2)', border: '1px solid var(--sk-color-rule-soft)', display: 'flex', flexDirection: 'column', gap: '5px' }}>
-              <span style={{ fontSize: '14.5px', fontWeight: 700, color: 'var(--sk-color-text)' }}>{t(p.label)}</span>
-              <span style={{ fontSize: '11.5px', fontWeight: 500, color: 'var(--sk-color-text-3)' }}>{t(p.note)}</span>
-            </span>
-          ))}
-        </div>
+      <section className="lw-card lp-table" aria-labelledby="lp-table-title">
+        <h2 className="lw-h2" id="lp-table-title">{t('landing.plans.table.title')}</h2>
+        <table className="lp-table__grid">
+          <caption className="sk-visually-hidden">{t('landing.plans.table.caption')}</caption>
+          <thead>
+            <tr>
+              <th scope="col">{t('landing.plans.table.colWhat')}</th>
+              <th scope="col">{t('landing.plans.table.colFree')}</th>
+              <th scope="col" className="lp-table__paid">{t('landing.plans.table.colPaid')}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {SAME_ROWS.map((r) => (
+              <tr key={r.label}>
+                <th scope="row">
+                  <span className="lp-table__label">{t(r.label)}</span>
+                  <span className="lp-table__note">{t(r.note)}</span>
+                </th>
+                <td data-label={t('landing.plans.table.colFree')}>{t(r.value)}</td>
+                <td data-label={t('landing.plans.table.colPaid')}>{t(r.value)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <p className="lp-table__foot">{t('landing.plans.table.note')}</p>
       </section>
 
-      {/* 6. Where Your Money Goes — no commission rate is configured, so none is shown */}
-      <section style={{ margin: `40px ${PAGE_X} 0`, padding: '34px 40px', borderRadius: '24px', background: 'var(--sk-color-positive-bg)', display: 'flex', flexDirection: 'column', gap: '11px' }}>
-        <span style={{ fontSize: '11.5px', fontWeight: 800, color: 'var(--sk-color-positive)', letterSpacing: '1.3px' }}>{t('landing.plans.money.eyebrow')}</span>
-        <h2 style={{ margin: 0, maxWidth: '720px', fontSize: '28px', lineHeight: 1.16, fontWeight: 800, color: 'var(--sk-color-text)', letterSpacing: '-0.9px' }}>
-          {t('landing.plans.money.title')}
-        </h2>
-        <p style={{ margin: 0, maxWidth: '720px', fontSize: '14px', lineHeight: 1.6, fontWeight: 500, color: 'var(--sk-color-text-2)' }}>
-          {t('landing.plans.money.body')}
-        </p>
-        <p style={{ margin: 0, maxWidth: '720px', fontSize: '12.5px', lineHeight: 1.6, fontWeight: 500, color: 'var(--sk-color-positive)' }}>
-          {t('landing.plans.money.ranking')}
-        </p>
-      </section>
-
-      {/* 7. What a Plan Never Does */}
-      <section
-        style={{
-          margin: `44px ${PAGE_X} 0`,
-          padding: '44px clamp(20px, 4vw, 50px)',
-          borderRadius: '24px',
-          background: 'var(--sk-color-brand-navy)',
-          display: 'flex',
-          gap: '52px',
-          flexWrap: 'wrap'
-        }}
-      >
-        <div style={{ flex: '1 1 360px', maxWidth: '450px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
-          <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--sk-color-sidebar-ink-2)', letterSpacing: '1.3px' }}>{t('landing.plans.never.eyebrow')}</span>
-          <h2 style={{ margin: 0, fontSize: '31px', lineHeight: 1.14, fontWeight: 800, color: 'var(--sk-color-sidebar-ink)', letterSpacing: '-1px' }}>
-            {t('landing.plans.never.title')}
-          </h2>
-          <p style={{ margin: 0, fontSize: '14px', lineHeight: 1.65, fontWeight: 500, color: 'var(--sk-color-sidebar-ink-3)' }}>
-            {t('landing.plans.never.body')}
-          </p>
+      <section className="lw-card lp-ppu" aria-labelledby="lp-ppu-title">
+        <div className="lp-ppu__copy">
+          <span className="lw-eyebrow">{t('landing.plans.payPerUse.eyebrow')}</span>
+          <h2 className="lw-h2" id="lp-ppu-title">{t('landing.plans.payPerUse.title')}</h2>
+          <p className="lw-lede">{t('landing.plans.payPerUse.body')}</p>
         </div>
-        <ul style={{ flex: '1 1 380px', display: 'flex', flexDirection: 'column', margin: 0, padding: 0, listStyle: 'none' }}>
-          {neverRules.map((n) => (
-            <li key={n.label} style={{ display: 'flex', alignItems: 'center', gap: '13px', padding: '12px 0', borderBottom: '1px solid rgba(255,255,255,0.10)' }}>
-              <span aria-hidden="true" style={{ width: '8px', height: '8px', borderRadius: '999px', flexShrink: 0, background: n.on ? 'var(--sk-color-positive-fill)' : 'var(--sk-color-danger-fill)' }} />
-              <span style={{ flexGrow: 1, fontSize: '14px', fontWeight: 600, color: 'var(--sk-color-sidebar-ink)' }}>{t(n.label)}</span>
-              <span
-                style={{
-                  padding: '4px 11px',
-                  borderRadius: '999px',
-                  fontSize: '10px',
-                  fontWeight: 800,
-                  letterSpacing: '0.5px',
-                  background: 'rgba(255,255,255,0.12)',
-                  color: 'var(--sk-color-sidebar-ink)'
-                }}
-              >
-                {t(n.on ? 'landing.plans.never.tagPayFor' : 'landing.plans.never.tagNeverPaid')}
-              </span>
+        <ul className="lp-ppu__grid">
+          {PAY_PER_USE.map((p) => (
+            <li key={p.label} className="lp-ppu__tile">
+              <span className="lp-ppu__label">{t(p.label)}</span>
+              <span className="lp-ppu__note">{t(p.note)}</span>
             </li>
           ))}
         </ul>
       </section>
 
-      {/* 8. FAQs */}
-      <section style={{ padding: `44px ${PAGE_X} 0`, display: 'flex', flexDirection: 'column', gap: '18px' }}>
-        <h2 style={{ margin: 0, fontSize: '30px', fontWeight: 800, color: 'var(--sk-color-text)', letterSpacing: '-1px' }}>
-          {t('landing.plans.faq.title')}
-        </h2>
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
-          {faqs.map((f, idx) => {
-            const isOpen = openFaq === idx;
-            return (
-              <div
-                key={f.q}
-                {...pressable(() => setOpenFaq(isOpen ? null : idx))} aria-expanded={isOpen}
-                style={{
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                  gap: '20px',
-                  minHeight: '44px',
-                  padding: '20px 0',
-                  borderBottom: '1px solid var(--sk-color-rule)',
-                  cursor: 'pointer'
-                }}
-              >
-                <div style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <span style={{ fontSize: '16px', fontWeight: 700, color: 'var(--sk-color-text)' }}>{t(f.q)}</span>
-                  {isOpen && (
-                    <span style={{ maxWidth: '940px', fontSize: '14px', lineHeight: 1.6, fontWeight: 500, color: 'var(--sk-color-text-2)' }}>
-                      {t(f.a)}
-                    </span>
-                  )}
-                </div>
-                <svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="var(--sk-color-text-3)"
-                  strokeWidth="2.2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  style={{ transform: isOpen ? 'rotate(180deg)' : 'none', marginTop: '3px', transition: 'transform 0.2s ease' }}
-                  aria-hidden="true"
-                >
-                  <path d="M6 9l6 6 6-6" />
-                </svg>
-              </div>
-            );
-          })}
+      <section className="lp-money" aria-labelledby="lp-money-title">
+        <div className="lp-money__copy">
+          <span className="lp-money__eyebrow">{t('landing.plans.money.eyebrow')}</span>
+          <h2 className="lw-h2 lp-money__title" id="lp-money-title">{t('landing.plans.money.title')}</h2>
+          <p className="lp-money__body">{t('landing.plans.money.body')}</p>
         </div>
+        <p className="lp-money__ranking">{t('landing.plans.money.ranking')}</p>
       </section>
 
-      {/* 9. Trust Pillars */}
-      <section
-        aria-label={t('landing.plans.pillars.label')}
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-          gap: '20px',
-          margin: '64px clamp(16px, 4vw, 72px) 0',
-          padding: '40px 24px',
-          borderRadius: '28px',
-          background: 'var(--sk-color-surface)',
-          border: '1px solid var(--sk-color-rule-soft)'
-        }}
-      >
-        {pillars.map((p) => (
-          <div key={p.title} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '10px', padding: '0 14px' }}>
-            <span style={{ fontSize: '18px', fontWeight: 800, color: 'var(--sk-color-text)', letterSpacing: '-0.3px' }}>{t(p.title)}</span>
-            <span style={{ fontSize: '13.5px', lineHeight: 1.55, fontWeight: 500, color: 'var(--sk-color-text-2)', maxWidth: '260px' }}>
-              {t(p.body)}
-            </span>
-          </div>
-        ))}
-      </section>
+      <div className="lp-rules">
+        <LwRulesPanel
+          eyebrow={t('landing.plans.never.eyebrow')}
+          title={t('landing.plans.never.title')}
+          lede={t('landing.plans.never.body')}
+          rules={NEVER_RULES.map((r) => ({
+            label: t(r.label),
+            tone: r.pays ? 'yes' : 'no',
+            tag: t(r.pays ? 'landing.plans.never.tagPayFor' : 'landing.plans.never.tagNeverPaid'),
+          }))}
+        />
+      </div>
+
+      <LwFaq title={t('landing.plans.faq.title')} items={FAQS.map((f) => ({ q: t(f.q), a: t(f.a) }))} />
     </PublicSitePage>
   );
 }

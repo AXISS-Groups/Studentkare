@@ -9,21 +9,32 @@ import { launchTe } from './areas/launch';
 import { landingTe } from './areas/landing';
 import { adminTe } from './areas/admin';
 import { adminBoardTe } from './areas/adminBoard';
+import { adminGovTe } from './areas/adminGov';
 import { campusTe } from './areas/campus';
 import { campusConsoleTe } from './areas/campusConsole';
 import { campusBoardsTe } from './areas/campusBoards';
+import { campusSafetyTe } from './areas/campusSafety';
 import { partnerTe } from './areas/partner';
 import { deviceTe } from './areas/device';
 import { studentshellTe } from './areas/studentshell';
 import { studentwebTe } from './areas/studentweb';
+import { studentwebT1Te } from './areas/studentwebT1';
 import { payTe } from './areas/pay';
 import { labbookTe } from './areas/labbook';
 import { rewardsTe } from './areas/rewards';
+import { mobile2Te } from './areas/mobile2';
+import { mobile2OrdersTe } from './areas/mobile2Orders';
+import { mobile2HealthTe } from './areas/mobile2health';
+import { m2valuesTe } from './areas/m2values';
 import { wellnessTe } from './areas/wellness';
 import { consoleTe } from './areas/console';
 import { phoneboardsTe } from './areas/phoneboards';
+import { safetyTe } from './areas/safety';
+import { identityTe } from './areas/identity';
 import { clinicianWorkTe } from './areas/clinicianWork';
+import { clinicianTe } from './areas/clinician';
 import { partnerConsoleTe } from './areas/partnerConsole';
+import { partnerWorkTe } from './areas/partnerWork';
 
 /**
  * తెలుగు — machine-assisted first draft, NOT yet reviewed by a native speaker
@@ -830,19 +841,30 @@ export const te: Catalog = {
   ...landingTe,
   ...adminTe,
   ...adminBoardTe,
+  ...adminGovTe,
   ...campusTe,
   ...campusConsoleTe,
   ...campusBoardsTe,
+  ...campusSafetyTe,
   ...partnerTe,
   ...deviceTe,
   ...studentshellTe,
   ...studentwebTe,
+  ...studentwebT1Te,
   ...payTe,
   ...labbookTe,
   ...rewardsTe,
+  ...mobile2Te,
+  ...mobile2OrdersTe,
+  ...mobile2HealthTe,
+  ...m2valuesTe,
   ...wellnessTe,
   ...consoleTe,
   ...phoneboardsTe,
+  ...safetyTe,
+  ...identityTe,
   ...clinicianWorkTe,
+  ...clinicianTe,
   ...partnerConsoleTe,
+  ...partnerWorkTe,
 };

@@ -21,7 +21,9 @@ describe('which shell a route gets', () => {
     auth.user = { fullName: 'Demo Administrator', role: 'SUPER_ADMIN' };
     render(<WorkspaceScreen route={route} />);
     expect(screen.getByRole('navigation', { name: 'Super admin navigation' })).toBeInTheDocument();
-    expect(screen.getByRole('main')).toHaveTextContent(route === 'admin/erasure' ? 'Erasure queue' : 'Break-glass log');
+    // Erasure requests load from the server first (the request never settles here), so the main area holds its skeleton.
+    if (route === 'admin/erasure') expect(within(screen.getByRole('main')).getByRole('status', { name: 'Loading erasure requests…' })).toBeInTheDocument();
+    else expect(screen.getByRole('main')).toHaveTextContent('Break-glass log');
   });
 
   it.each(['admin', 'admin/accounts', 'admin/support'] as const)('%s uses the new Super Admin shell', route => {

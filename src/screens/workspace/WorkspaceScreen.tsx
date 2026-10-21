@@ -37,13 +37,18 @@ import { useEffectivePartnerKind } from '../vendor/partnerPreview';
 import type { AccountRole } from '../../data/types/workflowTypes';
 import { usePhoneFrame } from '@/design-system/navigation/usePhoneFrame';
 import { StudentPhoneFrame } from './StudentPhoneFrame';
-import { AccountDetailsPage, DataExportPage, phoneBoardFor, YourCareWebPage } from './PhoneBoards';
+import { AccountDetailsPage, DataExportPage, phoneBoardFor, safetyBoardFor, YourCareWebPage } from './PhoneBoards';
 import { MoreHubBoard } from '@/features/account/views/MoreHubBoard';
 import { SearchPage, studentPhoneBoard } from '@/features/phoneKit/studentPhoneBoards';
 import { EmergencyHelplinesDialog } from '../../components/interface/InterfaceBar';
 import { NotificationCenterModal } from '../../components/health/NotificationCenterModal';
+import { AyushWidget, ayushWidgetShownOn } from '@/features/ayush/AyushWidget';
 
+const M2TrendsRoute = lazy(() => import('@/features/labResults/views/M2TrendsRoute').then(module => ({ default: module.M2TrendsRoute })));
+const M2ReportUploadRoute = lazy(() => import('@/features/labResults/views/M2ReportUploadRoute').then(module => ({ default: module.M2ReportUploadRoute })));
+const M2LabsRoute = lazy(() => import('@/features/m2store/views/M2LabsRoute').then(module => ({ default: module.M2LabsRoute })));
 const WebEmergencyCard = lazy(() => import('@/features/emergency/views/WebEmergencyCard').then(module => ({ default: module.WebEmergencyCard })));
+const IdentityVerifyView = lazy(() => import('@/features/auth/views/IdentityVerifyView').then(module => ({ default: module.IdentityVerifyView })));
 const WebPass = lazy(() => import('@/features/digital_id/views/WebPass').then(module => ({ default: module.WebPass })));
 const WellnessTrainingScreen = lazy(() => import('../wellbeing/WellnessTrainingScreen').then(module => ({ default: module.WellnessTrainingScreen })));
 const ExerciseLibraryScreen = lazy(() => import('../wellbeing/ExerciseLibraryScreen').then(module => ({ default: module.ExerciseLibraryScreen })));
@@ -69,6 +74,7 @@ const VendorHandoverScreen = lazy(() => import('../vendor/VendorHandoverScreen')
 const VendorSubstitutionScreen = lazy(() => import('../vendor/VendorSubstitutionScreen').then(module => ({ default: module.VendorSubstitutionScreen })));
 const VendorReorderScreen = lazy(() => import('../vendor/VendorReorderScreen').then(module => ({ default: module.VendorReorderScreen })));
 const VendorCampIntakeScreen = lazy(() => import('../vendor/VendorCampIntakeScreen').then(module => ({ default: module.VendorCampIntakeScreen })));
+const LabReportingScreen = lazy(() => import('../vendor/LabReportingScreen').then(module => ({ default: module.LabReportingScreen })));
 const LabSampleToReportScreen = lazy(() => import('../vendor/LabSampleToReportScreen').then(module => ({ default: module.LabSampleToReportScreen })));
 const PharmacyDispensingScreen = lazy(() => import('../vendor/PharmacyDispensingScreen').then(module => ({ default: module.PharmacyDispensingScreen })));
 const PartnerRequestsPanel = lazy(() => import('../vendor/PartnerRequestsPanel').then(module => ({ default: module.PartnerRequestsPanel })));
@@ -87,7 +93,21 @@ const WebNotificationsRoute = lazy(() => import('@/features/studentweb/views/Web
 const WebShopView = lazy(() => import('@/features/studentweb/views/shop/WebShopView').then(module => ({ default: module.WebShopView })));
 const WebCheckoutView = lazy(() => import('@/features/studentweb/views/shop/WebCheckoutView').then(module => ({ default: module.WebCheckoutView })));
 const StaffCampFastScreen = lazy(() => import('@/features/partner/staff/StaffCampFastScreen').then(module => ({ default: module.StaffCampFastScreen })));
+const StaffScanVerifyScreen = lazy(() => import('@/features/partner/staff/StaffScanVerifyScreen').then(module => ({ default: module.StaffScanVerifyScreen })));
+const StaffHandoverScreen = lazy(() => import('@/features/partner/staff/StaffHandoverScreen').then(module => ({ default: module.StaffHandoverScreen })));
+const StaffCollectScreen = lazy(() => import('@/features/partner/staff/StaffCollectScreen').then(module => ({ default: module.StaffCollectScreen })));
 const VaultWorkspaceHub = lazy(() => import('../vault/VaultWorkspaceHub').then(module => ({ default: module.VaultWorkspaceHub })));
+// Signed-in student web, Tier 1 pages (canvas 3b, WP-09), drawn in the student web shell.
+const WebVaultView = lazy(() => import('@/features/studentweb/views/t1/WebVaultView').then(module => ({ default: module.WebVaultView })));
+const WebMyLabTestsView = lazy(() => import('@/features/studentweb/views/t1/WebMyLabTestsView').then(module => ({ default: module.WebMyLabTestsView })));
+const WebReportInsightsView = lazy(() => import('@/features/studentweb/views/t1/WebReportInsightsView').then(module => ({ default: module.WebReportInsightsView })));
+const WebAyushView = lazy(() => import('@/features/studentweb/views/t1/WebAyushView').then(module => ({ default: module.WebAyushView })));
+const WebConsultSummaryRoute = lazy(() => import('@/features/studentweb/views/t1/WebConsultSummaryView').then(module => ({ default: module.WebConsultSummaryRoute })));
+const WebEmergencyCardRoute = lazy(() => import('@/features/studentweb/views/t1/WebEmergencyCardView').then(module => ({ default: module.WebEmergencyCardRoute })));
+const WebPassView = lazy(() => import('@/features/studentweb/views/t1/WebPassView').then(module => ({ default: module.WebPassView })));
+const WebRequestsRoute = lazy(() => import('@/features/studentweb/views/t1/WebRequestsRoute').then(module => ({ default: module.WebRequestsRoute })));
+const WebLeaveCampusRoute = lazy(() => import('@/features/studentweb/views/t1/WebLeaveCampusView').then(module => ({ default: module.WebLeaveCampusRoute })));
+const WebDeleteAccountRoute = lazy(() => import('@/features/studentweb/views/t1/WebDeleteAccountView').then(module => ({ default: module.WebDeleteAccountRoute })));
 
 /** The partner console page for a route, or null when the route is not one (same role checks as before). */
 function vendorPageFor(route: RoutePath, role: AccountRole | null, onNavigate: (target: string) => void, onLogout: () => Promise<void>, onSwitchRole: (role: 'student' | 'admin' | 'vendor') => void): React.ReactNode {
@@ -104,8 +124,14 @@ function vendorPageFor(route: RoutePath, role: AccountRole | null, onNavigate: (
     case 'camp-intake': case 'vendor-camp-intake': return <VendorCampIntakeScreen {...props} />;
     // The staff app's camp board: drawn full screen, outside the console shell (see WorkspaceScreen).
     case 'camp-fast': return <StaffCampFastScreen onNavigate={(target) => onNavigate(target)} />;
+    // The staff app's phone boards (WP-15): full screen, outside the console shell.
+    case 'staff-verify': return <StaffScanVerifyScreen onNavigate={(target) => onNavigate(target)} />;
+    case 'staff-handover': return <StaffHandoverScreen onNavigate={(target) => onNavigate(target)} />;
+    case 'staff-collect': return labStaff ? <StaffCollectScreen onNavigate={(target) => onNavigate(target)} /> : null;
     // The live lab desk (GET /work/lab-orders): sample custody through to filing the report for a doctor.
-    case 'lab-queue': case 'vendor-lab-queue': return <LabSampleToReportScreen />;
+    case 'lab-queue': case 'vendor-lab-queue': return <LabSampleToReportScreen onNavigate={onNavigate} />;
+    // Release results (WP-15): where each filed report has got to. The doctor releases.
+    case 'lab-reporting': return labStaff ? <LabReportingScreen onNavigate={onNavigate} /> : null;
     // The live dispense queue (GET /work/dispenses); the local register stays at /dispense-register.
     case 'dispensing': return <PharmacyDispensingScreen onNavigate={onNavigate} />;
     case 'dispense-register': case 'vendor-dispense-register': return <DispenseRegisterScreen {...props} />;
@@ -191,7 +217,7 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
     const partnerKind = effectivePartnerKind;
     if (!canOpenPartnerRoute(route, user?.role ?? null, partnerKind)) return <Navigate to="/vendor" replace />;
     // A phone board from the staff app: no sidebar, the whole screen is the scanner.
-    if (route === 'camp-fast') return <Suspense fallback={<ScreenLoading />}>{vendorPage}</Suspense>;
+    if (route === 'camp-fast' || route === 'staff-verify' || route === 'staff-handover' || route === 'staff-collect') return <Suspense fallback={<ScreenLoading />}>{vendorPage}</Suspense>;
     return <>
       <VendorShell route={route} role={user?.role ?? null} partnerKind={partnerKind} assignedPartnerKind={partnerKindOf(user)} onNavigate={navigate} accountName={user ? partnerDisplayName(user) : undefined} onSignOut={user ? () => setConfirmSignOut(true) : undefined} signingOut={mutation.busy} signOutError={mutation.error}>
         <Suspense fallback={<ScreenLoading />}><PageTransition key={route}>{vendorPage}</PageTransition></Suspense>
@@ -255,6 +281,9 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
     if (user.role !== 'STUDENT') return null;
     if (route === 'home') return <WebHomeView />;
     if (route === 'buy-again') return <WebReorderView />;
+    // No phone board yet: the web page reflows into the phone frame.
+    if (route === 'my-lab-tests') return <WebMyLabTestsView />;
+    if (route === 'report-insights') return <WebReportInsightsView />;
     if (phoneFrame) return null;
     switch (route) {
       case 'health': return <WebDashboardView />;
@@ -263,6 +292,16 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
       case 'notification-settings': return <WebNotificationsRoute />;
       case 'shop': return <WebShopView />;
       case 'checkout': return <WebCheckoutView />;
+      case 'records': return <WebVaultView />;
+      case 'ayush': return <WebAyushView />;
+      case 'visit-summaries': return <WebConsultSummaryRoute />;
+      case 'emergency-card': return <WebEmergencyCardRoute />;
+      case 'pass': return <WebPassView />;
+      case 'my-requests': return <WebRequestsRoute />;
+      case 'leave-campus': return <WebLeaveCampusRoute />;
+      case 'delete-account': return <WebDeleteAccountRoute />;
+      // Mobile 2.0 Lab tests: the student shell had no lab tests page (its nav item had no route).
+      case 'lab-tests': return <M2LabsRoute />;
       default: return null;
     }
   };
@@ -276,6 +315,9 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
       case 'search': return <SearchPage />;
       case 'health': return <MemberOverview />;
       case 'your-care': return <YourCareWebPage />;
+      // Mobile 2.0 My health (Tier 1): the same boards in the page column above phone width.
+      case 'health/trends': return <M2TrendsRoute />;
+      case 'health/report-upload': return <M2ReportUploadRoute />;
       case 'account': return <AccountDetailsPage />;
       case 'data-export': return <DataExportPage />;
       case 'billing': return <MemberProfilePanel initialTab="plan" />;
@@ -292,6 +334,7 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
       case 'notifications': return <NotificationInboxPanel />;
       case 'notification-settings': return <NotificationSettingsRoute />;
       case 'security': return <SignInSecurityRoute />;
+      case 'verify': return <IdentityVerifyView />;
       case 'rewards': return <RewardsRoute />;
       case 'leave-campus': return <LeaveCampusRoute links={{ openRecords: () => navigate('records'), openPlans: () => navigate('billing'), openSupport: () => navigate('support') }} />;
       case 'care-navigator': return <CareNavigatorPanel />;
@@ -303,7 +346,9 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
       case 'return-request': return <NewRequestRoute kind="RETURN" links={{ done: () => navigate('my-requests'), attachReturnPhoto }} />;
       case 'hostel-visit': return <NewRequestRoute kind="HOSTEL_VISIT" links={{ done: () => navigate('my-requests'), crisis: () => navigate('sos') }} />;
       case 'refill-request': return <NewRequestRoute kind="REFILL" links={{ done: () => navigate('my-requests') }} />;
-      case 'delete-account': return <DeleteAccountRoute links={{ exportData: () => navigate('records') }} />;
+      case 'delete-account': return <DeleteAccountRoute links={{ exportData: () => navigate('data-export'), crisis: () => navigate('crisis') }} />;
+      // WP-06 boards with no desktop twin yet: the phone board in the page column.
+      case 'ice-contacts': case 'consent': case 'care-circle': return safetyBoardFor(route);
       case 'prescriptions': return <MyPrescriptionsPanel />;
       case 'visit-summaries': return <VisitSummaryRoute links={{ openPrescriptions: () => navigate('prescriptions'), openAppointments: () => navigate('appointments') }} />;
       case 'ayush': return <AgentAyushPanel />;
@@ -333,6 +378,7 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
         title={phoneBoard ? t(phoneBoard.title) : pageLink ? t(pageLink.label) : t('phone.brand')}
         ownBack={phoneBoard?.ownBack}
         bleed={phoneBoard !== null}
+        onSignOut={() => setConfirmSignOut(true)}
         menu={{ open: mobileMenu, onToggle: () => setMobileMenu(!mobileMenu), controls: 'workspace-sidebar' }}
         menuPanel={<div id="workspace-sidebar" style={morePanel}><MoreHubBoard
           account={{ fullName: user.fullName, university: user.university, role: user.role, isVerifiedStudent: user.isVerifiedStudent }}
@@ -367,11 +413,14 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
         onSignOut={() => setConfirmSignOut(true)}
         signingOut={mutation.busy}
         signOutError={mutation.error || null}
+        bare={route === 'ayush'}
       >
         <Suspense fallback={<ScreenLoading />}><PageTransition key={route}>{content()}</PageTransition></Suspense>
       </StudentWebShell>
       {signOutDialog}
       <NotificationCenterModal isOpen={alertsOpen} onClose={() => setAlertsOpen(false)} />
+      {/* Ayush, floating (AyushWidget): never over crisis, SOS, the emergency card, checkout or Ayush itself. */}
+      {ayushWidgetShownOn(route) ? <AyushWidget /> : null}
       {/* The same helplines dialog the app bar opened, unchanged: 112, Tele-MANAS and the campus SOS. */}
       {sosOpen && <EmergencyHelplinesDialog onClose={() => setSosOpen(false)} onSendSos={() => { setSosOpen(false); navigate('sos'); }} />}
     </>;

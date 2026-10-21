@@ -172,10 +172,14 @@ export function drawsStudentPhoneFrame(pathname: string, role: string | null, ph
   return phoneWidth && role === 'STUDENT' && (isWorkspacePath(pathname) || STUDENT_PHONE_SHOP_PATHS.includes(pathname));
 }
 
-/** Public shop pages that a signed-in student at phone width sees in the student phone frame (see CareScreen). */
-export const STUDENT_PHONE_SHOP_PATHS: readonly string[] = ['/shop', '/checkout'];
+/**
+ * Public store pages that a signed-in student at phone width sees in the student
+ * phone frame: the shop and checkout (see CareScreen), and the Mobile 2.0 Lab
+ * tests (/lab-tests, see LabTestsScreen) and Doctor consults (/care) boards.
+ */
+export const STUDENT_PHONE_SHOP_PATHS: readonly string[] = ['/shop', '/checkout', '/lab-tests', '/care'];
 /** Pages a signed-in student gets in the student web shell (top nav with Alerts and SOS) above phone width. */
-export const STUDENT_SHELL_COMMERCE_PATHS: readonly string[] = ['/shop', '/checkout'];
+export const STUDENT_SHELL_COMMERCE_PATHS: readonly string[] = ['/shop', '/checkout', '/lab-tests'];
 
 /** A signed-in student's page above phone width draws the student web shell (its own Alerts and SOS), not the app bar. */
 export function drawsStudentWebShell(pathname: string, role: string | null, phoneWidth: boolean): boolean {

@@ -147,3 +147,34 @@ def test_the_ordering_doctor_becomes_the_reviewer_when_the_lab_files(harness):
 
     doc = login(client, codes, "doc@example.test")
     assert [i["id"] for i in client.get("/api/work/lab-reviews", headers=doc).json()["items"]] == [order["id"]]
+
+
+def test_the_student_sees_who_released_the_report_only_after_release(harness):
+    client, factory, codes = harness
+    patient, doc = setup_order(harness)
+    order = client.post("/api/work/doctor-lab-orders", json=body(patient["id"]), headers=doc).json()
+    client.post("/api/auth/logout", headers=doc)
+    lab = login(client, codes, "labco@example.test")
+    run_to_analysis(client, order["id"], lab)
+    assert file_report(client, order["id"], lab).status_code == 200
+    client.post("/api/auth/logout", headers=lab)
+
+    # Held for review: the student learns nothing about who holds the result.
+    student = login(client, codes, "pt@example.test")
+    held = client.get("/api/lab-orders", headers=student).json()["items"][0]
+    assert held["reviewedByDoctor"] == "" and held["reviewNote"] == ""
+    client.post("/api/auth/logout", headers=student)
+
+    doc = login(client, codes, "doc@example.test")
+    released = client.post(f"/api/work/lab-reviews/{order['id']}/release", json={"note": "Reviewed, all fine."}, headers=doc)
+    assert released.status_code == 200, released.text
+    client.post("/api/auth/logout", headers=doc)
+
+    student = login(client, codes, "pt@example.test")
+    mine = client.get("/api/lab-orders", headers=student).json()["items"][0]
+    assert mine["status"] == "REPORT_RELEASED" and mine["reviewedByDoctor"] == "Dr Rao"
+    client.post("/api/auth/logout", headers=student)
+
+    # Another student never sees this order at all.
+    _other, other_headers = register(client, codes, "someone@example.test")
+    assert client.get("/api/lab-orders", headers=other_headers).json()["items"] == []

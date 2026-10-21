@@ -1,6 +1,8 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { Text, View, StyleSheet } from 'react-native';
 import { useT } from '@/i18n';
+import { planPackageLabels, planPriceLabel } from '@/data/datasets/billingPrices';
+import { usePlanCatalog } from './planCatalog';
 import {
   Actions,
   BoundaryList,
@@ -19,6 +21,7 @@ import type { LandingDestinations } from './landingNativeKit';
 import { skTokens } from '@/theme/tokens/generated/skTokens';
 
 const { radius, space } = skTokens;
+const { size } = skTokens.font;
 
 interface LandingPlansNativeViewProps {
   destinations: LandingDestinations;
@@ -27,16 +30,16 @@ interface LandingPlansNativeViewProps {
 /**
  * Plans, React Native.
  *
- * This screen used to list a "Care Plus Plan ₹199" with "priority 24/7
- * tele-triage" — a plan the server catalogue does not have, and a priority
- * that payment must never buy. Prices come only from `GET /billing/plans`,
- * and this screen is not wired to it yet (the native screen wrapper passes
- * no fetcher), so it quotes no price rather than a typed-in one.
+ * Same data path as the web page (planCatalog.ts): names, prices and packages
+ * only from `GET /billing/plans`; while it loads, or if it cannot be read or
+ * one plan is malformed, no price is shown at all. Layout parity with the web
+ * board is a follow-up; this screen lists the plans plainly.
  */
 export const LandingPlansNativeView: React.FC<LandingPlansNativeViewProps> = function LandingPlansNativeView({
   destinations: to,
 }) {
   const t = useT();
+  const { state, reload } = usePlanCatalog();
   const boundaries = [
     { tag: t('landing.plans.native.tagNever'), body: t('landing.plans.native.ruleAds') },
     { tag: t('landing.plans.native.tagNever'), body: t('landing.plans.native.rulePayment') },
@@ -58,9 +61,31 @@ export const LandingPlansNativeView: React.FC<LandingPlansNativeViewProps> = fun
       </Hero>
 
       <Section title={t('landing.plans.nav.plans')}>
-        <View style={styles.planCard}>
-          <Paragraph>{t('landing.plans.native.plansBody')}</Paragraph>
-        </View>
+        {state.status === 'loading' ? (
+          <View accessibilityRole="progressbar" accessibilityLabel={t('landing.plans.loading')}>
+            <Meta>{t('landing.plans.loading')}</Meta>
+          </View>
+        ) : null}
+        {state.status === 'error' ? (
+          <View style={styles.planCard} accessibilityRole="alert">
+            <Text style={styles.planName}>{t('landing.plans.loadFailedTitle')}</Text>
+            <Paragraph>{t('landing.plans.loadFailedBody')}</Paragraph>
+            <PrimaryAction title={t('common.tryAgain')} onPress={reload} />
+            <Meta>{t('landing.plans.errorRef')}</Meta>
+          </View>
+        ) : null}
+        {state.status === 'ready' && state.plans.length === 0 ? <Paragraph>{t('landing.plans.empty')}</Paragraph> : null}
+        {state.status === 'ready' ? state.plans.map((plan) => (
+          <View key={plan.id} style={styles.planCard}>
+            <Text style={styles.planName} accessibilityRole="header">{plan.name}</Text>
+            <Text style={styles.planPrice}>{planPriceLabel(plan, t)} <Text style={styles.planPeriod}>{plan.period}</Text></Text>
+            {planPackageLabels(plan, t).map((label) => <Meta key={label}>{label}</Meta>)}
+            <Paragraph>{plan.description}</Paragraph>
+            {plan.benefits.length > 0
+              ? plan.benefits.map((b) => <Meta key={b}>{b}</Meta>)
+              : <Meta>{t('landing.plans.benefitsPending')}</Meta>}
+          </View>
+        )) : null}
       </Section>
 
       <Section title={t('landing.plans.footer.howWeMakeMoney')}>
@@ -94,4 +119,7 @@ const styles = StyleSheet.create({
     borderColor: color.ruleSoft,
     gap: space.s10,
   },
+  planName: { fontSize: size.titleSm, fontWeight: '800', color: color.text },
+  planPrice: { fontSize: size.heading, fontWeight: '800', color: color.text },
+  planPeriod: { fontSize: size.bodySm, fontWeight: '700', color: color.text3 },
 });

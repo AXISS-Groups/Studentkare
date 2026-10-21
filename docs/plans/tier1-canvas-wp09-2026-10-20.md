@@ -1,10 +1,11 @@
-# WP-09 Student web, signed in (Tier 1): canvas plan awaiting review
+# WP-09 Student web, signed in (Tier 1): canvas plan approved 2026-10-21, built in feat/t1-wp09
 
-**Approved by:** _(name, date)_
+**Approved by:** Krishna Chintakayala (founder, named Tier 1 reviewer), 2026-10-21 ("Approve all").
 
-**Status:** plan only. No screen code is written until a named design reviewer **and** the clinical
-lead (vault, lab tests, report screens, Ayush, visit summary, emergency card, pass) or legal (legal,
-leave campus, delete account) sign this file (`DESIGN.md` §5). One screen per ticket, branch and PR.
+**Status:** approved 2026-10-21, built in feat/t1-wp09. The approval covers the layout, copy and states
+described here; parts that need legal, clinical or vendor input we don't have are built in their honest
+reduced form (see Decisions taken). The original gate read: plan only until a named design reviewer and
+the clinical lead or legal sign this file (`DESIGN.md` §5).
 **Source:** `docs/plans/canvas-gap-audit-2026-10-20.md` lane 3b and lane 8 (AyushWidget), each board's
 brief, screenshot and `design/screens/source/04-student-web-signed-in/<Screen>.html`, and the code below.
 **Depends on (hard):** **S1 student web shell** — top nav (Shop · Lab tests · Doctors · Health vault ·
@@ -211,3 +212,28 @@ Web layout of DeleteAccount (WP-06), same view-model; decisions D6-1 and D6-9.
 - **D9-8 Support reply-time promise:** keep (with a settings value and owner) or drop.
 - **D9-9 Leave-campus lines:** only those the backend enforces.
 - Plus the phone-twin decisions this package inherits: D6-1, D6-2, D6-6, D6-7, D6-8, D6-9, D6-10, D7-6, D7-9.
+
+## Decisions taken (approved by Krishna Chintakayala, 2026-10-21)
+
+Approved as a set; each item takes the conservative, honest option (TIER1_BUILD_BRIEF).
+
+- **D9-1 ABDM line:** not drawn. No ABHA link exists server-side; "Portable after you graduate" is kept (records stay on departure).
+- **D9-2 App promo:** drawn only when the settings registry publishes a store listing (`public_site.*_store_url`); none is published, so nothing shows today.
+- **D9-3 Shell first:** S1 (StudentWebShell) was already on main; every page is drawn inside it. WebAyush uses a new `bare` option (top nav only above 1024 px).
+- **D9-4 WebReportAssistant:** not built; "Explain it" buttons not drawn. Needs a report-scoped, constitution-routed, clinically reviewed Ayush API.
+- **D9-5 Ayush index chip and relevance scores:** both dropped (the index status is ops-only; a relevance number is not useful to a student).
+- **D9-6 AyushWidget:** non-modal dialog on wide screens, modal sheet at ≤ 600 px; never drawn on SOS, crisis, emergency card, checkout, sign-in or Ayush itself; mounted in the desktop student shell only (the phone frame keeps its own AyushSheet, WP-07).
+- **D9-7 Public emergency-card QR:** no QR and no "anyone who scans" line; "Who can see this card" says only what is true.
+- **D9-8 Support reply-time promise:** dropped; the dialog says a person reads every message and shows the crisis lines.
+- **D9-9 Leave-campus lines:** only what `campus_departure.py` does; added "your check-in pass stops working" (the departure clears the digital ID secret); Care Circle, Edu ID prices, checks carrying over and the personal-email field are not drawn.
+- **D6-1 Red beyond SOS:** red only for SOS, crisis lines, allergies and deleting the account; revoke/stop sharing uses the navy action.
+- **D6-2 Offline card:** not claimed; the preview says there is no QR or offline copy yet.
+- **D6-6 ICE contacts:** one contact (the profile holds one), said on the page.
+- **D6-7 / D6-8 Pass:** no check-in history or "This wasn't me" (no student check-in log); no photo-match or 24 h retention claim (the counter check returns name, campus and roll number only).
+- **D6-9 Deletion:** typed DELETE as today; JSON export (no PDF + FHIR); no phone-code step; no request id or "we've emailed you".
+- **D6-10 Legal text:** no notice text, officer, version or response time; each tab states the gap and what the code does today.
+- **D7-6 Structured results:** no body-system table, parameter counts or trend chart; insights phase 1 = the releasing doctor's note, the report, talk to a clinician, add an outside report. "Outside reports" = LAB documents in the vault that no released order produced.
+- **D7-9 ConsultSummary extras:** type/price, access-ended line, follow-up booking, rating and "Order these" not drawn; prescriptions open in Prescriptions.
+- **Backend (rule 5):** two read-only fields, own rows only: `documentId` on `GET /records/shares`, `reviewedByDoctor` on `GET /lab-orders` (only once released). No migration, no new table, tests for the owner-only and before-release cases.
+- **Critical flag on released reports:** not surfaced on the web page (no clinical wording for it is in the plan); left as the existing release behaviour — listed for the clinical lead.
+

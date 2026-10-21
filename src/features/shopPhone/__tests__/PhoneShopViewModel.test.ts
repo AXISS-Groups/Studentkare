@@ -63,7 +63,7 @@ describe('PhoneShopViewModel', () => {
       '/catalog/m1/alternatives': { itemId: 'm1', composition: 'Cholecalciferol 60000 IU', dosageForm: 'sachet', restricted: false,
         items: [{ id: 'm2', name: 'D-Rise', brand: 'X', pack: '4 sachets', pricePaise: 9900, mrpPaise: 12000, stock: 3, imageUrl: null, manufacturer: '', dosageForm: 'sachet', composition: 'Cholecalciferol 60000 IU', schedule: '', requiresPrescription: false }] },
     }, { name: 'detail', itemId: 'm1' });
-    vm.start();
+    void vm.loadDetail('m1');
     await vi.waitFor(() => expect(vm.alternativesPhase).toBe('ready'));
     expect(vm.detail?.id).toBe('m1');
     expect(vm.composition).toBe('Cholecalciferol 60000 IU');
@@ -75,7 +75,7 @@ describe('PhoneShopViewModel', () => {
   it('says a linked product is not available when the catalogue does not have it', async () => {
     forgetListings();
     const { vm } = vmWith({ '/catalog': { items: [], total: 0 } }, { name: 'detail', itemId: 'gone' });
-    vm.start();
+    void vm.loadDetail('gone');
     await vi.waitFor(() => expect(vm.detailPhase).toBe('error'));
     expect(vm.detail).toBeNull();
   });

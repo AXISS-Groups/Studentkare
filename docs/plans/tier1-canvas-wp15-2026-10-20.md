@@ -1,8 +1,8 @@
 # WP-15 · Partner dispensing, lab and staff app: Tier 1 canvas plans
 
-**Approved by:** _(name, date)_
+**Approved by:** Krishna Chintakayala (founder, named Tier 1 reviewer), 2026-10-21 ("Approve all").
 
-**Status:** proposed. Plans only; no screen code has been written for this package.
+**Status:** approved 2026-10-21, built in `feat/t1-wp15`.
 **Rule:** `CLAUDE.md`, `DESIGN.md` §5–6, `AGENTS.md` (guardrails 1, 2, 4, 9, 11). These screens
 release lab values, dispense prescription medicines and verify identity at a counter. Each needs
 a named design reviewer **and** clinical (pathology / pharmacy) or legal sign-off before its
@@ -372,3 +372,33 @@ back to Krishna only"). Today: no screen.
 test requires it).
 
 **Open decisions.** Tube-label scanning and sample-id model; cold-box assignment (ties to §4).
+
+## Decisions taken (approved by Krishna Chintakayala, 2026-10-21)
+
+Approved as a set; each open decision took the conservative, honest option (TIER1_BUILD_BRIEF).
+
+| ID | Choice | Why |
+|---|---|---|
+| 1 | Keep the split: the lab files, the reviewing doctor releases. No lab "Release critical value now"; the critical banner says the value is with the doctor (or released, not acknowledged). Calling the clinician / alerting the clinic not offered. | The server refuses a lab release (`PATCH /lab-orders` 403 on REPORT_RELEASED); no paging endpoint. |
+| 1.a | The critical banner is driven only by the lab's own `criticalFlag` on a filed report, never a client threshold; it shows while the report is with the doctor or released but unacknowledged. | Plan safety rule; no clinical threshold invented. |
+| 1.b | "Over transit window" and "Redo rate" read "—"; "Never collected" comes from the server's `/work/lab-orders/awaiting-collection`. | No source for the first two; the server owns "overdue". |
+| 2 | No pathologist role or signature; no "Release batch". The board's "Release results" slot keeps the existing name "Lab reports" and is its own route `/lab-reporting`, listing filed reports critical first with their release state. Result, reference and high/low flags read "In the filed report"; student shown as order reference only. | No pathologist model; the lab payload has no values, range or name. |
+| 3 | Run sheet reads the lab's own `/work/lab-orders` (the lab partner is a VENDOR; `/collector/pickups` is the LAB_COLLECTOR role, which has no web sign-in). "Close run", phlebotomist name, fasting-since time and "Median per stop" left out / "—". | Honest reduced version; no run model. |
+| 3.a | Fasting confirmation is not stored anywhere, so StaffCollect keeps "Sample collected" disabled for a fasting test, with the reason. | Plan rule 2 (no backend → disabled with note); no new safety flow invented. |
+| 4 | Cold chain not connected: "—" figures, designed columns, no sample box. Range ("2–8 °C"), breach duration and "free recollection" not printed. | No cold-box model; range is a pathology-owner setting; recollection needs a commerce-plane policy. |
+| 5 | Register from `GET /ops/dispense-register` + `/work/dispenses`. No edit/delete/correction control; client CSV removed; "retained three years" not printed. | Unaudited export of a statutory register; retention not verified as enforced. |
+| 5.a | No "Sign and dispense": a proposed swap opens read-only. The register's "patient" column shows the verifying pharmacist. | The prescriber decides a swap (`/substitutions/{id}/decide` is theirs); the register carries no patient. |
+| 6 | Orders: no price on a prescription row; only `quoteStatus` (Paid / Price sent…). Pack only when the server lists PACKED (after payment); absent for RX_ISSUED. Delivered/handed over never set from this list. | Rule L; payment-gated packing unchanged. |
+| 7 | Handover list, OTPs, bag photo not connected. "At the counter now" starts from this tab's counter session; "Photo & hand over" disabled with the reason. | No handover model, OTP model or photo storage/retention decision. |
+| 8 | Substitutions follow the server: the pharmacy proposes (`POST /dispenses/{id}/substitutions`), the prescriber decides. Saving / accepted / declined read "—". The NTI note is not printed. | No NTI list exists on the server (a clinical list we must not invent); only the prescriber's no-substitution mark blocks a swap. |
+| 9 | Rx review: no allergy data shown (asked in person, server Rule L); the five server checks plus a per-line "matches the prescription" confirm before Approve enables; uploaded prescriptions open only via the 2-minute `file-link`; OCR not connected; "Ask the doctor" not drawn; "2FA on" only from `/auth/2fa/status`. | Plan safety rules; no endpoint for OCR or messaging the prescriber. |
+| 10.1 | No offline verification against a device-held signature: offline stops every check. | Fail closed (guardrail 2). |
+| 10.2 | No machine match hint ("Not available"); the person compares with the college ID card and decides. | No face-match service; biometric processing is a DPDP decision. |
+| 10.3 | No live photo captured, stored or retained. Mismatch flag/notify drawn disabled; roll-number lookup stops ("can't check by roll number"). "Not the same" stops that student for the rest of the session (in memory, never storage). | No backend for photo, flag, notify or lookup. |
+| 11 | "Today at this counter" is this tab's session only, labelled so. | No per-counter verify log endpoint. |
+| 12.1 | Staff app as web phone routes (`/staff-verify`, `/staff-handover`, `/staff-collect`, ≤ 430 px, full screen like `/camp-fast`), signed in as the partner. No Expo staff app (none exists in `src/native`). | Auth for a separate staff app target is out of scope. |
+| 12.2 | Counselling attestation drawn disabled (not stored). | No storage decided. |
+| 13 | Tube label typed (barcode scan not connected) and recorded as the sample identifier through the existing `PATCH /lab-orders/{id}` SAMPLE_COLLECTED step, only for the booking whose student was verified at this device. | Existing endpoint; tube-scan model not built. |
+
+Not built here: any backend change (none was needed for the reduced versions above); server-side enforcement that a pass was verified before collect (today it is a client gate on top of the lab's existing step).
+

@@ -16,6 +16,7 @@ export const Buttons: Story = {
       <Button label="Secondary" variant="secondary" onPress={noop} />
       <Button label="Ghost" variant="ghost" onPress={noop} />
       <Button label="Danger" variant="danger" onPress={noop} />
+      <Button label="Danger outline" variant="dangerOutline" onPress={noop} />
       <Button label="Busy" busy onPress={noop} />
       <Button label="Disabled" disabled onPress={noop} />
       <Button label="Call to action" size="cta" fullWidth onPress={noop} />

@@ -21,7 +21,11 @@ export interface ShopLinks {
   openSearch: () => void;
   openRewards: () => void;
   openRefill: () => void;
+  /** My health, where refills for regular medicines live (Mobile 2.0 Medicines; Rule L keeps them off the shop). */
+  openMyHealth?: () => void;
   openPrescriptions: () => void;
+  /** The records vault, where a prescription document is added (M2Product "Add Rx"). */
+  openRecords?: () => void;
   openLabTests: () => void;
   bookLab: (itemId: string) => void;
   trackOrder: (orderId: string) => void;

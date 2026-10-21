@@ -1,19 +1,24 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { useT } from '@/i18n';
-import type { MessageKey } from '@/i18n';
+import { LANGUAGE_NAMES, useLanguage, useT } from '@/i18n';
+import type { Lang, MessageKey } from '@/i18n';
+import { Icon } from '@/design-system/icons';
 import type { SignupConsentState, SignupPurpose } from '../viewmodel/signupConsent';
+import './onboarding-consent.css';
 
 /**
- * DPDP consent at signup (design: OnboardingConsent, Tier 1, SK-027).
+ * DPDP consent at signup (canvas OnboardingConsent, Tier 1, approved 2026-10-21;
+ * plan tier1-canvas-wp03, SK-027).
  *
- * Differs from the canvas on purpose:
- * - no "Ask a parent or guardian" (DESIGN.md D4: 18+ only, guardian flow dropped);
- * - no named grievance officer or reply time — none is appointed yet, and the
- *   privacy notice says so (LegalView); naming one would be a made-up claim;
- * - no "Partner offers" switch (Rule L) and no "campus totals" or "research"
- *   switches, because neither feature exists to consent to;
- * - no "stored encrypted in India" line: not something this code can verify.
+ * The wording is the versioned "member.consent.*" copy the server records
+ * (SIGNUP_CONSENT_VERSION): it is laid out to the board, not reworded. Differs
+ * from the board on purpose:
+ * - no "Ask a parent or guardian" (DESIGN.md D4: 18+ only);
+ * - no optional switches: "Partner offers" breaks Rule L, and "campus totals"
+ *   and "research" have no feature or server purpose to consent to (D3-4);
+ * - no named grievance officer or reply time until legal names one (D3-5);
+ * - "withdrawing is as easy as agreeing" is not promised: there is no withdraw
+ *   endpoint, so the honest line (delete your account) stays (D3-4).
  */
 const ITEMS: { purpose: SignupPurpose; title: MessageKey; body: MessageKey }[] = [
   { purpose: 'RECORDS_STORAGE', title: 'member.consent.store.title', body: 'member.consent.store.body' },
@@ -28,54 +33,102 @@ const PLAIN: [MessageKey, MessageKey][] = [
   ['member.consent.keptK', 'member.consent.keptV'],
 ];
 
-const box: React.CSSProperties = {
-  display: 'flex', alignItems: 'flex-start', gap: 'var(--sk-space-12)', minHeight: 44, padding: 'var(--sk-space-14)',
-  borderRadius: 'var(--sk-radius-lg)', cursor: 'pointer', textAlign: 'left',
-};
+const LANGS: readonly Lang[] = ['en', 'te', 'hi'];
 
-export const SignupConsent = observer(function SignupConsent({ consent }: { consent: SignupConsentState }) {
+export interface SignupConsentProps {
+  consent: SignupConsentState;
+  /** Registration in flight: the button shows it and stays off. */
+  busy?: boolean;
+  /** Back to the campus details (the header's arrow-left). */
+  onBack?: () => void;
+  /** Where this sits in sign-up, e.g. 6 of 6. */
+  progress?: { position: number; total: number };
+}
+
+/** Lives inside the sign-up <form>; its submit button sends the consent with registration. */
+export const SignupConsent = observer(function SignupConsent({ consent, busy = false, onBack, progress }: SignupConsentProps) {
   const t = useT();
+  const { lang, setLang } = useLanguage();
   return (
-    <section aria-labelledby="signup-consent-title" style={{ display: 'grid', gap: 'var(--sk-space-12)' }}>
-      <span className="care-eyebrow">{t('member.consent.eyebrow')}</span>
-      <h3 id="signup-consent-title" style={{ margin: 0 }}>{t('member.consent.title')}</h3>
-      <p style={{ margin: 0 }}>{t('member.consent.lead')}</p>
+    <section className="sk-consent" aria-labelledby="signup-consent-title">
+      <div className="sk-consent__bar">
+        {onBack ? (
+          <button type="button" className="sk-consent__back" aria-label={t('ident.consent.back')} onClick={onBack} disabled={busy}>
+            <Icon name="arrow-left" size={20} />
+          </button>
+        ) : null}
+        {progress ? (
+          <>
+            <span className="sk-consent__track" role="progressbar" aria-valuemin={1} aria-valuemax={progress.total} aria-valuenow={progress.position}
+              aria-label={t('auth.signup.stepOf', progress)}>
+              {Array.from({ length: progress.total }, (_, index) => (
+                <span key={index} data-on={index < progress.position} />
+              ))}
+            </span>
+            <span className="sk-consent__step" aria-hidden="true">{t('auth.signup.position', progress)}</span>
+          </>
+        ) : null}
+      </div>
 
-      <h4 style={{ margin: 0 }}>{t('member.consent.plainTitle')}</h4>
-      <dl style={{ margin: 0, display: 'grid', gap: 'var(--sk-space-6)' }}>
-        {PLAIN.map(([k, v]) => (
-          <div key={k}><dt style={{ fontWeight: 700 }}>{t(k)}</dt><dd style={{ margin: 0 }}>{t(v)}</dd></div>
+      <div className="sk-consent__langs" role="group" aria-labelledby="sk-consent-read-in">
+        <span id="sk-consent-read-in">{t('ident.consent.readIn')}</span>
+        {LANGS.map((code) => (
+          <button key={code} type="button" lang={code} aria-pressed={lang === code} onClick={() => setLang(code)}>
+            {LANGUAGE_NAMES[code]}
+          </button>
         ))}
-      </dl>
+      </div>
 
-      <fieldset style={{ border: 0, margin: 0, padding: 0, display: 'grid', gap: 'var(--sk-space-8)' }}>
-        <legend style={{ fontWeight: 700, marginBottom: 'var(--sk-space-8)' }}>{t('member.consent.requiredTitle')}</legend>
+      <div className="sk-consent__head">
+        <h1 id="signup-consent-title" className="sk-consent__title">{t('member.consent.eyebrow')}</h1>
+        <p className="sk-consent__lead">{t('member.consent.lead')}</p>
+      </div>
+
+      <div className="sk-consent__plain">
+        <h2 className="sk-consent__eyebrow sk-consent__eyebrow--action">{t('member.consent.plainTitle')}</h2>
+        <dl>
+          {PLAIN.map(([k, v]) => (
+            <div key={k}><dt>{t(k)}</dt><dd>{t(v)}</dd></div>
+          ))}
+        </dl>
+      </div>
+
+      <fieldset className="sk-consent__items">
+        <legend className="sk-consent__eyebrow">{t('member.consent.requiredTitle')}</legend>
         {ITEMS.map(({ purpose, title, body }) => {
           const on = consent.agreed[purpose];
           return (
-            <label key={purpose} style={{
-              ...box,
-              background: on ? 'var(--sk-color-surface-2)' : 'var(--sk-color-surface)',
-              border: `1.5px solid ${on ? 'var(--sk-color-focus)' : 'var(--sk-color-rule-soft)'}`,
-            }}>
-              <input type="checkbox" checked={on} onChange={() => consent.toggle(purpose)}
-                style={{ width: 24, height: 24, flexShrink: 0, margin: 0, accentColor: 'var(--sk-color-action)' }} />
-              <span style={{ display: 'grid', gap: 'var(--sk-space-4)' }}>
+            <label key={purpose} className="sk-consent__item" data-on={on}>
+              <input
+                type="checkbox"
+                className="sk-sr-only"
+                checked={on}
+                disabled={busy}
+                onChange={() => consent.toggle(purpose)}
+                aria-describedby={`consent-${purpose}-body`}
+              />
+              <span className="sk-consent__box" aria-hidden="true">{on ? <Icon name="check-2" size={16} strokeWidth={2.8} /> : null}</span>
+              <span className="sk-consent__words">
                 <strong>{t(title)}</strong>
-                <small>{t(body)}</small>
+                <small id={`consent-${purpose}-body`}>{t(body)}</small>
               </span>
             </label>
           );
         })}
       </fieldset>
 
-      <p style={{ margin: 0 }}>{t('member.consent.withdraw')}</p>
-      <p style={{ margin: 0 }}>
-        <a href="/privacy" target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', minHeight: 44 }}>
-          {t('member.consent.privacy')}
-        </a>
-      </p>
-      <p className="wf-fineprint" style={{ margin: 0 }}>{t('member.consent.recorded')}</p>
+      <div className="sk-consent__note">
+        <p>{t('member.consent.withdraw')}</p>
+        <p><a href="/privacy" target="_blank" rel="noopener noreferrer">{t('member.consent.privacy')}</a></p>
+      </div>
+
+      <div className="sk-consent__actions">
+        <button type="submit" className="sk-consent__continue" disabled={!consent.complete || busy} aria-busy={busy}>
+          {consent.complete ? t('ident.consent.continue') : t('member.consent.incomplete')}
+          {consent.complete ? <Icon name="arrow-right" size={18} /> : null}
+        </button>
+        <p className="sk-consent__recorded">{t('member.consent.recorded')}</p>
+      </div>
     </section>
   );
 });

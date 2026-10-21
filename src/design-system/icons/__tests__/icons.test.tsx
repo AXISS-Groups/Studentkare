@@ -50,6 +50,16 @@ describe('artwork components', () => {
     expect(container.querySelector('svg')).not.toBeNull();
   });
 
+  it('drops the drawing\'s own lettering when asked, keeping the shapes', () => {
+    const full = render(<Illustration name="illustration-care-circle-network" />).container;
+    expect(full.querySelectorAll('text').length).toBeGreaterThan(0);
+    const bare = render(<Illustration name="illustration-care-circle-network" withoutText />).container;
+    expect(bare.querySelector('svg')).not.toBeNull();
+    expect(bare.querySelectorAll('text')).toHaveLength(0);
+    expect(bare.textContent?.trim()).toBe('');
+    expect(bare.querySelectorAll('rect, path, circle').length).toBe(full.querySelectorAll('rect, path, circle').length);
+  });
+
   it('draws non-square illustrations at the width and height given', () => {
     const { container } = render(<Illustration name="illustration-vitamin-jar" width={280} height={261} />);
     const svg = container.querySelector('svg');

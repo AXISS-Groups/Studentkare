@@ -3,47 +3,50 @@ import { PhoneHeader } from '@/design-system/navigation/PhoneHeader';
 import { BoardToolbar, PhoneHeaderSlotProvider } from '@/design-system/navigation/BoardHeader';
 import type { BoardHeaderConfig, PhoneHeaderSlot } from '@/design-system/navigation/BoardHeader';
 import type { PhoneHeaderAction } from '@/design-system/navigation/PhoneHeader';
-import { TabBar } from '@/design-system/navigation/TabBar';
-import type { SkIconName } from '@/design-system/icons';
+import { PillNav } from '@/design-system/m2';
+import type { PillNavKey } from '@/design-system/m2';
 import { useT } from '@/i18n';
-import type { MessageKey } from '@/i18n';
 import { EmergencyHelplinesDialog } from '@/components/interface/InterfaceBar';
 import { navigate } from '@/lib/utils/workflowRouting';
 import type { RoutePath } from '@/lib/utils/workflowRouting';
 
-export type StudentTabKey = 'discover' | 'wellness' | 'ayush' | 'labTests' | 'yourCare';
+/**
+ * The Mobile 2.0 pill nav on the web (canvas page 9, approved 2026-10-21): Home
+ * · Orders · Ask Ayush · My health · Profile, replacing the five-tab bar
+ * (Discover · Wellness · Ayush AI · Lab Tests · Your Care). Destination, then
+ * the web route it opens:
+ * - Home (M2Home) opens /health, the student home.
+ * - Orders (M2Orders) opens /orders.
+ * - Ask Ayush (M2AskAyush) opens /ayush.
+ * - My health (M2Insights) opens /your-care.
+ * - Profile (M2Profile) opens /profile.
+ * The old tabs' shop and lab tests are on Home's service rail.
+ */
+export const STUDENT_NAV_ROUTES: Readonly<Record<PillNavKey, RoutePath>> = {
+  home: 'health',
+  orders: 'orders',
+  ayush: 'ayush',
+  health: 'your-care',
+  profile: 'profile',
+};
 
-export interface StudentWebTab {
-  key: StudentTabKey;
-  label: `tabbar.${string}` & MessageKey;
-  /** The exact icon name from the HomeDiscover brief. */
-  icon: SkIconName;
-  /** Where the tab opens on the web today. */
-  path: RoutePath;
+/** The store boards opened from Home's rail: the boards draw Home as current there. */
+const HOME_STORE_ROUTES: ReadonlySet<RoutePath> = new Set<RoutePath>(['shop', 'lab-tests', 'care', 'insurance', 'preventive-care']);
+
+/** The My health screens opened from Insights (M2Trends, M2ReportUpload): the nav shows My health there. */
+const HEALTH_ROUTES: ReadonlySet<RoutePath> = new Set<RoutePath>(['health/trends', 'health/report-upload']);
+
+/** The pill-nav destination a route belongs to (null: none is current). */
+export function studentNavFor(route: RoutePath): PillNavKey | null {
+  const key = (Object.keys(STUDENT_NAV_ROUTES) as PillNavKey[]).find((k) => STUDENT_NAV_ROUTES[k] === route);
+  if (key) return key;
+  if (HEALTH_ROUTES.has(route)) return 'health';
+  return HOME_STORE_ROUTES.has(route) ? 'home' : null;
 }
 
-/**
- * The student tab bar on the web, in the canvas HomeDiscover order and icons.
- * Canvas target, then the web route it opens:
- * - Discover (HomeDiscover) opens /health, the student home.
- * - Wellness (ShopHome) opens /shop.
- * - Ayush AI (AyushChat) opens /ayush.
- * - Lab Tests (LabPackages) opens /lab-tests: LabPackages has no route of its own
- *   (it is a shelf inside /shop), so the tab opens the lab-test catalogue.
- * - Your Care (YourCare) opens /your-care, the Your Care overview; the
- *   Appointments board's back button returns to it.
- */
-export const STUDENT_WEB_TABS: readonly StudentWebTab[] = [
-  { key: 'discover', label: 'tabbar.discover', icon: 'compass', path: 'health' },
-  { key: 'wellness', label: 'tabbar.wellness', icon: 'map-pin', path: 'shop' },
-  { key: 'ayush', label: 'tabbar.ayush', icon: 'sparkle', path: 'ayush' },
-  { key: 'labTests', label: 'tabbar.labTests', icon: 'flask-2', path: 'lab-tests' },
-  { key: 'yourCare', label: 'tabbar.yourCare', icon: 'stethoscope', path: 'your-care' },
-];
-
-/** The tab a route belongs to; null for a screen opened from a tab (it gets a back button). */
-export function studentTabFor(route: RoutePath): StudentTabKey | null {
-  return STUDENT_WEB_TABS.find((tab) => tab.path === route)?.key ?? null;
+/** Whether a route is a nav destination itself (no back button in the header). */
+export function isStudentNavRoot(route: RoutePath): boolean {
+  return (Object.values(STUDENT_NAV_ROUTES) as RoutePath[]).includes(route);
 }
 
 export interface StudentPhoneFrameProps {
@@ -58,6 +61,8 @@ export interface StudentPhoneFrameProps {
   ownBack?: boolean;
   /** The page draws its own gutters and full-width bands (the phone boards), so the frame adds no side padding. */
   bleed?: boolean;
+  /** Asks to sign out (a board's own Sign out, M2Profile). */
+  onSignOut?: () => void;
   children: React.ReactNode;
 }
 
@@ -68,25 +73,33 @@ function goBack(): void {
 
 /**
  * The phone boards' frame for a signed-in student on the web at phone width
- * (`size.phoneFrameMax`): the phone header on top, the page, and the student
- * tab bar docked at the bottom. Replaces the desktop web shell (sidebar, app
+ * (`size.phoneFrameMax`): the phone header on top (a Mobile 2.0 board draws
+ * its own), the page, and the Mobile 2.0 pill nav floating at the bottom. Replaces the desktop web shell (sidebar, app
  * bar and its quick links) there. SOS stays one tap away in the header on
  * every page, as it was in the app bar it replaces.
  */
-export function StudentPhoneFrame({ route, title, menu, menuPanel, ownBack = false, bleed = false, children }: StudentPhoneFrameProps): React.ReactElement {
+export function StudentPhoneFrame({ route, title, menu, menuPanel, ownBack = false, bleed = false, onSignOut, children }: StudentPhoneFrameProps): React.ReactElement {
   const t = useT();
   const [sosOpen, setSosOpen] = useState(false);
   // A phone board's own header (BoardHeader), when the page draws one.
   const [board, setBoard] = useState<BoardHeaderConfig | null>(null);
+  // A Mobile 2.0 board draws its whole header itself (back, cart, SOS).
+  const [ownChrome, setOwnChrome] = useState(false);
   const menuNow = useRef(menu);
   menuNow.current = menu;
+  const signOutNow = useRef(onSignOut);
+  signOutNow.current = onSignOut;
   // Stable for the frame's life, so a re-render of the page never re-sends its header.
   const slot = useMemo<PhoneHeaderSlot>(() => ({
     set: setBoard,
     openMore: () => { if (!menuNow.current.open) menuNow.current.onToggle(); },
+    setOwnChrome,
+    openSos: () => setSosOpen(true),
+    askSignOut: () => signOutNow.current?.(),
   }), []);
-  const tab = studentTabFor(route);
-  const discover = tab === 'discover';
+  const current = studentNavFor(route);
+  const root = isStudentNavRoot(route);
+  const discover = route === 'health';
   const actions: PhoneHeaderAction[] = [
     ...(discover ? [{ key: 'notifications', icon: 'bell-dome' as const, label: t('bar.notifications'), onPress: () => navigate('notifications') }] : []),
     { key: 'menu', icon: 'menu', label: menu.open ? t('ws.closeNav') : t('ws.openNav'), onPress: menu.onToggle, expanded: menu.open, controls: menu.controls },
@@ -94,28 +107,20 @@ export function StudentPhoneFrame({ route, title, menu, menuPanel, ownBack = fal
   ];
   return (
     <div className="sk-phone-frame" style={frame}>
-      <div style={top}>
+      {ownChrome ? null : <div style={top}>
         <PhoneHeader
           title={discover ? t('phone.brand') : board?.title ?? title}
           subtitle={board?.subtitle}
           brand={discover}
-          back={tab || ownBack ? undefined : { label: board?.backLabel ?? t('common.back'), onPress: goBack, icon: board?.backIcon }}
+          back={root || ownBack ? undefined : { label: board?.backLabel ?? t('common.back'), onPress: goBack, icon: board?.backIcon }}
           actions={actions}
         />
         <BoardToolbar actions={board?.actions} trailing={board?.trailing} />
-      </div>
+      </div>}
       {menu.open ? <div style={menuWrap}>{menuPanel}</div> : null}
       <main className="sk-phone-frame__main" style={bleed ? bleedMain : main}><PhoneHeaderSlotProvider value={slot}>{children}</PhoneHeaderSlotProvider></main>
       <div style={dock}>
-        <TabBar
-          label={t('tabbar.label')}
-          items={STUDENT_WEB_TABS.map((item) => ({ key: item.key, label: t(item.label), icon: item.icon }))}
-          selected={tab}
-          onSelect={(key) => {
-            const target = STUDENT_WEB_TABS.find((item) => item.key === key);
-            if (target) navigate(target.path);
-          }}
-        />
+        <PillNav current={current} onSelect={(key) => navigate(STUDENT_NAV_ROUTES[key])} />
       </div>
       {sosOpen && <EmergencyHelplinesDialog onClose={() => setSosOpen(false)} onSendSos={() => { setSosOpen(false); navigate('sos'); }} />}
     </div>
@@ -147,10 +152,11 @@ const main: React.CSSProperties = {
 
 const bleedMain: React.CSSProperties = { ...main, padding: 0 };
 
+/** The pill floats over the page (canvas page 9): the dock itself is see-through. */
 const dock: React.CSSProperties = {
   position: 'sticky',
   bottom: 0,
   zIndex: 20,
   paddingBottom: 'env(safe-area-inset-bottom)',
-  background: 'var(--sk-color-canvas)',
+  pointerEvents: 'none',
 };

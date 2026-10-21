@@ -1444,8 +1444,10 @@ def my_lab_orders(
     total = db.scalar(select(func.count()).select_from(statement.subquery()))
     rows = db.scalars(statement.order_by(M.LabOrder.created_at.desc()).offset(offset).limit(limit)).all()
     doctors = _ordering_doctor_names(db, rows)
+    reviewers = _reviewing_doctor_names(db, rows)
     charges = _charges_of(db, rows)
     return {"items": [{**lab_payload(r, for_patient=True), "orderedByDoctor": doctors.get(r.ordered_by, ""),
+                       "reviewedByDoctor": reviewers.get(r.reviewer_id, "") if r.status == "REPORT_RELEASED" else "",
                        **_charge_fields(charges.get(r.id))} for r in rows], "total": total or 0}
 
 
@@ -1463,6 +1465,18 @@ def _charge_fields(charge: M.LabOrderCharge | None) -> dict:
         return {"selfBooked": False, "paymentStatus": None, "amountPaise": None, "paymentDueAt": None}
     return {"selfBooked": True, "paymentStatus": charge.payment_status, "amountPaise": charge.amount_paise,
             "paymentDueAt": charge.payment_due_at or None}
+
+
+def _reviewing_doctor_names(db: Session, rows) -> dict[str, str]:
+    """Names of the doctors who released these reports ("reviewed by … before release").
+
+    Only released reports: before release the student learns nothing about who holds the result.
+    """
+    ids = {r.reviewer_id for r in rows if r.reviewer_id and r.status == "REPORT_RELEASED"}
+    if not ids:
+        return {}
+    return {a.id: a.full_name for a in db.scalars(select(M.Account).where(
+        M.Account.id.in_(ids), M.Account.role == "NMC_DOCTOR")).all()}
 
 
 def _ordering_doctor_names(db: Session, rows) -> dict[str, str]:

@@ -32,7 +32,7 @@ describe('StudentWebShell', () => {
     const groups = within(nav).getAllByRole('group').filter((group) => group.getAttribute('aria-labelledby'));
     expect(groups.map((group) => group.getAttribute('aria-labelledby'))).toEqual(['sk-sshell-care', 'sk-sshell-services', 'sk-sshell-account']);
     expect(within(groups[0]).getAllByRole('button').map((button) => button.textContent)).toEqual([
-      'Your Care', 'Health vault', 'My lab tests, Not available yet', 'Report insights, Not available yet', 'Emergency card', 'My check-in pass',
+      'Your Care', 'Health vault', 'My lab tests', 'Report insights', 'Emergency card', 'My check-in pass',
     ]);
     expect(within(groups[1]).getAllByRole('button').map((button) => button.textContent)).toEqual([
       'Orders', 'Buy again', 'Ayush AI', 'My requests',
@@ -51,12 +51,18 @@ describe('StudentWebShell', () => {
     expect(props.onNavigate).toHaveBeenCalledWith('security');
   });
 
-  it('shows items with no student screen as unavailable and never navigates', () => {
+  it('opens My lab tests and Report insights (WP-09), which now have student pages', () => {
     const props = renderShell();
-    const item = within(sidebarNav()).getByRole('button', { name: /My lab tests/ });
-    expect(item).toHaveAttribute('aria-disabled', 'true');
-    fireEvent.click(item);
-    expect(props.onNavigate).not.toHaveBeenCalled();
+    fireEvent.click(within(sidebarNav()).getByRole('button', { name: 'My lab tests' }));
+    expect(props.onNavigate).toHaveBeenCalledWith('my-lab-tests');
+    fireEvent.click(within(sidebarNav()).getByRole('button', { name: 'Report insights' }));
+    expect(props.onNavigate).toHaveBeenCalledWith('report-insights');
+  });
+
+  it('a bare board (WebAyush) keeps the top nav and SOS and marks the frame for no sidebar', () => {
+    renderShell({ route: 'ayush', bare: true });
+    expect(document.querySelector('.sk-sshell.is-bare')).not.toBeNull();
+    expect(screen.getByRole('button', { name: /SOS/ })).toBeTruthy();
   });
 
   it('opens the student Buy again page, never the partner console /reorder', () => {

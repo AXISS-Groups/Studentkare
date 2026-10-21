@@ -7,7 +7,7 @@ import type { MessageKey } from '@/i18n';
 import { PayStepViewModel } from '@/features/payments/viewmodel/PayStepViewModel';
 import { MedicineRepository } from '@/features/marketplace/data/MedicineRepository';
 import type { MedicineAlternative } from '@/features/marketplace/data/MedicineRepository';
-import { recallListing, rememberListing } from '@/features/phoneKit/listingCache';
+import { recallListing, rememberListing, rememberViewed } from '@/features/phoneKit/listingCache';
 
 /**
  * The phone shop (canvas ShopHome, then ProductList, then ProductDetail, then Cart, then
@@ -129,7 +129,7 @@ export class PhoneShopViewModel implements ViewModel {
   private enter(screen: ShopScreen): void {
     if (screen.name === 'home' && this.homePhase !== 'ready') void this.loadHome();
     if (screen.name === 'list') { this.listPage = 0; void this.loadList(); }
-    if (screen.name === 'detail') void this.loadDetail(screen.itemId);
+    // The medicine page (M2Product) loads its own listing, stock and other makers (M2ProductViewModel).
   }
 
   push(screen: ShopScreen): void {
@@ -258,6 +258,8 @@ export class PhoneShopViewModel implements ViewModel {
     }
     const found = known;
     const hasMedicine = Boolean(found && found.kind === 'product' && found.medicineId);
+    // Mobile 2.0 Home's "Recently viewed": catalogue listings opened this session (memory only).
+    if (found) rememberViewed(found);
     runInAction(() => {
       this.detail = found;
       this.detailPhase = found ? 'ready' : 'error';

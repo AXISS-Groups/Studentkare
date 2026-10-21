@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Medicine detail</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:#FAF8FF;color:#131B2E}
+a{color:#0C0494;text-decoration:none}a:hover{color:#2B20C9}
+button{font-family:inherit}
+a:focus-visible,button:focus-visible{outline:3px solid #6D5BFF;outline-offset:3px;border-radius:14px}
+@keyframes skRise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes skFloat{0%,100%{transform:translateY(0) rotate(-6deg)}50%{transform:translateY(-10px) rotate(4deg)}}
+@keyframes skPop{0%{transform:scale(.85)}60%{transform:scale(1.08)}100%{transform:scale(1)}}
+.sk-card{transition:transform .25s cubic-bezier(.2,.7,.3,1),box-shadow .25s}.sk-card:hover{transform:translateY(-2px);box-shadow:0 14px 30px rgba(12,4,148,.12)}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div style="width: 390px; height: 1300px; box-sizing: border-box; background: #FAF8FF; position: relative; overflow: hidden;">
+
+  <div style="position: relative; height: 300px; background: linear-gradient(160deg, #CCFBF1 0%, #99F6E4 55%, #5EEAD4 100%); border-radius: 0 0 36px 36px; overflow: hidden;">
+    <span aria-hidden="true" style="position: absolute; left: -60px; bottom: -80px; width: 240px; height: 240px; border-radius: 999px; border: 30px solid rgba(255,255,255,.35);"></span>
+    <header style="position: relative; padding: 18px 20px 0; display: flex; align-items: center; justify-content: space-between;">
+      <a href="Medicines.dc.html" aria-label="Back to Medicines" style="width: 44px; height: 44px; border-radius: 999px; background: rgba(255,255,255,.85); display: flex; align-items: center; justify-content: center;"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#131B2E" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"></path></svg></a>
+      <a href="Orders.dc.html" aria-label="Cart" style="width: 44px; height: 44px; border-radius: 999px; background: rgba(255,255,255,.85); display: flex; align-items: center; justify-content: center;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#131B2E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 7h13l-1.5 8.5a2 2 0 0 1-2 1.5H9.2a2 2 0 0 1-2-1.6L5 4H3"></path><circle cx="10" cy="20.5" r="1.2"></circle><circle cx="17" cy="20.5" r="1.2"></circle></svg></a>
+    </header>
+    <div aria-hidden="true" style="position: absolute; left: 50%; top: 92px; margin-left: -92px; width: 184px; height: 150px; animation: skFloat 4.5s ease-in-out infinite;">
+      <div style="position: absolute; inset: 0; border-radius: 30px; background: linear-gradient(150deg, #FFFFFF, #E6FFFB); box-shadow: 0 24px 40px rgba(15,118,110,.28); display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; padding: 26px 22px; box-sizing: border-box;">
+        <span style="border-radius: 999px; background: linear-gradient(145deg, #F8FAFC, #CBD5E1); height: 26px;"></span><span style="border-radius: 999px; background: linear-gradient(145deg, #F8FAFC, #CBD5E1); height: 26px;"></span><span style="border-radius: 999px; background: linear-gradient(145deg, #F8FAFC, #CBD5E1); height: 26px;"></span><span style="border-radius: 999px; background: linear-gradient(145deg, #F8FAFC, #CBD5E1); height: 26px;"></span><span style="border-radius: 999px; background: linear-gradient(145deg, #F8FAFC, #CBD5E1); height: 26px;"></span>
+        <span style="border-radius: 999px; background: linear-gradient(145deg, #F8FAFC, #CBD5E1); height: 26px;"></span><span style="border-radius: 999px; background: linear-gradient(145deg, #F8FAFC, #CBD5E1); height: 26px;"></span><span style="border-radius: 999px; background: linear-gradient(145deg, #F8FAFC, #CBD5E1); height: 26px;"></span><span style="border-radius: 999px; background: linear-gradient(145deg, #F8FAFC, #CBD5E1); height: 26px;"></span><span style="border-radius: 999px; background: linear-gradient(145deg, #F8FAFC, #CBD5E1); height: 26px;"></span>
+        <span style="grid-column: span 5; align-self: end; font-size: 12px; font-weight: 800; color: #0F766E; text-align: center;">650 mg</span>
+      </div>
+    </div>
+  </div>
+
+  <section style="padding: 20px 20px 0; animation: skRise .5s .05s both;">
+    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+      <span style="padding: 5px 10px; border-radius: 999px; background: #FFF7ED; color: #9A3412; font-size: 11.5px; font-weight: 800;">Prescription needed</span>
+      <span style="padding: 5px 10px; border-radius: 999px; background: #ECFDF5; color: #047857; font-size: 11.5px; font-weight: 800; display: flex; align-items: center; gap: 5px;"><span style="width: 7px; height: 7px; border-radius: 999px; background: #10B981;"></span>In stock at the clinic</span>
+    </div>
+    <h1 style="margin: 12px 0 4px; font-size: 25px; line-height: 30px; font-weight: 800; letter-spacing: -0.7px;">Paracetamol 650 mg</h1>
+    <p style="margin: 0; font-size: 13px; font-weight: 600; color: #464555;">Strip of 15 tablets · [Maker name]</p>
+    <div style="margin-top: 12px; padding: 10px 12px; border-radius: 14px; background: #F2F3FF; font-size: 12.5px; font-weight: 700; color: #0C0494; display: flex; align-items: center; gap: 8px;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0C0494" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.8 3h10.4A2 2 0 0 0 19 18l-5-9V3"></path></svg>
+      Contains: Paracetamol 650 mg
+    </div>
+  </section>
+
+  <section style="margin: 16px 20px 0; padding: 16px; border-radius: 24px; background: #FFFFFF; box-shadow: 0 6px 18px rgba(12,4,148,.06); display: flex; align-items: center; justify-content: space-between; animation: skRise .5s .1s both;">
+    <span style="display: flex; flex-direction: column; gap: 2px;"><span style="font-size: 26px; font-weight: 800; letter-spacing: -0.8px; font-variant-numeric: tabular-nums;">₹[price]</span><span style="font-size: 12px; font-weight: 600; color: #6B6980;">MRP ₹[MRP] · inclusive of taxes</span></span>
+    <div role="group" aria-label="Quantity" style="height: 46px; border-radius: 999px; background: #0C0494; display: flex; align-items: center; padding: 0 4px;">
+      <button type="button" aria-label="One fewer" onClick="{{ dec }}" style="width: 38px; height: 38px; border: 0; border-radius: 999px; background: rgba(255,255,255,.14); color: #FFFFFF; font-size: 20px; font-weight: 800; cursor: pointer;">−</button>
+      <span style="width: 36px; text-align: center; color: #FFFFFF; font-size: 16px; font-weight: 800; font-variant-numeric: tabular-nums; animation: skPop .3s both;">{{ qty }}</span>
+      <button type="button" aria-label="One more" onClick="{{ inc }}" style="width: 38px; height: 38px; border: 0; border-radius: 999px; background: rgba(255,255,255,.14); color: #FFFFFF; font-size: 20px; font-weight: 800; cursor: pointer;">+</button>
+    </div>
+  </section>
+
+  <div style="padding: 12px 20px 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; animation: skRise .5s .15s both;">
+    <span style="border-radius: 20px; padding: 12px; background: #ECFDF5; display: flex; flex-direction: column; gap: 3px;"><span style="font-size: 10.5px; font-weight: 800; letter-spacing: .8px; color: #047857;">CLINIC PICKUP</span><span style="font-size: 13.5px; font-weight: 800;">Today by 6 pm</span></span>
+    <span style="border-radius: 20px; padding: 12px; background: #EEF2FF; display: flex; flex-direction: column; gap: 3px;"><span style="font-size: 10.5px; font-weight: 800; letter-spacing: .8px; color: #0C0494;">TO BLOCK C</span><span style="font-size: 13.5px; font-weight: 800;">Tomorrow 10–12</span></span>
+  </div>
+
+  <section aria-labelledby="alts" style="margin: 18px 20px 0; padding: 16px; border-radius: 26px; background: linear-gradient(160deg, #F0FDF9, #FFFFFF 55%); box-shadow: 0 6px 18px rgba(12,4,148,.06); animation: skRise .55s .2s both;">
+    <h2 id="alts" style="margin: 0; font-size: 15px; font-weight: 800;">Same composition, other makers</h2>
+    <p style="margin: 4px 0 8px; font-size: 12px; font-weight: 600; color: #6B6980;">Cheapest first. A pharmacist confirms the swap.</p>
+    <sc-for list="{{ alts }}" as="a" hint-placeholder-count="3">
+      <div style="display: flex; align-items: center; gap: 12px; padding: 12px 0; border-top: 1px solid #E6F7F1;">
+        <span style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px;"><span style="font-size: 13.5px; font-weight: 700;">{{ a.name }}</span><span style="font-size: 11.5px; font-weight: 600; color: #6B6980;">{{ a.meta }}</span></span>
+        <sc-if value="{{ a.lowest }}" hint-placeholder-val="{{ false }}"><span style="padding: 4px 9px; border-radius: 999px; background: #047857; color: #FFFFFF; font-size: 10.5px; font-weight: 800;">Lowest</span></sc-if>
+        <span style="font-size: 14.5px; font-weight: 800; font-variant-numeric: tabular-nums;">{{ a.price }}</span>
+      </div>
+    </sc-for>
+  </section>
+
+  <section aria-labelledby="about" style="margin: 16px 20px 0; border-radius: 26px; background: #FFFFFF; box-shadow: 0 6px 18px rgba(12,4,148,.06); overflow: hidden; animation: skRise .55s .25s both;">
+    <h2 id="about" style="margin: 0; padding: 16px 16px 4px; font-size: 15px; font-weight: 800;">About this medicine</h2>
+    <sc-for list="{{ about }}" as="q" hint-placeholder-count="3">
+      <div style="border-top: 1px solid #EEF2FF;">
+        <button type="button" onClick="{{ q.toggle }}" aria-expanded="{{ q.expanded }}" style="width: 100%; border: 0; background: none; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; font-size: 13.5px; font-weight: 700; color: #131B2E; cursor: pointer; text-align: left;">{{ q.k }}<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#131B2E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="{{ q.chev }}"><path d="M6 9l6 6 6-6"></path></svg></button>
+        <sc-if value="{{ q.open }}" hint-placeholder-val="{{ false }}"><p style="margin: 0; padding: 0 16px 14px; font-size: 12.5px; line-height: 19px; font-weight: 600; color: #464555; animation: skRise .3s both;">{{ q.v }}</p></sc-if>
+      </div>
+    </sc-for>
+    <p style="margin: 0; padding: 10px 16px 14px; font-size: 11.5px; font-weight: 600; color: #6B6980; border-top: 1px solid #EEF2FF;">Source: [approved medicine information source] · reviewed by a pharmacist</p>
+  </section>
+
+  <div style="position: absolute; left: 0; right: 0; bottom: 0; padding: 14px 20px 24px; background: rgba(255,255,255,.86); backdrop-filter: blur(16px); border-top: 1px solid rgba(255,255,255,.8); box-shadow: 0 -10px 34px rgba(19,27,46,.10); display: flex; gap: 10px;">
+    <a href="ReportUpload.dc.html" style="height: 54px; padding: 0 16px; border-radius: 999px; border: 1.5px solid #0C0494; color: #0C0494; font-size: 14px; font-weight: 800; display: flex; align-items: center;">Add Rx</a>
+    <a href="Orders.dc.html" style="flex-grow: 1; height: 54px; border-radius: 999px; background: linear-gradient(150deg, #2B20C9, #0C0494); color: #FFFFFF; font-size: 15px; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 12px 26px rgba(12,4,148,.30);">Add {{ qty }} to cart</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1300}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { qty: 1, open: 'uses' }; }
+  renderVals() {
+    const s = this.state;
+    const rows = [
+      ['uses', 'What it is used for', 'Fever and mild to moderate pain, such as headache and body ache.'],
+      ['side', 'Common side effects', 'Usually well tolerated. Rarely nausea or a rash. Stop and ask a doctor if a rash appears.'],
+      ['avoid', 'Do not take with', 'Other medicines that also contain paracetamol (many cold remedies do). Avoid alcohol.']
+    ];
+    return {
+      qty: s.qty,
+      inc: () => this.setState({ qty: Math.min(9, s.qty + 1) }),
+      dec: () => this.setState({ qty: Math.max(1, s.qty - 1) }),
+      alts: [
+        { name: '[Generic maker A] Paracetamol 650', meta: 'Strip of 15', price: '₹[price]', lowest: true },
+        { name: '[Generic maker B] Paracetamol 650', meta: 'Strip of 15', price: '₹[price]', lowest: false },
+        { name: '[Brand] 650', meta: 'Strip of 15 · the one you picked', price: '₹[price]', lowest: false }
+      ],
+      about: rows.map(([id, k, v]) => ({
+        k, v, open: s.open === id, expanded: s.open === id ? 'true' : 'false',
+        toggle: () => this.setState({ open: s.open === id ? '' : id }),
+        chev: 'transition: transform .25s; transform: rotate(' + (s.open === id ? '180deg' : '0deg') + ');'
+      }))
+    };
+  }
+}
+</script>
+</body>
+</html>

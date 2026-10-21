@@ -34,8 +34,18 @@
       "src/features/auth/views/WelcomeFlowView.tsx",
       "src/features/auth/views/welcomeSlides.ts"
     ],
-    "SignIn": [],
-    "OtpVerify": [],
+    "SignIn": [
+      "src/features/auth/screens/AuthenticatedFlowScreen.tsx",
+      "src/features/auth/views/SignInView.tsx",
+      "src/features/auth/views/SignInFrame.tsx",
+      "src/features/auth/views/SignInNativeView.tsx"
+    ],
+    "OtpVerify": [
+      "src/features/auth/views/OtpVerifyView.tsx",
+      "src/features/auth/views/otpCopy.ts",
+      "src/features/auth/screens/AuthenticatedFlowScreen.tsx",
+      "src/features/auth/views/SignInFrame.tsx"
+    ],
     "CreateAccount": [
       "src/features/auth/views/CreateAccountView.tsx",
       "src/features/auth/views/CreateAccountNativeView.tsx",
@@ -72,15 +82,33 @@
       "src/screens/digital_id/ABHALinkScreen.tsx",
       "src/design-system/navigation/PhoneHeader.tsx"
     ],
-    "OnboardingConsent": [],
-    "VerifyIdentity": [],
-    "VerifyGate": [],
+    "OnboardingConsent": [
+      "src/features/auth/views/SignupConsent.tsx",
+      "src/features/auth/views/SignupConsentNative.tsx"
+    ],
+    "VerifyIdentity": [
+      "src/features/auth/views/IdentityVerifyView.tsx",
+      "src/features/auth/views/IdentityVerifyPanel.tsx",
+      "src/features/auth/views/IdentityCheckRow.tsx",
+      "src/features/auth/viewmodel/IdentityVerifyViewModel.ts"
+    ],
+    "VerifyGate": [
+      "src/features/auth/views/VerifyGateView.tsx",
+      "src/features/auth/views/VerifyGateCard.tsx",
+      "src/features/auth/views/IdentityCheckRow.tsx",
+      "src/features/auth/views/VerifyGateNativeView.tsx"
+    ],
     "LoggedOut": [
       "src/features/auth/views/LoggedOutView.tsx"
     ],
     "GuardianConsent": [],
     "GuardianApprove": [],
-    "LostPhone": [],
+    "LostPhone": [
+      "src/features/auth/views/LostPhoneView.tsx",
+      "src/features/auth/views/LostPhonePanel.tsx",
+      "src/features/auth/views/LostPhoneNativeView.tsx",
+      "src/features/auth/viewmodel/LostPhoneViewModel.ts"
+    ],
     "NewDevice": [],
     "HomeDiscover": [
       "src/features/discover/views/HomeDiscoverView.tsx",
@@ -179,8 +207,13 @@
       "src/features/notifications/views/NotificationNativeView.tsx",
       "src/screens/workspace/PhoneBoards.tsx"
     ],
-    "EmergencyCard": [],
-    "CrisisSupport": [],
+    "EmergencyCard": [
+      "src/features/emergency/views/EmergencyCardBoard.tsx",
+      "src/features/emergency/viewmodel/EmergencyCardViewModel.ts"
+    ],
+    "CrisisSupport": [
+      "src/features/crisis/views/CrisisSupportBoard.tsx"
+    ],
     "ShopHome": [
       "src/features/shopPhone/views/ShopHomeView.tsx",
       "src/features/shopPhone/views/shopParts.tsx",
@@ -255,7 +288,9 @@
       "src/features/digital_id/views/DigitalIdNativeView.tsx",
       "src/screens/workspace/PhoneBoards.tsx"
     ],
-    "PlanBilling": [],
+    "PlanBilling": [
+      "src/features/billing/views/PlanBillingBoard.tsx"
+    ],
     "ClaimsHub": [
       "src/features/claims/views/ClaimsHubBoard.tsx",
       "src/screens/workspace/PhoneBoards.tsx"
@@ -270,14 +305,24 @@
     ],
     "MyReports": [],
     "ReportInsights": [],
-    "ConsentInbox": [],
-    "SosBeacon": [],
+    "ConsentInbox": [
+      "src/features/vault/views/ConsentInboxBoard.tsx"
+    ],
+    "SosBeacon": [
+      "src/modules/m04-emergency/view/SosView.tsx",
+      "src/features/emergency/screens/SosRouteScreen.tsx"
+    ],
     "DataExport": [
       "src/features/account/views/DataExportBoard.tsx",
       "src/screens/workspace/PhoneBoards.tsx"
     ],
-    "IceContacts": [],
-    "FamilyCircle": [],
+    "IceContacts": [
+      "src/features/emergency/views/IceContactsBoard.tsx",
+      "src/features/emergency/viewmodel/EmergencyCardViewModel.ts"
+    ],
+    "FamilyCircle": [
+      "src/features/vault/views/FamilyCircleBoard.tsx"
+    ],
     "RefillRequest": [],
     "VitalTrends": [],
     "HostelVisit": [
@@ -309,21 +354,31 @@
       "src/features/requests/views/ReturnRequestView.tsx",
       "src/design-system/ResultMoment.tsx"
     ],
-    "MyPass": [],
+    "MyPass": [
+      "src/features/digital_id/views/MyPassBoard.tsx"
+    ],
     "CheckinReceipt": [],
     "LeaveCampus": [
       "src/features/campus/views/LeaveCampusView.tsx"
     ],
-    "DeleteAccount": [],
+    "DeleteAccount": [
+      "src/features/account/views/DeleteAccountView.tsx",
+      "src/features/account/viewmodel/DeleteAccountViewModel.ts"
+    ],
     "NotificationSettings": [
       "src/features/notifications/views/NotificationSettingsView.tsx"
     ],
     "ConsultSummary": [],
-    "SosDebrief": [],
+    "SosDebrief": [
+      "src/modules/m04-emergency/view/SosView.tsx",
+      "src/features/emergency/screens/SosRouteScreen.tsx"
+    ],
     "MyRequests": [
       "src/features/requests/views/RequestsViews.tsx"
     ],
-    "Legal": [],
+    "Legal": [
+      "src/features/legal/views/LegalBoard.tsx"
+    ],
     "Landing": [
       "src/features/landing/views/LandingView.tsx",
       "src/features/landing/views/LandingNativeView.tsx",
@@ -396,7 +451,20 @@
       "src/design-system/public-site/PublicAppBand.tsx",
       "src/features/landing/views/landingWebKit.tsx"
     ],
-    "WebPlans": [],
+    "WebPlans": [
+      "src/features/landing/views/LandingPlansView.tsx",
+      "src/features/landing/views/LandingPlansNativeView.tsx",
+      "src/features/landing/views/planCatalog.ts",
+      "src/features/landing/views/landingPlans.css",
+      "src/design-system/public-site/PublicSitePage.tsx",
+      "src/design-system/public-site/PublicSiteHeader.tsx",
+      "src/design-system/public-site/PublicSiteFooter.tsx",
+      "src/design-system/public-site/NewsletterBand.tsx",
+      "src/design-system/public-site/publicSiteNav.ts",
+      "src/design-system/public-site/PublicTrustBand.tsx",
+      "src/design-system/public-site/PublicAppBand.tsx",
+      "src/features/landing/views/landingWebKit.tsx"
+    ],
     "LandingCampus": [
       "src/features/landing/views/LandingCampusView.tsx",
       "src/features/landing/views/LandingCampusNativeView.tsx",
@@ -422,13 +490,36 @@
       "src/design-system/public-site/PublicAppBand.tsx",
       "src/features/landing/views/landingWebKit.tsx"
     ],
-    "WebSignIn": [],
+    "WebSignIn": [
+      "src/features/auth/screens/AuthenticatedFlowScreen.tsx",
+      "src/features/auth/views/SignInView.tsx",
+      "src/features/auth/views/SignInFrame.tsx"
+    ],
     "WebLoggedOut": [
       "src/features/auth/views/LoggedOutView.tsx"
     ],
-    "WebLostPhone": [],
-    "WebVerify": [],
-    "WebVerifyGate": [],
+    "WebLostPhone": [
+      "src/features/auth/views/LostPhoneView.tsx",
+      "src/features/auth/views/LostPhonePanel.tsx",
+      "src/features/auth/views/StandaloneStudentShell.tsx",
+      "src/design-system/student-shell/StudentWebShell.tsx",
+      "src/design-system/student-shell/studentNav.ts",
+      "src/design-system/overlays/ConfirmDialog.tsx"
+    ],
+    "WebVerify": [
+      "src/features/auth/views/IdentityVerifyView.tsx",
+      "src/features/auth/views/IdentityVerifyPanel.tsx",
+      "src/features/auth/views/IdentityCheckRow.tsx",
+      "src/features/auth/viewmodel/IdentityVerifyViewModel.ts",
+      "src/design-system/student-shell/StudentWebShell.tsx",
+      "src/design-system/student-shell/studentNav.ts",
+      "src/design-system/overlays/ConfirmDialog.tsx"
+    ],
+    "WebVerifyGate": [
+      "src/features/auth/views/VerifyGateView.tsx",
+      "src/features/auth/views/VerifyGateCard.tsx",
+      "src/features/auth/views/IdentityCheckRow.tsx"
+    ],
     "WebGuardianConsent": [],
     "WebGuardianApprove": [],
     "WebHome": [
@@ -449,14 +540,62 @@
       "src/design-system/student-shell/studentNav.ts",
       "src/design-system/overlays/ConfirmDialog.tsx"
     ],
-    "WebVault": [],
-    "WebMyLabTests": [],
+    "WebVault": [
+      "src/features/studentweb/views/t1/WebVaultView.tsx",
+      "src/design-system/student-shell/StudentWebShell.tsx",
+      "src/design-system/student-shell/studentNav.ts",
+      "src/design-system/overlays/ConfirmDialog.tsx",
+      "src/features/studentweb/views/parts.tsx",
+      "src/features/studentweb/views/t1/shared.tsx",
+      "src/features/studentweb/views/t1/t1web.css"
+    ],
+    "WebMyLabTests": [
+      "src/features/studentweb/views/t1/WebMyLabTestsView.tsx",
+      "src/design-system/student-shell/StudentWebShell.tsx",
+      "src/design-system/student-shell/studentNav.ts",
+      "src/design-system/overlays/ConfirmDialog.tsx",
+      "src/features/studentweb/views/parts.tsx",
+      "src/features/studentweb/views/t1/shared.tsx",
+      "src/features/studentweb/views/t1/t1web.css",
+      "src/design-system/public-site/PublicSiteFooter.tsx",
+      "src/design-system/public-site/publicSiteNav.ts",
+      "src/design-system/public-site/NewsletterBand.tsx"
+    ],
     "WebReportInsights": [],
     "WebReportAssistant": [],
-    "WebAyush": [],
+    "WebAyush": [
+      "src/features/studentweb/views/t1/WebAyushView.tsx",
+      "src/features/ayush/AyushAnswer.tsx",
+      "src/features/ayush/useAyushConversation.ts",
+      "src/features/ayush/ayush.css",
+      "src/design-system/student-shell/StudentWebShell.tsx",
+      "src/design-system/student-shell/studentNav.ts",
+      "src/design-system/overlays/ConfirmDialog.tsx",
+      "src/features/studentweb/views/parts.tsx",
+      "src/features/studentweb/views/t1/shared.tsx",
+      "src/features/studentweb/views/t1/t1web.css"
+    ],
     "WebConsultSummary": [],
-    "WebEmergencyCard": [],
-    "WebPass": [],
+    "WebEmergencyCard": [
+      "src/features/studentweb/views/t1/WebEmergencyCardView.tsx",
+      "src/features/emergency/viewmodel/EmergencyCardViewModel.ts",
+      "src/design-system/student-shell/StudentWebShell.tsx",
+      "src/design-system/student-shell/studentNav.ts",
+      "src/design-system/overlays/ConfirmDialog.tsx",
+      "src/features/studentweb/views/parts.tsx",
+      "src/features/studentweb/views/t1/shared.tsx",
+      "src/features/studentweb/views/t1/t1web.css"
+    ],
+    "WebPass": [
+      "src/features/studentweb/views/t1/WebPassView.tsx",
+      "src/features/digital_id/viewmodel/livePass.ts",
+      "src/design-system/student-shell/StudentWebShell.tsx",
+      "src/design-system/student-shell/studentNav.ts",
+      "src/design-system/overlays/ConfirmDialog.tsx",
+      "src/features/studentweb/views/parts.tsx",
+      "src/features/studentweb/views/t1/shared.tsx",
+      "src/features/studentweb/views/t1/t1web.css"
+    ],
     "WebSearchResults": [
       "src/features/studentweb/views/shop/WebShopView.tsx",
       "src/features/studentweb/views/shop/WebSearchResultsView.tsx",
@@ -540,10 +679,40 @@
       "src/design-system/student-shell/studentNav.ts",
       "src/design-system/overlays/ConfirmDialog.tsx"
     ],
-    "WebRequests": [],
-    "WebLegal": [],
-    "WebLeaveCampus": [],
-    "WebDeleteAccount": [],
+    "WebRequests": [
+      "src/features/studentweb/views/t1/WebRequestsView.tsx",
+      "src/features/studentweb/views/t1/WebRequestsRoute.tsx",
+      "src/features/requests/viewmodel/RequestsViewModel.ts",
+      "src/design-system/student-shell/StudentWebShell.tsx",
+      "src/design-system/student-shell/studentNav.ts",
+      "src/design-system/overlays/ConfirmDialog.tsx",
+      "src/features/studentweb/views/parts.tsx",
+      "src/features/studentweb/views/t1/shared.tsx",
+      "src/features/studentweb/views/t1/t1web.css"
+    ],
+    "WebLegal": [
+      "src/features/legal/views/WebLegalView.tsx"
+    ],
+    "WebLeaveCampus": [
+      "src/features/studentweb/views/t1/WebLeaveCampusView.tsx",
+      "src/features/campus/viewmodel/LeaveCampusViewModel.ts",
+      "src/design-system/student-shell/StudentWebShell.tsx",
+      "src/design-system/student-shell/studentNav.ts",
+      "src/design-system/overlays/ConfirmDialog.tsx",
+      "src/features/studentweb/views/parts.tsx",
+      "src/features/studentweb/views/t1/shared.tsx",
+      "src/features/studentweb/views/t1/t1web.css"
+    ],
+    "WebDeleteAccount": [
+      "src/features/studentweb/views/t1/WebDeleteAccountView.tsx",
+      "src/features/account/viewmodel/DeleteAccountViewModel.ts",
+      "src/design-system/student-shell/StudentWebShell.tsx",
+      "src/design-system/student-shell/studentNav.ts",
+      "src/design-system/overlays/ConfirmDialog.tsx",
+      "src/features/studentweb/views/parts.tsx",
+      "src/features/studentweb/views/t1/shared.tsx",
+      "src/features/studentweb/views/t1/t1web.css"
+    ],
     "CampusAdminConsole": [
       "src/design-system/campus-shell/CampusShell.tsx",
       "src/design-system/campus-shell/campusNav.ts",
@@ -579,11 +748,44 @@
       "src/features/campus/boards/rosterImport.ts",
       "src/features/campus/boards/boardKit.tsx"
     ],
-    "CampusInsights": [],
-    "CampusAccessRequests": [],
-    "CampusBreakGlass": [],
-    "CampusIncidents": [],
-    "CampusCounsellor": [],
+    "CampusInsights": [
+      "src/design-system/campus-shell/CampusShell.tsx",
+      "src/design-system/campus-shell/campusNav.ts",
+      "src/features/campus/console/campusPages.tsx",
+      "src/features/campus/safety/CampusInsightsScreen.tsx",
+      "src/features/campus/safety/safetyKit.tsx",
+      "src/features/campus/boards/boardKit.tsx"
+    ],
+    "CampusAccessRequests": [
+      "src/design-system/campus-shell/CampusShell.tsx",
+      "src/design-system/campus-shell/campusNav.ts",
+      "src/features/campus/console/campusPages.tsx",
+      "src/features/campus/safety/CampusAccessRequestsScreen.tsx",
+      "src/features/campus/safety/safetyKit.tsx"
+    ],
+    "CampusBreakGlass": [
+      "src/design-system/campus-shell/CampusShell.tsx",
+      "src/design-system/campus-shell/campusNav.ts",
+      "src/features/campus/console/campusPages.tsx",
+      "src/features/campus/safety/CampusBreakGlassScreen.tsx",
+      "src/features/campus/safety/safetyKit.tsx",
+      "src/features/campus/boards/boardKit.tsx"
+    ],
+    "CampusIncidents": [
+      "src/design-system/campus-shell/CampusShell.tsx",
+      "src/design-system/campus-shell/campusNav.ts",
+      "src/features/campus/console/campusPages.tsx",
+      "src/features/campus/safety/CampusIncidentsScreen.tsx",
+      "src/features/campus/safety/safetyKit.tsx"
+    ],
+    "CampusCounsellor": [
+      "src/design-system/campus-shell/CampusShell.tsx",
+      "src/design-system/campus-shell/campusNav.ts",
+      "src/features/campus/console/campusPages.tsx",
+      "src/features/campus/console/CampusPendingPage.tsx",
+      "src/screens/institution/CounsellorQueueScreen.tsx",
+      "src/features/campus/safety/safetyKit.tsx"
+    ],
     "CampusAdminTeam": [
       "src/design-system/campus-shell/CampusShell.tsx",
       "src/design-system/campus-shell/campusNav.ts",
@@ -591,7 +793,13 @@
       "src/features/campus/boards/CampusAdminTeamScreen.tsx",
       "src/features/campus/boards/boardKit.tsx"
     ],
-    "CampusIsolation": [],
+    "CampusIsolation": [
+      "src/design-system/campus-shell/CampusShell.tsx",
+      "src/design-system/campus-shell/campusNav.ts",
+      "src/features/campus/console/campusPages.tsx",
+      "src/features/campus/safety/safetyBoards.tsx",
+      "src/features/campus/safety/safetyKit.tsx"
+    ],
     "CampusOutbreak": [
       "src/design-system/campus-shell/CampusShell.tsx",
       "src/design-system/campus-shell/campusNav.ts",
@@ -616,15 +824,33 @@
       "src/features/campus/console/campusPages.tsx",
       "src/features/campus/boards/radarBoards.tsx"
     ],
-    "CampusAmbulance": [],
-    "CampusSla": [],
+    "CampusAmbulance": [
+      "src/design-system/campus-shell/CampusShell.tsx",
+      "src/design-system/campus-shell/campusNav.ts",
+      "src/features/campus/console/campusPages.tsx",
+      "src/features/campus/safety/safetyBoards.tsx",
+      "src/features/campus/safety/safetyKit.tsx"
+    ],
+    "CampusSla": [
+      "src/design-system/campus-shell/CampusShell.tsx",
+      "src/design-system/campus-shell/campusNav.ts",
+      "src/features/campus/console/campusPages.tsx",
+      "src/features/campus/safety/safetyBoards.tsx",
+      "src/features/campus/safety/safetyKit.tsx"
+    ],
     "CampusBlocks": [
       "src/design-system/campus-shell/CampusShell.tsx",
       "src/design-system/campus-shell/campusNav.ts",
       "src/features/campus/console/campusPages.tsx",
       "src/features/campus/boards/radarBoards.tsx"
     ],
-    "CampusDischarge": [],
+    "CampusDischarge": [
+      "src/design-system/campus-shell/CampusShell.tsx",
+      "src/design-system/campus-shell/campusNav.ts",
+      "src/features/campus/console/campusPages.tsx",
+      "src/features/campus/safety/safetyBoards.tsx",
+      "src/features/campus/safety/safetyKit.tsx"
+    ],
     "CampusWellness": [
       "src/design-system/campus-shell/CampusShell.tsx",
       "src/design-system/campus-shell/campusNav.ts",
@@ -675,10 +901,62 @@
       "src/features/clinician/queue/queueSource.ts",
       "src/features/clinician/shared/ClinicianStates.tsx"
     ],
-    "ClinicalReview": [],
-    "EncounterNote": [],
-    "Prescribe": [],
-    "ReportReviews": [],
+    "ClinicalReview": [
+      "src/design-system/clinician-shell/ClinicianShell.tsx",
+      "src/design-system/clinician-shell/clinicianNav.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/clinician/shared/ClinicianConsoleFrame.tsx",
+      "src/features/clinician/shared/ClinicianStates.tsx",
+      "src/features/clinician/shared/OfflineNote.tsx",
+      "src/features/clinician/shared/clinicalData.ts",
+      "src/features/clinician/shared/LoadableViewModel.ts",
+      "src/design-system/overlays/Overlay.tsx",
+      "src/features/clinician/critical-results/CriticalResultsScreen.tsx",
+      "src/features/clinician/critical-results/CriticalResultsViewModel.ts",
+      "src/features/clinician/critical-results/criticalModel.ts"
+    ],
+    "EncounterNote": [
+      "src/design-system/clinician-shell/ClinicianShell.tsx",
+      "src/design-system/clinician-shell/clinicianNav.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/clinician/shared/ClinicianConsoleFrame.tsx",
+      "src/features/clinician/shared/ClinicianStates.tsx",
+      "src/features/clinician/shared/OfflineNote.tsx",
+      "src/features/clinician/shared/clinicalData.ts",
+      "src/features/clinician/shared/LoadableViewModel.ts",
+      "src/design-system/overlays/Overlay.tsx",
+      "src/features/clinician/shared/handoff.ts",
+      "src/features/clinician/encounter-note/EncounterNoteScreen.tsx",
+      "src/features/clinician/encounter-note/encounterModel.ts"
+    ],
+    "Prescribe": [
+      "src/design-system/clinician-shell/ClinicianShell.tsx",
+      "src/design-system/clinician-shell/clinicianNav.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/clinician/shared/ClinicianConsoleFrame.tsx",
+      "src/features/clinician/shared/ClinicianStates.tsx",
+      "src/features/clinician/shared/OfflineNote.tsx",
+      "src/features/clinician/shared/clinicalData.ts",
+      "src/features/clinician/shared/LoadableViewModel.ts",
+      "src/design-system/overlays/Overlay.tsx",
+      "src/features/clinician/shared/handoff.ts",
+      "src/features/clinician/prescribe/PrescribeScreen.tsx",
+      "src/features/clinician/prescribe/PrescribeViewModel.ts",
+      "src/features/clinician/prescribe/prescribeModel.ts"
+    ],
+    "ReportReviews": [
+      "src/design-system/clinician-shell/ClinicianShell.tsx",
+      "src/design-system/clinician-shell/clinicianNav.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/clinician/shared/ClinicianConsoleFrame.tsx",
+      "src/features/clinician/shared/ClinicianStates.tsx",
+      "src/features/clinician/shared/OfflineNote.tsx",
+      "src/features/clinician/shared/clinicalData.ts",
+      "src/features/clinician/shared/LoadableViewModel.ts",
+      "src/design-system/overlays/Overlay.tsx",
+      "src/features/clinician/report-reviews/ReportReviewsScreen.tsx",
+      "src/features/clinician/report-reviews/reviewsModel.ts"
+    ],
     "ClinicianSchedule": [
       "src/design-system/clinician-shell/ClinicianShell.tsx",
       "src/design-system/clinician-shell/clinicianNav.ts",
@@ -707,12 +985,76 @@
       "src/design-system/console/ConsoleTablePage.tsx",
       "src/features/clinician/earnings/ClinicianEarningsConsoleScreen.tsx"
     ],
-    "ClinicianLabOrder": [],
-    "ClinicianReferral": [],
-    "ClinicianRenewals": [],
-    "ClinicianChronic": [],
-    "ClinicianAyush": [],
-    "ClinicianAi": [],
+    "ClinicianLabOrder": [
+      "src/design-system/clinician-shell/ClinicianShell.tsx",
+      "src/design-system/clinician-shell/clinicianNav.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/clinician/shared/ClinicianConsoleFrame.tsx",
+      "src/features/clinician/shared/ClinicianStates.tsx",
+      "src/features/clinician/shared/ConsoleTableScreen.tsx",
+      "src/features/clinician/shared/consoleTable.ts",
+      "src/design-system/console/ConsoleTablePage.tsx",
+      "src/features/clinician/shared/OfflineNote.tsx",
+      "src/features/clinician/shared/clinicalData.ts",
+      "src/design-system/overlays/Overlay.tsx",
+      "src/features/clinician/lab-orders/ClinicianLabOrdersScreen.tsx",
+      "src/features/clinician/viewmodel/DoctorLabOrderViewModel.ts"
+    ],
+    "ClinicianReferral": [
+      "src/design-system/clinician-shell/ClinicianShell.tsx",
+      "src/design-system/clinician-shell/clinicianNav.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/clinician/shared/ClinicianConsoleFrame.tsx",
+      "src/features/clinician/shared/ClinicianStates.tsx",
+      "src/features/clinician/shared/ConsoleTableScreen.tsx",
+      "src/features/clinician/shared/consoleTable.ts",
+      "src/design-system/console/ConsoleTablePage.tsx",
+      "src/features/clinician/referrals/ClinicianReferralsScreen.tsx"
+    ],
+    "ClinicianRenewals": [
+      "src/design-system/clinician-shell/ClinicianShell.tsx",
+      "src/design-system/clinician-shell/clinicianNav.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/clinician/shared/ClinicianConsoleFrame.tsx",
+      "src/features/clinician/shared/ClinicianStates.tsx",
+      "src/features/clinician/shared/ConsoleTableScreen.tsx",
+      "src/features/clinician/shared/consoleTable.ts",
+      "src/design-system/console/ConsoleTablePage.tsx",
+      "src/features/clinician/renewals/ClinicianRenewalsScreen.tsx"
+    ],
+    "ClinicianChronic": [
+      "src/design-system/clinician-shell/ClinicianShell.tsx",
+      "src/design-system/clinician-shell/clinicianNav.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/clinician/shared/ClinicianConsoleFrame.tsx",
+      "src/features/clinician/shared/ClinicianStates.tsx",
+      "src/features/clinician/shared/ConsoleTableScreen.tsx",
+      "src/features/clinician/shared/consoleTable.ts",
+      "src/design-system/console/ConsoleTablePage.tsx",
+      "src/features/clinician/chronic/ClinicianChronicConsoleScreen.tsx"
+    ],
+    "ClinicianAyush": [
+      "src/design-system/clinician-shell/ClinicianShell.tsx",
+      "src/design-system/clinician-shell/clinicianNav.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/clinician/shared/ClinicianConsoleFrame.tsx",
+      "src/features/clinician/shared/ClinicianStates.tsx",
+      "src/features/clinician/shared/ConsoleTableScreen.tsx",
+      "src/features/clinician/shared/consoleTable.ts",
+      "src/design-system/console/ConsoleTablePage.tsx",
+      "src/features/clinician/ayush/ClinicianAyushScreen.tsx"
+    ],
+    "ClinicianAi": [
+      "src/design-system/clinician-shell/ClinicianShell.tsx",
+      "src/design-system/clinician-shell/clinicianNav.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/clinician/shared/ClinicianConsoleFrame.tsx",
+      "src/features/clinician/shared/ClinicianStates.tsx",
+      "src/features/clinician/shared/ConsoleTableScreen.tsx",
+      "src/features/clinician/shared/consoleTable.ts",
+      "src/design-system/console/ConsoleTablePage.tsx",
+      "src/features/clinician/decision-support/ClinicianDecisionSupportScreen.tsx"
+    ],
     "ClinicianToday": [
       "src/design-system/clinician-shell/ClinicianShell.tsx",
       "src/design-system/clinician-shell/clinicianNav.ts",
@@ -733,7 +1075,22 @@
       "src/features/clinician/inbox/ClinicianInboxScreen.tsx",
       "src/features/clinician/shared/ClinicianStates.tsx"
     ],
-    "ClinicianConsultRoom": [],
+    "ClinicianConsultRoom": [
+      "src/design-system/clinician-shell/ClinicianShell.tsx",
+      "src/design-system/clinician-shell/clinicianNav.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/clinician/shared/ClinicianConsoleFrame.tsx",
+      "src/features/clinician/shared/ClinicianStates.tsx",
+      "src/features/clinician/shared/OfflineNote.tsx",
+      "src/features/clinician/shared/clinicalData.ts",
+      "src/features/clinician/shared/LoadableViewModel.ts",
+      "src/design-system/overlays/Overlay.tsx",
+      "src/design-system/overlays/ConfirmDialog.tsx",
+      "src/features/clinician/shared/handoff.ts",
+      "src/features/clinician/consult-room/ConsultRoomScreen.tsx",
+      "src/features/clinician/consult-room/consultModel.ts",
+      "src/components/health/consult/ConsultCallPanel.tsx"
+    ],
     "WebClinicianApply": [
       "src/features/clinician/apply/DoctorApplyScreen.tsx",
       "src/features/clinician/apply/DoctorApplyView.tsx",
@@ -753,8 +1110,27 @@
       "src/features/camp/day/campDay.ts",
       "src/native/CampScreen.tsx"
     ],
-    "LabQueue": [],
-    "DispenseRegister": [],
+    "LabQueue": [
+      "src/screens/vendor/VendorShell.tsx",
+      "src/screens/vendor/vendorNavigation.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/partner/PartnerPage.tsx",
+      "src/design-system/console/ConsoleTablePage.tsx",
+      "src/design-system/overlays/Overlay.tsx",
+      "src/features/partner/work/labWork.ts",
+      "src/features/partner/work/workCopy.ts",
+      "src/screens/vendor/LabSampleToReportScreen.tsx"
+    ],
+    "DispenseRegister": [
+      "src/screens/vendor/VendorShell.tsx",
+      "src/screens/vendor/vendorNavigation.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/partner/PartnerPage.tsx",
+      "src/design-system/console/ConsoleTablePage.tsx",
+      "src/design-system/overlays/Overlay.tsx",
+      "src/features/partner/work/pharmacyWork.ts",
+      "src/screens/vendor/DispenseRegisterScreen.tsx"
+    ],
     "VendorConsole": [
       "src/screens/vendor/VendorShell.tsx",
       "src/screens/vendor/vendorNavigation.ts",
@@ -771,7 +1147,15 @@
       "src/features/partner/partnerApi.ts",
       "src/screens/vendor/VendorSettlementScreen.tsx"
     ],
-    "VendorOrders": [],
+    "VendorOrders": [
+      "src/screens/vendor/VendorShell.tsx",
+      "src/screens/vendor/vendorNavigation.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/partner/PartnerPage.tsx",
+      "src/design-system/console/ConsoleTablePage.tsx",
+      "src/features/partner/work/pharmacyWork.ts",
+      "src/screens/vendor/VendorOrdersScreen.tsx"
+    ],
     "VendorCatalogue": [
       "src/screens/vendor/VendorShell.tsx",
       "src/screens/vendor/vendorNavigation.ts",
@@ -780,9 +1164,33 @@
       "src/features/partner/partnerApi.ts",
       "src/screens/vendor/VendorCatalogueScreen.tsx"
     ],
-    "LabCollection": [],
-    "LabColdChain": [],
-    "LabReporting": [],
+    "LabCollection": [
+      "src/screens/vendor/VendorShell.tsx",
+      "src/screens/vendor/vendorNavigation.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/partner/PartnerPage.tsx",
+      "src/design-system/console/ConsoleTablePage.tsx",
+      "src/features/partner/work/labWork.ts",
+      "src/features/partner/work/counterSession.ts",
+      "src/screens/vendor/LabCollectionScreen.tsx"
+    ],
+    "LabColdChain": [
+      "src/screens/vendor/VendorShell.tsx",
+      "src/screens/vendor/vendorNavigation.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/partner/PartnerPage.tsx",
+      "src/design-system/console/ConsoleTablePage.tsx",
+      "src/screens/vendor/LabColdChainScreen.tsx"
+    ],
+    "LabReporting": [
+      "src/screens/vendor/VendorShell.tsx",
+      "src/screens/vendor/vendorNavigation.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/partner/PartnerPage.tsx",
+      "src/design-system/console/ConsoleTablePage.tsx",
+      "src/features/partner/work/labWork.ts",
+      "src/screens/vendor/LabReportingScreen.tsx"
+    ],
     "VendorReturns": [
       "src/screens/vendor/VendorShell.tsx",
       "src/screens/vendor/vendorNavigation.ts",
@@ -791,8 +1199,25 @@
       "src/features/partner/partnerApi.ts",
       "src/screens/vendor/VendorReturnsScreen.tsx"
     ],
-    "VendorHandover": [],
-    "VendorSubstitution": [],
+    "VendorHandover": [
+      "src/screens/vendor/VendorShell.tsx",
+      "src/screens/vendor/vendorNavigation.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/partner/PartnerPage.tsx",
+      "src/design-system/console/ConsoleTablePage.tsx",
+      "src/features/partner/work/counterSession.ts",
+      "src/screens/vendor/VendorHandoverScreen.tsx"
+    ],
+    "VendorSubstitution": [
+      "src/screens/vendor/VendorShell.tsx",
+      "src/screens/vendor/vendorNavigation.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/partner/PartnerPage.tsx",
+      "src/design-system/console/ConsoleTablePage.tsx",
+      "src/design-system/overlays/Overlay.tsx",
+      "src/features/partner/work/pharmacyWork.ts",
+      "src/screens/vendor/VendorSubstitutionScreen.tsx"
+    ],
     "VendorReorder": [
       "src/screens/vendor/VendorShell.tsx",
       "src/screens/vendor/vendorNavigation.ts",
@@ -817,11 +1242,42 @@
       "src/features/partner/partnerApi.ts",
       "src/screens/vendor/VendorHomeScreen.tsx"
     ],
-    "VendorRxReview": [],
-    "ScanVerify": [],
-    "WebScanVerify": [],
-    "StaffHandover": [],
-    "StaffCollect": [],
+    "VendorRxReview": [
+      "src/screens/vendor/VendorShell.tsx",
+      "src/screens/vendor/vendorNavigation.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/partner/PartnerPage.tsx",
+      "src/design-system/console/ConsoleTablePage.tsx",
+      "src/features/partner/work/pharmacyWork.ts",
+      "src/screens/vendor/VendorRxReviewScreen.tsx"
+    ],
+    "ScanVerify": [
+      "src/features/partner/staff/StaffPhone.tsx",
+      "src/features/partner/work/counterSession.ts",
+      "src/features/partner/work/VerifyFlow.tsx",
+      "src/features/partner/staff/StaffScanVerifyScreen.tsx"
+    ],
+    "WebScanVerify": [
+      "src/screens/vendor/VendorShell.tsx",
+      "src/screens/vendor/vendorNavigation.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/partner/PartnerPage.tsx",
+      "src/design-system/console/ConsoleTablePage.tsx",
+      "src/features/partner/work/counterSession.ts",
+      "src/features/partner/work/VerifyFlow.tsx",
+      "src/screens/vendor/WebScanVerifyScreen.tsx"
+    ],
+    "StaffHandover": [
+      "src/features/partner/staff/StaffPhone.tsx",
+      "src/features/partner/work/counterSession.ts",
+      "src/features/partner/staff/StaffHandoverScreen.tsx"
+    ],
+    "StaffCollect": [
+      "src/features/partner/staff/StaffPhone.tsx",
+      "src/features/partner/work/counterSession.ts",
+      "src/features/partner/work/labWork.ts",
+      "src/features/partner/staff/StaffCollectScreen.tsx"
+    ],
     "StaffCampFast": [
       "src/features/partner/staff/StaffCampFastScreen.tsx"
     ],
@@ -841,7 +1297,16 @@
       "src/features/partner/partnerApi.ts",
       "src/screens/vendor/PartnerStaffScreen.tsx"
     ],
-    "SuperAdminConsole": [],
+    "SuperAdminConsole": [
+      "src/screens/workspace/admin/SuperAdminShell.tsx",
+      "src/screens/workspace/admin/superAdminNavigation.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/admin/views/AdminBoard.tsx",
+      "src/features/admin/views/GovBoard.tsx",
+      "src/design-system/console/ConsoleTablePage.tsx",
+      "src/features/admin/views/OperationsOverviewView.tsx",
+      "src/features/admin/viewmodels/OperationsOverviewViewModel.ts"
+    ],
     "AdminAccounts": [
       "src/screens/workspace/admin/SuperAdminShell.tsx",
       "src/screens/workspace/admin/superAdminNavigation.ts",
@@ -852,8 +1317,25 @@
       "src/features/admin/views/AccountsView.tsx",
       "src/features/admin/views/AccountsListView.tsx"
     ],
-    "AuditExplorer": [],
-    "AiGovernance": [],
+    "AuditExplorer": [
+      "src/screens/workspace/admin/SuperAdminShell.tsx",
+      "src/screens/workspace/admin/superAdminNavigation.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/admin/views/AdminBoard.tsx",
+      "src/features/admin/views/GovBoard.tsx",
+      "src/design-system/console/ConsoleTablePage.tsx",
+      "src/features/admin/views/AuditExplorerView.tsx",
+      "src/features/admin/viewmodels/AuditExplorerViewModel.ts"
+    ],
+    "AiGovernance": [
+      "src/screens/workspace/admin/SuperAdminShell.tsx",
+      "src/screens/workspace/admin/superAdminNavigation.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/admin/views/AdminBoard.tsx",
+      "src/features/admin/views/GovBoard.tsx",
+      "src/design-system/console/ConsoleTablePage.tsx",
+      "src/features/admin/views/AiGovernanceView.tsx"
+    ],
     "CatalogOps": [
       "src/screens/workspace/admin/SuperAdminShell.tsx",
       "src/screens/workspace/admin/superAdminNavigation.ts",
@@ -863,8 +1345,28 @@
       "src/features/admin/views/AdminBoard.tsx",
       "src/features/admin/views/CatalogueView.tsx"
     ],
-    "Integrations": [],
-    "DpdpQueue": [],
+    "Integrations": [
+      "src/screens/workspace/admin/SuperAdminShell.tsx",
+      "src/screens/workspace/admin/superAdminNavigation.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/admin/views/AdminBoard.tsx",
+      "src/features/admin/views/GovBoard.tsx",
+      "src/design-system/console/ConsoleTablePage.tsx",
+      "src/features/admin/views/IntegrationsView.tsx",
+      "src/design-system/data/DataTable.tsx"
+    ],
+    "DpdpQueue": [
+      "src/screens/workspace/admin/SuperAdminShell.tsx",
+      "src/screens/workspace/admin/superAdminNavigation.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/admin/views/AdminBoard.tsx",
+      "src/features/admin/views/GovBoard.tsx",
+      "src/features/admin/views/ErasureQueueView.tsx",
+      "src/design-system/console/ConsoleTablePage.tsx",
+      "src/design-system/data/DataTable.tsx",
+      "src/design-system/overlays/Drawer.tsx",
+      "src/design-system/overlays/Overlay.tsx"
+    ],
     "ClaimsAdjudication": [
       "src/screens/workspace/admin/SuperAdminShell.tsx",
       "src/screens/workspace/admin/superAdminNavigation.ts",
@@ -892,8 +1394,26 @@
       "src/features/admin/views/AdminBoard.tsx",
       "src/features/admin/views/UnconnectedBoards.tsx"
     ],
-    "AdminOps": [],
-    "AdminSurveillance": [],
+    "AdminOps": [
+      "src/screens/workspace/admin/SuperAdminShell.tsx",
+      "src/screens/workspace/admin/superAdminNavigation.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/admin/views/AdminBoard.tsx",
+      "src/features/admin/views/GovBoard.tsx",
+      "src/features/admin/views/SafetyEventsView.tsx",
+      "src/design-system/console/ConsoleTablePage.tsx",
+      "src/design-system/data/DataTable.tsx"
+    ],
+    "AdminSurveillance": [
+      "src/screens/workspace/admin/SuperAdminShell.tsx",
+      "src/screens/workspace/admin/superAdminNavigation.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/admin/views/AdminBoard.tsx",
+      "src/features/admin/views/GovBoard.tsx",
+      "src/features/admin/views/GovernanceBoards.tsx",
+      "src/design-system/console/ConsoleTablePage.tsx",
+      "src/design-system/data/DataTable.tsx"
+    ],
     "AdminTenants": [
       "src/screens/workspace/admin/SuperAdminShell.tsx",
       "src/screens/workspace/admin/superAdminNavigation.ts",
@@ -904,9 +1424,36 @@
       "src/features/admin/views/UnconnectedBoards.tsx",
       "src/features/admin/views/ContractsView.tsx"
     ],
-    "AdminRuleL": [],
-    "AdminConsentPolicy": [],
-    "AdminHandover": [],
+    "AdminRuleL": [
+      "src/screens/workspace/admin/SuperAdminShell.tsx",
+      "src/screens/workspace/admin/superAdminNavigation.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/admin/views/AdminBoard.tsx",
+      "src/features/admin/views/GovBoard.tsx",
+      "src/features/admin/views/RuleLView.tsx",
+      "src/design-system/console/ConsoleTablePage.tsx",
+      "src/design-system/data/DataTable.tsx"
+    ],
+    "AdminConsentPolicy": [
+      "src/screens/workspace/admin/SuperAdminShell.tsx",
+      "src/screens/workspace/admin/superAdminNavigation.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/admin/views/AdminBoard.tsx",
+      "src/features/admin/views/GovBoard.tsx",
+      "src/features/admin/views/GovernanceBoards.tsx",
+      "src/design-system/console/ConsoleTablePage.tsx",
+      "src/design-system/data/DataTable.tsx"
+    ],
+    "AdminHandover": [
+      "src/screens/workspace/admin/SuperAdminShell.tsx",
+      "src/screens/workspace/admin/superAdminNavigation.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/admin/views/AdminBoard.tsx",
+      "src/features/admin/views/GovBoard.tsx",
+      "src/features/admin/views/GovernanceBoards.tsx",
+      "src/design-system/console/ConsoleTablePage.tsx",
+      "src/design-system/data/DataTable.tsx"
+    ],
     "AdminSentinel": [
       "src/screens/workspace/admin/SuperAdminShell.tsx",
       "src/screens/workspace/admin/superAdminNavigation.ts",
@@ -925,8 +1472,27 @@
       "src/features/admin/views/AdminBoard.tsx",
       "src/features/admin/views/TokensView.tsx"
     ],
-    "AdminBreakGlassLog": [],
-    "AdminPlansPricing": [],
+    "AdminBreakGlassLog": [
+      "src/screens/workspace/admin/SuperAdminShell.tsx",
+      "src/screens/workspace/admin/superAdminNavigation.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/admin/views/AdminBoard.tsx",
+      "src/features/admin/views/GovBoard.tsx",
+      "src/features/admin/views/BreakGlassLogView.tsx",
+      "src/design-system/console/ConsoleTablePage.tsx",
+      "src/design-system/data/DataTable.tsx"
+    ],
+    "AdminPlansPricing": [
+      "src/screens/workspace/admin/SuperAdminShell.tsx",
+      "src/screens/workspace/admin/superAdminNavigation.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/admin/views/AdminBoard.tsx",
+      "src/features/admin/views/GovBoard.tsx",
+      "src/design-system/console/ConsoleTablePage.tsx",
+      "src/features/admin/views/PlansPricingView.tsx",
+      "src/design-system/overlays/Drawer.tsx",
+      "src/design-system/overlays/Overlay.tsx"
+    ],
     "AdminFlags": [
       "src/screens/workspace/admin/SuperAdminShell.tsx",
       "src/screens/workspace/admin/superAdminNavigation.ts",
@@ -936,7 +1502,15 @@
       "src/features/admin/views/AdminBoard.tsx",
       "src/features/admin/views/FeatureFlagsView.tsx"
     ],
-    "AdminTemplates": [],
+    "AdminTemplates": [
+      "src/screens/workspace/admin/SuperAdminShell.tsx",
+      "src/screens/workspace/admin/superAdminNavigation.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/admin/views/AdminBoard.tsx",
+      "src/features/admin/views/GovBoard.tsx",
+      "src/design-system/console/ConsoleTablePage.tsx",
+      "src/features/admin/views/MessageTemplatesView.tsx"
+    ],
     "AdminBilling": [
       "src/screens/workspace/admin/SuperAdminShell.tsx",
       "src/screens/workspace/admin/superAdminNavigation.ts",
@@ -946,7 +1520,16 @@
       "src/features/admin/views/AdminBoard.tsx",
       "src/features/admin/views/BillingLedgerView.tsx"
     ],
-    "AdminKnowledge": [],
+    "AdminKnowledge": [
+      "src/screens/workspace/admin/SuperAdminShell.tsx",
+      "src/screens/workspace/admin/superAdminNavigation.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/admin/views/AdminBoard.tsx",
+      "src/features/admin/views/GovBoard.tsx",
+      "src/design-system/console/ConsoleTablePage.tsx",
+      "src/features/admin/views/KnowledgeView.tsx",
+      "src/features/admin/views/PublishSourceDialog.tsx"
+    ],
     "AdminIntake": [
       "src/screens/workspace/admin/SuperAdminShell.tsx",
       "src/screens/workspace/admin/superAdminNavigation.ts",
@@ -956,11 +1539,49 @@
       "src/features/admin/views/AdminBoard.tsx",
       "src/features/admin/views/IntakeView.tsx"
     ],
-    "AdminCheckins": [],
-    "AdminCase": [],
-    "AdminPriceFix": [],
-    "AdminApiKeys": [],
-    "AdminSignIn": [],
+    "AdminCheckins": [
+      "src/screens/workspace/admin/SuperAdminShell.tsx",
+      "src/screens/workspace/admin/superAdminNavigation.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/admin/views/AdminBoard.tsx",
+      "src/features/admin/views/GovBoard.tsx",
+      "src/features/admin/views/GovernanceBoards.tsx",
+      "src/design-system/console/ConsoleTablePage.tsx",
+      "src/design-system/data/DataTable.tsx"
+    ],
+    "AdminCase": [
+      "src/screens/workspace/admin/SuperAdminShell.tsx",
+      "src/screens/workspace/admin/superAdminNavigation.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/admin/views/AdminBoard.tsx",
+      "src/features/admin/views/GovBoard.tsx",
+      "src/design-system/console/ConsoleTablePage.tsx",
+      "src/features/admin/views/CaseView.tsx"
+    ],
+    "AdminPriceFix": [
+      "src/screens/workspace/admin/SuperAdminShell.tsx",
+      "src/screens/workspace/admin/superAdminNavigation.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/admin/views/AdminBoard.tsx",
+      "src/features/admin/views/GovBoard.tsx",
+      "src/design-system/console/ConsoleTablePage.tsx",
+      "src/features/admin/views/PriceFixView.tsx",
+      "src/features/admin/views/PlansPricingView.tsx"
+    ],
+    "AdminApiKeys": [
+      "src/screens/workspace/admin/SuperAdminShell.tsx",
+      "src/screens/workspace/admin/superAdminNavigation.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/admin/views/AdminBoard.tsx",
+      "src/features/admin/views/GovBoard.tsx",
+      "src/features/admin/views/ApiKeysView.tsx",
+      "src/design-system/console/ConsoleTablePage.tsx",
+      "src/design-system/data/DataTable.tsx"
+    ],
+    "AdminSignIn": [
+      "src/features/auth/views/AdminSignInView.tsx",
+      "src/features/auth/views/SignInFrame.tsx"
+    ],
     "FlowMap": [],
     "Sheets": [
       "src/design-system/overlays/Overlay.tsx",
@@ -969,7 +1590,12 @@
     ],
     "NavSheets": [],
     "StateScreens": [],
-    "AyushWidget": [],
+    "AyushWidget": [
+      "src/features/ayush/AyushWidget.tsx",
+      "src/features/ayush/AyushAnswer.tsx",
+      "src/features/ayush/useAyushConversation.ts",
+      "src/features/ayush/ayush.css"
+    ],
     "AyushSheet": [],
     "MotionSystem": [],
     "IconSystem": [],
@@ -984,34 +1610,216 @@
       "src/design-system/Toast.tsx",
       "src/design-system/Banner.tsx",
       "src/design-system/feedback/FormField.tsx"
+    ],
+    "M2Home": [
+      "src/features/m2store/views/M2HomeView.tsx",
+      "src/features/m2store/views/M2HomeRoute.tsx",
+      "src/features/m2store/data/useM2Home.ts",
+      "src/features/m2store/data/storeArt.ts",
+      "src/features/m2store/data/orderLine.ts",
+      "src/design-system/m2/ServiceRail.tsx",
+      "src/design-system/m2/HeroCarousel.tsx",
+      "src/design-system/m2/GradientHeroCard.tsx",
+      "src/features/phoneKit/studentPhoneBoards.tsx",
+      "src/native/StudentHomeScreen.tsx",
+      "src/design-system/m2/PillNav.tsx",
+      "src/design-system/m2/M2Parts.tsx",
+      "src/design-system/m2/Gradient.tsx",
+      "src/design-system/m2/servicePalette.ts",
+      "src/design-system/m2/m2Motion.ts",
+      "src/screens/workspace/StudentPhoneFrame.tsx",
+      "src/native/StudentTabBar.tsx"
+    ],
+    "M2Medicines": [
+      "src/features/m2store/views/M2MedicinesView.tsx",
+      "src/features/m2store/views/M2MedicinesBoard.tsx",
+      "src/features/shopPhone/views/ShopFlow.tsx",
+      "src/features/shopPhone/views/ShopPhoneRoute.tsx",
+      "src/features/shopPhone/viewmodel/PhoneShopViewModel.ts",
+      "src/features/m2store/data/storeArt.ts",
+      "src/features/m2store/data/orderLine.ts",
+      "src/native/M2StoreScreens.tsx",
+      "src/design-system/m2/PillNav.tsx",
+      "src/design-system/m2/M2Parts.tsx",
+      "src/design-system/m2/Gradient.tsx",
+      "src/design-system/m2/servicePalette.ts",
+      "src/design-system/m2/m2Motion.ts",
+      "src/screens/workspace/StudentPhoneFrame.tsx",
+      "src/native/StudentTabBar.tsx"
+    ],
+    "M2Product": [
+      "src/features/shopPhone/views/M2ProductView.tsx",
+      "src/features/shopPhone/views/M2ProductBoard.tsx",
+      "src/features/shopPhone/viewmodel/M2ProductViewModel.ts",
+      "src/features/shopPhone/views/ShopFlow.tsx",
+      "src/design-system/m2/PillNav.tsx",
+      "src/design-system/m2/M2Parts.tsx",
+      "src/design-system/m2/Gradient.tsx",
+      "src/design-system/m2/m2Motion.ts",
+      "src/screens/workspace/StudentPhoneFrame.tsx",
+      "src/native/StudentTabBar.tsx",
+      "src/features/phoneKit/studentPhoneBoards.tsx",
+      "src/native/M2HealthScreens.tsx"
+    ],
+    "M2Labs": [
+      "src/features/m2store/views/M2LabsView.tsx",
+      "src/features/m2store/views/M2LabsRoute.tsx",
+      "src/features/m2store/data/useLabPackages.ts",
+      "src/features/m2store/screens/LabTestsScreen.tsx",
+      "src/design-system/m2/GradientHeroCard.tsx",
+      "src/features/m2store/data/storeArt.ts",
+      "src/features/m2store/data/orderLine.ts",
+      "src/native/M2StoreScreens.tsx",
+      "src/design-system/m2/PillNav.tsx",
+      "src/design-system/m2/M2Parts.tsx",
+      "src/design-system/m2/Gradient.tsx",
+      "src/design-system/m2/servicePalette.ts",
+      "src/design-system/m2/m2Motion.ts",
+      "src/screens/workspace/StudentPhoneFrame.tsx",
+      "src/native/StudentTabBar.tsx"
+    ],
+    "M2Consults": [
+      "src/features/m2store/views/M2ConsultsView.tsx",
+      "src/features/m2store/views/M2ConsultsRoute.tsx",
+      "src/features/m2store/viewmodel/ConsultsViewModel.ts",
+      "src/features/care/screens/CareScreen.tsx",
+      "src/native/M2StoreScreens.tsx",
+      "src/design-system/m2/PillNav.tsx",
+      "src/design-system/m2/M2Parts.tsx",
+      "src/design-system/m2/Gradient.tsx",
+      "src/design-system/m2/servicePalette.ts",
+      "src/design-system/m2/m2Motion.ts",
+      "src/screens/workspace/StudentPhoneFrame.tsx",
+      "src/native/StudentTabBar.tsx"
+    ],
+    "M2Vaccines": [
+      "src/features/preventive/views/M2VaccinesView.tsx",
+      "src/features/preventive/views/M2VaccinesRoute.tsx",
+      "src/features/preventive/viewmodel/VaccinesViewModel.ts",
+      "src/features/m2health/HealthParts.tsx",
+      "src/features/m2health/resource.ts",
+      "src/design-system/m2/PillNav.tsx",
+      "src/design-system/m2/M2Parts.tsx",
+      "src/design-system/m2/Gradient.tsx",
+      "src/design-system/m2/m2Motion.ts",
+      "src/screens/workspace/StudentPhoneFrame.tsx",
+      "src/native/StudentTabBar.tsx",
+      "src/features/phoneKit/studentPhoneBoards.tsx",
+      "src/native/M2HealthScreens.tsx"
+    ],
+    "M2Insurance": [
+      "src/features/m2store/views/M2InsuranceView.tsx",
+      "src/features/m2store/views/M2InsuranceRoute.tsx",
+      "src/features/m2store/views/InsuranceSheets.tsx",
+      "src/features/m2store/viewmodel/InsuranceViewModel.ts",
+      "src/screens/workspace/PhoneBoards.tsx",
+      "src/native/M2StoreScreens.tsx",
+      "src/design-system/m2/PillNav.tsx",
+      "src/design-system/m2/M2Parts.tsx",
+      "src/design-system/m2/Gradient.tsx",
+      "src/design-system/m2/servicePalette.ts",
+      "src/design-system/m2/m2Motion.ts",
+      "src/screens/workspace/StudentPhoneFrame.tsx",
+      "src/native/StudentTabBar.tsx"
+    ],
+    "M2Orders": [
+      "src/features/m2store/views/M2OrdersView.tsx",
+      "src/features/m2store/views/M2OrdersRoute.tsx",
+      "src/features/m2store/views/OrderRouteBand.tsx",
+      "src/features/m2store/data/orderProgress.ts",
+      "src/features/orders/viewmodel/OrdersViewModel.ts",
+      "src/features/phoneKit/studentPhoneBoards.tsx",
+      "src/native/M2StoreScreens.tsx",
+      "src/design-system/m2/PillNav.tsx",
+      "src/design-system/m2/M2Parts.tsx",
+      "src/design-system/m2/Gradient.tsx",
+      "src/design-system/m2/servicePalette.ts",
+      "src/design-system/m2/m2Motion.ts",
+      "src/screens/workspace/StudentPhoneFrame.tsx",
+      "src/native/StudentTabBar.tsx"
+    ],
+    "M2Insights": [
+      "src/features/insights/views/M2InsightsView.tsx",
+      "src/features/insights/views/M2InsightsRoute.tsx",
+      "src/features/insights/viewmodel/InsightsViewModel.ts",
+      "src/features/labResults/viewmodel/LabValuesViewModels.ts",
+      "src/features/m2health/HealthParts.tsx",
+      "src/features/m2health/resource.ts",
+      "src/design-system/m2/PillNav.tsx",
+      "src/design-system/m2/M2Parts.tsx",
+      "src/design-system/m2/Gradient.tsx",
+      "src/design-system/m2/m2Motion.ts",
+      "src/screens/workspace/StudentPhoneFrame.tsx",
+      "src/native/StudentTabBar.tsx",
+      "src/features/phoneKit/studentPhoneBoards.tsx",
+      "src/native/M2HealthScreens.tsx"
+    ],
+    "M2Trends": [
+      "src/features/labResults/views/M2TrendsView.tsx",
+      "src/features/labResults/views/M2TrendsRoute.tsx",
+      "src/features/labResults/viewmodel/trendScreenModels.ts",
+      "src/features/labResults/viewmodel/LabValuesViewModels.ts",
+      "src/features/labResults/viewmodel/labValueModels.ts",
+      "src/features/labResults/data/LabResultsRepository.ts",
+      "src/design-system/charts/trendGeometry.ts",
+      "src/features/phoneKit/studentPhoneBoards.tsx",
+      "src/native/M2HealthScreens.tsx",
+      "src/design-system/m2/PillNav.tsx",
+      "src/design-system/m2/M2Parts.tsx",
+      "src/design-system/m2/Gradient.tsx",
+      "src/design-system/m2/servicePalette.ts",
+      "src/design-system/m2/m2Motion.ts",
+      "src/screens/workspace/StudentPhoneFrame.tsx",
+      "src/native/StudentTabBar.tsx"
+    ],
+    "M2ReportUpload": [
+      "src/features/labResults/views/M2ReportUploadView.tsx",
+      "src/features/labResults/views/M2ReportUploadRoute.tsx",
+      "src/features/labResults/views/pickReportFile.web.ts",
+      "src/features/labResults/viewmodel/ReportUploadViewModel.ts",
+      "src/features/labResults/viewmodel/LabValuesViewModels.ts",
+      "src/features/labResults/viewmodel/labValueModels.ts",
+      "src/features/labResults/data/LabResultsRepository.ts",
+      "src/features/phoneKit/studentPhoneBoards.tsx",
+      "src/native/M2HealthScreens.tsx",
+      "src/design-system/m2/PillNav.tsx",
+      "src/design-system/m2/M2Parts.tsx",
+      "src/design-system/m2/Gradient.tsx",
+      "src/design-system/m2/servicePalette.ts",
+      "src/design-system/m2/m2Motion.ts",
+      "src/screens/workspace/StudentPhoneFrame.tsx",
+      "src/native/StudentTabBar.tsx"
+    ],
+    "M2AskAyush": [
+      "src/features/chat/views/M2AskAyushView.tsx",
+      "src/features/chat/views/M2AskAyushRoute.tsx",
+      "src/features/chat/viewmodel/AyushViewModel.ts",
+      "src/design-system/m2/PillNav.tsx",
+      "src/design-system/m2/M2Parts.tsx",
+      "src/design-system/m2/Gradient.tsx",
+      "src/design-system/m2/m2Motion.ts",
+      "src/screens/workspace/StudentPhoneFrame.tsx",
+      "src/native/StudentTabBar.tsx",
+      "src/features/phoneKit/studentPhoneBoards.tsx",
+      "src/native/M2HealthScreens.tsx"
+    ],
+    "M2Profile": [
+      "src/features/m2profile/views/M2ProfileView.tsx",
+      "src/features/m2profile/views/M2ProfileRoute.tsx",
+      "src/features/m2profile/viewmodel/ProfileViewModel.ts",
+      "src/features/m2health/HealthParts.tsx",
+      "src/features/m2health/resource.ts",
+      "src/design-system/m2/PillNav.tsx",
+      "src/design-system/m2/M2Parts.tsx",
+      "src/design-system/m2/Gradient.tsx",
+      "src/design-system/m2/m2Motion.ts",
+      "src/screens/workspace/StudentPhoneFrame.tsx",
+      "src/native/StudentTabBar.tsx",
+      "src/features/phoneKit/studentPhoneBoards.tsx",
+      "src/native/M2HealthScreens.tsx"
     ]
   },
   "inProgress": {
-    "SignIn": [
-      "src/features/auth/views/SignInView.tsx",
-      "src/features/auth/screens/AuthenticatedFlowScreen.tsx",
-      "src/features/auth/views/SignInNativeView.tsx"
-    ],
-    "OtpVerify": [
-      "src/features/auth/screens/AuthenticatedFlowScreen.tsx"
-    ],
-    "OnboardingConsent": [
-      "src/features/auth/views/SignupConsent.tsx",
-      "src/features/auth/views/SignupConsentNative.tsx"
-    ],
-    "VerifyIdentity": [
-      "src/features/auth/views/IdentityVerifyView.tsx",
-      "src/features/auth/views/IdentityVerifyPanel.tsx"
-    ],
-    "VerifyGate": [
-      "src/features/auth/views/VerifyGateView.tsx",
-      "src/features/auth/views/VerifyGateNativeView.tsx"
-    ],
-    "LostPhone": [
-      "src/features/auth/views/LostPhoneView.tsx",
-      "src/features/auth/views/LostPhonePanel.tsx",
-      "src/features/auth/views/LostPhoneNativeView.tsx"
-    ],
     "Teleconsult": [
       "src/features/teleconsult/views/TeleconsultNativeView.tsx",
       "src/components/health/consult/ConsultCallPanel.tsx"
@@ -1031,13 +1839,6 @@
       "src/screens/workspace/AgentAyushPanel.tsx",
       "src/features/chat/views/AyushChatNativeView.tsx"
     ],
-    "EmergencyCard": [
-      "src/features/emergency/views/WebEmergencyCard.tsx"
-    ],
-    "CrisisSupport": [
-      "src/screens/medical/MedicalIncidentScreen.tsx",
-      "src/design-system/CrisisLinks.tsx"
-    ],
     "ProductList": [
       "src/features/marketplace/views/ShopNativeView.tsx",
       "src/features/shopPhone/views/ProductListView.tsx",
@@ -1049,43 +1850,11 @@
     "PrescriptionUpload": [
       "src/screens/marketplace/LiveMarketplaceScreen.tsx"
     ],
-    "PlanBilling": [
-      "src/screens/billing/BillingPanel.tsx"
-    ],
-    "ConsentInbox": [
-      "src/screens/vault/AccessConsentInboxPanel.tsx"
-    ],
-    "SosBeacon": [
-      "src/modules/m04-emergency/view/SosView.tsx",
-      "src/features/emergency/screens/SosRouteScreen.tsx"
-    ],
-    "IceContacts": [
-      "src/features/emergency/views/WebEmergencyCard.tsx"
-    ],
-    "FamilyCircle": [
-      "src/screens/vault/FamilyAccessShareScreen.tsx"
-    ],
     "RefillRequest": [
       "src/features/requests/views/RequestsViews.tsx"
     ],
-    "MyPass": [
-      "src/features/digital_id/views/WebPass.tsx"
-    ],
-    "DeleteAccount": [
-      "src/features/account/views/DeleteAccountView.tsx"
-    ],
     "ConsultSummary": [
       "src/features/vault/views/VisitSummaryView.tsx"
-    ],
-    "SosDebrief": [
-      "src/modules/m04-emergency/view/SosView.tsx"
-    ],
-    "Legal": [
-      "src/features/legal/views/LegalView.tsx"
-    ],
-    "WebPlans": [
-      "src/features/landing/views/LandingPlansView.tsx",
-      "src/features/landing/views/LandingPlansNativeView.tsx"
     ],
     "LandingClinician": [
       "src/features/landing/views/LandingClinicianView.tsx",
@@ -1099,340 +1868,31 @@
       "src/design-system/public-site/PublicAppBand.tsx",
       "src/features/landing/views/landingWebKit.tsx"
     ],
-    "WebSignIn": [
-      "src/features/auth/views/SignInView.tsx",
-      "src/features/auth/screens/AuthenticatedFlowScreen.tsx",
-      "src/components/interface/AuthLayout.tsx"
-    ],
-    "WebLostPhone": [
-      "src/features/auth/views/LostPhoneView.tsx",
-      "src/features/auth/views/LostPhonePanel.tsx"
-    ],
-    "WebVerify": [
-      "src/features/auth/views/IdentityVerifyView.tsx",
-      "src/features/auth/views/IdentityVerifyPanel.tsx"
-    ],
-    "WebVerifyGate": [
-      "src/features/auth/views/VerifyGateView.tsx"
-    ],
-    "WebVault": [
-      "src/screens/workspace/WorkspaceScreen.tsx",
-      "src/screens/vault/VaultWorkspaceHub.tsx",
-      "src/screens/workspace/MemberPanels.tsx",
-      "src/design-system/student-shell/StudentWebShell.tsx",
-      "src/design-system/student-shell/studentNav.ts"
-    ],
-    "WebMyLabTests": [
-      "src/screens/workspace/WorkspaceScreen.tsx",
-      "src/screens/workspace/MyPrescriptionsPanel.tsx"
-    ],
-    "WebAyush": [
-      "src/screens/workspace/WorkspaceScreen.tsx",
-      "src/screens/workspace/AgentAyushPanel.tsx"
-    ],
-    "WebEmergencyCard": [
-      "src/screens/workspace/WorkspaceScreen.tsx",
-      "src/features/emergency/views/WebEmergencyCard.tsx"
-    ],
-    "WebPass": [
-      "src/screens/workspace/WorkspaceScreen.tsx",
-      "src/features/digital_id/views/WebPass.tsx"
-    ],
-    "WebRequests": [
-      "src/screens/workspace/WorkspaceScreen.tsx",
-      "src/features/requests/views/RequestsViews.tsx"
-    ],
-    "WebLegal": [
-      "src/features/legal/views/LegalView.tsx"
-    ],
-    "WebLeaveCampus": [
-      "src/screens/workspace/WorkspaceScreen.tsx",
-      "src/features/campus/views/LeaveCampusView.tsx"
-    ],
-    "WebDeleteAccount": [
-      "src/screens/workspace/WorkspaceScreen.tsx",
-      "src/features/account/views/DeleteAccountView.tsx"
-    ],
-    "CampusInsights": [
-      "src/screens/institution/CampusHealthInsightsScreen.tsx",
-      "src/design-system/campus-shell/CampusShell.tsx",
-      "src/design-system/campus-shell/campusNav.ts"
-    ],
-    "CampusAccessRequests": [
-      "src/screens/workspace/WorkspaceScreen.tsx",
-      "src/screens/institution/CampusAccessRequests.tsx",
-      "src/design-system/campus-shell/CampusShell.tsx",
-      "src/design-system/campus-shell/campusNav.ts"
-    ],
-    "CampusBreakGlass": [
-      "src/screens/workspace/WorkspaceScreen.tsx",
-      "src/screens/institution/CampusBreakGlass.tsx",
-      "src/design-system/campus-shell/CampusShell.tsx",
-      "src/design-system/campus-shell/campusNav.ts"
-    ],
-    "CampusIncidents": [
-      "src/screens/institution/CampusIncidentsDeskScreen.tsx",
-      "src/design-system/campus-shell/CampusShell.tsx",
-      "src/design-system/campus-shell/campusNav.ts"
-    ],
-    "CampusCounsellor": [
-      "src/screens/workspace/WorkspaceScreen.tsx",
-      "src/screens/institution/CounsellorQueueScreen.tsx"
-    ],
-    "CampusIsolation": [
-      "src/screens/institution/OutbreakIsolationDeskScreen.tsx",
-      "src/design-system/campus-shell/CampusShell.tsx",
-      "src/design-system/campus-shell/campusNav.ts"
-    ],
-    "CampusAmbulance": [
-      "src/screens/institution/AmbulanceDispatchTrackerScreen.tsx",
-      "src/design-system/campus-shell/CampusShell.tsx",
-      "src/design-system/campus-shell/campusNav.ts"
-    ],
-    "ClinicalReview": [
-      "src/design-system/clinician-shell/ClinicianShell.tsx",
-      "src/design-system/clinician-shell/clinicianNav.ts",
-      "src/features/clinician/shared/ClinicianConsoleFrame.tsx",
-      "src/features/clinician/critical-results/CriticalResultsScreen.tsx",
-      "src/features/clinician/critical-results/criticalModel.ts"
-    ],
-    "EncounterNote": [
-      "src/design-system/clinician-shell/ClinicianShell.tsx",
-      "src/design-system/clinician-shell/clinicianNav.ts",
-      "src/features/clinician/shared/ClinicianConsoleFrame.tsx",
-      "src/features/clinician/encounter-note/EncounterNoteScreen.tsx"
-    ],
-    "Prescribe": [
-      "src/design-system/clinician-shell/ClinicianShell.tsx",
-      "src/design-system/clinician-shell/clinicianNav.ts",
-      "src/features/clinician/shared/ClinicianConsoleFrame.tsx",
-      "src/features/clinician/prescribe/PrescribeScreen.tsx",
-      "src/features/clinician/prescribe/prescribeModel.ts"
-    ],
-    "ReportReviews": [
-      "src/design-system/clinician-shell/ClinicianShell.tsx",
-      "src/design-system/clinician-shell/clinicianNav.ts",
-      "src/features/clinician/shared/ClinicianConsoleFrame.tsx",
-      "src/features/clinician/report-reviews/ReportReviewsScreen.tsx"
-    ],
-    "ClinicianReferral": [
-      "src/design-system/clinician-shell/ClinicianShell.tsx",
-      "src/design-system/clinician-shell/clinicianNav.ts",
-      "src/features/clinician/shared/ClinicianConsoleFrame.tsx",
-      "src/features/clinician/shared/ConsoleTableScreen.tsx",
-      "src/features/clinician/referrals/ClinicianReferralsScreen.tsx"
-    ],
-    "ClinicianRenewals": [
-      "src/design-system/clinician-shell/ClinicianShell.tsx",
-      "src/design-system/clinician-shell/clinicianNav.ts",
-      "src/features/clinician/shared/ClinicianConsoleFrame.tsx",
-      "src/features/clinician/shared/ConsoleTableScreen.tsx",
-      "src/features/clinician/renewals/ClinicianRenewalsScreen.tsx"
-    ],
-    "ClinicianChronic": [
-      "src/design-system/clinician-shell/ClinicianShell.tsx",
-      "src/design-system/clinician-shell/clinicianNav.ts",
-      "src/features/clinician/shared/ClinicianConsoleFrame.tsx",
-      "src/features/clinician/shared/ConsoleTableScreen.tsx",
-      "src/features/clinician/chronic/ClinicianChronicConsoleScreen.tsx"
-    ],
-    "ClinicianAyush": [
-      "src/design-system/clinician-shell/ClinicianShell.tsx",
-      "src/design-system/clinician-shell/clinicianNav.ts",
-      "src/features/clinician/shared/ClinicianConsoleFrame.tsx",
-      "src/features/clinician/shared/ConsoleTableScreen.tsx",
-      "src/features/clinician/ayush/ClinicianAyushScreen.tsx"
-    ],
-    "ClinicianAi": [
-      "src/design-system/clinician-shell/ClinicianShell.tsx",
-      "src/design-system/clinician-shell/clinicianNav.ts",
-      "src/features/clinician/shared/ClinicianConsoleFrame.tsx",
-      "src/features/clinician/shared/ConsoleTableScreen.tsx",
-      "src/features/clinician/decision-support/ClinicianDecisionSupportScreen.tsx"
-    ],
-    "ClinicianConsultRoom": [
-      "src/design-system/clinician-shell/ClinicianShell.tsx",
-      "src/design-system/clinician-shell/clinicianNav.ts",
-      "src/features/clinician/shared/ClinicianConsoleFrame.tsx",
-      "src/features/clinician/consult-room/ConsultRoomScreen.tsx"
-    ],
-    "LabQueue": [
-      "src/screens/vendor/VendorShell.tsx",
-      "src/screens/vendor/vendorNavigation.ts",
-      "src/screens/vendor/LabSampleToReportScreen.tsx"
-    ],
-    "DispenseRegister": [
-      "src/screens/vendor/VendorShell.tsx",
-      "src/screens/vendor/vendorNavigation.ts",
-      "src/screens/vendor/DispenseRegisterScreen.tsx"
-    ],
-    "VendorOrders": [
-      "src/screens/vendor/VendorShell.tsx",
-      "src/screens/vendor/vendorNavigation.ts",
-      "src/screens/vendor/VendorOrdersScreen.tsx"
-    ],
-    "LabCollection": [
-      "src/screens/vendor/VendorShell.tsx",
-      "src/screens/vendor/vendorNavigation.ts",
-      "src/screens/vendor/LabCollectionScreen.tsx"
-    ],
-    "LabColdChain": [
-      "src/screens/vendor/VendorShell.tsx",
-      "src/screens/vendor/vendorNavigation.ts",
-      "src/screens/vendor/LabColdChainScreen.tsx"
-    ],
-    "LabReporting": [
-      "src/screens/vendor/VendorShell.tsx",
-      "src/screens/vendor/vendorNavigation.ts",
-      "src/screens/vendor/LabSampleToReportScreen.tsx"
-    ],
-    "VendorHandover": [
-      "src/screens/vendor/VendorShell.tsx",
-      "src/screens/vendor/vendorNavigation.ts",
-      "src/screens/vendor/VendorHandoverScreen.tsx"
-    ],
-    "VendorSubstitution": [
-      "src/screens/vendor/VendorShell.tsx",
-      "src/screens/vendor/vendorNavigation.ts",
-      "src/screens/vendor/VendorSubstitutionScreen.tsx"
-    ],
-    "VendorRxReview": [
-      "src/screens/vendor/VendorShell.tsx",
-      "src/screens/vendor/vendorNavigation.ts",
-      "src/screens/vendor/VendorRxReviewScreen.tsx"
-    ],
-    "ScanVerify": [
-      "src/screens/vendor/WebScanVerifyScreen.tsx"
-    ],
-    "WebScanVerify": [
-      "src/screens/vendor/VendorShell.tsx",
-      "src/screens/vendor/vendorNavigation.ts",
-      "src/screens/vendor/WebScanVerifyScreen.tsx"
-    ],
-    "SuperAdminConsole": [
-      "src/screens/workspace/admin/SuperAdminShell.tsx",
-      "src/screens/workspace/admin/superAdminNavigation.ts",
-      "src/screens/workspace/admin/AdminPage.tsx",
-      "src/screens/workspace/admin/SuperAdminScreens.tsx",
-      "src/features/admin/views/OperationsOverviewView.tsx",
-      "src/design-system/console-shell/ConsoleShell.tsx"
-    ],
-    "AuditExplorer": [
-      "src/screens/workspace/admin/SuperAdminShell.tsx",
-      "src/screens/workspace/admin/superAdminNavigation.ts",
-      "src/screens/workspace/admin/AdminPage.tsx",
-      "src/features/admin/views/AuditExplorerView.tsx"
-    ],
-    "AiGovernance": [
-      "src/screens/workspace/admin/SuperAdminShell.tsx",
-      "src/screens/workspace/admin/superAdminNavigation.ts",
-      "src/screens/workspace/admin/AdminPage.tsx",
-      "src/features/admin/views/AiGovernanceView.tsx"
-    ],
-    "Integrations": [
-      "src/screens/workspace/admin/SuperAdminShell.tsx",
-      "src/screens/workspace/admin/superAdminNavigation.ts",
-      "src/screens/workspace/admin/AdminPage.tsx",
-      "src/screens/workspace/admin/SuperAdminScreens.tsx",
-      "src/screens/admin/IntegrationsSettingsModule.tsx"
-    ],
-    "DpdpQueue": [
-      "src/screens/workspace/admin/SuperAdminShell.tsx",
-      "src/screens/workspace/admin/superAdminNavigation.ts",
-      "src/screens/workspace/admin/AdminPage.tsx",
-      "src/screens/workspace/ErasurePanel.tsx"
-    ],
-    "AdminOps": [
-      "src/screens/workspace/admin/SuperAdminShell.tsx",
-      "src/screens/workspace/admin/superAdminNavigation.ts",
-      "src/screens/workspace/admin/AdminPage.tsx",
-      "src/features/admin/views/SafetyEventsView.tsx"
-    ],
-    "AdminSurveillance": [
-      "src/screens/workspace/admin/SuperAdminShell.tsx",
-      "src/screens/workspace/admin/superAdminNavigation.ts",
-      "src/screens/workspace/admin/AdminPage.tsx",
-      "src/features/admin/views/SurveillanceView.tsx"
-    ],
-    "AdminRuleL": [
-      "src/screens/workspace/admin/SuperAdminShell.tsx",
-      "src/screens/workspace/admin/superAdminNavigation.ts",
-      "src/screens/workspace/admin/AdminPage.tsx",
-      "src/features/admin/views/NotConnectedView.tsx"
-    ],
-    "AdminConsentPolicy": [
-      "src/screens/workspace/admin/SuperAdminShell.tsx",
-      "src/screens/workspace/admin/superAdminNavigation.ts",
-      "src/screens/workspace/admin/AdminPage.tsx",
-      "src/features/admin/views/ReadOnlyAdminView.tsx"
-    ],
-    "AdminHandover": [
-      "src/screens/workspace/admin/SuperAdminShell.tsx",
-      "src/screens/workspace/admin/superAdminNavigation.ts",
-      "src/screens/workspace/admin/AdminPage.tsx",
-      "src/features/admin/views/ReadOnlyAdminView.tsx"
-    ],
-    "AdminBreakGlassLog": [
-      "src/screens/workspace/admin/SuperAdminShell.tsx",
-      "src/screens/workspace/admin/superAdminNavigation.ts",
-      "src/screens/workspace/admin/AdminPage.tsx",
-      "src/features/admin/views/BreakGlassLogView.tsx"
-    ],
-    "AdminPlansPricing": [
-      "src/screens/workspace/admin/SuperAdminShell.tsx",
-      "src/screens/workspace/admin/superAdminNavigation.ts",
-      "src/screens/workspace/admin/AdminPage.tsx",
-      "src/features/admin/views/PlansPricingView.tsx"
-    ],
-    "AdminTemplates": [
-      "src/screens/workspace/admin/SuperAdminShell.tsx",
-      "src/screens/workspace/admin/superAdminNavigation.ts",
-      "src/screens/workspace/admin/AdminPage.tsx",
-      "src/features/admin/views/MessageTemplatesView.tsx"
-    ],
-    "AdminKnowledge": [
-      "src/screens/workspace/admin/SuperAdminShell.tsx",
-      "src/screens/workspace/admin/superAdminNavigation.ts",
-      "src/screens/workspace/admin/AdminPage.tsx",
-      "src/features/admin/views/KnowledgeView.tsx"
-    ],
-    "AdminCheckins": [
-      "src/screens/workspace/admin/SuperAdminShell.tsx",
-      "src/screens/workspace/admin/superAdminNavigation.ts",
-      "src/screens/workspace/admin/AdminPage.tsx",
-      "src/features/admin/views/NotConnectedView.tsx"
-    ],
-    "AdminCase": [
-      "src/screens/workspace/admin/SuperAdminShell.tsx",
-      "src/screens/workspace/admin/superAdminNavigation.ts",
-      "src/screens/workspace/admin/AdminPage.tsx",
-      "src/features/admin/views/CaseView.tsx"
-    ],
-    "AdminPriceFix": [
-      "src/screens/workspace/admin/SuperAdminShell.tsx",
-      "src/screens/workspace/admin/superAdminNavigation.ts",
-      "src/screens/workspace/admin/AdminPage.tsx",
-      "src/features/admin/views/PriceFixView.tsx"
-    ],
-    "AdminApiKeys": [
-      "src/screens/workspace/admin/SuperAdminShell.tsx",
-      "src/screens/workspace/admin/superAdminNavigation.ts",
-      "src/screens/workspace/admin/AdminPage.tsx",
-      "src/screens/workspace/admin/SuperAdminScreens.tsx"
-    ],
-    "AyushWidget": [
-      "src/screens/workspace/AgentAyushPanel.tsx"
-    ],
     "AyushSheet": [
       "src/features/chat/views/AyushChatNativeView.tsx"
     ],
     "WebConsultSummary": [
       "src/features/vault/views/VisitSummaryView.tsx",
-      "src/features/vault/viewmodel/VisitSummaryViewModel.ts"
+      "src/features/vault/viewmodel/VisitSummaryViewModel.ts",
+      "src/features/studentweb/views/t1/WebConsultSummaryView.tsx",
+      "src/design-system/student-shell/StudentWebShell.tsx",
+      "src/design-system/student-shell/studentNav.ts",
+      "src/design-system/overlays/ConfirmDialog.tsx",
+      "src/features/studentweb/views/parts.tsx",
+      "src/features/studentweb/views/t1/shared.tsx",
+      "src/features/studentweb/views/t1/t1web.css"
     ],
-    "ClinicianLabOrder": [
-      "src/screens/clinician/DoctorLabOrderDispatchScreen.tsx",
-      "src/features/clinician/viewmodel/DoctorLabOrderViewModel.ts"
+    "WebReportInsights": [
+      "src/features/studentweb/views/t1/WebReportInsightsView.tsx",
+      "src/design-system/student-shell/StudentWebShell.tsx",
+      "src/design-system/student-shell/studentNav.ts",
+      "src/design-system/overlays/ConfirmDialog.tsx",
+      "src/features/studentweb/views/parts.tsx",
+      "src/features/studentweb/views/t1/shared.tsx",
+      "src/features/studentweb/views/t1/t1web.css",
+      "src/design-system/public-site/PublicSiteFooter.tsx",
+      "src/design-system/public-site/publicSiteNav.ts",
+      "src/design-system/public-site/NewsletterBand.tsx"
     ]
   }
 }

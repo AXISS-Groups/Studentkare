@@ -1,31 +1,45 @@
-import { demoDataEnabled } from '@/core/env';
+import { apiRequest } from '@/data/services/http';
 import type { Stat } from '@/design-system';
+import { translate } from '@/i18n';
 import type { Loadable } from '../shared/LoadableViewModel';
+import { careAppointments, namesByPatient, waitedFor } from '../shared/clinicalData';
+import type { Request, T } from '../shared/clinicalData';
 
 /**
- * ClinicalReview — critical results (design page 5). Ranked by severity, not
- * arrival. TIER 1: awaiting a named design reviewer and clinical sign-off.
+ * ClinicalReview — critical results (design page 5, Tier 1, approved
+ * 2026-10-21). Ranked by severity, not arrival.
+ *
+ * Production reads `GET /work/critical-results` (unacknowledged critical
+ * values the doctor may review) and `GET /work/lab-orders/awaiting-collection`
+ * (samples this doctor ordered that were never collected), and acknowledges
+ * with `POST /lab-orders/{id}/acknowledge-critical`. The lab sends the value
+ * as its own note; the API does not split value, unit and reference range, so
+ * the screen shows the lab's words rather than a re-parsed number.
  */
 
-/** Lab flag: HH / LL critical, H / L out of range, none for "never collected". */
-export type ResultFlag = 'HH' | 'LL' | 'H' | 'L' | 'none';
+/**
+ * Lab flag: HH / LL critical with a direction, `CRIT` critical as flagged by
+ * the lab without a direction, H / L out of range, none for "never collected".
+ */
+export type ResultFlag = 'HH' | 'LL' | 'CRIT' | 'H' | 'L' | 'none';
 export type AckState = 'unacknowledged' | 'acknowledged' | 'never-collected';
 
 export interface CriticalResult {
   id: string;
+  /** Empty when the student is not on this doctor's appointments. */
   patientName: string;
-  /** "STU-2026-4410 · Osmania" */
+  /** "Sample S-4410" — identifies the result when the name is not known. */
   meta: string;
-  campus: string;
   analyte: string;
   panel: string;
-  /** Value with unit, as released by the lab: "6.8 mmol/L". */
+  /** The value as the lab released it, e.g. "Potassium 6.8 mmol/L (3.5–5.1)". */
   value: string;
+  /** Reference range when the source reports one separately; empty otherwise. */
   reference: string;
   flag: ResultFlag;
+  /** "11 min" since release, or why a sample is overdue. */
   released: string;
   ack: AckState;
-  /** "Acknowledged 2h ago" / "Booked, never collected" */
   ackText: string;
 }
 
@@ -35,15 +49,10 @@ export interface CriticalData {
 }
 
 export type Escalation = 'call' | 'clinic' | 'follow-up';
-
-export const ESCALATIONS: { id: Escalation; label: string; meta: (r: CriticalResult) => string }[] = [
-  { id: 'call', label: 'Call the student now', meta: () => 'Campus number on file · logs the attempt' },
-  { id: 'clinic', label: 'Route to campus clinic', meta: (r) => `${r.campus} desk · on shift today` },
-  { id: 'follow-up', label: 'Add a follow-up task', meta: () => 'Appears on your queue until closed' },
-];
+export const ESCALATIONS: readonly Escalation[] = ['call', 'clinic', 'follow-up'];
 
 export function isCritical(flag: ResultFlag): boolean {
-  return flag === 'HH' || flag === 'LL';
+  return flag === 'HH' || flag === 'LL' || flag === 'CRIT';
 }
 
 /** Critical first, then out-of-range, then the rest — never by arrival. */
@@ -55,36 +64,105 @@ export function bySeverity(results: CriticalResult[]): CriticalResult[] {
 export interface CriticalSource extends Loadable<CriticalData> {
   /** Records the acknowledgement and the chosen escalation. Absent = cannot. */
   acknowledge?: (id: string, escalation: Escalation) => Promise<void>;
-  /** Reminds the student about a sample never collected. */
+  /** Reminds the student about a sample never collected. Absent = no service for it. */
   chase?: (id: string) => Promise<void>;
 }
 
-export function criticalSample(): CriticalData {
+/* ------------------------------------------------------------ API mapping */
+
+export interface CriticalApiItem {
+  id: string;
+  patientId: string;
+  testPanel: string[];
+  sampleId: string;
+  criticalNote: string;
+  waitingSeconds: number;
+}
+
+export interface UncollectedApiItem {
+  id: string;
+  patientId: string;
+  testPanel: string[];
+  overdueReason: string;
+  waitingSeconds: number;
+}
+
+export function mapCritical(
+  critical: { items: CriticalApiItem[]; total: number },
+  uncollected: { items: UncollectedApiItem[]; total: number },
+  names: Map<string, string>,
+  t: T,
+): CriticalData {
+  const sample = (id: string) => (id ? t('clinCritical.sample', { id }) : '');
+  const results: CriticalResult[] = [
+    ...critical.items.map((item): CriticalResult => ({
+      id: item.id,
+      patientName: names.get(item.patientId) ?? '',
+      meta: sample(item.sampleId),
+      analyte: item.testPanel.join(', '),
+      panel: t('clinCritical.flaggedByLab'),
+      value: item.criticalNote,
+      reference: '',
+      flag: 'CRIT',
+      released: waitedFor(item.waitingSeconds, t),
+      ack: 'unacknowledged',
+      ackText: t('clinCritical.notAcknowledged'),
+    })),
+    ...uncollected.items.map((item): CriticalResult => ({
+      id: item.id,
+      patientName: names.get(item.patientId) ?? '',
+      meta: '',
+      analyte: item.testPanel.join(', '),
+      panel: item.overdueReason === 'no_slot_recorded' ? t('partner.core.review.noSlot') : t('partner.core.review.slotPassed'),
+      value: t('clinCritical.noSample'),
+      reference: '',
+      flag: 'none',
+      released: waitedFor(item.waitingSeconds, t),
+      ack: 'never-collected',
+      ackText: t('clinCritical.neverCollected'),
+    })),
+  ];
+  const oldest = Math.max(0, ...critical.items.map((i) => i.waitingSeconds));
+  const oldestUncollected = Math.max(0, ...uncollected.items.map((i) => i.waitingSeconds));
   return {
     stats: [
-      { label: 'Unacknowledged', value: '2', meta: 'Oldest 38 minutes', tone: 'danger' },
-      { label: 'Median turnaround', value: '14 min', meta: 'Release to acknowledgement' },
-      { label: 'Ordered, never collected', value: '1', meta: 'Slot passed 11 days ago', tone: 'danger' },
-      { label: 'In care this week', value: '23', meta: 'Active consent on file' },
+      { label: t('clinCritical.stat.unack'), value: String(critical.total), meta: critical.total ? t('clinCritical.stat.oldest', { time: waitedFor(oldest, t) }) : t('clinCritical.stat.noneWaiting'), tone: critical.total ? 'danger' : 'text' },
+      // No server aggregate for these two: shown as unreported, never estimated.
+      { label: t('clinCritical.stat.turnaround'), value: null, meta: t('clinCritical.stat.notReported') },
+      { label: t('clinCritical.stat.never'), value: String(uncollected.total), meta: uncollected.total ? t('clinCritical.stat.oldest', { time: waitedFor(oldestUncollected, t) }) : t('clinCritical.stat.noneWaiting'), tone: uncollected.total ? 'danger' : 'text' },
+      { label: t('clinCritical.stat.inCare'), value: null, meta: t('clinCritical.stat.notReported') },
     ],
-    results: [
-      { id: 'k1', patientName: 'Aarav Sharma', meta: 'STU-2026-4410 · Osmania', campus: 'Osmania', analyte: 'Potassium', panel: 'Renal panel · Kare Labs', value: '6.8 mmol/L', reference: '3.5–5.1', flag: 'HH', released: '11 min ago', ack: 'unacknowledged', ackText: 'Not acknowledged' },
-      { id: 'k2', patientName: 'Meera Nair', meta: 'STU-2026-3341 · Univ. of Hyderabad', campus: 'Univ. of Hyderabad', analyte: 'Haemoglobin', panel: 'CBC · Kare Labs', value: '7.1 g/dL', reference: '12.0–15.5', flag: 'LL', released: '38 min ago', ack: 'unacknowledged', ackText: 'Not acknowledged' },
-      { id: 'k3', patientName: 'Rohan Verma', meta: 'STU-2026-8902 · BITS Pilani', campus: 'BITS Pilani', analyte: 'TSH', panel: 'Thyroid · Kare Labs', value: '9.4 mIU/L', reference: '0.4–4.0', flag: 'H', released: '3 hrs ago', ack: 'acknowledged', ackText: 'Acknowledged 2h ago' },
-      { id: 'k4', patientName: 'Ananya Reddy', meta: 'STU-2026-1182 · IIT Hyderabad', campus: 'IIT Hyderabad', analyte: 'Vitamin D', panel: 'Vitamin panel', value: '11 ng/mL', reference: '30–100', flag: 'L', released: 'Yesterday', ack: 'acknowledged', ackText: 'Acknowledged' },
-      { id: 'k5', patientName: 'Vikramaditya Rao', meta: 'STU-2026-5521 · IIIT Hyderabad', campus: 'IIIT Hyderabad', analyte: 'Iron panel', panel: 'Ordered 12 Sep', value: 'No sample', reference: '—', flag: 'none', released: 'Slot passed', ack: 'never-collected', ackText: 'Booked, never collected' },
-    ],
+    results,
   };
 }
 
-export const sampleCriticalSource: CriticalSource = {
-  load: async () => criticalSample(),
-  acknowledge: async () => undefined,
-  chase: async () => undefined,
-};
+/**
+ * What goes into the server's acknowledgement note: the doctor's chosen
+ * escalation, in English, because it is part of the clinical record rather
+ * than of this screen's language.
+ */
+export function escalationNote(escalation: Escalation): string {
+  const key = escalation === 'call' ? 'clinCritical.record.call' : escalation === 'clinic' ? 'clinCritical.record.clinic' : 'clinCritical.record.followUp';
+  return translate('en', key);
+}
 
-export const unconnectedCriticalSource: CriticalSource = { load: async () => null };
-
-export function defaultCriticalSource(): CriticalSource {
-  return demoDataEnabled() ? sampleCriticalSource : unconnectedCriticalSource;
+export function criticalApiSource(t: T, request: Request = apiRequest): CriticalSource {
+  return {
+    async load() {
+      // Names are a convenience: if the appointments can't load, the results still do.
+      const names = careAppointments(request).then(namesByPatient, () => new Map<string, string>());
+      const [critical, uncollected] = await Promise.all([
+        request<{ items: CriticalApiItem[]; total: number }>('/work/critical-results'),
+        request<{ items: UncollectedApiItem[]; total: number }>('/work/lab-orders/awaiting-collection'),
+      ]);
+      return mapCritical(critical, uncollected, await names, t);
+    },
+    async acknowledge(id, escalation) {
+      await request(`/lab-orders/${encodeURIComponent(id)}/acknowledge-critical`, {
+        method: 'POST',
+        body: JSON.stringify({ note: escalationNote(escalation) }),
+      });
+    },
+    // No reminder endpoint exists for an uncollected sample: `chase` stays absent.
+  };
 }

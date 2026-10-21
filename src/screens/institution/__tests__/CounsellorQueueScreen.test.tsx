@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
+import { axeViolations, describeViolations } from '@/test/axe';
 
 // Only the HTTP layer is mocked, keyed by path, so these tests hold for any implementation.
 const apiRequest = vi.fn<(path: string, init?: RequestInit) => Promise<unknown>>();
@@ -64,7 +65,7 @@ describe('CounsellorQueueScreen', () => {
     apiRequest.mockResolvedValue(queueOf());
     render(<CounsellorQueueScreen />);
     await flush();
-    expect(screen.getByText('No one is waiting right now.')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Queue clear — no one is waiting for a counsellor.' })).toBeInTheDocument();
     expect(document.body.textContent).toMatch(/does not mean no student needs help/i);
     expect(document.body.textContent).not.toMatch(/waiting: 0/i);
   });
@@ -148,7 +149,40 @@ describe('CounsellorQueueScreen', () => {
     await flush();
     expect(within(dialog).getByRole('alert')).toHaveTextContent('Crisis event not found.');
   });
-});
 
+  it('keeps Tele-MANAS and 112 one tap away in every state, and never claims an escalation the server does not make', async () => {
+    apiRequest.mockReturnValue(new Promise(() => undefined));
+    render(<CounsellorQueueScreen />);
+    await flush();
+    expect(screen.getByRole('status', { name: 'Loading counsellor queue' })).toBeInTheDocument();
+    const teleManas = screen.getByRole('link', { name: 'Call Tele-MANAS, the mental-health helpline, on 14416' });
+    expect(teleManas).toHaveAttribute('href', 'tel:14416');
+    expect(teleManas.tabIndex).toBe(0);
+    expect(screen.getByRole('link', { name: 'Call 112, India’s emergency number' })).toHaveAttribute('href', 'tel:112');
+    expect(document.body.textContent).toMatch(/doesn’t escalate on its own yet/);
+    expect(document.body.textContent).not.toMatch(/escalates to the super admin safety centre|rings Tele-MANAS/);
+    // No roster source: no invented on-call counsellor, and no invented median.
+    expect(document.body.textContent).not.toMatch(/On call now|Neha Kulkarni|Median ack 6 min/);
+    expect(screen.getByText('Median ack — · this week')).toBeInTheDocument();
+  });
+
+  it('draws the acknowledgement ring from the window used, and a tick once followed up', async () => {
+    apiRequest.mockResolvedValue(queueOf(item(), item({ id: 'c2', studentName: 'Ravi K', outcome: 'CONTACTED', acknowledgedAt: secondsAgo(1) })));
+    const { container } = render(<CounsellorQueueScreen />);
+    await flush();
+    const ring = container.querySelector<HTMLElement>('.cs-ring:not(.cs-ring--done)');
+    expect(ring?.style.getPropertyValue('--cs-ring-pct')).toBe(String(4 / 15));
+    expect(ring).toHaveTextContent('11');
+    expect(container.querySelector('.cs-ring--done [data-icon="check"]')).not.toBeNull();
+  });
+
+  it('has no accessibility violations with a queue on screen', async () => {
+    apiRequest.mockResolvedValue(queueOf(item()));
+    const { container } = render(<CounsellorQueueScreen />);
+    await flush();
+    const violations = await axeViolations(container);
+    expect(violations, describeViolations(violations)).toEqual([]);
+  });
+});
 // The campus console's counsellor board (no queue for campus admins) is covered in
 // src/features/campus/console/__tests__/CampusConsole.test.tsx.

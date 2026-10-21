@@ -1,35 +1,36 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { observer } from 'mobx-react-lite';
+import { ConsolePageHeader, SkButton } from '@/design-system';
+import { Icon } from '@/design-system/icons';
 import { navigate } from '@/lib/utils/workflowRouting';
-import { AdminEmpty, AdminEmptySection, AdminError, AdminLoading, AdminPage } from '@/screens/workspace/admin/AdminPage';
-import { contractsRepository } from '../model/contractsRepository';
-import { planPriceWithPeriod } from '../model/format';
-import { PlansPricingViewModel } from '../viewmodels/PlansPricingViewModel';
 import { useT } from '@/i18n';
+import { governanceRepository } from '../model/governanceRepository';
+import { BoardNote } from './AdminBoard';
+import { BackLink, BoardFailure, BoardLoading, GovCard, GovLines, useResource } from './GovBoard';
+import { BILLING_AREA, settingLabel, settingValue } from './PlansPricingView';
+import './gov-board.css';
 
-// Change a plan price (design: AdminPriceFix). Tier 1 in DESIGN.md; built without the
-// named design review at the product owner's request, and kept read-only. Current prices
-// come from the billing catalogue. There is no endpoint to set a price, check which
-// screens read the catalogue, or request a second admin's approval, so none of those is
-// a working control here.
+/**
+ * Fix the Premium price, SK-006 (design: AdminPriceFix, Tier 1). Retired: SK-006 is
+ * resolved by the settings registry — each plan price is one setting that the plan
+ * catalogue and checkout read, and a price is changed in Plans & pricing (reason
+ * required, audited, history kept). This page says so and shows the price settings as
+ * the server has them; it has no price field and no approval button of its own. The
+ * board's "Demo: second admin approves" never ships.
+ */
 export const PriceFixView = observer(function PriceFixView() {
   const t = useT();
-  const [vm] = useState(() => new PlansPricingViewModel(contractsRepository));
-  useEffect(() => { vm.load(); return vm.dispose; }, [vm]);
-  return <AdminPage eyebrow={t('admin.plans.title')} title={t('admin.priceFix.title')} description={t('admin.priceFix.description')}>
-    <button type="button" className="sk-admin-back" onClick={() => navigate('admin/plans')}><span aria-hidden="true">← </span>{t('admin.plans.title')}</button>
-    <p className="sk-admin-note" role="note">{t('admin.priceFix.readOnly')}</p>
-    <AdminEmptySection title={t('admin.priceFix.step1')} description={t('admin.priceFix.step1Body')} emptyTitle={t('admin.plans.noSurfaceChecks')} emptyDescription={t('admin.priceFix.step1EmptyBody')} />
-    <div className="sk-admin-sections sk-admin-sections-two">
-      <section className="sk-admin-card" aria-labelledby="sk-admin-price-current">
-        <h3 id="sk-admin-price-current" className="sk-admin-eyebrow">{t('admin.priceFix.step2')}</h3>
-        {vm.loading ? <AdminLoading label={t('admin.priceFix.loading')} />
-          : vm.error ? <AdminError title={t('admin.priceFix.error')} message={vm.error} onRetry={vm.reload} />
-            : !vm.plans.length ? <AdminEmpty title={t('admin.plans.empty')} description={t('admin.priceFix.emptyBody')} />
-              : <ul className="sk-admin-list">{vm.plans.map(plan => <li key={plan.id}><span>{plan.name}</span><strong className="sk-admin-mono">{planPriceWithPeriod(plan, t)}</strong></li>)}</ul>}
-        <p className="sk-admin-section-description">{t('admin.priceFix.setLater')}</p>
-      </section>
-      <AdminEmptySection title={t('admin.priceFix.step3')} description={t('admin.priceFix.step3Body')} emptyTitle={t('admin.priceFix.step3Empty')} emptyDescription={t('admin.priceFix.step3EmptyBody')} />
-    </div>
-  </AdminPage>;
+  const vm = useResource(governanceRepository.settings);
+  if (vm.status === 'loading') return <BoardLoading label={t('admin.priceFix.loading')} />;
+  if (vm.status === 'error') return <BoardFailure t={t} what={t('gov.priceFix.what')} screen="AdminPriceFix" onRetry={vm.reload} detail={vm.error} />;
+  const prices = (vm.data?.items ?? []).filter(item => item.area === BILLING_AREA);
+  return <div className="sk-ds sk-admin-page sk-gov">
+    <BackLink route="admin/plans" label={t('admin.plans.title')} />
+    <ConsolePageHeader title={t('gov.priceFix.title')} subtitle={t('gov.priceFix.subtitle')} />
+    <BoardNote icon="check">{t('gov.priceFix.resolved')}</BoardNote>
+    <GovCard eyebrow={t('gov.priceFix.settings')}>
+      <GovLines label={t('gov.priceFix.settings')} lines={prices.map(item => ({ label: settingLabel(t, item), value: settingValue(t, item), mono: true }))} />
+      <SkButton onClick={() => navigate('admin/plans')}>{t('gov.priceFix.open')}<Icon name="arrow-right" size={16} /></SkButton>
+    </GovCard>
+  </div>;
 });

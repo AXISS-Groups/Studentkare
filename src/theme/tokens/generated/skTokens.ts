@@ -114,7 +114,47 @@ export const skTokens = {
       "qrBackground": "#FFFFFF",
       "cameraBg": "#0B1020",
       "cameraAccent": "#818CF8",
-      "onCamera": "#C7D2FE"
+      "onCamera": "#C7D2FE",
+      "brandNavyLight": "#2B20C9",
+      "ayushOrbGlint": "#A5F3FC",
+      "serviceIndigo": "#6D5BFF",
+      "serviceViolet": "#A78BFA",
+      "serviceVioletDeep": "#6D28D9",
+      "serviceVioletSoft": "#EDE9FE",
+      "serviceVioletInk": "#6D28D9",
+      "serviceVioletShade": "#4C1D95",
+      "serviceBlue": "#60A5FA",
+      "serviceBlueDeep": "#1D4ED8",
+      "serviceBlueSoft": "#DBEAFE",
+      "serviceBlueInk": "#1D4ED8",
+      "serviceSky": "#38BDF8",
+      "serviceSkyDeep": "#0369A1",
+      "serviceSkySoft": "#E0F2FE",
+      "serviceSkyInk": "#0369A1",
+      "serviceTeal": "#14B8A6",
+      "serviceTealDeep": "#0F766E",
+      "serviceTealSoft": "#CCFBF1",
+      "serviceTealInk": "#0F766E",
+      "serviceGreen": "#34D399",
+      "serviceGreenDeep": "#047857",
+      "serviceGreenSoft": "#D1FAE5",
+      "serviceGreenInk": "#047857",
+      "serviceGreenShade": "#065F46",
+      "serviceAmber": "#FBBF24",
+      "serviceAmberDeep": "#B45309",
+      "serviceAmberSoft": "#FEF3C7",
+      "serviceAmberInk": "#B45309",
+      "serviceAmberShade": "#92400E",
+      "serviceOrange": "#FB923C",
+      "serviceOrangeDeep": "#C2410C",
+      "serviceOrangeSoft": "#FFEDD5",
+      "serviceOrangeInk": "#C2410C",
+      "serviceOrangeShade": "#9A3412",
+      "serviceRose": "#F472B6",
+      "serviceRoseDeep": "#BE185D",
+      "serviceRoseSoft": "#FCE7F3",
+      "serviceRoseInk": "#BE185D",
+      "serviceRoseShade": "#9D174D"
     },
     "dark": {
       "canvas": "#0E1428",
@@ -227,7 +267,47 @@ export const skTokens = {
       "qrBackground": "#FFFFFF",
       "cameraBg": "#0B1020",
       "cameraAccent": "#818CF8",
-      "onCamera": "#C7D2FE"
+      "onCamera": "#C7D2FE",
+      "brandNavyLight": "#2B20C9",
+      "ayushOrbGlint": "#A5F3FC",
+      "serviceIndigo": "#6D5BFF",
+      "serviceViolet": "#A78BFA",
+      "serviceVioletDeep": "#6D28D9",
+      "serviceVioletSoft": "#2E2458",
+      "serviceVioletInk": "#C4B5FD",
+      "serviceVioletShade": "#4C1D95",
+      "serviceBlue": "#60A5FA",
+      "serviceBlueDeep": "#1D4ED8",
+      "serviceBlueSoft": "#1B2E5C",
+      "serviceBlueInk": "#93C5FD",
+      "serviceSky": "#38BDF8",
+      "serviceSkyDeep": "#0369A1",
+      "serviceSkySoft": "#12384F",
+      "serviceSkyInk": "#7DD3FC",
+      "serviceTeal": "#14B8A6",
+      "serviceTealDeep": "#0F766E",
+      "serviceTealSoft": "#10403D",
+      "serviceTealInk": "#5EEAD4",
+      "serviceGreen": "#34D399",
+      "serviceGreenDeep": "#047857",
+      "serviceGreenSoft": "#12402F",
+      "serviceGreenInk": "#6EE7B7",
+      "serviceGreenShade": "#065F46",
+      "serviceAmber": "#FBBF24",
+      "serviceAmberDeep": "#B45309",
+      "serviceAmberSoft": "#3D2E10",
+      "serviceAmberInk": "#FCD34D",
+      "serviceAmberShade": "#92400E",
+      "serviceOrange": "#FB923C",
+      "serviceOrangeDeep": "#C2410C",
+      "serviceOrangeSoft": "#43260F",
+      "serviceOrangeInk": "#FDBA74",
+      "serviceOrangeShade": "#9A3412",
+      "serviceRose": "#F472B6",
+      "serviceRoseDeep": "#BE185D",
+      "serviceRoseSoft": "#45192F",
+      "serviceRoseInk": "#F9A8D4",
+      "serviceRoseShade": "#9D174D"
     }
   },
   "font": {
@@ -304,7 +384,10 @@ export const skTokens = {
       "base": 320,
       "sheet": 420,
       "toast": 4000,
-      "spinnerDelay": 400
+      "spinnerDelay": 400,
+      "carousel": 4200,
+      "ambient": 4000,
+      "orbit": 12000
     },
     "easing": {
       "standard": "cubic-bezier(0.16, 1, 0.3, 1)",
@@ -740,6 +823,121 @@ export const skTokens = {
       "fg": "cameraAccent",
       "bg": "cameraBg",
       "min": 3
+    },
+    {
+      "fg": "serviceVioletInk",
+      "bg": "serviceVioletSoft",
+      "min": 4.5
+    },
+    {
+      "fg": "onHero",
+      "bg": "serviceVioletDeep",
+      "min": 4.5
+    },
+    {
+      "fg": "serviceBlueInk",
+      "bg": "serviceBlueSoft",
+      "min": 4.5
+    },
+    {
+      "fg": "onHero",
+      "bg": "serviceBlueDeep",
+      "min": 4.5
+    },
+    {
+      "fg": "serviceSkyInk",
+      "bg": "serviceSkySoft",
+      "min": 4.5
+    },
+    {
+      "fg": "onHero",
+      "bg": "serviceSkyDeep",
+      "min": 4.5
+    },
+    {
+      "fg": "serviceTealInk",
+      "bg": "serviceTealSoft",
+      "min": 4.5
+    },
+    {
+      "fg": "onHero",
+      "bg": "serviceTealDeep",
+      "min": 4.5
+    },
+    {
+      "fg": "serviceGreenInk",
+      "bg": "serviceGreenSoft",
+      "min": 4.5
+    },
+    {
+      "fg": "onHero",
+      "bg": "serviceGreenDeep",
+      "min": 4.5
+    },
+    {
+      "fg": "serviceAmberInk",
+      "bg": "serviceAmberSoft",
+      "min": 4.5
+    },
+    {
+      "fg": "onHero",
+      "bg": "serviceAmberDeep",
+      "min": 4.5
+    },
+    {
+      "fg": "serviceOrangeInk",
+      "bg": "serviceOrangeSoft",
+      "min": 4.5
+    },
+    {
+      "fg": "onHero",
+      "bg": "serviceOrangeDeep",
+      "min": 4.5
+    },
+    {
+      "fg": "serviceRoseInk",
+      "bg": "serviceRoseSoft",
+      "min": 4.5
+    },
+    {
+      "fg": "onHero",
+      "bg": "serviceRoseDeep",
+      "min": 4.5
+    },
+    {
+      "fg": "onHero",
+      "bg": "brandNavyLight",
+      "min": 4.5
+    },
+    {
+      "fg": "onHero",
+      "bg": "serviceIndigo",
+      "min": 3
+    },
+    {
+      "fg": "onHero",
+      "bg": "serviceVioletShade",
+      "min": 4.5
+    },
+    {
+      "fg": "onHero",
+      "bg": "serviceAmberShade",
+      "min": 4.5
+    },
+    {
+      "fg": "onHero",
+      "bg": "serviceOrangeShade",
+      "min": 4.5
+    },
+    {
+      "fg": "onHero",
+      "bg": "serviceRoseShade",
+      "min": 4.5
+    },
+    {
+      "fg": "onHero",
+      "bg": "serviceGreenShade",
+      "min": 4.5
     }
   ]
 } as const;

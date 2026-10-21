@@ -6,8 +6,11 @@ import type { RoutePath } from '@/lib/utils/workflowRouting';
 import type { Lang } from '@/i18n';
 import { SignupConsentState } from './signupConsent';
 import { normalizeInviteCode } from '@/features/rewards/inviteCode';
+import { getSetting } from '@/data/services/config';
 
 type AuthMode = 'login' | 'signup';
+/** STAFF: the staff sign-in page (AdminSignIn). The server then sends codes only to staff accounts. */
+export type AuthAudience = 'STUDENT' | 'STAFF';
 type Channel = 'EMAIL' | 'WHATSAPP';
 
 /** What the server says about a device the student chose to be remembered on. Never a session. */
@@ -21,6 +24,8 @@ type RememberedResponse = ({ remembered: true } & RememberedDevice) | { remember
 
 interface OtpSendResponse {
   targetMasked: string;
+  /** How long the code lives, from the server (it issues 300 s today). The screen never assumes it. */
+  expiresInSeconds?: number;
   fallbackSent?: boolean;
   fallbackTargetMasked?: string;
   message?: string;
@@ -47,6 +52,11 @@ export class AuthViewModel {
   twoFaCode = '';
   resendAt = 0;
   seconds = 0;
+  /** Lifetime of the code just sent, as the server reported it; 0 until a code is sent. */
+  expiresInSeconds = 0;
+  /** HTTP status of the last failed request (401 wrong code, 429 too many tries), or 0. */
+  errorStatus = 0;
+  audience: AuthAudience = 'STUDENT';
   fullName = '';
   dob = '';
   bloodGroup = '';
@@ -105,7 +115,7 @@ export class AuthViewModel {
 
   reset(): void {
     this.step = 1;
-    this.channel = 'WHATSAPP';
+    this.channel = this.audience === 'STAFF' ? 'EMAIL' : 'WHATSAPP';
     this.identifier = '';
     this.code = '';
     this.masked = '';
@@ -115,6 +125,8 @@ export class AuthViewModel {
     this.twoFaCode = '';
     this.resendAt = 0;
     this.seconds = 0;
+    this.expiresInSeconds = 0;
+    this.errorStatus = 0;
     this.fullName = '';
     this.dob = '';
     this.bloodGroup = '';
@@ -155,9 +167,16 @@ export class AuthViewModel {
     this[field] = value;
   }
 
+  setAudience(audience: AuthAudience): void {
+    this.audience = audience;
+    // Staff sign in by work email only (the server refuses anything else).
+    if (audience === 'STAFF') this.channel = 'EMAIL';
+  }
+
   advance(step: number): void {
     this.step = step;
     this.error = '';
+    this.errorStatus = 0;
     this.twoFaRestart = '';
   }
 
@@ -208,6 +227,7 @@ export class AuthViewModel {
         // Back to the same spot — accept() still checks the route against the signed-in role.
         if (!this.next && isRoutePath(device.lastRoute)) this.next = device.lastRoute;
         this.masked = response.targetMasked;
+        this.expiresInSeconds = response.expiresInSeconds ?? 0;
         this.startResendTimer();
         this.code = '';
         this.step = 3;
@@ -242,9 +262,11 @@ export class AuthViewModel {
     }
   }
 
+  /** The wait before "Send a new code" comes back: a screen pace from the settings registry. */
   startResendTimer(): void {
-    this.resendAt = Date.now() + 45000;
-    this.seconds = 45;
+    const wait = getSetting('auth.otp_resend_seconds');
+    this.resendAt = Date.now() + wait * 1000;
+    this.seconds = wait;
   }
 
   tick(): void {
@@ -274,6 +296,7 @@ export class AuthViewModel {
   async sendCode(): Promise<void> {
     this.busy = true;
     this.error = '';
+    this.errorStatus = 0;
     try {
       const response = await apiRequest<OtpSendResponse>('/auth/otp/send', {
         method: 'POST',
@@ -282,10 +305,12 @@ export class AuthViewModel {
           channel: this.channel,
           intent: this.isLogin ? 'LOGIN' : 'SIGNUP',
           fallbackEmail: this.channel === 'WHATSAPP' && this.fallbackEmail.includes('@') ? this.fallbackEmail : undefined,
+          ...(this.audience === 'STAFF' ? { audience: 'STAFF' } : {}),
         }),
       });
       runInAction(() => {
         this.masked = response.targetMasked;
+        this.expiresInSeconds = response.expiresInSeconds ?? 0;
         this.startResendTimer();
         this.code = '';
         this.step = 3;
@@ -296,6 +321,7 @@ export class AuthViewModel {
     } catch (error) {
       runInAction(() => {
         this.error = error instanceof Error ? error.message : 'Could not send the code.';
+        this.errorStatus = error instanceof ApiError ? error.status : 0;
       });
     } finally {
       runInAction(() => {
@@ -307,6 +333,7 @@ export class AuthViewModel {
   async verify(onAccept: (response: SessionResponse) => void): Promise<void> {
     this.busy = true;
     this.error = '';
+    this.errorStatus = 0;
     try {
       const response = await apiRequest<SessionResponse>('/auth/otp/verify', { method: 'POST', body: JSON.stringify({ otp: this.code }) });
       runInAction(() => {
@@ -325,7 +352,10 @@ export class AuthViewModel {
       });
     } catch (error) {
       runInAction(() => {
+        // Nothing is kept from a refused code: no session, and the boxes empty for a fresh try.
         this.error = error instanceof Error ? error.message : 'Could not verify the code.';
+        this.errorStatus = error instanceof ApiError ? error.status : 0;
+        this.code = '';
       });
     } finally {
       runInAction(() => {

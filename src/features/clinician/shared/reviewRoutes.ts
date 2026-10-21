@@ -1,22 +1,18 @@
-import { demoDataEnabled } from '@/core/env';
 import type { RoutePath } from '@/lib/utils/workflowRouting';
 
 /**
- * Screens built from the canvas but still awaiting a named design reviewer and
- * clinical sign-off (DESIGN.md §5, Tier 1). Development opens the new screen;
- * production keeps what it has today — the live screen, or nothing.
+ * Where the doctor's clinical screens live. The Tier 1 screens (WP-13) were
+ * approved by Krishna Chintakayala on 2026-10-21 and are live in every build;
+ * the older panels (`clinical-review`, `report-reviews`, `clinical-notes`)
+ * stay reachable for links that still point at them, and `clinical-review`
+ * keeps the held-report release and substitution decisions the critical
+ * results board does not cover.
  */
-export function reviewRoute(live: RoutePath | null, preview: RoutePath): RoutePath | null {
-  return demoDataEnabled() ? preview : live;
-}
-
 export const REVIEW_ROUTES = {
-  // Built from the design and live everywhere, empty until a source is connected.
   inbox: (): RoutePath => 'clinician/inbox',
   consultRoom: (): RoutePath => 'clinician/consult-room',
-  criticalResults: () => reviewRoute('clinical-review', 'clinician/critical-results'),
-  reportReviews: () => reviewRoute('report-reviews', 'clinician/report-reviews'),
-  encounterNote: () => reviewRoute('clinical-notes', 'clinician/encounter-note'),
-  // Tier 1: live as a read-only empty layout (like the Super Admin Tier 1 screens).
+  criticalResults: (): RoutePath => 'clinician/critical-results',
+  reportReviews: (): RoutePath => 'clinician/report-reviews',
+  encounterNote: (): RoutePath => 'clinician/encounter-note',
   prescribe: (): RoutePath => 'clinician/prescribe',
 } as const;

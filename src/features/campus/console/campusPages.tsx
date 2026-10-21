@@ -13,9 +13,10 @@ import type { RoutePath } from '@/lib/utils/workflowRouting';
  * Announcements, Reports and Settings boards draw the scope/search top bar; the
  * other boards are sidebar and page only.
  *
- * Tier 1 boards (Insights, Incidents, Ambulance, Isolation, Access requests,
- * Emergency access, SOS) render their existing screens unchanged; only the
- * wrapper around them moved from the old tab hub into this shell.
+ * The Tier 1 safety boards (Insights, Incidents, Ambulance, Counsellor, Access
+ * requests, Emergency access, Isolation, Discharge, SLA) are built to the
+ * canvas in src/features/campus/safety (WP-11, approved 2026-10-21). The SOS
+ * desk is unchanged. The counsellor queue stays on the counsellor's own home.
  */
 export interface CampusPage {
   current: CampusNavId | null;
@@ -30,13 +31,7 @@ const named = <K extends string>(load: () => Promise<Record<K, React.ComponentTy
   lazy(() => load().then((module) => ({ default: module[name] })));
 
 const CampusOverviewScreen = named(() => import('@/features/campus/overview/CampusOverviewScreen'), 'CampusOverviewScreen');
-const CampusHealthInsightsScreen = named(() => import('@/screens/institution/CampusHealthInsightsScreen'), 'CampusHealthInsightsScreen');
 const CampusSosDesk = named(() => import('@/screens/institution/CampusSosDesk'), 'CampusSosDesk');
-const CampusIncidentsDeskScreen = named(() => import('@/screens/institution/CampusIncidentsDeskScreen'), 'CampusIncidentsDeskScreen');
-const AmbulanceDispatchTrackerScreen = named(() => import('@/screens/institution/AmbulanceDispatchTrackerScreen'), 'AmbulanceDispatchTrackerScreen');
-const CampusAccessRequests = named(() => import('@/screens/institution/CampusAccessRequests'), 'CampusAccessRequests');
-const CampusBreakGlass = named(() => import('@/screens/institution/CampusBreakGlass'), 'CampusBreakGlass');
-const OutbreakIsolationDeskScreen = named(() => import('@/screens/institution/OutbreakIsolationDeskScreen'), 'OutbreakIsolationDeskScreen');
 // WP-10 boards (design page 4), built to the canvas in src/features/campus/boards.
 const CampusRosterScreen = named(() => import('@/features/campus/boards'), 'CampusRosterScreen');
 const CampusBlocksScreen = named(() => import('@/features/campus/boards'), 'CampusBlocksScreen');
@@ -56,6 +51,15 @@ const CampusAggregateScreen = named(() => import('@/features/campus/boards'), 'C
 const MedicalLeaveApprovalsScreen = named(() => import('@/screens/institution/MedicalLeaveApprovalsScreen'), 'MedicalLeaveApprovalsScreen');
 const CampusHealthScorecardScreen = named(() => import('@/screens/institution/CampusHealthScorecardScreen'), 'CampusHealthScorecardScreen');
 const CounsellorOnlyPage = named(() => import('./CampusPendingPage'), 'CampusCounsellorOnlyPage');
+// WP-11 boards (design page 4, Tier 1, approved 2026-10-21), built to the canvas in src/features/campus/safety.
+const CampusInsightsScreen = named(() => import('@/features/campus/safety'), 'CampusInsightsScreen');
+const CampusAccessRequestsScreen = named(() => import('@/features/campus/safety'), 'CampusAccessRequestsScreen');
+const CampusBreakGlassScreen = named(() => import('@/features/campus/safety'), 'CampusBreakGlassScreen');
+const CampusIncidentsScreen = named(() => import('@/features/campus/safety'), 'CampusIncidentsScreen');
+const CampusIsolationScreen = named(() => import('@/features/campus/safety'), 'CampusIsolationScreen');
+const CampusAmbulanceScreen = named(() => import('@/features/campus/safety'), 'CampusAmbulanceScreen');
+const CampusDischargeScreen = named(() => import('@/features/campus/safety'), 'CampusDischargeScreen');
+const CampusSlaScreen = named(() => import('@/features/campus/safety'), 'CampusSlaScreen');
 const NotificationInboxPanel = named(() => import('@/screens/workspace/NotificationInboxPanel'), 'NotificationInboxPanel');
 const SupportPanel = lazy(() => import('@/screens/workspace/MemberPanels').then((module) => ({ default: () => <module.SupportPanel /> })));
 
@@ -66,24 +70,24 @@ export const CAMPUS_PAGES: Partial<Record<RoutePath, CampusPage>> = {
   'campus/verification': { current: 'verification', board: 'CampusApprovals', title: 'campusShell.nav.verification', topBar: false, screen: CampusApprovalsScreen },
   // No board on the canvas; the old hub's Medical leave tab, mounted unchanged beside Verification (CampusApprovals).
   'campus/leave': { current: 'leave', board: 'CampusApprovals', title: 'campusShell.nav.leave', topBar: false, screen: MedicalLeaveApprovalsScreen },
-  'campus/insights': { current: 'insights', board: 'CampusInsights', title: 'campusShell.nav.insights', topBar: true, screen: CampusHealthInsightsScreen },
+  'campus/insights': { current: 'insights', board: 'CampusInsights', title: 'campusShell.nav.insights', topBar: true, screen: CampusInsightsScreen },
   'campus/camps': { current: 'camps', board: 'CampusCamps', title: 'campusShell.nav.camps', topBar: false, screen: CampusCampsScreen },
   'campus/certificates': { current: 'certificates', board: 'CampusCertificates', title: 'campusShell.nav.certificates', topBar: true, screen: CampusCertificatesScreen },
   'campus-wellness': { current: 'wellness', board: 'CampusWellness', title: 'campusShell.nav.wellness', topBar: false, screen: CampusWellnessScreen },
   // No board of its own on the canvas: the live, approved SOS desk the old hub opened on.
   'campus/sos': { current: 'sos', board: 'CampusSosDesk', title: 'campusShell.nav.sos', topBar: true, screen: CampusSosDesk },
-  'campus/incidents': { current: 'incidents', board: 'CampusIncidents', title: 'campusShell.nav.incidents', topBar: true, screen: CampusIncidentsDeskScreen },
-  'campus/ambulance': { current: 'ambulance', board: 'CampusAmbulance', title: 'campusShell.nav.ambulance', topBar: false, screen: AmbulanceDispatchTrackerScreen },
+  'campus/incidents': { current: 'incidents', board: 'CampusIncidents', title: 'campusShell.nav.incidents', topBar: true, screen: CampusIncidentsScreen },
+  'campus/ambulance': { current: 'ambulance', board: 'CampusAmbulance', title: 'campusShell.nav.ambulance', topBar: false, screen: CampusAmbulanceScreen },
   'campus/counsellor': { current: 'counsellor', board: 'CampusCounsellor', title: 'campusShell.nav.counsellor', topBar: true, screen: CounsellorOnlyPage },
-  'campus-access-requests': { current: 'access-requests', board: 'CampusAccessRequests', title: 'campusShell.nav.accessRequests', topBar: true, screen: CampusAccessRequests },
-  'campus-break-glass': { current: 'emergency-access', board: 'CampusBreakGlass', title: 'campusShell.nav.emergencyAccess', topBar: true, screen: CampusBreakGlass },
-  'campus/isolation': { current: 'isolation', board: 'CampusIsolation', title: 'campusShell.nav.isolation', topBar: false, screen: OutbreakIsolationDeskScreen },
-  'campus/discharge': { current: 'discharge', board: 'CampusDischarge', title: 'campusShell.nav.discharge', topBar: false, screen: null },
+  'campus-access-requests': { current: 'access-requests', board: 'CampusAccessRequests', title: 'campusShell.nav.accessRequests', topBar: true, screen: CampusAccessRequestsScreen },
+  'campus-break-glass': { current: 'emergency-access', board: 'CampusBreakGlass', title: 'campusShell.nav.emergencyAccess', topBar: true, screen: CampusBreakGlassScreen },
+  'campus/isolation': { current: 'isolation', board: 'CampusIsolation', title: 'campusShell.nav.isolation', topBar: false, screen: CampusIsolationScreen },
+  'campus/discharge': { current: 'discharge', board: 'CampusDischarge', title: 'campusShell.nav.discharge', topBar: false, screen: CampusDischargeScreen },
   'campus/outbreak': { current: 'outbreak', board: 'CampusOutbreak', title: 'campusShell.nav.outbreak', topBar: false, screen: CampusOutbreakScreen },
   'campus/water': { current: 'water', board: 'CampusWater', title: 'campusShell.nav.water', topBar: false, screen: CampusWaterScreen },
   'campus/sanitary': { current: 'sanitary', board: 'CampusSanitary', title: 'campusShell.nav.sanitary', topBar: false, screen: CampusSanitaryScreen },
   'campus/mess': { current: 'mess', board: 'CampusMess', title: 'campusShell.nav.mess', topBar: false, screen: CampusMessScreen },
-  'campus/sla': { current: 'sla', board: 'CampusSla', title: 'campusShell.nav.sla', topBar: false, screen: null },
+  'campus/sla': { current: 'sla', board: 'CampusSla', title: 'campusShell.nav.sla', topBar: false, screen: CampusSlaScreen },
   'campus/team': { current: 'team', board: 'CampusAdminTeam', title: 'campusShell.nav.team', topBar: true, screen: CampusAdminTeamScreen },
   'campus/announcements': { current: 'announcements', board: 'CampusAnnouncements', title: 'campusShell.nav.announcements', topBar: true, screen: CampusAnnouncementsScreen },
   'campus/reports': { current: 'reports', board: 'CampusReports', title: 'campusShell.nav.reports', topBar: true, screen: CampusReportsScreen },

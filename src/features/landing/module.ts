@@ -39,8 +39,9 @@ export const landingModule: FeatureModule = {
     {
       path: '/lab-tests',
       public: true,
+      // A signed-in student gets Mobile 2.0 Lab tests in the workspace; everyone else the public page.
       load: () =>
-        import('./views/LandingLabTestsView').then((m) => ({ default: m.LandingLabTestsView })),
+        import('@/features/m2store/screens/LabTestsScreen').then((m) => ({ default: m.LabTestsScreen })),
     },
     {
       path: '/consult',

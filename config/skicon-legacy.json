@@ -1,5 +1,3 @@
 [
-  "src/design-system/primitives.tsx",
-  "src/features/clinician/consult-room/ConsultRoomScreen.tsx",
-  "src/features/clinician/prescribe/PrescribeScreen.tsx"
+  "src/design-system/primitives.tsx"
 ]

@@ -8,19 +8,23 @@ import { VideoConsultationDialog } from '@/components/health/VideoConsultationDi
 import { BookAppointmentDialog } from './AppointmentsPanel';
 import { NotificationNativeView } from '@/features/notifications/views/NotificationNativeView';
 import { NotificationViewModel } from '@/features/notifications/viewmodel/NotificationViewModel';
-import { StudentProfileBoard } from '@/features/account/views/StudentProfileBoard';
 import { AccountDetailsBoard } from '@/features/account/views/AccountDetailsBoard';
 import { DataExportBoard } from '@/features/account/views/DataExportBoard';
 import type { RecordsExport } from '@/features/account/views/DataExportBoard';
 import { DigitalIdRoute } from '@/features/digital_id/views/DigitalIdNativeView';
 import { ScreenLoading } from '@/components/health/ScreenLoading';
-import { ClaimsHubBoard } from '@/features/claims/views/ClaimsHubBoard';
+import { M2InsuranceRoute } from '@/features/m2store/views/M2InsuranceRoute';
 import { HelpCentreBoard } from '@/features/support/views/HelpCentreBoard';
-import { PreventiveCareBoard } from '@/features/preventive/views/PreventiveCareBoard';
 import { MovementBoard } from '@/features/movement/views/MovementBoard';
 import { useExerciseStore } from '@/data/contexts/ExerciseStore';
+import { EmergencyCardRoute } from '@/features/emergency/views/EmergencyCardBoard';
+import { IceContactsRoute } from '@/features/emergency/views/IceContactsBoard';
+import { MyPassRoute } from '@/features/digital_id/views/MyPassBoard';
+import { DeleteAccountRoute } from '@/features/account/views/DeleteAccountView';
+import { PlanBillingBoard } from '@/features/billing/views/PlanBillingBoard';
+import { ConsentInboxBoard } from '@/features/vault/views/ConsentInboxBoard';
+import { FamilyCircleBoard } from '@/features/vault/views/FamilyCircleBoard';
 
-const PreventiveCareScreen = lazy(() => import('@/features/preventive/screens/PreventiveCareScreen').then((module) => ({ default: module.PreventiveCareScreen })));
 const ExerciseLibraryScreen = lazy(() => import('../wellbeing/ExerciseLibraryScreen').then((module) => ({ default: module.ExerciseLibraryScreen })));
 
 const MemberProfilePanel = lazy(() => import('./MemberProfilePanel').then((module) => ({ default: module.MemberProfilePanel })));
@@ -52,16 +56,6 @@ function saveExport(data: RecordsExport): void {
   URL.revokeObjectURL(url);
 }
 
-function StudentProfilePage(): React.ReactElement {
-  const [editing, edit] = usePanel();
-  return (
-    <>
-      <StudentProfileBoard links={{ digitalId: () => navigate('digital-id'), edit }} />
-      {editing ? <WebPanel tab="profile" /> : null}
-    </>
-  );
-}
-
 export function AccountDetailsPage(): React.ReactElement {
   const [editing, edit] = usePanel();
   return (
@@ -89,11 +83,12 @@ function DigitalIdPage(): React.ReactElement {
   );
 }
 
-function ClaimsHubPage(): React.ReactElement {
-  const [open, openForm] = usePanel();
+/** Mobile 2.0 Insurance (M2Insurance, replaces ClaimsHub); "Manage" opens the full insurance page under it. */
+function InsurancePage(): React.ReactElement {
+  const [open, openPanel] = usePanel();
   return (
     <>
-      <ClaimsHubBoard links={{ newClaim: openForm }} />
+      <M2InsuranceRoute manage={openPanel} />
       {open ? <WebPanel tab="insurance" /> : null}
     </>
   );
@@ -105,16 +100,6 @@ function HelpCentrePage(): React.ReactElement {
       topic: { orders: () => navigate('orders'), prescriptions: () => navigate('prescriptions'), records: () => navigate('records'), verify: () => navigate('verify'), delete: () => navigate('delete-account') },
       crisis: () => navigate('sos'), requests: () => navigate('my-requests'), legal: () => navigate('privacy'),
     }} />
-  );
-}
-
-function PreventiveCarePage(): React.ReactElement {
-  const [more, openMore] = usePanel();
-  return (
-    <>
-      <PreventiveCareBoard links={{ camp: () => navigate('health-camp'), more: openMore }} />
-      {more ? <div id="board-panel-preventive"><Suspense fallback={<ScreenLoading />}><PreventiveCareScreen /></Suspense></div> : null}
-    </>
   );
 }
 
@@ -181,24 +166,41 @@ function NotificationsPage(): React.ReactElement {
 }
 
 /**
+ * The Tier 1 boards of WP-06 (safety, consent and account deletion), approved
+ * by Krishna Chintakayala on 2026-10-21. The same boards serve the desktop
+ * routes that have no web twin yet (ice-contacts, consent, care-circle).
+ */
+export function safetyBoardFor(route: RoutePath): React.ReactElement | null {
+  switch (route) {
+    case 'emergency-card': return <EmergencyCardRoute links={{ contacts: () => navigate('ice-contacts') }} />;
+    case 'ice-contacts': return <IceContactsRoute links={{}} />;
+    case 'pass': return <MyPassRoute links={{ digitalId: () => navigate('digital-id') }} />;
+    case 'delete-account': return <DeleteAccountRoute links={{ exportData: () => navigate('data-export'), crisis: () => navigate('crisis') }} />;
+    case 'billing': return <PlanBillingBoard links={{ support: () => navigate('support') }} />;
+    case 'consent': return <ConsentInboxBoard links={{ records: () => navigate('records') }} />;
+    case 'care-circle': return <FamilyCircleBoard links={{ emergencyCard: () => navigate('emergency-card'), consent: () => navigate('consent') }} />;
+    default: return null;
+  }
+}
+
+/**
  * The phone board a student's route draws in the web phone frame (canvas page
- * 2), or null where the route keeps its web view. The desktop shell keeps the
+ * 2), or null where the route keeps its web view. Your Care, the profile and
+ * preventive care are Mobile 2.0 boards now (M2Insights, M2Profile,
+ * M2Vaccines: features/phoneKit/studentPhoneBoards). The desktop shell keeps the
  * web panels; these are the phone boards only.
  */
 export function phoneBoardFor(route: RoutePath): React.ReactElement | null {
   switch (route) {
-    case 'your-care': return <YourCarePage />;
     case 'appointments': return <AppointmentsPage />;
     case 'notifications': return <NotificationsPage />;
-    case 'profile': return <StudentProfilePage />;
     case 'account': return <AccountDetailsPage />;
     case 'data-export': return <DataExportPage />;
     case 'digital-id': return <DigitalIdPage />;
-    case 'insurance': return <ClaimsHubPage />;
+    case 'insurance': return <InsurancePage />;
     case 'support': return <HelpCentrePage />;
-    case 'preventive-care': return <PreventiveCarePage />;
     case 'movement': return <MovementPage />;
-    default: return null;
+    default: return safetyBoardFor(route);
   }
 }
 

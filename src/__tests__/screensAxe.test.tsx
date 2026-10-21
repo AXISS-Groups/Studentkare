@@ -41,7 +41,7 @@ describe('screens built in the remediation pass are accessible', () => {
   it('identity verify', async () => {
     const vm = new IdentityVerifyViewModel(api({ '/identity': { campusStatus: 'PENDING' } }));
     await vm.load();
-    await expectAccessible(<IdentityVerifyPanel viewModel={vm} links={{ back: () => undefined, openCampusVerification: () => undefined }} />);
+    await expectAccessible(<IdentityVerifyPanel viewModel={vm} links={{ back: () => undefined, openCrisis: () => undefined, openCampusVerification: () => undefined }} />);
   });
 
   it('appointment booking', async () => {

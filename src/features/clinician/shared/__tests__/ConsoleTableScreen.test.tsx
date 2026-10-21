@@ -4,11 +4,11 @@ import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { ConsoleTableView } from '../ConsoleTableScreen';
 import { ConsoleTableViewModel, unconnectedTableSource } from '../consoleTable';
 import type { ConsoleTableConfig, ConsoleTableData, ConsoleTableSource } from '../consoleTable';
-import { labOrdersConfig, labOrdersSample } from '../../lab-orders/ClinicianLabOrdersScreen';
-import { referralsConfig, referralsSample } from '../../referrals/ClinicianReferralsScreen';
-import { renewalsConfig, renewalsSample } from '../../renewals/ClinicianRenewalsScreen';
-import { ayushConfig, ayushSample } from '../../ayush/ClinicianAyushScreen';
-import { decisionSupportConfig, decisionSupportSample } from '../../decision-support/ClinicianDecisionSupportScreen';
+import { labOrdersConfig as labOrdersConfigFor, mapLabOrders } from '../../lab-orders/ClinicianLabOrdersScreen';
+import { referralsConfig as referralsConfigFor, referralsSample } from '../../referrals/ClinicianReferralsScreen';
+import { renewalsConfig as renewalsConfigFor, renewalsSample } from '../../renewals/ClinicianRenewalsScreen';
+import { ayushConfig as ayushConfigFor, ayushSample } from '../../ayush/ClinicianAyushScreen';
+import { decisionSupportConfig as decisionSupportConfigFor, decisionSupportSample } from '../../decision-support/ClinicianDecisionSupportScreen';
 import { patientsConfig as patientsConfigFor } from '../../patients/ClinicianPatientsScreen';
 import { translate } from '@/i18n';
 import type { MessageKey, Vars } from '@/i18n';
@@ -16,12 +16,23 @@ import { mapSchedule, scheduleConfig as scheduleConfigFor } from '../../schedule
 import { earningsConfig as earningsConfigFor, mapEarnings } from '../../earnings/ClinicianEarningsConsoleScreen';
 import { muted, pill, strong } from '../cells';
 import { bookingsFor } from '../../queue/__tests__/queueFixture';
-import { chronicConfig, chronicSample } from '../../chronic/ClinicianChronicConsoleScreen';
+import { chronicConfig as chronicConfigFor, chronicSample } from '../../chronic/ClinicianChronicConsoleScreen';
 
 const en = (key: MessageKey, vars?: Vars) => translate('en', key, vars);
 const patientsConfig = patientsConfigFor(en);
 const scheduleConfig = scheduleConfigFor(en);
 const earningsConfig = earningsConfigFor(en);
+const labOrdersConfig = labOrdersConfigFor(en);
+const referralsConfig = referralsConfigFor(en);
+const renewalsConfig = renewalsConfigFor(en);
+const ayushConfig = ayushConfigFor(en);
+const decisionSupportConfig = decisionSupportConfigFor(en);
+const chronicConfig = chronicConfigFor(en);
+/** Test fixture: two orders as /work/doctor-lab-orders returns them. */
+const labOrdersSample = (): ConsoleTableData => mapLabOrders([
+  { id: 'o1', patientId: 'p1', patientName: 'Fixture Student', testPanel: ['Thyroid profile'], clinicalIndication: 'Fatigue for six weeks', collectionMode: 'WALK_IN', fastingRequired: false, labName: 'Fixture Labs', status: 'BOOKED', createdAt: 1790000000 },
+  { id: 'o2', patientId: 'p2', patientName: 'Fixture Two', testPanel: ['Iron studies'], clinicalIndication: 'Low Hb on CBC', collectionMode: 'HOME', fastingRequired: true, labName: 'Fixture Labs', status: 'SAMPLE_REJECTED', createdAt: 1790000500 },
+], en);
 const NOW = new Date(2026, 8, 24, 9, 46);
 
 /** Test fixtures only: no build serves these rows. A consent-reporting patients source does not exist yet. */

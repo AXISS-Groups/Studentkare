@@ -4,8 +4,8 @@ import { useT } from '@/i18n';
 import { navigate } from '@/lib/utils/workflowRouting';
 import type { MessageKey } from '@/i18n';
 import { RecordsPanel } from '../workspace/MemberPanels';
-import { AccessConsentInboxPanel } from './AccessConsentInboxPanel';
-import { FamilyAccessShareScreen } from './FamilyAccessShareScreen';
+import { ConsentInboxBoard } from '@/features/vault/views/ConsentInboxBoard';
+import { FamilyCircleBoard } from '@/features/vault/views/FamilyCircleBoard';
 import '../../theme/workflows.css';
 
 type VaultTab = 'records' | 'access' | 'family';
@@ -24,9 +24,9 @@ export function VaultWorkspaceHub() {
   const renderTabContent = () => {
     switch (activeTab) {
       case 'access':
-        return <AccessConsentInboxPanel onOpenRecords={openRecords} />;
+        return <ConsentInboxBoard embedded links={{ records: openRecords }} />;
       case 'family':
-        return <FamilyAccessShareScreen onOpenRecords={openRecords} />;
+        return <FamilyCircleBoard embedded links={{ emergencyCard: () => navigate('emergency-card'), consent: () => setActiveTab('access') }} />;
       default:
         return <RecordsPanel />;
     }

@@ -76,12 +76,12 @@ describe('CampusConsole', () => {
     expect(await screen.findByRole('status', { name: 'Loading overview' })).toBeInTheDocument();
   });
 
-  it('shows an honest "not connected" page for a board with no screen, and no sample data', async () => {
+  it('shows a board with no data source as "not connected", with no sample data', async () => {
     renderConsole('campus/discharge');
     await flush();
     expect(await screen.findByRole('heading', { level: 1, name: 'Discharge certificates' })).toBeInTheDocument();
-    expect(screen.getByText('Not connected yet')).toBeInTheDocument();
-    expect(screen.getByText(/no sample data, and no all-clear/)).toBeInTheDocument();
+    expect(screen.getByText('Discharge certificates aren’t connected yet')).toBeInTheDocument();
+    expect(document.body.textContent).not.toMatch(/NMC-TS|Dr\. A\. Reddy|B-214/);
     expect(within(screen.getByRole('navigation', { name: 'Campus admin' })).getByRole('link', { name: 'Discharge certificates' })).toHaveAttribute('aria-current', 'page');
   });
 
