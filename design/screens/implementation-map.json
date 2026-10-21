@@ -1097,8 +1097,27 @@
       "src/features/camp/day/campDay.ts",
       "src/native/CampScreen.tsx"
     ],
-    "LabQueue": [],
-    "DispenseRegister": [],
+    "LabQueue": [
+      "src/screens/vendor/VendorShell.tsx",
+      "src/screens/vendor/vendorNavigation.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/partner/PartnerPage.tsx",
+      "src/design-system/console/ConsoleTablePage.tsx",
+      "src/design-system/overlays/Overlay.tsx",
+      "src/features/partner/work/labWork.ts",
+      "src/features/partner/work/workCopy.ts",
+      "src/screens/vendor/LabSampleToReportScreen.tsx"
+    ],
+    "DispenseRegister": [
+      "src/screens/vendor/VendorShell.tsx",
+      "src/screens/vendor/vendorNavigation.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/partner/PartnerPage.tsx",
+      "src/design-system/console/ConsoleTablePage.tsx",
+      "src/design-system/overlays/Overlay.tsx",
+      "src/features/partner/work/pharmacyWork.ts",
+      "src/screens/vendor/DispenseRegisterScreen.tsx"
+    ],
     "VendorConsole": [
       "src/screens/vendor/VendorShell.tsx",
       "src/screens/vendor/vendorNavigation.ts",
@@ -1115,7 +1134,15 @@
       "src/features/partner/partnerApi.ts",
       "src/screens/vendor/VendorSettlementScreen.tsx"
     ],
-    "VendorOrders": [],
+    "VendorOrders": [
+      "src/screens/vendor/VendorShell.tsx",
+      "src/screens/vendor/vendorNavigation.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/partner/PartnerPage.tsx",
+      "src/design-system/console/ConsoleTablePage.tsx",
+      "src/features/partner/work/pharmacyWork.ts",
+      "src/screens/vendor/VendorOrdersScreen.tsx"
+    ],
     "VendorCatalogue": [
       "src/screens/vendor/VendorShell.tsx",
       "src/screens/vendor/vendorNavigation.ts",
@@ -1124,9 +1151,33 @@
       "src/features/partner/partnerApi.ts",
       "src/screens/vendor/VendorCatalogueScreen.tsx"
     ],
-    "LabCollection": [],
-    "LabColdChain": [],
-    "LabReporting": [],
+    "LabCollection": [
+      "src/screens/vendor/VendorShell.tsx",
+      "src/screens/vendor/vendorNavigation.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/partner/PartnerPage.tsx",
+      "src/design-system/console/ConsoleTablePage.tsx",
+      "src/features/partner/work/labWork.ts",
+      "src/features/partner/work/counterSession.ts",
+      "src/screens/vendor/LabCollectionScreen.tsx"
+    ],
+    "LabColdChain": [
+      "src/screens/vendor/VendorShell.tsx",
+      "src/screens/vendor/vendorNavigation.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/partner/PartnerPage.tsx",
+      "src/design-system/console/ConsoleTablePage.tsx",
+      "src/screens/vendor/LabColdChainScreen.tsx"
+    ],
+    "LabReporting": [
+      "src/screens/vendor/VendorShell.tsx",
+      "src/screens/vendor/vendorNavigation.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/partner/PartnerPage.tsx",
+      "src/design-system/console/ConsoleTablePage.tsx",
+      "src/features/partner/work/labWork.ts",
+      "src/screens/vendor/LabReportingScreen.tsx"
+    ],
     "VendorReturns": [
       "src/screens/vendor/VendorShell.tsx",
       "src/screens/vendor/vendorNavigation.ts",
@@ -1135,8 +1186,25 @@
       "src/features/partner/partnerApi.ts",
       "src/screens/vendor/VendorReturnsScreen.tsx"
     ],
-    "VendorHandover": [],
-    "VendorSubstitution": [],
+    "VendorHandover": [
+      "src/screens/vendor/VendorShell.tsx",
+      "src/screens/vendor/vendorNavigation.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/partner/PartnerPage.tsx",
+      "src/design-system/console/ConsoleTablePage.tsx",
+      "src/features/partner/work/counterSession.ts",
+      "src/screens/vendor/VendorHandoverScreen.tsx"
+    ],
+    "VendorSubstitution": [
+      "src/screens/vendor/VendorShell.tsx",
+      "src/screens/vendor/vendorNavigation.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/partner/PartnerPage.tsx",
+      "src/design-system/console/ConsoleTablePage.tsx",
+      "src/design-system/overlays/Overlay.tsx",
+      "src/features/partner/work/pharmacyWork.ts",
+      "src/screens/vendor/VendorSubstitutionScreen.tsx"
+    ],
     "VendorReorder": [
       "src/screens/vendor/VendorShell.tsx",
       "src/screens/vendor/vendorNavigation.ts",
@@ -1161,11 +1229,42 @@
       "src/features/partner/partnerApi.ts",
       "src/screens/vendor/VendorHomeScreen.tsx"
     ],
-    "VendorRxReview": [],
-    "ScanVerify": [],
-    "WebScanVerify": [],
-    "StaffHandover": [],
-    "StaffCollect": [],
+    "VendorRxReview": [
+      "src/screens/vendor/VendorShell.tsx",
+      "src/screens/vendor/vendorNavigation.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/partner/PartnerPage.tsx",
+      "src/design-system/console/ConsoleTablePage.tsx",
+      "src/features/partner/work/pharmacyWork.ts",
+      "src/screens/vendor/VendorRxReviewScreen.tsx"
+    ],
+    "ScanVerify": [
+      "src/features/partner/staff/StaffPhone.tsx",
+      "src/features/partner/work/counterSession.ts",
+      "src/features/partner/work/VerifyFlow.tsx",
+      "src/features/partner/staff/StaffScanVerifyScreen.tsx"
+    ],
+    "WebScanVerify": [
+      "src/screens/vendor/VendorShell.tsx",
+      "src/screens/vendor/vendorNavigation.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/partner/PartnerPage.tsx",
+      "src/design-system/console/ConsoleTablePage.tsx",
+      "src/features/partner/work/counterSession.ts",
+      "src/features/partner/work/VerifyFlow.tsx",
+      "src/screens/vendor/WebScanVerifyScreen.tsx"
+    ],
+    "StaffHandover": [
+      "src/features/partner/staff/StaffPhone.tsx",
+      "src/features/partner/work/counterSession.ts",
+      "src/features/partner/staff/StaffHandoverScreen.tsx"
+    ],
+    "StaffCollect": [
+      "src/features/partner/staff/StaffPhone.tsx",
+      "src/features/partner/work/counterSession.ts",
+      "src/features/partner/work/labWork.ts",
+      "src/features/partner/staff/StaffCollectScreen.tsx"
+    ],
     "StaffCampFast": [
       "src/features/partner/staff/StaffCampFastScreen.tsx"
     ],
@@ -1390,59 +1489,6 @@
       "src/design-system/public-site/PublicTrustBand.tsx",
       "src/design-system/public-site/PublicAppBand.tsx",
       "src/features/landing/views/landingWebKit.tsx"
-    ],
-    "LabQueue": [
-      "src/screens/vendor/VendorShell.tsx",
-      "src/screens/vendor/vendorNavigation.ts",
-      "src/screens/vendor/LabSampleToReportScreen.tsx"
-    ],
-    "DispenseRegister": [
-      "src/screens/vendor/VendorShell.tsx",
-      "src/screens/vendor/vendorNavigation.ts",
-      "src/screens/vendor/DispenseRegisterScreen.tsx"
-    ],
-    "VendorOrders": [
-      "src/screens/vendor/VendorShell.tsx",
-      "src/screens/vendor/vendorNavigation.ts",
-      "src/screens/vendor/VendorOrdersScreen.tsx"
-    ],
-    "LabCollection": [
-      "src/screens/vendor/VendorShell.tsx",
-      "src/screens/vendor/vendorNavigation.ts",
-      "src/screens/vendor/LabCollectionScreen.tsx"
-    ],
-    "LabColdChain": [
-      "src/screens/vendor/VendorShell.tsx",
-      "src/screens/vendor/vendorNavigation.ts",
-      "src/screens/vendor/LabColdChainScreen.tsx"
-    ],
-    "LabReporting": [
-      "src/screens/vendor/VendorShell.tsx",
-      "src/screens/vendor/vendorNavigation.ts",
-      "src/screens/vendor/LabSampleToReportScreen.tsx"
-    ],
-    "VendorHandover": [
-      "src/screens/vendor/VendorShell.tsx",
-      "src/screens/vendor/vendorNavigation.ts",
-      "src/screens/vendor/VendorHandoverScreen.tsx"
-    ],
-    "VendorSubstitution": [
-      "src/screens/vendor/VendorShell.tsx",
-      "src/screens/vendor/vendorNavigation.ts",
-      "src/screens/vendor/VendorSubstitutionScreen.tsx"
-    ],
-    "VendorRxReview": [
-      "src/screens/vendor/VendorShell.tsx",
-      "src/screens/vendor/vendorNavigation.ts",
-      "src/screens/vendor/VendorRxReviewScreen.tsx"
-    ],
-    "ScanVerify": [
-      "src/screens/vendor/WebScanVerifyScreen.tsx"
-    ],
-    "WebScanVerify": [
-      "src/screens/vendor/VendorShell.tsx",
-      "src/screens/vendor/vendorNavigation.ts",
-      "src/screens/vendor/WebScanVerifyScreen.tsx"
     ],
     "SuperAdminConsole": [
       "src/screens/workspace/admin/SuperAdminShell.tsx",

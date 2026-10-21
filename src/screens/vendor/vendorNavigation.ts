@@ -30,12 +30,12 @@ export const VENDOR_NAVIGATION: VendorNavGroup[] = [
     titleKey: 'partner.vcon.nav.store',
     items: [
       { label: 'Home', labelKey: 'partner.vcon.nav.home', icon: 'home-2', route: 'vendor' },
-      { label: 'Verify student', labelKey: 'partner.vcon.nav.verify', icon: 'scan', route: 'scan-verify' },
+      { label: 'Verify student', labelKey: 'partner.vcon.nav.verify', icon: 'scan', route: 'scan-verify', activeFor: ['staff-verify'] },
       // `/orders` is the member orders page for every other role.
       { label: 'Orders', labelKey: 'partner.vcon.nav.orders', icon: 'box-2', route: 'orders', vendorOnly: true, kinds: ['PHARMACY', 'CLINIC'] },
       { label: 'Rx review', labelKey: 'partner.vcon.nav.rxReview', icon: 'prescription', route: 'rx-review', activeFor: ['vendor-rx-review'], kinds: PHARMACY },
       { label: 'Substitutions', labelKey: 'partner.vcon.nav.substitutions', icon: 'arrows-left-right-2', route: 'substitutions', activeFor: ['vendor-substitutions'], kinds: PHARMACY },
-      { label: 'OTP handover', labelKey: 'partner.vcon.nav.handover', icon: 'key', route: 'handover', activeFor: ['vendor-handover'], kinds: PHARMACY },
+      { label: 'OTP handover', labelKey: 'partner.vcon.nav.handover', icon: 'key', route: 'handover', activeFor: ['vendor-handover', 'staff-handover'], kinds: PHARMACY },
       { label: 'Returns', labelKey: 'partner.vcon.nav.returns', icon: 'undo', route: 'returns', activeFor: ['vendor-returns'], kinds: PHARMACY },
       { label: 'Dispense register', labelKey: 'partner.vcon.nav.dispensing', icon: 'clipboard', route: 'dispensing', activeFor: ['dispense-register', 'vendor-dispense-register'], kinds: PHARMACY },
       { label: 'Reorder rules', labelKey: 'partner.vcon.nav.reorder', icon: 'repeat', route: 'reorder', activeFor: ['vendor-reorder'], kinds: PHARMACY },
@@ -46,12 +46,12 @@ export const VENDOR_NAVIGATION: VendorNavGroup[] = [
     titleKey: 'partner.vcon.nav.lab',
     items: [
       { label: 'Sample queue', labelKey: 'partner.vcon.nav.sampleQueue', icon: 'flask', route: 'lab-queue', activeFor: ['vendor-lab-queue'], kinds: LAB },
-      { label: 'Run sheet', labelKey: 'partner.vcon.nav.runSheet', icon: 'truck', route: 'run-sheet', activeFor: ['lab-collection'], kinds: LAB },
+      { label: 'Run sheet', labelKey: 'partner.vcon.nav.runSheet', icon: 'truck', route: 'run-sheet', activeFor: ['lab-collection', 'staff-collect'], kinds: LAB },
       { label: 'Cold chain', labelKey: 'partner.vcon.nav.coldChain', icon: 'asterisk', route: 'cold-chain', activeFor: ['lab-cold-chain'], kinds: LAB },
-      // The board's "Release results" slot. A lab files reports and a doctor releases them, so
-      // the partner's entry is "Lab reports" and opens the live lab desk (as the Home tool does).
-      // A shortcut: it never takes the white pill from Sample queue, which owns that page.
-      { label: 'Lab reports', labelKey: 'partner.vhome.home.tool.labReports', icon: 'file', route: 'lab-queue', kinds: LAB, shortcut: true },
+      // The board's "Release results" slot (WP-15). A lab files reports and a doctor releases
+      // them, so the entry keeps the name "Lab reports"; it opens the LabReporting board, which
+      // shows where every filed report has got to (with the doctor, released, acknowledged).
+      { label: 'Lab reports', labelKey: 'partner.vhome.home.tool.labReports', icon: 'file', route: 'lab-reporting', kinds: LAB },
       // Camp fast mode (the staff app board) opens from Camp intake and keeps it lit.
       { label: 'Camp intake', labelKey: 'partner.vcon.nav.campIntake', icon: 'alert-triangle-2', route: 'camp-intake', activeFor: ['vendor-camp-intake', 'camp-fast'], kinds: LAB },
     ],

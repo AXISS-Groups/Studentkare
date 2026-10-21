@@ -128,13 +128,9 @@
   "src/screens/vendor/PartnerRequestsPanel.tsx",
   "src/screens/vendor/PharmacyInventoryScreen.tsx",
   "src/screens/vendor/PincodeCoverageScreen.tsx",
-  "src/screens/vendor/VendorHandoverScreen.tsx",
   "src/screens/vendor/VendorPartnerDashboardScreen.tsx",
-  "src/screens/vendor/VendorRxReviewScreen.tsx",
   "src/screens/vendor/VendorShell.tsx",
-  "src/screens/vendor/VendorSubstitutionScreen.tsx",
   "src/screens/vendor/VendorWorkspaceHub.tsx",
-  "src/screens/vendor/WebScanVerifyScreen.tsx",
   "src/screens/workspace/DigitalIdPanel.tsx",
   "src/screens/workspace/admin/SuperAdminScreens.tsx"
 ]

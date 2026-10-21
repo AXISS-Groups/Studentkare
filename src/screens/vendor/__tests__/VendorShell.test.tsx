@@ -40,8 +40,18 @@ describe('partner console sidebar (VendorConsole / VendorHome boards)', () => {
     renderShell('LAB', 'lab-queue');
     expect(within(nav()).getByRole('button', { name: 'Sample queue' })).toHaveAttribute('aria-current', 'page');
     expect(within(nav()).getByRole('button', { name: 'Home' })).not.toHaveAttribute('aria-current');
-    // "Lab reports" (the board's file icon) opens the same lab desk but never takes the pill.
     expect(within(nav()).getByRole('button', { name: 'Lab reports' })).not.toHaveAttribute('aria-current');
+  });
+
+  it('"Lab reports" (the board\'s Release results slot, file icon) is its own page now (WP-15)', () => {
+    renderShell('LAB', 'lab-reporting');
+    expect(within(nav()).getByRole('button', { name: 'Lab reports' })).toHaveAttribute('aria-current', 'page');
+    expect(within(nav()).getByRole('button', { name: 'Sample queue' })).not.toHaveAttribute('aria-current');
+  });
+
+  it('keeps the console item lit while a staff app phone board is open (WP-15)', () => {
+    renderShell('LAB', 'staff-collect');
+    expect(within(nav()).getByRole('button', { name: 'Run sheet' })).toHaveAttribute('aria-current', 'page');
   });
 
   it('keeps Camp intake lit while the staff app\'s camp fast mode is open', () => {

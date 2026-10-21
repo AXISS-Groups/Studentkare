@@ -36,7 +36,8 @@ describe('WorkspaceScreen vendor routing', () => {
 
   it('renders VendorSubstitutionScreen when route is substitutions even with unauthenticated session', async () => {
     render(<WorkspaceScreen route="substitutions" />);
-    expect(await screen.findByRole('heading', { level: 1, name: 'Substitutions' })).toBeInTheDocument();
+    // WP-15: the page reads the live dispenses; with no session that read fails closed into its error state.
+    expect(await screen.findByRole('heading', { level: 1, name: /substitutions/i })).toBeInTheDocument();
   });
 
   it('renders VendorReorderScreen when route is reorder even with unauthenticated session', async () => {

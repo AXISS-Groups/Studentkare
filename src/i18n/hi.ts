@@ -29,6 +29,7 @@ import { identityHi } from './areas/identity';
 import { clinicianWorkHi } from './areas/clinicianWork';
 import { clinicianHi } from './areas/clinician';
 import { partnerConsoleHi } from './areas/partnerConsole';
+import { partnerWorkHi } from './areas/partnerWork';
 
 /**
  * हिंदी — machine-assisted first draft, NOT yet reviewed by a native speaker
@@ -855,4 +856,5 @@ export const hi: Catalog = {
   ...clinicianWorkHi,
   ...clinicianHi,
   ...partnerConsoleHi,
+  ...partnerWorkHi,
 };

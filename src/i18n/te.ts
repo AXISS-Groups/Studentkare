@@ -29,6 +29,7 @@ import { identityTe } from './areas/identity';
 import { clinicianWorkTe } from './areas/clinicianWork';
 import { clinicianTe } from './areas/clinician';
 import { partnerConsoleTe } from './areas/partnerConsole';
+import { partnerWorkTe } from './areas/partnerWork';
 
 /**
  * తెలుగు — machine-assisted first draft, NOT yet reviewed by a native speaker
@@ -855,4 +856,5 @@ export const te: Catalog = {
   ...clinicianWorkTe,
   ...clinicianTe,
   ...partnerConsoleTe,
+  ...partnerWorkTe,
 };
