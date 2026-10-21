@@ -242,19 +242,38 @@ def _check_activity(db, body: ActivityDayInput) -> None:
                                       "field": ACTIVITY_FIELDS[metric]})
 
 
-def _activity_day_values(rows, zone) -> dict[Date, dict[str, float]]:
-    """day -> metric -> value.
+# Where a day's activity number may come from, most trusted first. Sources are
+# never added together: for each day and metric the first source in this order
+# that has a value is the one shown, so the same walk read from Apple Health,
+# counted by the phone's motion sensor and typed in by hand counts once.
+# The platform health stores come first because they already merge the phone
+# and a watch without double counting; the phone's own sensor is next; what the
+# student typed is the fallback. A source not listed here (an older row) ranks
+# after all of them.
+SOURCE_PRIORITY: tuple[str, ...] = ("HEALTHKIT", "HEALTH_CONNECT", "PHONE_MOTION", "MANUAL")
 
-    Within one source a day's entries add up; across sources the largest
-    source wins rather than adding, so steps typed in by hand and the same
-    steps synced later from Apple Health / Health Connect are not counted twice.
+
+def _rank(source: str) -> int:
+    return SOURCE_PRIORITY.index(source) if source in SOURCE_PRIORITY else len(SOURCE_PRIORITY)
+
+
+def _activity_days(rows, zone) -> dict[Date, dict[str, tuple[float, str]]]:
+    """day -> metric -> (value, the source it came from).
+
+    Within one source a day's entries add up; across sources the most trusted
+    one (SOURCE_PRIORITY) is used and the others are ignored — never added, and
+    not "whichever is larger", so a bigger number typed in by hand does not
+    replace what a connected health store read. Equal rank (two phones on two
+    platforms) keeps the larger, so one walk is still one number.
     """
     per_source: dict[tuple[Date, str, str], float] = defaultdict(float)
     for row in rows:
         per_source[(student_time.local_date_of(row.recorded_at, zone), row.metric, row.source)] += row.value
-    days: dict[Date, dict[str, float]] = defaultdict(dict)
-    for (day, metric, _source), value in per_source.items():
-        days[day][metric] = max(days[day].get(metric, 0.0), value)
+    days: dict[Date, dict[str, tuple[float, str]]] = defaultdict(dict)
+    for (day, metric, source), value in per_source.items():
+        held = days[day].get(metric)
+        if held is None or (_rank(source), -value) < (_rank(held[1]), -held[0]):
+            days[day][metric] = (value, source)
     return days
 
 
@@ -265,26 +284,31 @@ def _round(metric: str, value: float):
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
 
 
-def _day_payload(day: Date, values: dict[str, float]) -> dict:
+def _day_payload(day: Date, chosen: dict[str, tuple[float, str]]) -> dict:
+    """One day's totals, and for each value the source it came from (so the app can say so)."""
     out: dict = {"date": day.isoformat()}
     for metric, field in ACTIVITY_FIELDS.items():
-        out[field] = _round(metric, values[metric]) if metric in values else None
+        out[field] = _round(metric, chosen[metric][0]) if metric in chosen else None
+    out["sources"] = {field: chosen[metric][1] for metric, field in ACTIVITY_FIELDS.items() if metric in chosen}
     return out
 
 
-def _store_day(db, user, body: ActivityDayInput, source: str, audit_action: str) -> dict:
+def _store_day(db, user, body: ActivityDayInput, source: str, audit_action: str,
+               backdate_key: str = "wellness.activity_backdate_days") -> dict:
     """Replace ``source``'s values for ``body.date`` with the ones given; return the merged day.
 
     Shared by manual entry (source MANUAL) and device sync (one source per
     provider), so a re-sync of the same day replaces that provider's numbers
-    instead of adding to them, and never touches another source's rows.
+    instead of adding to them, and never touches another source's rows: the
+    server keeps one total per day per source. ``backdate_key`` is the setting
+    for how far back this kind of entry may be dated.
     """
     _check_activity(db, body)
     zone = student_time.student_zone(db, user["id"])
     today = student_time.local_today(zone)
     if body.date > today:
         raise error(422, "ACTIVITY_DAY_IN_FUTURE")
-    backdate_days = setting("wellness.activity_backdate_days", db)
+    backdate_days = setting(backdate_key, db)
     if body.date < today - timedelta(days=backdate_days):
         raise error(422, "ACTIVITY_DAY_TOO_OLD", days=backdate_days)
     start, end = student_time.day_bounds_utc(body.date, zone)
@@ -301,7 +325,7 @@ def _store_day(db, user, body: ActivityDayInput, source: str, audit_action: str)
     _audit(db, user, audit_action, body.date.isoformat())
     db.commit()
     rows = _rows_between(db, user["id"], set(ACTIVITY_FIELDS), start, end)
-    return _day_payload(body.date, _activity_day_values(rows, zone).get(body.date, {}))
+    return _day_payload(body.date, _activity_days(rows, zone).get(body.date, {}))
 
 
 @router.post("/activity/entries", status_code=201)
@@ -311,29 +335,38 @@ def save_activity_day(body: ActivityDayInput, user=Depends(authenticated_user), 
 
 # --- Device sync (Apple Health / Health Connect) ------------------------------
 
-# Provider -> care_readings.source. Only real platform health stores; there is
-# no "web pedometer" (a browser has no step source), so none is accepted.
-SYNC_SOURCES: dict[str, str] = {"healthkit": "HEALTHKIT", "health_connect": "HEALTH_CONNECT"}
+# Provider -> care_readings.source. Only sources that count steps on the phone:
+# the platform health stores and the phone's own motion coprocessor (iOS Core
+# Motion's day total, read by the app). There is no "web pedometer" (a browser
+# has no reliable step source), so none is accepted.
+SYNC_SOURCES: dict[str, str] = {
+    "healthkit": "HEALTHKIT",
+    "health_connect": "HEALTH_CONNECT",
+    "phone_motion": "PHONE_MOTION",
+}
 
 
 class DeviceSyncInput(ActivityDayInput):
-    """One local day's totals read from the phone's health store, as the app read them.
+    """One local day's totals read on the phone, as the app read them.
 
     The app sends only values the platform returned; a metric it could not read
-    is left out, never filled with a guess. Bounds are the manual ones.
+    is left out, never filled with a guess. Bounds are the manual ones
+    (``wellness.activity_*_max``); how far back a day may be is
+    ``wellness.activity_sync_backdate_days`` (a phone keeps only recent days).
     """
-    provider: Literal["healthkit", "health_connect"]
+    provider: Literal["healthkit", "health_connect", "phone_motion"]
 
 
 @router.post("/v1/movement/background-sync", status_code=201)
 def sync_device_day(body: DeviceSyncInput, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
     """Persist a day's device totals to care_readings (owner only, clinical plane).
 
-    They appear in GET /activity/trends beside manual entries; within a day the
-    larger source wins rather than adding, so the same steps typed in and synced
-    are not counted twice. Re-sending a day replaces that provider's values.
+    They appear in GET /activity/trends beside manual entries. Each source keeps
+    one total per day (re-sending a day replaces that provider's values), and
+    the trends use the most trusted source per day (SOURCE_PRIORITY), never a sum.
     """
-    day = _store_day(db, user, body, SYNC_SOURCES[body.provider], "ACTIVITY_DAY_SYNCED")
+    day = _store_day(db, user, body, SYNC_SOURCES[body.provider], "ACTIVITY_DAY_SYNCED",
+                     backdate_key="wellness.activity_sync_backdate_days")
     return {"status": "SYNCED", "provider": body.provider, "day": day}
 
 
@@ -375,7 +408,8 @@ def activity_trends(db, account_id: str, period: str) -> dict:
     start, _ = student_time.day_bounds_utc(first, zone)
     _, end = student_time.day_bounds_utc(last, zone)
     rows = _rows_between(db, account_id, set(ACTIVITY_FIELDS), start, end)
-    days = _activity_day_values(rows, zone)
+    chosen = _activity_days(rows, zone)
+    days = {day: {metric: pair[0] for metric, pair in metrics.items()} for day, metrics in chosen.items()}
 
     metrics: dict[str, dict] = {}
     for metric, field in ACTIVITY_FIELDS.items():
@@ -405,7 +439,7 @@ def activity_trends(db, account_id: str, period: str) -> dict:
         "daysInPeriod": (last - first).days + 1,
         "metrics": metrics,
         "bestDay": best,
-        "days": [_day_payload(day, days[day]) for day in sorted(days)],
+        "days": [_day_payload(day, chosen[day]) for day in sorted(chosen)],
     }
 
 
