@@ -61,7 +61,10 @@ def _email_configured() -> bool:
 # answer can carry the business number, and only its status is read.
 
 # OpenWA reports CONNECTED; WAHA (the fallback API _send_openwa also speaks) WORKING.
-WHATSAPP_CONNECTED_STATES = frozenset({"CONNECTED", "WORKING"})
+# Some OpenWA builds answer READY for a linked, sendable session (verified against
+# the deployed gateway: a READY session accepted a send with 201), while the same
+# build answers INITIALIZING/QR_READY before the phone is linked.
+WHATSAPP_CONNECTED_STATES = frozenset({"CONNECTED", "WORKING", "READY"})
 # 400 / 422 mean "this recipient", not "this channel": one student's wrong number
 # must not switch WhatsApp off for everyone.
 _RECIPIENT_ERRORS = frozenset({400, 422})

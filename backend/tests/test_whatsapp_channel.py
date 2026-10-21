@@ -67,6 +67,7 @@ def test_connected_session_offers_whatsapp(whatsapp):
 @pytest.mark.parametrize("answer", [
     FakeResponse(200, {"status": "DISCONNECTED"}),
     FakeResponse(200, {"status": "INITIALIZING"}),
+    FakeResponse(200, {"status": "qr_ready"}),
     FakeResponse(200, {"data": {"status": "SCAN_QR_CODE"}}),
     FakeResponse(200, {}),
     FakeResponse(404, {"message": "Session not found"}),
@@ -90,6 +91,13 @@ def test_session_check_is_cached(whatsapp):
 def test_waha_working_counts_as_connected(whatsapp):
     whatsapp["session"] = FakeResponse(200, {"name": "sk", "status": "WORKING"})
     assert "WHATSAPP" in otp_delivery.available_channels()
+
+
+def test_openwa_ready_counts_as_connected(whatsapp):
+    # The deployed OpenWA build answers lowercase "ready" once the phone is linked.
+    whatsapp["session"] = FakeResponse(200, {"name": "sk", "status": "ready", "engineLoaded": True})
+    assert "WHATSAPP" in otp_delivery.available_channels()
+    assert otp_delivery.whatsapp_status()["state"] == "connected"
 
 
 def test_failed_send_drops_the_channel_until_a_later_success(whatsapp):
