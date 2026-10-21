@@ -241,7 +241,8 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
     { path: 'movement' as RoutePath, label: 'nav.movement' as MessageKey, icon: Dumbbell },
     { path: 'insurance' as RoutePath, label: 'nav.insurance' as MessageKey, icon: ShieldCheck },
     { path: 'orders' as RoutePath, label: 'nav.orders' as MessageKey, icon: Package },
-    { path: 'my-requests' as RoutePath, label: 'nav.myRequests' as MessageKey, icon: ClipboardList },
+    // Returns, hostel visits and refills are student requests (the server refuses other roles).
+    ...(user.role === 'STUDENT' ? [{ path: 'my-requests' as RoutePath, label: 'nav.myRequests' as MessageKey, icon: ClipboardList }] : []),
     { path: 'appointments' as RoutePath, label: 'nav.appointments' as MessageKey, icon: CalendarDays },
     { path: 'medications' as RoutePath, label: 'nav.medications' as MessageKey, icon: Pill },
     { path: 'prescriptions' as RoutePath, label: 'nav.prescriptions' as MessageKey, icon: FlaskConical },

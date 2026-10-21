@@ -2,7 +2,7 @@
 import { execFileSync, spawnSync } from 'node:child_process';
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { ESLint } from 'eslint';
 import { afterAll, describe, expect, it } from 'vitest';
 
@@ -94,5 +94,121 @@ describe('legacy lists only shrink (scripts/check-legacy-lists.mjs)', () => {
     const missing = run(scratch);
     expect(missing.status).toBe(1);
     expect(missing.stderr).toContain('gone.tsx does not exist');
+  });
+});
+
+describe('a git rename carries a legacy-list entry (scripts/check-legacy-lists.mjs)', () => {
+  const script = resolve(root, 'scripts/check-legacy-lists.mjs');
+  const repos = mkdtempSync(join(tmpdir(), 'sk-ratchet-renames-'));
+  afterAll(() => rmSync(repos, { recursive: true, force: true }));
+
+  const LIST = 'config/copy-literal-legacy.json';
+  // Twenty distinct lines, so a changed line moves git's similarity index by about 5%.
+  const source = (name: string) => Array.from({ length: 20 }, (_, i) => `export const ${name}${i} = ${i};`).join('\n') + '\n';
+  const git = (cwd: string, ...args: string[]) => execFileSync('git', args, { cwd, stdio: 'ignore' });
+  const write = (cwd: string, file: string, text: string) => {
+    mkdirSync(dirname(join(cwd, file)), { recursive: true });
+    writeFileSync(join(cwd, file), text);
+  };
+  const writeList = (cwd: string, entries: string[]) => write(cwd, LIST, JSON.stringify(entries));
+  // git mv needs the destination directory to exist.
+  const move = (cwd: string, from: string, to: string) => {
+    mkdirSync(dirname(join(cwd, to)), { recursive: true });
+    git(cwd, 'mv', from, to);
+  };
+  const editLines = (cwd: string, file: string, count: number) => {
+    const lines = readFileSync(join(cwd, file), 'utf8').split('\n');
+    for (let i = 0; i < count; i += 1) lines[i] = `export const rewritten${i} = 'x${i}';`;
+    writeFileSync(join(cwd, file), lines.join('\n'));
+  };
+  const run = (cwd: string, env: Record<string, string> = {}) => {
+    // The suite itself may run in CI; each case sets CI itself.
+    const childEnv: NodeJS.ProcessEnv = { ...process.env, LEGACY_BASE: 'HEAD', ...env };
+    if (!('CI' in env)) delete childEnv.CI;
+    return spawnSync(process.execPath, [script], { cwd, env: childEnv, encoding: 'utf8' });
+  };
+
+  // A committed base: src/a.tsx is on the list, src/b.tsx exists but is not.
+  function baseRepo(): string {
+    const cwd = mkdtempSync(join(repos, 'repo-'));
+    write(cwd, 'src/a.tsx', source('a'));
+    write(cwd, 'src/b.tsx', source('b'));
+    writeList(cwd, ['src/a.tsx']);
+    git(cwd, 'init', '-q');
+    git(cwd, 'add', '.');
+    git(cwd, '-c', 'user.email=ci@example.test', '-c', 'user.name=ci', 'commit', '-qm', 'base');
+    return cwd;
+  }
+
+  it('passes when a listed file is moved with git mv and its entry renamed', () => {
+    const cwd = baseRepo();
+    move(cwd, 'src/a.tsx', 'src/moved/a.tsx');
+    writeList(cwd, ['src/moved/a.tsx']);
+    const result = run(cwd);
+    expect(result.status, result.stderr).toBe(0);
+    expect(result.stdout).toContain('src/a.tsx -> src/moved/a.tsx (renamed)');
+  });
+
+  it('passes when the move also rewrites a line (similarity above the threshold)', () => {
+    const cwd = baseRepo();
+    move(cwd, 'src/a.tsx', 'src/moved/a.tsx');
+    editLines(cwd, 'src/moved/a.tsx', 1);
+    writeList(cwd, ['src/moved/a.tsx']);
+    const result = run(cwd);
+    expect(result.status, result.stderr).toBe(0);
+  });
+
+  it('still fails an unrelated new entry added alongside a rename', () => {
+    const cwd = baseRepo();
+    move(cwd, 'src/a.tsx', 'src/moved/a.tsx');
+    writeList(cwd, ['src/b.tsx', 'src/moved/a.tsx']);
+    const result = run(cwd);
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain('src/b.tsx was added; legacy lists may only shrink');
+    expect(result.stderr).not.toContain('src/moved/a.tsx was added');
+  });
+
+  it('fails when the old path stays on the list next to the new one (the list would grow)', () => {
+    const cwd = baseRepo();
+    move(cwd, 'src/a.tsx', 'src/moved/a.tsx');
+    writeList(cwd, ['src/a.tsx', 'src/moved/a.tsx']);
+    const result = run(cwd);
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain('src/moved/a.tsx was added; legacy lists may only shrink');
+  });
+
+  it('fails when the moved file is mostly rewritten (similarity below the threshold)', () => {
+    const cwd = baseRepo();
+    move(cwd, 'src/a.tsx', 'src/moved/a.tsx');
+    editLines(cwd, 'src/moved/a.tsx', 15);
+    writeList(cwd, ['src/moved/a.tsx']);
+    const result = run(cwd);
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain('src/moved/a.tsx was added; legacy lists may only shrink');
+  });
+
+  it('fails when a listed file is deleted and a different file takes its entry', () => {
+    const cwd = baseRepo();
+    git(cwd, 'rm', '-q', 'src/a.tsx');
+    write(cwd, 'src/c.tsx', 'export const unrelated = true;\n');
+    git(cwd, 'add', 'src/c.tsx');
+    writeList(cwd, ['src/c.tsx']);
+    const result = run(cwd);
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain('src/c.tsx was added; legacy lists may only shrink');
+  });
+
+  it('fails in CI when the base ref cannot be read', () => {
+    const cwd = baseRepo();
+    const result = run(cwd, { CI: 'true', LEGACY_BASE: 'origin/no-such-branch' });
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain('cannot read the base ref origin/no-such-branch');
+  });
+
+  it('only warns locally when the base ref cannot be read', () => {
+    const cwd = baseRepo();
+    const result = run(cwd, { LEGACY_BASE: 'origin/no-such-branch' });
+    expect(result.status, result.stderr).toBe(0);
+    expect(result.stderr).toContain('warning: cannot read the base ref origin/no-such-branch');
   });
 });

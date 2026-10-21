@@ -215,7 +215,7 @@ Scores use the same 0–100 judgement scale as the baseline. They are assessment
 2. Add the six feature keys to `.env.prod.example`, Helm and the prod overlay, and report missing keys at startup (TD-40).
 3. Set the demo flags in `.env.dev.example` and fix README and CONTRIBUTING (TD-41, TD-14).
 4. Fix rate-limit identity (TD-10) and harden or remove the prod compose overlay (TD-16). Confirm the credential rotation (TD-05).
-5. Execute the team's own dead-code list (`docs/dead-code-2026-10-14.md`): delete `src/modules`, retarget the scaffolder, and delete dead backend modules and their tests (TD-06, TD-08).
+5. Delete `src/modules`, retarget the scaffolder, and delete dead backend modules and their tests (TD-06, TD-08), working from a freshly verified cleanup plan (pending). Do not execute `docs/dead-code-2026-10-14.md`: it is superseded and lists files the app now uses.
 6. Rule L roles and grants (TD-03), a server-side consent gate before campus console data (TD-47), and a typed API client (TD-13).
 
 The full plan is in [23](23-priority-action-plan.md).

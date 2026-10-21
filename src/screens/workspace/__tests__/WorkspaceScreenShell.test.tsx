@@ -75,6 +75,20 @@ describe('which shell a route gets', () => {
     expect(screen.queryByRole('navigation', { name: 'Super admin navigation' })).toBeNull();
   });
 
+  it.each(['SUPER_ADMIN', 'CAMPUS_ADMIN', 'COUNSELLOR', 'NMC_DOCTOR'] as const)('lists no My requests link for a %s, who cannot open it', role => {
+    auth.user = { fullName: 'Staff Member', role };
+    render(<WorkspaceScreen route="profile" />);
+    const menu = screen.getByRole('navigation', { name: 'Main menu' });
+    expect(within(menu).getByRole('button', { name: /orders/i })).toBeInTheDocument();
+    expect(within(menu).queryByRole('button', { name: /my requests/i })).toBeNull();
+  });
+
+  it('lists My requests for a student', () => {
+    auth.user = { fullName: 'Asha Rao', role: 'STUDENT', isVerifiedStudent: true };
+    render(<WorkspaceScreen route="health" />);
+    expect(screen.getAllByRole('button', { name: /my requests/i }).length).toBeGreaterThan(0);
+  });
+
   it('keeps the member orders page for students', () => {
     auth.user = { fullName: 'Asha Rao', role: 'STUDENT', isVerifiedStudent: true };
     render(<WorkspaceScreen route="orders" />);
