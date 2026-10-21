@@ -50,6 +50,7 @@ import { DeleteAccountRoute } from '@/features/account/views/DeleteAccountView';
 import { RewardsRoute } from '@/features/rewards/views/RewardsView';
 import { MyRequestsRoute, NewRequestRoute } from '@/features/requests/views/RequestsViews';
 import { ReturnRequestBoardScreen, SearchScreen } from './PhoneBoardsScreens';
+import { FindCareScreen } from './CareDirectoryScreens';
 import {
   ConsultsScreen,
   InsuranceScreen,
@@ -94,6 +95,7 @@ export type RootStackParamList = {
   DeleteAccount: undefined;
   DigitalId: undefined;
   Emergency: undefined;
+  FindCare: { segment?: 'hospitals' | 'pharmacies' | 'ambulance' | 'doctors'; placeId?: string } | undefined;
   Home: undefined;
   HostelVisit: undefined;
   Insights: undefined;
@@ -188,6 +190,7 @@ function EmergencyRoute() {
         signIn: signedIn ? undefined : () => navigate('SignIn'),
         home: signedIn ? () => navigate('Home') : undefined,
         back: () => navigation.goBack(),
+        nearestHospitals: () => navigate('FindCare', { segment: 'hospitals' }),
       }} />
     </BoardFrame>
   );
@@ -487,6 +490,8 @@ function RootNavigator() {
         <Stack.Screen name="Marketplace" component={MarketplaceRoute} options={{ title: t('onboard.nav.marketplace') }} />
         <Stack.Screen name="PreventiveCare" component={PreventiveCareScreen} options={{ title: t('onboard.nav.vaccines') }} />
         <Stack.Screen name="Camp" component={CampRoute} options={{ title: t('onboard.nav.camp') }} />
+        {/* Find care near you: public, signed in or out (location stays on the phone). */}
+        <Stack.Screen name="FindCare" component={FindCareScreen} options={{ title: t('fc.eyebrow'), headerShown: false }} />
       </Stack.Group>
     </Stack.Navigator>
   );

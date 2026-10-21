@@ -51,6 +51,7 @@
     "expo-camera": "~16.0.18",
     "expo-constants": "~17.0.8",
     "expo-font": "~13.0.4",
+    "expo-location": "~18.0.10",
     "expo-notifications": "~0.29.14",
     "livekit-client": "2.22.3",
     "lucide-react": "^1.16.0",
