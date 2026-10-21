@@ -31,3 +31,15 @@
   .en-grid { grid-template-columns: minmax(0, 1fr); gap: 28px; }
   .en-side { padding-left: 0; border-left: 0; padding-top: 24px; border-top: 1px solid var(--sk-color-rule-soft); }
 }
+
+/* Which note, and starting a new one (the legacy notes panel's list, in one control). */
+.en-picker { display: flex; align-items: center; gap: var(--sk-space-10); flex-wrap: wrap; }
+.en-picker__label { font-size: 11px; font-weight: 800; letter-spacing: 1.3px; color: var(--sk-color-text-3); text-transform: uppercase; }
+.en-picker__select {
+  min-height: var(--sk-size-touch-target); min-width: 0; flex: 1; padding: 0 var(--sk-space-12);
+  border: 1px solid var(--sk-color-rule); border-radius: var(--sk-radius-md); background: var(--sk-color-surface);
+  font-family: inherit; font-size: 13.5px; font-weight: 600; color: var(--sk-color-text);
+}
+.en-picker__select:focus-visible { outline: 3px solid var(--sk-color-focus); outline-offset: 2px; }
+.sk-ds .en-side__empty { margin: 0; padding: var(--sk-space-16); border-radius: var(--sk-radius-lg); background: var(--sk-color-surface-3); font-size: 13px; line-height: 1.55; font-weight: 600; color: var(--sk-color-text-2); }
+.sk-ds .en-drawer__intro, .sk-ds .en-drawer__none { margin: 0; font-size: 13px; line-height: 1.55; font-weight: 500; color: var(--sk-color-text-2); }

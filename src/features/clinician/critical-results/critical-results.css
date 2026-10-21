@@ -38,3 +38,12 @@
 .sk-ds .cr-hint, .sk-ds .cr-done { margin: 0; font-size: 12px; font-weight: 600; color: var(--sk-color-text-3); }
 
 .cr-skeleton { display: flex; flex-direction: column; gap: var(--sk-space-14); }
+
+/* The lab's own wording of the value, in mono, at the top of the drawer. */
+.sk-ds .cr-value { margin: 0; padding: 12px 14px; border-radius: var(--sk-radius-md); background: var(--sk-color-danger-bg); color: var(--sk-color-danger); font-size: 13.5px; font-weight: 700; }
+.cr-chase { display: inline-flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+.cr-chase__why { max-width: 220px; font-size: 11px; font-weight: 500; color: var(--sk-color-text-3); text-align: end; }
+.sk-ds .cr-legacy { margin: 0; display: flex; align-items: center; gap: var(--sk-space-12); flex-wrap: wrap; font-size: 12px; font-weight: 500; color: var(--sk-color-text-3); }
+
+/* The page's blocks, spaced as on the canvas. */
+.cr-page { display: flex; flex-direction: column; gap: var(--sk-space-24); min-width: 0; }

@@ -18,12 +18,6 @@ export interface ClinicianConsoleFrameProps {
   context: string;
   contextShort?: string;
   summarySource?: ConsoleSummarySource;
-  /**
-   * A Tier 1 screen built ahead of its named design review and clinical
-   * sign-off. Shows a banner saying so; the screen is reachable in
-   * development only.
-   */
-  reviewPending?: boolean;
   children: React.ReactNode;
 }
 
@@ -31,14 +25,6 @@ type FramePage = Pick<ClinicianConsoleFrameProps, 'current' | 'context' | 'conte
 
 /** Set by ClinicianConsoleLayout: pages inside it report their title instead of drawing a shell. */
 const LayoutContext = createContext<((page: FramePage) => void) | null>(null);
-
-function ReviewBanner(): React.ReactElement {
-  return (
-    <p className="sk-review-banner" role="note">
-      <strong>Awaiting clinical sign-off.</strong> {demoDataEnabled() ? 'Showing the design’s sample data (demo mode).' : 'Nothing here is live yet, and no sample data is shown.'} A named design reviewer and clinical sign-off are needed before this screen handles real patients.
-    </p>
-  );
-}
 
 /**
  * The shell, the signed-in clinician, sidebar badges, and sign-out with its
@@ -111,12 +97,11 @@ export function ClinicianConsoleLayout({ summarySource, children }: { summarySou
  * reports its sidebar item and title to the shared shell; on its own (a page
  * rendered by itself) it draws the whole shell.
  */
-export function ClinicianConsoleFrame({ current, context, contextShort, summarySource, reviewPending = false, children }: ClinicianConsoleFrameProps): React.ReactElement | null {
+export function ClinicianConsoleFrame({ current, context, contextShort, summarySource, children }: ClinicianConsoleFrameProps): React.ReactElement | null {
   const report = useContext(LayoutContext);
   // Before paint, so the shell never shows the previous page's highlight or title.
   useLayoutEffect(() => { report?.({ current, context, contextShort }); }, [report, current, context, contextShort]);
 
-  const page = <>{reviewPending ? <ReviewBanner /> : null}{children}</>;
-  if (report) return page;
-  return <ConsoleShell page={{ current, context, contextShort }} summarySource={summarySource}>{page}</ConsoleShell>;
+  if (report) return <>{children}</>;
+  return <ConsoleShell page={{ current, context, contextShort }} summarySource={summarySource}>{children}</ConsoleShell>;
 }

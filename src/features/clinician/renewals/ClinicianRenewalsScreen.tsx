@@ -1,30 +1,41 @@
-import React from 'react';
+import React, { useMemo } from 'react';
+import { useT } from '@/i18n';
 import { ConsoleTableScreen } from '../shared/ConsoleTableScreen';
 import { sampleInDevelopment } from '../shared/consoleTable';
 import type { ConsoleTableConfig, ConsoleTableData, ConsoleTableSource } from '../shared/consoleTable';
 import { cell, muted, pill, strong } from '../shared/cells';
+import type { T } from '../shared/clinicalData';
 
-/** ClinicianRenewals (design page 5, Tier 3). Nothing renews itself. */
-export const renewalsConfig: ConsoleTableConfig = {
-  title: 'Renewals',
-  subtitle: 'Refill requests from students · you decide, always',
-  caption: 'Refill requests waiting for your decision, with adherence',
-  columns: [
-    { label: 'Student', width: '140px' },
-    { label: 'Medicine & history' },
-    { label: 'Asked', width: '150px' },
-    { label: 'Adherence', width: '140px' },
-    { label: 'Your decision', width: '160px', align: 'end' },
-  ],
-  footnote:
-    'Nothing renews itself. Inhaler use of eleven times in thirty days is surfaced because rising reliever use is how uncontrolled asthma announces itself — the screen shows you the pattern rather than quietly reissuing the prescription.',
-  empty: { title: 'No refill requests.', body: 'When a student asks to renew a medicine you prescribed, it waits here for your decision.' },
-  unconnected: { title: 'Renewals aren’t connected yet.', body: 'Refill requests will appear here once they are connected. Until then this page shows nothing rather than a guess.' },
-  errorTitle: 'Couldn’t load renewals',
-  reference: 'Ref RENEWALS · ClinicianRenewals',
-  statLabels: ['Waiting on you', 'Blocked pending a test', 'Escalating use', 'Auto-renewed'],
-};
+/**
+ * ClinicianRenewals (design page 5, Tier 1, approved 2026-10-21). Nothing
+ * renews itself. `GET/POST /work/refills` is the PHARMACY's refill queue
+ * (scoped to the pharmacy a student sent it to), not a clinician decision, and
+ * the dose log is not in it — so production shows the not-connected layout
+ * rather than a pharmacy queue dressed as the doctor's.
+ */
+export function renewalsConfig(t: T): ConsoleTableConfig {
+  return {
+    title: t('clinRenewals.title'),
+    subtitle: t('clinRenewals.subtitle'),
+    caption: t('clinRenewals.caption'),
+    columns: [
+      { label: t('clinRenewals.col.student'), width: '140px' },
+      { label: t('clinRenewals.col.medicine') },
+      { label: t('clinRenewals.col.asked'), width: '150px' },
+      { label: t('clinRenewals.col.adherence'), width: '160px' },
+      { label: t('clinRenewals.col.decision'), width: '170px', align: 'end' },
+    ],
+    footnote: t('clinRenewals.footnote'),
+    empty: { title: t('clinRenewals.emptyTitle'), body: t('clinRenewals.emptyBody') },
+    emptyIcon: 'stetho-alt--p4',
+    unconnected: { title: t('clinRenewals.unconnectedTitle'), body: t('clinRenewals.unconnectedBody') },
+    errorTitle: t('clinRenewals.errorTitle'),
+    reference: t('clinRenewals.reference'),
+    statLabels: [t('clinRenewals.stat.waiting'), t('clinRenewals.stat.blocked'), t('clinRenewals.stat.escalating'), t('clinRenewals.stat.auto')],
+  };
+}
 
+/* Development demo only (demoDataEnabled): the design's rows, never in production builds. */
 export function renewalsSample(): ConsoleTableData {
   return {
     badge: { label: '1 needs a test first', tone: 'danger' },
@@ -44,5 +55,7 @@ export function renewalsSample(): ConsoleTableData {
 }
 
 export function ClinicianRenewalsScreen({ source }: { source?: ConsoleTableSource }): React.ReactElement {
-  return <ConsoleTableScreen navId="renewals" config={renewalsConfig} source={source ?? sampleInDevelopment(renewalsSample)} />;
+  const t = useT();
+  const config = useMemo(() => renewalsConfig(t), [t]);
+  return <ConsoleTableScreen navId="renewals" config={config} source={source ?? sampleInDevelopment(renewalsSample)} />;
 }

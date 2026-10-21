@@ -1,30 +1,40 @@
-import React from 'react';
+import React, { useMemo } from 'react';
+import { useT } from '@/i18n';
 import { ConsoleTableScreen } from '../shared/ConsoleTableScreen';
 import { sampleInDevelopment } from '../shared/consoleTable';
 import type { ConsoleTableConfig, ConsoleTableData, ConsoleTableSource } from '../shared/consoleTable';
 import { cell, muted, pill, strong } from '../shared/cells';
+import type { T } from '../shared/clinicalData';
 
-/** ClinicianAyush (design page 5, Tier 3). Alongside allopathic care, never instead of it. */
-export const ayushConfig: ConsoleTableConfig = {
-  title: 'AYUSH desk',
-  subtitle: 'Ayurveda, Yoga, Unani, Siddha and Homeopathy · alongside allopathic care, never instead of it',
-  caption: 'AYUSH consultations, their practitioner, and who is co-managing',
-  columns: [
-    { label: 'Student', width: '140px' },
-    { label: 'Presenting & system' },
-    { label: 'Practitioner', width: '170px' },
-    { label: 'Co-managed with', width: '150px' },
-    { label: 'State', width: '150px', align: 'end' },
-  ],
-  footnote:
-    'The refused row is the reason this desk has rules. Substituting AYUSH for an inhaler in asthma is not a choice we facilitate — the student was told why, offered a co-managed plan instead, and their allopathic clinician was informed.',
-  empty: { title: 'No AYUSH consultations open.', body: 'When a student you care for opens an AYUSH consultation, it appears here so care stays co-ordinated.' },
-  unconnected: { title: 'The AYUSH desk isn’t connected yet.', body: 'Consultations will appear here once the desk is connected. Until then this page shows nothing rather than a guess.' },
-  errorTitle: 'Couldn’t load the AYUSH desk',
-  reference: 'Ref AYUSH · ClinicianAyush',
-  statLabels: ['Open consultations', 'Co-managed', 'Refused', 'Replacing a prescription'],
-};
+/**
+ * ClinicianAyush (design page 5, Tier 1, approved 2026-10-21). Alongside
+ * allopathic care, never instead of it. No AYUSH consultation model exists
+ * yet, so production shows the not-connected layout; the refusal rule needs a
+ * named owner and a server check before this desk can be connected.
+ */
+export function ayushConfig(t: T): ConsoleTableConfig {
+  return {
+    title: t('clinAyush.title'),
+    subtitle: t('clinAyush.subtitle'),
+    caption: t('clinAyush.caption'),
+    columns: [
+      { label: t('clinAyush.col.student'), width: '140px' },
+      { label: t('clinAyush.col.presenting') },
+      { label: t('clinAyush.col.practitioner'), width: '170px' },
+      { label: t('clinAyush.col.comanaged'), width: '150px' },
+      { label: t('clinAyush.col.state'), width: '150px', align: 'end' },
+    ],
+    footnote: t('clinAyush.footnote'),
+    empty: { title: t('clinAyush.emptyTitle'), body: t('clinAyush.emptyBody') },
+    emptyIcon: 'stetho-alt--p4',
+    unconnected: { title: t('clinAyush.unconnectedTitle'), body: t('clinAyush.unconnectedBody') },
+    errorTitle: t('clinAyush.errorTitle'),
+    reference: t('clinAyush.reference'),
+    statLabels: [t('clinAyush.stat.open'), t('clinAyush.stat.comanaged'), t('clinAyush.stat.refused'), t('clinAyush.stat.replacing')],
+  };
+}
 
+/* Development demo only (demoDataEnabled): the design's rows, never in production builds. */
 export function ayushSample(): ConsoleTableData {
   return {
     badge: { label: '1 request refused', tone: 'danger' },
@@ -44,5 +54,7 @@ export function ayushSample(): ConsoleTableData {
 }
 
 export function ClinicianAyushScreen({ source }: { source?: ConsoleTableSource }): React.ReactElement {
-  return <ConsoleTableScreen navId="ayush" config={ayushConfig} source={source ?? sampleInDevelopment(ayushSample)} />;
+  const t = useT();
+  const config = useMemo(() => ayushConfig(t), [t]);
+  return <ConsoleTableScreen navId="ayush" config={config} source={source ?? sampleInDevelopment(ayushSample)} />;
 }

@@ -68,8 +68,9 @@ describe('chronic tracker from /work/chronic', () => {
       item({ id: 'b', nextDueAt: NOW + 3 * day }),
       item({ id: 'c' }),
       item({ id: 'd', state: 'ENDED_BY_STUDENT' }),
-    ]), NOW);
-    expect(data.rows.map((row) => text(row.cells[4]))).toEqual(['Chase', 'Due this week', 'On track', 'Ended by student']);
+    ]), en, NOW);
+    // No chase endpoint exists: an overdue row is a state, never a "Chase" action.
+    expect(data.rows.map((row) => text(row.cells[4]))).toEqual(['Overdue', 'Due this week', 'On track', 'Ended by student']);
     expect(text(data.rows[0].cells[3])).toBe('Overdue by 12 days');
     expect(text(data.rows[3].cells[3])).toBe('—');
     expect(text(data.rows[3].cells[1])).toMatch(/^Left the programme/);
@@ -77,7 +78,7 @@ describe('chronic tracker from /work/chronic', () => {
   });
 
   it('invents no date for a programme never reviewed', () => {
-    const data = mapChronic(response([item({ lastReviewAt: null, nextDueAt: null })]), NOW);
+    const data = mapChronic(response([item({ lastReviewAt: null, nextDueAt: null })]), en, NOW);
     expect(text(data.rows[0].cells[2])).toBe('Not yet');
     expect(text(data.rows[0].cells[3])).toBe('After first review');
   });

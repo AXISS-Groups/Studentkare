@@ -14,6 +14,8 @@ export interface ConsoleTableViewProps {
   config: ConsoleTableConfig;
   /** Right of the title, e.g. "Add availability". Shown with the data only. */
   headerAction?: React.ReactNode;
+  /** The empty state's next step when it is an action on this page rather than a route (e.g. "Order test"). */
+  emptyAction?: { label: string; onSelect: () => void };
   onNavigate: (route: RoutePath) => void;
 }
 
@@ -21,7 +23,7 @@ export interface ConsoleTableViewProps {
  * A clinician list board on the design-system console table page. Not connected
  * shows the real layout with blank figures and an empty table — never sample rows.
  */
-export const ConsoleTableView = observer(function ConsoleTableView({ viewModel, config, headerAction, onNavigate }: ConsoleTableViewProps): React.ReactElement {
+export const ConsoleTableView = observer(function ConsoleTableView({ viewModel, config, headerAction, emptyAction: emptyOverride, onNavigate }: ConsoleTableViewProps): React.ReactElement {
   const t = useT();
   const { status, data } = viewModel;
   const pageStatus: ConsoleTableStatus = status;
@@ -49,7 +51,7 @@ export const ConsoleTableView = observer(function ConsoleTableView({ viewModel, 
         title: config.empty.title,
         body: config.empty.body,
         icon3d: config.emptyIcon ?? 'stetho-alt--p4',
-        action: emptyAction ? { label: emptyAction.label, onSelect: () => onNavigate(emptyAction.route) } : undefined,
+        action: emptyOverride ?? (emptyAction ? { label: emptyAction.label, onSelect: () => onNavigate(emptyAction.route) } : undefined),
       }}
       unconnected={config.unconnected}
       error={{

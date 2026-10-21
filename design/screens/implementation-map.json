@@ -888,10 +888,62 @@
       "src/features/clinician/queue/queueSource.ts",
       "src/features/clinician/shared/ClinicianStates.tsx"
     ],
-    "ClinicalReview": [],
-    "EncounterNote": [],
-    "Prescribe": [],
-    "ReportReviews": [],
+    "ClinicalReview": [
+      "src/design-system/clinician-shell/ClinicianShell.tsx",
+      "src/design-system/clinician-shell/clinicianNav.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/clinician/shared/ClinicianConsoleFrame.tsx",
+      "src/features/clinician/shared/ClinicianStates.tsx",
+      "src/features/clinician/shared/OfflineNote.tsx",
+      "src/features/clinician/shared/clinicalData.ts",
+      "src/features/clinician/shared/LoadableViewModel.ts",
+      "src/design-system/overlays/Overlay.tsx",
+      "src/features/clinician/critical-results/CriticalResultsScreen.tsx",
+      "src/features/clinician/critical-results/CriticalResultsViewModel.ts",
+      "src/features/clinician/critical-results/criticalModel.ts"
+    ],
+    "EncounterNote": [
+      "src/design-system/clinician-shell/ClinicianShell.tsx",
+      "src/design-system/clinician-shell/clinicianNav.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/clinician/shared/ClinicianConsoleFrame.tsx",
+      "src/features/clinician/shared/ClinicianStates.tsx",
+      "src/features/clinician/shared/OfflineNote.tsx",
+      "src/features/clinician/shared/clinicalData.ts",
+      "src/features/clinician/shared/LoadableViewModel.ts",
+      "src/design-system/overlays/Overlay.tsx",
+      "src/features/clinician/shared/handoff.ts",
+      "src/features/clinician/encounter-note/EncounterNoteScreen.tsx",
+      "src/features/clinician/encounter-note/encounterModel.ts"
+    ],
+    "Prescribe": [
+      "src/design-system/clinician-shell/ClinicianShell.tsx",
+      "src/design-system/clinician-shell/clinicianNav.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/clinician/shared/ClinicianConsoleFrame.tsx",
+      "src/features/clinician/shared/ClinicianStates.tsx",
+      "src/features/clinician/shared/OfflineNote.tsx",
+      "src/features/clinician/shared/clinicalData.ts",
+      "src/features/clinician/shared/LoadableViewModel.ts",
+      "src/design-system/overlays/Overlay.tsx",
+      "src/features/clinician/shared/handoff.ts",
+      "src/features/clinician/prescribe/PrescribeScreen.tsx",
+      "src/features/clinician/prescribe/PrescribeViewModel.ts",
+      "src/features/clinician/prescribe/prescribeModel.ts"
+    ],
+    "ReportReviews": [
+      "src/design-system/clinician-shell/ClinicianShell.tsx",
+      "src/design-system/clinician-shell/clinicianNav.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/clinician/shared/ClinicianConsoleFrame.tsx",
+      "src/features/clinician/shared/ClinicianStates.tsx",
+      "src/features/clinician/shared/OfflineNote.tsx",
+      "src/features/clinician/shared/clinicalData.ts",
+      "src/features/clinician/shared/LoadableViewModel.ts",
+      "src/design-system/overlays/Overlay.tsx",
+      "src/features/clinician/report-reviews/ReportReviewsScreen.tsx",
+      "src/features/clinician/report-reviews/reviewsModel.ts"
+    ],
     "ClinicianSchedule": [
       "src/design-system/clinician-shell/ClinicianShell.tsx",
       "src/design-system/clinician-shell/clinicianNav.ts",
@@ -920,12 +972,76 @@
       "src/design-system/console/ConsoleTablePage.tsx",
       "src/features/clinician/earnings/ClinicianEarningsConsoleScreen.tsx"
     ],
-    "ClinicianLabOrder": [],
-    "ClinicianReferral": [],
-    "ClinicianRenewals": [],
-    "ClinicianChronic": [],
-    "ClinicianAyush": [],
-    "ClinicianAi": [],
+    "ClinicianLabOrder": [
+      "src/design-system/clinician-shell/ClinicianShell.tsx",
+      "src/design-system/clinician-shell/clinicianNav.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/clinician/shared/ClinicianConsoleFrame.tsx",
+      "src/features/clinician/shared/ClinicianStates.tsx",
+      "src/features/clinician/shared/ConsoleTableScreen.tsx",
+      "src/features/clinician/shared/consoleTable.ts",
+      "src/design-system/console/ConsoleTablePage.tsx",
+      "src/features/clinician/shared/OfflineNote.tsx",
+      "src/features/clinician/shared/clinicalData.ts",
+      "src/design-system/overlays/Overlay.tsx",
+      "src/features/clinician/lab-orders/ClinicianLabOrdersScreen.tsx",
+      "src/features/clinician/viewmodel/DoctorLabOrderViewModel.ts"
+    ],
+    "ClinicianReferral": [
+      "src/design-system/clinician-shell/ClinicianShell.tsx",
+      "src/design-system/clinician-shell/clinicianNav.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/clinician/shared/ClinicianConsoleFrame.tsx",
+      "src/features/clinician/shared/ClinicianStates.tsx",
+      "src/features/clinician/shared/ConsoleTableScreen.tsx",
+      "src/features/clinician/shared/consoleTable.ts",
+      "src/design-system/console/ConsoleTablePage.tsx",
+      "src/features/clinician/referrals/ClinicianReferralsScreen.tsx"
+    ],
+    "ClinicianRenewals": [
+      "src/design-system/clinician-shell/ClinicianShell.tsx",
+      "src/design-system/clinician-shell/clinicianNav.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/clinician/shared/ClinicianConsoleFrame.tsx",
+      "src/features/clinician/shared/ClinicianStates.tsx",
+      "src/features/clinician/shared/ConsoleTableScreen.tsx",
+      "src/features/clinician/shared/consoleTable.ts",
+      "src/design-system/console/ConsoleTablePage.tsx",
+      "src/features/clinician/renewals/ClinicianRenewalsScreen.tsx"
+    ],
+    "ClinicianChronic": [
+      "src/design-system/clinician-shell/ClinicianShell.tsx",
+      "src/design-system/clinician-shell/clinicianNav.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/clinician/shared/ClinicianConsoleFrame.tsx",
+      "src/features/clinician/shared/ClinicianStates.tsx",
+      "src/features/clinician/shared/ConsoleTableScreen.tsx",
+      "src/features/clinician/shared/consoleTable.ts",
+      "src/design-system/console/ConsoleTablePage.tsx",
+      "src/features/clinician/chronic/ClinicianChronicConsoleScreen.tsx"
+    ],
+    "ClinicianAyush": [
+      "src/design-system/clinician-shell/ClinicianShell.tsx",
+      "src/design-system/clinician-shell/clinicianNav.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/clinician/shared/ClinicianConsoleFrame.tsx",
+      "src/features/clinician/shared/ClinicianStates.tsx",
+      "src/features/clinician/shared/ConsoleTableScreen.tsx",
+      "src/features/clinician/shared/consoleTable.ts",
+      "src/design-system/console/ConsoleTablePage.tsx",
+      "src/features/clinician/ayush/ClinicianAyushScreen.tsx"
+    ],
+    "ClinicianAi": [
+      "src/design-system/clinician-shell/ClinicianShell.tsx",
+      "src/design-system/clinician-shell/clinicianNav.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/clinician/shared/ClinicianConsoleFrame.tsx",
+      "src/features/clinician/shared/ClinicianStates.tsx",
+      "src/features/clinician/shared/ConsoleTableScreen.tsx",
+      "src/features/clinician/shared/consoleTable.ts",
+      "src/design-system/console/ConsoleTablePage.tsx",
+      "src/features/clinician/decision-support/ClinicianDecisionSupportScreen.tsx"
+    ],
     "ClinicianToday": [
       "src/design-system/clinician-shell/ClinicianShell.tsx",
       "src/design-system/clinician-shell/clinicianNav.ts",
@@ -946,7 +1062,22 @@
       "src/features/clinician/inbox/ClinicianInboxScreen.tsx",
       "src/features/clinician/shared/ClinicianStates.tsx"
     ],
-    "ClinicianConsultRoom": [],
+    "ClinicianConsultRoom": [
+      "src/design-system/clinician-shell/ClinicianShell.tsx",
+      "src/design-system/clinician-shell/clinicianNav.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/clinician/shared/ClinicianConsoleFrame.tsx",
+      "src/features/clinician/shared/ClinicianStates.tsx",
+      "src/features/clinician/shared/OfflineNote.tsx",
+      "src/features/clinician/shared/clinicalData.ts",
+      "src/features/clinician/shared/LoadableViewModel.ts",
+      "src/design-system/overlays/Overlay.tsx",
+      "src/design-system/overlays/ConfirmDialog.tsx",
+      "src/features/clinician/shared/handoff.ts",
+      "src/features/clinician/consult-room/ConsultRoomScreen.tsx",
+      "src/features/clinician/consult-room/consultModel.ts",
+      "src/components/health/consult/ConsultCallPanel.tsx"
+    ],
     "WebClinicianApply": [
       "src/features/clinician/apply/DoctorApplyScreen.tsx",
       "src/features/clinician/apply/DoctorApplyView.tsx",
@@ -1260,73 +1391,6 @@
       "src/design-system/public-site/PublicAppBand.tsx",
       "src/features/landing/views/landingWebKit.tsx"
     ],
-    "ClinicalReview": [
-      "src/design-system/clinician-shell/ClinicianShell.tsx",
-      "src/design-system/clinician-shell/clinicianNav.ts",
-      "src/features/clinician/shared/ClinicianConsoleFrame.tsx",
-      "src/features/clinician/critical-results/CriticalResultsScreen.tsx",
-      "src/features/clinician/critical-results/criticalModel.ts"
-    ],
-    "EncounterNote": [
-      "src/design-system/clinician-shell/ClinicianShell.tsx",
-      "src/design-system/clinician-shell/clinicianNav.ts",
-      "src/features/clinician/shared/ClinicianConsoleFrame.tsx",
-      "src/features/clinician/encounter-note/EncounterNoteScreen.tsx"
-    ],
-    "Prescribe": [
-      "src/design-system/clinician-shell/ClinicianShell.tsx",
-      "src/design-system/clinician-shell/clinicianNav.ts",
-      "src/features/clinician/shared/ClinicianConsoleFrame.tsx",
-      "src/features/clinician/prescribe/PrescribeScreen.tsx",
-      "src/features/clinician/prescribe/prescribeModel.ts"
-    ],
-    "ReportReviews": [
-      "src/design-system/clinician-shell/ClinicianShell.tsx",
-      "src/design-system/clinician-shell/clinicianNav.ts",
-      "src/features/clinician/shared/ClinicianConsoleFrame.tsx",
-      "src/features/clinician/report-reviews/ReportReviewsScreen.tsx"
-    ],
-    "ClinicianReferral": [
-      "src/design-system/clinician-shell/ClinicianShell.tsx",
-      "src/design-system/clinician-shell/clinicianNav.ts",
-      "src/features/clinician/shared/ClinicianConsoleFrame.tsx",
-      "src/features/clinician/shared/ConsoleTableScreen.tsx",
-      "src/features/clinician/referrals/ClinicianReferralsScreen.tsx"
-    ],
-    "ClinicianRenewals": [
-      "src/design-system/clinician-shell/ClinicianShell.tsx",
-      "src/design-system/clinician-shell/clinicianNav.ts",
-      "src/features/clinician/shared/ClinicianConsoleFrame.tsx",
-      "src/features/clinician/shared/ConsoleTableScreen.tsx",
-      "src/features/clinician/renewals/ClinicianRenewalsScreen.tsx"
-    ],
-    "ClinicianChronic": [
-      "src/design-system/clinician-shell/ClinicianShell.tsx",
-      "src/design-system/clinician-shell/clinicianNav.ts",
-      "src/features/clinician/shared/ClinicianConsoleFrame.tsx",
-      "src/features/clinician/shared/ConsoleTableScreen.tsx",
-      "src/features/clinician/chronic/ClinicianChronicConsoleScreen.tsx"
-    ],
-    "ClinicianAyush": [
-      "src/design-system/clinician-shell/ClinicianShell.tsx",
-      "src/design-system/clinician-shell/clinicianNav.ts",
-      "src/features/clinician/shared/ClinicianConsoleFrame.tsx",
-      "src/features/clinician/shared/ConsoleTableScreen.tsx",
-      "src/features/clinician/ayush/ClinicianAyushScreen.tsx"
-    ],
-    "ClinicianAi": [
-      "src/design-system/clinician-shell/ClinicianShell.tsx",
-      "src/design-system/clinician-shell/clinicianNav.ts",
-      "src/features/clinician/shared/ClinicianConsoleFrame.tsx",
-      "src/features/clinician/shared/ConsoleTableScreen.tsx",
-      "src/features/clinician/decision-support/ClinicianDecisionSupportScreen.tsx"
-    ],
-    "ClinicianConsultRoom": [
-      "src/design-system/clinician-shell/ClinicianShell.tsx",
-      "src/design-system/clinician-shell/clinicianNav.ts",
-      "src/features/clinician/shared/ClinicianConsoleFrame.tsx",
-      "src/features/clinician/consult-room/ConsultRoomScreen.tsx"
-    ],
     "LabQueue": [
       "src/screens/vendor/VendorShell.tsx",
       "src/screens/vendor/vendorNavigation.ts",
@@ -1504,10 +1568,6 @@
       "src/features/studentweb/views/parts.tsx",
       "src/features/studentweb/views/t1/shared.tsx",
       "src/features/studentweb/views/t1/t1web.css"
-    ],
-    "ClinicianLabOrder": [
-      "src/screens/clinician/DoctorLabOrderDispatchScreen.tsx",
-      "src/features/clinician/viewmodel/DoctorLabOrderViewModel.ts"
     ],
     "WebReportInsights": [
       "src/features/studentweb/views/t1/WebReportInsightsView.tsx",
