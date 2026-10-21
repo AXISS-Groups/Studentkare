@@ -27,6 +27,7 @@ import { ApiKeysView } from '../../../features/admin/views/ApiKeysView';
 import { ErasureQueueView } from '../../../features/admin/views/ErasureQueueView';
 import { INTEGRATION_ROUTES, IntegrationsView } from '../../../features/admin/views/IntegrationsView';
 import { RuleLView } from '../../../features/admin/views/RuleLView';
+import { TeamAccountsView } from '../../../features/team-accounts/TeamAccountsView';
 import { CheckinsView, ConsentPolicyView, HandoverView, SurveillanceView } from '../../../features/admin/views/GovernanceBoards';
 import { useT } from '../../../i18n';
 import { AdminPage, LegacyPanel } from './AdminPage';
@@ -74,6 +75,7 @@ export function superAdminScreen(route: RoutePath): ReactElement | null {
   if (route === 'admin/flags') return <FeatureFlagsView />;
   if (route === 'admin/templates') return <MessageTemplatesView />;
   if (route === 'admin/accounts') return <AccountsView />;
+  if (route === 'admin/team-accounts') return <TeamAccountsView />;
   if (route === 'admin/erasure') return <ErasureQueueView />;
   if (route === 'admin/catalog') return <CatalogueView />;
   if (route === 'admin/intake') return <IntakeView />;
