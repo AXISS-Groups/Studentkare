@@ -33,10 +33,10 @@ function useBack(): () => void {
   return () => { if (navigation.canGoBack()) navigation.goBack(); };
 }
 
-function Frame({ children }: { children: React.ReactNode }) {
+function Frame({ children, bottom = false }: { children: React.ReactNode; bottom?: boolean }) {
   const focused = useIsFocused();
   return (
-    <SafeAreaView edges={['top', 'left', 'right']} style={styles.frame}>
+    <SafeAreaView edges={bottom ? ['top', 'left', 'right', 'bottom'] : ['top', 'left', 'right']} style={styles.frame}>
       <M2ActiveProvider value={focused}>{children}</M2ActiveProvider>
     </SafeAreaView>
   );
@@ -132,13 +132,13 @@ export function ReportUploadScreen(): React.ReactElement {
   useEffect(() => () => vm.dispose(), [vm]);
   if (camera) {
     return (
-      <Frame>
+      <Frame bottom>
         <ReportCamera onCancel={() => setCamera(false)} onPhoto={(photo) => { setCamera(false); void vm.upload(photo); }} />
       </Frame>
     );
   }
   return (
-    <Frame>
+    <Frame bottom>
       <M2ReportUploadView vm={vm} sources={{ photo: () => setCamera(true), pdf: null }} online={online}
         links={{ back, trends: () => navigate('Trends') }} />
     </Frame>

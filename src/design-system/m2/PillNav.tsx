@@ -126,6 +126,15 @@ export function PillNav({ current, onSelect, bottomInset = 0, testID = 'pill-nav
 /** Height the nav takes at the bottom of a screen (bar + its bottom margin), for layouts that must clear it. */
 export const PILL_NAV_HEIGHT = BAR_HEIGHT + space.s16 + space.s8;
 
+/**
+ * Bottom padding for a board's scroll content so its last field and button
+ * scroll fully clear of the floating pill nav: the nav's height and offset plus
+ * breathing room. The bottom safe area is added by the dock (web:
+ * env(safe-area-inset-bottom)) and by the native shell, which lays the nav out
+ * under the screens with the inset.
+ */
+export const M2_NAV_CLEARANCE = PILL_NAV_HEIGHT + space.s24;
+
 const styles = StyleSheet.create({
   dock: { paddingHorizontal: space.s16, paddingTop: space.s8 },
   bar: { height: BAR_HEIGHT, borderRadius: radius.full, ...shadowStyle(shadow.float) },

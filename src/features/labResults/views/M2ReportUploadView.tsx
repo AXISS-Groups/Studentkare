@@ -5,7 +5,7 @@ import { Icon } from '@/design-system/icons';
 import type { SkIconName } from '@/design-system/icons';
 import { Banner, Button, ErrorState, OfflineBanner, Rise, Skeleton, TextField } from '@/design-system';
 import {
-  Gradient, LiftCard, M2Card, M2Heading, M2_BOTTOM_SPACE, RoundButton, heroStops, m2Text, tileStops, useOwnPhoneChrome, webAttrs,
+  Gradient, LiftCard, M2Card, M2Heading, M2_NAV_CLEARANCE, RoundButton, heroStops, m2Text, tileStops, useOwnPhoneChrome, webAttrs,
 } from '@/design-system/m2';
 import type { PressState, ServiceHue } from '@/design-system/m2';
 import { color, focusRing, font, fontWeight, radius, shadow, shadowStyle, size, space } from '@/design-system/theme';
@@ -394,7 +394,7 @@ export const M2ReportUploadView = observer(function M2ReportUploadView({ vm, sou
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.canvas },
-  content: { paddingBottom: M2_BOTTOM_SPACE, gap: space.s16 },
+  content: { paddingBottom: M2_NAV_CLEARANCE, gap: space.s16 },
   grow: { flex: 1, minWidth: 0 },
   gutter: { paddingHorizontal: space.gutterPhone },
   stack: { gap: space.s12 },

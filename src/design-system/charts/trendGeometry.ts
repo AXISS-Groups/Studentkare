@@ -35,8 +35,6 @@ export interface TrendGeometry {
   points: PlacedPoint[];
   /** "M x y L x y …"; empty when no line is drawn. */
   linePath: string;
-  /** The soft fill under the line, down to the plot's floor; empty when no line. */
-  areaPath: string;
   /** Approximate length of the line, for the draw-in animation. */
   lineLength: number;
   band: { top: number; bottom: number } | null;
@@ -68,9 +66,6 @@ export function trendGeometry(points: readonly TrendChartPoint[], band: TrendCha
   const placed = points.map((p, i) => ({ ...p, x: x(i), y: y(p.value) }));
   const line = drawLine && placed.length > 1;
   const linePath = line ? placed.map((p, i) => `${i ? 'L' : 'M'}${round(p.x)} ${round(p.y)}`).join(' ') : '';
-  const first = placed[0];
-  const last = placed[placed.length - 1];
-  const areaPath = line && first && last ? `${linePath} L${round(last.x)} ${FLOOR} L${round(first.x)} ${FLOOR} Z` : '';
   let lineLength = 0;
   if (line) {
     for (let i = 1; i < placed.length; i += 1) {
@@ -83,7 +78,7 @@ export function trendGeometry(points: readonly TrendChartPoint[], band: TrendCha
     ? { top: clamp(band.high === null ? TOP - 8 : y(band.high)), bottom: clamp(band.low === null ? FLOOR : y(band.low)) }
     : null;
   return {
-    width: TREND_WIDTH, height: TREND_HEIGHT, points: placed, linePath, areaPath, lineLength: Math.ceil(lineLength),
+    width: TREND_WIDTH, height: TREND_HEIGHT, points: placed, linePath, lineLength: Math.ceil(lineLength),
     band: bandBox && bandBox.bottom > bandBox.top ? bandBox : null, dateY: FLOOR + 26,
   };
 }

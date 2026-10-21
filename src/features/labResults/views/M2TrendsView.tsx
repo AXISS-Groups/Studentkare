@@ -5,7 +5,7 @@ import { Icon } from '@/design-system/icons';
 import { ErrorState, OfflineBanner, Rise, Skeleton } from '@/design-system';
 import { TestTrendChart } from '@/design-system/charts';
 import {
-  M2Card, M2Heading, M2_BOTTOM_SPACE, RoundButton, SoftIcon, m2Text, useOwnPhoneChrome, webAttrs,
+  M2Card, M2Heading, M2_NAV_CLEARANCE, RoundButton, SoftIcon, m2Text, useOwnPhoneChrome, webAttrs,
 } from '@/design-system/m2';
 import type { PressState } from '@/design-system/m2';
 import { color, focusRing, font, fontWeight, radius, shadow, shadowStyle, size, space } from '@/design-system/theme';
@@ -319,7 +319,7 @@ export const M2TrendsView = observer(function M2TrendsView({ vm, reviews, online
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.canvas },
-  content: { paddingBottom: M2_BOTTOM_SPACE, gap: space.s16 },
+  content: { paddingBottom: M2_NAV_CLEARANCE, gap: space.s16 },
   grow: { flex: 1, minWidth: 0 },
   gutter: { paddingHorizontal: space.gutterPhone },
   header: { flexDirection: 'row', alignItems: 'center', gap: space.s12, paddingHorizontal: space.gutterPhone, paddingTop: space.s16 },

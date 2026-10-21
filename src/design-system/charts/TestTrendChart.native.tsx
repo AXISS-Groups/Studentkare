@@ -31,7 +31,6 @@ export function TestTrendChart({ points, band, drawLine, summary, bandLabel, tes
               <SvgText x={g.width - 8} y={g.band.top + 14} textAnchor="end" fontSize={10.5} fontWeight="800" fill={color.positive}>{bandLabel}</SvgText>
             </G>
           ) : null}
-          {g.areaPath ? <Path d={g.areaPath} fill={color.actionSoft} fillOpacity={0.45} /> : null}
           {g.linePath ? <Path d={g.linePath} fill="none" stroke={color.chartCategorical1} strokeWidth={3} strokeLinecap="round" strokeLinejoin="round" /> : null}
           {g.points.map((p) => (
             <G key={p.key}>

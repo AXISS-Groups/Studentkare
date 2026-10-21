@@ -128,6 +128,7 @@ describe('M2Trends', () => {
     expect([...points].map((p) => p.getAttribute('data-tone'))).toEqual(['attention', 'positive', 'attention']);
     expect(chart.querySelector('[data-part="line"]')).not.toBeNull();
     expect(chart.querySelector('[data-part="band"]')).not.toBeNull();
+    expect(chart.querySelector('[data-part="area"]')).toBeNull();
     expect(screen.getByText(/^Values you confirmed from your reports/)).toBeInTheDocument();
   });
 

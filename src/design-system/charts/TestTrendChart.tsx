@@ -60,7 +60,6 @@ export function TestTrendChart({ points, band, drawLine, summary, bandLabel, tes
             <text x={g.width - 8} y={g.band.top + 14} textAnchor="end" fontFamily={font.family.sans} fontSize={10.5} fontWeight={800} fill={color.positive}>{bandLabel}</text>
           </g>
         ) : null}
-        {g.areaPath ? <path d={g.areaPath} fill={color.actionSoft} fillOpacity={0.45} data-part="area" /> : null}
         {g.linePath ? (
           <path d={g.linePath} fill="none" stroke={color.chartCategorical1} strokeWidth={3} strokeLinecap="round" strokeLinejoin="round"
             strokeDasharray={g.lineLength} strokeDashoffset={drawn ? 0 : g.lineLength} style={{ transition }} data-part="line" />
