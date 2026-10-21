@@ -1,6 +1,7 @@
 import React from 'react';
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { Mock } from 'vitest';
 
 const motionFlag = vi.hoisted(() => ({ reduced: true }));
 vi.mock('@/design-system/motion', async (importOriginal) => ({
@@ -42,9 +43,9 @@ const EMPTY = week([]);
 const FULL = week([day('2026-10-19', 4210, 'MANUAL'), day('2026-10-21', 6120, 'HEALTHKIT')], 5165);
 
 interface FakeConnector extends StepConnector {
-  connect: ReturnType<typeof vi.fn>;
-  status: ReturnType<typeof vi.fn>;
-  disconnect: ReturnType<typeof vi.fn>;
+  connect: Mock<() => Promise<ConnectorStatus>>;
+  status: Mock<() => Promise<ConnectorStatus>>;
+  disconnect: Mock<() => void>;
   emit?: (steps: number) => void;
   stopped?: () => boolean;
 }
