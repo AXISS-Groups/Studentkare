@@ -369,6 +369,19 @@ declare("health.readings_list_cap", INT, 1000, area="health", unit="rows", minim
 # without a reload (SosBeacon). The server pushes nothing; this is a read.
 declare("emergency.sos_poll_seconds", INT, 15, area="emergency", unit="seconds", minimum=5, maximum=120, public=True,
         description="How often the SOS screen re-reads an open alert from GET /api/emergency/sos/current.")
+# Blood SOS (services/agents/blood_emergency_agent.py, audit H1). A broadcast goes
+# out on the platform's own WhatsApp to every matching donor on the campus, so it
+# is a fixed template plus a short optional note, and it is rate limited per
+# account and per campus. Counted from care_blood_sos_requests, so the limits hold
+# across replicas.
+declare("blood.sos_note_max_chars", INT, 140, area="emergency", unit="characters", minimum=0, maximum=280,
+        description="Longest optional note a requester may add to the fixed blood SOS message (0 turns notes off).")
+declare("blood.sos_max_units", INT, 4, area="emergency", unit="units", minimum=1, maximum=10,
+        description="Most units of blood one blood SOS may ask for.")
+declare("blood.sos_per_account_per_day", INT, 3, area="emergency", unit="requests per 24 hours", minimum=1,
+        maximum=20, description="Blood SOS broadcasts one account may send in 24 hours.")
+declare("blood.sos_per_campus_per_hour", INT, 5, area="emergency", unit="requests per hour", minimum=1,
+        maximum=100, description="Blood SOS broadcasts that may go to one campus's donors in an hour.")
 # --- lab results (services/lab_results.py; Mobile 2.0 plan Gap 1) ------------
 # Input bounds only. None of these is a clinical threshold: whether a value is
 # in range is decided by the range the lab printed, stored with the value.

@@ -1248,6 +1248,9 @@ class BloodSOSRequest(Base):
     hospital_location: Mapped[str] = mapped_column(String(200))
     urgency: Mapped[str] = mapped_column(String(20), default="CRITICAL")
     matching_donors_count: Mapped[int] = mapped_column(Integer, default=0)
+    # The campus the broadcast went to ("" = every campus, super admin only). Also
+    # what the per-campus rate limit counts (audit H1).
+    campus: Mapped[str] = mapped_column(String(160), default="", server_default="", index=True)
     status: Mapped[str] = mapped_column(String(24), default="QUEUED")
     created_at: Mapped[float] = mapped_column(Float, default=0.0)
 class CrisisEvent(Base):

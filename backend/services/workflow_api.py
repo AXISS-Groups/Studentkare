@@ -2847,63 +2847,148 @@ def schedule_reminder(appointment_id: str, body: ReminderInput, user=Depends(aut
     return {"queued": True, "eventId": event_id, "message": "Reminder queued."}
 
 
+BloodGroup = Literal["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]
+BLOOD_GROUP_VALUES = frozenset(("A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"))
+PHONE_NOT_VERIFIED = "PHONE_NOT_VERIFIED"
+CAMPUS_NOT_VERIFIED = "CAMPUS_NOT_VERIFIED"
+HOUR_SECONDS = 3600
+DAY_SECONDS = 86400
+LINK_MARKERS = ("http", "www.", "://")
+
+
 class BloodDonorInput(StrictModel):
-    fullName: str
-    bloodGroup: str
-    hostelBlock: str
-    phone: str
+    bloodGroup: BloodGroup
+    hostelBlock: str = Field(min_length=1, max_length=120)
     visible: bool = False
+    # Optional; when sent it must be the account's own verified WhatsApp number.
+    # The number used is always that contact, never what was typed (audit H1).
+    phone: str | None = Field(default=None, max_length=32)
+
+
+def _digits(value: str) -> str:
+    return re.sub(r"\D", "", value or "")
+
+
+def _blood_campus_staff(user: dict, db: Session) -> str | None:
+    """None for a super admin; the assigned campus for campus staff; "" for nobody else."""
+    if user["role"] == "SUPER_ADMIN":
+        return None
+    if user["role"] in CAMPUS_SCOPED_ROLES:
+        return staff_campus_of(db.get(M.Account, user["id"]))
+    return ""
 
 
 @router.post("/blood/register-donor")
 def register_blood_donor(body: BloodDonorInput, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
-    from services.agents.blood_emergency_agent import BloodDonor
-    donor = BloodDonor(
-        id=f"bd_{new_id()[:6]}",
-        name=body.fullName,
-        blood_group=body.bloodGroup,
-        hostel_block=body.hostelBlock,
-        phone=body.phone,
-        last_donated="Recently registered",
-        is_available=True,
-        visible=body.visible,
-    )
-    res = blood_emergency_agent.register_donor(db, user["id"], donor)
+    """A student registers their own donor record, on their verified number and verified campus."""
+    from services.agents.blood_emergency_agent import BloodDonor, verified_campus, verified_phone
+    if user["role"] != "STUDENT" or user.get("isTeamAccount") is True:
+        raise HTTPException(403, "Only a student can register as a blood donor.")
+    if not verified_campus(db, user["id"]):
+        raise HTTPException(409, {"code": CAMPUS_NOT_VERIFIED,
+                                  "message": "Verify your campus first: donors are matched within a campus."})
+    phone = verified_phone(db, user["id"])
+    if not phone:
+        raise HTTPException(409, {"code": PHONE_NOT_VERIFIED,
+                                  "message": "Verify your WhatsApp number with a one-time code first."})
+    if body.phone and _digits(body.phone)[-10:] != _digits(phone)[-10:]:
+        raise HTTPException(409, {"code": PHONE_NOT_VERIFIED,
+                                  "message": "Donors are reached only on their own verified WhatsApp number."})
+    res = blood_emergency_agent.register_donor(db, user["id"], BloodDonor(
+        blood_group=body.bloodGroup, hostel_block=body.hostelBlock.strip(), visible=body.visible))
+    audit(db, user, "BLOOD_DONOR_REGISTERED", res["id"])
+    db.commit()
     return res
 
 
 @router.get("/blood/donors")
-def get_blood_donors(bloodGroup: str = Query("ALL"), user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
-    donors = blood_emergency_agent.get_donors(db, bloodGroup, public=True)
-    return {"donors": donors}
+def get_blood_donors(bloodGroup: str = Query("ALL", max_length=4), user=Depends(authenticated_user),
+                     db: Session = Depends(workflow_db)):
+    """Donors' blood group and hostel block, only to whom they belong.
+
+    A super admin, or a campus admin / counsellor for their own campus, sees that
+    campus's listed donors. A student sees only their own record. Every other
+    role (partners, doctors) sees nothing. Phone numbers are never returned.
+    """
+    groups = None if bloodGroup == "ALL" else [bloodGroup.strip().upper()]
+    if groups and groups[0] not in BLOOD_GROUP_VALUES:
+        raise HTTPException(422, "Unknown blood group.")
+    scope = _blood_campus_staff(user, db)
+    if scope is None or scope:
+        donors = blood_emergency_agent.campus_donors(db, scope, groups)
+        return {"donors": [blood_emergency_agent.donor_payload(d) for d in donors]}
+    own = db.scalars(select(M.BloodDonor).where(M.BloodDonor.account_id == user["id"])).all()
+    return {"donors": [blood_emergency_agent.donor_payload(d) for d in own
+                       if not groups or d.blood_group in groups]}
 
 
 class BloodSOSInput(StrictModel):
-    patientName: str
-    requiredGroup: str
-    unitsNeeded: int = 1
-    hospitalLocation: str
-    urgency: str = "CRITICAL"
+    requiredGroup: BloodGroup
+    unitsNeeded: int = Field(default=1, ge=1)
+    urgency: Literal["CRITICAL", "URGENT"] = "CRITICAL"
+    # The only free text that goes out, under the fixed template (length from the registry).
+    note: str = Field(default="", max_length=280)
+    # Super admin only: the campus to reach ("" or absent = every campus).
+    campus: str | None = Field(default=None, max_length=160)
+
+
+def _blood_sos_campus(user: dict, body: BloodSOSInput, db: Session) -> str:
+    """Where this requester may broadcast. Fails closed for everyone else."""
+    from services.agents.blood_emergency_agent import verified_campus
+    if user["role"] == "SUPER_ADMIN":
+        return " ".join((body.campus or "").split())
+    if body.campus is not None:
+        raise HTTPException(403, "A blood SOS goes to your own campus only.")
+    if user.get("isTeamAccount") is True:
+        raise HTTPException(403, "Team accounts can't send a blood SOS to real students.")
+    if user["role"] == "STUDENT":
+        campus = verified_campus(db, user["id"])
+    elif user["role"] in CAMPUS_SCOPED_ROLES:
+        campus = staff_campus_of(db.get(M.Account, user["id"]))
+    else:
+        raise HTTPException(403, "Only a student or campus staff can send a blood SOS.")
+    if not campus:
+        raise HTTPException(409, {"code": CAMPUS_NOT_VERIFIED,
+                                  "message": "Verify your campus first: a blood SOS goes to your campus's donors."})
+    return campus
 
 
 @router.post("/blood/sos-request")
 def trigger_blood_sos(body: BloodSOSInput, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+    campus = _blood_sos_campus(user, body, db)
+    if body.unitsNeeded > int(setting("blood.sos_max_units", db)):
+        raise HTTPException(422, "That is more units than one blood SOS can ask for. Call the blood bank directly.")
+    note = " ".join(body.note.split())
+    if len(note) > int(setting("blood.sos_note_max_chars", db)):
+        raise HTTPException(422, "The note is too long.")
+    if any(marker in note.casefold() for marker in LINK_MARKERS):
+        raise HTTPException(422, "The note can't contain links.")
+    now = time.time()
+    mine = db.scalar(select(func.count()).select_from(M.BloodSOSRequest).where(
+        M.BloodSOSRequest.account_id == user["id"], M.BloodSOSRequest.created_at > now - DAY_SECONDS)) or 0
+    if mine >= int(setting("blood.sos_per_account_per_day", db)):
+        raise HTTPException(429, "You have sent the most blood SOS requests allowed today. Call your campus health centre.")
+    if campus:
+        key = _campus_key(campus)
+        recent = db.scalars(select(M.BloodSOSRequest.campus).where(
+            M.BloodSOSRequest.created_at > now - HOUR_SECONDS)).all()
+        if sum(1 for c in recent if _campus_key(c) == key) >= int(setting("blood.sos_per_campus_per_hour", db)):
+            raise HTTPException(429, "Several blood SOS requests already went to this campus in the last hour. "
+                                     "Call your campus health centre.")
     res = blood_emergency_agent.trigger_sos_broadcast(
-        db=db,
-        account_id=user["id"],
-        patient_name=body.patientName,
-        required_group=body.requiredGroup,
-        units=body.unitsNeeded,
-        location=body.hospitalLocation,
-        urgency=body.urgency,
+        db=db, account_id=user["id"], required_group=body.requiredGroup, units=body.unitsNeeded,
+        campus=campus, urgency=body.urgency, note=note,
     )
-    audit(db, user, "BLOOD_SOS_TRIGGERED", user["id"])
-    # The group and unit count are what an operator needs; the patient is not named.
+    # Every send is audited: the request, and each donor it was staged for (ids only).
+    audit(db, user, "BLOOD_SOS_TRIGGERED", res["request_id"])
+    for donor_id in res.pop("staged_donor_ids"):
+        audit(db, user, "BLOOD_SOS_SENT", donor_id)
     ops_feed.publish(
         db, "BLOOD_SOS_TRIGGERED", "SAFETY", severity="CRITICAL",
-        summary=f"Blood SOS broadcast Â· {body.unitsNeeded} unit(s) {body.requiredGroup} Â· {body.urgency.lower()}",
+        summary=f"Blood SOS broadcast · {body.unitsNeeded} unit(s) {body.requiredGroup} · {body.urgency.lower()}"
+                f" · {res['events_staged']} donor(s)",
         actor_id=user["id"], actor_role=user.get("role", ""), subject_id=user["id"],
-        resource_type="blood_sos", resource_id=user["id"],
+        resource_type="blood_sos", resource_id=res["request_id"],
     )
     db.commit()
     return res

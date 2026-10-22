@@ -33,23 +33,25 @@ def db_harness():
     engine.dispose()
 
 
-def test_public_donor_directory_requires_auth_and_redacts_contact(harness):
-    client, _, codes = harness
+def test_donor_directory_requires_auth_and_never_returns_contact(harness):
+    client, factory, codes = harness
     assert client.get("/api/blood/donors").status_code == 401
-    _, headers = register(client, codes)
+    user, headers = register(client, codes)
+    with factory() as db:
+        db.add(M.CampusVerification(account_id=user["id"], university="Test University", roll_number="R1",
+                                    status="VERIFIED"))
+        db.commit()
     registered = client.post("/api/blood/register-donor", headers=headers, json={
-        "fullName": "Consenting Donor",
         "bloodGroup": "O+",
         "hostelBlock": "Block A",
-        "phone": "+91 9000000001",
         "visible": True,
     })
     assert registered.status_code == 200, registered.text
     res = client.get("/api/blood/donors", headers=headers)
     assert res.status_code == 200
     donors = res.json()["donors"]
-    assert len(donors) > 0
-    assert all(d.get("phone") == "" for d in donors)
+    assert len(donors) == 1
+    assert all("phone" not in d for d in donors)
 
 
 def test_approvals_require_staff_role(harness):
