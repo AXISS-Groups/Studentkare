@@ -17,7 +17,10 @@ from services import clinical_fulfilment as F
 def make_staff(factory, account_id, role, identifier, name="Staff", profile=None):
     with factory() as db:
         db.add(M.Account(id=account_id, identifier=identifier, channel="EMAIL", full_name=name,
-                         role=role, active=True, profile=profile or {}, created_at=time.time()))
+                         role=role, active=True, profile=profile or {}, created_at=time.time(),
+                         # Campus scope is the server-assigned column (audit C1).
+                         staff_campus=(profile or {}).get("university", "")
+                         if role in ("CAMPUS_ADMIN", "COUNSELLOR") else ""))
         db.commit()
 
 

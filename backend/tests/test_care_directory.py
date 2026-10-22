@@ -21,7 +21,8 @@ OTHER = "VNR VJIET"
 def account(factory, account_id, role, campus=""):
     with factory() as db:
         db.add(M.Account(id=account_id, identifier=f"{account_id}@example.test", channel="EMAIL", full_name=f"Test {role}",
-                         role=role, active=True, profile={"university": campus} if campus else {}, created_at=time.time()))
+                         role=role, active=True, profile={"university": campus} if campus else {}, created_at=time.time(),
+                         staff_campus=campus if role in ("CAMPUS_ADMIN", "COUNSELLOR") else ""))
         db.commit()
 
 

@@ -60,7 +60,8 @@ def seed(factory, *, role="STUDENT", identifier=None, profile=None, kind="", tea
     with factory() as db:
         db.add(M.Account(id=account_id, identifier=identifier, channel="EMAIL", full_name=f"{role} person", role=role,
                          active=True, profile=profile or {}, created_at=time.time(), partner_kind=kind,
-                         is_team_account=team))
+                         is_team_account=team,
+                         staff_campus=(profile or {}).get("university", "") if role in ("CAMPUS_ADMIN", "COUNSELLOR") else ""))
         db.commit()
     return account_id, identifier
 
@@ -111,6 +112,7 @@ def test_create_makes_every_account_once_and_never_reprints_a_pin(harness):  # n
                      ("VENDOR", "CLINIC"), ("VENDOR", "PHARMACY"), ("VENDOR", "LAB"), ("VENDOR", "WELLNESS")}
     assert rows[tid("campus")].profile["university"] == TEAM_CAMPUS
     assert rows[tid("counsellor")].profile["university"] == TEAM_CAMPUS
+    assert rows[tid("campus")].staff_campus == TEAM_CAMPUS and rows[tid("counsellor")].staff_campus == TEAM_CAMPUS
     assert rows[tid("pharmacy")].profile["organisation"] == T.TEAM_PARTNER_ORG
     assert len(audits(factory, "TEAM_ACCOUNT_CREATED")) == len(T.TEAM_ACCOUNTS)
 

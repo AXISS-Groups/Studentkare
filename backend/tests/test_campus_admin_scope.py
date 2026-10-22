@@ -16,7 +16,7 @@ def admin(client, codes, factory, identifier, role="CAMPUS_ADMIN", university=No
     with factory() as db:
         account = db.get(M.Account, user["id"])
         account.role = role
-        account.profile = {**(account.profile or {}), "university": university or ""}
+        account.staff_campus = university or ""
         db.commit()
     return user, login(client, codes, identifier)
 

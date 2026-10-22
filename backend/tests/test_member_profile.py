@@ -255,7 +255,7 @@ def test_campus_approval_updates_profile_and_blocks_vendor_approval(harness):
     with factory() as db:
         checker = db.get(M.Account, "checker")
         checker.role = "CAMPUS_ADMIN"
-        checker.profile = {"university": "Correct Campus"}  # campus admins act only for their own campus
+        checker.staff_campus = "Correct Campus"  # campus admins act only for their own campus
         db.commit()
     assert client.patch(f"/api/ops/campus/{user['id']}", headers=staff_headers, json={"status": "VERIFIED"}).status_code == 200
     login(client, codes, "member@example.test")

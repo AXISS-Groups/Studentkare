@@ -53,6 +53,7 @@ def add_campus_admin(factory):
         if not db.get(M.Account, "campusadmin"):
             db.add(M.Account(id="campusadmin", identifier="campus@example.test", channel="EMAIL", full_name="Campus Admin",
                              role="CAMPUS_ADMIN", active=True, profile={"university": "Test University"},
+                             staff_campus="Test University",
                              created_at=time.time()))
             db.commit()
 

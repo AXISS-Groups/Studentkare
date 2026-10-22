@@ -43,6 +43,12 @@ class Account(Base):
     # with a PIN, scoped to the test campus / test partner organisation so it sees
     # no real student's data. Set only by the team-accounts command, never by an API.
     is_team_account: Mapped[bool] = mapped_column(Boolean, default=False, server_default=sa_false())
+    # CAMPUS_ADMIN / COUNSELLOR only: the campus this staff member acts for. Its own
+    # column, never a profile key, because PATCH /profile writes the profile and a
+    # campus scope taken from there let staff move themselves into any college
+    # (audit C1). Set only by a super admin (create_staff, assign_campus), the
+    # provisioning script and the team-accounts command.
+    staff_campus: Mapped[str] = mapped_column(String(160), default="", server_default="")
 
 
 class StaffPinCredential(Base):

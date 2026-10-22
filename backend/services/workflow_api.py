@@ -1304,7 +1304,7 @@ def accounts(
                    "partnerKind": partner_kind_of(row),
                    "twoFactorEnabled": row.id in with_two_factor,
                    # Only campus-scoped staff show their campus; a student's profile stays private.
-                   **({"campus": (row.profile or {}).get("university", "")} if row.role in CAMPUS_SCOPED_ROLES else {})}
+                   **({"campus": row.staff_campus or ""} if row.role in CAMPUS_SCOPED_ROLES else {})}
                   for row in rows],
         "total": total,
         "limit": limit,
@@ -1355,6 +1355,7 @@ def create_staff(body: StaffInput, user=Depends(require_super_admin), db: Sessio
     row = M.Account(id=new_id(), identifier=normalize_identifier(body.identifier, body.channel), channel=body.channel,
                      full_name=body.fullName, role=body.role, active=True,
                      profile={"university": body.university} if body.university else {}, created_at=time.time(),
+                     staff_campus=body.university or "",
                      partner_kind=body.partnerKind or "")
     db.add(row)
     audit(db, user, "STAFF_ACCOUNT_CREATED", row.id)
@@ -1406,26 +1407,45 @@ def assign_campus(account_id: str, body: CampusAssignmentInput, user=Depends(req
     account = db.scalar(select(M.Account).where(M.Account.id == account_id).with_for_update().execution_options(populate_existing=True))
     if account is None or account.role not in CAMPUS_SCOPED_ROLES:
         raise HTTPException(404, "No campus administrator or counsellor with that id.")
-    account.profile = {**(account.profile or {}), "university": body.university.strip()}
+    if account.is_team_account:
+        # Team accounts stay on the team test campus (core/team_scope.py).
+        raise HTTPException(409, "A team account always acts for the team campus.")
+    campus = " ".join(body.university.split())
+    if is_reserved_campus(campus):
+        raise HTTPException(422, RESERVED_CAMPUS_MESSAGE)
+    # The scope lives in its own column; the profile copy is for display only.
+    account.staff_campus = campus
+    account.profile = {**(account.profile or {}), "university": campus}
     audit(db, user, f"{account.role}_SCOPE_SET", account_id)
     db.commit()
-    return {"id": account_id, "university": account.profile["university"]}
+    return {"id": account_id, "university": account.staff_campus}
 
 
 def _campus_key(value: str) -> str:
     return " ".join((value or "").split()).casefold()
 
 
+def staff_campus_of(account: M.Account | None) -> str:
+    """The campus a campus administrator or counsellor acts for, as a super admin assigned it.
+
+    Read from ``care_accounts.staff_campus`` only, never from the self-service
+    profile (audit C1). "" for every other role and for unassigned staff.
+    """
+    if account is None or account.role not in CAMPUS_SCOPED_ROLES:
+        return ""
+    return " ".join((account.staff_campus or "").split())
+
+
 def campus_scope(user: dict, db: Session) -> str | None:
     """The campus a staff member may act for. None means every campus (super admin only).
 
-    Fails closed: a campus administrator with no campus recorded gets a 403,
-    never an unfiltered view of every college's students.
+    Fails closed: a campus administrator with no campus assigned gets a 403,
+    never an unfiltered view of every college's students. The campus comes from
+    the server-assigned membership (``staff_campus_of``), not the profile.
     """
     if user["role"] == "SUPER_ADMIN":
         return None
-    account = db.get(M.Account, user["id"])
-    university = _campus_key((account.profile or {}).get("university", "")) if account else ""
+    university = _campus_key(staff_campus_of(db.get(M.Account, user["id"])))
     if not university:
         raise HTTPException(403, "Your account isn't assigned to a campus yet. Ask a super admin to set it.")
     return university
@@ -1456,7 +1476,7 @@ def partner_campuses(user=Depends(authenticated_user), db: Session = Depends(wor
                                               M.Account.is_team_account.is_(False))).all()
     seen: dict[str, str] = {}
     for row in rows:
-        name = " ".join(str((row.profile or {}).get("university", "")).split())
+        name = staff_campus_of(row)
         key = _campus_key(name)
         if key and key not in seen:
             seen[key] = name
@@ -1483,6 +1503,10 @@ class CampusSubmitInput(StrictModel):
 
 @router.post("/campus/verification")
 def submit_campus_verification(body: CampusSubmitInput, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+    # Students only. Staff campus scope is assigned by a super admin, and a team
+    # account stays on the team campus (audit C1).
+    if user["role"] != "STUDENT" or user.get("isTeamAccount") is True:
+        raise HTTPException(403, "Only a student account can submit a campus affiliation.")
     account = db.scalar(select(M.Account).where(M.Account.id == user["id"]).with_for_update().execution_options(populate_existing=True))
     row = db.get(M.CampusVerification, user["id"])
     if row and row.status == "VERIFIED":
