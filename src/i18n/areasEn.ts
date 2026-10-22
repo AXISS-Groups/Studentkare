@@ -1,4 +1,5 @@
 // keep-sorted start
+import { accountContactsEn } from './areas/accountContacts';
 import { adminBoardEn } from './areas/adminBoard';
 import { adminEn } from './areas/admin';
 import { adminGovEn } from './areas/adminGov';
@@ -52,6 +53,7 @@ import { wellnessEn } from './areas/wellness';
  */
 export const areasEn = {
   // keep-sorted start
+  ...accountContactsEn,
   ...adminBoardEn,
   ...adminEn,
   ...adminGovEn,

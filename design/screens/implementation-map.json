@@ -707,6 +707,7 @@
     "WebSecurity": [
       "src/features/account/views/SignInSecurityView.tsx",
       "src/features/account/viewmodel/TwoFactorViewModel.ts",
+      "src/features/account/viewmodel/ContactsViewModel.ts",
       "src/design-system/student-shell/StudentWebShell.tsx",
       "src/design-system/student-shell/studentNav.ts",
       "src/design-system/overlays/ConfirmDialog.tsx"

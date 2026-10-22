@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { observer } from 'mobx-react-lite';
 import { useT } from '@/i18n';
-import { Button, Card, CodeInput, ErrorState, Note, Rise, Skeleton } from '@/design-system';
+import { Button, Card, CodeInput, ErrorState, Note, PhoneInput, Rise, Skeleton, TextField } from '@/design-system';
 import { Icon } from '@/design-system/icons';
 import { color, focusRing, font, fontWeight, radius, size, space } from '@/design-system/theme';
 import { ConfirmDialog } from '@/components/interface/ConfirmDialog';
@@ -11,6 +11,8 @@ import { homeForRole, navigate } from '@/lib/utils/workflowRouting';
 import { QrCells } from '@/features/digital_id/views/DigitalIdNativeView';
 import { TwoFactorViewModel } from '../viewmodel/TwoFactorViewModel';
 import { PasscodeViewModel } from '@/features/auth/viewmodel/PasscodeViewModel';
+import { CONTACT_KINDS, ContactsViewModel } from '../viewmodel/ContactsViewModel';
+import type { ContactKind } from '../viewmodel/ContactsViewModel';
 
 /** Groups the key in fours ("JBSW Y3DP EHPK 3PXP"): easier to type into an app. */
 const grouped = (secret: string) => secret.replace(/(.{4})(?=.)/g, '$1 ');
@@ -59,16 +61,108 @@ const PasscodeCard = observer(function PasscodeCard({ vm }: { vm: PasscodeViewMo
   );
 });
 
+const CONTACT_ICON = { EMAIL: 'mail-2', WHATSAPP: 'message-square-text' } as const;
+
+/**
+ * Your email and WhatsApp number (plan tier1-auth-password-2026-10-22, section A):
+ * each verified or not, the sign-in ID marked. Add the missing one, verify one an
+ * admin typed for you, or remove the second. Codes for signing in go only to a
+ * verified contact, so the card says which are.
+ */
+const ContactsCard = observer(function ContactsCard({ vm }: { vm: ContactsViewModel }) {
+  const t = useT();
+  const kindLabel = (kind: ContactKind) => t(`contacts.kind.${kind}`);
+  if (vm.phase === 'loading') return <Skeleton label={t('contacts.loading')} lines={['40%', '100%', '100%']} />;
+  if (vm.phase === 'failed') {
+    return <ErrorState title={t('contacts.failedTitle')} body={t('contacts.failedBody')} retryLabel={t('common.tryAgain')} onRetry={() => void vm.load()} />;
+  }
+  return (
+    <Card testID="contacts-card">
+      <View style={styles.cardHead}>
+        <Icon name="user" size={22} color={color.action} />
+        <View style={styles.cardHeadText}>
+          <Text accessibilityRole="header" style={styles.cardTitle}>{t('contacts.title')}</Text>
+          <Text style={styles.body}>{t('contacts.lead')}</Text>
+        </View>
+      </View>
+      {vm.done ? <Note tone="positive">{t(vm.done.key, { kind: kindLabel(vm.done.kind) })}</Note> : null}
+      {vm.problem && !vm.editing ? <Note tone="danger">{t(vm.problem)}</Note> : null}
+      {CONTACT_KINDS.map(kind => {
+        const contact = vm.contact(kind);
+        const editing = vm.editing === kind;
+        return (
+          <View key={kind} style={styles.contactRow} testID={`contact-${kind}`}>
+            <View style={styles.contactHead}>
+              <Icon name={CONTACT_ICON[kind]} size={20} color={color.text2} />
+              <View style={styles.contactText}>
+                <Text style={styles.contactKind}>{kindLabel(kind)}</Text>
+                <Text style={styles.contactValue}>{contact ? contact.value : t('contacts.none')}</Text>
+                {contact?.primary ? <Text style={styles.meta}>{t('contacts.signInId')}</Text> : null}
+              </View>
+              {contact ? (
+                <View style={[styles.pill, contact.verified ? styles.pillOn : styles.pillOff]}>
+                  {contact.verified ? <Icon name="check-2" size={14} color={color.positive} /> : null}
+                  <Text style={[styles.pillText, { color: contact.verified ? color.positive : color.text2 }]}>
+                    {t(contact.verified ? 'contacts.verified' : 'contacts.unverified')}
+                  </Text>
+                </View>
+              ) : null}
+            </View>
+            {editing ? (
+              <View style={styles.contactForm}>
+                {vm.step === 'enter' ? (
+                  kind === 'EMAIL'
+                    ? <TextField label={t('contacts.emailLabel')} value={vm.value} onChangeText={vm.setValue} keyboardType="email-address" autoComplete="email" maxLength={254} error={vm.problem ? t(vm.problem) : undefined} disabled={vm.busy} testID="contact-value" />
+                    : <PhoneInput label={t('contacts.phoneLabel')} value={vm.value} onChangeText={vm.setValue} error={vm.problem ? t(vm.problem) : undefined} disabled={vm.busy} testID="contact-value" />
+                ) : (
+                  <CodeInput label={t('contacts.codeLabel')} value={vm.code} onChangeText={vm.setCode} hint={t('contacts.codeHint', { target: vm.sentTo })} error={vm.problem ? t(vm.problem) : undefined} disabled={vm.busy} testID="contact-code" />
+                )}
+                <View style={styles.actions}>
+                  {vm.step === 'enter'
+                    ? <Button label={vm.busy ? t('contacts.sending') : t('contacts.send')} onPress={() => void vm.sendCode()} busy={vm.busy} disabled={!vm.canSend && !vm.busy} />
+                    : <Button label={vm.busy ? t('contacts.confirming') : t('contacts.confirm')} onPress={() => void vm.verify()} busy={vm.busy} disabled={!vm.canVerify && !vm.busy} />}
+                  <Button label={t('contacts.cancel')} variant="ghost" onPress={vm.cancel} disabled={vm.busy} />
+                </View>
+              </View>
+            ) : contact?.primary ? null : (
+              <View style={styles.actions}>
+                {!contact || !contact.verified ? (
+                  <Button label={t(contact ? 'contacts.verify' : 'contacts.add', { kind: kindLabel(kind) })} variant={contact ? 'primary' : 'secondary'} onPress={() => vm.start(kind)} disabled={vm.busy || vm.editing !== null} />
+                ) : null}
+                {contact ? <Button label={t('contacts.remove', { kind: kindLabel(kind) })} variant="ghost" onPress={() => vm.askRemove(kind)} disabled={vm.busy || vm.editing !== null} /> : null}
+              </View>
+            )}
+          </View>
+        );
+      })}
+      <ConfirmDialog
+        open={vm.removing !== null}
+        tone="destructive"
+        title={vm.removing ? t('contacts.removeTitle', { kind: kindLabel(vm.removing) }) : ''}
+        body={<Text style={styles.body}>{t('contacts.removeBody')}</Text>}
+        confirmLabel={vm.removing ? t('contacts.remove', { kind: kindLabel(vm.removing) }) : ''}
+        cancelLabel={t('common.cancel')}
+        busy={vm.busy}
+        onConfirm={() => void vm.remove()}
+        onCancel={vm.cancelRemove}
+      />
+    </Card>
+  );
+});
+
 export const SignInSecurityView = observer(function SignInSecurityView({
   viewModel: vm,
   onContinue,
   passcode,
+  contacts,
 }: {
   viewModel: TwoFactorViewModel;
   /** Shown once a held session has turned 2FA on: back to the workspace. */
   onContinue?: () => void;
   /** Students: the passcode card. */
   passcode?: PasscodeViewModel;
+  /** Students: their email and WhatsApp number. */
+  contacts?: ContactsViewModel;
 }) {
   const t = useT();
   const status = vm.status;
@@ -98,6 +192,7 @@ export const SignInSecurityView = observer(function SignInSecurityView({
         </View>
       </Pressable>
 
+      {contacts ? <Rise index={1}><ContactsCard vm={contacts} /></Rise> : null}
       {passcode ? <Rise index={1}><PasscodeCard vm={passcode} /></Rise> : null}
 
       {vm.phase === 'loading' ? <Skeleton label={t('sec.loading')} lines={['50%', '100%', '80%']} /> : null}
@@ -243,14 +338,20 @@ export function SignInSecurityRoute(): React.ReactElement {
   }, [vm]);
   const role = auth.user?.role;
   const [passcode] = useState(() => new PasscodeViewModel());
+  const [contacts] = useState(() => new ContactsViewModel());
   useEffect(() => {
-    if (role === 'STUDENT') void passcode.load();
-  }, [passcode, role]);
+    if (role === 'STUDENT') {
+      void passcode.load();
+      void contacts.load();
+    }
+    return () => contacts.dispose();
+  }, [passcode, contacts, role]);
   return (
     <SignInSecurityView
       viewModel={vm}
       onContinue={role ? () => navigate(homeForRole(role)) : undefined}
       passcode={role === 'STUDENT' ? passcode : undefined}
+      contacts={role === 'STUDENT' ? contacts : undefined}
     />
   );
 }
@@ -284,6 +385,12 @@ const styles = StyleSheet.create({
   secret: { fontFamily: font.family.mono, fontSize: font.size.body, color: color.clinicalValue, letterSpacing: 1 },
   actions: { flexDirection: 'row', flexWrap: 'wrap', gap: space.s8 },
   dialogBody: { gap: space.s12 },
+  contactRow: { gap: space.s10, paddingTop: space.s12, borderTopWidth: 1, borderTopColor: color.rule },
+  contactHead: { flexDirection: 'row', alignItems: 'flex-start', gap: space.s10, flexWrap: 'wrap' },
+  contactText: { flex: 1, minWidth: 160, gap: space.s2 },
+  contactKind: { fontFamily: font.family.sans, fontSize: font.size.caption, fontWeight: fontWeight(font.weight.heavy), color: color.text2 },
+  contactValue: { fontFamily: font.family.sans, fontSize: font.size.bodySm, color: color.text },
+  contactForm: { gap: space.s10 },
   // Two cards side by side on the web board, stacked when narrow.
   later: { flexDirection: 'row', flexWrap: 'wrap', gap: space.s16, alignItems: 'stretch' },
   half: { flexGrow: 1, flexBasis: 320, minWidth: 0 },

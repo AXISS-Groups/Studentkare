@@ -62,6 +62,7 @@ from core.telemetry import (
     update_db_pool_metrics,
     update_job_metrics,
 )
+from services.account_contacts import router as account_contacts_router
 from services.account_password import router as account_password_router
 from services.activity_telemetry import ActivityTelemetryMiddleware
 from services.alerts import router as alerts_router
@@ -348,4 +349,5 @@ app.include_router(settings_router)
 app.include_router(team_accounts_router)
 app.include_router(student_passcode_router)
 app.include_router(account_password_router)
+app.include_router(account_contacts_router)
 app.include_router(apilayer_router, dependencies=[Depends(require_super_admin)])
