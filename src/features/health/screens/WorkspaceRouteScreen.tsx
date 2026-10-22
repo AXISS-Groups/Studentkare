@@ -18,6 +18,7 @@ import { CriticalResultsScreen } from '@/features/clinician/critical-results/Cri
 import { ReportReviewsScreen } from '@/features/clinician/report-reviews/ReportReviewsScreen';
 import { EncounterNoteScreen } from '@/features/clinician/encounter-note/EncounterNoteScreen';
 import { PrescribeScreen } from '@/features/clinician/prescribe/PrescribeScreen';
+import { ClinicianPostReviewsScreen } from '@/features/newsroom/admin/PostsAdminView';
 import { asRoutePath } from '@/lib/utils/workflowRouting';
 import { useAuth } from '@/data/contexts/AuthContext';
 import { ScreenLoading } from '@/components/health/ScreenLoading';
@@ -50,6 +51,8 @@ const CLINICIAN_SCREENS: Partial<Record<RoutePath, React.ComponentType>> = {
   'clinician/report-reviews': ReportReviewsScreen,
   'clinician/encounter-note': EncounterNoteScreen,
   'clinician/prescribe': PrescribeScreen,
+  // Health tip reviews (newsroom): approve exactly the version that will be published.
+  'clinician/post-reviews': ClinicianPostReviewsScreen,
   earnings: ClinicianEarningsConsoleScreen,
   chronic: ClinicianChronicConsoleScreen,
 };

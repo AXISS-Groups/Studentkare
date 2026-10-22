@@ -32,7 +32,7 @@ const REGISTRIES: Record<string, number> = {
   'src/i18n/areasEn.ts': 2,
   'src/i18n/areasHi.ts': 2,
   'src/i18n/areasTe.ts': 2,
-  'src/screens/workspace/StudentPhoneFrame.tsx': 2,
+  'src/screens/workspace/StudentPhoneFrame.tsx': 3,
   'src/screens/workspace/WorkspaceScreen.tsx': 1,
   'src/features/phoneKit/studentPhoneBoards.tsx': 1,
   'src/native/App.tsx': 1,

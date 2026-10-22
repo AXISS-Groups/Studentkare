@@ -1,0 +1,217 @@
+import React, { useEffect, useState } from 'react';
+import { useNavigate, useParams } from '@/core/navigation';
+import { useLanguage, useT } from '@/i18n';
+import { Icon } from '@/design-system/icons';
+import { PublicSiteHeader, PublicSitePage } from '@/design-system/public-site';
+import { NewsroomRepository, absoluteUrl } from '../data/NewsroomRepository';
+import type { PostDetail } from '../data/NewsroomRepository';
+import { TEMPLATES } from '../model/templates';
+import type { SectionPath } from '../model/templates';
+import { formatDate, postJsonLd, shareUrl } from '../model/share';
+import type { ShareTarget } from '../model/share';
+import { PostCover } from './PostCover';
+import { PostBody } from './PostBody';
+import { PostCard, PostChips, PostMeta } from './PostCard';
+import './newsroom.css';
+
+const JSON_LD_ID = 'sk-news-jsonld';
+
+/** Title, description, canonical, Open Graph / Twitter and the JSON-LD for this post; removed when the page closes. */
+function usePostHead(post: PostDetail | null, publisher: string): void {
+  useEffect(() => {
+    if (!post) return undefined;
+    const origin = window.location.origin;
+    const url = `${origin}${post.path}`;
+    const image = absoluteUrl(post.ogImage, origin);
+    const previous = document.title;
+    document.title = `${post.seoTitle} · ${publisher}`;
+    const set = (attr: 'name' | 'property', key: string, value: string) => {
+      let el = document.head.querySelector(`meta[${attr}="${key}"]`);
+      if (!el) {
+        el = document.createElement('meta');
+        el.setAttribute(attr, key);
+        document.head.appendChild(el);
+      }
+      el.setAttribute('content', value);
+    };
+    set('name', 'description', post.seoDescription);
+    set('property', 'og:type', 'article');
+    set('property', 'og:title', post.seoTitle);
+    set('property', 'og:description', post.seoDescription);
+    set('property', 'og:url', url);
+    set('property', 'og:image', image);
+    set('property', 'og:image:width', '1200');
+    set('property', 'og:image:height', '630');
+    set('property', 'og:image:alt', post.coverAlt);
+    set('name', 'twitter:card', 'summary_large_image');
+    set('name', 'twitter:title', post.seoTitle);
+    set('name', 'twitter:description', post.seoDescription);
+    set('name', 'twitter:image', image);
+    let canonical = document.head.querySelector('link[rel="canonical"]');
+    if (!canonical) {
+      canonical = document.createElement('link');
+      canonical.setAttribute('rel', 'canonical');
+      document.head.appendChild(canonical);
+    }
+    canonical.setAttribute('href', url);
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.id = JSON_LD_ID;
+    script.textContent = JSON.stringify(postJsonLd(post, origin, publisher));
+    document.getElementById(JSON_LD_ID)?.remove();
+    document.head.appendChild(script);
+    return () => {
+      document.title = previous;
+      document.getElementById(JSON_LD_ID)?.remove();
+    };
+  }, [post, publisher]);
+}
+
+/** Copy link, WhatsApp, LinkedIn and X: plain links, no third-party script. */
+export function ShareLinks({ post }: { post: PostDetail }): React.ReactElement {
+  const t = useT();
+  const [copied, setCopied] = useState<'idle' | 'done' | 'failed'>('idle');
+  const url = typeof window !== 'undefined' ? `${window.location.origin}${post.path}` : post.path;
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied('done');
+    } catch {
+      setCopied('failed');
+    }
+  };
+  const targets: readonly { id: ShareTarget; icon: 'message-circle-2' | 'brand-linkedin' | 'x-2'; label: 'news.shareWhatsapp' | 'news.shareLinkedin' | 'news.shareX' }[] = [
+    { id: 'whatsapp', icon: 'message-circle-2', label: 'news.shareWhatsapp' },
+    { id: 'linkedin', icon: 'brand-linkedin', label: 'news.shareLinkedin' },
+    { id: 'x', icon: 'x-2', label: 'news.shareX' },
+  ];
+  return (
+    <section className="sk-news-share" aria-label={t('news.share')}>
+      <span className="sk-news-share__title"><Icon name="share" size={16} />{t('news.share')}</span>
+      <div className="sk-news-share__row">
+        <button type="button" className="sk-news-share__btn" onClick={() => void copy()} data-testid="news-copy-link">
+          <Icon name={copied === 'done' ? 'check' : 'copy'} size={18} />{t('news.copyLink')}
+        </button>
+        {targets.map((target) => (
+          <a key={target.id} className="sk-news-share__btn" href={shareUrl(target.id, url, post.title)} target="_blank" rel="noopener noreferrer"
+            aria-label={t(target.label)} data-testid={`news-share-${target.id}`}>
+            <Icon name={target.icon} size={18} />
+          </a>
+        ))}
+      </div>
+      <p className="sk-news-share__status" role="status">
+        {copied === 'done' ? t('news.copied') : copied === 'failed' ? t('news.copyFailed') : ''}
+      </p>
+    </section>
+  );
+}
+
+export function PostArticle({ post, onOpen }: { post: PostDetail; onOpen: (path: string) => void }): React.ReactElement {
+  const t = useT();
+  const { lang } = useLanguage();
+  const spec = TEMPLATES[post.template];
+  const back = post.section === 'blog' ? 'news.backBlog' : 'news.backNews';
+  return (
+    <article className="sk-news-post" data-template={post.template} data-testid="news-post">
+      <nav className="sk-news-crumbs" aria-label={t('news.crumbAria')}>
+        <a href={`/${post.section}`} onClick={(e) => { e.preventDefault(); onOpen(`/${post.section}`); }}>
+          <Icon name="arrow-left" size={16} />{t(back)}
+        </a>
+      </nav>
+      <PostCover template={post.template} art={post.coverArt} alt={post.coverAlt} size="hero">
+        <PostChips post={post} />
+        <h1 className="sk-news-post__title">{post.title}</h1>
+        {post.summary ? <p className="sk-news-post__summary">{post.summary}</p> : null}
+        <PostMeta post={post} />
+      </PostCover>
+
+      <div className="sk-news-post__layout">
+        <div className="sk-news-post__main">
+          {post.reviewed ? (
+            <p className="sk-news-post__reviewed" data-testid="news-reviewed">
+              <Icon name="shield-check" size={18} />
+              {t('news.reviewedBy', { name: post.reviewed.by, date: formatDate(post.reviewed.on, lang) })}
+            </p>
+          ) : null}
+          {post.sample ? <p className="sk-news-post__sample"><Icon name="info" size={16} />{t('news.sampleNote')}</p> : null}
+          <PostBody template={post.template} blocks={post.body} onOpen={onOpen} />
+          {spec.review ? (
+            <aside className="sk-news-post__note" aria-label={t('news.healthNoteAria')}>
+              <Icon name="info" size={18} />
+              <p>
+                {t('news.healthNote')}{' '}
+                <a href="/crisis" onClick={(e) => { e.preventDefault(); onOpen('/crisis'); }}>{t('news.healthNoteCrisis')}</a>
+              </p>
+            </aside>
+          ) : null}
+          {post.tags.length ? (
+            <ul className="sk-news-tags" aria-label={t('news.tagsAria')}>
+              {post.tags.map((tag) => <li key={tag} className="sk-news-tag">{tag}</li>)}
+            </ul>
+          ) : null}
+          {post.updatedAt && post.updatedAt !== post.publishedAt ? (
+            <p className="sk-news-post__updated">{t('news.updated', { date: formatDate(post.updatedAt, lang) })}</p>
+          ) : null}
+        </div>
+        <aside className="sk-news-post__side">
+          <ShareLinks post={post} />
+        </aside>
+      </div>
+
+      {post.related.length ? (
+        <section className="sk-news-related" aria-labelledby="sk-news-related">
+          <h2 id="sk-news-related" className="sk-news-section-title">{t('news.related')}</h2>
+          <div className="sk-news-grid">
+            {post.related.map((item) => <PostCard key={item.id} post={item} onOpen={(p) => onOpen(p.path)} />)}
+          </div>
+        </section>
+      ) : null}
+    </article>
+  );
+}
+
+/**
+ * /blog/:slug and /news/:slug (WebPost): one published post in its template,
+ * with share links, related posts and the newsletter band. A draft or a wrong
+ * address is "not published", never a half-shown post.
+ */
+export function PostPage({ section }: { section: SectionPath }): React.ReactElement {
+  const t = useT();
+  const { slug = '' } = useParams();
+  const routerNavigate = useNavigate();
+  const [state, setState] = useState<{ phase: 'loading' | 'ready' | 'missing' | 'error'; post: PostDetail | null }>({ phase: 'loading', post: null });
+  const [attempt, setAttempt] = useState(0);
+  usePostHead(state.post, t('news.publisher'));
+
+  useEffect(() => {
+    let live = true;
+    setState({ phase: 'loading', post: null });
+    new NewsroomRepository().post(section, slug).then(
+      (post) => { if (live) setState({ phase: 'ready', post }); },
+      (error: { status?: number }) => { if (live) setState({ phase: error.status === 404 ? 'missing' : 'error', post: null }); },
+    );
+    return () => { live = false; };
+  }, [section, slug, attempt]);
+
+  return (
+    <PublicSitePage header={<PublicSiteHeader current={section} variant="compact" />}>
+      <div className="sk-news" data-section={section}>
+        {state.phase === 'loading' ? (
+          <div className="sk-news-post" aria-busy="true" role="status" aria-label={t('news.loadingPost')}>
+            <div className="sk-news-skeleton sk-news-skeleton--hero" />
+          </div>
+        ) : null}
+        {state.phase === 'missing' || state.phase === 'error' ? (
+          <div className="sk-news-state" role="alert" data-testid="news-missing">
+            <Icon name={state.phase === 'missing' ? 'file-text' : 'alert-circle'} size={28} />
+            <h1>{t(state.phase === 'missing' ? 'news.notFound' : 'news.error')}</h1>
+            <p>{t(state.phase === 'missing' ? 'news.notFoundBody' : 'news.errorBody')}</p>
+            {state.phase === 'error' ? <button type="button" className="sk-news-btn" onClick={() => setAttempt((n) => n + 1)}>{t('news.retry')}</button> : null}
+            <a className="sk-news-btn sk-news-btn--ghost" href={`/${section}`}>{t('news.toList')}</a>
+          </div>
+        ) : null}
+        {state.post ? <PostArticle post={state.post} onOpen={(path) => routerNavigate(path)} /> : null}
+      </div>
+    </PublicSitePage>
+  );
+}
