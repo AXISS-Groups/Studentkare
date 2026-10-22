@@ -19,6 +19,9 @@ paths = [
   '''^src/core/security/''',
   '''^backend/tests/''',
   '''^src/types/index\.ts$''',
+  # Frontend unit-test fixtures (fake invite tokens and the like). Kept to test files only, so a real
+  # secret in app code is still caught.
+  '''^src/(.+/)?__tests__/[^/]+\.test\.tsx?$''',
 ]
 regexes = [
   '''fixture''',
