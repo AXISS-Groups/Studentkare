@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '@/data/contexts/AuthContext';
 import { useOptionalLiveCart } from '@/data/contexts/LiveCartContext';
 import { useNavigate } from '@/core/navigation';
@@ -9,6 +9,7 @@ import { recentlyViewed } from '@/features/phoneKit/listingCache';
 import { cannotAdd } from '@/features/shopPhone/viewmodel/PhoneShopViewModel';
 import type { ShopFilter } from '../data/storeArt';
 import { useM2HomeData } from '../data/useM2Home';
+import { M2BlogCard, homeTeaserCount, useLatestPosts } from '@/features/newsroom/views/M2PostParts';
 import { M2HomeView } from './M2HomeView';
 import type { ServiceKey } from './M2HomeView';
 
@@ -32,6 +33,8 @@ export function M2HomeRoute(): React.ReactElement {
   const slot = usePhoneHeaderSlot();
   const cart = useOptionalLiveCart();
   const data = useM2HomeData();
+  const [blogAttempt, setBlogAttempt] = useState(0);
+  const blog = useLatestPosts('HEALTH_TIP', homeTeaserCount(), blogAttempt);
   const count = cart ? cart.lines.reduce((sum, line) => sum + line.quantity, 0) : 0;
   return (
     <M2HomeView
@@ -40,6 +43,7 @@ export function M2HomeRoute(): React.ReactElement {
       verified={user?.isVerifiedStudent === true}
       data={data}
       recent={recentlyViewed(getSetting('shop.home_featured_count'))}
+      blog={<M2BlogCard state={blog} onOpen={(post) => routerNavigate(post.path)} onAll={() => routerNavigate('/blog')} onRetry={() => setBlogAttempt((n) => n + 1)} />}
       cart={cart ? { count, add: cart.add, canAdd: (item) => !cannotAdd(item) } : undefined}
       links={{
         sos: () => (slot?.openSos ? slot.openSos() : navigate('sos')),

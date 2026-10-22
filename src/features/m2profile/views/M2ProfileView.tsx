@@ -43,6 +43,8 @@ export interface M2ProfileLinks {
   orders: () => void;
   privacy?: () => void;
   help?: () => void;
+  /** What's new: the team's product update posts (features/newsroom M2WhatsNew). */
+  whatsNew?: () => void;
   signOut: () => void;
 }
 
@@ -265,6 +267,7 @@ export const M2ProfileView = observer(function M2ProfileView({ vm, links }: { vm
           <Row icon="credit-card" fill={color.serviceVioletSoft} ink={color.serviceVioletInk} title={t('m2.prof.orders')} meta={t('m2.prof.ordersMeta')} onPress={links.orders} testID="m2-prof-orders" />
           <Row icon="translate" fill={color.serviceBlueSoft} ink={color.serviceBlueInk} title={t('m2.prof.language')} meta={LANGS.map((l) => LANGUAGE_NAMES[l]).join(' · ')} onPress={() => setLangOpen(true)} testID="m2-prof-language" />
           {links.privacy ? <Row icon="lock-4" fill={color.neutralBg} ink={color.text2} title={t('m2.prof.privacy')} meta={t('m2.prof.privacyMeta')} onPress={links.privacy} testID="m2-prof-privacy" /> : null}
+          {links.whatsNew ? <Row icon="sparkles" fill={color.surface3} ink={color.action} title={t('news.whatsNew.title')} meta={t('news.whatsNew.meta')} onPress={links.whatsNew} testID="m2-prof-whats-new" /> : null}
           {links.help ? <Row icon="message-circle-3" fill={color.serviceSkySoft} ink={color.serviceSkyInk} title={t('m2.prof.help')} meta={t('m2.prof.helpMeta')} onPress={links.help} testID="m2-prof-help" /> : null}
         </M2Card>
         <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('home.signOut')} aria-label={t('home.signOut')} onPress={links.signOut} testID="m2-prof-sign-out"

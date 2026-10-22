@@ -30,6 +30,7 @@ import { RuleLView } from '../../../features/admin/views/RuleLView';
 import { TeamAccountsView } from '../../../features/team-accounts/TeamAccountsView';
 import { AdminCareDirectoryScreen } from '../../../features/careDirectory/admin/CareDirectoryAdminView';
 import { AdminMedicineInfoScreen } from '../../../features/medicineInfo/admin/MedicineInfoReviewView';
+import { AdminPostsScreen } from '../../../features/newsroom/admin/PostsAdminView';
 import { CheckinsView, ConsentPolicyView, HandoverView, SurveillanceView } from '../../../features/admin/views/GovernanceBoards';
 import { useT } from '../../../i18n';
 import { AdminPage, LegacyPanel } from './AdminPage';
@@ -67,6 +68,7 @@ export function superAdminScreen(route: RoutePath): ReactElement | null {
   if (route === 'admin/api-keys') return <ApiKeysView />;
   if (route === 'admin/care-directory') return <AdminCareDirectoryScreen />;
   if (route === 'admin/medicine-info') return <AdminMedicineInfoScreen />;
+  if (route === 'admin/posts') return <AdminPostsScreen />;
   if (route === 'admin/audit') return <AuditExplorerView />;
   if (route === 'admin/surveillance') return <SurveillanceView />;
   if (route === 'admin/tokens') return <TokensView />;

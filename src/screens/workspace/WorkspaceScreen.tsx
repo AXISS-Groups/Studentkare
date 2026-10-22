@@ -88,6 +88,7 @@ const M2InsightsRoute = lazy(() => import('@/features/insights/views/M2InsightsR
 const MedicineInfoRoute = lazy(() => import('@/features/medicineInfo/views/MedicineInfoRoute').then(module => ({ default: module.MedicineInfoRoute })));
 const PharmacyMedicineInfoScreen = lazy(() => import('@/features/medicineInfo/admin/MedicineInfoReviewView').then(module => ({ default: module.PharmacyMedicineInfoScreen })));
 const CareDirectoryRoute = lazy(() => import('@/features/careDirectory/views/CareDirectoryRoute').then(module => ({ default: module.CareDirectoryRoute })));
+const M2WhatsNewRoute = lazy(() => import('@/features/newsroom/views/M2WhatsNewRoute').then(module => ({ default: module.M2WhatsNewRoute })));
 const WebEmergencyCard = lazy(() => import('@/features/emergency/views/WebEmergencyCard').then(module => ({ default: module.WebEmergencyCard })));
 const IdentityVerifyView = lazy(() => import('@/features/auth/views/IdentityVerifyView').then(module => ({ default: module.IdentityVerifyView })));
 const WebPass = lazy(() => import('@/features/digital_id/views/WebPass').then(module => ({ default: module.WebPass })));
@@ -354,6 +355,8 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
       case 'your-care': return <M2InsightsRoute />;
       // Find care near you (WebFindCare above phone width): the same board, two columns.
       case 'find-care': return <CareDirectoryRoute wide />;
+      // What's new (product update posts), from Profile: the same board in the page column.
+      case 'whats-new': return <M2WhatsNewRoute wide />;
       // Medicine information above phone width: the same screen, one wider column.
       case 'medicine-info': return <MedicineInfoRoute wide />;
       default: return null;
