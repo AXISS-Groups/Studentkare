@@ -9,6 +9,12 @@
 }
 .sk-team-accounts__you { margin-left: var(--sk-space-6); }
 .sk-team-accounts__meta { font-weight: 500; }
+.sk-team-accounts__password {
+  display: block;
+  margin-top: var(--sk-space-4);
+  font-size: var(--sk-text-caption);
+  color: var(--sk-color-text-2);
+}
 .sk-team-accounts__actions {
   display: flex;
   flex-wrap: wrap;

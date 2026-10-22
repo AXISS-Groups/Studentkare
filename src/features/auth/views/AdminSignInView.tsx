@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
@@ -9,7 +9,7 @@ import { Navigate } from '@/core/navigation';
 import { useAuth } from '@/data/contexts/AuthContext';
 import { homeForRole } from '@/lib/utils/workflowRouting';
 import type { SessionResponse } from '@/data/types/workflowTypes';
-import { AuthViewModel, STAFF_PIN_LENGTH } from '../viewmodel/AuthViewModel';
+import { AuthViewModel, PASSWORD_MAX_LENGTH, STAFF_PIN_LENGTH } from '../viewmodel/AuthViewModel';
 import type { StaffSignInMethod } from '../viewmodel/AuthViewModel';
 import { OtpVerifyView } from './OtpVerifyView';
 import { Wordmark } from './SignInFrame';
@@ -35,10 +35,16 @@ const HTTP_TOO_MANY = 429;
  * public setting auth.staff_pin_login_enabled is on (the server refuses it too
  * when off). It replaces the emailed code only: an account with an authenticator
  * still gets that step.
+ *
+ * Passwords (plan tier1-auth-password-2026-10-22): a "Password" option beside the
+ * two, shown only while the public setting auth.password_login_enabled is on. Same
+ * rules as the PIN: one answer for every failure, and the authenticator after it.
  */
-export const AdminSignInView = observer(function AdminSignInView({ vm, onAccept, pinEnabled = getSetting('auth.staff_pin_login_enabled') }: { vm: AuthViewModel; onAccept: (response: SessionResponse) => void; pinEnabled?: boolean }) {
+export const AdminSignInView = observer(function AdminSignInView({ vm, onAccept, pinEnabled = getSetting('auth.staff_pin_login_enabled'), passwordEnabled = getSetting('auth.password_login_enabled') }: { vm: AuthViewModel; onAccept: (response: SessionResponse) => void; pinEnabled?: boolean; passwordEnabled?: boolean }) {
   const t = useT();
   const locked = vm.errorStatus === HTTP_TOO_MANY;
+  const methods = METHODS.filter(entry => entry.method === 'CODE' || (entry.method === 'PIN' ? pinEnabled : passwordEnabled));
+  const method = methods.some(entry => entry.method === vm.signInMethod) ? vm.signInMethod : 'CODE';
   return (
     <main className="sk-staff">
       <div className="sk-staff__card sk-signin">
@@ -50,8 +56,8 @@ export const AdminSignInView = observer(function AdminSignInView({ vm, onAccept,
         {vm.step === 1 ? (
           <div className="sk-signin__column">
             <h1 className="sk-staff__title">{t('ident.staff.title')}</h1>
-            {pinEnabled ? <SignInMethodSwitch vm={vm} /> : null}
-            {pinEnabled && vm.signInMethod === 'PIN' ? <PinForm vm={vm} onAccept={onAccept} /> : (
+            {methods.length > 1 ? <SignInMethodSwitch vm={vm} methods={methods} /> : null}
+            {method === 'PIN' ? <PinForm vm={vm} onAccept={onAccept} /> : method === 'PASSWORD' ? <PasswordForm vm={vm} onAccept={onAccept} /> : (
               <form className="sk-signin__column" onSubmit={(e) => { e.preventDefault(); void vm.sendCode(); }}>
                 <div className="sk-signin__field">
                   <label className="sk-staff__label" htmlFor="sk-staff-email">{t('ident.staff.email')}</label>
@@ -130,26 +136,27 @@ export const AdminSignInView = observer(function AdminSignInView({ vm, onAccept,
 const METHODS: readonly { method: StaffSignInMethod; label: MessageKey; icon: SkIconName }[] = [
   { method: 'CODE', label: 'team.signin.methodCode', icon: 'mail-2' },
   { method: 'PIN', label: 'team.signin.methodPin', icon: 'key' },
+  { method: 'PASSWORD', label: 'team.signin.methodPassword', icon: 'lock' },
 ];
 
 /**
- * Emailed code or team PIN: a radio group drawn as two pills. Arrow keys move
- * between them (one tab stop), as a native radio group does.
+ * Emailed code, team PIN or password: a radio group drawn as pills, only the ones
+ * switched on. Arrow keys move between them (one tab stop), as a native radio group does.
  */
-const SignInMethodSwitch = observer(function SignInMethodSwitch({ vm }: { vm: AuthViewModel }) {
+const SignInMethodSwitch = observer(function SignInMethodSwitch({ vm, methods }: { vm: AuthViewModel; methods: typeof METHODS }) {
   const t = useT();
   const refs = useRef<(HTMLButtonElement | null)[]>([]);
   const move = (event: React.KeyboardEvent<HTMLButtonElement>, index: number) => {
     const step = event.key === 'ArrowRight' || event.key === 'ArrowDown' ? 1 : event.key === 'ArrowLeft' || event.key === 'ArrowUp' ? -1 : 0;
     if (!step) return;
     event.preventDefault();
-    const next = (index + step + METHODS.length) % METHODS.length;
+    const next = (index + step + methods.length) % methods.length;
     refs.current[next]?.focus();
-    vm.setSignInMethod(METHODS[next].method);
+    vm.setSignInMethod(methods[next].method);
   };
   return (
     <div className="sk-staff__methods" role="radiogroup" aria-label={t('team.signin.methodLabel')}>
-      {METHODS.map((entry, index) => {
+      {methods.map((entry, index) => {
         const checked = vm.signInMethod === entry.method;
         return (
           <button
@@ -229,6 +236,80 @@ const PinForm = observer(function PinForm({ vm, onAccept }: { vm: AuthViewModel;
         </div>
       ) : null}
       <button type="submit" className="sk-staff__primary" disabled={!vm.canSubmitPin} aria-busy={vm.busy}>
+        {vm.busy ? t('team.signin.signingIn') : t('team.signin.submit')}
+      </button>
+      <p className="sk-staff__note">{t('team.signin.note')}</p>
+    </form>
+  );
+});
+
+/**
+ * A team account's ID and password. Like the PIN form: the server's one answer for
+ * every failure is shown as it is, and the field empties after each try. "Show"
+ * is a text button (the icon kit has no eye-off, plan D-6).
+ */
+const PasswordForm = observer(function PasswordForm({ vm, onAccept }: { vm: AuthViewModel; onAccept: (response: SessionResponse) => void }) {
+  const t = useT();
+  const [shown, setShown] = useState(false);
+  const described = ['sk-staff-password-hint', vm.error ? 'sk-staff-password-error' : ''].filter(Boolean).join(' ');
+  return (
+    <form className="sk-signin__column" onSubmit={(e) => { e.preventDefault(); setShown(false); void vm.signInWithPassword(onAccept); }}>
+      <div className="sk-signin__field">
+        <label className="sk-staff__label" htmlFor="sk-staff-password-id">{t('team.signin.id')}</label>
+        <div className="sk-signin__input" data-invalid={Boolean(vm.error)}>
+          <input
+            id="sk-staff-password-id"
+            type="email"
+            required
+            autoComplete="username"
+            maxLength={254}
+            value={vm.identifier}
+            aria-invalid={Boolean(vm.error)}
+            aria-describedby="sk-staff-password-id-hint"
+            onChange={(event) => vm.setIdentifier(event.target.value)}
+          />
+        </div>
+        <p className="sk-staff__hint" id="sk-staff-password-id-hint">{t('team.signin.idHint')}</p>
+      </div>
+      <div className="sk-signin__field">
+        <label className="sk-staff__label" htmlFor="sk-staff-password">{t('team.signin.password')}</label>
+        <div className="sk-signin__input" data-invalid={Boolean(vm.error)}>
+          <input
+            id="sk-staff-password"
+            type={shown ? 'text' : 'password'}
+            required
+            autoComplete="current-password"
+            autoCapitalize="none"
+            spellCheck={false}
+            maxLength={PASSWORD_MAX_LENGTH}
+            value={vm.password}
+            aria-invalid={Boolean(vm.error)}
+            aria-describedby={described}
+            onChange={(event) => vm.setPassword(event.target.value)}
+          />
+          <button
+            type="button"
+            className="sk-staff__reveal"
+            aria-pressed={shown}
+            aria-label={t(shown ? 'team.signin.hideAria' : 'team.signin.showAria')}
+            aria-controls="sk-staff-password"
+            onClick={() => setShown(value => !value)}
+          >
+            {t(shown ? 'team.signin.hide' : 'team.signin.show')}
+          </button>
+        </div>
+        <p className="sk-staff__hint" id="sk-staff-password-hint">{t('team.signin.passwordHint')}</p>
+      </div>
+      {vm.error ? (
+        <div className="sk-otp__note sk-otp__note--error" role="alert" id="sk-staff-password-error">
+          <span className="sk-otp__note-icon"><Icon name="alert-circle-4" size={20} /></span>
+          <span>
+            <strong>{vm.errorStatus === HTTP_TOO_MANY ? t('ident.otp.tooManyTitle') : t('team.signin.failedTitle')}</strong>
+            {vm.error}
+          </span>
+        </div>
+      ) : null}
+      <button type="submit" className="sk-staff__primary" disabled={!vm.canSubmitPassword} aria-busy={vm.busy}>
         {vm.busy ? t('team.signin.signingIn') : t('team.signin.submit')}
       </button>
       <p className="sk-staff__note">{t('team.signin.note')}</p>
