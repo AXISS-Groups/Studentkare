@@ -10,7 +10,7 @@ import { useT, type MessageKey } from '@/i18n';
 import '../../theme/workflows.css';
 
 interface Slot { id: string; slotStart: string; slotEnd: string; capacity: number; booked: number; available: number; }
-interface Appointment { id: string; catalogItemId: string; providerId: string; slotStart: string; slotEnd: string; status: string; createdAt: number; }
+interface Appointment { id: string; catalogItemId: string; providerId: string; slotStart: string; slotEnd: string; status: string; createdAt: number; /** The booked service, when the server knows it. */ serviceName?: string }
 /** The stored preferences. Other fields (consents this dialog does not show) are kept and sent back untouched. */
 interface Prefs { [field: string]: unknown; emailEnabled?: boolean; pushEnabled?: boolean; remindersEnabled?: boolean; timezone?: string; quietStart?: string; quietEnd?: string; }
 
@@ -54,7 +54,7 @@ export function AppointmentsPanel() {
       {resource.data?.items.length ? <div className="wf-order-list">
         {resource.data.items.map(appt => <article className="wf-card" key={appt.id}>
           <div className="wf-panel-heading">
-            <div><span className="care-eyebrow">{t('care.appts.ref', { ref: appt.id.slice(0, 8).toUpperCase() })}</span><h3>{formatDate(appt.slotStart)}</h3></div>
+            <div><span className="care-eyebrow">{appt.serviceName || t('care.appts.ref', { ref: appt.id.slice(0, 8).toUpperCase() })}</span><h3>{formatDate(appt.slotStart)}</h3></div>
             <span className={`wf-status ${statusClass(appt.status)}`}>{statusLabel(appt.status)}</span>
           </div>
           <div className="wf-order-meta">

@@ -2249,7 +2249,10 @@ def update_appointment(appointment_id: str, body: AppointmentStatusInput, user=D
 
 def appointment_payload(db, appt):
     slot = db.get(M.AvailabilitySlot, appt.slot_id)
+    item = db.get(M.CatalogEntry, appt.catalog_item_id) if appt.catalog_item_id else None
     return {"id": appt.id, "catalogItemId": appt.catalog_item_id, "providerId": appt.provider_id,
+            # The listed service's name, so a card says what was booked (live-run audit #13).
+            "serviceName": item.name if item else "",
             "slotStart": slot.slot_start if slot else "", "slotEnd": slot.slot_end if slot else "",
             "status": appt.status, "createdAt": appt.created_at, "updatedAt": appt.updated_at}
 

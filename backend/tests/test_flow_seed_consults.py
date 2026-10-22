@@ -35,6 +35,9 @@ def test_a_seeded_consult_booking_reaches_the_doctor(harness):
     slot = client.get("/api/appointments/availability?catalogItemId=demo-general-consult", headers=student).json()["slots"][0]
     booked = client.post("/api/appointments", headers=student, json={"slotId": slot["id"]})
     assert booked.status_code == 201, booked.text
+    # The student's list names the service, not only an internal id (live-run audit #13).
+    mine = client.get("/api/appointments", headers=student).json()["items"]
+    assert mine[0]["serviceName"] == "General Physician Teleconsultation"
     client.post("/api/auth/logout", headers=student)
     doctor = login(client, codes, DEMO_DOCTOR)
     items = client.get("/api/work/appointments", headers=doctor).json()["items"]
