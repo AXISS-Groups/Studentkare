@@ -313,7 +313,8 @@ def test_knowledge_counts_only_active_reviewed_sources(factory):
         ])
         db.commit()
         result = scheduler.knowledge_freshness_check(db)
-        assert result["summary"] == {"sources": 1, "expired": 1, "expiring_soon": 0}
+        assert result["summary"] == {"sources": 1, "expired": 1, "expiring_soon": 0,
+                                     "index_updated": 0, "index_removed": 0}
 
 
 def test_followups_are_bounded_and_progress_past_existing_tasks(factory):

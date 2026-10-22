@@ -170,6 +170,13 @@ async def lifespan(app):
             print("[SEED] Skipped: demo accounts need APP_ENV=development or testing and SEED_DEMO_DATA=true.")
     except Exception as e:
         print(f"[SEED] Skipped: {e}")
+    # Agent Ayush: publish the help pack (unless AYUSH_HELP_PACK_AUTOLOAD=false) and index
+    # anything approved but missing or embedded by another model. In a thread: an
+    # on-prem embedding model can be slow or down, and startup must not wait on it.
+    import threading as _ayush_threading
+
+    from services.ayush_health import startup_sync
+    _ayush_threading.Thread(target=startup_sync, args=(SessionLocal,), name="ayush-index-sync", daemon=True).start()
     # Initialize OpenTelemetry (fail-closed: never breaks startup)
     init_telemetry()
     # Initialize Sentry (fail-closed: no DSN = no Sentry)

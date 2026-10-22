@@ -141,3 +141,46 @@ Notes for the reviewer: a passcode's length is counted in **characters** (te క
 | `authpc.ready.title` | Want a faster sign-in? | వేగంగా సైన్ ఇన్ కావాలా? | तेज़ साइन इन चाहिए? |
 | `authpc.ready.body` | Add an optional passcode for your own devices. | మీ సొంత డివైస్‌ల కోసం ఐచ్ఛిక పాస్‌కోడ్ జోడించండి. | अपने डिवाइस के लिए एक वैकल्पिक पासकोड जोड़ें। |
 | `authpc.ready.cta` | Add a passcode | పాస్‌కోడ్ జోడించండి | पासकोड जोड़ें |
+
+### Ayush: nothing found, and the admin health card (feat/ayush-fix, 2026-10-22)
+
+| Key | English | te (current) | hi (current) |
+|---|---|---|---|
+| `assist.ayush.noSource.title` | I couldn’t find this in StudentKare’s help yet. | దీని గురించి StudentKare సహాయంలో ఇంకా సమాచారం దొరకలేదు. | यह मुझे अभी StudentKare की मदद में नहीं मिला। |
+| `assist.ayush.noSource.next` | Help answers questions about the app. A doctor can answer anything about your health. | యాప్ గురించిన ప్రశ్నలకు సహాయ కేంద్రం జవాబిస్తుంది. మీ ఆరోగ్యం గురించి ఏదైనా డాక్టర్ చెప్పగలరు. | ऐप से जुड़े सवालों का जवाब मदद केंद्र देता है। आपकी सेहत से जुड़ी कोई भी बात डॉक्टर बता सकते हैं। |
+| `assist.ayush.noSource.help` | Open Help | సహాయం తెరవండి | मदद खोलें |
+| `assist.ayush.noSource.book` | Book a consult | కన్సల్ట్ బుక్ చేయండి | कंसल्ट बुक करें |
+| `admin.kb.health.title` | Ayush health | Ayush ఆరోగ్యం | Ayush की स्थिति |
+| `admin.kb.health.pill.ok` | Answering | సమాధానాలు ఇస్తోంది | जवाब दे रहा है |
+| `admin.kb.health.pill.attention` | Needs a look | చూడాలి | देखना ज़रूरी |
+| `admin.kb.health.pill.down` | Not answering | సమాధానాలు ఇవ్వడం లేదు | जवाब नहीं दे रहा |
+| `admin.kb.health.ok` | Ayush is answering from published sources. | ప్రచురించిన సోర్స్‌ల నుంచి Ayush సమాధానాలు ఇస్తోంది. | Ayush प्रकाशित स्रोतों से जवाब दे रहा है। |
+| `admin.kb.health.attention` | Ayush is answering, but something needs a look. | Ayush సమాధానాలు ఇస్తోంది, కానీ ఒకటి చూడాలి. | Ayush जवाब दे रहा है, पर कुछ देखना ज़रूरी है। |
+| `admin.kb.health.down` | Ayush can’t answer anything yet. No published source is indexed, so every question gets “I couldn’t find this”. Load the help pack or publish a source. | Ayush ఇంకా దేనికీ సమాధానం ఇవ్వలేదు. ప్రచురించిన ఏ సోర్స్ ఇండెక్స్‌లో లేదు, కాబట్టి ప్రతి ప్రశ్నకు “దొరకలేదు” అని వస్తుంది. హెల్ప్ ప్యాక్ లోడ్ చేయండి లేదా సోర్స్ ప్రచురించండి. | Ayush अभी किसी सवाल का जवाब नहीं दे सकता। कोई प्रकाशित स्रोत इंडेक्स में नहीं है, इसलिए हर सवाल पर “नहीं मिला” आता है। हेल्प पैक लोड करें या स्रोत प्रकाशित करें। |
+| `admin.kb.health.loading` | Checking Ayush… | Ayushను చెక్ చేస్తున్నాం… | Ayush की जाँच हो रही है… |
+| `admin.kb.health.error` | Couldn’t check Ayush | Ayushను చెక్ చేయలేకపోయాం | Ayush की जाँच नहीं हो सकी |
+| `admin.kb.health.published` | Sources published | ప్రచురించిన సోర్స్‌లు | प्रकाशित स्रोत |
+| `admin.kb.health.indexed` | Sources indexed | ఇండెక్స్ అయిన సోర్స్‌లు | इंडेक्स हुए स्रोत |
+| `admin.kb.health.helpPack` | StudentKare help articles live | లైవ్‌లో ఉన్న StudentKare హెల్ప్ ఆర్టికల్స్ | लाइव StudentKare मदद लेख |
+| `admin.kb.health.retrieval` | How Ayush finds sources | Ayush సోర్స్‌లను ఎలా వెతుకుతుంది | Ayush स्रोत कैसे ढूँढता है |
+| `admin.kb.health.retrievalKeyword` | Keyword matching (no semantic model on) | కీవర్డ్ మ్యాచింగ్ (సెమాంటిక్ మోడల్ ఆన్‌లో లేదు) | कीवर्ड मिलान (सिमैंटिक मॉडल चालू नहीं) |
+| `admin.kb.health.retrievalSemantic` | Semantic search · {model} | సెమాంటిక్ సెర్చ్ · {model} | सिमैंटिक खोज · {model} |
+| `admin.kb.health.retrievalDegraded` | Semantic model not answering · {count} passages on keyword matching | సెమాంటిక్ మోడల్ స్పందించడం లేదు · {count} భాగాలు కీవర్డ్ మ్యాచింగ్‌పై | सिमैंटिक मॉडल जवाब नहीं दे रहा · {count} अंश कीवर्ड मिलान पर |
+| `admin.kb.health.misconfigured` | EMBEDDING_PROVIDER is set to “{provider}”, which can’t be used here, so Ayush uses keyword matching. See the Ayush operations guide. | EMBEDDING_PROVIDER “{provider}”గా సెట్ అయింది, ఇది ఇక్కడ పనిచేయదు, కాబట్టి Ayush కీవర్డ్ మ్యాచింగ్ వాడుతుంది. Ayush ఆపరేషన్స్ గైడ్ చూడండి. | EMBEDDING_PROVIDER “{provider}” पर सेट है, जो यहाँ काम नहीं करता, इसलिए Ayush कीवर्ड मिलान करता है। Ayush ऑपरेशन्स गाइड देखें। |
+| `admin.kb.health.answers` | How Ayush answers | Ayush ఎలా సమాధానం ఇస్తుంది | Ayush कैसे जवाब देता है |
+| `admin.kb.health.answersQuotes` | Quotes the source word for word (no model on) | సోర్స్‌ను యథాతథంగా ఉటంకిస్తుంది (మోడల్ ఆన్‌లో లేదు) | स्रोत को शब्दशः उद्धृत करता है (मॉडल चालू नहीं) |
+| `admin.kb.health.answersRephrased` | Rephrased by the on-prem model · {model} | ఆన్-ప్రెమ్ మోడల్ తిరిగి రాస్తుంది · {model} | ऑन-प्रेम मॉडल दोबारा लिखता है · {model} |
+| `admin.kb.health.modelServer` | Model server | మోడల్ సర్వర్ | मॉडल सर्वर |
+| `admin.kb.health.modelOk` | Reachable | అందుబాటులో ఉంది | पहुँच में है |
+| `admin.kb.health.modelDown` | Not reachable · answers fall back to quotes | అందుబాటులో లేదు · సమాధానాలు ఉటంకింపులకు మారతాయి | पहुँच में नहीं · जवाब उद्धरण पर लौटते हैं |
+| `admin.kb.health.modelNotPulled` | Reachable, but {model} is not pulled | అందుబాటులో ఉంది, కానీ {model} పుల్ చేయలేదు | पहुँच में है, पर {model} पुल नहीं हुआ |
+| `admin.kb.health.recent` | Last answers | చివరి సమాధానాలు | पिछले जवाब |
+| `admin.kb.health.recentValue` | {rephrased} rephrased · {quoted} quoted · {fellBack} fell back to quotes | {rephrased} తిరిగి రాసినవి · {quoted} ఉటంకించినవి · {fellBack} ఉటంకింపుకు మారినవి | {rephrased} दोबारा लिखे · {quoted} उद्धृत · {fellBack} उद्धरण पर लौटे |
+| `admin.kb.health.lastError` | Last error | చివరి లోపం | पिछली गड़बड़ी |
+| `admin.kb.health.noError` | None since the server started | సర్వర్ మొదలైనప్పటి నుంచి ఏదీ లేదు | सर्वर शुरू होने के बाद कोई नहीं |
+| `admin.kb.health.errorValue` | {error} while {where} · {when} | {where} సమయంలో {error} · {when} | {where} के दौरान {error} · {when} |
+| `admin.kb.health.where.embedding` | embedding a question | ప్రశ్నను ఎంబెడ్ చేస్తున్నప్పుడు | सवाल एम्बेड करते |
+| `admin.kb.health.where.generation` | rephrasing an answer | సమాధానాన్ని తిరిగి రాస్తున్నప్పుడు | जवाब दोबारा लिखते |
+| `admin.kb.health.where.indexing` | indexing a source | సోర్స్‌ను ఇండెక్స్ చేస్తున్నప్పుడు | स्रोत इंडेक्स करते |
+| `admin.kb.health.where.retrieval` | searching sources | సోర్స్‌లు వెతుకుతున్నప్పుడు | स्रोत खोजते |
+| `admin.kb.health.where.startup` | starting up | ప్రారంభమవుతున్నప్పుడు | शुरू होते |

@@ -149,6 +149,14 @@ data:
   # Video consults (docs/video-consults.md): the wss:// LiveKit address browsers
   # connect to. Empty = no call can be started; key and secret are in studentkare-secrets.
   LIVEKIT_URL: {{ .Values.backend.env.LIVEKIT_URL | default "" | quote }}
+  # Agent Ayush (docs/guides/ayush-operations.md): on-prem Ollama only. Empty OLLAMA_URL =
+  # quoted answers and keyword retrieval, shown in Admin › Knowledge.
+  OLLAMA_URL: {{ .Values.backend.env.OLLAMA_URL | default "" | quote }}
+  LLM_MODEL: {{ .Values.backend.env.LLM_MODEL | default "" | quote }}
+  EMBEDDING_PROVIDER: {{ .Values.backend.env.EMBEDDING_PROVIDER | default "local" | quote }}
+  EMBEDDING_MODEL: {{ .Values.backend.env.EMBEDDING_MODEL | default "" | quote }}
+  EMBEDDING_OLLAMA_URL: {{ .Values.backend.env.EMBEDDING_OLLAMA_URL | default "" | quote }}
+  AYUSH_HELP_PACK_AUTOLOAD: {{ .Values.backend.env.AYUSH_HELP_PACK_AUTOLOAD | default "true" | quote }}
 ---
 apiVersion: v1
 kind: ServiceAccount

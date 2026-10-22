@@ -2474,3 +2474,10 @@ def knowledge_index_status(user=Depends(require_staff), db: Session = Depends(wo
 def ayush_quality(user=Depends(require_super_admin), db: Session = Depends(workflow_db)):
     """Grounded rate, answer rate and refusal breakdown from recorded turns."""
     return agent_ayush.quality(db)
+
+
+@router.get("/ops/agents/ayush/health")
+def ayush_health_status(user=Depends(require_super_admin), db: Session = Depends(workflow_db)):
+    """Published, indexed, retrieval mode, answer mode and the last runtime error."""
+    from services import ayush_health
+    return ayush_health.health(db)

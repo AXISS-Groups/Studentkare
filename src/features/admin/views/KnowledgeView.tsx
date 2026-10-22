@@ -5,10 +5,12 @@ import { Icon } from '@/design-system/icons';
 import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
 import { knowledgeRepository } from '../model/knowledgeRepository';
-import { count, readable } from '../model/format';
+import { count, readable, when } from '../model/format';
+import type { AyushHealth } from '../model/types';
 import { KnowledgeViewModel } from '../viewmodels/KnowledgeViewModel';
 import { BoardToast, boardError } from './AdminBoard';
 import { GovCard, GovLines, GovPill, Unavailable } from './GovBoard';
+import type { LineTone } from './GovBoard';
 import { PublishSourceDialog } from './PublishSourceDialog';
 import './gov-board.css';
 
@@ -20,6 +22,58 @@ const SOURCE_STATE_LABEL: Record<string, MessageKey> = {
   Live: 'admin.kb.stateLive',
 };
 const STATE_TONE: Record<string, 'positive' | 'attention' | 'neutral' | 'danger'> = { 'is-positive': 'positive', 'is-attention': 'attention', 'is-danger': 'danger' };
+
+const HEALTH_HEADLINE: Record<AyushHealth['status'], MessageKey> = {
+  ok: 'admin.kb.health.ok', attention: 'admin.kb.health.attention', down: 'admin.kb.health.down',
+};
+const HEALTH_PILL: Record<AyushHealth['status'], MessageKey> = {
+  ok: 'admin.kb.health.pill.ok', attention: 'admin.kb.health.pill.attention', down: 'admin.kb.health.pill.down',
+};
+const HEALTH_TONE: Record<AyushHealth['status'], 'positive' | 'attention' | 'danger'> = { ok: 'positive', attention: 'attention', down: 'danger' };
+const ERROR_WHERE: Record<string, MessageKey> = {
+  embedding: 'admin.kb.health.where.embedding', generation: 'admin.kb.health.where.generation',
+  indexing: 'admin.kb.health.where.indexing', retrieval: 'admin.kb.health.where.retrieval', startup: 'admin.kb.health.where.startup',
+};
+
+/** Ayush health in plain words (GET /ops/agents/ayush/health): can it answer, how, and what last went wrong. */
+const AyushHealthCard = observer(function AyushHealthCard({ vm }: { vm: KnowledgeViewModel }) {
+  const t = useT();
+  const health = vm.health;
+  if (vm.healthLoading) return <GovCard title={t('admin.kb.health.title')}><p className="sk-gov-fine" role="status">{t('admin.kb.health.loading')}</p></GovCard>;
+  if (vm.healthError || !health) {
+    return <GovCard title={t('admin.kb.health.title')}>
+      <div className="sk-gov-error" role="alert"><Icon name="alert-triangle" size={16} /><span>{t('admin.kb.health.error')}{vm.healthError ? ` · ${vm.healthError}` : ''}</span>
+        <button type="button" className="sk-gov-link" onClick={vm.reloadHealth}>{t('common.tryAgain')}</button></div>
+    </GovCard>;
+  }
+  const { retrieval, answers, lastError } = health;
+  const retrievalValue = retrieval.mode === 'semantic' ? t('admin.kb.health.retrievalSemantic', { model: retrieval.model })
+    : retrieval.mode === 'degraded' ? t('admin.kb.health.retrievalDegraded', { count: count(retrieval.fallbackPassages) })
+      : t('admin.kb.health.retrievalKeyword');
+  const modelLine: { value: string; tone?: LineTone } | null = answers.mode !== 'rephrased' ? null
+    : answers.reachable === false ? { value: t('admin.kb.health.modelDown'), tone: 'attention' }
+      : answers.modelPulled === false ? { value: t('admin.kb.health.modelNotPulled', { model: answers.model }), tone: 'attention' }
+        : answers.reachable ? { value: t('admin.kb.health.modelOk'), tone: 'positive' } : null;
+  const lines: { label: string; value: string | null; tone?: LineTone }[] = [
+    { label: t('admin.kb.health.published'), value: count(health.published), tone: health.published ? undefined : 'danger' },
+    { label: t('admin.kb.health.indexed'), value: t('admin.kb.xOfY', { x: count(health.indexed), y: count(health.published) }), tone: health.missing || health.stale ? 'attention' : undefined },
+    { label: t('admin.kb.health.helpPack'), value: t('admin.kb.xOfY', { x: count(health.helpPack.published), y: count(health.helpPack.articles) }) },
+    { label: t('admin.kb.health.retrieval'), value: retrievalValue, tone: retrieval.mode === 'degraded' ? 'attention' : undefined },
+    { label: t('admin.kb.health.answers'), value: answers.mode === 'rephrased' ? t('admin.kb.health.answersRephrased', { model: answers.model }) : t('admin.kb.health.answersQuotes') },
+    ...(modelLine ? [{ label: t('admin.kb.health.modelServer'), ...modelLine }] : []),
+    { label: t('admin.kb.health.recent'), value: t('admin.kb.health.recentValue', { rephrased: count(answers.recent.rephrased), quoted: count(answers.recent.quoted), fellBack: count(answers.recent.fellBack) }) },
+    {
+      label: t('admin.kb.health.lastError'),
+      value: lastError ? t('admin.kb.health.errorValue', { error: lastError.error, where: ERROR_WHERE[lastError.where] ? t(ERROR_WHERE[lastError.where]) : lastError.where, when: when(lastError.at) }) : t('admin.kb.health.noError'),
+      tone: lastError ? 'attention' : undefined,
+    },
+  ];
+  return <GovCard title={t('admin.kb.health.title')} aside={<GovPill tone={HEALTH_TONE[health.status]} dot>{t(HEALTH_PILL[health.status])}</GovPill>}>
+    <p className={health.status === 'down' ? 'sk-gov-unavailable' : 'sk-gov-text'} role={health.status === 'down' ? 'alert' : undefined}>{t(HEALTH_HEADLINE[health.status])}</p>
+    {retrieval.misconfigured ? <p className="sk-gov-unavailable">{t('admin.kb.health.misconfigured', { provider: retrieval.requestedProvider })}</p> : null}
+    <GovLines label={t('admin.kb.health.title')} lines={lines} />
+  </GovCard>;
+});
 
 /**
  * Knowledge base (design: AdminKnowledge, Tier 1), on the data and actions the backend
@@ -61,6 +115,7 @@ export const KnowledgeView = observer(function KnowledgeView() {
           </li>)}</ul>}
       </GovCard>
       <div className="sk-gov-stack">
+        <AyushHealthCard vm={vm} />
         <GovCard title={t('admin.kb.index')}>
           {vm.indexLoading ? <p className="sk-gov-fine" role="status">{t('admin.kb.indexLoading')}</p>
             : vm.indexError ? <div className="sk-gov-error" role="alert"><Icon name="alert-triangle" size={16} /><span>{t('admin.kb.indexError')} · {vm.indexError}</span><button type="button" className="sk-gov-link" onClick={vm.reloadIndex}>{t('common.tryAgain')}</button></div>

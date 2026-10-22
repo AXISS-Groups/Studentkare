@@ -37,6 +37,15 @@ x-app-env: &app-env
   LIVEKIT_URL: ${LIVEKIT_URL:-}
   LIVEKIT_API_KEY: ${LIVEKIT_API_KEY:-}
   LIVEKIT_API_SECRET: ${LIVEKIT_API_SECRET:-}
+  # Agent Ayush (docs/guides/ayush-operations.md). On-prem Ollama only (Rule-C). Empty
+  # OLLAMA_URL = answers are quotes and retrieval is keyword matching, said so in Admin › Knowledge.
+  OLLAMA_URL: ${OLLAMA_URL:-}
+  LLM_MODEL: ${LLM_MODEL:-}
+  LLM_TIMEOUT_SECONDS: ${LLM_TIMEOUT_SECONDS:-}
+  EMBEDDING_PROVIDER: ${EMBEDDING_PROVIDER:-local}
+  EMBEDDING_MODEL: ${EMBEDDING_MODEL:-}
+  EMBEDDING_OLLAMA_URL: ${EMBEDDING_OLLAMA_URL:-}
+  AYUSH_HELP_PACK_AUTOLOAD: ${AYUSH_HELP_PACK_AUTOLOAD:-true}
 
 services:
   postgres:

@@ -1,9 +1,19 @@
 import { makeAutoObservable, observableRef, runInAction } from 'mobx';
 import type { KnowledgeRepository } from '../model/knowledgeRepository';
 import { indexTone, sourceState } from '../model/format';
-import type { IndexStatus, KnowledgeSource, KnowledgeSources } from '../model/types';
+import type { AyushHealth, IndexStatus, KnowledgeSource, KnowledgeSources } from '../model/types';
 
 const FAILED = 'The request could not be completed.';
+const UNREADABLE = 'The health report could not be read.';
+
+/** A health report the card can draw: anything else is shown as an error, never half-drawn. */
+function isAyushHealth(value: unknown): value is AyushHealth {
+  if (!value || typeof value !== 'object') return false;
+  const report = value as Partial<AyushHealth>;
+  return typeof report.status === 'string' && typeof report.published === 'number' && typeof report.indexed === 'number'
+    && !!report.retrieval && typeof report.retrieval.mode === 'string' && !!report.answers && typeof report.answers.mode === 'string'
+    && !!report.helpPack && !!report.answers.recent;
+}
 
 /**
  * Knowledge base: the sources Ayush may quote and the search index over them.
@@ -20,17 +30,25 @@ export class KnowledgeViewModel {
   indexError = '';
   reindexing = false;
   reindexError = '';
+  health: AyushHealth | null = null;
+  healthLoading = true;
+  healthError = '';
   private sourcesVersion = 0;
   private indexVersion = 0;
+  private healthVersion = 0;
   private sourcesController: AbortController | null = null;
   private indexController: AbortController | null = null;
+  private healthController: AbortController | null = null;
   // Bumped on dispose only, so a rebuild finishing after the screen has gone changes nothing.
   private generation = 0;
 
   constructor(private readonly repository: KnowledgeRepository) {
-    makeAutoObservable<this, 'repository' | 'sourcesVersion' | 'indexVersion' | 'sourcesController' | 'indexController' | 'generation'>(
+    makeAutoObservable<this, 'repository' | 'sourcesVersion' | 'indexVersion' | 'healthVersion' | 'sourcesController' | 'indexController' | 'healthController' | 'generation'>(
       this,
-      { repository: false, sourcesVersion: false, indexVersion: false, sourcesController: false, indexController: false, generation: false, sources: observableRef, index: observableRef },
+      {
+        repository: false, sourcesVersion: false, indexVersion: false, healthVersion: false, sourcesController: false, indexController: false,
+        healthController: false, generation: false, sources: observableRef, index: observableRef, health: observableRef,
+      },
       { autoBind: true },
     );
   }
@@ -48,15 +66,18 @@ export class KnowledgeViewModel {
   load() {
     void this.loadSources();
     void this.loadIndex();
+    void this.loadHealth();
   }
 
   reloadSources() { void this.loadSources(); }
   reloadIndex() { void this.loadIndex(); }
+  reloadHealth() { void this.loadHealth(); }
 
-  /** After a source is published: the list first, then the index. */
+  /** After a source is published (the server indexes it in the same request): the list, the index, then health. */
   published() {
     this.reloadSources();
     this.reloadIndex();
+    this.reloadHealth();
   }
 
   /** Rebuild the search index; afterwards the index is checked again, then the list. */
@@ -70,6 +91,7 @@ export class KnowledgeViewModel {
       if (generation === this.generation) {
         this.reloadIndex();
         this.reloadSources();
+        this.reloadHealth();
       }
     } catch (reason) {
       if (generation === this.generation) runInAction(() => { this.reindexError = reason instanceof Error ? reason.message : FAILED; });
@@ -114,14 +136,40 @@ export class KnowledgeViewModel {
     }
   }
 
-  /** Stops both requests in flight and ignores late answers. A later load works again. */
+  async loadHealth() {
+    const version = ++this.healthVersion;
+    this.healthController?.abort();
+    const controller = new AbortController();
+    this.healthController = controller;
+    this.healthLoading = true;
+    this.healthError = '';
+    this.health = null;
+    try {
+      const result: unknown = await this.repository.health(controller.signal);
+      if (version === this.healthVersion) {
+        runInAction(() => {
+          if (isAyushHealth(result)) this.health = result;
+          else this.healthError = UNREADABLE;
+        });
+      }
+    } catch (reason) {
+      if (version === this.healthVersion) runInAction(() => { this.healthError = reason instanceof Error ? reason.message : ''; });
+    } finally {
+      if (version === this.healthVersion) runInAction(() => { this.healthLoading = false; });
+    }
+  }
+
+  /** Stops every request in flight and ignores late answers. A later load works again. */
   dispose() {
     this.sourcesVersion += 1;
     this.indexVersion += 1;
+    this.healthVersion += 1;
     this.generation += 1;
     this.sourcesController?.abort();
     this.indexController?.abort();
+    this.healthController?.abort();
     this.sourcesController = null;
     this.indexController = null;
+    this.healthController = null;
   }
 }

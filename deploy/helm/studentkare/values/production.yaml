@@ -61,6 +61,11 @@ backend:
     PAYMENT_PROVIDER: razorpay
     # Video consults (docs/video-consults.md). wss:// only; empty = calls off.
     LIVEKIT_URL: ""
+    # Agent Ayush (docs/guides/ayush-operations.md). In-cluster Ollama only; empty = quotes + keyword.
+    OLLAMA_URL: ""
+    LLM_MODEL: ""
+    EMBEDDING_PROVIDER: local
+    EMBEDDING_MODEL: ""
   # Secrets (populated from Vault/SealedSecrets)
   secrets:
     DATABASE_URL: ""

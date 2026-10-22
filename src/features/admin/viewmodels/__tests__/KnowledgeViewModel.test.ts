@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { KnowledgeRepository } from '../../model/knowledgeRepository';
-import type { IndexStatus, KnowledgeSources } from '../../model/types';
+import type { AyushHealth, IndexStatus, KnowledgeSources } from '../../model/types';
 import { KnowledgeViewModel } from '../KnowledgeViewModel';
 import { PublishSourceViewModel } from '../PublishSourceViewModel';
 
@@ -12,12 +12,20 @@ const sources: KnowledgeSources = { items: [
   { id: 's4', title: 'Draft', category: 'general', version: 1, author: 'Clinical team', reviewed: false, expiresAt: null },
 ] };
 const index: IndexStatus = { approvedSources: 2, indexedSources: 1, chunks: 48, embedder: 'hash-ngram', semantic: false, missing: ['s2'], mismatchedEmbedder: 0 };
+const health: AyushHealth = {
+  status: 'ok', published: 17, indexed: 17, missing: 0, stale: 0, chunks: 40,
+  helpPack: { articles: 17, published: 17 },
+  retrieval: { mode: 'keyword', embedder: 'local-hashing-v1', requestedProvider: 'local', model: '', misconfigured: '', fallbackPassages: 0 },
+  answers: { mode: 'quotes', model: '', reachable: null, modelPulled: null, recent: { rephrased: 0, quoted: 3, fellBack: 0 } },
+  lastError: null,
+};
 const settle = async () => { for (let i = 0; i < 6; i += 1) await Promise.resolve(); };
 
 function repository(overrides: Partial<KnowledgeRepository> = {}): KnowledgeRepository {
   return {
     sources: vi.fn().mockResolvedValue(sources),
     indexStatus: vi.fn().mockResolvedValue(index),
+    health: vi.fn().mockResolvedValue(health),
     reindex: vi.fn().mockResolvedValue({}),
     publish: vi.fn().mockResolvedValue({}),
     ...overrides,
@@ -25,6 +33,28 @@ function repository(overrides: Partial<KnowledgeRepository> = {}): KnowledgeRepo
 }
 
 describe('KnowledgeViewModel', () => {
+  it('loads Ayush health with the page and again after a publish', async () => {
+    const repo = repository();
+    const vm = new KnowledgeViewModel(repo);
+    expect(vm.healthLoading).toBe(true);
+    vm.load();
+    await settle();
+    expect(vm.health).toEqual(health);
+    expect(vm.healthLoading).toBe(false);
+    vm.published();
+    await settle();
+    expect(repo.health).toHaveBeenCalledTimes(2);
+  });
+
+  it('keeps a health failure to its own card', async () => {
+    const vm = new KnowledgeViewModel(repository({ health: vi.fn().mockRejectedValue(new Error('Forbidden')) }));
+    vm.load();
+    await settle();
+    expect(vm.healthError).toBe('Forbidden');
+    expect(vm.health).toBeNull();
+    expect(vm.sourcesError).toBe('');
+  });
+
   it('is loading before the first load, then loads the list and the index independently', async () => {
     const repo = repository();
     const vm = new KnowledgeViewModel(repo);

@@ -19,11 +19,12 @@ const BADGE: Record<AyushOutcome, { label: MessageKey; tone: 'positive' | 'atten
 };
 
 /** Where a declined question can go instead (a person, never a product). */
-const ROUTE: Partial<Record<AyushOutcome, { label: MessageKey; route: RoutePath }>> = {
-  REFUSED_SCOPE: { label: 'swt.ayush.route.clinician', route: 'care' },
-  REFUSED_OUTPUT: { label: 'swt.ayush.route.clinician', route: 'care' },
-  REFUSED_PERSONAL: { label: 'swt.ayush.route.review', route: 'care' },
-  NO_SOURCE: { label: 'swt.ayush.route.support', route: 'my-requests' },
+const ROUTES: Partial<Record<AyushOutcome, ReadonlyArray<{ label: MessageKey; route: RoutePath }>>> = {
+  REFUSED_SCOPE: [{ label: 'swt.ayush.route.clinician', route: 'care' }],
+  REFUSED_OUTPUT: [{ label: 'swt.ayush.route.clinician', route: 'care' }],
+  REFUSED_PERSONAL: [{ label: 'swt.ayush.route.review', route: 'care' }],
+  // Not a dead end: the help centre (support) and a doctor.
+  NO_SOURCE: [{ label: 'assist.ayush.noSource.help', route: 'support' }, { label: 'assist.ayush.noSource.book', route: 'care' }],
 };
 
 /**
@@ -36,8 +37,9 @@ export function AyushAnswer({ turn, onRoute }: { turn: AyushTurn; onRoute?: () =
   const { reply } = turn;
   const badge = BADGE[reply.outcome] ?? BADGE.NO_SOURCE;
   const note = AYUSH_REFUSAL_NOTE[reply.outcome];
-  const route = ROUTE[reply.outcome];
+  const routes = ROUTES[reply.outcome] ?? [];
   const crisis = reply.outcome === 'CRISIS';
+  const noSource = reply.outcome === 'NO_SOURCE';
   return (
     <>
       <div className="sk-ay-q">{turn.question}</div>
@@ -46,8 +48,8 @@ export function AyushAnswer({ turn, onRoute }: { turn: AyushTurn; onRoute?: () =
           <span className={`sk-ay-badge is-${badge.tone}`}>{t(badge.label)}</span>
           {reply.outcome === 'ANSWERED' ? <span>{t('swt.ayush.grounded')}</span> : null}
         </div>
-        <p>{reply.answer}</p>
-        {note ? <p className="sk-ay-a__meta">{t(note)}</p> : null}
+        {noSource ? <p>{t('assist.ayush.noSource.title')}</p> : <p>{reply.answer}</p>}
+        {noSource ? <p className="sk-ay-a__meta">{t('assist.ayush.noSource.next')}</p> : note ? <p className="sk-ay-a__meta">{t(note)}</p> : null}
         {crisis && reply.crisis?.resources.length ? (
           <div className="sk-ay-calls">
             {reply.crisis.resources.map((resource) => (
@@ -58,11 +60,11 @@ export function AyushAnswer({ turn, onRoute }: { turn: AyushTurn; onRoute?: () =
           </div>
         ) : null}
         {reply.citations.map((citation) => <Citation key={citation.sourceId} title={citation.title} meta={t('assist.ayush.citationMeta', { category: citation.category, version: citation.version })} snippet={citation.snippet} stale={citation.stale} />)}
-        {route ? (
-          <button type="button" className="sk-ay-route" onClick={() => { onRoute?.(); navigate(route.route); }}>
+        {routes.map((route) => (
+          <button key={route.route} type="button" className="sk-ay-route" onClick={() => { onRoute?.(); navigate(route.route); }}>
             {t(route.label)}<Icon name="arrow-right" size={15} />
           </button>
-        ) : null}
+        ))}
       </div>
     </>
   );
