@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ConsoleTopbar } from '@/design-system/console-shell/ConsoleShell';
+import { TeamBadge } from '@/features/team-accounts/TeamBadge';
 import { Icon } from '@/design-system/icons';
 import { SkButton, Toast } from '@/design-system/primitives';
 import { apiBaseUrl } from '@/core/env';
@@ -82,6 +83,7 @@ export function VendorRxReviewScreen({ source = loadRxReviews, twoFactorSource =
   const topbar = (
     <ConsoleTopbar
       title={t('partner.vrx.rx.title')}
+      badge={<TeamBadge />}
       search={{ label: t('partner.vrx.rx.searchPlaceholder'), value: search, onChange: setSearch }}
       twoFactorLabel={twoFactor.data?.enabled ? t('pt.rxr.twoFactorOn') : undefined}
       notifications={{ label: t('console.notifications'), onClick: () => setToast(t('partner.vhome.home.notificationsOff')) }}

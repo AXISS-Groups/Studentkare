@@ -42,6 +42,7 @@ export const routePaths = [
   'admin/sentinel',
   'admin/support',
   'admin/surveillance',
+  'admin/team-accounts',
   'admin/telemetry',
   'admin/templates',
   'admin/tokens',

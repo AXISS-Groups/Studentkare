@@ -18,6 +18,7 @@ from sqlalchemy.orm import Session as DBSession
 
 from core import workflow_models as M
 from core.app_env import is_dev_or_test, is_production, is_testing
+from core.team_scope import RESERVED_CAMPUS_MESSAGE, is_reserved_campus
 from services import clinical_profile, twofa_store
 from services.db_sql import SessionLocal
 from services.demo_seed import is_demo_identifier
@@ -131,6 +132,9 @@ def account_payload(account: M.Account) -> dict:
     profile = account.profile or {}
     return {"id": account.id, "fullName": account.full_name, "role": account.role,
             "partnerKind": partner_kind_of(account),
+            # A shared team account (services/team_accounts.py): the consoles show a
+            # "Team account" badge, and core/team_scope.team_sandboxed reads it.
+            "isTeamAccount": account.is_team_account is True,
             "email": account.identifier if account.channel == "EMAIL" else "",
             "phone": account.identifier if account.channel == "WHATSAPP" else "",
             "dob": profile.get("dob", ""), "university": profile.get("university", ""),
@@ -396,6 +400,14 @@ class Signup(StrictModel):
     @classmethod
     def check_age(cls, value):
         return adult_birth_date(value)
+
+    @field_validator("university")
+    @classmethod
+    def not_the_team_campus(cls, value: str) -> str:
+        # The team test campus holds no real student (core/team_scope.py).
+        if is_reserved_campus(value):
+            raise ValueError(RESERVED_CAMPUS_MESSAGE)
+        return value
 
     # Required: no consent, no account (fail closed). Validated before the
     # signup grant is spent, so a refusal doesn't burn the verification.

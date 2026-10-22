@@ -144,3 +144,15 @@
   .sk-console-nav .sk-console-nav__link,
   .sk-console-topbar .sk-console-topbar__icon-btn { transition: none; }
 }
+
+/* ---- team account badge (TeamAccountBadge) ----
+   A shared team account, not a person's own login. Amber on its own soft fill,
+   so it reads the same on the white top bars and on the navy. */
+.sk-team-badge {
+  flex: none; display: inline-flex; align-items: center; gap: var(--sk-space-6);
+  min-height: 26px; padding: 0 var(--sk-space-10);
+  border-radius: var(--sk-radius-full); background: var(--sk-color-attention-bg);
+  font-family: inherit; font-size: var(--sk-text-caption); font-weight: 800; line-height: 1.2; white-space: nowrap;
+  color: var(--sk-color-attention);
+}
+.sk-team-badge svg { flex-shrink: 0; }

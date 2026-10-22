@@ -123,6 +123,7 @@ const workspacePaths: { path: string; access?: (role: AccountRole | null) => boo
   { path: '/admin/lab-reviews', access: hasRole('SUPER_ADMIN') },
   { path: '/admin/claims', access: hasRole('SUPER_ADMIN') },
   { path: '/admin/outbox', access: hasRole('SUPER_ADMIN') },
+  { path: '/admin/team-accounts', access: hasRole('SUPER_ADMIN') },
   // Find care near you: the curated directory listings (super admin: every campus).
   { path: '/admin/care-directory', access: hasRole('SUPER_ADMIN') },
   { path: '/delete-account', access: hasRole('STUDENT') },

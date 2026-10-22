@@ -3,6 +3,7 @@ import { Icon } from '@/design-system/icons';
 import { SkButton, StatusPill, Toast } from '@/design-system/primitives';
 import type { SkTone } from '@/design-system/primitives';
 import { ConsoleTopbar } from '@/design-system/console-shell/ConsoleShell';
+import { TeamBadge } from '@/features/team-accounts/TeamBadge';
 import toolsArt from '../../assets/image-6f6766.jpg';
 import { useAuth } from '../../data/contexts/AuthContext';
 import { money } from '../../data/types/workflowTypes';
@@ -176,6 +177,7 @@ export function VendorHomeScreen({ initialProviderType, source = liveHomeSource,
     <ConsoleTopbar
       className="vh-topbar"
       title={t('partner.vhome.home.header')}
+      badge={<TeamBadge />}
       search={{ label: t('console.searchSoon') }}
       notifications={{ label: t('console.notifications'), onClick: () => setToast(t('partner.vhome.home.notificationsOff')) }}
       account={<AccountMenu name={accountName} email={user?.email} typeLabel={providerType ? t(`partner.vhome.home.type.${providerType}` as MessageKey) : ''} onSwitchRole={onSwitchRole} onSignOut={() => (onLogout ? onLogout() : logout())} />}

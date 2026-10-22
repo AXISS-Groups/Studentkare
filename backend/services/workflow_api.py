@@ -28,6 +28,7 @@ from sqlalchemy.orm import Session
 from core import workflow_models as M
 from core.rule_l import COMMERCE_ROLE, commerce_role_usable, rule_l_status
 from core.settings_registry import setting
+from core.team_scope import RESERVED_CAMPUS_MESSAGE, is_reserved_campus, team_sandboxed
 from services import (
     clinical_profile,
     lab_results,
@@ -355,7 +356,9 @@ def grant_record_share(body: ShareInput, user=Depends(authenticated_user), db: S
     if not doc:
         raise HTTPException(404, "Record not found.")
     clinician = db.scalar(select(M.Account).where(M.Account.identifier == body.clinicianEmail.lower()))
-    if not clinician or clinician.role not in {"NMC_DOCTOR", "SUPER_ADMIN"}:
+    # A team account (core/team_scope.py) is never a real student's clinician: the same
+    # answer as an unknown address, so nothing says the team account exists.
+    if not clinician or clinician.role not in {"NMC_DOCTOR", "SUPER_ADMIN"} or clinician.is_team_account:
         raise HTTPException(404, "No matching clinician account found.")
     share_id = f"shr_{new_id()[:10]}"
     db.add(M.RecordShare(id=share_id, owner_id=user["id"], clinician_id=clinician.id, document_id=doc.id,
@@ -1446,7 +1449,9 @@ def partner_campuses(user=Depends(authenticated_user), db: Session = Depends(wor
     name. Names only — no counts, no people, nothing about any student. A campus
     that is not listed can still be typed in; it then waits for a super admin.
     """
-    rows = db.scalars(select(M.Account).where(M.Account.role == "CAMPUS_ADMIN", M.Account.active.is_(True))).all()
+    # The team test campus is never offered to a student (core/team_scope.py).
+    rows = db.scalars(select(M.Account).where(M.Account.role == "CAMPUS_ADMIN", M.Account.active.is_(True),
+                                              M.Account.is_team_account.is_(False))).all()
     seen: dict[str, str] = {}
     for row in rows:
         name = " ".join(str((row.profile or {}).get("university", "")).split())
@@ -1464,6 +1469,14 @@ class CampusSubmitInput(StrictModel):
     @classmethod
     def strip_campus_text(cls, value):
         return value.strip() if isinstance(value, str) else value
+
+    @field_validator("university")
+    @classmethod
+    def not_the_team_campus(cls, value: str) -> str:
+        # The team test campus holds no real student (core/team_scope.py).
+        if is_reserved_campus(value):
+            raise ValueError(RESERVED_CAMPUS_MESSAGE)
+        return value
 
 
 @router.post("/campus/verification")
@@ -2888,7 +2901,8 @@ def followup_tasks(user=Depends(require_staff), db: Session = Depends(workflow_d
 @router.post("/work/followups/{task_id}/resolve")
 def resolve_followup(task_id: str, user=Depends(require_staff), db: Session = Depends(workflow_db)):
     row = db.get(M.FollowUpTask, task_id)
-    if not row:
+    # Only the follow-up's own staff member (or the super admin) closes it, as the list shows.
+    if not row or (user["role"] != "SUPER_ADMIN" and row.account_id != user["id"]):
         raise HTTPException(404, "Follow-up not found.")
     row.status = "RESOLVED"
     row.resolved_at = time.time()
@@ -3094,6 +3108,9 @@ def my_visit_summary(note_id: str, response: Response, user=Depends(authenticate
 
 @router.get("/ops/approvals")
 def get_pending_approvals(user=Depends(require_staff)):
+    # The pending actions are about real students; a team account sees none (core/team_scope.py).
+    if team_sandboxed(user):
+        return {"pending_actions": []}
     actions = hitl_approval_agent.get_pending_actions()
     return {"pending_actions": [a.model_dump() for a in actions]}
 
@@ -3104,6 +3121,8 @@ class ApproveActionInput(StrictModel):
 
 @router.post("/ops/approve-action")
 def approve_pending_action(body: ApproveActionInput, user=Depends(require_staff), db: Session = Depends(workflow_db)):
+    if team_sandboxed(user):
+        raise HTTPException(403, "Team accounts can't approve actions about real students.")
     # Only authorized staff (clinician/admin) may approve. Uses the server-derived
     # fullName, never a hard-coded doctor name.
     result = hitl_approval_agent.approve_action(body.actionId, user.get("fullName") or user.get("full_name") or "Staff")
@@ -3253,6 +3272,8 @@ def lookup_medication(body: MedicationLookupInput, user=Depends(authenticated_us
 
 @router.get("/v1/ops/audit-trail")
 def get_medical_audit_trail(limit: int = Query(default=50, ge=1, le=100), user=Depends(require_staff)):
+    if team_sandboxed(user):
+        return {"events": [], "count": 0}
     trail = medical_guard.get_audit_trail(limit)
     return {"events": trail, "count": len(trail)}
 

@@ -8,6 +8,7 @@ import { useTheme } from '../../../theme/tokens/theme';
 import { FormError } from '../../../components/interface/WorkflowUI';
 import { SUPER_ADMIN_NAVIGATION } from './superAdminNavigation';
 import { useT } from '../../../i18n';
+import { TeamBadge } from '../../../features/team-accounts/TeamBadge';
 import './super-admin-shell.css';
 
 interface SuperAdminShellProps {
@@ -76,6 +77,7 @@ export function SuperAdminShell({ route, role, onNavigate, onSignOut, signingOut
     <main className="sk-admin-main">
       {/* The app-wide theme setting (ThemeProvider); it applies everywhere, not only here. */}
       <div className="sk-admin-topbar">
+        <TeamBadge />
         {/* Alerts opens the real activity feed; the shared notification centre shows demo data. */}
         <button type="button" className="sk-admin-top-action" onClick={() => go('admin/activity')}>
           <Icon name="bell" size={18} /><span>{t('admin.shell.alerts')}</span>

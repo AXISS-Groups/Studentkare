@@ -1,0 +1,85 @@
+/* Super admin → Team accounts. Tokens only (DESIGN.md §3). */
+.sk-team-accounts__id {
+  display: block;
+  margin-top: var(--sk-space-2);
+  font-family: var(--sk-font-mono);
+  font-size: var(--sk-text-caption);
+  color: var(--sk-color-text-2);
+  overflow-wrap: anywhere;
+}
+.sk-team-accounts__you { margin-left: var(--sk-space-6); }
+.sk-team-accounts__meta { font-weight: 500; }
+.sk-team-accounts__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sk-space-6);
+}
+.sk-team-accounts__actions .sk-admin-button { min-height: var(--sk-size-touch-target); }
+
+/* The new PIN, shown once inside the done card. */
+.sk-team-accounts__pin-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sk-space-8);
+  text-align: center;
+}
+.sk-team-accounts__pin-card p { margin: 0; }
+.sk-team-accounts__pin-label {
+  font-size: var(--sk-text-caption);
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--sk-color-text-2);
+}
+.sk-team-accounts__pin {
+  padding: var(--sk-space-10) var(--sk-space-20);
+  border-radius: var(--sk-radius-md);
+  background: var(--sk-color-surface-2);
+  font-family: var(--sk-font-mono);
+  font-size: var(--sk-text-heading);
+  font-weight: 700;
+  letter-spacing: 6px;
+  color: var(--sk-color-clinical-value);
+}
+.sk-team-accounts__current {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sk-space-6);
+  width: 100%;
+}
+.sk-team-accounts__current label {
+  font-size: var(--sk-text-caption);
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--sk-color-text-2);
+}
+.sk-team-accounts__current input {
+  min-height: var(--sk-size-control);
+  padding: 0 var(--sk-space-14);
+  border: 1px solid var(--sk-color-rule);
+  border-radius: var(--sk-radius-md);
+  background: var(--sk-color-surface);
+  color: var(--sk-color-text);
+  font-family: var(--sk-font-mono);
+  font-size: var(--sk-text-title-sm);
+  letter-spacing: 4px;
+}
+.sk-team-accounts__current input:focus-visible { outline: 3px solid var(--sk-color-focus); outline-offset: 2px; }
+@media (max-width: 720px) {
+  .sk-team-accounts__table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .sk-team-accounts__table, .sk-team-accounts__table tbody, .sk-team-accounts__table tr, .sk-team-accounts__table td { display: block; width: 100%; }
+  .sk-team-accounts__table tr { padding: var(--sk-space-12) 0; border-bottom: 1px solid var(--sk-color-rule); }
+  .sk-team-accounts__table td { padding: var(--sk-space-4) var(--sk-space-12); border: 0; }
+}
+
+/* The copy button sits in the dialog, outside the admin page's button styles. */
+.sk-team-accounts__copy {
+  display: inline-flex; align-items: center; gap: var(--sk-space-6);
+  min-height: var(--sk-size-touch-target); padding: 0 var(--sk-space-16);
+  border: 1px solid var(--sk-color-rule); border-radius: var(--sk-radius-md);
+  background: var(--sk-color-surface); color: var(--sk-color-action);
+  font: inherit; font-size: var(--sk-text-body-sm); font-weight: 700; cursor: pointer;
+}
+.sk-team-accounts__copy:focus-visible { outline: 3px solid var(--sk-color-focus); outline-offset: 2px; }

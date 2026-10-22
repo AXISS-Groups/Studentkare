@@ -9,6 +9,8 @@ export interface Account {
   partnerKind?: PartnerKind | '';
   /** Session answers only: the role must use 2FA and it is not on, so only Sign-in & security opens. */
   twoFactorSetupRequired?: boolean;
+  /** A shared team account (one per role, PIN sign-in). The consoles show a "Team account" badge. Older servers omit it. */
+  isTeamAccount?: boolean;
 }
 export interface SessionResponse { user: Account | null; csrfToken: string; requiresSignup?: boolean; requires2FA?: boolean; tempToken?: string }
 export interface MemberProfile extends Account {

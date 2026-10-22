@@ -30,6 +30,8 @@ export const SUPER_ADMIN_NAVIGATION: SuperAdminNavGroup[] = [
       { label: 'Surveillance map', labelKey: 'console.admin.nav.surveillance', icon: 'map', route: 'admin/surveillance' },
       { label: 'Feature flags', labelKey: 'console.admin.nav.flags', icon: 'settings-2', route: 'admin/flags' },
       { label: 'Accounts', labelKey: 'console.admin.nav.accounts', icon: 'users-2', route: 'admin/accounts' },
+      // Not on the design canvas: the shared team accounts (founder decision 2026-10-22).
+      { label: 'Team accounts', labelKey: 'team.screen.title', icon: 'key', route: 'admin/team-accounts' },
     ],
   },
   {

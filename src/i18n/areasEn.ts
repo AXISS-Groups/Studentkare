@@ -39,6 +39,7 @@ import { stepsEn } from './areas/steps';
 import { studentshellEn } from './areas/studentshell';
 import { studentwebEn } from './areas/studentweb';
 import { studentwebT1En } from './areas/studentwebT1';
+import { teamAccountsEn } from './areas/teamAccounts';
 import { wellnessEn } from './areas/wellness';
 // keep-sorted end
 
@@ -90,6 +91,7 @@ export const areasEn = {
   ...studentshellEn,
   ...studentwebEn,
   ...studentwebT1En,
+  ...teamAccountsEn,
   ...wellnessEn,
   // keep-sorted end
 };

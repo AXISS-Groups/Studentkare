@@ -23,6 +23,7 @@ from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
 from core import workflow_models as M
+from core.team_scope import team_sandboxed
 from services import ops_feed
 from services.clinical_api import LAB_CHARGE_PAID_STATES
 from services.commerce_session import commerce_db
@@ -322,7 +323,9 @@ def _services_for(user: dict) -> tuple[str, ...]:
     if user["role"] == "NMC_DOCTOR":
         return ("NURSE_VISIT",)
     if user["role"] == "VENDOR":
-        return {"LAB": ("LAB_PICKUP",), "CLINIC": ("NURSE_VISIT",)}.get(user.get("partnerKind", ""), ())
+        # A wellness centre takes the same visits as a clinic (founder decision 2026-10-22).
+        return {"LAB": ("LAB_PICKUP",), "CLINIC": ("NURSE_VISIT",), "WELLNESS": ("NURSE_VISIT",)}.get(
+            user.get("partnerKind", ""), ())
     return ()
 
 
@@ -331,7 +334,9 @@ def partner_visits(user=Depends(require_staff), db: Session = Depends(workflow_d
     """Open requests this partner is qualified to take, plus the ones this partner took."""
     stmt = select(M.HostelVisitRequest)
     if user["role"] != "SUPER_ADMIN":
-        open_to_me = ((M.HostelVisitRequest.status == "REQUESTED") & M.HostelVisitRequest.service.in_(_services_for(user))
+        # A team account (core/team_scope.py) never sees the open queue: it is real students' requests.
+        services = () if team_sandboxed(user) else _services_for(user)
+        open_to_me = ((M.HostelVisitRequest.status == "REQUESTED") & M.HostelVisitRequest.service.in_(services)
                       & M.HostelVisitRequest.lab_order_id.is_(None))
         # The pickup for a self-booked lab test is the lab's only once it is paid.
         unpaid = select(M.LabOrderCharge.lab_order_id).where(M.LabOrderCharge.payment_status.not_in(LAB_CHARGE_PAID_STATES))
@@ -356,6 +361,9 @@ def act_on_visit(visit_id: str, body: VisitAction, user=Depends(require_staff), 
         # A booked test's pickup moves with its lab order: the collector marks it collected.
         raise HTTPException(409, "This pickup follows its lab booking. Update the lab order instead.")
     if body.action == "CLAIM":
+        if team_sandboxed(user):
+            # The open queue is real students' requests; a team account never sees it (core/team_scope.py).
+            raise HTTPException(404, "Visit not found.")
         if visit.service not in _services_for(user):
             raise HTTPException(403, "This visit needs a partner qualified for it.")
         if visit.status != "REQUESTED":

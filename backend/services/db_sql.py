@@ -162,6 +162,10 @@ def create_all_tables() -> None:
                 with engine.connect() as conn:
                     conn.execute(text("ALTER TABLE care_accounts ADD COLUMN partner_kind VARCHAR(12) NOT NULL DEFAULT ''"))
                     conn.commit()
+            if "is_team_account" not in columns:
+                with engine.connect() as conn:
+                    conn.execute(text("ALTER TABLE care_accounts ADD COLUMN is_team_account BOOLEAN NOT NULL DEFAULT FALSE"))
+                    conn.commit()
         if "care_scheduled_jobs" in inspector.get_table_names():
             columns = [c["name"] for c in inspector.get_columns("care_scheduled_jobs")]
             with engine.connect() as conn:
