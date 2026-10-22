@@ -39,6 +39,8 @@ export interface AccountReadyViewProps {
   onEnter: () => void;
   /** Open Help & support (the board's "Need a hand?" line). */
   onHelp?: () => void;
+  /** Students, while passcodes are on: offer the optional passcode (founder, 2026-10-22). */
+  onAddPasscode?: () => void;
 }
 
 /**
@@ -58,7 +60,7 @@ export interface AccountReadyViewProps {
  * data explicitly marked as a concept. Both the duration and the price would
  * be invented, so the capability is named without a price.
  */
-export function AccountReadyView({ onEnter, onHelp }: AccountReadyViewProps): React.ReactElement {
+export function AccountReadyView({ onEnter, onHelp, onAddPasscode }: AccountReadyViewProps): React.ReactElement {
   const verification = useApiResource<Verification>('/campus/verification');
   const profile = useApiResource<Profile>('/profile');
   const t = useT();
@@ -107,6 +109,17 @@ export function AccountReadyView({ onEnter, onHelp }: AccountReadyViewProps): Re
           </li>
         ))}
       </ul>
+
+      {onAddPasscode ? (
+        <div className="sk-ready__passcode" data-testid="ready-passcode">
+          <span className="sk-ready__passcode-icon"><Icon name="key" size={20} /></span>
+          <span className="sk-ready__passcode-words">
+            <strong>{t('authpc.ready.title')}</strong>
+            <span>{t('authpc.ready.body')}</span>
+          </span>
+          <button type="button" className="sk-ready__passcode-cta" onClick={onAddPasscode}>{t('authpc.ready.cta')}</button>
+        </div>
+      ) : null}
 
       <button type="button" className="sk-ready__primary" onClick={onEnter}>
         {t('onboard.ready.enter')}

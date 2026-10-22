@@ -78,6 +78,7 @@ export const routeRoles: Readonly<Partial<Record<RoutePath, RouteRoles>>> = {
   'run-sheet': PARTNER,
   'rx-review': PARTNER,
   'scan-verify': PARTNER,
+  'set-passcode': STUDENT_ONLY, // the student's own passcode (Account ready, Sign-in & security, forgot passcode)
   'settlement': PARTNER,
   'settlements': PARTNER,
   'staff': PARTNER,

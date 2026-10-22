@@ -194,6 +194,8 @@ export function drawsStudentWebShell(pathname: string, role: string | null, phon
  */
 export function consoleHasOwnChrome(pathname: string, role: string | null): boolean {
   if (/^\/admin(\/|$)/.test(pathname)) return true;
+  // The passcode page is drawn in the sign-in frame: its own logo, language switch and emergency strip.
+  if (pathname === '/set-passcode') return true;
   if (opensInCampusConsole(pathname, role)) return true;
   return role === 'NMC_DOCTOR' && isClinicianConsolePath(pathname);
 }

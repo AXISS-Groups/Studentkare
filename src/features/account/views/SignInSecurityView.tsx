@@ -10,6 +10,7 @@ import { useAuth } from '@/data/contexts/AuthContext';
 import { homeForRole, navigate } from '@/lib/utils/workflowRouting';
 import { QrCells } from '@/features/digital_id/views/DigitalIdNativeView';
 import { TwoFactorViewModel } from '../viewmodel/TwoFactorViewModel';
+import { PasscodeViewModel } from '@/features/auth/viewmodel/PasscodeViewModel';
 
 /** Groups the key in fours ("JBSW Y3DP EHPK 3PXP"): easier to type into an app. */
 const grouped = (secret: string) => secret.replace(/(.{4})(?=.)/g, '$1 ');
@@ -23,13 +24,51 @@ const grouped = (secret: string) => secret.replace(/(.{4})(?=.)/g, '$1 ');
  * (DESIGN.md §2.7). Signing every other session out is the lost-phone flow
  * (POST /sessions/revoke-others), reached from the banner above.
  */
+/**
+ * The student's optional passcode (plan tier1-canvas-wp03, amendment 2026-10-22 b):
+ * on or off and its length, from GET /auth/passcode. Adding, changing and turning
+ * it off happen on /set-passcode. Students only, with the switch on; team accounts
+ * keep their own PIN on the staff page.
+ */
+const PasscodeCard = observer(function PasscodeCard({ vm }: { vm: PasscodeViewModel }) {
+  const t = useT();
+  if (vm.phase !== 'ready' || !vm.usable) return null;
+  const on = vm.hasPasscode;
+  return (
+    <Card testID="passcode-card">
+      <View style={styles.cardHead}>
+        <Icon name="key" size={22} color={color.action} />
+        <View style={styles.cardHeadText}>
+          <Text accessibilityRole="header" style={styles.cardTitle}>{t('authpc.card.title')}</Text>
+          <Text style={styles.body}>{t('authpc.card.lead')}</Text>
+        </View>
+        <View style={[styles.pill, on ? styles.pillOn : styles.pillOff]}>
+          {on ? <Icon name="check-2" size={14} color={color.positive} /> : null}
+          <Text style={[styles.pillText, { color: on ? color.positive : color.text2 }]}>
+            {on ? t('authpc.card.on', { length: vm.status?.length ?? 0 }) : t('authpc.card.off')}
+          </Text>
+        </View>
+      </View>
+      <Button
+        label={t(on ? 'authpc.card.change' : 'authpc.card.add')}
+        variant={on ? 'secondary' : 'primary'}
+        onPress={() => navigate('set-passcode')}
+        icon={on ? undefined : <Icon name="key" size={16} color={color.onAction} />}
+      />
+    </Card>
+  );
+});
+
 export const SignInSecurityView = observer(function SignInSecurityView({
   viewModel: vm,
   onContinue,
+  passcode,
 }: {
   viewModel: TwoFactorViewModel;
   /** Shown once a held session has turned 2FA on: back to the workspace. */
   onContinue?: () => void;
+  /** Students: the passcode card. */
+  passcode?: PasscodeViewModel;
 }) {
   const t = useT();
   const status = vm.status;
@@ -58,6 +97,8 @@ export const SignInSecurityView = observer(function SignInSecurityView({
           <Icon name="arrow-right" size={16} color={color.danger} />
         </View>
       </Pressable>
+
+      {passcode ? <Rise index={1}><PasscodeCard vm={passcode} /></Rise> : null}
 
       {vm.phase === 'loading' ? <Skeleton label={t('sec.loading')} lines={['50%', '100%', '80%']} /> : null}
 
@@ -201,7 +242,17 @@ export function SignInSecurityRoute(): React.ReactElement {
     return () => vm.dispose();
   }, [vm]);
   const role = auth.user?.role;
-  return <SignInSecurityView viewModel={vm} onContinue={role ? () => navigate(homeForRole(role)) : undefined} />;
+  const [passcode] = useState(() => new PasscodeViewModel());
+  useEffect(() => {
+    if (role === 'STUDENT') void passcode.load();
+  }, [passcode, role]);
+  return (
+    <SignInSecurityView
+      viewModel={vm}
+      onContinue={role ? () => navigate(homeForRole(role)) : undefined}
+      passcode={role === 'STUDENT' ? passcode : undefined}
+    />
+  );
 }
 
 const styles = StyleSheet.create({
