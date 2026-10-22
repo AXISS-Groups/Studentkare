@@ -99,7 +99,9 @@
     "VendorSubstitution",
     "VerifyIdentity",
     "WebPass",
-    "WebVerify"
+    "WebVerify",
+    "WebPost",
+    "AdminPosts"
    ],
    "elements": [
     [
@@ -200,7 +202,9 @@
     "WebSignOut",
     "WebVault",
     "WebVerify",
-    "WebVerifyGate"
+    "WebVerifyGate",
+    "WebPost",
+    "AdminPosts"
    ],
    "elements": [
     [
@@ -1176,7 +1180,9 @@
     "SosBeacon",
     "StudentProfile",
     "VitalTrends",
-    "WebFindCare"
+    "WebFindCare",
+    "WebPost",
+    "AdminPosts"
    ],
    "elements": [
     [
@@ -1282,7 +1288,9 @@
     "CatalogOps",
     "DpdpQueue",
     "Integrations",
-    "SuperAdminConsole"
+    "SuperAdminConsole",
+    "WebNewsroom",
+    "M2Home"
    ],
    "elements": [
     [
@@ -1642,7 +1650,9 @@
     "WebRequests",
     "WebSecurity",
     "WebVault",
-    "WebVerify"
+    "WebVerify",
+    "WebNewsroom",
+    "WebPost"
    ],
    "elements": [
     [
@@ -1713,7 +1723,9 @@
     "VendorRxReview",
     "VendorSettlement",
     "VendorSubstitution",
-    "WebScanVerify"
+    "WebScanVerify",
+    "WebPost",
+    "AdminPosts"
    ],
    "elements": [
     [
@@ -2448,7 +2460,8 @@
     "CatalogOps",
     "DpdpQueue",
     "Integrations",
-    "SuperAdminConsole"
+    "SuperAdminConsole",
+    "AdminPosts"
    ],
    "elements": [
     [
@@ -2533,7 +2546,8 @@
     "SplashPulse",
     "SplashVault",
     "VendorHome",
-    "WebAyush"
+    "WebAyush",
+    "WebPost"
    ],
    "elements": [
     [
@@ -3400,7 +3414,8 @@
     "WebPlans",
     "WebPrograms",
     "WebSearchResults",
-    "WebShop"
+    "WebShop",
+    "AdminPosts"
    ],
    "elements": [
     [
@@ -3494,7 +3509,12 @@
     "M2FacilityDetail",
     "M2FindCare",
     "M2MedicineInfo",
-    "WebFindCare"
+    "WebFindCare",
+    "WebNewsroom",
+    "WebPost",
+    "AdminPosts",
+    "M2WhatsNew",
+    "M2Home"
    ],
    "elements": [
     [
@@ -3595,7 +3615,8 @@
     "CampusSla",
     "CampusWater",
     "CampusWellness",
-    "M2MedicineInfo"
+    "M2MedicineInfo",
+    "AdminPosts"
    ],
    "elements": [
     [
@@ -3682,7 +3703,9 @@
     "VendorHome",
     "VendorRxReview",
     "WebReportAssistant",
-    "WebReportInsights"
+    "WebReportInsights",
+    "WebNewsroom",
+    "AdminPosts"
    ],
    "elements": [
     [
@@ -3729,7 +3752,9 @@
     "M2FindCare",
     "Prescribe",
     "ReportReviews",
-    "WebFindCare"
+    "WebFindCare",
+    "WebNewsroom",
+    "WebPost"
    ],
    "elements": [
     [
@@ -3821,7 +3846,8 @@
     "StaffCampFast",
     "StaffCollect",
     "StaffHandover",
-    "VerifyIdentity"
+    "VerifyIdentity",
+    "WebNewsroom"
    ],
    "elements": [
     [
@@ -3860,7 +3886,8 @@
     "WebRequests",
     "WebSecurity",
     "WebVault",
-    "WebVerify"
+    "WebVerify",
+    "AdminPosts"
    ],
    "elements": [
     [
@@ -4461,7 +4488,9 @@
     "WebRequests",
     "WebSecurity",
     "WebVault",
-    "WebVerify"
+    "WebVerify",
+    "WebPost",
+    "AdminPosts"
    ],
    "elements": [
     [
@@ -4657,7 +4686,9 @@
     "WebFindCare",
     "WebMyLabTests",
     "WebReportInsights",
-    "WebSignIn"
+    "WebSignIn",
+    "WebNewsroom",
+    "M2WhatsNew"
    ],
    "elements": [
     [
@@ -5080,7 +5111,8 @@
     "ClinicianToday",
     "EncounterNote",
     "Prescribe",
-    "ReportReviews"
+    "ReportReviews",
+    "AdminPosts"
    ],
    "elements": [
     [
@@ -5155,7 +5187,8 @@
     "EncounterNote",
     "M2FacilityDetail",
     "Prescribe",
-    "ReportReviews"
+    "ReportReviews",
+    "AdminPosts"
    ],
    "elements": [
     [
@@ -5218,7 +5251,8 @@
     "WebPrograms",
     "WebReorder",
     "WebReportInsights",
-    "WebWellness"
+    "WebWellness",
+    "WebPost"
    ],
    "elements": [
     [
@@ -5250,7 +5284,8 @@
     "WebPrograms",
     "WebReorder",
     "WebReportInsights",
-    "WebWellness"
+    "WebWellness",
+    "WebPost"
    ],
    "elements": [
     [
@@ -5324,7 +5359,8 @@
     "WebPrograms",
     "WebReorder",
     "WebReportInsights",
-    "WebWellness"
+    "WebWellness",
+    "WebPost"
    ],
    "elements": [
     [
@@ -5421,7 +5457,9 @@
     "M2FindCare",
     "M2MedicineInfo",
     "M2Steps",
-    "WebFindCare"
+    "WebFindCare",
+    "WebPost",
+    "AdminPosts"
    ],
    "elements": [
     [
@@ -5464,7 +5502,8 @@
     "ProductList",
     "Teleconsult",
     "WebDashboard",
-    "WebVault"
+    "WebVault",
+    "AdminPosts"
    ],
    "elements": [
     [
@@ -5877,7 +5916,8 @@
     "CampusRoster",
     "M2MedicineInfo",
     "ReturnRequest",
-    "WebReportInsights"
+    "WebReportInsights",
+    "AdminPosts"
    ],
    "elements": [
     [
@@ -5944,7 +5984,8 @@
     "ResultCampBooked",
     "ResultLabBooked",
     "ResultRefund",
-    "StatusMoments"
+    "StatusMoments",
+    "AdminPosts"
    ],
    "elements": [
     [
@@ -6003,7 +6044,8 @@
     "ResultCampBooked",
     "ResultLabBooked",
     "ResultRefund",
-    "StatusMoments"
+    "StatusMoments",
+    "WebPost"
    ],
    "elements": [
     [
@@ -6034,7 +6076,10 @@
     "AdminPlansPricing",
     "CampusBreakGlass",
     "CampusOverview",
-    "HostelVisit"
+    "HostelVisit",
+    "WebNewsroom",
+    "WebPost",
+    "M2WhatsNew"
    ],
    "elements": [
     [
@@ -6186,7 +6231,8 @@
    "screens": [
     "ReportInsights",
     "WebReportAssistant",
-    "WebReportInsights"
+    "WebReportInsights",
+    "WebNewsroom"
    ],
    "elements": [
     [
@@ -6238,7 +6284,11 @@
    "screens": [
     "ReportInsights",
     "WebReportAssistant",
-    "WebReportInsights"
+    "WebReportInsights",
+    "WebNewsroom",
+    "WebPost",
+    "AdminPosts",
+    "M2Home"
    ],
    "elements": [
     [
@@ -6476,7 +6526,8 @@
    "screens": [
     "PrescriptionUpload",
     "VendorSettlement",
-    "WebVault"
+    "WebVault",
+    "WebPost"
    ],
    "elements": [
     [
@@ -6574,7 +6625,8 @@
     "M2FindCare",
     "M2MedicineInfo",
     "WebFindCare",
-    "WebHome"
+    "WebHome",
+    "AdminPosts"
    ],
    "elements": [
     [
@@ -6814,7 +6866,10 @@
     "ClinicianConsultRoom",
     "HomeDiscover",
     "M2Home",
-    "SearchEntry"
+    "SearchEntry",
+    "WebNewsroom",
+    "WebPost",
+    "AdminPosts"
    ],
    "elements": [
     [
@@ -6879,7 +6934,8 @@
     "AdminMedicineInfo",
     "LoggedOut",
     "M2MedicineInfo",
-    "WebLoggedOut"
+    "WebLoggedOut",
+    "AdminPosts"
    ],
    "elements": [
     [
@@ -7232,7 +7288,8 @@
    "uses": 2,
    "screens": [
     "AyushWidget",
-    "WebReportAssistant"
+    "WebReportAssistant",
+    "AdminPosts"
    ],
    "elements": [
     [
@@ -7359,7 +7416,10 @@
    "uses": 2,
    "screens": [
     "SignIn",
-    "WebSignIn"
+    "WebSignIn",
+    "WebNewsroom",
+    "WebPost",
+    "AdminPosts"
    ],
    "elements": [
     [
@@ -7403,7 +7463,12 @@
    "source": "canvas",
    "uses": 2,
    "screens": [
-    "AyushSheet"
+    "AyushSheet",
+    "WebNewsroom",
+    "WebPost",
+    "AdminPosts",
+    "M2WhatsNew",
+    "M2Profile"
    ],
    "elements": [
     [
@@ -7430,7 +7495,9 @@
     "AccountDetails",
     "M2Home",
     "M2Profile",
-    "WebAccount"
+    "WebAccount",
+    "WebNewsroom",
+    "WebPost"
    ],
    "elements": [
     [
@@ -7548,7 +7615,9 @@
    "screens": [
     "AdminMedicineInfo",
     "PrescriptionUpload",
-    "SearchEntry"
+    "SearchEntry",
+    "WebPost",
+    "AdminPosts"
    ],
    "elements": [
     [
@@ -7933,7 +8002,11 @@
    "uses": 2,
    "screens": [
     "ReportInsights",
-    "WebReportInsights"
+    "WebReportInsights",
+    "WebNewsroom",
+    "WebPost",
+    "AdminPosts",
+    "M2WhatsNew"
    ],
    "elements": [
     [
@@ -8516,7 +8589,10 @@
    "source": "IconSystem",
    "uses": 2,
    "screens": [
-    "IconSystem"
+    "IconSystem",
+    "WebNewsroom",
+    "WebPost",
+    "AdminPosts"
    ],
    "elements": [
     [
@@ -9468,7 +9544,8 @@
    "screens": [
     "CampusBreakGlass",
     "M2Home",
-    "M2Medicines"
+    "M2Medicines",
+    "AdminPosts"
    ],
    "elements": [
     [
@@ -9562,7 +9639,8 @@
     "M2Insights",
     "M2Medicines",
     "M2Steps",
-    "OtpVerify"
+    "OtpVerify",
+    "WebNewsroom"
    ],
    "elements": [
     [
@@ -9778,7 +9856,8 @@
    "source": "canvas",
    "uses": 1,
    "screens": [
-    "WebWellness"
+    "WebWellness",
+    "WebPost"
    ],
    "elements": [
     [
@@ -9872,7 +9951,8 @@
    "source": "canvas",
    "uses": 1,
    "screens": [
-    "Onboarding2"
+    "Onboarding2",
+    "AdminPosts"
    ],
    "elements": [
     [
@@ -9890,7 +9970,8 @@
    "source": "canvas",
    "uses": 1,
    "screens": [
-    "PrescriptionUpload"
+    "PrescriptionUpload",
+    "AdminPosts"
    ],
    "elements": [
     [
@@ -9945,7 +10026,8 @@
    "uses": 1,
    "screens": [
     "AdminCareDirectory",
-    "HelpCentre"
+    "HelpCentre",
+    "AdminPosts"
    ],
    "elements": [
     [
@@ -11489,7 +11571,8 @@
     "CreateAccount",
     "SetPasscode",
     "SignIn",
-    "WebSignIn"
+    "WebSignIn",
+    "AdminPosts"
    ],
    "elements": [
     [
@@ -11533,7 +11616,11 @@
    "viewBox": "0 0 72 72",
    "file": "icons/3d/bell--p2.svg",
    "screens": [
-    "IconSystem"
+    "IconSystem",
+    "WebNewsroom",
+    "WebPost",
+    "AdminPosts",
+    "M2WhatsNew"
    ]
   },
   {
@@ -11543,7 +11630,11 @@
    "viewBox": "0 0 72 72",
    "file": "icons/3d/brain-alt--p3.svg",
    "screens": [
-    "IconSystem"
+    "IconSystem",
+    "WebNewsroom",
+    "WebPost",
+    "AdminPosts",
+    "M2Home"
    ]
   },
   {
@@ -11554,7 +11645,10 @@
    "file": "icons/3d/calendar-alt--p4.svg",
    "screens": [
     "Appointments",
-    "IconSystem"
+    "IconSystem",
+    "WebNewsroom",
+    "WebPost",
+    "AdminPosts"
    ]
   },
   {
@@ -11633,7 +11727,10 @@
    "screens": [
     "IconSystem",
     "LoggedOut",
-    "WebLoggedOut"
+    "WebLoggedOut",
+    "WebNewsroom",
+    "WebPost",
+    "AdminPosts"
    ]
   },
   {
@@ -11643,7 +11740,10 @@
    "viewBox": "0 0 72 72",
    "file": "icons/3d/doc--p4.svg",
    "screens": [
-    "IconSystem"
+    "IconSystem",
+    "WebNewsroom",
+    "WebPost",
+    "AdminPosts"
    ]
   },
   {
@@ -11665,7 +11765,11 @@
    "screens": [
     "IconSystem",
     "LoggedOut",
-    "WebLoggedOut"
+    "WebLoggedOut",
+    "WebNewsroom",
+    "WebPost",
+    "AdminPosts",
+    "M2Home"
    ]
   },
   {
@@ -11675,7 +11779,10 @@
    "viewBox": "0 0 72 72",
    "file": "icons/3d/home-alt--p4.svg",
    "screens": [
-    "IconSystem"
+    "IconSystem",
+    "WebNewsroom",
+    "WebPost",
+    "AdminPosts"
    ]
   },
   {
@@ -11685,7 +11792,10 @@
    "viewBox": "0 0 72 72",
    "file": "icons/3d/idcard-alt--p4.svg",
    "screens": [
-    "IconSystem"
+    "IconSystem",
+    "WebNewsroom",
+    "WebPost",
+    "AdminPosts"
    ]
   },
   {
@@ -11748,7 +11858,11 @@
    "viewBox": "0 0 72 72",
    "file": "icons/3d/settings-alt--p4.svg",
    "screens": [
-    "IconSystem"
+    "IconSystem",
+    "WebNewsroom",
+    "WebPost",
+    "AdminPosts",
+    "M2WhatsNew"
    ]
   },
   {
@@ -11845,7 +11959,11 @@
    "viewBox": "0 0 72 72",
    "file": "icons/3d/thermo-alt--p1.svg",
    "screens": [
-    "IconSystem"
+    "IconSystem",
+    "WebNewsroom",
+    "WebPost",
+    "AdminPosts",
+    "M2Home"
    ]
   },
   {
@@ -11855,7 +11973,10 @@
    "viewBox": "0 0 72 72",
    "file": "icons/3d/user--p4.svg",
    "screens": [
-    "IconSystem"
+    "IconSystem",
+    "WebNewsroom",
+    "WebPost",
+    "AdminPosts"
    ]
   },
   {
@@ -11867,7 +11988,11 @@
    "screens": [
     "IconSystem",
     "RecordsVault",
-    "WebVault"
+    "WebVault",
+    "WebNewsroom",
+    "WebPost",
+    "AdminPosts",
+    "M2WhatsNew"
    ]
   },
   {
@@ -11887,7 +12012,11 @@
    "viewBox": "0 0 72 72",
    "file": "icons/3d/wellness-alt--p5.svg",
    "screens": [
-    "IconSystem"
+    "IconSystem",
+    "WebNewsroom",
+    "WebPost",
+    "AdminPosts",
+    "M2Home"
    ]
   }
  ],
@@ -13040,7 +13169,7 @@
  ],
  "screens": {
   "AbhaLink": {
-   "page": "1 \u00b7 Launch & onboarding",
+   "page": "1 · Launch & onboarding",
    "size": "390x1300",
    "icons": [
     "arrow-left",
@@ -13055,7 +13184,7 @@
    "textGlyphs": []
   },
   "AccountDetails": {
-   "page": "2 \u00b7 Student app (mobile)",
+   "page": "2 · Student app (mobile)",
    "size": "390x1470",
    "icons": [
     "arrow-left",
@@ -13077,13 +13206,13 @@
    "brand": [],
    "assets": [],
    "textGlyphs": [
-    "\u2713",
-    "\ud83c\udf93",
-    "\ud83d\uddd1"
+    "✓",
+    "🎓",
+    "🗑"
    ]
   },
   "AccountReady": {
-   "page": "1 \u00b7 Launch & onboarding",
+   "page": "1 · Launch & onboarding",
    "size": "390x844",
    "icons": [
     "arrow-right",
@@ -13101,7 +13230,7 @@
    "textGlyphs": []
   },
   "AdminAccounts": {
-   "page": "7 \u00b7 Super admin",
+   "page": "7 · Super admin",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -13141,7 +13270,7 @@
    "textGlyphs": []
   },
   "AdminApiKeys": {
-   "page": "7 \u00b7 Super admin",
+   "page": "7 · Super admin",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -13177,12 +13306,12 @@
    ],
    "assets": [],
    "textGlyphs": [
-    "\u2190",
-    "\u2713"
+    "←",
+    "✓"
    ]
   },
   "AdminBilling": {
-   "page": "7 \u00b7 Super admin",
+   "page": "7 · Super admin",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -13222,7 +13351,7 @@
    "textGlyphs": []
   },
   "AdminBreakGlassLog": {
-   "page": "7 \u00b7 Super admin",
+   "page": "7 · Super admin",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -13262,11 +13391,11 @@
    ],
    "assets": [],
    "textGlyphs": [
-    "\u2713"
+    "✓"
    ]
   },
   "AdminCase": {
-   "page": "7 \u00b7 Super admin",
+   "page": "7 · Super admin",
    "size": "1440x1024",
    "icons": [
     "alert-triangle-3",
@@ -13299,12 +13428,12 @@
    ],
    "assets": [],
    "textGlyphs": [
-    "\u2190",
-    "\u2713"
+    "←",
+    "✓"
    ]
   },
   "AdminCheckins": {
-   "page": "7 \u00b7 Super admin",
+   "page": "7 · Super admin",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -13342,7 +13471,7 @@
    "textGlyphs": []
   },
   "AdminConsentPolicy": {
-   "page": "7 \u00b7 Super admin",
+   "page": "7 · Super admin",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -13380,7 +13509,7 @@
    "textGlyphs": []
   },
   "AdminFlags": {
-   "page": "7 \u00b7 Super admin",
+   "page": "7 · Super admin",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -13420,7 +13549,7 @@
    "textGlyphs": []
   },
   "AdminHandover": {
-   "page": "7 \u00b7 Super admin",
+   "page": "7 · Super admin",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -13456,11 +13585,11 @@
    ],
    "assets": [],
    "textGlyphs": [
-    "\u2192"
+    "→"
    ]
   },
   "AdminIntake": {
-   "page": "7 \u00b7 Super admin",
+   "page": "7 · Super admin",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -13499,7 +13628,7 @@
    "textGlyphs": []
   },
   "AdminKnowledge": {
-   "page": "7 \u00b7 Super admin",
+   "page": "7 · Super admin",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -13539,7 +13668,7 @@
    "textGlyphs": []
   },
   "AdminOps": {
-   "page": "7 \u00b7 Super admin",
+   "page": "7 · Super admin",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -13577,7 +13706,7 @@
    "textGlyphs": []
   },
   "AdminPartners": {
-   "page": "7 \u00b7 Super admin",
+   "page": "7 · Super admin",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -13615,7 +13744,7 @@
    "textGlyphs": []
   },
   "AdminPlansPricing": {
-   "page": "7 \u00b7 Super admin",
+   "page": "7 · Super admin",
    "size": "1440x1024",
    "icons": [
     "alert-circle",
@@ -13656,11 +13785,11 @@
    ],
    "assets": [],
    "textGlyphs": [
-    "\u2192"
+    "→"
    ]
   },
   "AdminPriceFix": {
-   "page": "7 \u00b7 Super admin",
+   "page": "7 · Super admin",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -13696,12 +13825,12 @@
    ],
    "assets": [],
    "textGlyphs": [
-    "\u2190",
-    "\u2713"
+    "←",
+    "✓"
    ]
   },
   "AdminRuleL": {
-   "page": "7 \u00b7 Super admin",
+   "page": "7 · Super admin",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -13739,7 +13868,7 @@
    "textGlyphs": []
   },
   "AdminSentinel": {
-   "page": "7 \u00b7 Super admin",
+   "page": "7 · Super admin",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -13777,7 +13906,7 @@
    "textGlyphs": []
   },
   "AdminSignIn": {
-   "page": "7 \u00b7 Super admin",
+   "page": "7 · Super admin",
    "size": "1440x900",
    "icons": [],
    "icons3d": [],
@@ -13789,11 +13918,11 @@
    ],
    "assets": [],
    "textGlyphs": [
-    "\u2713"
+    "✓"
    ]
   },
   "AdminSurveillance": {
-   "page": "7 \u00b7 Super admin",
+   "page": "7 · Super admin",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -13831,7 +13960,7 @@
    "textGlyphs": []
   },
   "AdminTemplates": {
-   "page": "7 \u00b7 Super admin",
+   "page": "7 · Super admin",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -13869,11 +13998,11 @@
    ],
    "assets": [],
    "textGlyphs": [
-    "\u2713"
+    "✓"
    ]
   },
   "AdminTenants": {
-   "page": "7 \u00b7 Super admin",
+   "page": "7 · Super admin",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -13911,7 +14040,7 @@
    "textGlyphs": []
   },
   "AdminTokens": {
-   "page": "7 \u00b7 Super admin",
+   "page": "7 · Super admin",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -13949,7 +14078,7 @@
    "textGlyphs": []
   },
   "AdminVerification": {
-   "page": "7 \u00b7 Super admin",
+   "page": "7 · Super admin",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -13987,7 +14116,7 @@
    "textGlyphs": []
   },
   "AiGovernance": {
-   "page": "7 \u00b7 Super admin",
+   "page": "7 · Super admin",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -14025,7 +14154,7 @@
    "textGlyphs": []
   },
   "Appointments": {
-   "page": "2 \u00b7 Student app (mobile)",
+   "page": "2 · Student app (mobile)",
    "size": "390x944",
    "icons": [
     "arrow-left"
@@ -14041,11 +14170,11 @@
     "a-doctor-on-a-video-consult-460112.png"
    ],
    "textGlyphs": [
-    "\u2713"
+    "✓"
    ]
   },
   "AuditExplorer": {
-   "page": "7 \u00b7 Super admin",
+   "page": "7 · Super admin",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -14083,7 +14212,7 @@
    "textGlyphs": []
   },
   "AyushChat": {
-   "page": "2 \u00b7 Student app (mobile)",
+   "page": "2 · Student app (mobile)",
    "size": "390x844",
    "icons": [
     "arrow-left",
@@ -14100,7 +14229,7 @@
    "textGlyphs": []
   },
   "AyushSheet": {
-   "page": "8 \u00b7 Design system & flow map",
+   "page": "8 · Design system & flow map",
    "size": "390x844",
    "icons": [
     "arrow-right",
@@ -14116,11 +14245,11 @@
    "brand": [],
    "assets": [],
    "textGlyphs": [
-    "\u2713"
+    "✓"
    ]
   },
   "AyushWidget": {
-   "page": "8 \u00b7 Design system & flow map",
+   "page": "8 · Design system & flow map",
    "size": "420x680",
    "icons": [
     "arrow-up",
@@ -14139,7 +14268,7 @@
    "textGlyphs": []
   },
   "CampDay": {
-   "page": "6 \u00b7 Partner \u2014 pharmacy, lab, clinic",
+   "page": "6 · Partner — pharmacy, lab, clinic",
    "size": "390x844",
    "icons": [
     "arrow-left",
@@ -14155,7 +14284,7 @@
    "textGlyphs": []
   },
   "CampusAccessRequests": {
-   "page": "4 \u00b7 Campus / hostel admin",
+   "page": "4 · Campus / hostel admin",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -14202,11 +14331,11 @@
    ],
    "assets": [],
    "textGlyphs": [
-    "\u2318"
+    "⌘"
    ]
   },
   "CampusAdminConsole": {
-   "page": "4 \u00b7 Campus / hostel admin",
+   "page": "4 · Campus / hostel admin",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -14249,7 +14378,7 @@
    "textGlyphs": []
   },
   "CampusAdminTeam": {
-   "page": "4 \u00b7 Campus / hostel admin",
+   "page": "4 · Campus / hostel admin",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -14297,12 +14426,12 @@
    ],
    "assets": [],
    "textGlyphs": [
-    "\u2318",
-    "\u2713"
+    "⌘",
+    "✓"
    ]
   },
   "CampusAmbulance": {
-   "page": "4 \u00b7 Campus / hostel admin",
+   "page": "4 · Campus / hostel admin",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -14342,11 +14471,11 @@
    ],
    "assets": [],
    "textGlyphs": [
-    "\u2192"
+    "→"
    ]
   },
   "CampusAnnouncements": {
-   "page": "4 \u00b7 Campus / hostel admin",
+   "page": "4 · Campus / hostel admin",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -14391,11 +14520,11 @@
    ],
    "assets": [],
    "textGlyphs": [
-    "\u2318"
+    "⌘"
    ]
   },
   "CampusApply": {
-   "page": "4 \u00b7 Campus / hostel admin",
+   "page": "4 · Campus / hostel admin",
    "size": "1440x1100",
    "icons": [
     "check"
@@ -14411,7 +14540,7 @@
    "textGlyphs": []
   },
   "CampusApprovals": {
-   "page": "4 \u00b7 Campus / hostel admin",
+   "page": "4 · Campus / hostel admin",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -14454,7 +14583,7 @@
    "textGlyphs": []
   },
   "CampusBlocks": {
-   "page": "4 \u00b7 Campus / hostel admin",
+   "page": "4 · Campus / hostel admin",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -14496,7 +14625,7 @@
    "textGlyphs": []
   },
   "CampusBreakGlass": {
-   "page": "4 \u00b7 Campus / hostel admin",
+   "page": "4 · Campus / hostel admin",
    "size": "1440x1024",
    "icons": [
     "alert-circle",
@@ -14546,11 +14675,11 @@
    ],
    "assets": [],
    "textGlyphs": [
-    "\u2318"
+    "⌘"
    ]
   },
   "CampusCamps": {
-   "page": "4 \u00b7 Campus / hostel admin",
+   "page": "4 · Campus / hostel admin",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -14593,7 +14722,7 @@
    "textGlyphs": []
   },
   "CampusCertificates": {
-   "page": "4 \u00b7 Campus / hostel admin",
+   "page": "4 · Campus / hostel admin",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -14639,12 +14768,12 @@
    ],
    "assets": [],
    "textGlyphs": [
-    "\u2318",
-    "\u2713"
+    "⌘",
+    "✓"
    ]
   },
   "CampusCounsellor": {
-   "page": "4 \u00b7 Campus / hostel admin",
+   "page": "4 · Campus / hostel admin",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -14691,13 +14820,13 @@
    ],
    "assets": [],
    "textGlyphs": [
-    "\u2318",
-    "\u2713",
-    "\u2717"
+    "⌘",
+    "✓",
+    "✗"
    ]
   },
   "CampusDischarge": {
-   "page": "4 \u00b7 Campus / hostel admin",
+   "page": "4 · Campus / hostel admin",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -14739,7 +14868,7 @@
    "textGlyphs": []
   },
   "CampusIncidents": {
-   "page": "4 \u00b7 Campus / hostel admin",
+   "page": "4 · Campus / hostel admin",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -14788,11 +14917,11 @@
    ],
    "assets": [],
    "textGlyphs": [
-    "\u2318"
+    "⌘"
    ]
   },
   "CampusInsights": {
-   "page": "4 \u00b7 Campus / hostel admin",
+   "page": "4 · Campus / hostel admin",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -14841,11 +14970,11 @@
    ],
    "assets": [],
    "textGlyphs": [
-    "\u2318"
+    "⌘"
    ]
   },
   "CampusIsolation": {
-   "page": "4 \u00b7 Campus / hostel admin",
+   "page": "4 · Campus / hostel admin",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -14887,7 +15016,7 @@
    "textGlyphs": []
   },
   "CampusMess": {
-   "page": "4 \u00b7 Campus / hostel admin",
+   "page": "4 · Campus / hostel admin",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -14929,7 +15058,7 @@
    "textGlyphs": []
   },
   "CampusOutbreak": {
-   "page": "4 \u00b7 Campus / hostel admin",
+   "page": "4 · Campus / hostel admin",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -14973,7 +15102,7 @@
    "textGlyphs": []
   },
   "CampusOverview": {
-   "page": "4 \u00b7 Campus / hostel admin",
+   "page": "4 · Campus / hostel admin",
    "size": "1440x1024",
    "icons": [
     "alert-circle",
@@ -15024,11 +15153,11 @@
    ],
    "assets": [],
    "textGlyphs": [
-    "\u2318"
+    "⌘"
    ]
   },
   "CampusReports": {
-   "page": "4 \u00b7 Campus / hostel admin",
+   "page": "4 · Campus / hostel admin",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -15074,11 +15203,11 @@
    ],
    "assets": [],
    "textGlyphs": [
-    "\u2318"
+    "⌘"
    ]
   },
   "CampusRoster": {
-   "page": "4 \u00b7 Campus / hostel admin",
+   "page": "4 · Campus / hostel admin",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -15129,12 +15258,12 @@
    ],
    "assets": [],
    "textGlyphs": [
-    "\u2318",
-    "\u2713"
+    "⌘",
+    "✓"
    ]
   },
   "CampusSanitary": {
-   "page": "4 \u00b7 Campus / hostel admin",
+   "page": "4 · Campus / hostel admin",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -15176,7 +15305,7 @@
    "textGlyphs": []
   },
   "CampusSettings": {
-   "page": "4 \u00b7 Campus / hostel admin",
+   "page": "4 · Campus / hostel admin",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -15224,11 +15353,11 @@
    ],
    "assets": [],
    "textGlyphs": [
-    "\u2318"
+    "⌘"
    ]
   },
   "CampusSla": {
-   "page": "4 \u00b7 Campus / hostel admin",
+   "page": "4 · Campus / hostel admin",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -15270,7 +15399,7 @@
    "textGlyphs": []
   },
   "CampusVerify": {
-   "page": "1 \u00b7 Launch & onboarding",
+   "page": "1 · Launch & onboarding",
    "size": "390x844",
    "icons": [
     "arrow-left",
@@ -15288,7 +15417,7 @@
    "textGlyphs": []
   },
   "CampusWater": {
-   "page": "4 \u00b7 Campus / hostel admin",
+   "page": "4 · Campus / hostel admin",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -15330,7 +15459,7 @@
    "textGlyphs": []
   },
   "CampusWellness": {
-   "page": "4 \u00b7 Campus / hostel admin",
+   "page": "4 · Campus / hostel admin",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -15372,7 +15501,7 @@
    "textGlyphs": []
   },
   "Cart": {
-   "page": "2 \u00b7 Student app (mobile)",
+   "page": "2 · Student app (mobile)",
    "size": "390x844",
    "icons": [
     "alert-circle-2",
@@ -15387,7 +15516,7 @@
    "textGlyphs": []
   },
   "CatalogOps": {
-   "page": "7 \u00b7 Super admin",
+   "page": "7 · Super admin",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -15426,7 +15555,7 @@
    "textGlyphs": []
   },
   "CheckinReceipt": {
-   "page": "2 \u00b7 Student app (mobile)",
+   "page": "2 · Student app (mobile)",
    "size": "390x1000",
    "icons": [
     "check",
@@ -15441,7 +15570,7 @@
    "textGlyphs": []
   },
   "Checkout": {
-   "page": "2 \u00b7 Student app (mobile)",
+   "page": "2 · Student app (mobile)",
    "size": "390x844",
    "icons": [
     "arrow-left",
@@ -15456,7 +15585,7 @@
    "textGlyphs": []
   },
   "ClaimsAdjudication": {
-   "page": "7 \u00b7 Super admin",
+   "page": "7 · Super admin",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -15477,7 +15606,7 @@
    "textGlyphs": []
   },
   "ClaimsHub": {
-   "page": "2 \u00b7 Student app (mobile)",
+   "page": "2 · Student app (mobile)",
    "size": "390x844",
    "icons": [
     "arrow-left",
@@ -15495,7 +15624,7 @@
    "textGlyphs": []
   },
   "ClinicalReview": {
-   "page": "5 \u00b7 Doctor",
+   "page": "5 · Doctor",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -15532,7 +15661,7 @@
    "textGlyphs": []
   },
   "ClinicianAi": {
-   "page": "5 \u00b7 Doctor",
+   "page": "5 · Doctor",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -15568,7 +15697,7 @@
    "textGlyphs": []
   },
   "ClinicianApply": {
-   "page": "5 \u00b7 Doctor",
+   "page": "5 · Doctor",
    "size": "390x1060",
    "icons": [
     "check",
@@ -15583,7 +15712,7 @@
    "textGlyphs": []
   },
   "ClinicianAyush": {
-   "page": "5 \u00b7 Doctor",
+   "page": "5 · Doctor",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -15619,7 +15748,7 @@
    "textGlyphs": []
   },
   "ClinicianChronic": {
-   "page": "5 \u00b7 Doctor",
+   "page": "5 · Doctor",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -15655,7 +15784,7 @@
    "textGlyphs": []
   },
   "ClinicianConsole": {
-   "page": "5 \u00b7 Doctor",
+   "page": "5 · Doctor",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -15694,7 +15823,7 @@
    "textGlyphs": []
   },
   "ClinicianConsultRoom": {
-   "page": "5 \u00b7 Doctor",
+   "page": "5 · Doctor",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -15738,12 +15867,12 @@
    ],
    "assets": [],
    "textGlyphs": [
-    "\u2190",
-    "\u2713"
+    "←",
+    "✓"
    ]
   },
   "ClinicianEarnings": {
-   "page": "5 \u00b7 Doctor",
+   "page": "5 · Doctor",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -15779,7 +15908,7 @@
    "textGlyphs": []
   },
   "ClinicianInbox": {
-   "page": "5 \u00b7 Doctor",
+   "page": "5 · Doctor",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -15819,7 +15948,7 @@
    "textGlyphs": []
   },
   "ClinicianLabOrder": {
-   "page": "5 \u00b7 Doctor",
+   "page": "5 · Doctor",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -15855,7 +15984,7 @@
    "textGlyphs": []
   },
   "ClinicianPatients": {
-   "page": "5 \u00b7 Doctor",
+   "page": "5 · Doctor",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -15891,7 +16020,7 @@
    "textGlyphs": []
   },
   "ClinicianReferral": {
-   "page": "5 \u00b7 Doctor",
+   "page": "5 · Doctor",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -15927,7 +16056,7 @@
    "textGlyphs": []
   },
   "ClinicianRenewals": {
-   "page": "5 \u00b7 Doctor",
+   "page": "5 · Doctor",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -15963,7 +16092,7 @@
    "textGlyphs": []
   },
   "ClinicianSchedule": {
-   "page": "5 \u00b7 Doctor",
+   "page": "5 · Doctor",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -15999,7 +16128,7 @@
    "textGlyphs": []
   },
   "ClinicianToday": {
-   "page": "5 \u00b7 Doctor",
+   "page": "5 · Doctor",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -16038,11 +16167,11 @@
    ],
    "assets": [],
    "textGlyphs": [
-    "\u2713"
+    "✓"
    ]
   },
   "ConfirmDialogs": {
-   "page": "8 \u00b7 Design system & flow map",
+   "page": "8 · Design system & flow map",
    "size": "1440x900",
    "icons": [
     "calendar-x",
@@ -16062,7 +16191,7 @@
    "textGlyphs": []
   },
   "ConsentInbox": {
-   "page": "2 \u00b7 Student app (mobile)",
+   "page": "2 · Student app (mobile)",
    "size": "390x1420",
    "icons": [
     "arrow-left"
@@ -16076,7 +16205,7 @@
    "textGlyphs": []
   },
   "ConsultSummary": {
-   "page": "2 \u00b7 Student app (mobile)",
+   "page": "2 · Student app (mobile)",
    "size": "390x1200",
    "icons": [
     "check",
@@ -16089,12 +16218,12 @@
    "brand": [],
    "assets": [],
    "textGlyphs": [
-    "\u2605",
-    "\u2713"
+    "★",
+    "✓"
    ]
   },
   "CreateAccount": {
-   "page": "1 \u00b7 Launch & onboarding",
+   "page": "1 · Launch & onboarding",
    "size": "390x844",
    "icons": [
     "arrow-left",
@@ -16115,7 +16244,7 @@
    "textGlyphs": []
   },
   "CrisisSupport": {
-   "page": "2 \u00b7 Student app (mobile)",
+   "page": "2 · Student app (mobile)",
    "size": "390x1040",
    "icons": [
     "arrow-left",
@@ -16133,7 +16262,7 @@
    "textGlyphs": []
   },
   "DataExport": {
-   "page": "2 \u00b7 Student app (mobile)",
+   "page": "2 · Student app (mobile)",
    "size": "390x1300",
    "icons": [
     "arrow-left",
@@ -16148,7 +16277,7 @@
    "textGlyphs": []
   },
   "DeleteAccount": {
-   "page": "2 \u00b7 Student app (mobile)",
+   "page": "2 · Student app (mobile)",
    "size": "390x1060",
    "icons": [
     "check",
@@ -16161,13 +16290,13 @@
    "brand": [],
    "assets": [],
    "textGlyphs": [
-    "\u2192",
-    "\u2715",
-    "\u2b07"
+    "→",
+    "✕",
+    "⬇"
    ]
   },
   "Devices": {
-   "page": "2 \u00b7 Student app (mobile)",
+   "page": "2 · Student app (mobile)",
    "size": "390x900",
    "icons": [
     "chevron-left"
@@ -16179,13 +16308,13 @@
    "brand": [],
    "assets": [],
    "textGlyphs": [
-    "\ud83d\udcf1",
-    "\ud83e\ude78",
-    "\ud83e\ude7a"
+    "📱",
+    "🩸",
+    "🩺"
    ]
   },
   "DigitalId": {
-   "page": "2 \u00b7 Student app (mobile)",
+   "page": "2 · Student app (mobile)",
    "size": "390x844",
    "icons": [
     "arrow-left",
@@ -16203,12 +16332,12 @@
    ],
    "assets": [],
    "textGlyphs": [
-    "\u2192",
-    "\u2713"
+    "→",
+    "✓"
    ]
   },
   "DispenseRegister": {
-   "page": "6 \u00b7 Partner \u2014 pharmacy, lab, clinic",
+   "page": "6 · Partner — pharmacy, lab, clinic",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -16245,11 +16374,11 @@
    ],
    "assets": [],
    "textGlyphs": [
-    "\u2192"
+    "→"
    ]
   },
   "DoctorResults": {
-   "page": "2 \u00b7 Student app (mobile)",
+   "page": "2 · Student app (mobile)",
    "size": "390x944",
    "icons": [
     "arrow-left"
@@ -16265,7 +16394,7 @@
    "textGlyphs": []
   },
   "DpdpQueue": {
-   "page": "7 \u00b7 Super admin",
+   "page": "7 · Super admin",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -16304,7 +16433,7 @@
    "textGlyphs": []
   },
   "EmergencyCard": {
-   "page": "2 \u00b7 Student app (mobile)",
+   "page": "2 · Student app (mobile)",
    "size": "390x998",
    "icons": [
     "arrow-left",
@@ -16319,11 +16448,11 @@
    "brand": [],
    "assets": [],
    "textGlyphs": [
-    "\u2715"
+    "✕"
    ]
   },
   "EncounterNote": {
-   "page": "5 \u00b7 Doctor",
+   "page": "5 · Doctor",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -16359,7 +16488,7 @@
    "textGlyphs": []
   },
   "FamilyCircle": {
-   "page": "2 \u00b7 Student app (mobile)",
+   "page": "2 · Student app (mobile)",
    "size": "390x1520",
    "icons": [
     "arrow-left"
@@ -16373,7 +16502,7 @@
    "textGlyphs": []
   },
   "Feedback": {
-   "page": "8 \u00b7 Design system & flow map",
+   "page": "8 · Design system & flow map",
    "size": "1440x1024",
    "icons": [
     "alert-triangle-4",
@@ -16391,7 +16520,7 @@
    "textGlyphs": []
   },
   "FlowMap": {
-   "page": "8 \u00b7 Design system & flow map",
+   "page": "8 · Design system & flow map",
    "size": "2820x3490",
    "icons": [],
    "icons3d": [],
@@ -16405,7 +16534,7 @@
    "textGlyphs": []
   },
   "GuardianApprove": {
-   "page": "1 \u00b7 Launch & onboarding",
+   "page": "1 · Launch & onboarding",
    "size": "390x1020",
    "icons": [
     "check"
@@ -16419,12 +16548,12 @@
    ],
    "assets": [],
    "textGlyphs": [
-    "\u2713",
-    "\ud83d\udd12"
+    "✓",
+    "🔒"
    ]
   },
   "GuardianConsent": {
-   "page": "1 \u00b7 Launch & onboarding",
+   "page": "1 · Launch & onboarding",
    "size": "390x1140",
    "icons": [
     "check",
@@ -16438,11 +16567,11 @@
    "brand": [],
    "assets": [],
    "textGlyphs": [
-    "\u2713"
+    "✓"
    ]
   },
   "HelpCentre": {
-   "page": "2 \u00b7 Student app (mobile)",
+   "page": "2 · Student app (mobile)",
    "size": "390x1046",
    "icons": [
     "arrow-left",
@@ -16466,7 +16595,7 @@
    "textGlyphs": []
   },
   "HomeDiscover": {
-   "page": "2 \u00b7 Student app (mobile)",
+   "page": "2 · Student app (mobile)",
    "size": "390x844",
    "icons": [
     "arrow-right",
@@ -16489,7 +16618,7 @@
    "textGlyphs": []
   },
   "HostelVisit": {
-   "page": "2 \u00b7 Student app (mobile)",
+   "page": "2 · Student app (mobile)",
    "size": "390x1000",
    "icons": [
     "alert-circle",
@@ -16506,7 +16635,7 @@
    "textGlyphs": []
   },
   "IceContacts": {
-   "page": "2 \u00b7 Student app (mobile)",
+   "page": "2 · Student app (mobile)",
    "size": "390x1420",
    "icons": [
     "arrow-left",
@@ -16521,7 +16650,7 @@
    "textGlyphs": []
   },
   "IconSystem": {
-   "page": "8 \u00b7 Design system & flow map",
+   "page": "8 · Design system & flow map",
    "size": "1440x1500",
    "icons": [
     "ambulance",
@@ -16589,7 +16718,7 @@
    "textGlyphs": []
   },
   "IllustrationLibrary": {
-   "page": "8 \u00b7 Design system & flow map",
+   "page": "8 · Design system & flow map",
    "size": "1440x2280",
    "icons": [],
    "icons3d": [],
@@ -16630,11 +16759,11 @@
     "video-93a060.mp4"
    ],
    "textGlyphs": [
-    "\u2192"
+    "→"
    ]
   },
   "Integrations": {
-   "page": "7 \u00b7 Super admin",
+   "page": "7 · Super admin",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -16670,11 +16799,11 @@
    ],
    "assets": [],
    "textGlyphs": [
-    "\u2192"
+    "→"
    ]
   },
   "LabColdChain": {
-   "page": "6 \u00b7 Partner \u2014 pharmacy, lab, clinic",
+   "page": "6 · Partner — pharmacy, lab, clinic",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -16711,7 +16840,7 @@
    "textGlyphs": []
   },
   "LabCollection": {
-   "page": "6 \u00b7 Partner \u2014 pharmacy, lab, clinic",
+   "page": "6 · Partner — pharmacy, lab, clinic",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -16749,7 +16878,7 @@
    "textGlyphs": []
   },
   "LabPackages": {
-   "page": "2 \u00b7 Student app (mobile)",
+   "page": "2 · Student app (mobile)",
    "size": "390x844",
    "icons": [
     "alert-circle-2",
@@ -16764,7 +16893,7 @@
    "textGlyphs": []
   },
   "LabQueue": {
-   "page": "6 \u00b7 Partner \u2014 pharmacy, lab, clinic",
+   "page": "6 · Partner — pharmacy, lab, clinic",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -16800,11 +16929,11 @@
    ],
    "assets": [],
    "textGlyphs": [
-    "\u2192"
+    "→"
    ]
   },
   "LabReporting": {
-   "page": "6 \u00b7 Partner \u2014 pharmacy, lab, clinic",
+   "page": "6 · Partner — pharmacy, lab, clinic",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -16841,7 +16970,7 @@
    "textGlyphs": []
   },
   "LabResults": {
-   "page": "2 \u00b7 Student app (mobile)",
+   "page": "2 · Student app (mobile)",
    "size": "390x1066",
    "icons": [
     "arrow-left",
@@ -16857,11 +16986,11 @@
    "brand": [],
    "assets": [],
    "textGlyphs": [
-    "\u2713"
+    "✓"
    ]
   },
   "Landing": {
-   "page": "3a \u00b7 Student web \u2014 public site",
+   "page": "3a · Student web — public site",
    "size": "1440x6480",
    "icons": [
     "activity",
@@ -16931,12 +17060,12 @@
     "video-fabac8.mp4"
    ],
    "textGlyphs": [
-    "\u2192",
-    "\u2713"
+    "→",
+    "✓"
    ]
   },
   "LandingCampus": {
-   "page": "3a \u00b7 Student web \u2014 public site",
+   "page": "3a · Student web — public site",
    "size": "1440x4592",
    "icons": [
     "brand-apple",
@@ -16972,7 +17101,7 @@
    "textGlyphs": []
   },
   "LandingClinician": {
-   "page": "3a \u00b7 Student web \u2014 public site",
+   "page": "3a · Student web — public site",
    "size": "1440x4752",
    "icons": [
     "brand-apple",
@@ -17010,7 +17139,7 @@
    "textGlyphs": []
   },
   "LeaveCampus": {
-   "page": "2 \u00b7 Student app (mobile)",
+   "page": "2 · Student app (mobile)",
    "size": "390x1260",
    "icons": [
     "check",
@@ -17023,12 +17152,12 @@
    "brand": [],
    "assets": [],
    "textGlyphs": [
-    "\u2192",
-    "\u2713"
+    "→",
+    "✓"
    ]
   },
   "Legal": {
-   "page": "2 \u00b7 Student app (mobile)",
+   "page": "2 · Student app (mobile)",
    "size": "390x1500",
    "icons": [
     "chevron-left"
@@ -17042,7 +17171,7 @@
    "textGlyphs": []
   },
   "LoggedOut": {
-   "page": "1 \u00b7 Launch & onboarding",
+   "page": "1 · Launch & onboarding",
    "size": "390x1090",
    "icons": [
     "check",
@@ -17068,7 +17197,7 @@
    "textGlyphs": []
   },
   "LostPhone": {
-   "page": "1 \u00b7 Launch & onboarding",
+   "page": "1 · Launch & onboarding",
    "size": "390x1080",
    "icons": [
     "check",
@@ -17082,11 +17211,11 @@
    "brand": [],
    "assets": [],
    "textGlyphs": [
-    "\u2192"
+    "→"
    ]
   },
   "Main": {
-   "page": "1 \u00b7 Launch & onboarding",
+   "page": "1 · Launch & onboarding",
    "size": "390x844",
    "icons": [
     "arrow-right"
@@ -17109,18 +17238,18 @@
     "image-ccaceb.png"
    ],
    "textGlyphs": [
-    "\u2192",
-    "\u2600",
-    "\ud83c\udf19",
-    "\ud83c\udf24",
-    "\ud83d\udd12",
-    "\ud83d\uddc2",
-    "\ud83e\uddea",
-    "\ud83e\ude7a"
+    "→",
+    "☀",
+    "🌙",
+    "🌤",
+    "🔒",
+    "🗂",
+    "🧪",
+    "🩺"
    ]
   },
   "Medications": {
-   "page": "2 \u00b7 Student app (mobile)",
+   "page": "2 · Student app (mobile)",
    "size": "390x904",
    "icons": [
     "arrow-left",
@@ -17137,11 +17266,11 @@
     "video-379108.mp4"
    ],
    "textGlyphs": [
-    "\u2713"
+    "✓"
    ]
   },
   "MoreHub": {
-   "page": "2 \u00b7 Student app (mobile)",
+   "page": "2 · Student app (mobile)",
    "size": "390x1346",
    "icons": [
     "bell-2",
@@ -17174,7 +17303,7 @@
    "textGlyphs": []
   },
   "MotionSystem": {
-   "page": "8 \u00b7 Design system & flow map",
+   "page": "8 · Design system & flow map",
    "size": "1440x2300",
    "icons": [
     "circle"
@@ -17186,11 +17315,11 @@
    "brand": [],
    "assets": [],
    "textGlyphs": [
-    "\u2190"
+    "←"
    ]
   },
   "Movement": {
-   "page": "2 \u00b7 Student app (mobile)",
+   "page": "2 · Student app (mobile)",
    "size": "390x844",
    "icons": [
     "arrow-left"
@@ -17204,7 +17333,7 @@
    "textGlyphs": []
   },
   "MyPass": {
-   "page": "2 \u00b7 Student app (mobile)",
+   "page": "2 · Student app (mobile)",
    "size": "390x1120",
    "icons": [
     "alert-triangle",
@@ -17220,12 +17349,12 @@
    "brand": [],
    "assets": [],
    "textGlyphs": [
-    "\u2600",
-    "\u2713"
+    "☀",
+    "✓"
    ]
   },
   "MyReports": {
-   "page": "2 \u00b7 Student app (mobile)",
+   "page": "2 · Student app (mobile)",
    "size": "390x1020",
    "icons": [
     "arrow-left"
@@ -17241,7 +17370,7 @@
    "textGlyphs": []
   },
   "MyRequests": {
-   "page": "2 \u00b7 Student app (mobile)",
+   "page": "2 · Student app (mobile)",
    "size": "390x1100",
    "icons": [
     "chevron-left"
@@ -17255,7 +17384,7 @@
    "textGlyphs": []
   },
   "NavSheets": {
-   "page": "8 \u00b7 Design system & flow map",
+   "page": "8 · Design system & flow map",
    "size": "1440x1024",
    "icons": [
     "bell-dome",
@@ -17283,7 +17412,7 @@
    "textGlyphs": []
   },
   "NewDevice": {
-   "page": "1 \u00b7 Launch & onboarding",
+   "page": "1 · Launch & onboarding",
    "size": "390x1060",
    "icons": [
     "check",
@@ -17301,7 +17430,7 @@
    "textGlyphs": []
   },
   "NoResults": {
-   "page": "2 \u00b7 Student app (mobile)",
+   "page": "2 · Student app (mobile)",
    "size": "390x844",
    "icons": [
     "arrow-left",
@@ -17320,7 +17449,7 @@
    "textGlyphs": []
   },
   "NotificationSettings": {
-   "page": "2 \u00b7 Student app (mobile)",
+   "page": "2 · Student app (mobile)",
    "size": "390x1624",
    "icons": [
     "chevron-left",
@@ -17335,7 +17464,7 @@
    "textGlyphs": []
   },
   "NotificationTemplates": {
-   "page": "8 \u00b7 Design system & flow map",
+   "page": "8 · Design system & flow map",
    "size": "1440x1100",
    "icons": [],
    "icons3d": [],
@@ -17345,11 +17474,11 @@
    "brand": [],
    "assets": [],
    "textGlyphs": [
-    "\u2192"
+    "→"
    ]
   },
   "Notifications": {
-   "page": "2 \u00b7 Student app (mobile)",
+   "page": "2 · Student app (mobile)",
    "size": "390x844",
    "icons": [
     "arrow-left",
@@ -17370,7 +17499,7 @@
    "textGlyphs": []
   },
   "Onboarding1": {
-   "page": "1 \u00b7 Launch & onboarding",
+   "page": "1 · Launch & onboarding",
    "size": "390x844",
    "icons": [
     "arrow-right",
@@ -17388,7 +17517,7 @@
    "textGlyphs": []
   },
   "Onboarding2": {
-   "page": "1 \u00b7 Launch & onboarding",
+   "page": "1 · Launch & onboarding",
    "size": "390x844",
    "icons": [
     "align-left-2",
@@ -17407,7 +17536,7 @@
    "textGlyphs": []
   },
   "Onboarding3": {
-   "page": "1 \u00b7 Launch & onboarding",
+   "page": "1 · Launch & onboarding",
    "size": "390x844",
    "icons": [
     "arrow-left",
@@ -17423,7 +17552,7 @@
    "textGlyphs": []
   },
   "OnboardingConsent": {
-   "page": "1 \u00b7 Launch & onboarding",
+   "page": "1 · Launch & onboarding",
    "size": "390x1652",
    "icons": [
     "arrow-left",
@@ -17436,11 +17565,11 @@
    "brand": [],
    "assets": [],
    "textGlyphs": [
-    "\u2192"
+    "→"
    ]
   },
   "OrderHistory": {
-   "page": "2 \u00b7 Student app (mobile)",
+   "page": "2 · Student app (mobile)",
    "size": "390x1160",
    "icons": [
     "arrow-left",
@@ -17457,11 +17586,11 @@
    "brand": [],
    "assets": [],
    "textGlyphs": [
-    "\u2713"
+    "✓"
    ]
   },
   "OrderSuccess": {
-   "page": "2 \u00b7 Student app (mobile)",
+   "page": "2 · Student app (mobile)",
    "size": "390x944",
    "icons": [
     "arrow-right",
@@ -17481,7 +17610,7 @@
    "textGlyphs": []
   },
   "OrderTracking": {
-   "page": "2 \u00b7 Student app (mobile)",
+   "page": "2 · Student app (mobile)",
    "size": "390x844",
    "icons": [
     "arrow-left",
@@ -17497,7 +17626,7 @@
    "textGlyphs": []
   },
   "OtpVerify": {
-   "page": "1 \u00b7 Launch & onboarding",
+   "page": "1 · Launch & onboarding",
    "size": "390x844",
    "icons": [
     "alert-circle-4",
@@ -17514,7 +17643,7 @@
    "textGlyphs": []
   },
   "PartnerApply": {
-   "page": "6 \u00b7 Partner \u2014 pharmacy, lab, clinic",
+   "page": "6 · Partner — pharmacy, lab, clinic",
    "size": "390x1060",
    "icons": [
     "check",
@@ -17527,11 +17656,11 @@
    "brand": [],
    "assets": [],
    "textGlyphs": [
-    "\u2713"
+    "✓"
    ]
   },
   "PartnerStaff": {
-   "page": "6 \u00b7 Partner \u2014 pharmacy, lab, clinic",
+   "page": "6 · Partner — pharmacy, lab, clinic",
    "size": "1440x1024",
    "icons": [
     "alert-triangle-2",
@@ -17565,7 +17694,7 @@
    "textGlyphs": []
   },
   "Payment": {
-   "page": "2 \u00b7 Student app (mobile)",
+   "page": "2 · Student app (mobile)",
    "size": "390x844",
    "icons": [
     "arrow-left",
@@ -17585,7 +17714,7 @@
    "textGlyphs": []
   },
   "PaymentResult": {
-   "page": "2 \u00b7 Student app (mobile)",
+   "page": "2 · Student app (mobile)",
    "size": "390x900",
    "icons": [
     "arrow-left",
@@ -17625,7 +17754,7 @@
    "textGlyphs": []
   },
   "Permissions": {
-   "page": "1 \u00b7 Launch & onboarding",
+   "page": "1 · Launch & onboarding",
    "size": "390x844",
    "icons": [
     "arrow-left",
@@ -17643,7 +17772,7 @@
    "textGlyphs": []
   },
   "PlanBilling": {
-   "page": "2 \u00b7 Student app (mobile)",
+   "page": "2 · Student app (mobile)",
    "size": "390x892",
    "icons": [
     "alert-circle-2",
@@ -17659,7 +17788,7 @@
    "textGlyphs": []
   },
   "Prescribe": {
-   "page": "5 \u00b7 Doctor",
+   "page": "5 · Doctor",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -17698,7 +17827,7 @@
    "textGlyphs": []
   },
   "PrescriptionUpload": {
-   "page": "2 \u00b7 Student app (mobile)",
+   "page": "2 · Student app (mobile)",
    "size": "390x844",
    "icons": [
     "arrow-left",
@@ -17717,7 +17846,7 @@
    "textGlyphs": []
   },
   "PreventiveCare": {
-   "page": "2 \u00b7 Student app (mobile)",
+   "page": "2 · Student app (mobile)",
    "size": "390x944",
    "icons": [
     "arrow-left",
@@ -17734,7 +17863,7 @@
    "textGlyphs": []
   },
   "ProductDetail": {
-   "page": "2 \u00b7 Student app (mobile)",
+   "page": "2 · Student app (mobile)",
    "size": "390x844",
    "icons": [
     "alert-circle-2",
@@ -17751,7 +17880,7 @@
    "textGlyphs": []
   },
   "ProductList": {
-   "page": "2 \u00b7 Student app (mobile)",
+   "page": "2 · Student app (mobile)",
    "size": "390x970",
    "icons": [
     "arrow-left",
@@ -17775,7 +17904,7 @@
    "textGlyphs": []
   },
   "ProfileSetup": {
-   "page": "1 \u00b7 Launch & onboarding",
+   "page": "1 · Launch & onboarding",
    "size": "390x844",
    "icons": [
     "arrow-left",
@@ -17791,7 +17920,7 @@
    "textGlyphs": []
   },
   "RecordsVault": {
-   "page": "2 \u00b7 Student app (mobile)",
+   "page": "2 · Student app (mobile)",
    "size": "390x844",
    "icons": [
     "arrow-left"
@@ -17805,11 +17934,11 @@
    "brand": [],
    "assets": [],
    "textGlyphs": [
-    "\u2713"
+    "✓"
    ]
   },
   "RefillRequest": {
-   "page": "2 \u00b7 Student app (mobile)",
+   "page": "2 · Student app (mobile)",
    "size": "390x1380",
    "icons": [
     "arrow-left"
@@ -17823,7 +17952,7 @@
    "textGlyphs": []
   },
   "ReportInsights": {
-   "page": "2 \u00b7 Student app (mobile)",
+   "page": "2 · Student app (mobile)",
    "size": "390x1560",
    "icons": [
     "arrow-left",
@@ -17855,7 +17984,7 @@
    "textGlyphs": []
   },
   "ReportReviews": {
-   "page": "5 \u00b7 Doctor",
+   "page": "5 · Doctor",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -17889,11 +18018,11 @@
    ],
    "assets": [],
    "textGlyphs": [
-    "\u2192"
+    "→"
    ]
   },
   "ResultCampBooked": {
-   "page": "2 \u00b7 Student app (mobile)",
+   "page": "2 · Student app (mobile)",
    "size": "390x900",
    "icons": [
     "arrow-left",
@@ -17933,7 +18062,7 @@
    "textGlyphs": []
   },
   "ResultLabBooked": {
-   "page": "2 \u00b7 Student app (mobile)",
+   "page": "2 · Student app (mobile)",
    "size": "390x900",
    "icons": [
     "arrow-left",
@@ -17973,7 +18102,7 @@
    "textGlyphs": []
   },
   "ResultRefund": {
-   "page": "2 \u00b7 Student app (mobile)",
+   "page": "2 · Student app (mobile)",
    "size": "390x900",
    "icons": [
     "arrow-left",
@@ -18013,7 +18142,7 @@
    "textGlyphs": []
   },
   "ReturnRequest": {
-   "page": "2 \u00b7 Student app (mobile)",
+   "page": "2 · Student app (mobile)",
    "size": "390x1060",
    "icons": [
     "arrow-left",
@@ -18029,7 +18158,7 @@
    "textGlyphs": []
   },
   "ScanVerify": {
-   "page": "6 \u00b7 Partner \u2014 pharmacy, lab, clinic",
+   "page": "6 · Partner — pharmacy, lab, clinic",
    "size": "390x1000",
    "icons": [
     "check",
@@ -18044,12 +18173,12 @@
    "brand": [],
    "assets": [],
    "textGlyphs": [
-    "\u2192",
-    "\u2713"
+    "→",
+    "✓"
    ]
   },
   "SearchEntry": {
-   "page": "2 \u00b7 Student app (mobile)",
+   "page": "2 · Student app (mobile)",
    "size": "390x844",
    "icons": [
     "apple",
@@ -18078,7 +18207,7 @@
    "textGlyphs": []
   },
   "SearchLoading": {
-   "page": "2 \u00b7 Student app (mobile)",
+   "page": "2 · Student app (mobile)",
    "size": "390x844",
    "icons": [
     "arrow-left",
@@ -18095,7 +18224,7 @@
    "textGlyphs": []
   },
   "SearchResults": {
-   "page": "2 \u00b7 Student app (mobile)",
+   "page": "2 · Student app (mobile)",
    "size": "390x844",
    "icons": [
     "activity-2",
@@ -18121,7 +18250,7 @@
    "textGlyphs": []
   },
   "SearchTyping": {
-   "page": "2 \u00b7 Student app (mobile)",
+   "page": "2 · Student app (mobile)",
    "size": "390x844",
    "icons": [
     "activity-2",
@@ -18145,7 +18274,7 @@
    "textGlyphs": []
   },
   "Sheets": {
-   "page": "8 \u00b7 Design system & flow map",
+   "page": "8 · Design system & flow map",
    "size": "1440x1560",
    "icons": [
     "check",
@@ -18160,7 +18289,7 @@
    "textGlyphs": []
   },
   "ShopHome": {
-   "page": "2 \u00b7 Student app (mobile)",
+   "page": "2 · Student app (mobile)",
    "size": "390x1114",
    "icons": [
     "arrow-right",
@@ -18189,11 +18318,11 @@
     "video-379108.mp4"
    ],
    "textGlyphs": [
-    "\u2192"
+    "→"
    ]
   },
   "SignIn": {
-   "page": "1 \u00b7 Launch & onboarding",
+   "page": "1 · Launch & onboarding",
    "size": "390x844",
    "icons": [
     "arrow-left",
@@ -18217,7 +18346,7 @@
    "textGlyphs": []
   },
   "SignOut": {
-   "page": "1 \u00b7 Launch & onboarding",
+   "page": "1 · Launch & onboarding",
    "size": "390x844",
    "icons": [
     "arrow-left",
@@ -18233,7 +18362,7 @@
    "textGlyphs": []
   },
   "SosBeacon": {
-   "page": "2 \u00b7 Student app (mobile)",
+   "page": "2 · Student app (mobile)",
    "size": "390x1020",
    "icons": [
     "arrow-left",
@@ -18248,7 +18377,7 @@
    "textGlyphs": []
   },
   "SosDebrief": {
-   "page": "2 \u00b7 Student app (mobile)",
+   "page": "2 · Student app (mobile)",
    "size": "390x1180",
    "icons": [
     "check"
@@ -18260,11 +18389,11 @@
    "brand": [],
    "assets": [],
    "textGlyphs": [
-    "\u2713"
+    "✓"
    ]
   },
   "SplashPulse": {
-   "page": "1 \u00b7 Launch & onboarding",
+   "page": "1 · Launch & onboarding",
    "size": "390x844",
    "icons": [
     "arrow-right"
@@ -18282,13 +18411,13 @@
     "a-glossy-3d-heart-beating-gently-350fa7.png"
    ],
    "textGlyphs": [
-    "\ud83d\uddc2",
-    "\ud83e\uddea",
-    "\ud83e\ude7a"
+    "🗂",
+    "🧪",
+    "🩺"
    ]
   },
   "SplashVault": {
-   "page": "1 \u00b7 Launch & onboarding",
+   "page": "1 · Launch & onboarding",
    "size": "390x844",
    "icons": [
     "arrow-right"
@@ -18308,11 +18437,11 @@
     "image-ccaceb.png"
    ],
    "textGlyphs": [
-    "\ud83d\udd12"
+    "🔒"
    ]
   },
   "StaffCampFast": {
-   "page": "6 \u00b7 Partner \u2014 pharmacy, lab, clinic",
+   "page": "6 · Partner — pharmacy, lab, clinic",
    "size": "390x960",
    "icons": [
     "chevron-left"
@@ -18324,11 +18453,11 @@
    "brand": [],
    "assets": [],
    "textGlyphs": [
-    "\u2713"
+    "✓"
    ]
   },
   "StaffCollect": {
-   "page": "6 \u00b7 Partner \u2014 pharmacy, lab, clinic",
+   "page": "6 · Partner — pharmacy, lab, clinic",
    "size": "390x960",
    "icons": [
     "check",
@@ -18341,11 +18470,11 @@
    "brand": [],
    "assets": [],
    "textGlyphs": [
-    "\u2713"
+    "✓"
    ]
   },
   "StaffHandover": {
-   "page": "6 \u00b7 Partner \u2014 pharmacy, lab, clinic",
+   "page": "6 · Partner — pharmacy, lab, clinic",
    "size": "390x960",
    "icons": [
     "camera-2",
@@ -18359,11 +18488,11 @@
    "brand": [],
    "assets": [],
    "textGlyphs": [
-    "\u2713"
+    "✓"
    ]
   },
   "StateScreens": {
-   "page": "8 \u00b7 Design system & flow map",
+   "page": "8 · Design system & flow map",
    "size": "1440x1024",
    "icons": [
     "check",
@@ -18380,7 +18509,7 @@
    "textGlyphs": []
   },
   "StatusMoments": {
-   "page": "8 \u00b7 Design system & flow map",
+   "page": "8 · Design system & flow map",
    "size": "1440x1000",
    "icons": [
     "cart-alt",
@@ -18425,7 +18554,7 @@
    "textGlyphs": []
   },
   "StudentProfile": {
-   "page": "2 \u00b7 Student app (mobile)",
+   "page": "2 · Student app (mobile)",
    "size": "390x1000",
    "icons": [
     "arrow-left",
@@ -18440,7 +18569,7 @@
    "textGlyphs": []
   },
   "SuperAdminConsole": {
-   "page": "7 \u00b7 Super admin",
+   "page": "7 · Super admin",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -18479,11 +18608,11 @@
    ],
    "assets": [],
    "textGlyphs": [
-    "\u2192"
+    "→"
    ]
   },
   "Teleconsult": {
-   "page": "2 \u00b7 Student app (mobile)",
+   "page": "2 · Student app (mobile)",
    "size": "390x844",
    "icons": [
     "check",
@@ -18503,7 +18632,7 @@
    "textGlyphs": []
   },
   "VendorCampIntake": {
-   "page": "6 \u00b7 Partner \u2014 pharmacy, lab, clinic",
+   "page": "6 · Partner — pharmacy, lab, clinic",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -18539,11 +18668,11 @@
    ],
    "assets": [],
    "textGlyphs": [
-    "\u2713"
+    "✓"
    ]
   },
   "VendorCatalogue": {
-   "page": "6 \u00b7 Partner \u2014 pharmacy, lab, clinic",
+   "page": "6 · Partner — pharmacy, lab, clinic",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -18580,7 +18709,7 @@
    "textGlyphs": []
   },
   "VendorConsole": {
-   "page": "6 \u00b7 Partner \u2014 pharmacy, lab, clinic",
+   "page": "6 · Partner — pharmacy, lab, clinic",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -18618,7 +18747,7 @@
    "textGlyphs": []
   },
   "VendorHandover": {
-   "page": "6 \u00b7 Partner \u2014 pharmacy, lab, clinic",
+   "page": "6 · Partner — pharmacy, lab, clinic",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -18654,11 +18783,11 @@
    ],
    "assets": [],
    "textGlyphs": [
-    "\u2713"
+    "✓"
    ]
   },
   "VendorHome": {
-   "page": "6 \u00b7 Partner \u2014 pharmacy, lab, clinic",
+   "page": "6 · Partner — pharmacy, lab, clinic",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -18700,11 +18829,11 @@
     "image-6f6766.jpg"
    ],
    "textGlyphs": [
-    "\u2192"
+    "→"
    ]
   },
   "VendorOrders": {
-   "page": "6 \u00b7 Partner \u2014 pharmacy, lab, clinic",
+   "page": "6 · Partner — pharmacy, lab, clinic",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -18741,7 +18870,7 @@
    "textGlyphs": []
   },
   "VendorReorder": {
-   "page": "6 \u00b7 Partner \u2014 pharmacy, lab, clinic",
+   "page": "6 · Partner — pharmacy, lab, clinic",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -18778,7 +18907,7 @@
    "textGlyphs": []
   },
   "VendorReturns": {
-   "page": "6 \u00b7 Partner \u2014 pharmacy, lab, clinic",
+   "page": "6 · Partner — pharmacy, lab, clinic",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -18815,7 +18944,7 @@
    "textGlyphs": []
   },
   "VendorRxReview": {
-   "page": "6 \u00b7 Partner \u2014 pharmacy, lab, clinic",
+   "page": "6 · Partner — pharmacy, lab, clinic",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -18856,7 +18985,7 @@
    "textGlyphs": []
   },
   "VendorSettlement": {
-   "page": "6 \u00b7 Partner \u2014 pharmacy, lab, clinic",
+   "page": "6 · Partner — pharmacy, lab, clinic",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -18894,7 +19023,7 @@
    "textGlyphs": []
   },
   "VendorSubstitution": {
-   "page": "6 \u00b7 Partner \u2014 pharmacy, lab, clinic",
+   "page": "6 · Partner — pharmacy, lab, clinic",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -18931,7 +19060,7 @@
    "textGlyphs": []
   },
   "VerifyGate": {
-   "page": "1 \u00b7 Launch & onboarding",
+   "page": "1 · Launch & onboarding",
    "size": "390x844",
    "icons": [
     "check",
@@ -18951,7 +19080,7 @@
    "textGlyphs": []
   },
   "VerifyIdentity": {
-   "page": "1 \u00b7 Launch & onboarding",
+   "page": "1 · Launch & onboarding",
    "size": "390x1060",
    "icons": [
     "alert-triangle",
@@ -18979,11 +19108,11 @@
    "brand": [],
    "assets": [],
    "textGlyphs": [
-    "\u2713"
+    "✓"
    ]
   },
   "VitalTrends": {
-   "page": "2 \u00b7 Student app (mobile)",
+   "page": "2 · Student app (mobile)",
    "size": "390x1560",
    "icons": [
     "arrow-left"
@@ -19002,7 +19131,7 @@
    "textGlyphs": []
   },
   "WebAccount": {
-   "page": "3b \u00b7 Student web \u2014 signed in",
+   "page": "3b · Student web — signed in",
    "size": "1440x2340",
    "icons": [
     "bar-chart",
@@ -19061,14 +19190,14 @@
     "a-friendly-doctor-waving-hello-b859fc.png"
    ],
    "textGlyphs": [
-    "\u2192",
-    "\u2713",
-    "\ud83c\udf93",
-    "\ud83d\uddd1"
+    "→",
+    "✓",
+    "🎓",
+    "🗑"
    ]
   },
   "WebAyush": {
-   "page": "3b \u00b7 Student web \u2014 signed in",
+   "page": "3b · Student web — signed in",
    "size": "1440x1024",
    "icons": [
     "arrow-right",
@@ -19088,7 +19217,7 @@
    "textGlyphs": []
   },
   "WebCheckout": {
-   "page": "3b \u00b7 Student web \u2014 signed in",
+   "page": "3b · Student web — signed in",
    "size": "1440x1024",
    "icons": [
     "banknote-2",
@@ -19111,7 +19240,7 @@
    "textGlyphs": []
   },
   "WebClinicianApply": {
-   "page": "5 \u00b7 Doctor",
+   "page": "5 · Doctor",
    "size": "1440x1100",
    "icons": [
     "check"
@@ -19127,7 +19256,7 @@
    "textGlyphs": []
   },
   "WebConsult": {
-   "page": "3a \u00b7 Student web \u2014 public site",
+   "page": "3a · Student web — public site",
    "size": "1440x5252",
    "icons": [
     "brain-2",
@@ -19173,11 +19302,11 @@
     "a-friendly-doctor-waving-hello-b859fc.png"
    ],
    "textGlyphs": [
-    "\u2192"
+    "→"
    ]
   },
   "WebConsultSummary": {
-   "page": "3b \u00b7 Student web \u2014 signed in",
+   "page": "3b · Student web — signed in",
    "size": "1440x1100",
    "icons": [
     "bar-chart",
@@ -19214,12 +19343,12 @@
    ],
    "assets": [],
    "textGlyphs": [
-    "\u2605",
-    "\u2713"
+    "★",
+    "✓"
    ]
   },
   "WebDashboard": {
-   "page": "3b \u00b7 Student web \u2014 signed in",
+   "page": "3b · Student web — signed in",
    "size": "1440x1100",
    "icons": [
     "bar-chart",
@@ -19265,11 +19394,11 @@
    ],
    "assets": [],
    "textGlyphs": [
-    "\u2713"
+    "✓"
    ]
   },
   "WebDeleteAccount": {
-   "page": "3b \u00b7 Student web \u2014 signed in",
+   "page": "3b · Student web — signed in",
    "size": "1440x1024",
    "icons": [
     "bar-chart",
@@ -19306,13 +19435,13 @@
    ],
    "assets": [],
    "textGlyphs": [
-    "\u2192",
-    "\u2715",
-    "\u2b07"
+    "→",
+    "✕",
+    "⬇"
    ]
   },
   "WebEmergencyCard": {
-   "page": "3b \u00b7 Student web \u2014 signed in",
+   "page": "3b · Student web — signed in",
    "size": "1440x1180",
    "icons": [
     "bar-chart",
@@ -19353,7 +19482,7 @@
    "textGlyphs": []
   },
   "WebGuardianApprove": {
-   "page": "3b \u00b7 Student web \u2014 signed in",
+   "page": "3b · Student web — signed in",
    "size": "1440x900",
    "icons": [
     "check"
@@ -19367,12 +19496,12 @@
    ],
    "assets": [],
    "textGlyphs": [
-    "\u2713",
-    "\ud83d\udd12"
+    "✓",
+    "🔒"
    ]
   },
   "WebGuardianConsent": {
-   "page": "3b \u00b7 Student web \u2014 signed in",
+   "page": "3b · Student web — signed in",
    "size": "1440x1024",
    "icons": [
     "bar-chart",
@@ -19409,11 +19538,11 @@
    ],
    "assets": [],
    "textGlyphs": [
-    "\u2713"
+    "✓"
    ]
   },
   "WebHome": {
-   "page": "3b \u00b7 Student web \u2014 signed in",
+   "page": "3b · Student web — signed in",
    "size": "1440x2230",
    "icons": [
     "brand-apple",
@@ -19445,7 +19574,7 @@
    "textGlyphs": []
   },
   "WebLabList": {
-   "page": "3a \u00b7 Student web \u2014 public site",
+   "page": "3a · Student web — public site",
    "size": "1440x2806",
    "icons": [
     "brand-apple",
@@ -19485,7 +19614,7 @@
    "textGlyphs": []
   },
   "WebLabTests": {
-   "page": "3a \u00b7 Student web \u2014 public site",
+   "page": "3a · Student web — public site",
    "size": "1440x5612",
    "icons": [
     "brand-apple",
@@ -19534,11 +19663,11 @@
     "video-09075f.mp4"
    ],
    "textGlyphs": [
-    "\u2192"
+    "→"
    ]
   },
   "WebLeaveCampus": {
-   "page": "3b \u00b7 Student web \u2014 signed in",
+   "page": "3b · Student web — signed in",
    "size": "1440x1100",
    "icons": [
     "bar-chart",
@@ -19575,12 +19704,12 @@
    ],
    "assets": [],
    "textGlyphs": [
-    "\u2192",
-    "\u2713"
+    "→",
+    "✓"
    ]
   },
   "WebLegal": {
-   "page": "3b \u00b7 Student web \u2014 signed in",
+   "page": "3b · Student web — signed in",
    "size": "1440x1400",
    "icons": [],
    "icons3d": [],
@@ -19592,11 +19721,11 @@
    ],
    "assets": [],
    "textGlyphs": [
-    "\u2192"
+    "→"
    ]
   },
   "WebLoggedOut": {
-   "page": "3b \u00b7 Student web \u2014 signed in",
+   "page": "3b · Student web — signed in",
    "size": "1440x1024",
    "icons": [
     "check",
@@ -19627,7 +19756,7 @@
    "textGlyphs": []
   },
   "WebLostPhone": {
-   "page": "3b \u00b7 Student web \u2014 signed in",
+   "page": "3b · Student web — signed in",
    "size": "1440x1024",
    "icons": [
     "bar-chart",
@@ -19664,11 +19793,11 @@
    ],
    "assets": [],
    "textGlyphs": [
-    "\u2192"
+    "→"
    ]
   },
   "WebMyLabTests": {
-   "page": "3b \u00b7 Student web \u2014 signed in",
+   "page": "3b · Student web — signed in",
    "size": "1440x2580",
    "icons": [
     "bar-chart",
@@ -19727,11 +19856,11 @@
    ],
    "assets": [],
    "textGlyphs": [
-    "\u2713"
+    "✓"
    ]
   },
   "WebNotifications": {
-   "page": "3b \u00b7 Student web \u2014 signed in",
+   "page": "3b · Student web — signed in",
    "size": "1440x1180",
    "icons": [
     "bar-chart",
@@ -19771,7 +19900,7 @@
    "textGlyphs": []
   },
   "WebOrders": {
-   "page": "3b \u00b7 Student web \u2014 signed in",
+   "page": "3b · Student web — signed in",
    "size": "1440x1024",
    "icons": [
     "check",
@@ -19788,11 +19917,11 @@
    ],
    "assets": [],
    "textGlyphs": [
-    "\u2713"
+    "✓"
    ]
   },
   "WebPartnerApply": {
-   "page": "6 \u00b7 Partner \u2014 pharmacy, lab, clinic",
+   "page": "6 · Partner — pharmacy, lab, clinic",
    "size": "1440x1024",
    "icons": [
     "check"
@@ -19806,11 +19935,11 @@
    ],
    "assets": [],
    "textGlyphs": [
-    "\u2713"
+    "✓"
    ]
   },
   "WebPartnerships": {
-   "page": "3a \u00b7 Student web \u2014 public site",
+   "page": "3a · Student web — public site",
    "size": "1440x4884",
    "icons": [
     "activity",
@@ -19849,11 +19978,11 @@
    ],
    "assets": [],
    "textGlyphs": [
-    "\u2192"
+    "→"
    ]
   },
   "WebPass": {
-   "page": "3b \u00b7 Student web \u2014 signed in",
+   "page": "3b · Student web — signed in",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -19893,11 +20022,11 @@
    ],
    "assets": [],
    "textGlyphs": [
-    "\u2713"
+    "✓"
    ]
   },
   "WebPlans": {
-   "page": "3a \u00b7 Student web \u2014 public site",
+   "page": "3a · Student web — public site",
    "size": "1440x5116",
    "icons": [
     "brand-apple",
@@ -19936,7 +20065,7 @@
    "textGlyphs": []
   },
   "WebProduct": {
-   "page": "3b \u00b7 Student web \u2014 signed in",
+   "page": "3b · Student web — signed in",
    "size": "1440x1024",
    "icons": [
     "leaf-3",
@@ -19954,12 +20083,12 @@
    ],
    "assets": [],
    "textGlyphs": [
-    "\u2190",
-    "\u2192"
+    "←",
+    "→"
    ]
   },
   "WebPrograms": {
-   "page": "3a \u00b7 Student web \u2014 public site",
+   "page": "3a · Student web — public site",
    "size": "1440x4892",
    "icons": [
     "brand-apple",
@@ -20000,11 +20129,11 @@
     "video-2c18e6.mp4"
    ],
    "textGlyphs": [
-    "\u2192"
+    "→"
    ]
   },
   "WebReorder": {
-   "page": "3b \u00b7 Student web \u2014 signed in",
+   "page": "3b · Student web — signed in",
    "size": "1440x2260",
    "icons": [
     "bar-chart",
@@ -20062,7 +20191,7 @@
    "textGlyphs": []
   },
   "WebReportAssistant": {
-   "page": "3b \u00b7 Student web \u2014 signed in",
+   "page": "3b · Student web — signed in",
    "size": "1440x1296",
    "icons": [
     "arrow-up",
@@ -20122,7 +20251,7 @@
    "textGlyphs": []
   },
   "WebReportInsights": {
-   "page": "3b \u00b7 Student web \u2014 signed in",
+   "page": "3b · Student web — signed in",
    "size": "1440x2500",
    "icons": [
     "bar-chart",
@@ -20193,7 +20322,7 @@
    "textGlyphs": []
   },
   "WebRequests": {
-   "page": "3b \u00b7 Student web \u2014 signed in",
+   "page": "3b · Student web — signed in",
    "size": "1440x1024",
    "icons": [
     "bar-chart",
@@ -20232,7 +20361,7 @@
    "textGlyphs": []
   },
   "WebScanVerify": {
-   "page": "6 \u00b7 Partner \u2014 pharmacy, lab, clinic",
+   "page": "6 · Partner — pharmacy, lab, clinic",
    "size": "1440x1024",
    "icons": [
     "alert-triangle-2",
@@ -20267,12 +20396,12 @@
    ],
    "assets": [],
    "textGlyphs": [
-    "\u2192",
-    "\u2713"
+    "→",
+    "✓"
    ]
   },
   "WebSearchResults": {
-   "page": "3b \u00b7 Student web \u2014 signed in",
+   "page": "3b · Student web — signed in",
    "size": "1440x1024",
    "icons": [
     "check",
@@ -20296,7 +20425,7 @@
    "textGlyphs": []
   },
   "WebSecurity": {
-   "page": "3b \u00b7 Student web \u2014 signed in",
+   "page": "3b · Student web — signed in",
    "size": "1440x1240",
    "icons": [
     "bar-chart",
@@ -20334,12 +20463,12 @@
    ],
    "assets": [],
    "textGlyphs": [
-    "\u2192",
-    "\ud83d\udcf5"
+    "→",
+    "📵"
    ]
   },
   "WebShop": {
-   "page": "3b \u00b7 Student web \u2014 signed in",
+   "page": "3b · Student web — signed in",
    "size": "1440x1504",
    "icons": [
     "bottle-2",
@@ -20362,11 +20491,11 @@
     "video-93a060.mp4"
    ],
    "textGlyphs": [
-    "\u2192"
+    "→"
    ]
   },
   "WebSignIn": {
-   "page": "3b \u00b7 Student web \u2014 signed in",
+   "page": "3b · Student web — signed in",
    "size": "1440x1024",
    "icons": [
     "check",
@@ -20389,7 +20518,7 @@
    "textGlyphs": []
   },
   "WebSignOut": {
-   "page": "1 \u00b7 Launch & onboarding",
+   "page": "1 · Launch & onboarding",
    "size": "1440x1024",
    "icons": [
     "check",
@@ -20406,7 +20535,7 @@
    "textGlyphs": []
   },
   "WebVault": {
-   "page": "3b \u00b7 Student web \u2014 signed in",
+   "page": "3b · Student web — signed in",
    "size": "1440x1100",
    "icons": [
     "bar-chart",
@@ -20456,11 +20585,11 @@
    ],
    "assets": [],
    "textGlyphs": [
-    "\u2713"
+    "✓"
    ]
   },
   "WebVerify": {
-   "page": "3b \u00b7 Student web \u2014 signed in",
+   "page": "3b · Student web — signed in",
    "size": "1440x1024",
    "icons": [
     "alert-triangle",
@@ -20509,12 +20638,12 @@
    ],
    "assets": [],
    "textGlyphs": [
-    "\u2192",
-    "\u2713"
+    "→",
+    "✓"
    ]
   },
   "WebVerifyGate": {
-   "page": "3b \u00b7 Student web \u2014 signed in",
+   "page": "3b · Student web — signed in",
    "size": "1440x900",
    "icons": [
     "check",
@@ -20534,7 +20663,7 @@
    "textGlyphs": []
   },
   "WebWellness": {
-   "page": "3a \u00b7 Student web \u2014 public site",
+   "page": "3a · Student web — public site",
    "size": "1440x4308",
    "icons": [
     "brand-apple",
@@ -20580,12 +20709,12 @@
     "video-fabac8.mp4"
    ],
    "textGlyphs": [
-    "\u2192",
-    "\u2713"
+    "→",
+    "✓"
    ]
   },
   "YourCare": {
-   "page": "2 \u00b7 Student app (mobile)",
+   "page": "2 · Student app (mobile)",
    "size": "390x1034",
    "icons": [
     "activity-3",
@@ -20607,15 +20736,16 @@
    ],
    "assets": [],
    "textGlyphs": [
-    "\u2713"
+    "✓"
    ]
   },
   "M2Home": {
-   "page": "9 \u00b7 Mobile 2.0 (approved 2026-10-21)",
+   "page": "9 · Mobile 2.0 (approved 2026-10-21)",
    "size": "390x1640",
    "icons": [
     "arrow-right",
     "ayush-spark",
+    "book",
     "bottle",
     "box",
     "calendar-2",
@@ -20628,6 +20758,7 @@
     "eye",
     "first-aid-kit",
     "heart-3",
+    "heart-pulse",
     "home",
     "home-2",
     "lab",
@@ -20645,6 +20776,7 @@
     "search",
     "shield",
     "shield-alert",
+    "shield-check",
     "star",
     "stetho",
     "syringe",
@@ -20652,7 +20784,12 @@
     "trend-arrow",
     "user-5"
    ],
-   "icons3d": [],
+   "icons3d": [
+    "brain-alt--p3",
+    "heart--p1",
+    "thermo-alt--p1",
+    "wellness-alt--p5"
+   ],
    "glyphs": [],
    "illustrations": [],
    "charts": [
@@ -20663,7 +20800,7 @@
    "textGlyphs": []
   },
   "M2Medicines": {
-   "page": "9 \u00b7 Mobile 2.0 (approved 2026-10-21)",
+   "page": "9 · Mobile 2.0 (approved 2026-10-21)",
    "size": "390x1640",
    "icons": [
     "arrow-left",
@@ -20702,7 +20839,7 @@
    "textGlyphs": []
   },
   "M2Product": {
-   "page": "9 \u00b7 Mobile 2.0 (approved 2026-10-21)",
+   "page": "9 · Mobile 2.0 (approved 2026-10-21)",
    "size": "390x1300",
    "icons": [
     "arrow-left",
@@ -20721,7 +20858,7 @@
    "textGlyphs": []
   },
   "M2Labs": {
-   "page": "9 \u00b7 Mobile 2.0 (approved 2026-10-21)",
+   "page": "9 · Mobile 2.0 (approved 2026-10-21)",
    "size": "390x1640",
    "icons": [
     "arrow-left",
@@ -20755,7 +20892,7 @@
    "textGlyphs": []
   },
   "M2Consults": {
-   "page": "9 \u00b7 Mobile 2.0 (approved 2026-10-21)",
+   "page": "9 · Mobile 2.0 (approved 2026-10-21)",
    "size": "390x1640",
    "icons": [
     "arrow-left",
@@ -20781,7 +20918,7 @@
    "textGlyphs": []
   },
   "M2Vaccines": {
-   "page": "9 \u00b7 Mobile 2.0 (approved 2026-10-21)",
+   "page": "9 · Mobile 2.0 (approved 2026-10-21)",
    "size": "390x1400",
    "icons": [
     "arrow-left",
@@ -20802,7 +20939,7 @@
    "textGlyphs": []
   },
   "M2Insurance": {
-   "page": "9 \u00b7 Mobile 2.0 (approved 2026-10-21)",
+   "page": "9 · Mobile 2.0 (approved 2026-10-21)",
    "size": "390x1200",
    "icons": [
     "arrow-left",
@@ -20826,7 +20963,7 @@
    "textGlyphs": []
   },
   "M2Orders": {
-   "page": "9 \u00b7 Mobile 2.0 (approved 2026-10-21)",
+   "page": "9 · Mobile 2.0 (approved 2026-10-21)",
    "size": "390x1100",
    "icons": [
     "ayush-spark",
@@ -20849,7 +20986,7 @@
    "textGlyphs": []
   },
   "M2Insights": {
-   "page": "9 \u00b7 Mobile 2.0 (approved 2026-10-21)",
+   "page": "9 · Mobile 2.0 (approved 2026-10-21)",
    "size": "390x1780",
    "icons": [
     "ayush-spark",
@@ -20880,7 +21017,7 @@
    "textGlyphs": []
   },
   "M2Trends": {
-   "page": "9 \u00b7 Mobile 2.0 (approved 2026-10-21)",
+   "page": "9 · Mobile 2.0 (approved 2026-10-21)",
    "size": "390x1300",
    "icons": [
     "arrow-left",
@@ -20905,7 +21042,7 @@
    "textGlyphs": []
   },
   "M2ReportUpload": {
-   "page": "9 \u00b7 Mobile 2.0 (approved 2026-10-21)",
+   "page": "9 · Mobile 2.0 (approved 2026-10-21)",
    "size": "390x1250",
    "icons": [
     "arrow-left",
@@ -20924,7 +21061,7 @@
    "textGlyphs": []
   },
   "M2AskAyush": {
-   "page": "9 \u00b7 Mobile 2.0 (approved 2026-10-21)",
+   "page": "9 · Mobile 2.0 (approved 2026-10-21)",
    "size": "390x844",
    "icons": [
     "arrow-left",
@@ -20941,7 +21078,7 @@
    "textGlyphs": []
   },
   "M2Profile": {
-   "page": "9 \u00b7 Mobile 2.0 (approved 2026-10-21)",
+   "page": "9 · Mobile 2.0 (approved 2026-10-21)",
    "size": "390x1400",
    "icons": [
     "chevron-right",
@@ -20956,6 +21093,7 @@
     "scan",
     "settings",
     "shield-2",
+    "sparkles",
     "star",
     "syringe",
     "translate",
@@ -20972,7 +21110,7 @@
    "textGlyphs": []
   },
   "M2FindCare": {
-   "page": "New \u00b7 Find care near you (2026-10-21, no canvas board)",
+   "page": "New · Find care near you (2026-10-21, no canvas board)",
    "size": "390x1700",
    "icons": [
     "ambulance",
@@ -21001,7 +21139,7 @@
    "textGlyphs": []
   },
   "M2FacilityDetail": {
-   "page": "New \u00b7 Find care near you (2026-10-21, no canvas board)",
+   "page": "New · Find care near you (2026-10-21, no canvas board)",
    "size": "390x1200",
    "icons": [
     "ambulance",
@@ -21027,7 +21165,7 @@
    "textGlyphs": []
   },
   "WebFindCare": {
-   "page": "New \u00b7 Find care near you (2026-10-21, no canvas board)",
+   "page": "New · Find care near you (2026-10-21, no canvas board)",
    "size": "1440x1400",
    "icons": [
     "ambulance",
@@ -21056,7 +21194,7 @@
    "textGlyphs": []
   },
   "AdminCareDirectory": {
-   "page": "New \u00b7 Find care near you (2026-10-21, no canvas board)",
+   "page": "New · Find care near you (2026-10-21, no canvas board)",
    "size": "1440x1100",
    "icons": [
     "alert-triangle",
@@ -21076,7 +21214,7 @@
    "textGlyphs": []
   },
   "M2Reminders": {
-   "page": "9 \u00b7 Mobile 2.0 (approved 2026-10-21)",
+   "page": "9 · Mobile 2.0 (approved 2026-10-21)",
    "size": "390x1400",
    "icons": [
     "arrow-left",
@@ -21106,7 +21244,7 @@
    "textGlyphs": []
   },
   "M2Water": {
-   "page": "9 \u00b7 Mobile 2.0 (approved 2026-10-21)",
+   "page": "9 · Mobile 2.0 (approved 2026-10-21)",
    "size": "390x1400",
    "icons": [
     "arrow-left",
@@ -21132,7 +21270,7 @@
    "textGlyphs": []
   },
   "M2Steps": {
-   "page": "9 \u00b7 Mobile 2.0 \u2014 new screen, no canvas board (ticket approved 2026-10-21)",
+   "page": "9 · Mobile 2.0 — new screen, no canvas board (ticket approved 2026-10-21)",
    "size": "390x1500",
    "icons": [
     "arrow-left",
@@ -21155,7 +21293,7 @@
    "textGlyphs": []
   },
   "SetPasscode": {
-   "page": "New \u00b7 Sign-in passcode (2026-10-22, no canvas board)",
+   "page": "New · Sign-in passcode (2026-10-22, no canvas board)",
    "size": "390x844",
    "icons": [
     "alert-circle-4",
@@ -21196,7 +21334,7 @@
    "textGlyphs": []
   },
   "M2MedicineInfo": {
-   "page": "New \u00b7 Medicine information (2026-10-22, no canvas board)",
+   "page": "New · Medicine information (2026-10-22, no canvas board)",
    "size": "390x1800",
    "icons": [
     "alert-triangle",
@@ -21227,7 +21365,7 @@
    "textGlyphs": []
   },
   "AdminMedicineInfo": {
-   "page": "New \u00b7 Medicine information (2026-10-22, no canvas board)",
+   "page": "New · Medicine information (2026-10-22, no canvas board)",
    "size": "1440x1100",
    "icons": [
     "alert-triangle",
@@ -21242,6 +21380,189 @@
     "upload"
    ],
    "icons3d": [],
+   "glyphs": [],
+   "illustrations": [],
+   "charts": [],
+   "brand": [],
+   "assets": [],
+   "textGlyphs": []
+  },
+  "WebNewsroom": {
+   "page": "New · Newsroom: News and Blog (2026-10-23, no canvas board)",
+   "size": "1440x1600",
+   "icons": [
+    "alert-circle",
+    "book",
+    "calendar",
+    "chevron-left",
+    "chevron-right",
+    "clock",
+    "graduation-cap",
+    "heart-pulse",
+    "megaphone",
+    "mic",
+    "refresh",
+    "search",
+    "share-nodes",
+    "shield-check",
+    "sparkles",
+    "star",
+    "user"
+   ],
+   "icons3d": [
+    "bell--p2",
+    "brain-alt--p3",
+    "calendar-alt--p4",
+    "chat-alt--p4",
+    "doc--p4",
+    "heart--p1",
+    "home-alt--p4",
+    "idcard-alt--p4",
+    "settings-alt--p4",
+    "thermo-alt--p1",
+    "user--p4",
+    "vault-alt--p4",
+    "wellness-alt--p5"
+   ],
+   "glyphs": [],
+   "illustrations": [],
+   "charts": [],
+   "brand": [
+    "studentkare-logo"
+   ],
+   "assets": [],
+   "textGlyphs": []
+  },
+  "WebPost": {
+   "page": "New · Newsroom: News and Blog (2026-10-23, no canvas board)",
+   "size": "1440x2000",
+   "icons": [
+    "alert-circle",
+    "alert-triangle",
+    "arrow-left",
+    "arrow-right",
+    "brand-linkedin",
+    "calendar",
+    "check",
+    "clipboard",
+    "clock",
+    "copy",
+    "file-text",
+    "graduation-cap",
+    "heart-pulse",
+    "image-off",
+    "info",
+    "megaphone",
+    "message-circle-2",
+    "message-square-text",
+    "mic",
+    "share",
+    "shield-check",
+    "sparkles",
+    "star",
+    "user",
+    "x-2"
+   ],
+   "icons3d": [
+    "bell--p2",
+    "brain-alt--p3",
+    "calendar-alt--p4",
+    "chat-alt--p4",
+    "doc--p4",
+    "heart--p1",
+    "home-alt--p4",
+    "idcard-alt--p4",
+    "settings-alt--p4",
+    "thermo-alt--p1",
+    "user--p4",
+    "vault-alt--p4",
+    "wellness-alt--p5"
+   ],
+   "glyphs": [],
+   "illustrations": [],
+   "charts": [],
+   "brand": [
+    "studentkare-logo"
+   ],
+   "assets": [],
+   "textGlyphs": []
+  },
+  "AdminPosts": {
+   "page": "New · Newsroom: News and Blog (2026-10-23, no canvas board)",
+   "size": "1440x1600",
+   "icons": [
+    "alert-triangle",
+    "align-left",
+    "align-left-2",
+    "arrow-left",
+    "arrow-up",
+    "arrow-up-right",
+    "calendar",
+    "camera",
+    "check",
+    "check-circle",
+    "chevron-down",
+    "clipboard",
+    "eye",
+    "eye-off",
+    "file-text",
+    "graduation-cap",
+    "heart-pulse",
+    "info",
+    "lock",
+    "megaphone",
+    "message-square-text",
+    "mic",
+    "pencil",
+    "plus",
+    "rotate-ccw",
+    "rows-split",
+    "search",
+    "shield-check",
+    "sparkles",
+    "stethoscope",
+    "trash",
+    "upload"
+   ],
+   "icons3d": [
+    "bell--p2",
+    "brain-alt--p3",
+    "calendar-alt--p4",
+    "chat-alt--p4",
+    "doc--p4",
+    "heart--p1",
+    "home-alt--p4",
+    "idcard-alt--p4",
+    "settings-alt--p4",
+    "thermo-alt--p1",
+    "user--p4",
+    "vault-alt--p4",
+    "wellness-alt--p5"
+   ],
+   "glyphs": [],
+   "illustrations": [],
+   "charts": [],
+   "brand": [
+    "studentkare-logo"
+   ],
+   "assets": [],
+   "textGlyphs": []
+  },
+  "M2WhatsNew": {
+   "page": "New · Newsroom: News and Blog (2026-10-23, no canvas board)",
+   "size": "390x1200",
+   "icons": [
+    "alert-circle",
+    "chevron-right",
+    "megaphone",
+    "shield-check",
+    "sparkles"
+   ],
+   "icons3d": [
+    "bell--p2",
+    "settings-alt--p4",
+    "vault-alt--p4"
+   ],
    "glyphs": [],
    "illustrations": [],
    "charts": [],
@@ -21442,7 +21763,7 @@
     "Onboarding1",
     "SplashVault"
    ],
-   "alt": "A small clinic building \u2014 care close to your campus"
+   "alt": "A small clinic building — care close to your campus"
   },
   "image-cb61b7.jpg": {
    "id": "cb61b75a951bda498b651db96b6bc729",
@@ -21524,122 +21845,122 @@
   }
  },
  "textGlyphs": {
-  "\u2713": {
+  "✓": {
    "unicode": "U+2713",
    "name": "check mark",
    "uses": 121,
    "useIcon": "check"
   },
-  "\u2192": {
+  "→": {
    "unicode": "U+2192",
    "name": "rightwards arrow",
    "uses": 78,
    "useIcon": "arrow-right"
   },
-  "\u2318": {
+  "⌘": {
    "unicode": "U+2318",
    "name": "place of interest sign",
    "uses": 12,
    "useIcon": null,
-   "note": "Keyboard-shortcut hint (\u2318K) \u2014 keep as text."
+   "note": "Keyboard-shortcut hint (⌘K) — keep as text."
   },
-  "\u2715": {
+  "✕": {
    "unicode": "U+2715",
    "name": "multiplication x",
    "uses": 9,
    "useIcon": "x"
   },
-  "\u2190": {
+  "←": {
    "unicode": "U+2190",
    "name": "leftwards arrow",
    "uses": 6,
    "useIcon": "arrow-left"
   },
-  "\ud83d\udd12": {
+  "🔒": {
    "unicode": "U+1F512",
    "name": "lock",
    "uses": 4,
    "useIcon": "lock"
   },
-  "\ud83e\ude7a": {
+  "🩺": {
    "unicode": "U+1FA7A",
    "name": "stethoscope",
    "uses": 3,
    "useIcon": "stethoscope"
   },
-  "\u2600": {
+  "☀": {
    "unicode": "U+2600",
    "name": "black sun with rays",
    "uses": 2,
    "useIcon": "sun"
   },
-  "\ud83e\uddea": {
+  "🧪": {
    "unicode": "U+1F9EA",
    "name": "test tube",
    "uses": 2,
    "useIcon": "flask"
   },
-  "\ud83d\uddc2": {
+  "🗂": {
    "unicode": "U+1F5C2",
    "name": "card index dividers",
    "uses": 2,
    "useIcon": "file"
   },
-  "\u2b07": {
+  "⬇": {
    "unicode": "U+2B07",
    "name": "downwards black arrow",
    "uses": 2,
    "useIcon": "download"
   },
-  "\u2717": {
+  "✗": {
    "unicode": "U+2717",
    "name": "ballot x",
    "uses": 2,
    "useIcon": "x"
   },
-  "\u2605": {
+  "★": {
    "unicode": "U+2605",
    "name": "black star",
    "uses": 2,
    "useIcon": "star-filled"
   },
-  "\ud83c\udf93": {
+  "🎓": {
    "unicode": "U+1F393",
    "name": "graduation cap",
    "uses": 2,
    "useIcon": "graduation-cap"
   },
-  "\ud83d\uddd1": {
+  "🗑": {
    "unicode": "U+1F5D1",
    "name": "wastebasket",
    "uses": 2,
    "useIcon": "trash"
   },
-  "\ud83c\udf24": {
+  "🌤": {
    "unicode": "U+1F324",
    "name": "white sun with small cloud",
    "uses": 1,
    "useIcon": "sun"
   },
-  "\ud83c\udf19": {
+  "🌙": {
    "unicode": "U+1F319",
    "name": "crescent moon",
    "uses": 1,
    "useIcon": "moon"
   },
-  "\ud83d\udcf5": {
+  "📵": {
    "unicode": "U+1F4F5",
    "name": "no mobile phones",
    "uses": 1,
    "useIcon": "phone-off"
   },
-  "\ud83d\udcf1": {
+  "📱": {
    "unicode": "U+1F4F1",
    "name": "mobile phone",
    "uses": 1,
    "useIcon": "devices"
   },
-  "\ud83e\ude78": {
+  "🩸": {
    "unicode": "U+1FA78",
    "name": "drop of blood",
    "uses": 1,
@@ -21647,15 +21968,15 @@
   }
  },
  "pages": {
-  "01-launch-onboarding": "1 \u00b7 Launch & onboarding",
-  "02-student-app-mobile": "2 \u00b7 Student app (mobile)",
-  "03-student-web-public-site": "3a \u00b7 Student web \u2014 public site",
-  "04-student-web-signed-in": "3b \u00b7 Student web \u2014 signed in",
-  "05-campus-hostel-admin": "4 \u00b7 Campus / hostel admin",
-  "06-doctor": "5 \u00b7 Doctor",
-  "07-partner-pharmacy-lab-clinic": "6 \u00b7 Partner \u2014 pharmacy, lab, clinic",
-  "08-super-admin": "7 \u00b7 Super admin",
-  "09-design-system-flow-map": "8 \u00b7 Design system & flow map",
-  "10-mobile-2": "9 \u00b7 Mobile 2.0 (approved 2026-10-21)"
+  "01-launch-onboarding": "1 · Launch & onboarding",
+  "02-student-app-mobile": "2 · Student app (mobile)",
+  "03-student-web-public-site": "3a · Student web — public site",
+  "04-student-web-signed-in": "3b · Student web — signed in",
+  "05-campus-hostel-admin": "4 · Campus / hostel admin",
+  "06-doctor": "5 · Doctor",
+  "07-partner-pharmacy-lab-clinic": "6 · Partner — pharmacy, lab, clinic",
+  "08-super-admin": "7 · Super admin",
+  "09-design-system-flow-map": "8 · Design system & flow map",
+  "10-mobile-2": "9 · Mobile 2.0 (approved 2026-10-21)"
  }
 }

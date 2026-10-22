@@ -65,6 +65,14 @@ export interface PublicSettings {
   "meds.reminder_minute_night": number;
   /** Most reminder times one medication plan may have in a day. (doses per day) */
   "meds.times_per_day_max": number;
+  /** Latest health tips on the student Home card ('From the StudentKare blog'). (posts) */
+  "newsroom.home_teasers": number;
+  /** Posts on one page of the Blog or News list. (posts) */
+  "newsroom.page_size": number;
+  /** Related posts shown under a post. (posts) */
+  "newsroom.related_count": number;
+  /** Reading speed used for a post's reading time. (words per minute) */
+  "newsroom.words_per_minute": number;
   /** Hours a pharmacy's price quote stays payable. 0 means quotes do not expire. (hours) */
   "pharmacy.quote_expiry_hours": number;
   /** Days between a student's account-deletion request and its erasure; they can cancel until then. (days) */
@@ -205,6 +213,10 @@ export const publicSettingDefaults: Readonly<PublicSettings> = {
   "meds.reminder_minute_morning": 480,
   "meds.reminder_minute_night": 1320,
   "meds.times_per_day_max": 6,
+  "newsroom.home_teasers": 2,
+  "newsroom.page_size": 9,
+  "newsroom.related_count": 3,
+  "newsroom.words_per_minute": 200,
   "pharmacy.quote_expiry_hours": 0,
   "privacy.deletion_grace_days": 7,
   "public_site.app_store_url": "",
@@ -286,6 +298,10 @@ export const publicSettingSpecs: Readonly<Record<PublicSettingKey, PublicSetting
   "meds.reminder_minute_morning": { type: "int", min: 0, max: 1439, allowed: [], unit: "minutes after midnight" },
   "meds.reminder_minute_night": { type: "int", min: 0, max: 1439, allowed: [], unit: "minutes after midnight" },
   "meds.times_per_day_max": { type: "int", min: 1, max: 24, allowed: [], unit: "doses per day" },
+  "newsroom.home_teasers": { type: "int", min: 0, max: 4, allowed: [], unit: "posts" },
+  "newsroom.page_size": { type: "int", min: 3, max: 30, allowed: [], unit: "posts" },
+  "newsroom.related_count": { type: "int", min: 0, max: 6, allowed: [], unit: "posts" },
+  "newsroom.words_per_minute": { type: "int", min: 100, max: 400, allowed: [], unit: "words per minute" },
   "pharmacy.quote_expiry_hours": { type: "int", min: 0, max: 720, allowed: [], unit: "hours" },
   "privacy.deletion_grace_days": { type: "int", min: 1, max: 30, allowed: [], unit: "days" },
   "public_site.app_store_url": { type: "str", min: null, max: null, allowed: [], unit: "https URL" },

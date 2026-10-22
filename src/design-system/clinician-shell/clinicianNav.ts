@@ -5,7 +5,7 @@ import type { MessageKey } from '@/i18n';
 export type ClinicianNavId =
   | 'today' | 'check-in' | 'inbox' | 'queue' | 'consult-room' | 'critical-results' | 'report-reviews'
   | 'encounter-note' | 'prescribe' | 'lab-orders' | 'referrals' | 'renewals' | 'my-patients'
-  | 'chronic-care' | 'ayush' | 'decision-support' | 'schedule' | 'earnings';
+  | 'chronic-care' | 'ayush' | 'decision-support' | 'schedule' | 'earnings' | 'post-reviews';
 
 export interface ClinicianNavItem {
   id: ClinicianNavId;
@@ -52,6 +52,8 @@ export const CLINICIAN_NAV: ClinicianNavGroup[] = [
       { id: 'consult-room', label: 'Consult room', labelKey: 'console.clin.nav.consultRoom', icon: 'video-2', route: 'clinician/consult-room' },
       { id: 'critical-results', label: 'Critical results', labelKey: 'console.clin.nav.criticalResults', icon: 'flask', route: 'clinician/critical-results' },
       { id: 'report-reviews', label: 'Report reviews', labelKey: 'console.clin.nav.reportReviews', icon: 'file', route: 'clinician/report-reviews' },
+      // Not on the design canvas: health tip posts waiting for a clinician's approval (features/newsroom).
+      { id: 'post-reviews', label: 'Health tip reviews', labelKey: 'news.adm.rev.title', icon: 'heart-pulse', route: 'clinician/post-reviews' },
       { id: 'encounter-note', label: 'Encounter note', labelKey: 'console.clin.nav.encounterNote', icon: 'doc', route: 'clinician/encounter-note' },
       { id: 'prescribe', label: 'Prescribe', labelKey: 'console.clin.nav.prescribe', icon: 'prescription', route: 'clinician/prescribe' },
     ],

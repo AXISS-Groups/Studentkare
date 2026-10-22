@@ -81,6 +81,7 @@ from services.lab_results import router as lab_results_router
 from services.medicine_info import router as medicine_info_router
 from services.medicine_master import router as medicine_master_router
 from services.member_profile_api import router as member_profile_router
+from services.newsroom import router as newsroom_router
 from services.otp_delivery import available_channels, whatsapp_status
 from services.preventive_care import router as preventive_router
 from services.rewards_api import router as rewards_router
@@ -256,13 +257,21 @@ app.add_middleware(ActivityTelemetryMiddleware)
 # own Cache-Control. Everything else is no-store. /api/config/public carries no
 # per-user data (services/integrations.py), and the app reads it at boot.
 CACHEABLE_PATHS = frozenset({"/api/config/public"})
+# The newsroom's public reads (services/newsroom.py): published posts, feeds, the
+# sitemap and share images, identical for everyone (no session is read there).
+CACHEABLE_PREFIXES = ("/api/posts/",)
+
+
+def cacheable(request) -> bool:
+    path = request.url.path
+    return path in CACHEABLE_PATHS or (request.method == "GET" and (path == "/api/posts" or path.startswith(CACHEABLE_PREFIXES)))
 
 
 @app.middleware("http")
 async def response_headers(request, call_next):
     response = await call_next(request)
     response.headers["X-Content-Type-Options"] = "nosniff"
-    if request.url.path not in CACHEABLE_PATHS or "Cache-Control" not in response.headers:
+    if not cacheable(request) or "Cache-Control" not in response.headers:
         response.headers["Cache-Control"] = "no-store"
     return response
 
@@ -355,6 +364,7 @@ app.include_router(student_requests_router)
 app.include_router(clinical_router)
 app.include_router(medicine_master_router)
 app.include_router(medicine_info_router)
+app.include_router(newsroom_router)
 app.include_router(lab_booking_router)
 app.include_router(rx_uploads_router)
 app.include_router(lab_results_router)

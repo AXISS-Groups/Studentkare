@@ -54,11 +54,19 @@ const HEALTH_ROUTES: ReadonlySet<RoutePath> = new Set<RoutePath>([
   // keep-sorted end
 ]);
 
+/** Screens opened from Profile (What's new): the nav shows Profile there. */
+const PROFILE_ROUTES: ReadonlySet<RoutePath> = new Set<RoutePath>([
+  // keep-sorted start
+  'whats-new',
+  // keep-sorted end
+]);
+
 /** The pill-nav destination a route belongs to (null: none is current). */
 export function studentNavFor(route: RoutePath): PillNavKey | null {
   const key = (Object.keys(STUDENT_NAV_ROUTES) as PillNavKey[]).find((k) => STUDENT_NAV_ROUTES[k] === route);
   if (key) return key;
   if (HEALTH_ROUTES.has(route)) return 'health';
+  if (PROFILE_ROUTES.has(route)) return 'profile';
   return HOME_STORE_ROUTES.has(route) ? 'home' : null;
 }
 

@@ -31,6 +31,7 @@ export function M2ProfileRoute(): React.ReactElement {
       orders: () => navigate('orders'),
       privacy: () => navigate('data-export'),
       help: () => navigate('support'),
+      whatsNew: () => navigate('whats-new'),
       signOut: () => (slot?.askSignOut ? slot.askSignOut() : void logout()),
     }} />
   );

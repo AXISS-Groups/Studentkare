@@ -1,0 +1,48 @@
+/* Super admin, Posts and the clinician's health tip reviews (AdminPosts). Tokens only. */
+
+.sk-posts-editor { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: var(--sk-space-24); align-items: start; }
+.sk-posts-editor--review { grid-template-columns: minmax(280px, 0.6fr) minmax(0, 1.4fr); }
+.sk-posts-form { display: flex; flex-direction: column; gap: var(--sk-space-16); min-width: 0; }
+
+.sk-posts-templates { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: var(--sk-space-10); }
+.sk-posts-template {
+  position: relative; display: flex; flex-direction: column; gap: var(--sk-space-6); padding: var(--sk-space-8);
+  border-radius: var(--sk-radius-lg); border: 2px solid var(--sk-color-rule-soft); background: var(--sk-color-surface); cursor: pointer;
+}
+.sk-posts-template[data-checked='true'] { border-color: var(--sk-color-action); background: var(--sk-color-surface-3); }
+.sk-posts-template input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.sk-posts-template:focus-within { outline: 3px solid var(--sk-color-focus); outline-offset: 3px; }
+.sk-posts-template__name { font-size: 14px; font-weight: 800; color: var(--sk-color-text); }
+.sk-posts-template__about { font-size: 12px; line-height: 1.4; font-weight: 500; color: var(--sk-color-text-2); }
+
+.sk-posts-art { display: flex; flex-wrap: wrap; gap: var(--sk-space-10); margin-bottom: var(--sk-space-12); }
+.sk-posts-art__option {
+  position: relative; display: inline-flex; align-items: center; justify-content: center; min-width: 76px; min-height: 76px;
+  border-radius: var(--sk-radius-lg); border: 2px solid var(--sk-color-rule-soft); background: var(--sk-color-surface-2); cursor: pointer;
+}
+.sk-posts-art__option[data-checked='true'] { border-color: var(--sk-color-action); }
+.sk-posts-art__option input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.sk-posts-art__option:focus-within { outline: 3px solid var(--sk-color-focus); outline-offset: 3px; }
+.sk-posts-art__none { padding: 0 var(--sk-space-10); font-size: 13px; font-weight: 700; color: var(--sk-color-text-2); }
+
+.sk-posts-block { margin: 0 0 var(--sk-space-12); padding: var(--sk-space-12) var(--sk-space-14); border-radius: var(--sk-radius-lg); border: 1px solid var(--sk-color-rule); background: var(--sk-color-surface); min-width: 0; }
+.sk-posts-block__legend { display: inline-flex; align-items: center; gap: var(--sk-space-6); padding: 0 var(--sk-space-4); font-size: 13px; font-weight: 800; color: var(--sk-color-action); }
+.sk-posts-block__tools { display: flex; justify-content: flex-end; gap: var(--sk-space-4); }
+.sk-posts-add { display: flex; flex-wrap: wrap; gap: var(--sk-space-8); }
+.sk-posts-check { display: inline-flex; align-items: center; gap: var(--sk-space-8); min-height: var(--sk-size-touch-target); font-size: 14px; font-weight: 600; color: var(--sk-color-text); }
+.sk-posts-check input { width: 20px; height: 20px; accent-color: var(--sk-color-action); }
+
+.sk-posts-preview { position: sticky; top: var(--sk-space-16); display: flex; flex-direction: column; border-radius: var(--sk-radius-xl); border: 1px solid var(--sk-color-rule); background: var(--sk-color-canvas); overflow: hidden; max-height: calc(100vh - 32px); }
+.sk-posts-preview__bar {
+  margin: 0; display: flex; align-items: center; gap: var(--sk-space-8); flex-wrap: wrap; padding: var(--sk-space-10) var(--sk-space-16);
+  background: var(--sk-color-surface-2); font-size: 13px; font-weight: 800; color: var(--sk-color-text);
+}
+.sk-posts-preview__bar span { font-weight: 500; color: var(--sk-color-text-3); }
+.sk-posts-preview__page { overflow-y: auto; padding: var(--sk-space-16); }
+.sk-posts-preview__page .sk-news-post__layout { grid-template-columns: minmax(0, 1fr); }
+.sk-posts-preview__page .sk-news-post__side { position: static; }
+
+@media (max-width: 1100px) {
+  .sk-posts-editor, .sk-posts-editor--review { grid-template-columns: minmax(0, 1fr); }
+  .sk-posts-preview { position: static; max-height: none; }
+}

@@ -54,7 +54,7 @@ export function resolveAccess(path: string, role: AccountRole | null): boolean {
   const flat = registry.flatMap((module) =>
     module.routes.map((route) => ({ ...route, fullPath: joinPath(module.basePath, route.path) }))
   );
-  const match = flat.find((route) => route.fullPath === path);
+  const match = flat.find((route) => pathMatches(route.fullPath, path));
   // Guardrail 1. An unknown path used to be granted, so a typo, a stale link or
   // a route renamed out from under a caller all resolved to "allowed".
   // Enforcement currently runs through RouteGuard rather than through here, so
@@ -70,8 +70,21 @@ export function isPublicPath(path: string): boolean {
   const flat = registry.flatMap((module) =>
     module.routes.map((route) => ({ ...route, fullPath: joinPath(module.basePath, route.path) }))
   );
-  const match = flat.find((route) => route.fullPath === path);
+  const match = flat.find((route) => pathMatches(route.fullPath, path));
   return match?.public ?? false;
+}
+
+/**
+ * A registered path matches the location exactly, or segment by segment where it
+ * declares a parameter (`/blog/:slug` matches `/blog/sleep-in-exam-week`, never
+ * `/blog` or `/blog/a/b`). A parameter segment is never empty.
+ */
+export function pathMatches(pattern: string, path: string): boolean {
+  if (pattern === path) return true;
+  if (!pattern.includes('/:')) return false;
+  const want = pattern.split('/');
+  const got = path.split('/');
+  return want.length === got.length && want.every((part, i) => (part.startsWith(':') ? (got[i] ?? '') !== '' : part === got[i]));
 }
 
 export function joinPath(base: string, segment: string): string {

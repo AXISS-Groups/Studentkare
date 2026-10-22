@@ -13,10 +13,10 @@ afterEach(() => {
 });
 
 describe('PublicSiteHeader, compact', () => {
-  it('is the brand, the eight-item nav and sign-in, with no shop strip', () => {
+  it('is the brand, the ten-item nav (Blog and News added) and sign-in, with no shop strip', () => {
     const { container } = render(<PublicSiteHeader current="labTests" variant="compact" />);
     const nav = screen.getByRole('navigation', { name: 'Main navigation' });
-    expect(within(nav).getAllByRole('link')).toHaveLength(8);
+    expect(within(nav).getAllByRole('link')).toHaveLength(10);
     expect(within(nav).getByRole('link', { name: 'Lab tests' })).toHaveAttribute('aria-current', 'page');
     expect(screen.getByRole('link', { name: 'Sign in' })).toHaveAttribute('href', '/login');
     expect(screen.queryByRole('navigation', { name: 'Shop by category' })).toBeNull();

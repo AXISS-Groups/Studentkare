@@ -299,6 +299,50 @@ const PUBLIC_ROUTES = [
     `,
   },
   {
+    path: '/blog',
+    title: 'StudentKare Blog — health tips and stories',
+    description: 'Plain-language health tips, each reviewed by a clinician before it goes out, and stories from the StudentKare team.',
+    canonical: 'https://studentkare.co/blog',
+    fallbackHtml: `
+      <header role="banner">
+        <nav aria-label="Main Navigation">
+          <a href="/">Studentkare</a>
+          <a href="/blog">Blog</a>
+          <a href="/news">News</a>
+          <a href="/find-care">Find care</a>
+          <a href="/privacy">Privacy</a>
+        </nav>
+      </header>
+      <main id="main-content">
+        <h1>Health tips and stories</h1>
+        <p>Plain-language health tips, each reviewed by a clinician before it goes out, and stories from the team. In an emergency, call 112.</p>
+        <p><a href="/api/posts/blog/rss.xml">RSS feed</a> · <a href="/api/posts/blog/atom.xml">Atom feed</a></p>
+      </main>
+    `,
+  },
+  {
+    path: '/news',
+    title: 'StudentKare News — what is new, campus news and press',
+    description: 'What changed in the StudentKare app, news from campuses we work with, and press releases.',
+    canonical: 'https://studentkare.co/news',
+    fallbackHtml: `
+      <header role="banner">
+        <nav aria-label="Main Navigation">
+          <a href="/">Studentkare</a>
+          <a href="/blog">Blog</a>
+          <a href="/news">News</a>
+          <a href="/find-care">Find care</a>
+          <a href="/privacy">Privacy</a>
+        </nav>
+      </header>
+      <main id="main-content">
+        <h1>News and updates</h1>
+        <p>What is new in the app, news from campuses and press releases.</p>
+        <p><a href="/api/posts/news/rss.xml">RSS feed</a> · <a href="/api/posts/news/atom.xml">Atom feed</a></p>
+      </main>
+    `,
+  },
+  {
     path: '/lifeshare',
     title: 'Studentkare LifeShare — Emergency Blood & Medical SOS',
     description: 'Campus emergency blood donation exchange, urgent medical incident coordination, and rapid SOS response platform.',

@@ -1,0 +1,62 @@
+{
+  "$description": "Cover colours for the newsroom share image (services/newsroom_cover.py). Copied from design/tokens/studentkare.tokens.json (light scheme); tests/test_newsroom.py fails if they drift.",
+  "templates": {
+    "HEALTH_TIP": {
+      "hue": "green",
+      "stops": [
+        "service-green-deep",
+        "service-green-shade"
+      ],
+      "glow": "service-green"
+    },
+    "STORY": {
+      "hue": "violet",
+      "stops": [
+        "service-violet-deep",
+        "service-violet-shade"
+      ],
+      "glow": "service-violet"
+    },
+    "CAMPUS_NEWS": {
+      "hue": "amber",
+      "stops": [
+        "service-amber-deep",
+        "service-amber-shade"
+      ],
+      "glow": "service-amber"
+    },
+    "PRODUCT_UPDATE": {
+      "hue": "indigo",
+      "stops": [
+        "brand-navy-light",
+        "brand-navy"
+      ],
+      "glow": "service-indigo"
+    },
+    "PRESS_RELEASE": {
+      "hue": "blue",
+      "stops": [
+        "service-blue-deep",
+        "brand-navy"
+      ],
+      "glow": "service-blue"
+    }
+  },
+  "colors": {
+    "brand-navy": "#0C0494",
+    "brand-navy-light": "#2B20C9",
+    "on-hero": "#FFFFFF",
+    "service-amber": "#FBBF24",
+    "service-amber-deep": "#B45309",
+    "service-amber-shade": "#92400E",
+    "service-blue": "#60A5FA",
+    "service-blue-deep": "#1D4ED8",
+    "service-green": "#34D399",
+    "service-green-deep": "#047857",
+    "service-green-shade": "#065F46",
+    "service-indigo": "#6D5BFF",
+    "service-violet": "#A78BFA",
+    "service-violet-deep": "#6D28D9",
+    "service-violet-shade": "#4C1D95"
+  }
+}

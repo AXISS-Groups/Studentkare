@@ -1677,7 +1677,9 @@
       "src/design-system/m2/servicePalette.ts",
       "src/design-system/m2/m2Motion.ts",
       "src/screens/workspace/StudentPhoneFrame.tsx",
-      "src/native/StudentTabBar.tsx"
+      "src/native/StudentTabBar.tsx",
+      "src/features/newsroom/views/M2PostParts.tsx",
+      "src/features/newsroom/model/templates.ts"
     ],
     "M2Medicines": [
       "src/features/m2store/views/M2MedicinesView.tsx",
@@ -2002,6 +2004,48 @@
       "src/screens/workspace/admin/SuperAdminScreens.tsx",
       "src/screens/workspace/admin/superAdminNavigation.ts",
       "src/screens/vendor/vendorNavigation.ts"
+    ],
+    "WebNewsroom": [
+      "src/features/newsroom/views/NewsroomListPage.tsx",
+      "src/features/newsroom/views/PostCard.tsx",
+      "src/features/newsroom/views/PostCover.tsx",
+      "src/features/newsroom/views/newsroom.css",
+      "src/features/newsroom/viewmodel/NewsroomListViewModel.ts",
+      "src/features/newsroom/data/NewsroomRepository.ts",
+      "src/features/newsroom/model/templates.ts",
+      "src/features/newsroom/screens/NewsroomScreens.tsx",
+      "src/design-system/public-site/publicSiteNav.ts"
+    ],
+    "WebPost": [
+      "src/features/newsroom/views/PostPage.tsx",
+      "src/features/newsroom/views/PostBody.tsx",
+      "src/features/newsroom/views/PostCard.tsx",
+      "src/features/newsroom/views/PostCover.tsx",
+      "src/features/newsroom/views/newsroom.css",
+      "src/features/newsroom/model/share.ts",
+      "src/features/newsroom/model/templates.ts",
+      "src/features/newsroom/data/NewsroomRepository.ts",
+      "src/features/newsroom/screens/NewsroomScreens.tsx"
+    ],
+    "AdminPosts": [
+      "src/features/newsroom/admin/PostsAdminView.tsx",
+      "src/features/newsroom/admin/posts-admin.css",
+      "src/features/newsroom/viewmodel/PostsAdminViewModel.ts",
+      "src/features/newsroom/model/templates.ts",
+      "src/features/newsroom/views/PostCover.tsx",
+      "src/features/newsroom/views/PostPage.tsx",
+      "src/screens/workspace/admin/SuperAdminScreens.tsx",
+      "src/screens/workspace/admin/superAdminNavigation.ts",
+      "src/design-system/clinician-shell/clinicianNav.ts",
+      "src/features/health/screens/WorkspaceRouteScreen.tsx"
+    ],
+    "M2WhatsNew": [
+      "src/features/newsroom/views/M2WhatsNewView.tsx",
+      "src/features/newsroom/views/M2WhatsNewRoute.tsx",
+      "src/features/newsroom/views/M2PostParts.tsx",
+      "src/features/newsroom/model/templates.ts",
+      "src/features/phoneKit/studentPhoneBoards.tsx",
+      "src/screens/workspace/StudentPhoneFrame.tsx"
     ]
   },
   "inProgress": {
