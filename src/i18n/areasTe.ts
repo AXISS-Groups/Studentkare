@@ -1,4 +1,5 @@
 // keep-sorted start
+import { accountContactsTe } from './areas/accountContacts';
 import { adminBoardTe } from './areas/adminBoard';
 import { adminGovTe } from './areas/adminGov';
 import { adminTe } from './areas/admin';
@@ -41,7 +42,6 @@ import { studentshellTe } from './areas/studentshell';
 import { studentwebT1Te } from './areas/studentwebT1';
 import { studentwebTe } from './areas/studentweb';
 import { teamAccountsTe } from './areas/teamAccounts';
-import { accountContactsTe } from './areas/accountContacts';
 import { wellnessTe } from './areas/wellness';
 // keep-sorted end
 
@@ -53,6 +53,7 @@ import { wellnessTe } from './areas/wellness';
  */
 export const areasTe = {
   // keep-sorted start
+  ...accountContactsTe,
   ...adminBoardTe,
   ...adminGovTe,
   ...adminTe,
@@ -95,7 +96,6 @@ export const areasTe = {
   ...studentwebT1Te,
   ...studentwebTe,
   ...teamAccountsTe,
-  ...accountContactsTe,
   ...wellnessTe,
   // keep-sorted end
 };
