@@ -22,6 +22,13 @@ export type PayPhase =
   | 'closed'       // expired or cancelled: cannot be paid
   | 'error';       // our side or the network; retry
 
+function newPaymentKey(): string {
+  const random = typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+    ? crypto.randomUUID()
+    : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+  return `pay-${random}`;
+}
+
 const TEST_CARD_NUMBERS: Record<TestCard, string> = {
   success: '4111111111111111',
   declined: '4000000000000002',
@@ -46,6 +53,10 @@ export class PayStepViewModel implements ViewModel {
   error: MessageKey | '' = '';
   notice: MessageKey | '' = '';
   private disposed = false;
+  /** The start in flight: a second start() (StrictMode runs the mount effect twice) joins it. */
+  private starting: Promise<void> | null = null;
+  /** One key for this Pay step: every start, retry included, asks for the same payment (live-run audit #9). */
+  private readonly idempotencyKey = newPaymentKey();
 
   constructor(
     readonly orderId: string,
@@ -53,8 +64,9 @@ export class PayStepViewModel implements ViewModel {
     private readonly repository: PaymentRepository = paymentRepository,
     private readonly openCheckout: OpenCheckout = openRazorpay,
   ) {
-    makeAutoObservable<PayStepViewModel, 'disposed' | 'repository' | 'openCheckout'>(
-      this, { disposed: false, repository: false, openCheckout: false, orderId: false, amountPaise: false }, { autoBind: true },
+    makeAutoObservable<PayStepViewModel, 'disposed' | 'repository' | 'openCheckout' | 'starting' | 'idempotencyKey'>(
+      this, { disposed: false, repository: false, openCheckout: false, orderId: false, amountPaise: false, starting: false, idempotencyKey: false },
+      { autoBind: true },
     );
   }
 
@@ -80,13 +92,20 @@ export class PayStepViewModel implements ViewModel {
     this.testCard = card;
   }
 
-  async start(): Promise<void> {
+  start(): Promise<void> {
     this.disposed = false;
+    if (this.starting) return this.starting;
+    const run = this.openPayment().finally(() => { this.starting = null; });
+    this.starting = run;
+    return run;
+  }
+
+  private async openPayment(): Promise<void> {
     this.phase = 'starting';
     this.error = '';
     this.notice = '';
     try {
-      const res = await this.repository.start(this.orderId);
+      const res = await this.repository.start(this.orderId, this.idempotencyKey);
       if (this.disposed) return;
       runInAction(() => {
         if (!res.configured) { this.phase = 'unavailable'; return; }

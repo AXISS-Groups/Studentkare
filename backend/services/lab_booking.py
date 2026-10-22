@@ -322,8 +322,9 @@ class MockCheckoutInput(StrictModel):
 
 
 @router.post("/lab-orders/{order_id}/payment")
-def start_lab_payment(order_id: str, user=Depends(authenticated_user), db: Session = Depends(commerce_db)):
-    return payments.start_payment(db, _own_lab_payable(db, order_id, user))
+def start_lab_payment(order_id: str, user=Depends(authenticated_user), db: Session = Depends(commerce_db),
+                      idempotency_key: str = Header("", max_length=80)):
+    return payments.start_payment(db, _own_lab_payable(db, order_id, user), idempotency_key)
 
 
 @router.get("/lab-orders/{order_id}/payment")

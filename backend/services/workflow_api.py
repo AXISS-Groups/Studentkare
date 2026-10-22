@@ -953,9 +953,13 @@ def _own_order_payable(db, order_id: str, user: dict):
 
 
 @router.post("/orders/{order_id}/payment")
-def initiate_payment(order_id: str, user=Depends(authenticated_user), db: Session = Depends(commerce_db)):
-    """Open a provider order for this order's server-side total, or say plainly that none is connected."""
-    return payments.start_payment(db, _own_order_payable(db, order_id, user))
+def initiate_payment(order_id: str, user=Depends(authenticated_user), db: Session = Depends(commerce_db),
+                     idempotency_key: str = Header("", max_length=80)):
+    """Open a provider order for this order's server-side total, or say plainly that none is connected.
+
+    The same Idempotency-Key always gets the same payment back (one checkout, one payment).
+    """
+    return payments.start_payment(db, _own_order_payable(db, order_id, user), idempotency_key)
 
 
 class PaymentVerifyInput(StrictModel):

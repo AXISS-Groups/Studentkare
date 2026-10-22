@@ -1,5 +1,5 @@
 import React, { StrictMode } from 'react';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { PACKAGE, SLOTS, booking } from '../../viewmodel/__tests__/labFixtures';
 import { LabBookingOverlay } from '../LabBookingOverlay';
@@ -43,6 +43,8 @@ describe('LabBookingOverlay (live-run audit #2)', () => {
     // screen.* searches document.body: a Pay step rendered into a detached node is not found.
     expect(await screen.findByTestId('pay-step')).toBeInTheDocument();
     expect(screen.getByTestId('lab-booking-overlay')).toBeInTheDocument();
+    // One payment request, though StrictMode mounts the Pay step twice (live-run audit #9).
+    await waitFor(() => expect(calls.filter((c) => c === `POST ${PAY}`)).toHaveLength(1));
   });
 
   it('Esc in the slot sheet closes the sheet only; Esc on the page closes the page', async () => {

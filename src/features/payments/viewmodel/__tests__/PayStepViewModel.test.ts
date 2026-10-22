@@ -143,3 +143,25 @@ describe('PayStepViewModel', () => {
     expect(down.reference).toBe('ORD_1234');
   });
 });
+
+describe('one payment per Pay step (live-run audit #9)', () => {
+  it('a second start while one is in flight (StrictMode) sends no second request', async () => {
+    const { vm, request } = viewModel({ [`POST ${base}`]: MOCK_START });
+    await Promise.all([vm.start(), vm.start()]);
+    expect(request.mock.calls.filter(([path, init]) => path === base && init?.method === 'POST')).toHaveLength(1);
+    expect(vm.phase).toBe('ready');
+  });
+
+  it('sends one Idempotency-Key for the Pay step, the same on every try', async () => {
+    const { vm, request } = viewModel({ [`POST ${base}`]: MOCK_START });
+    await vm.start();
+    vm.dispose();
+    await vm.start();
+    const keys = request.mock.calls.filter(([path]) => path === base)
+      .map(([, init]) => new Headers((init as RequestInit).headers).get('Idempotency-Key'));
+    expect(keys).toHaveLength(2);
+    expect(keys[0]).toMatch(/^pay-/);
+    expect(keys[1]).toBe(keys[0]);
+  });
+});
+

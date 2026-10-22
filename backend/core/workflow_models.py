@@ -516,6 +516,10 @@ class PaymentIntent(Base):
     sent to the provider (Rule L).
     """
     __tablename__ = "care_payment_intents"
+    # One payment per checkout attempt: the client's Idempotency-Key, unique per payable
+    # (NULL when none was sent; NULLs never collide). Live-run audit #9.
+    __table_args__ = (UniqueConstraint("payable_kind", "payable_id", "idempotency_key",
+                                       name="uq_care_payment_intents_payable_key"),)
     id: Mapped[str] = mapped_column(String(64), primary_key=True)
     payable_kind: Mapped[str] = mapped_column(String(24))
     payable_id: Mapped[str] = mapped_column(String(64), index=True)
@@ -530,6 +534,7 @@ class PaymentIntent(Base):
     expires_at: Mapped[float] = mapped_column(Float, default=0.0)
     created_at: Mapped[float] = mapped_column(Float)
     updated_at: Mapped[float] = mapped_column(Float)
+    idempotency_key: Mapped[str | None] = mapped_column(String(80), nullable=True, default=None)
 
 
 class DispenseQuote(Base):

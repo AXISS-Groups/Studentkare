@@ -75,8 +75,11 @@ export class PaymentRepository {
     return `${this.base}/${encodeURIComponent(id)}/payment${rest}`;
   }
 
-  start(orderId: string): Promise<PaymentStart> {
-    return this.request<PaymentStart>(this.path(orderId), { method: 'POST' });
+  /** `idempotencyKey`: one per Pay step; the server hands the same payment back for it. */
+  start(orderId: string, idempotencyKey?: string): Promise<PaymentStart> {
+    return this.request<PaymentStart>(this.path(orderId), {
+      method: 'POST', ...(idempotencyKey ? { headers: { 'Idempotency-Key': idempotencyKey } } : {}),
+    });
   }
 
   mockCheckout(orderId: string, providerOrderId: string, cardNumber: string): Promise<MockCheckoutResult> {
