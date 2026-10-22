@@ -2,6 +2,7 @@
 id: consent-and-sharing
 title: Consent, sharing a record and stopping a share
 reviewed: 2026-10-22
+keywords: share, sharing, share a report, share with a doctor, share my records, revoke, stop sharing, access, consent, permission, give access, रिकॉर्ड, शेयर, साझा, अनुमति, రికార్డ్, రికార్డు, రికార్డును, షేర్, పంచుకోవాలి, పంచుకోవడం, అనుమతి, डॉक्टर को रिकॉर्ड, వైద్యుడితో, డాక్టర్‌తో
 ---
 <!--
 Written from: /consent (src/features/vault/views/ConsentInboxBoard.tsx, copy sf.consent.*),

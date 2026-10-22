@@ -22,7 +22,7 @@ honest refusal (verified live on 2026-10-22).
 flowchart LR
   subgraph Ingestion["Ingestion (super admin)"]
     A[Admin › Knowledge<br/>PublishSourceDialog] -->|POST /api/ops/knowledge| B[(care_knowledge_sources<br/>reviewed=true, active, expires_at)]
-    B -->|"Rebuild index" button<br/>POST /api/ops/knowledge/reindex| C[split_into_chunks<br/>~700 chars, sentence bounds,<br/>1-sentence overlap]
+    B -->|"Rebuild index" button<br/>POST /api/ops/knowledge/reindex| C[split_into_chunks<br/>one passage per paragraph,<br/>long ones by sentence]
     C --> D[LocalHashingEmbedder<br/>char 3/4-grams → 512-d, L2]
     D --> E[(care_knowledge_chunks<br/>vector as JSON column)]
   end
@@ -53,10 +53,10 @@ flowchart LR
 |---|---|---|
 | Ingestion | `backend/services/workflow_api.py` `create_knowledge` (`POST /api/ops/knowledge`, super admin) | Writes a `KnowledgeSource` row with `reviewed=True`, `active=True`, `expires_at = now + expiresInDays` (1–3650, default 365). |
 | Source table | `backend/core/workflow_models.py` `KnowledgeSource` → `care_knowledge_sources` (migration `fe83ff8b6dc6`) | Title ≤ 180, content ≤ 4,000 chars, category, author, version, reviewed, active, expiry. |
-| Chunking | `backend/services/vector_store.py` `split_into_chunks` | Sentence split, ~700-char target, 1-sentence overlap, trailing fragment < 120 chars folded back, each chunk capped at 2,000. Title is prepended. |
+| Chunking | `backend/services/vector_store.py` `split_into_chunks` | One passage per paragraph (updated 2026-10-23); a paragraph over ~700 chars is split on sentences with a 1-sentence overlap; a piece under 120 chars is folded into its neighbour; each chunk capped at 2,000. Title is prepended to the first. `sync_index` re-chunks a source whose stored passages differ from what the chunker makes today. |
 | Embeddings | `backend/services/embeddings.py` `LocalHashingEmbedder` (`local-hashing-v1`) | Character 3- and 4-grams hashed (blake2b) into 512 buckets, `1 + log(count)` weighting, L2-normalised. |
 | Vector store | `vector_store.index_source` / `reindex_all` → `care_knowledge_chunks` (migration `a9e4c21f83d0`) | One row per chunk with the vector as a JSON list, the embedder name and the source version. |
-| Retrieval | `vector_store.search` | Loads **all** approved chunks, drops any whose subject-term overlap with the question is < 0.2 (stop-words removed), scores `0.6 × cosine + 0.4 × overlap`, floor 0.25, keeps the best passage per source, top 3 (`agent_ayush.ask` passes `limit=3`). |
+| Retrieval | `vector_store.search` | Loads **all** approved chunks. A passage's terms are its words, its article's title and the help pack's `keywords:` for that article (`help_pack.retrieval_keywords`); question words are stemmed, English/Hinglish/Tenglish filler removed, and a word not in the index is typo-corrected to the closest indexed word (difflib ≥ 0.85, counts 0.8) or, if none, counts double. A passage is admitted when it holds the `ayush.min_term_overlap` share of the question (default 0.5) or every known word of a question with at least two. Score `0.6 × cosine + 0.4 × overlap` (floor 0.25) + 0.15 × title overlap + 0.2 × the passage's own overlap + 0.2 for a whole keyword phrase; best passage per source, top 3. |
 | Answer | `backend/services/agent_ayush.py` `compose_extractive` / `generate` | Quotes the top passage (≤ 900 chars) and names the other sources; if a model is configured, asks it to rephrase and accepts the result only if it passes the grounding check. |
 | Sources in the answer | `agent_ayush.ask` → `citations[]` | `sourceId`, `title`, `category`, `version`, 240-char snippet, score, `stale` (chunk built from an older version). |
 | UI | `src/features/ayush/useAyushConversation.ts`, `src/features/ayush/AyushAnswer.tsx`, `src/features/chat/views/M2AskAyushRoute.tsx` (phone), `src/features/studentweb/views/t1/WebAyushView.tsx` (web), `src/features/ayush/AyushWidget.tsx` (floating) | Sends the question, keeps replies **in memory only** (a transcript is clinical data), shows citations and refusal reasons. |
@@ -144,7 +144,9 @@ constants.
 5. **A seeded, reviewed starter library** (how booking works, sharing records, verification, crisis
    resources). With an empty library the feature only ever refuses.
 6. **Wire the AI rate limiter** (`rate_limit_ai_requests`) onto `/api/agents/ayush/ask`.
-7. **Evaluate Ayush, not only the navigator**: point `agent_eval.py` at `agent_ayush.ask` with a gold set of
+7. **Evaluate Ayush, not only the navigator** (done 2026-10-23 for the gold set: `backend/tests/test_ayush_eval.py` over
+   `backend/tests/data/ayush_eval_set.json`, gating refusals, crisis and retrieval floors in CI; the ops telemetry
+   endpoint still measures the navigator): point `agent_eval.py` at `agent_ayush.ask` with a gold set of
    questions → expected sources, and track recall, grounded rate and refusal precision per release. Retire
    or merge the older navigator so there is one retrieval path.
 8. **Indian PII masking**: `AISecurityGuardrail.PII_PATTERNS` masks only email and US SSN. Phone numbers,

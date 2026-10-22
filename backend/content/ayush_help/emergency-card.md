@@ -2,6 +2,7 @@
 id: emergency-card
 title: Your emergency card
 reviewed: 2026-10-22
+keywords: emergency card, emergency contact, add an emergency contact, blood group, allergies, allergy, ice card, medical id, आपातकालीन कार्ड, ब्लड ग्रुप, ఎమర్జెన్సీ కార్డ్, బ్లడ్ గ్రూప్
 ---
 <!--
 Written from: /emergency-card (src/features/studentweb/views/t1/WebEmergencyCardView.tsx, copy

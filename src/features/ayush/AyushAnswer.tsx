@@ -4,7 +4,7 @@ import type { MessageKey } from '@/i18n';
 import { Icon } from '@/design-system/icons';
 import { navigate } from '@/lib/utils/workflowRouting';
 import type { RoutePath } from '@/lib/utils/workflowRouting';
-import { AYUSH_REFUSAL_NOTE } from './useAyushConversation';
+import { AYUSH_REFUSAL_NOTE, ayushCategoryLabel } from './useAyushConversation';
 import type { AyushOutcome, AyushTurn } from './useAyushConversation';
 import './ayush.css';
 
@@ -59,7 +59,7 @@ export function AyushAnswer({ turn, onRoute }: { turn: AyushTurn; onRoute?: () =
             ))}
           </div>
         ) : null}
-        {reply.citations.map((citation) => <Citation key={citation.sourceId} title={citation.title} meta={t('assist.ayush.citationMeta', { category: citation.category, version: citation.version })} snippet={citation.snippet} stale={citation.stale} />)}
+        {reply.citations.map((citation) => <Citation key={citation.sourceId} title={citation.title} meta={t('assist.ayush.citationMeta', { category: ayushCategoryLabel(citation.category, t), version: citation.version })} snippet={citation.snippet} stale={citation.stale} />)}
         {routes.map((route) => (
           <button key={route.route} type="button" className="sk-ay-route" onClick={() => { onRoute?.(); navigate(route.route); }}>
             {t(route.label)}<Icon name="arrow-right" size={15} />

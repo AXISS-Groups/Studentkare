@@ -2,6 +2,7 @@
 id: crisis-helplines
 title: Emergency and crisis helpline numbers
 reviewed: 2026-10-22
+keywords: breathe, breathing, emergency, unsafe, not safe, feel unsafe, overwhelmed, anxious, hopeless, hurt myself, harm myself, poison, swallowed, helpline, helplines, emergency number, tele manas, telemanas, ambulance number, poison, mental health helpline, counsellor, counselor, हेल्पलाइन, టెలి మానస్, హెల్ప్‌లైన్
 ---
 <!--
 Written from: src/design-system/CrisisLinks.tsx (EMERGENCY_NUMBER, TELE_MANAS_NUMBER, AMBULANCE_NUMBER),

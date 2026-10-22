@@ -2,6 +2,7 @@
 id: plans-and-prices
 title: Plans and prices
 reviewed: 2026-10-22
+keywords: is it free, is studentkare free, price, prices, pricing, cost, fee, fees, charges, subscription, membership, plan, plans, upgrade, premium, student plus, free, paid, कीमत, प्लान, शुल्क, ధర, ప్లాన్, ఫీజు
 ---
 <!--
 Written from: backend/services/billing.py _plan_payload and GET /api/billing/plans, Plan & billing

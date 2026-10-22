@@ -440,6 +440,12 @@ declare("support.inquiries_per_ip_per_hour", INT, 10, area="support", unit="inqu
 # it against the model in use (docs/guides/ayush-operations.md) before lowering it.
 declare("ayush.semantic_admit_similarity", FLOAT, 0.8, area="ayush", unit="cosine similarity", minimum=0.5,
         maximum=0.99, description="Semantic mode: lowest similarity at which a passage with no shared word is admitted.")
+# The share of a question's subject words (after typo correction, counting the
+# article's title and help-pack keywords) a passage must contain to be considered at
+# all. Half keeps "cricket score today" from matching an article that says "today";
+# measured on the gold set in backend/tests/test_ayush_eval.py, re-run it after a change.
+declare("ayush.min_term_overlap", FLOAT, 0.5, area="ayush", unit="share of subject words", minimum=0.2,
+        maximum=1.0, description="Lowest share of a question's subject words a passage must contain to be retrieved.")
 
 # --- platform --------------------------------------------------------------
 # A name zoneinfo does not know (in an override or a student's preference) is

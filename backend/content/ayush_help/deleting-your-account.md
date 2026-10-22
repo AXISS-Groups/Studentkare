@@ -2,6 +2,7 @@
 id: deleting-your-account
 title: Deleting your account
 reviewed: 2026-10-22
+keywords: delete, deletion, delete my account, remove my account, close my account, deactivate, erase my data, account delete, अकाउंट, खाता, डिलीट, हटाना, అకౌంట్, ఖాతా, డిలీట్, తొలగించాలి
 ---
 <!--
 Written from: /delete-account (src/features/studentweb/... WebDeleteAccountRoute and DeleteAccountRoute,

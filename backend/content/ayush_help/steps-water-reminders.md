@@ -2,6 +2,7 @@
 id: steps-water-reminders
 title: Steps, water and medicine reminders
 reviewed: 2026-10-22
+keywords: steps, track my steps, step counter, pedometer, walking, health connect, apple health, google fit, fitness, water, water reminder, hydration, drink water, reminder, reminders, remind me, medicine reminder, pill reminder
 ---
 <!--
 Written from: /health/steps (src/features/steps/views, copy steps.*), /health/water
