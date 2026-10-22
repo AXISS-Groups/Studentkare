@@ -7,6 +7,7 @@ import type { Lang } from '@/i18n';
 import { SignupConsentState } from './signupConsent';
 import { normalizeInviteCode } from '@/features/rewards/inviteCode';
 import { getSetting } from '@/data/services/config';
+import { PASSCODE_MAX_LENGTH, isPasscodeShape, passcodeDetail } from './passcodeRules';
 
 type AuthMode = 'login' | 'signup';
 /** The board's order for the channel switcher: Email first, then WhatsApp. */
@@ -47,14 +48,23 @@ export type StaffSignInMethod = 'CODE' | 'PIN';
 export const STAFF_PIN_LENGTH = 6;
 type Channel = 'EMAIL' | 'WHATSAPP';
 
-/** What the server says about a device the student chose to be remembered on. Never a session. */
+/** What the server says about the account this device remembers (masked). Never a session. */
 export interface RememberedDevice {
   targetMasked: string;
   channel: Channel;
   lastRoute: string;
+  /** The account has a passcode and passcodes are on: "Use my passcode" applies. */
+  passcode: boolean;
 }
 
-type RememberedResponse = ({ remembered: true } & RememberedDevice) | { remembered: false };
+/**
+ * Why a passcode sign-in didn't open a session. NEW_DEVICE: this device hasn't
+ * signed in to the account before (a code first). FAILED: one answer for wrong,
+ * locked or none set. DISABLED: the switch is off. NEED_ID: nothing typed yet.
+ */
+export type PasscodeProblem = 'NEW_DEVICE' | 'FAILED' | 'DISABLED' | 'NEED_ID' | 'OTHER' | '';
+
+type RememberedResponse = ({ remembered: true } & Omit<RememberedDevice, 'passcode'> & { passcode?: boolean }) | { remembered: false };
 
 interface OtpSendResponse {
   targetMasked: string;
@@ -128,6 +138,13 @@ export class AuthViewModel {
   signInMethod: StaffSignInMethod = 'CODE';
   /** A team account's PIN while it is typed. Never kept after a try, right or wrong. */
   pin = '';
+  /** Student sign-in: the passcode panel is open instead of the code form. */
+  passcodeEntry = false;
+  /** The student's passcode while it is typed. Never kept after a try, right or wrong, and never stored. */
+  passcode = '';
+  passcodeProblem: PasscodeProblem = '';
+  /** The server's own words for a refused passcode (they carry its attempt and lockout numbers). */
+  passcodeMessage = '';
 
   constructor(
     mode: AuthMode,
@@ -178,6 +195,10 @@ export class AuthViewModel {
     this.university = '';
     this.rollNumber = '';
     this.consent.reset();
+    this.passcodeEntry = false;
+    this.passcode = '';
+    this.passcodeProblem = '';
+    this.passcodeMessage = '';
     this.error = '';
     this.twoFaRestart = '';
     this.channelFailure = null;
@@ -232,6 +253,7 @@ export class AuthViewModel {
 
   setIdentifier(value: string): void {
     this.identifier = value;
+    if (this.passcodeProblem === 'NEED_ID') this.passcodeProblem = '';
   }
 
   setCode(value: string): void {
@@ -359,7 +381,9 @@ export class AuthViewModel {
     try {
       const res = await apiRequest<RememberedResponse>('/auth/remembered');
       runInAction(() => {
-        this.remembered = res.remembered ? { targetMasked: res.targetMasked, channel: res.channel, lastRoute: res.lastRoute } : null;
+        this.remembered = res.remembered
+          ? { targetMasked: res.targetMasked, channel: res.channel, lastRoute: res.lastRoute, passcode: res.passcode === true }
+          : null;
       });
     } catch {
       runInAction(() => { this.remembered = null; });
@@ -400,6 +424,107 @@ export class AuthViewModel {
   useAnotherAccount(): void {
     this.remembered = null;
     this.error = '';
+    this.leavePasscode();
+  }
+
+  /** The public master switch (auth.passcode_login_enabled): off, no passcode option is drawn. */
+  get passcodeEnabled(): boolean {
+    return this.audience === 'STUDENT' && this.isLogin && getSetting('auth.passcode_login_enabled') === true;
+  }
+
+  /** "Use my passcode" beside "Continue as …": only when the remembered account has one. */
+  get rememberedPasscode(): boolean {
+    return this.passcodeEnabled && this.remembered?.passcode === true;
+  }
+
+  get canSubmitPasscode(): boolean {
+    return !this.busy && isPasscodeShape(this.passcode);
+  }
+
+  /** Opens the passcode panel. From the typed form it needs the email or number first. */
+  startPasscode(): void {
+    this.error = '';
+    this.errorStatus = 0;
+    this.passcode = '';
+    this.passcodeMessage = '';
+    if (!this.remembered && !this.identifier.trim()) {
+      this.passcodeProblem = 'NEED_ID';
+      this.focusContactRequest += 1;
+      return;
+    }
+    this.passcodeProblem = '';
+    this.passcodeEntry = true;
+  }
+
+  leavePasscode(): void {
+    this.passcodeEntry = false;
+    this.passcode = '';
+    this.passcodeProblem = '';
+    this.passcodeMessage = '';
+  }
+
+  setPasscode(value: string): void {
+    this.passcode = value.slice(0, PASSCODE_MAX_LENGTH);
+    if (this.passcodeProblem === 'FAILED') this.passcodeProblem = '';
+  }
+
+  /**
+   * POST /auth/passcode/sign-in. On "Continue as …" the device's remembered
+   * account is used (nothing typed is sent); otherwise the typed email or number.
+   * The server decides everything: a device that hasn't signed in before is told
+   * to use a code first, and every other failure gets one answer. Nothing is kept
+   * from a refused try: no session, and the field empties.
+   */
+  async signInWithPasscode(onAccept: (response: SessionResponse) => void): Promise<void> {
+    if (!this.canSubmitPasscode) return;
+    const passcode = this.passcode;
+    this.passcode = '';
+    this.busy = true;
+    this.passcodeProblem = '';
+    this.passcodeMessage = '';
+    this.twoFaRestart = '';
+    try {
+      const response = await apiRequest<SessionResponse>('/auth/passcode/sign-in', {
+        method: 'POST',
+        body: JSON.stringify({ passcode, ...(this.remembered ? {} : { identifier: this.identifier.trim() }) }),
+      });
+      runInAction(() => {
+        if (response.requires2FA && response.tempToken) {
+          this.tempToken = response.tempToken;
+          this.twoFaCode = '';
+          this.passcodeEntry = false;
+          this.step = 7;
+          return;
+        }
+        this.accept(response, onAccept);
+      });
+    } catch (error) {
+      runInAction(() => {
+        const { code } = passcodeDetail(error);
+        this.passcodeProblem = code === 'PASSCODE_NEW_DEVICE' ? 'NEW_DEVICE'
+          : code === 'PASSCODE_FAILED' ? 'FAILED'
+            : code === 'PASSCODE_DISABLED' ? 'DISABLED' : 'OTHER';
+        this.passcodeMessage = error instanceof Error ? error.message : '';
+      });
+    } finally {
+      runInAction(() => { this.busy = false; });
+    }
+  }
+
+  /** Leaves the passcode for a code: "Send a code instead", and the new-device answer's action. */
+  async useCodeInstead(): Promise<void> {
+    this.leavePasscode();
+    if (this.remembered) await this.continueRemembered();
+    else await this.sendCode();
+  }
+
+  /**
+   * "Forgot your passcode?": sign in with a code, then straight on to set a new
+   * one (the server lets a fresh code sign-in replace it without the old one).
+   */
+  async forgotPasscode(): Promise<void> {
+    this.next = 'set-passcode';
+    await this.useCodeInstead();
   }
 
   async forgetDevice(): Promise<void> {
@@ -407,7 +532,10 @@ export class AuthViewModel {
     this.error = '';
     try {
       await apiRequest('/auth/remembered/forget', { method: 'POST' });
-      runInAction(() => { this.remembered = null; });
+      runInAction(() => {
+        this.remembered = null;
+        this.leavePasscode();
+      });
     } catch (error) {
       runInAction(() => { this.error = error instanceof Error ? error.message : 'Could not forget this device.'; });
     } finally {

@@ -16,7 +16,8 @@ import { CrisisLinks } from '@/design-system';
 import { AuthViewModel } from '../viewmodel/AuthViewModel';
 import { SignInView } from '../views/SignInView';
 import { OtpVerifyView } from '../views/OtpVerifyView';
-import { SignInFrame, TermsLine } from '../views/SignInFrame';
+import { SignInFrame, TermsLine, type AuthTab } from '../views/SignInFrame';
+import { PasscodeSignInView, RememberedView } from '../views/PasscodeSignInView';
 import { CreateAccountView } from '../views/CreateAccountView';
 import { SignupConsent } from '../views/SignupConsent';
 
@@ -60,6 +61,11 @@ export const AuthenticatedFlowScreen = observer(function AuthenticatedFlowScreen
 
   const accept = (response: SessionResponse) => auth.acceptSession(response);
   const toSignup = () => navigate('signup', next ?? undefined);
+  // The Sign in / Create account tabs: the page in view is highlighted.
+  const tabs = {
+    current: (mode === 'login' ? 'signIn' : 'create') as AuthTab,
+    onPick: (tab: AuthTab) => (tab === 'create' ? toSignup() : navigate('login', next ?? undefined)),
+  };
 
   // Development builds only (isDev): never in a production bundle's UI.
   const demoLogin = (demoId: string, demoChan: 'EMAIL' | 'WHATSAPP') => {
@@ -92,7 +98,7 @@ export const AuthenticatedFlowScreen = observer(function AuthenticatedFlowScreen
   );
 
   if (mode === 'login') {
-    const footer = vm.step === 1 ? (
+    const footer = vm.step === 1 && !vm.passcodeEntry ? (
       <div className="sk-signin__links">
         <p>{t('auth.newTo')} <button type="button" className="sk-signin__secondary" onClick={toSignup}>{t('auth.createAccount')}</button></p>
         <a className="sk-signin__secondary" href="/lost-phone">
@@ -104,25 +110,22 @@ export const AuthenticatedFlowScreen = observer(function AuthenticatedFlowScreen
       </div>
     ) : null;
     return (
-      <SignInFrame web={!phone} onBack={() => (vm.step === 1 ? navigate('welcome') : vm.advance(1))} footer={footer}>
+      <SignInFrame
+        web={!phone}
+        onBack={() => {
+          if (vm.passcodeEntry) vm.leavePasscode();
+          else if (vm.step === 1) navigate('welcome');
+          else vm.advance(1);
+        }}
+        tabs={vm.step === 1 ? tabs : undefined}
+        footer={footer}
+      >
         {/* Step 1 and the code step show their errors by the field; these steps have none. */}
-        <FormError message={vm.step === 7 || (vm.step === 1 && vm.remembered) ? vm.error : ''} />
+        <FormError message={vm.step === 7 || (vm.step === 1 && vm.remembered && !vm.passcodeEntry) ? vm.error : ''} />
         {vm.twoFaRestart && <div className="wf-notice" role="alert"><p>{t(vm.twoFaRestart)}</p></div>}
-        {vm.step === 1 && vm.remembered && (
-          <div className="sk-signin__column">
-            <div className="sk-signin__head">
-              <h1 className="sk-signin__title">{t('auth.signin.title')}</h1>
-              <p className="sk-signin__lead">{t('auth.remembered.lead')}</p>
-            </div>
-            <button type="button" className="sk-signin__primary" disabled={vm.busy} onClick={() => void vm.continueRemembered()}>
-              <Icon name={vm.remembered.channel === 'EMAIL' ? 'mail-2' : 'message-circle-3'} size={18} />
-              {t('auth.remembered.continue', { masked: vm.remembered.targetMasked })}
-            </button>
-            <button type="button" className="sk-signin__secondary" disabled={vm.busy} onClick={vm.useAnotherAccount}>{t('auth.remembered.notYou')}</button>
-            <button type="button" className="sk-signin__secondary" disabled={vm.busy} onClick={() => void vm.forgetDevice()}>{t('auth.remembered.forget')}</button>
-          </div>
-        )}
-        {vm.step === 1 && !vm.remembered && (
+        {vm.step === 1 && vm.passcodeEntry && <PasscodeSignInView vm={vm} onAccept={accept} />}
+        {vm.step === 1 && !vm.passcodeEntry && vm.remembered && <RememberedView vm={vm} />}
+        {vm.step === 1 && !vm.passcodeEntry && !vm.remembered && (
           <form className="sk-signin__column" onSubmit={(e) => { e.preventDefault(); void vm.sendCode(); }}>
             <SignInView vm={vm} onCreateAccount={toSignup} />
             {isDev() && demoLogins}
@@ -174,7 +177,7 @@ export const AuthenticatedFlowScreen = observer(function AuthenticatedFlowScreen
   );
 
   return (
-    <SignInFrame web={!phone} onBack={signupBack} regionLabel="auth.signup.title" footer={signupFooter}>
+    <SignInFrame web={!phone} onBack={signupBack} regionLabel="auth.signup.title" tabs={vm.step <= 2 ? tabs : undefined} footer={signupFooter}>
       {vm.step !== CONSENT_STEP && vm.step !== 2 && vm.step !== 3 && <FormError message={vm.error} />}
       <PageTransition key={vm.step}>
         {vm.step === 1 && (
