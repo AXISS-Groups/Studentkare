@@ -84,6 +84,16 @@ describe('student workspace at phone width', () => {
     expect(screen.getByRole('button', { name: 'Notifications' })).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'SOS, get help now' }));
     expect(screen.getByRole('dialog')).toBeInTheDocument();
+    // After the helplines: Nearest hospitals opens Find care (plan tier1-care-directory-2026-10-21 §3).
+    fireEvent.click(screen.getByTestId('helplines-find-care'));
+    expect(nav.calls).toContain('find-care');
+  });
+
+  it('opens Find care from Home Near me in the phone frame with Home current', async () => {
+    render(<WorkspaceScreen route="find-care" />);
+    expect(await screen.findByTestId('fc-directory')).toBeInTheDocument();
+    expect(within(screen.getByRole('navigation', { name: 'Main' })).getByRole('link', { name: 'Home' })).toHaveAttribute('aria-current', 'page');
+    expect(screen.getByTestId('fc-emergency-112')).toBeInTheDocument();
   });
 
   it('opens the account menu (More) from the avatar on Home', async () => {

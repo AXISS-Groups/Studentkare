@@ -77,6 +77,15 @@ INTEGRATIONS_DB: dict = {
         "api_key": os.getenv("LLM_API_KEY", os.getenv("EMERGENT_LLM_KEY", "")),
         "model": os.getenv("LLM_MODEL", "llama3.1:8b"),
     },
+    # India's Health Facility Registry (ABDM HFR), for the care directory. Nothing
+    # reads from it until a super admin sets credentials here, and even then the
+    # connector says plainly that live lookups are not built (services/hfr_registry.py).
+    "abdm_hfr": {
+        "enabled": os.getenv("ABDM_HFR_ENABLED", "false").lower() == "true",
+        "registry_url": os.getenv("ABDM_HFR_REGISTRY_URL", ""),
+        "client_id": os.getenv("ABDM_HFR_CLIENT_ID", ""),
+        "client_secret": os.getenv("ABDM_HFR_CLIENT_SECRET", ""),
+    },
     "apilayer": {
         "enabled": os.getenv("APILAYER_ENABLED", "false").lower() == "true",
         "api_key": os.getenv("APILAYER_API_KEY", ""),

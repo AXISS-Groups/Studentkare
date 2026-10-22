@@ -8,6 +8,7 @@ import { campusBoardsHi } from './areas/campusBoards';
 import { campusConsoleHi } from './areas/campusConsole';
 import { campusHi } from './areas/campus';
 import { campusSafetyHi } from './areas/campusSafety';
+import { careDirectoryHi } from './areas/careDirectory';
 import { careHi } from './areas/care';
 import { clinicianHi } from './areas/clinician';
 import { clinicianWorkHi } from './areas/clinicianWork';
@@ -58,6 +59,7 @@ export const areasHi = {
   ...campusConsoleHi,
   ...campusHi,
   ...campusSafetyHi,
+  ...careDirectoryHi,
   ...careHi,
   ...clinicianHi,
   ...clinicianWorkHi,

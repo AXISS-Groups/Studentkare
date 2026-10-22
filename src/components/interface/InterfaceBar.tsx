@@ -5,6 +5,7 @@ import { useT } from '@/i18n';
 import { NotificationCenterModal } from '../health/NotificationCenterModal';
 import { ShopDialog } from '../marketplace/ShopDialog';
 import { navigate } from '../../lib/utils/workflowRouting';
+import { Icon } from '@/design-system/icons';
 import { useAuth } from '../../data/contexts/AuthContext';
 
 export function InterfaceBar({ section }: { section: string }) {
@@ -54,7 +55,13 @@ export function InterfaceBar({ section }: { section: string }) {
 }
 
 /** The SOS helplines dialog, shared with the Super Admin shell so there is one copy of it. */
-export function EmergencyHelplinesDialog({ onClose, onSendSos }: { onClose: () => void; /** Students only: alert their campus (SOS is a student feature). */ onSendSos?: () => void }) {
+export function EmergencyHelplinesDialog({ onClose, onSendSos, onFindCare }: {
+  onClose: () => void;
+  /** Students only: alert their campus (SOS is a student feature). */
+  onSendSos?: () => void;
+  /** "Nearest hospitals": opens Find care, after the helplines (plan tier1-care-directory-2026-10-21 §3). */
+  onFindCare?: () => void;
+}) {
   const t = useT();
   return <ShopDialog title={t('ebar.dialogTitle')} onClose={onClose}>
     <p>{t('ebar.dialogIntro')}</p>
@@ -65,5 +72,6 @@ export function EmergencyHelplinesDialog({ onClose, onSendSos }: { onClose: () =
         <a href={telHref(contact.number)} className="health-button" aria-label={t('ebar.callSpoken', { name: t(contact.name), number: contact.number })}><PhoneCall size={16} aria-hidden="true" />{t('ebar.call')}</a>
       </div>)}
     </div>
+    {onFindCare && <button type="button" className="health-button" onClick={onFindCare} aria-label={t('fc.nearestHospitalsSpoken')} data-testid="helplines-find-care"><Icon name="hospital" size={16} />{t('fc.nearestHospitals')}</button>}
   </ShopDialog>;
 }

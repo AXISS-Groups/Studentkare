@@ -53,6 +53,7 @@
     "expo-constants": "~17.0.8",
     "expo-font": "~13.0.4",
     "expo-health-connect": "0.1.1",
+    "expo-location": "~18.0.10",
     "expo-notifications": "~0.29.14",
     "expo-sensors": "14.0.2",
     "livekit-client": "2.22.3",

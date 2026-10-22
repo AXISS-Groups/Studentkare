@@ -60,6 +60,8 @@ const CampusIsolationScreen = named(() => import('@/features/campus/safety'), 'C
 const CampusAmbulanceScreen = named(() => import('@/features/campus/safety'), 'CampusAmbulanceScreen');
 const CampusDischargeScreen = named(() => import('@/features/campus/safety'), 'CampusDischargeScreen');
 const CampusSlaScreen = named(() => import('@/features/campus/safety'), 'CampusSlaScreen');
+// Find care near you: the campus's own directory listings (no canvas board; brief AdminCareDirectory).
+const CampusCareDirectoryScreen = named(() => import('@/features/careDirectory/admin/CareDirectoryAdminView'), 'CampusCareDirectoryScreen');
 const NotificationInboxPanel = named(() => import('@/screens/workspace/NotificationInboxPanel'), 'NotificationInboxPanel');
 const SupportPanel = lazy(() => import('@/screens/workspace/MemberPanels').then((module) => ({ default: () => <module.SupportPanel /> })));
 
@@ -78,6 +80,7 @@ export const CAMPUS_PAGES: Partial<Record<RoutePath, CampusPage>> = {
   'campus/sos': { current: 'sos', board: 'CampusSosDesk', title: 'campusShell.nav.sos', topBar: true, screen: CampusSosDesk },
   'campus/incidents': { current: 'incidents', board: 'CampusIncidents', title: 'campusShell.nav.incidents', topBar: true, screen: CampusIncidentsScreen },
   'campus/ambulance': { current: 'ambulance', board: 'CampusAmbulance', title: 'campusShell.nav.ambulance', topBar: false, screen: CampusAmbulanceScreen },
+  'campus/care-directory': { current: 'care-directory', board: 'AdminCareDirectory', title: 'campusShell.nav.careDirectory', topBar: false, screen: CampusCareDirectoryScreen },
   'campus/counsellor': { current: 'counsellor', board: 'CampusCounsellor', title: 'campusShell.nav.counsellor', topBar: true, screen: CounsellorOnlyPage },
   'campus-access-requests': { current: 'access-requests', board: 'CampusAccessRequests', title: 'campusShell.nav.accessRequests', topBar: true, screen: CampusAccessRequestsScreen },
   'campus-break-glass': { current: 'emergency-access', board: 'CampusBreakGlass', title: 'campusShell.nav.emergencyAccess', topBar: true, screen: CampusBreakGlassScreen },

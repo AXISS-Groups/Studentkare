@@ -6,6 +6,8 @@ import { toDate } from '@/features/phoneboards/format';
 import { LabResultsRepository } from '@/features/labResults/data/LabResultsRepository';
 import { InsightsValuesViewModel } from '@/features/labResults/viewmodel/LabValuesViewModels';
 import { Resource } from '@/features/m2health/resource';
+import { MedsTodayViewModel } from '@/features/reminders/viewmodel/MedsTodayViewModel';
+import { WaterViewModel } from '@/features/reminders/viewmodel/WaterViewModel';
 import { readWeek } from '@/features/steps/data/stepsApi';
 import type { ActivityTrends } from '@/features/steps/data/stepsApi';
 
@@ -25,6 +27,8 @@ import type { ActivityTrends } from '@/features/steps/data/stepsApi';
  * - Links from the care cards go to the refill request and the order's own
  *   collection time (D-M2-9), never to the store, and carry no medicine or test.
  * - "Ask Ayush about this report" is not drawn: record access (D-M2-13) is not built.
+ * - Medicines today and Water (reminders ticket) are their own view models,
+ *   shared with the M2Reminders and M2Water screens; each loads on its own.
  * - Steps (Steps ticket, 2026-10-21) is a wellness card, not a clinical value:
  *   today's number from GET /activity/trends with its source, never a goal or score.
  */
@@ -80,6 +84,8 @@ export class InsightsViewModel implements ViewModel {
   readonly reviews: Resource<{ items: ReportReview[] }>;
   readonly refills: Resource<{ items: RefillPlan[] }>;
   readonly labOrders: Resource<{ items: LabOrder[] }>;
+  readonly meds: MedsTodayViewModel;
+  readonly water: WaterViewModel;
   readonly steps: Resource<ActivityTrends>;
   reviewAsk: ReviewAsk = 'idle';
   reviewAskMessage = '';
@@ -92,9 +98,12 @@ export class InsightsViewModel implements ViewModel {
     this.reviews = new Resource(() => request<{ items: ReportReview[] }>(`/preventive/report-reviews?limit=${REVIEWS_READ}`));
     this.refills = new Resource(() => request<{ items: RefillPlan[] }>('/refills/plans'));
     this.labOrders = new Resource(() => request<{ items: LabOrder[] }>(`/lab-orders?limit=${ORDERS_READ}`));
+    this.meds = new MedsTodayViewModel(request);
+    this.water = new WaterViewModel(request);
     this.steps = new Resource(() => readWeek(request));
     makeAutoObservable<InsightsViewModel, 'request'>(this, {
       request: false, values: false, appointments: false, documents: false, shares: false, reviews: false, refills: false, labOrders: false, steps: false,
+      meds: false, water: false,
     }, { autoBind: true });
   }
 
@@ -136,6 +145,8 @@ export class InsightsViewModel implements ViewModel {
   load(): void {
     void this.values.load();
     [this.appointments, this.documents, this.shares, this.reviews, this.refills, this.labOrders, this.steps].forEach((r) => void r.load());
+    this.meds.load();
+    this.water.load();
   }
 
   /** Ask a doctor to explain the latest report (POST /preventive/report-reviews, the existing share rules apply). */
@@ -159,6 +170,8 @@ export class InsightsViewModel implements ViewModel {
   dispose(): void {
     this.values.dispose();
     [this.appointments, this.documents, this.shares, this.reviews, this.refills, this.labOrders, this.steps].forEach((r) => r.cancel());
+    this.meds.dispose();
+    this.water.dispose();
   }
 
   reset(): void {

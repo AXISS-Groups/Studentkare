@@ -4,7 +4,7 @@ import type { SkIconName } from '../icons';
 
 export type CampusNavId =
   | 'overview' | 'students' | 'blocks' | 'verification' | 'leave' | 'insights' | 'camps' | 'certificates' | 'wellness'
-  | 'sos' | 'incidents' | 'ambulance' | 'counsellor' | 'access-requests' | 'emergency-access' | 'isolation' | 'discharge'
+  | 'sos' | 'incidents' | 'ambulance' | 'care-directory' | 'counsellor' | 'access-requests' | 'emergency-access' | 'isolation' | 'discharge'
   | 'outbreak' | 'water' | 'sanitary' | 'mess' | 'sla'
   | 'team' | 'announcements' | 'reports' | 'scorecard' | 'settings';
 
@@ -56,6 +56,8 @@ export const CAMPUS_NAV: CampusNavGroup[] = [
       { id: 'sos', label: 'campusShell.nav.sos', icon: 'sos', route: 'campus/sos', urgent: true },
       { id: 'incidents', label: 'campusShell.nav.incidents', icon: 'alert-triangle', route: 'campus/incidents', urgent: true },
       { id: 'ambulance', label: 'campusShell.nav.ambulance', icon: 'ambulance-2', route: 'campus/ambulance' },
+      // Not on the canvas: the campus's own Find care listings (hospitals, pharmacies, ambulance numbers).
+      { id: 'care-directory', label: 'campusShell.nav.careDirectory', icon: 'hospital', route: 'campus/care-directory' },
       { id: 'counsellor', label: 'campusShell.nav.counsellor', icon: 'message-dots', route: 'campus/counsellor', urgent: true },
       { id: 'access-requests', label: 'campusShell.nav.accessRequests', icon: 'lock', route: 'campus-access-requests' },
       { id: 'emergency-access', label: 'campusShell.nav.emergencyAccess', icon: 'heart-plus', route: 'campus-break-glass' },

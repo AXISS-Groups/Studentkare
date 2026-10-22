@@ -7,7 +7,7 @@ import { hi } from '@/i18n/hi';
 
 const read = (file: string) => readFileSync(resolve(process.cwd(), file), 'utf8');
 const appJson = JSON.parse(read('app.json')) as {
-  expo: { ios: { infoPlist: Record<string, unknown> }; android: { permissions: string[] }; plugins: (string | [string, Record<string, string>])[] };
+  expo: { ios: { infoPlist: Record<string, unknown> }; android: { permissions: string[] }; plugins: (string | [string, Record<string, string | boolean>])[] };
 };
 
 describe('every OS permission the app declares has a screen that uses it', () => {
@@ -28,6 +28,19 @@ describe('every OS permission the app declares has a screen that uses it', () =>
   it('notifications are used by medicine reminders', () => {
     expect(read('src/native/App.tsx')).toMatch(/name="MedicineReminders"/);
     expect(appJson.expo.android.permissions).toEqual(expect.arrayContaining(['android.permission.POST_NOTIFICATIONS', 'android.permission.RECEIVE_BOOT_COMPLETED']));
+  });
+
+  it('location is foreground only, asked for by Find care, with the same purpose text', () => {
+    expect(read('src/native/App.tsx')).toMatch(/name="FindCare"/);
+    expect(read('src/native/deviceLocation.ts')).toMatch(/requestForegroundPermissionsAsync/);
+    expect(read('src/native/deviceLocation.ts')).not.toMatch(/Background/);
+    const text = String(appJson.expo.ios.infoPlist.NSLocationWhenInUseUsageDescription);
+    expect(text).toMatch(/never sent or stored/);
+    expect(appJson.expo.ios.infoPlist).not.toHaveProperty('NSLocationAlwaysUsageDescription');
+    const plugin = appJson.expo.plugins.find((p) => Array.isArray(p) && p[0] === 'expo-location');
+    expect(Array.isArray(plugin) ? plugin[1].locationWhenInUsePermission : '').toBe(text);
+    expect(Array.isArray(plugin) ? plugin[1].isAndroidBackgroundLocationEnabled : true).toBe(false);
+    expect(appJson.expo.android.permissions.join(' ')).not.toMatch(/BACKGROUND_LOCATION|FOREGROUND_SERVICE/);
   });
 
   it('declares no Face ID or biometric permission (there is no biometric lock)', () => {

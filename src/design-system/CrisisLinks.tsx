@@ -12,6 +12,8 @@ import type { MessageKey } from '@/i18n';
  */
 export const TELE_MANAS_NUMBER = '14416';
 export const EMERGENCY_NUMBER = '112';
+/** The national ambulance number. SYNC: src/components/health/EmergencyBar.tsx (ambulance-service). */
+export const AMBULANCE_NUMBER = '108';
 
 /** India's emergency number and the national mental-health helpline. Numbers and helpline names are never translated. */
 const CRISIS_LINES: readonly { number: string; label: MessageKey; spoken: MessageKey }[] = [

@@ -108,7 +108,7 @@ function StudentM2Home({ name, campus, verified, footer }: { name: string; campu
   const navigate = useNavigate();
   const focused = useIsFocused();
   const data = useM2HomeData();
-  const go = (route: DestinationRoute | 'Emergency' | 'Checkout' | 'Medicines' | 'Labs' | 'Consults' | 'Insurance' | 'Vaccines' | 'More' | 'Profile' | 'HostelVisit' | 'Camp') => () => navigate(route);
+  const go = (route: DestinationRoute | 'Emergency' | 'Checkout' | 'Medicines' | 'Labs' | 'Consults' | 'FindCare' | 'Insurance' | 'Vaccines' | 'More' | 'Profile' | 'HostelVisit' | 'Camp') => () => navigate(route);
   return (
     <SafeAreaView edges={['top', 'left', 'right']} style={styles.screen}>
     <M2ActiveProvider value={focused}>
@@ -127,7 +127,7 @@ function StudentM2Home({ name, campus, verified, footer }: { name: string; campu
           search: go('Search'),
           uploadRx: go('Vault'),
           place: go('Profile'),
-          services: { medicines: go('Medicines'), labs: go('Labs'), consults: go('Consults'), vaccines: go('Vaccines'), insurance: go('Insurance'), campus: go('DigitalId') },
+          services: { medicines: go('Medicines'), labs: go('Labs'), consults: go('Consults'), nearMe: go('FindCare'), vaccines: go('Vaccines'), insurance: go('Insurance'), campus: go('DigitalId') },
           labs: go('Labs'),
           generics: go('Medicines'),
           uploadReport: go('Vault'),

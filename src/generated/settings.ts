@@ -13,6 +13,10 @@ export interface PublicSettings {
   "billing.student_plus.monthly_inr": number;
   /** Price of the Student Plus 3-month package, paid once. (₹ per 3 months) */
   "billing.student_plus.quarter_package_inr": number;
+  /** Oldest device location fix the app reuses to sort by distance. (seconds) */
+  "care_directory.location_max_age_seconds": number;
+  /** How long the app waits for the device location before saying so. (seconds) */
+  "care_directory.location_timeout_seconds": number;
   /** How long after the slot ends a video consult can still be joined. (minutes) */
   "consult.media_join_after_minutes": number;
   /** How early before the slot starts a video consult can be joined. (minutes) */
@@ -153,6 +157,8 @@ export const publicSettingDefaults: Readonly<PublicSettings> = {
   "billing.premium.from_monthly_inr": 499,
   "billing.student_plus.monthly_inr": 149,
   "billing.student_plus.quarter_package_inr": 2199,
+  "care_directory.location_max_age_seconds": 120,
+  "care_directory.location_timeout_seconds": 15,
   "consult.media_join_after_minutes": 30,
   "consult.media_join_before_minutes": 15,
   "emergency.sos_poll_seconds": 15,
@@ -221,6 +227,8 @@ export const publicSettingSpecs: Readonly<Record<PublicSettingKey, PublicSetting
   "billing.premium.from_monthly_inr": { type: "int", min: 1, max: 100000, allowed: [], unit: "\u20b9 per month (starting price)" },
   "billing.student_plus.monthly_inr": { type: "int", min: 1, max: 100000, allowed: [], unit: "\u20b9 per month" },
   "billing.student_plus.quarter_package_inr": { type: "int", min: 1, max: 1000000, allowed: [], unit: "\u20b9 per 3 months" },
+  "care_directory.location_max_age_seconds": { type: "int", min: 0, max: 900, allowed: [], unit: "seconds" },
+  "care_directory.location_timeout_seconds": { type: "int", min: 3, max: 60, allowed: [], unit: "seconds" },
   "consult.media_join_after_minutes": { type: "int", min: 0, max: 240, allowed: [], unit: "minutes" },
   "consult.media_join_before_minutes": { type: "int", min: 0, max: 120, allowed: [], unit: "minutes" },
   "emergency.sos_poll_seconds": { type: "int", min: 5, max: 120, allowed: [], unit: "seconds" },

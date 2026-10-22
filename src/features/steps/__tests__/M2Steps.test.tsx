@@ -264,7 +264,7 @@ describe('M2StepsView', () => {
 });
 
 describe('Steps card on My health', () => {
-  const links = () => ({ sos: vi.fn(), trends: vi.fn(), records: vi.fn(), reportUpload: vi.fn(), steps: vi.fn() });
+  const links = () => ({ sos: vi.fn(), trends: vi.fn(), records: vi.fn(), reportUpload: vi.fn(), steps: vi.fn(), medicines: vi.fn(), water: vi.fn() });
 
   it('shows today’s steps with their source and opens Steps', async () => {
     const { request } = fakeRequest({ [WEEK_PATH]: FULL });

@@ -11,6 +11,7 @@
     "AdminApiKeys",
     "AdminBilling",
     "AdminBreakGlassLog",
+    "AdminCareDirectory",
     "AdminCheckins",
     "AdminConsentPolicy",
     "AdminFlags",
@@ -1123,6 +1124,8 @@
     "LabResults",
     "M2AskAyush",
     "M2Consults",
+    "M2FacilityDetail",
+    "M2FindCare",
     "M2Insurance",
     "M2Labs",
     "M2Medicines",
@@ -1166,7 +1169,8 @@
     "SignOut",
     "SosBeacon",
     "StudentProfile",
-    "VitalTrends"
+    "VitalTrends",
+    "WebFindCare"
    ],
    "elements": [
     [
@@ -2333,10 +2337,13 @@
     "CampusSla",
     "CampusWater",
     "CampusWellness",
+    "M2FacilityDetail",
+    "M2FindCare",
     "M2Home",
     "M2Insights",
     "M2Labs",
     "M2Medicines",
+    "WebFindCare",
     "WebMyLabTests"
    ],
    "elements": [
@@ -2585,6 +2592,7 @@
     "AdminApiKeys",
     "AdminBilling",
     "AdminBreakGlassLog",
+    "AdminCareDirectory",
     "AdminCase",
     "AdminCheckins",
     "AdminConsentPolicy",
@@ -2876,7 +2884,9 @@
     "CampusSettings",
     "CampusSla",
     "CampusWater",
-    "CampusWellness"
+    "CampusWellness",
+    "M2FindCare",
+    "WebFindCare"
    ],
    "elements": [
     [
@@ -3446,6 +3456,7 @@
    "source": "canvas",
    "uses": 25,
    "screens": [
+    "AdminCareDirectory",
     "CampusAccessRequests",
     "CampusAdminConsole",
     "CampusAdminTeam",
@@ -3470,7 +3481,10 @@
     "CampusSettings",
     "CampusSla",
     "CampusWater",
-    "CampusWellness"
+    "CampusWellness",
+    "M2FacilityDetail",
+    "M2FindCare",
+    "WebFindCare"
    ],
    "elements": [
     [
@@ -3698,8 +3712,11 @@
     "ClinicianToday",
     "EncounterNote",
     "Landing",
+    "M2FacilityDetail",
+    "M2FindCare",
     "Prescribe",
-    "ReportReviews"
+    "ReportReviews",
+    "WebFindCare"
    ],
    "elements": [
     [
@@ -3809,6 +3826,7 @@
    "source": "canvas",
    "uses": 19,
    "screens": [
+    "AdminCareDirectory",
     "ConfirmDialogs",
     "M2Steps",
     "WebAccount",
@@ -4609,7 +4627,9 @@
     "Checkout",
     "HelpCentre",
     "M2Consults",
+    "M2FindCare",
     "M2Insights",
+    "M2Medicines",
     "M2Profile",
     "M2ReportUpload",
     "MoreHub",
@@ -4619,10 +4639,10 @@
     "SignIn",
     "StudentProfile",
     "WebAccount",
+    "WebFindCare",
     "WebMyLabTests",
     "WebReportInsights",
-    "WebSignIn",
-    "M2Medicines"
+    "WebSignIn"
    ],
    "elements": [
     [
@@ -5118,6 +5138,7 @@
     "ClinicianSchedule",
     "ClinicianToday",
     "EncounterNote",
+    "M2FacilityDetail",
     "Prescribe",
     "ReportReviews"
    ],
@@ -5380,7 +5401,10 @@
     "CampusSettings",
     "ClinicianConsultRoom",
     "ClinicianToday",
-    "M2Steps"
+    "M2FacilityDetail",
+    "M2FindCare",
+    "M2Steps",
+    "WebFindCare"
    ],
    "elements": [
     [
@@ -5406,6 +5430,7 @@
    "source": "canvas",
    "uses": 13,
    "screens": [
+    "AdminCareDirectory",
     "AdminKnowledge",
     "AdminPlansPricing",
     "AdminTemplates",
@@ -5529,9 +5554,12 @@
     "Landing",
     "LandingCampus",
     "LandingClinician",
+    "M2FacilityDetail",
+    "M2FindCare",
     "M2Home",
     "M2Profile",
     "WebConsult",
+    "WebFindCare",
     "WebLabList",
     "WebLabTests",
     "WebPartnerships",
@@ -5691,10 +5719,13 @@
     "CampusIncidents",
     "HostelVisit",
     "M2AskAyush",
+    "M2FacilityDetail",
+    "M2FindCare",
     "M2Home",
     "M2Labs",
     "M2Medicines",
-    "WebAccount"
+    "WebAccount",
+    "WebFindCare"
    ],
    "elements": [
     [
@@ -6519,6 +6550,9 @@
    "uses": 3,
    "screens": [
     "AccountReady",
+    "M2FacilityDetail",
+    "M2FindCare",
+    "WebFindCare",
     "WebHome"
    ],
    "elements": [
@@ -6984,7 +7018,9 @@
    "source": "IconSystem",
    "uses": 2,
    "screens": [
-    "IconSystem"
+    "IconSystem",
+    "M2FindCare",
+    "WebFindCare"
    ],
    "elements": [
     [
@@ -7114,7 +7150,10 @@
    "source": "IconSystem",
    "uses": 2,
    "screens": [
-    "IconSystem"
+    "IconSystem",
+    "M2FacilityDetail",
+    "M2FindCare",
+    "WebFindCare"
    ],
    "elements": [
     [
@@ -7722,7 +7761,10 @@
    "source": "IconSystem",
    "uses": 2,
    "screens": [
-    "IconSystem"
+    "IconSystem",
+    "M2FacilityDetail",
+    "M2FindCare",
+    "WebFindCare"
    ],
    "elements": [
     [
@@ -9123,9 +9165,11 @@
    "source": "canvas",
    "uses": 1,
    "screens": [
+    "M2FindCare",
     "M2Home",
     "M2Insurance",
-    "SuperAdminConsole"
+    "SuperAdminConsole",
+    "WebFindCare"
    ],
    "elements": [
     [
@@ -9872,6 +9916,7 @@
    "source": "canvas",
    "uses": 1,
    "screens": [
+    "AdminCareDirectory",
     "HelpCentre"
    ],
    "elements": [
@@ -11227,6 +11272,77 @@
      "path",
      {
       "d": "M 5 12 h 14"
+     }
+    ]
+   ]
+  },
+  {
+   "name": "hospital",
+   "kind": "line",
+   "file": "icons/line/hospital.svg",
+   "source": "kit",
+   "uses": 4,
+   "screens": [
+    "AdminCareDirectory",
+    "M2FacilityDetail",
+    "M2FindCare",
+    "WebFindCare"
+   ],
+   "elements": [
+    [
+     "path",
+     {
+      "d": "M 4 21 V 8 a 1 1 0 0 1 1 -1 h 3 V 4 a 1 1 0 0 1 1 -1 h 6 a 1 1 0 0 1 1 1 v 3 h 3 a 1 1 0 0 1 1 1 v 13"
+     }
+    ],
+    [
+     "path",
+     {
+      "d": "M 2 21 h 20"
+     }
+    ],
+    [
+     "path",
+     {
+      "d": "M 12 5.5 v 4 M 10 7.5 h 4"
+     }
+    ],
+    [
+     "path",
+     {
+      "d": "M 10 21 v -4 h 4 v 4"
+     }
+    ]
+   ]
+  },
+  {
+   "name": "directions",
+   "kind": "line",
+   "file": "icons/line/directions.svg",
+   "source": "kit",
+   "uses": 3,
+   "screens": [
+    "M2FacilityDetail",
+    "M2FindCare",
+    "WebFindCare"
+   ],
+   "elements": [
+    [
+     "path",
+     {
+      "d": "M 10.6 2.6 a 2 2 0 0 1 2.8 0 l 8 8 a 2 2 0 0 1 0 2.8 l -8 8 a 2 2 0 0 1 -2.8 0 l -8 -8 a 2 2 0 0 1 0 -2.8 z"
+     }
+    ],
+    [
+     "path",
+     {
+      "d": "M 9 15 v -3 a 1 1 0 0 1 1 -1 h 5"
+     }
+    ],
+    [
+     "path",
+     {
+      "d": "M 13 8.5 l 2.5 2.5 l -2.5 2.5"
      }
     ]
    ]
@@ -20616,19 +20732,20 @@
     "ayush-spark",
     "bottle",
     "box",
-    "check",
     "chevron-right",
     "droplet",
-    "glass",
     "heart-3",
     "home",
-    "pill-3",
-    "plus",
     "refresh",
-    "skip-forward",
     "stetho",
     "thyroid",
     "user-5",
+    "check",
+    "glass",
+    "pill-3",
+    "plus",
+    "skip-forward",
+    "undo",
     "walk"
    ],
    "icons3d": [],
@@ -20727,6 +20844,166 @@
    "charts": [
     "chart-profile-complete-ring"
    ],
+   "brand": [],
+   "assets": [],
+   "textGlyphs": []
+  },
+  "M2FindCare": {
+   "page": "New \u00b7 Find care near you (2026-10-21, no canvas board)",
+   "size": "390x1700",
+   "icons": [
+    "ambulance",
+    "arrow-left",
+    "chevron-right",
+    "clock",
+    "directions",
+    "doctor",
+    "droplet",
+    "hospital",
+    "info",
+    "locate",
+    "map-pin-2",
+    "phone",
+    "pill",
+    "shield-alert",
+    "shield-check",
+    "stethoscope"
+   ],
+   "icons3d": [],
+   "glyphs": [],
+   "illustrations": [],
+   "charts": [],
+   "brand": [],
+   "assets": [],
+   "textGlyphs": []
+  },
+  "M2FacilityDetail": {
+   "page": "New \u00b7 Find care near you (2026-10-21, no canvas board)",
+   "size": "390x1200",
+   "icons": [
+    "ambulance",
+    "arrow-left",
+    "arrow-up-right",
+    "clock",
+    "directions",
+    "droplet",
+    "hospital",
+    "info",
+    "map-pin-2",
+    "phone",
+    "pill",
+    "shield-check",
+    "stethoscope"
+   ],
+   "icons3d": [],
+   "glyphs": [],
+   "illustrations": [],
+   "charts": [],
+   "brand": [],
+   "assets": [],
+   "textGlyphs": []
+  },
+  "WebFindCare": {
+   "page": "New \u00b7 Find care near you (2026-10-21, no canvas board)",
+   "size": "1440x1400",
+   "icons": [
+    "ambulance",
+    "arrow-left",
+    "chevron-right",
+    "clock",
+    "directions",
+    "doctor",
+    "droplet",
+    "hospital",
+    "info",
+    "locate",
+    "map-pin-2",
+    "phone",
+    "pill",
+    "shield-alert",
+    "shield-check",
+    "stethoscope"
+   ],
+   "icons3d": [],
+   "glyphs": [],
+   "illustrations": [],
+   "charts": [],
+   "brand": [],
+   "assets": [],
+   "textGlyphs": []
+  },
+  "AdminCareDirectory": {
+   "page": "New \u00b7 Find care near you (2026-10-21, no canvas board)",
+   "size": "1440x1100",
+   "icons": [
+    "alert-triangle",
+    "hospital",
+    "pencil",
+    "plug",
+    "plus",
+    "shield-check",
+    "trash"
+   ],
+   "icons3d": [],
+   "glyphs": [],
+   "illustrations": [],
+   "charts": [],
+   "brand": [],
+   "assets": [],
+   "textGlyphs": []
+  },
+  "M2Reminders": {
+   "page": "9 \u00b7 Mobile 2.0 (approved 2026-10-21)",
+   "size": "390x1400",
+   "icons": [
+    "arrow-left",
+    "ayush-spark",
+    "bell",
+    "bell-off",
+    "box",
+    "check",
+    "chevron-right",
+    "doc-upload",
+    "glass",
+    "heart-3",
+    "home",
+    "pill-3",
+    "plus",
+    "shield-alert",
+    "skip-forward",
+    "undo",
+    "user-5"
+   ],
+   "icons3d": [],
+   "glyphs": [],
+   "illustrations": [],
+   "charts": [],
+   "brand": [],
+   "assets": [],
+   "textGlyphs": []
+  },
+  "M2Water": {
+   "page": "9 \u00b7 Mobile 2.0 (approved 2026-10-21)",
+   "size": "390x1400",
+   "icons": [
+    "arrow-left",
+    "ayush-spark",
+    "bell",
+    "bell-off",
+    "box",
+    "glass",
+    "heart-3",
+    "home",
+    "minus",
+    "plus",
+    "shield-alert",
+    "undo",
+    "user-5"
+   ],
+   "icons3d": [],
+   "glyphs": [],
+   "illustrations": [],
+   "charts": [],
    "brand": [],
    "assets": [],
    "textGlyphs": []

@@ -34,11 +34,11 @@ afterEach(() => {
 });
 
 describe('PublicSiteHeader', () => {
-  it('marks only the current page in the seven-item nav', () => {
+  it('marks only the current page in the eight-item nav', () => {
     render(<PublicSiteHeader current="labTests" />);
     const nav = screen.getByRole('navigation', { name: 'Main navigation' });
     const links = within(nav).getAllByRole('link');
-    expect(links.map((l) => l.textContent)).toEqual(['Discover', 'Wellness', 'Training', 'Lab tests', 'Find a doctor', 'Programmes', 'Plans']);
+    expect(links.map((l) => l.textContent)).toEqual(['Discover', 'Wellness', 'Training', 'Lab tests', 'Find a doctor', 'Find care', 'Programmes', 'Plans']);
     expect(within(nav).getByRole('link', { name: 'Lab tests' })).toHaveAttribute('aria-current', 'page');
     expect(links.filter((l) => l.hasAttribute('aria-current'))).toHaveLength(1);
   });
