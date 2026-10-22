@@ -166,13 +166,13 @@ describe('screens with no data source', () => {
 
 describe('real data on the older screens', () => {
   it('shows Accounts & roles: real counts per role, app access from each role’s home, and the account list', async () => {
-    [['STUDENT', 900], ['NMC_DOCTOR', 40], ['VENDOR', 12], ['CAMPUS_ADMIN', 6], ['COUNSELLOR', 0], ['SUPER_ADMIN', 2]].forEach(([role, total]) => { apiAnswers[`/ops/accounts?limit=1&role=${role}`] = () => Promise.resolve({ items: [], total }); });
+    [['STUDENT', 900], ['NMC_DOCTOR', 40], ['VENDOR', 12], ['CAMPUS_ADMIN', 6], ['COUNSELLOR', 0], ['SUPER_ADMIN', 2], ['LAB_COLLECTOR', 0]].forEach(([role, total]) => { apiAnswers[`/ops/accounts?limit=1&role=${role}`] = () => Promise.resolve({ items: [], total }); });
     show('admin/accounts');
     expect(await screen.findByRole('heading', { level: 1, name: 'Accounts & roles' })).toBeInTheDocument();
     // Figures: label (dt), value and meta (dd). Pending grants and break-glass have no source: "—", never 0.
     const figures = Array.from(screen.getByRole('group', { name: 'Accounts summary' }).querySelectorAll('.sk-stat'));
     expect(figures[0]).toHaveTextContent('960');
-    expect(figures[1]).toHaveTextContent('6');
+    expect(figures[1]).toHaveTextContent('7');
     expect(figures[2]).toHaveTextContent('—');
     expect(figures[2]).toHaveTextContent('Not reported');
     expect(figures[3]).toHaveTextContent('Break-glass · 30 days');
@@ -199,7 +199,7 @@ describe('real data on the older screens', () => {
   });
 
   it('switches Accounts & roles between its tabs: pending grants empty, recent changes from the account feed', async () => {
-    [['STUDENT', 1], ['NMC_DOCTOR', 0], ['VENDOR', 0], ['CAMPUS_ADMIN', 0], ['COUNSELLOR', 0], ['SUPER_ADMIN', 1]].forEach(([role, total]) => { apiAnswers[`/ops/accounts?limit=1&role=${role}`] = () => Promise.resolve({ items: [], total }); });
+    [['STUDENT', 1], ['NMC_DOCTOR', 0], ['VENDOR', 0], ['CAMPUS_ADMIN', 0], ['COUNSELLOR', 0], ['SUPER_ADMIN', 1], ['LAB_COLLECTOR', 0]].forEach(([role, total]) => { apiAnswers[`/ops/accounts?limit=1&role=${role}`] = () => Promise.resolve({ items: [], total }); });
     const event = (id: string, kind: string, summary: string): OpsFeed['items'][number] => ({ id, kind, domain: 'ACCOUNT', severity: 'ATTENTION', actorId: 'a', actorRole: 'SUPER_ADMIN', subjectId: 's', providerId: '', resourceType: '', resourceId: '', summary, createdAt: 1_700_000_000, acknowledgedAt: null, acknowledgedBy: '' });
     apiAnswers['/ops/feed?domain=ACCOUNT&limit=200'] = () => Promise.resolve({ items: [event('1', 'STAFF_ACCOUNT_CREATED', 'Staff account created with the vendor role'), event('2', 'SUBSCRIPTION_STARTED', 'Plan started')], total: 2, critical: 0, scope: 'all' });
     show('admin/accounts');

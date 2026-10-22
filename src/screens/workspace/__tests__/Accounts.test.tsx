@@ -11,7 +11,7 @@ vi.mock('../../../data/services/http', async importOriginal => ({ ...(await impo
 
 import { superAdminScreen } from '../admin/SuperAdminScreens';
 
-const ROLES = ['STUDENT', 'NMC_DOCTOR', 'VENDOR', 'CAMPUS_ADMIN', 'COUNSELLOR', 'SUPER_ADMIN'] as const;
+const ROLES = ['STUDENT', 'NMC_DOCTOR', 'VENDOR', 'CAMPUS_ADMIN', 'COUNSELLOR', 'SUPER_ADMIN', 'LAB_COLLECTOR'] as const;
 const countPath = (role: string) => `/ops/accounts?limit=1&role=${role}`;
 const COUNT_PATHS = ROLES.map(countPath);
 const LIST = '/ops/accounts?limit=15&offset=0';
@@ -35,7 +35,7 @@ beforeEach(() => {
 
 describe('Accounts & roles overview', () => {
   it('requests the account list, then each role’s count, in order', async () => {
-    answerCounts([900, 40, 12, 6, 0, 2]);
+    answerCounts([900, 40, 12, 6, 0, 2, 2]);
     answer(LIST, { items: [], total: 0 });
     show();
     expect(screen.getByLabelText('Loading accounts by role…')).toHaveAttribute('aria-busy', 'true');
@@ -44,12 +44,13 @@ describe('Accounts & roles overview', () => {
   });
 
   it('shows counts per role, the clinical data each may reach and the workspace each uses', async () => {
-    answerCounts([900, 40, 12, 6, 0, 2]);
+    answerCounts([900, 40, 12, 6, 0, 2, 2]);
     show();
     const table = await screen.findByRole('table', { name: 'Accounts by role' });
     const figures = Array.from(screen.getByRole('group', { name: 'Accounts summary' }).querySelectorAll('.sk-stat'));
-    expect(figures[0]).toHaveTextContent('960');
-    expect(figures[1]).toHaveTextContent('6');
+    // Lab collectors count too: the same total as the overview (live-run audit #15).
+    expect(figures[0]).toHaveTextContent('962');
+    expect(figures[1]).toHaveTextContent('7');
     // The role is the row header (th), then one cell per column.
     const rows = within(table).getAllByRole('row').slice(1).map(row => Array.from(row.querySelectorAll('th, td')).map(cell => cell.textContent));
     expect(rows).toEqual([
@@ -59,16 +60,17 @@ describe('Accounts & roles overview', () => {
       ['Campus AdminCAMPUS_ADMINInstitution staff', '6', 'No clinical access', 'Campus administration'],
       ['CounsellorCOUNSELLORCampus crisis follow-up', '0', 'Permission policy unavailable', 'Counsellor queue'],
       ['Super AdminSUPER_ADMINPlatform operations', '2', 'No clinical access', 'Platform administration'],
+      ['Lab collectorLAB_COLLECTORA lab’s sample collector', '2', 'Permission policy unavailable', 'Staff app (sample collection)'],
     ]);
     expect(document.body.textContent).not.toMatch(/signed-in/);
     // Development-only state switchers are not part of the screen.
     ['Preview', 'Data', 'Loading', 'Empty', 'Error'].forEach(label => expect(screen.queryByRole('button', { name: label })).toBeNull());
     const tone = (role: string) => ['positive', 'attention'].find(name => (within(table).getByText(role).closest('tr') as HTMLElement).querySelector(`.sk-pill--${name}`));
-    expect(ROLES.map(tone)).toEqual(['positive', 'positive', 'attention', 'positive', 'attention', 'positive']);
+    expect(ROLES.map(tone)).toEqual(['positive', 'positive', 'attention', 'positive', 'attention', 'positive', 'attention']);
   });
 
   it('shows the first failing count’s error, and Try again requests every count again', async () => {
-    answerCounts([900, 40, 12, 6, 0, 2]);
+    answerCounts([900, 40, 12, 6, 0, 2, 2]);
     apiAnswers[countPath('VENDOR')] = () => Promise.reject(new Error('Vendor count timed out'));
     apiAnswers[countPath('SUPER_ADMIN')] = () => Promise.reject(new Error('Admin count timed out'));
     answer(LIST, { items: [], total: 0 });
@@ -77,14 +79,14 @@ describe('Accounts & roles overview', () => {
     expect(alert).toHaveTextContent('Couldn’t load accounts & roles');
     expect(alert).toHaveTextContent('Ref ERR-503 · AdminAccounts');
     expect(alert).toHaveTextContent('Vendor count timed out');
-    answerCounts([900, 40, 12, 6, 0, 2]);
+    answerCounts([900, 40, 12, 6, 0, 2, 2]);
     fireEvent.click(within(alert).getByRole('button', { name: /try again/i }));
     expect(await screen.findByRole('table', { name: 'Accounts by role' })).toBeInTheDocument();
     expect(paths()).toEqual([LIST, ...COUNT_PATHS, ...COUNT_PATHS]);
   });
 
   it('loads recent account changes each time that tab opens, showing staff accounts created only', async () => {
-    answerCounts([1, 0, 0, 0, 0, 1]);
+    answerCounts([1, 0, 0, 0, 0, 1, 0]);
     answer(RECENT, { items: [feedEvent('1', 'STAFF_ACCOUNT_CREATED', 'Staff account created with the vendor role'), feedEvent('2', 'SUBSCRIPTION_STARTED', 'Plan started'), feedEvent('3', 'STAFF_ACCOUNT_CREATED', '')], total: 3, critical: 0, scope: 'all' });
     show();
     await screen.findByRole('table', { name: 'Accounts by role' });
@@ -105,7 +107,7 @@ describe('Accounts & roles overview', () => {
   });
 
   it('shows recent changes empty, then an error with Try again', async () => {
-    answerCounts([1, 0, 0, 0, 0, 1]);
+    answerCounts([1, 0, 0, 0, 0, 1, 0]);
     answer(RECENT, { items: [feedEvent('2', 'SUBSCRIPTION_STARTED', 'Plan started')], total: 1, critical: 0, scope: 'all' });
     show();
     await screen.findByRole('table', { name: 'Accounts by role' });
@@ -124,7 +126,7 @@ describe('Accounts & roles overview', () => {
   });
 
   it('moves between tabs with the arrow, Home and End keys', async () => {
-    answerCounts([1, 0, 0, 0, 0, 1]);
+    answerCounts([1, 0, 0, 0, 0, 1, 0]);
     show();
     const byRole = await screen.findByRole('tab', { name: 'By role' });
     fireEvent.keyDown(byRole, { key: 'ArrowRight' });
@@ -177,7 +179,7 @@ describe('Manage accounts', () => {
   });
 
   it('shows a list error and requests the same page on Try again', async () => {
-    answerCounts([1, 0, 0, 0, 0, 1]);
+    answerCounts([1, 0, 0, 0, 0, 1, 0]);
     apiAnswers[LIST] = () => Promise.reject(new Error('Accounts unavailable'));
     show();
     const alert = await screen.findByText('Accounts unavailable');

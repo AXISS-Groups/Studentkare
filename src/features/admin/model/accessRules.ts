@@ -15,6 +15,8 @@ export const ROLE_ROWS: [AccountRole, string, string][] = [
   ['CAMPUS_ADMIN', 'Campus Admin', 'Institution staff'],
   ['COUNSELLOR', 'Counsellor', 'Campus crisis follow-up'],
   ['SUPER_ADMIN', 'Super Admin', 'Platform operations'],
+  // Counted with the rest, so this total matches the overview's (live-run audit #15).
+  ['LAB_COLLECTOR', 'Lab collector', 'A lab’s sample collector'],
 ];
 
 /** Staff who act for one campus: the server requires a campus when creating them. */
@@ -32,7 +34,7 @@ export function clinicalAccess(role: AccountRole): { label: string; tone: string
 }
 
 /** Names for the workspace each role is sent to after sign-in (homeForRole). */
-const HOME_LABEL: Partial<Record<RoutePath, string>> = { health: 'Student portal', clinician: 'Clinical workspace', vendor: 'Vendor workspace', campus: 'Campus administration', counsellor: 'Counsellor queue', admin: 'Platform administration' };
+const HOME_LABEL: Partial<Record<RoutePath, string>> = { health: 'Student portal', clinician: 'Clinical workspace', vendor: 'Vendor workspace', campus: 'Campus administration', counsellor: 'Counsellor queue', admin: 'Platform administration', 'staff-collect': 'Staff app (sample collection)' };
 
 /** The part of the app a role works in: its home route from the app's own routing. */
 export const appAccess = (role: AccountRole): string => HOME_LABEL[homeForRole(role)] ?? 'Workspace unavailable';
