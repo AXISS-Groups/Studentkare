@@ -111,3 +111,106 @@ The app syncs today's total from the most trusted connected source only
 source and shows the most trusted one, never a sum. Re-sync runs every
 `wellness.steps_live_sync_seconds` while the Steps screen is in front, and once
 when My health opens. There is no background sync while the app is closed.
+
+## Bundling (what Expo reads)
+
+Expo reads `app.json` + `app.config.ts`, `metro.config.cjs` and `babel.config.cjs` from the
+repository root. The `@/…` import alias is resolved in `metro.config.cjs` (`@/x` → `src/x`, the same
+mapping as `vite.config.ts` and `tsconfig.json`). A `node_modules` that is a symlink (a shared install)
+is added to Metro's watch folders automatically. CI's **Expo bundle** job runs both exports below, so a
+broken phone bundle fails the pull request:
+
+```sh
+npx expo export --platform android --output-dir /absolute/temporary/path/expo-android
+npx expo export --platform ios --output-dir /absolute/temporary/path/expo-ios
+```
+
+## Versions and build numbers
+
+`package.json` `"version"` (MAJOR.MINOR.PATCH, each part below 100) is the only place to change.
+`app.config.ts` derives the store version from it, and the iOS `buildNumber` / Android `versionCode`
+as `MAJOR*10000 + MINOR*100 + PATCH` (0.5.0 → 500). The stores refuse a build number they have seen,
+so **bump the patch for every store upload**. `runtimeVersion` follows the app version
+(`policy: "appVersion"`); there is no over-the-air update (`expo-updates` is not installed).
+
+## Release builds with EAS
+
+Profiles in `eas.json` (all set `EXPO_PUBLIC_API_BASE_URL=https://api.studentkare.co/api` and
+`EXPO_PUBLIC_SITE_URL=https://studentkare.co`):
+
+| Profile | What | Use |
+|---|---|---|
+| `development` | Development client (HealthKit, Health Connect and the motion sensor need it), internal, Android APK | Day-to-day work: `npx expo start --dev-client` |
+| `preview` | Release build, internal distribution, Android APK | Testers (TestFlight internal / sideload) |
+| `production` | Store build, Android App Bundle | `eas submit` |
+
+Environment read by `app.config.ts` (set as EAS environment variables/secrets, never committed):
+
+| Variable | Needed for | If unset |
+|---|---|---|
+| `EAS_PROJECT_ID` | Every EAS build (`expo.extra.eas.projectId`) | `eas build` asks to run `eas init` |
+| `EXPO_OWNER` | Builds under an Expo organisation | Personal account |
+| `EXPO_PUBLIC_SENTRY_DSN` | Crash reporting in the app | Crash reporting is off |
+| `SENTRY_ORG`, `SENTRY_PROJECT`, `SENTRY_AUTH_TOKEN` (secret), `SENTRY_URL` (optional) | Uploading source maps during the build | No upload (stack traces stay minified) |
+
+One-time set-up (Krishna / mobile eng):
+
+```sh
+npm i -g eas-cli
+eas login
+eas init                      # creates the project and prints its id (it cannot edit app.config.ts)
+export EAS_PROJECT_ID=<id>    # for local eas commands (or an untracked .env.local); never commit it
+eas env:create --name EAS_PROJECT_ID --value <id> --environment production --visibility plaintext
+# repeat env:create for the preview and development environments
+eas credentials -p ios        # Apple distribution certificate + provisioning profile (Apple Developer account)
+eas credentials -p android    # upload keystore (EAS-managed); then enable Play App Signing
+```
+
+Build and submit:
+
+```sh
+eas build --profile development --platform ios|android   # dev client
+eas build --profile preview --platform all
+eas build --profile production --platform all
+eas submit --profile production --platform ios           # App Store Connect (TestFlight first)
+eas submit --profile production --platform android       # Play internal track, as a draft
+```
+
+`eas submit -p android` needs a Google Play service-account JSON (Play Console → API access), and the
+first Android upload must be done by hand in Play Console. `eas submit -p ios` needs the App Store
+Connect app record (bundle id `co.studentkare.app`) and an App Store Connect API key.
+
+## Deep links
+
+`src/native/linking.ts` maps `studentkare://…` and `https://studentkare.co/…` to screens:
+`/login` and `/claim` → Sign in (Home when signed in), `/orders[/<id>]` → Orders (an order's details),
+`/consult` → Consults (signed in) or the public Consult page, `/medicine-info?medicine=<id>|q=<text>`,
+`/find-care?segment=…&place=<id>`. The first link waits for the session check. Signed-in screens are
+never opened while signed out (the link opens Sign in instead), and the target does not resume after
+signing in. `/claim#token=…` invites are **not** redeemed on the phone yet, so `/claim` is excluded from
+the universal/App Links and keeps opening the web. There is no blog on the web or the phone, so there
+is no blog link. The web must serve `/.well-known/apple-app-site-association` and
+`/.well-known/assetlinks.json`: templates and steps in `deploy/well-known/README.md`.
+
+## Permissions
+
+The phone asks only for what a screen uses: camera ("Take a photo"), approximate location while in
+use (Find care; Android blocks `ACCESS_FINE_LOCATION`, iOS defaults to reduced accuracy), motion,
+Apple Health / Health Connect read (Steps), notifications (local reminders). There is no microphone:
+`RECORD_AUDIO`/`MODIFY_AUDIO_SETTINGS` are blocked and `NSMicrophoneUsageDescription` is gone until
+phone video consults ship. `src/native/__tests__/osPermissions.test.ts` holds this in place.
+
+## Crash reporting
+
+`src/native/crashReporting.ts` starts Sentry (`@sentry/react-native`, the version Expo SDK 52
+expects) from `src/native/index.ts` when `EXPO_PUBLIC_SENTRY_DSN` is set, and does nothing otherwise.
+It never attaches a user, request data, screenshots, view hierarchy, traces or breadcrumb payloads;
+messages are PHI-scrubbed with the web's keyword list (`src/lib/sentryScrub.ts`) plus e-mail and long
+numbers, and an event that still names PHI is dropped.
+
+## Store paperwork
+
+Drafts generated from the code, for product/legal to confirm: `docs/store/play-data-safety.md`,
+`docs/store/apple-privacy-labels.md`, `docs/store/health-connect-declaration.md`,
+`docs/store/healthkit-review-notes.md`. The app links to the public Terms and Privacy Policy pages
+from Sign in, Create account and More (`src/features/auth/views/LegalLinksNative.tsx`).

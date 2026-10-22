@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { channelFieldCopy, channelIsDeliverable } from './channelCopy';
 import { useLanguage, useT } from '@/i18n';
+import { LegalLinksNative } from './LegalLinksNative';
 import { apiBaseUrl } from '@/core/env';
 import { SignupConsentNative } from './SignupConsentNative';
 import { color, font, fontWeight, radius, space } from '@/design-system/theme';
@@ -420,6 +421,7 @@ export const CreateAccountNativeView: React.FC<CreateAccountNativeViewProps> = o
           </TouchableOpacity>
         )}
         {subStep === 'contact' ? <Text style={s.terms}>{t('auth.terms')}</Text> : null}
+        <LegalLinksNative />
       </View>
     </AuthNativeFrame>
   );

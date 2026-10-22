@@ -125,7 +125,7 @@ src/features/<domain>/
 | --- | --- | --- |
 | Entry | `src/main.tsx` → `src/App.tsx` | `src/native/index.ts` → `src/native/App.tsx` |
 | Router | `src/core/navigation` (react-router) | `src/native/navigation.tsx` (React Navigation) |
-| `react-native` | Vite alias → `react-native-web` | Metro (`config/metro.config.cjs`, `config/babel.config.cjs`) |
+| `react-native` | Vite alias → `react-native-web` | Metro (`metro.config.cjs`, `babel.config.cjs` at the repo root) |
 | Typecheck | `tsconfig.json` | `config/tsconfig.native.json` |
 
 `src/core/store/__tests__/crossPlatform.test.ts` instantiates `AppStores` and the
