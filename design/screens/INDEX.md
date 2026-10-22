@@ -1,6 +1,6 @@
 # Student Kare — every screen
 
-259 screens: 252 on 10 canvas pages, plus 7 new screens with no board yet (M2Reminders, M2Water and M2Steps; the 4 Find care screens), designed in code in the Mobile 2.0 language. Each row links to a brief that lists every icon, picture, link and state the screen needs.
+260 screens: 252 on 10 canvas pages, plus 8 new screens with no board yet (M2Reminders, M2Water and M2Steps; the 4 Find care screens; SetPasscode), designed in code in the Mobile 2.0 language. Each row links to a brief that lists every icon, picture, link and state the screen needs.
 
 | # | Screen | What it is | Platform | Tier | Tickets | Icons | 3D | Glyphs | Pictures |
 |---|---|---|---|---|---|---|---|---|---|
@@ -12,9 +12,9 @@
 | 5 | [Onboarding1](briefs/Onboarding1.md) | Onboarding 1 — Campus care | Phone 390x844 | 3 | SK-024 | 3 | 0 | 0 | 1 |
 | 6 | [Onboarding2](briefs/Onboarding2.md) | Onboarding 2 — Health vault | Phone 390x844 | 3 | SK-024 | 6 | 0 | 0 | 0 |
 | 7 | [Onboarding3](briefs/Onboarding3.md) | Onboarding 3 — Ayush AI | Phone 390x844 | 3 | SK-024 | 3 | 0 | 0 | 0 |
-| 8 | [SignIn](briefs/SignIn.md) | Sign in | Phone 390x844 | 1 | SK-003, SK-010, SK-021, SK-025 | 5 | 0 | 0 | 0 |
+| 8 | [SignIn](briefs/SignIn.md) | Sign in | Phone 390x844 | 1 | SK-003, SK-010, SK-021, SK-025 | 9 | 0 | 0 | 0 |
 | 9 | [OtpVerify](briefs/OtpVerify.md) | OTP verification | Phone 390x844 | 1 | SK-003, SK-010, SK-025 | 4 | 0 | 0 | 0 |
-| 10 | [CreateAccount](briefs/CreateAccount.md) | Create account — step 1 | Phone 390x844 | 2 | SK-010, SK-026 | 4 | 0 | 0 | 0 |
+| 10 | [CreateAccount](briefs/CreateAccount.md) | Create account — step 1 | Phone 390x844 | 2 | SK-010, SK-026 | 8 | 0 | 0 | 0 |
 | 11 | [CampusVerify](briefs/CampusVerify.md) | Campus verify — step 2 | Phone 390x844 | 2 | SK-026 | 5 | 0 | 0 | 0 |
 | 12 | [ProfileSetup](briefs/ProfileSetup.md) | Care profile — step 3 | Phone 390x844 | 2 | SK-026 | 3 | 0 | 0 | 0 |
 | 13 | [Permissions](briefs/Permissions.md) | Permissions — step 4 | Phone 390x844 | 2 | SK-011, SK-026 | 5 | 0 | 0 | 0 |
@@ -104,7 +104,7 @@
 | 95 | [LandingClinician](briefs/LandingClinician.md) | Landing — for clinicians | Web 1440x4752 | 3 | SK-078 | 12 | 0 | 1 | 7 |
 | 96 | [WebPartnerships](briefs/WebPartnerships.md) | Web — Partnerships | Web 1440x4884 | 3 | SK-078 | 17 | 0 | 1 | 6 |
 | | **3b · Student web — signed in** | | | | | | | | |
-| 97 | [WebSignIn](briefs/WebSignIn.md) | Web — Sign in | Web 1440x1024 | 1 | SK-021, SK-079 | 4 | 0 | 0 | 0 |
+| 97 | [WebSignIn](briefs/WebSignIn.md) | Web — Sign in | Web 1440x1024 | 1 | SK-021, SK-079 | 8 | 0 | 0 | 0 |
 | 98 | [WebLoggedOut](briefs/WebLoggedOut.md) | Web — logged out (confirmation + feedback) | Web 1440x1024 | 2 | SK-079 | 3 | 3 | 0 | 8 |
 | 99 | [WebLostPhone](briefs/WebLostPhone.md) | Web — lost your phone | Web 1440x1024 | 2 | SK-079 | 24 | 0 | 0 | 0 |
 | 100 | [WebVerify](briefs/WebVerify.md) | Web — Verify it’s you (photo, email, college ID, government ID) | Web 1440x1024 | 1 | SK-080 | 28 | 0 | 0 | 5 |
@@ -274,3 +274,5 @@
 | 257 | [M2FacilityDetail](briefs/M2FacilityDetail.md) | One place in the care directory | Phone 390x1200 | 2 | Find care | 13 | 0 | 0 | 0 |
 | 258 | [WebFindCare](briefs/WebFindCare.md) | Public /find-care page | Web 1440x1400 | 2 | Find care | 16 | 0 | 0 | 0 |
 | 259 | [AdminCareDirectory](briefs/AdminCareDirectory.md) | Care directory listings (super admin and campus console) | Web 1440x1100 | 3 | Find care | 7 | 0 | 0 | 0 |
+| | **New · Sign-in passcode (2026-10-22, no canvas board)** | | | | | | | | |
+| 260 | [SetPasscode](briefs/SetPasscode.md) | Add, change or reset your passcode (no board; designed in code in the Mobile 2.0 language) | Phone 390x844 | 1 | auth-passcode | 12 | 10 | 0 | 2 |
