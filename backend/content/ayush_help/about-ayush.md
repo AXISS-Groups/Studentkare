@@ -1,7 +1,8 @@
 ---
 id: about-ayush
 title: What Ayush can and cannot do
-reviewed: 2026-10-22
+reviewed: 2026-10-23
+keywords: ayush, assistant, chatbot, chat bot, ai assistant, what can you do, what can ayush do, chat history, chats saved, ayush history, are my chats saved
 ---
 <!--
 Written from: backend/services/agent_ayush.py (pipeline: crisis gate, scope guard, vault boundary,
@@ -16,4 +17,4 @@ If Ayush cannot find an answer in the approved help, it says so instead of guess
 
 If you say something that sounds like a crisis, Ayush shows emergency and Tele-MANAS helpline numbers straight away, and your campus follow-up team may be told so someone can check on you.
 
-What you ask Ayush is kept only if you turn on Ayush history in your choices. Only you can read it, and deleting your account erases it.
+Your chats with Ayush are saved only if you turn on Ayush history in your choices. Only you can read it, and deleting your account erases it.

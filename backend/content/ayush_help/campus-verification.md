@@ -2,6 +2,7 @@
 id: campus-verification
 title: How campus verification works
 reviewed: 2026-10-22
+keywords: verify, verification, verify my college, college, campus, roll number, student id, id card, verified student, कैंपस, वेरिफ़िकेशन, वेरिफिकेशन, सत्यापन, कॉलेज, క్యాంపస్, వెరిఫికేషన్, ధృవీకరణ, కాలేజీ
 ---
 <!--
 Written from: /verify (src/features/auth/views/IdentityVerifyView.tsx and IdentityVerifyPanel.tsx,

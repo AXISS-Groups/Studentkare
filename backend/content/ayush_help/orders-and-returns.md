@@ -2,6 +2,7 @@
 id: orders-and-returns
 title: Tracking orders, cancelling and returns
 reviewed: 2026-10-22
+keywords: where is my order, not delivered, order not delivered, return medicines, return an item, track my order, track order, order status, cancel an order, cancel my order, return, refund, replacement, damaged, wrong item, my requests, my orders, रिफंड, वापसी, రిఫండ్, రిటర్న్
 ---
 <!--
 Written from: /orders (src/features/m2store/views/M2OrdersView.tsx), My requests

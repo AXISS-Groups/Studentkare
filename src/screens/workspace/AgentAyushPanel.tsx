@@ -5,6 +5,7 @@ import { apiRequest } from '../../data/services/http';
 import { FormError, useMutation } from '../../components/interface/WorkflowUI';
 import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
+import { ayushCategoryLabel } from '@/features/ayush/useAyushConversation';
 import '../../theme/workflows.css';
 
 interface Citation {
@@ -127,7 +128,7 @@ export function AgentAyushPanel() {
                   <strong style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                     <BookOpen size={15} aria-hidden="true" />{citation.title}
                   </strong>
-                  <small>{t('assist.ayush.citationMeta', { category: citation.category, version: citation.version })}</small>
+                  <small>{t('assist.ayush.citationMeta', { category: ayushCategoryLabel(citation.category, t), version: citation.version })}</small>
                   <p style={{ fontSize: 12 }}>{citation.snippet}…</p>
                   {citation.stale && <small style={{ color: 'var(--attention)' }}>
                     {t('assist.ayush.stale')}

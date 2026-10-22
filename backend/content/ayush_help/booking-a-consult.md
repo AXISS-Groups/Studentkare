@@ -2,6 +2,7 @@
 id: booking-a-consult
 title: Booking a doctor consult
 reviewed: 2026-10-22
+keywords: consult, physician, consult a doctor, consultation, appointment, book a doctor, see a doctor, talk to a doctor, speak to a doctor, video call, video consult, online doctor, teleconsultation, schedule, reschedule, cancel appointment, slot, doctor appointment, डॉक्टर, अपॉइंटमेंट, बुक, परामर्श, कंसल्ट, డాక్టర్, వైద్యుడు, అపాయింట్‌మెంట్, బుక్, కన్సల్ట్
 ---
 <!--
 Written from: /care (src/features/m2store/views/M2ConsultsRoute.tsx, M2ConsultsView.tsx),

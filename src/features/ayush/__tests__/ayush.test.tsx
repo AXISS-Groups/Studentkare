@@ -37,6 +37,16 @@ describe('WebAyush', () => {
     expect(v, describeViolations(v)).toEqual([]);
   });
 
+  it('names the help pack as StudentKare help, never the raw PRODUCT_HELP category', async () => {
+    api.mockResolvedValue({ ...answered, citations: [{ ...answered.citations[0], category: 'PRODUCT_HELP' }] });
+    render(<WebAyushView />);
+    fireEvent.change(screen.getByLabelText('Your question'), { target: { value: 'How do I share?' } });
+    fireEvent.click(screen.getByRole('button', { name: /^Ask/ }));
+    await settle();
+    expect(screen.getByText('StudentKare help · version 2')).toBeTruthy();
+    expect(screen.queryByText(/PRODUCT_HELP/)).toBeNull();
+  });
+
   it('a crisis reply is an alert with call buttons; a refusal routes to a person, never a product', async () => {
     api.mockResolvedValueOnce(crisis).mockResolvedValueOnce(refused);
     render(<WebAyushView />);

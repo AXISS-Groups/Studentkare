@@ -2,6 +2,7 @@
 id: find-care
 title: Finding hospitals, pharmacies, ambulances and doctors
 reviewed: 2026-10-22
+keywords: hospital, clinic, pharmacy, chemist, medical shop, ambulance, blood bank, nearest, nearby, near me, directions, map, location, find a doctor, अस्पताल, फार्मेसी, एम्बुलेंस, ఆసుపత్రి, హాస్పిటల్, ఫార్మసీ, అంబులెన్స్
 ---
 <!--
 Written from: /find-care (src/features/careDirectory, CareDirectoryRoute, copy fc.*).
