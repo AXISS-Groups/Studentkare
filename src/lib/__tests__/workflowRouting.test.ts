@@ -53,6 +53,12 @@ describe('Authenticated workspace routing', () => {
     expect(homeForRole('CAMPUS_ADMIN')).toBe('campus');
   });
 
+  it('sends a lab collector to the staff app\'s Collect board, and keeps it out of the partner console (live-run audit #6)', () => {
+    expect(homeForRole('LAB_COLLECTOR')).toBe('staff-collect');
+    for (const route of ['staff-collect', 'staff-verify', 'staff-handover'] as const) expect(canAccessRoute(route, 'LAB_COLLECTOR'), route).toBe(true);
+    for (const route of ['vendor', 'staff', 'run-sheet', 'admin', 'clinician', 'health/trends'] as const) expect(canAccessRoute(route, 'LAB_COLLECTOR'), route).toBe(false);
+  });
+
   it('sends a counsellor to the crisis queue, and keeps that queue from every campus admin', () => {
     expect(homeForRole('COUNSELLOR')).toBe('counsellor');
     expect(canAccessRoute('counsellor', 'COUNSELLOR')).toBe(true);

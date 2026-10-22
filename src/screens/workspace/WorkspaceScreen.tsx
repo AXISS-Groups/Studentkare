@@ -152,6 +152,9 @@ const WebDeleteAccountRoute = lazy(() => import('@/features/studentweb/views/t1/
 function vendorPageFor(route: RoutePath, role: AccountRole | null, onNavigate: (target: string) => void, onLogout: () => Promise<void>, onSwitchRole: (role: 'student' | 'admin' | 'vendor') => void): React.ReactNode {
   const props = { onNavigate, onLogout };
   const labStaff = role === 'VENDOR' || role === 'SUPER_ADMIN';
+  // A lab's collector signs in to the staff app's phone boards only (live-run audit #6).
+  const collector = role === 'LAB_COLLECTOR';
+  if (collector && route !== 'staff-collect' && route !== 'staff-verify' && route !== 'staff-handover') return null;
   switch (route) {
     case 'vendor': return <VendorHomeScreen {...props} onSwitchRole={onSwitchRole} />;
     // /verify is the student identity page; the partner scanner lives at /scan-verify.
@@ -166,7 +169,7 @@ function vendorPageFor(route: RoutePath, role: AccountRole | null, onNavigate: (
     // The staff app's phone boards (WP-15): full screen, outside the console shell.
     case 'staff-verify': return <StaffScanVerifyScreen onNavigate={(target) => onNavigate(target)} />;
     case 'staff-handover': return <StaffHandoverScreen onNavigate={(target) => onNavigate(target)} />;
-    case 'staff-collect': return labStaff ? <StaffCollectScreen onNavigate={(target) => onNavigate(target)} /> : null;
+    case 'staff-collect': return labStaff || collector ? <StaffCollectScreen onNavigate={(target) => onNavigate(target)} /> : null;
     // The live lab desk (GET /work/lab-orders): sample custody through to filing the report for a doctor.
     case 'lab-queue': case 'vendor-lab-queue': return <LabSampleToReportScreen onNavigate={onNavigate} />;
     // Release results (WP-15): where each filed report has got to. The doctor releases.

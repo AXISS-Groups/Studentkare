@@ -1,5 +1,5 @@
 import React, { createContext, ReactNode, useCallback, useContext, useEffect, useState } from 'react';
-import { Account, SessionResponse } from '../types/workflowTypes';
+import { ACCOUNT_ROLES, Account, SessionResponse } from '../types/workflowTypes';
 import { ApiError, apiRequest, setCsrfToken } from '../services/http';
 import { navigate } from '../../lib/utils/workflowRouting';
 import type { RoutePath } from '../../lib/utils/workflowRouting';
@@ -30,7 +30,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [errorStatus, setErrorStatus] = useState(0);
   const [version, setVersion] = useState(0);
   const acceptSession = useCallback((session: SessionResponse) => {
-    if (session.user && (!session.user.id || !session.user.fullName || !['STUDENT', 'SUPER_ADMIN', 'CAMPUS_ADMIN', 'COUNSELLOR', 'VENDOR', 'NMC_DOCTOR'].includes(session.user.role) || !session.csrfToken)) throw new Error('Invalid authenticated session.');
+    if (session.user && (!session.user.id || !session.user.fullName || !ACCOUNT_ROLES.includes(session.user.role) || !session.csrfToken)) throw new Error('Invalid authenticated session.');
     setCsrfToken(session.csrfToken || '');
     setUser(session.user);
     setError('');

@@ -1,4 +1,6 @@
-export type AccountRole = 'STUDENT' | 'SUPER_ADMIN' | 'CAMPUS_ADMIN' | 'COUNSELLOR' | 'VENDOR' | 'NMC_DOCTOR';
+export type AccountRole = 'STUDENT' | 'SUPER_ADMIN' | 'CAMPUS_ADMIN' | 'COUNSELLOR' | 'VENDOR' | 'NMC_DOCTOR' | 'LAB_COLLECTOR';
+/** Every role the server may sign in. A session with any other role is refused (fails closed). */
+export const ACCOUNT_ROLES: readonly AccountRole[] = ['STUDENT', 'SUPER_ADMIN', 'CAMPUS_ADMIN', 'COUNSELLOR', 'VENDOR', 'NMC_DOCTOR', 'LAB_COLLECTOR'];
 /** Set on a VENDOR account by a super admin; decides which partner dashboard it gets. */
 export type PartnerKind = 'PHARMACY' | 'LAB' | 'CLINIC' | 'WELLNESS';
 export interface Account {

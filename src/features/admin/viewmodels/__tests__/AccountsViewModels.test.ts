@@ -7,7 +7,7 @@ import { appAccess, clinicalAccess, ROLE_ROWS } from '../../model/accessRules';
 import { AccountsListViewModel } from '../AccountsListViewModel';
 import { AccountsOverviewViewModel } from '../AccountsOverviewViewModel';
 
-const TOTALS: Record<AccountRole, number> = { STUDENT: 900, NMC_DOCTOR: 40, VENDOR: 12, CAMPUS_ADMIN: 6, COUNSELLOR: 0, SUPER_ADMIN: 2 };
+const TOTALS: Record<AccountRole, number> = { STUDENT: 900, NMC_DOCTOR: 40, VENDOR: 12, CAMPUS_ADMIN: 6, COUNSELLOR: 0, SUPER_ADMIN: 2, LAB_COLLECTOR: 0 };
 const settle = async () => { for (let i = 0; i < 8; i += 1) await Promise.resolve(); };
 const account = (id: string): StaffAccount => ({ id, fullName: id, identifier: `${id}@example.test`, role: 'VENDOR', active: true });
 const feedEvent = (id: string, kind: string): OpsFeedEvent => ({ id, kind, domain: 'ACCOUNT', severity: 'INFO', actorId: '', actorRole: '', subjectId: '', providerId: '', resourceType: '', resourceId: '', summary: id, createdAt: 1, acknowledgedAt: null, acknowledgedBy: '' });
