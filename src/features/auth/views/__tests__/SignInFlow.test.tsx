@@ -94,9 +94,9 @@ describe.each(['phone', 'web'] as const)('Sign in (%s board)', { timeout: 20_000
 
   it('switches the language for the whole screen', async () => {
     renderSignIn();
-    fireEvent.click(screen.getByRole('button', { name: 'తెలుగు' }));
+    fireEvent.click(screen.getByRole('button', { name: 'తె తెలుగు' }));
     expect(await screen.findByRole('button', { name: 'ధృవీకరణ కోడ్ పంపండి' })).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'English' }));
+    fireEvent.click(screen.getByRole('button', { name: 'EN English' }));
     expect(await screen.findByRole('button', { name: 'Send verification code' })).toBeInTheDocument();
   });
 

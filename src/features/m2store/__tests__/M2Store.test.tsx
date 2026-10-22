@@ -95,7 +95,10 @@ describe('M2Home', () => {
     const meds = screen.getByTestId('m2-home-meds');
     expect(meds).toHaveAttribute('aria-label', 'Medicines today. 2 of 3 doses taken today. 1 dose left today');
     expect(screen.getByRole('link', { name: 'Buy again · 3 items' })).toBeInTheDocument();
-    expect(screen.getByTestId('m2-home-consult').getAttribute('aria-label')).toMatch(/^Next consult: .*Confirmed\. Details$/);
+    // A LiftCard is named by its visible text on the web (label in name, live-run audit #10).
+    const consult = screen.getByTestId('m2-home-consult');
+    expect(consult).not.toHaveAttribute('aria-label');
+    expect(consult).toHaveTextContent(/Confirmed/);
     fireEvent.click(screen.getByRole('link', { name: 'Fever and cold' }));
     expect(links.concern).toHaveBeenCalledWith({ query: 'fever' });
   });
@@ -253,7 +256,9 @@ describe('M2Labs', () => {
     wrap(<M2LabsView phase="ready" packages={packages} retry={vi.fn()} block="Block C" links={{ back: vi.fn(), reports: vi.fn(), rx: vi.fn(), book }} />);
     expect(screen.getByText('Sample collected at Block C')).toBeInTheDocument();
     expect(within(screen.getByTestId('m2-labs-hero')).getByText('Full body check')).toBeInTheDocument();
-    expect(screen.getByTestId('m2-labs-pkg-thy')).toHaveAttribute('aria-label', 'Thyroid profile, 3 tests · no fasting, ₹499. Book');
+    // Named by what it shows on the web (label in name, live-run audit #10).
+    expect(screen.getByTestId('m2-labs-pkg-thy')).not.toHaveAttribute('aria-label');
+    expect(screen.getByTestId('m2-labs-pkg-thy')).toHaveTextContent('Thyroid profile3 tests · no fasting₹499Book');
     fireEvent.click(screen.getByRole('link', { name: 'Full body' }));
     expect(book).toHaveBeenCalledWith(packages[1]);
     // No audience tabs and no "most booked" claim: packages carry neither.

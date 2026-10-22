@@ -40,7 +40,7 @@ describe('LandingLabListView', () => {
     expect(mocked.mock.calls.map((call) => call[0])).toContain('/catalog?kind=lab&limit=24');
     expect(screen.getByText('₹450')).toBeTruthy();
     expect(screen.getByText('₹800')).toBeTruthy();
-    const book = screen.getByLabelText('Book Thyroid Profile in the shop');
+    const book = screen.getByLabelText('Book in the shop: Thyroid Profile');
     expect(book.getAttribute('href')).toBe('/shop?kind=lab');
     // The old page re-typed prices and named a campus as a customer.
     expect(document.body.textContent).not.toMatch(/₹499|VNR VJIET|Block B|% OFF|Booked/);

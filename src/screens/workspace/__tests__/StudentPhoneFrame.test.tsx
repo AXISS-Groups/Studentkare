@@ -98,7 +98,7 @@ describe('student workspace at phone width', () => {
 
   it('opens the account menu (More) from the avatar on Home', async () => {
     render(<WorkspaceScreen route="health" />);
-    fireEvent.click(await screen.findByRole('button', { name: 'Open your account menu' }));
+    fireEvent.click(await screen.findByRole('button', { name: /, open your account menu$/ }));
     expect(screen.getByTestId('more-hub')).toBeInTheDocument();
   });
 

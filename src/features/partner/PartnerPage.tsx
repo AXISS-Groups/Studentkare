@@ -75,8 +75,9 @@ export interface PartnerKpi {
 /** The four tiles under a page title: eyebrow label, figure, one line of meta. */
 export function PartnerKpis({ items, label }: { items: PartnerKpi[]; label?: string }): React.ReactElement {
   const t = useT();
-  return (
-    <dl className="pc-kpis" role={label ? 'group' : undefined} aria-label={label}>
+  // The name goes on a wrapping group: a role on the <dl> drops its list semantics (axe dlitem, live-run audit #10).
+  const list = (
+    <dl className="pc-kpis">
       {items.map((item) => (
         <div key={item.id} className="pc-kpi">
           <dt className="pc-kpi__label">{item.label}</dt>
@@ -86,6 +87,7 @@ export function PartnerKpis({ items, label }: { items: PartnerKpi[]; label?: str
       ))}
     </dl>
   );
+  return label ? <div role="group" aria-label={label}>{list}</div> : list;
 }
 
 /** Page skeleton: title, four tiles, a panel of rows. */

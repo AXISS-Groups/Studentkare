@@ -175,7 +175,8 @@ export function StudentWebShell({
           <Icon name="shopping-bag" size={19} />
           {cartCount > 0 ? <span className="sk-sshell__badge" aria-hidden="true">{cartCount}</span> : null}
         </button>
-        <button type="button" className="sk-sshell__avatar sk-sshell__avatar--top" aria-label={t('shell.myAccount')} onClick={() => go('profile')}>
+        <button type="button" className="sk-sshell__avatar sk-sshell__avatar--top" aria-label={t('shell.myAccountInitials', { initials })} onClick={() => go('profile')}>
+          {/* The name starts with the initials it shows (label in name, live-run audit #10). */}
           <span aria-hidden="true">{initials}</span>
         </button>
       </header>
