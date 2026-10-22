@@ -38,12 +38,11 @@ import { rewardsEn } from './areas/rewards';
 import { safetyEn } from './areas/safety';
 import { shopwebEn } from './areas/shopweb';
 import { stepsEn } from './areas/steps';
+import { studentPasswordEn } from './areas/studentPassword';
 import { studentshellEn } from './areas/studentshell';
 import { studentwebEn } from './areas/studentweb';
 import { studentwebT1En } from './areas/studentwebT1';
 import { teamAccountsEn } from './areas/teamAccounts';
-import { accountContactsEn } from './areas/accountContacts';
-import { studentPasswordEn } from './areas/studentPassword';
 import { wellnessEn } from './areas/wellness';
 // keep-sorted end
 
@@ -94,12 +93,11 @@ export const areasEn = {
   ...safetyEn,
   ...shopwebEn,
   ...stepsEn,
+  ...studentPasswordEn,
   ...studentshellEn,
   ...studentwebEn,
   ...studentwebT1En,
   ...teamAccountsEn,
-  ...accountContactsEn,
-  ...studentPasswordEn,
   ...wellnessEn,
   // keep-sorted end
 };
