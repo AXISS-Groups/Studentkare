@@ -442,8 +442,13 @@ class PrescriptionItemInput(StrictModel):
     durationDays: int = Field(default=0, ge=0, le=365)
     quantity: int = Field(default=0, ge=0, le=1000)
     substitutionAllowed: bool = True
+    # Accepted for older clients and never trusted: the schedule is read from the
+    # medicine master on the server (audit M1, ``master_schedule``).
     scheduleClass: str = Field(default="OTC", max_length=4)
     substanceCode: str = Field(default="", max_length=60)
+    # The medicine master record (care_medicines.id). Optional: without it the
+    # generic name is matched against the master's names and single salts.
+    medicineId: str = Field(default="", max_length=80)
 
     @field_validator("scheduleClass")
     @classmethod
@@ -460,6 +465,70 @@ class PrescriptionInput(StrictModel):
     advice: str = Field(default="", max_length=1000)
     validDays: int = Field(default=30, ge=1, le=180)
     acknowledgeAllergyConflict: bool = False
+
+
+# Strictest last: a name that matches several master records takes the strictest schedule.
+SCHEDULE_STRICTNESS = ("OTC", "H", "H1", "X")
+# NMC Telemedicine Practice Guidelines 2020: Schedule X drugs are prohibited in teleconsultation.
+TELECONSULT_PROHIBITED = frozenset({"X"})
+SCHEDULE_UNKNOWN = "SCHEDULE_UNKNOWN"
+SCHEDULE_X_PROHIBITED = "SCHEDULE_X_PROHIBITED"
+NMC_REGISTRATION_REQUIRED = "NMC_REGISTRATION_REQUIRED"
+
+
+def master_schedule(db: Session, item: PrescriptionItemInput) -> str:
+    """The drug schedule from the medicine master, never from the client (audit M1).
+
+    ``medicineId`` names the record; otherwise the generic name is matched against
+    master names and single-salt compositions, and the strictest schedule among
+    the matches wins. No match fails closed: an unknown schedule can't be filed.
+    """
+    from services.medicine_master import published_medicine_clause
+    if item.medicineId:
+        medicine = db.scalar(select(M.Medicine).where(M.Medicine.id == item.medicineId, published_medicine_clause()))
+        schedules = [medicine.schedule] if medicine is not None else []
+    else:
+        name = " ".join(item.genericName.split()).casefold()
+        single_salt = (select(M.MedicineIngredient.medicine_id).group_by(M.MedicineIngredient.medicine_id)
+                       .having(func.count() == 1))
+        by_salt = select(M.MedicineIngredient.medicine_id).where(
+            M.MedicineIngredient.salt_key == name, M.MedicineIngredient.medicine_id.in_(single_salt))
+        schedules = db.scalars(select(M.Medicine.schedule).where(
+            published_medicine_clause(),
+            (func.lower(M.Medicine.name) == name) | M.Medicine.id.in_(by_salt))).all()
+    known = [s for s in schedules if s in SCHEDULE_STRICTNESS]
+    if not known:
+        raise HTTPException(422, {"code": SCHEDULE_UNKNOWN, "genericName": item.genericName,
+                                  "message": f"{item.genericName} isn't in the medicine master, so its schedule "
+                                             "can't be checked. Choose a listed medicine or ask an admin to add it."})
+    return max(known, key=SCHEDULE_STRICTNESS.index)
+
+
+def _patient_on_team_campus(db: Session, patient: M.Account) -> bool:
+    from core.team_scope import is_reserved_campus
+    verification = db.get(M.CampusVerification, patient.id)
+    campus = verification.university if verification is not None else (patient.profile or {}).get("university", "")
+    return is_reserved_campus(campus)
+
+
+def prescriber_registration(db: Session, prescriber: M.Account | None, patient: M.Account) -> str:
+    """The prescriber's NMC registration number. Without one there is no prescription.
+
+    The shared team doctor account has no registration and may prescribe only for
+    team-campus test students, never a real one (core/team_scope.py).
+    """
+    if prescriber is None:
+        raise HTTPException(403, "Only a clinician account may issue a prescription.")
+    if prescriber.is_team_account:
+        if not _patient_on_team_campus(db, patient):
+            raise HTTPException(403, "The team doctor account can prescribe only for team-campus test students.")
+        return ""
+    reg_no = str((prescriber.profile or {}).get("registrationNumber", "")).strip()[:60]
+    if not reg_no:
+        raise HTTPException(403, {"code": NMC_REGISTRATION_REQUIRED,
+                                  "message": "Your NMC registration number isn't on your account. "
+                                             "A super admin must add it before you can prescribe."})
+    return reg_no
 
 
 def prescription_payload(row: M.Prescription, items: list[M.PrescriptionItem]) -> dict:
@@ -502,6 +571,7 @@ def issue_prescription(body: PrescriptionInput, user=Depends(require_staff), db:
     patient = db.get(M.Account, body.patientId)
     if not patient:
         raise HTTPException(404, "No such patient account.")
+    prescriber_reg_no = prescriber_registration(db, db.get(M.Account, user["id"]), patient)
     # A clinician prescribes only for someone in their care: a confirmed or
     # completed appointment with them. Fail closed — no relationship, no Rx.
     in_care = db.scalar(select(M.Appointment.id).where(
@@ -519,6 +589,15 @@ def issue_prescription(body: PrescriptionInput, user=Depends(require_staff), db:
         if not note or note.account_id != user["id"] or note.patient_id != body.patientId:
             raise HTTPException(422, "Link the prescription to one of your own notes for this patient, or to none.")
 
+    # The schedule of each item comes from the medicine master, and every
+    # e-prescription here is a teleconsultation: Schedule X is refused outright.
+    schedules = [master_schedule(db, item) for item in body.items]
+    prohibited = [item.genericName for item, schedule in zip(body.items, schedules, strict=True)
+                  if schedule in TELECONSULT_PROHIBITED]
+    if prohibited:
+        raise HTTPException(422, {"code": SCHEDULE_X_PROHIBITED, "items": prohibited,
+                                  "message": "Schedule X medicines can't be prescribed in a teleconsultation."})
+
     allergies = clinical_profile.allergies(db, patient.id)
     conflicts = []
     for item in body.items:
@@ -533,11 +612,10 @@ def issue_prescription(body: PrescriptionInput, user=Depends(require_staff), db:
             "conflicts": conflicts,
         })
 
-    prescriber_profile = (db.get(M.Account, user["id"]).profile or {}) if db.get(M.Account, user["id"]) else {}
     now = time.time()
     prescription = M.Prescription(
         id=new_id(), encounter_id=encounter_id, prescriber_id=user["id"],
-        prescriber_reg_no=str(prescriber_profile.get("registrationNumber", ""))[:60],
+        prescriber_reg_no=prescriber_reg_no,
         patient_id=body.patientId, issued_at=now, valid_until=now + body.validDays * 86400,
         status="ISSUED", advice=body.advice.strip(),
         allergy_check={
@@ -554,9 +632,9 @@ def issue_prescription(body: PrescriptionInput, user=Depends(require_staff), db:
             brand_name=item.brandName.strip(), strength=item.strength.strip(), form=item.form.strip(),
             dose=item.dose.strip(), frequency=item.frequency.strip(), duration_days=item.durationDays,
             quantity=item.quantity, substitution_allowed=item.substitutionAllowed,
-            schedule_class=item.scheduleClass,
+            schedule_class=schedule,
         )
-        for item in body.items
+        for item, schedule in zip(body.items, schedules, strict=True)
     ]
     db.add_all(items)
     ops_feed.publish(

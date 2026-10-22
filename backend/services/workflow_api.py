@@ -1329,6 +1329,18 @@ class StaffInput(StrictModel):
     # The campus a campus administrator or counsellor acts for. Required for
     # those roles: without it they have no scope, and an unscoped one sees nobody.
     university: str | None = Field(default=None, max_length=160)
+    # NMC_DOCTOR only, and required for it: a prescription carries the
+    # prescriber's NMC / state medical council registration number (audit M1).
+    registrationNumber: str | None = Field(default=None, max_length=60)
+
+    @model_validator(mode="after")
+    def doctors_need_a_registration(self):
+        self.registrationNumber = (self.registrationNumber or "").strip() or None
+        if self.role == "NMC_DOCTOR" and not self.registrationNumber:
+            raise ValueError("A doctor needs their NMC or state medical council registration number.")
+        if self.role != "NMC_DOCTOR":
+            self.registrationNumber = None
+        return self
 
     @model_validator(mode="after")
     def partner_kind_matches_role(self):
@@ -1354,7 +1366,9 @@ class StaffInput(StrictModel):
 def create_staff(body: StaffInput, user=Depends(require_super_admin), db: Session = Depends(workflow_db)):
     row = M.Account(id=new_id(), identifier=normalize_identifier(body.identifier, body.channel), channel=body.channel,
                      full_name=body.fullName, role=body.role, active=True,
-                     profile={"university": body.university} if body.university else {}, created_at=time.time(),
+                     profile=({"university": body.university} if body.university else {})
+                     | ({"registrationNumber": body.registrationNumber} if body.registrationNumber else {}),
+                     created_at=time.time(),
                      staff_campus=body.university or "",
                      partner_kind=body.partnerKind or "")
     db.add(row)
@@ -1395,6 +1409,24 @@ def set_partner_kind(account_id: str, body: PartnerKindInput, user=Depends(requi
     )
     db.commit()
     return {"id": row.id, "partnerKind": partner_kind_of(row)}
+
+
+class RegistrationInput(StrictModel):
+    registrationNumber: str = Field(min_length=3, max_length=60)
+
+
+@router.patch("/ops/accounts/{account_id}/registration")
+def set_doctor_registration(account_id: str, body: RegistrationInput, user=Depends(require_super_admin),
+                            db: Session = Depends(workflow_db)):
+    """Record a doctor's NMC registration number. Super admin only; a doctor can't set their own."""
+    account = db.scalar(select(M.Account).where(M.Account.id == account_id).with_for_update()
+                        .execution_options(populate_existing=True))
+    if account is None or account.role != "NMC_DOCTOR":
+        raise HTTPException(404, "No doctor account with that id.")
+    account.profile = {**(account.profile or {}), "registrationNumber": body.registrationNumber.strip()}
+    audit(db, user, "DOCTOR_REGISTRATION_SET", account_id)
+    db.commit()
+    return {"id": account_id, "registrationNumber": account.profile["registrationNumber"]}
 
 
 class CampusAssignmentInput(StrictModel):

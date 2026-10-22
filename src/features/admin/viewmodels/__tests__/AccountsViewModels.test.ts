@@ -223,11 +223,13 @@ describe('AccountsListViewModel', () => {
     vm.setIdentifier('+919800000000');
     vm.setRole('NMC_DOCTOR');
     vm.setChannel('WHATSAPP');
+    vm.setRegistrationNumber(' TSMC-12345 ');
     expect(await vm.create()).toBe(true);
     const sent = vi.mocked(repo.create).mock.calls[0][0];
-    expect(sent).toEqual({ fullName: 'Dr Meera Iyer', identifier: '+919800000000', channel: 'WHATSAPP', role: 'NMC_DOCTOR' });
-    expect(Object.keys(sent)).toEqual(['fullName', 'identifier', 'channel', 'role']);
-    expect([vm.fullName, vm.identifier, vm.role, vm.channel]).toEqual(['', '', 'NMC_DOCTOR', 'WHATSAPP']);
+    // A doctor is created with their NMC registration number (audit M1).
+    expect(sent).toEqual({ fullName: 'Dr Meera Iyer', identifier: '+919800000000', channel: 'WHATSAPP', role: 'NMC_DOCTOR', registrationNumber: 'TSMC-12345' });
+    expect(Object.keys(sent)).toEqual(['fullName', 'identifier', 'channel', 'role', 'registrationNumber']);
+    expect([vm.fullName, vm.identifier, vm.role, vm.channel, vm.registrationNumber]).toEqual(['', '', 'NMC_DOCTOR', 'WHATSAPP', '']);
     expect(repo.list).toHaveBeenCalledTimes(2);
   });
 
