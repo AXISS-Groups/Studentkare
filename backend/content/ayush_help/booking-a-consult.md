@@ -1,7 +1,7 @@
 ---
 id: booking-a-consult
 title: Booking a doctor consult
-reviewed: 2026-10-22
+reviewed: 2026-10-23
 keywords: consult, physician, consult a doctor, consultation, appointment, book a doctor, see a doctor, talk to a doctor, speak to a doctor, video call, video consult, online doctor, teleconsultation, schedule, reschedule, cancel appointment, slot, doctor appointment, डॉक्टर, अपॉइंटमेंट, बुक, परामर्श, कंसल्ट, డాక్టర్, వైద్యుడు, అపాయింట్‌మెంట్, బుక్, కన్సల్ట్
 ---
 <!--
@@ -12,7 +12,7 @@ backend/services/workflow_api.py POST /api/appointments and PATCH /api/appointme
 -->
 To book a doctor consult, open Doctor consults (Care in the app menu). It lists the doctors who are taking bookings, with each doctor's price and their next free slot, so you see both before you book. You can also find doctors under Find care, on the Doctors tab.
 
-Choose Book next to a doctor. Pick the consultation service, a date, and one of the open time slots, then choose Request this appointment. Sending the request holds that slot for you. The doctor or provider then confirms it, and only then does it become a confirmed appointment. No payment is collected in the booking step.
+Choose Book next to a doctor. Pick the consultation service, a date, and one of the open time slots, then choose Request this appointment. Sending the request holds that slot for you. The doctor or provider then confirms or declines it, and only a confirmed request becomes an appointment. No payment is collected in the booking step.
 
 If no slot is shown, that doctor has not published any slots for that service and date yet. Try another date or another doctor.
 
