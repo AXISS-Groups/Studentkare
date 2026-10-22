@@ -44,7 +44,7 @@ from services import (
 )
 from services.agents.blood_emergency_agent import blood_emergency_agent
 from services.agents.hitl_approval_agent import hitl_approval_agent
-from services.agents.medical_guard import medical_guard
+from services.agents.medical_guard import KILL_SWITCH_SETTING, medical_guard
 from services.agents.medication_adherence_loop_agent import medication_adherence_loop_agent
 from services.code_sentinel_scanner import CodeSentinelScanner
 from services.commerce_session import commerce_db, grants_required
@@ -3307,8 +3307,11 @@ def my_visit_summary(note_id: str, response: Response, user=Depends(authenticate
     }
 
 
+# Held AI actions name the student they are about and the medical audit trail
+# records clinical decisions, so only the super admin reads or releases them
+# (audit M2). There is no clinical-reviewer role yet; partners never see them.
 @router.get("/ops/approvals")
-def get_pending_approvals(user=Depends(require_staff)):
+def get_pending_approvals(user=Depends(require_super_admin)):
     # The pending actions are about real students; a team account sees none (core/team_scope.py).
     if team_sandboxed(user):
         return {"pending_actions": []}
@@ -3321,7 +3324,7 @@ class ApproveActionInput(StrictModel):
 
 
 @router.post("/ops/approve-action")
-def approve_pending_action(body: ApproveActionInput, user=Depends(require_staff), db: Session = Depends(workflow_db)):
+def approve_pending_action(body: ApproveActionInput, user=Depends(require_super_admin), db: Session = Depends(workflow_db)):
     if team_sandboxed(user):
         raise HTTPException(403, "Team accounts can't approve actions about real students.")
     # Only authorized staff (clinician/admin) may approve. Uses the server-derived
@@ -3472,7 +3475,7 @@ def lookup_medication(body: MedicationLookupInput, user=Depends(authenticated_us
 # -----------------------------------------------------------------------------
 
 @router.get("/v1/ops/audit-trail")
-def get_medical_audit_trail(limit: int = Query(default=50, ge=1, le=100), user=Depends(require_staff)):
+def get_medical_audit_trail(limit: int = Query(default=50, ge=1, le=100), user=Depends(require_super_admin)):
     if team_sandboxed(user):
         return {"events": [], "count": 0}
     trail = medical_guard.get_audit_trail(limit)
@@ -3482,6 +3485,10 @@ def get_medical_audit_trail(limit: int = Query(default=50, ge=1, le=100), user=D
 @router.post("/v1/ops/kill-switch")
 def trigger_emergency_kill_switch(user=Depends(require_super_admin), db: Session = Depends(workflow_db)):
     actor_name = user.get("fullName") or user.get("full_name") or user.get("email") or "Staff"
+    # Persisted in the settings registry: every worker, replica and the model
+    # gateway (services/llm_gateway.py) obey it, and it survives a restart.
+    from services.settings_api import write_override
+    write_override(db, user, KILL_SWITCH_SETTING, True, "Emergency kill switch activated")
     result = medical_guard.activate_emergency_kill_switch(triggered_by=actor_name)
     audit(db, user, "KILL_SWITCH_ACTIVATED", user["id"])
     ops_feed.publish(
@@ -3497,6 +3504,8 @@ def trigger_emergency_kill_switch(user=Depends(require_super_admin), db: Session
 @router.post("/v1/ops/kill-switch/reset")
 def reset_emergency_kill_switch(user=Depends(require_super_admin), db: Session = Depends(workflow_db)):
     actor_name = user.get("fullName") or user.get("full_name") or user.get("email") or "SuperAdmin"
+    from services.settings_api import write_override
+    write_override(db, user, KILL_SWITCH_SETTING, None, "Emergency kill switch reset")
     result = medical_guard.reset_emergency_kill_switch(reset_by=actor_name)
     audit(db, user, "KILL_SWITCH_RESET", user["id"])
     ops_feed.publish(

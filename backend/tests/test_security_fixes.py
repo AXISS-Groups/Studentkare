@@ -54,14 +54,14 @@ def test_donor_directory_requires_auth_and_never_returns_contact(harness):
     assert all("phone" not in d for d in donors)
 
 
-def test_approvals_require_staff_role(harness):
+def test_approvals_require_the_super_admin(harness):
     client, factory, codes = harness
     _, headers = register(client, codes)  # STUDENT
     assert client.get("/api/ops/approvals", headers=headers).status_code == 403
     assert client.post("/api/ops/approve-action", json={"actionId": "act_01"}, headers=headers).status_code == 403
-    # Unknown action for a staff member returns 404, never a fake success.
+    # Unknown action for the super admin returns 404, never a fake success.
     with factory() as db:
-        db.add(M.Account(id="staff", identifier="staff@example.test", channel="EMAIL", full_name="Staff", role="NMC_DOCTOR", active=True, profile={}, created_at=time.time()))
+        db.add(M.Account(id="staff", identifier="staff@example.test", channel="EMAIL", full_name="Staff", role="SUPER_ADMIN", active=True, profile={}, created_at=time.time()))
         db.commit()
     staff_headers = login(client, codes, "staff@example.test")
     res = client.post("/api/ops/approve-action", json={"actionId": "does-not-exist"}, headers=staff_headers)

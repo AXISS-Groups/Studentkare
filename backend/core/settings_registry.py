@@ -416,6 +416,14 @@ declare("lab.collect_verification_minutes", INT, 15, area="lab", unit="minutes",
 declare("privacy.deletion_grace_days", INT, 7, area="privacy", unit="days", minimum=1, maximum=30, public=True,
         description="Days between a student's account-deletion request and its erasure; they can cancel until then.")
 
+# --- AI kill switch (audit M2) --------------------------------------------------
+# Persisted here, not in one process's memory, so every worker and replica obeys
+# it (within CACHE_TTL_SECONDS) and it survives a restart. services/llm_gateway.py
+# refuses every model call while it is on. Set through POST /api/v1/ops/kill-switch
+# (and /reset), which record a reason and an audit row like any other override.
+declare("ai.kill_switch_active", BOOL, False, area="ai",
+        description="Emergency stop: while true, no AI model call is made anywhere on the platform.")
+
 # --- Agent Ayush retrieval (services/vector_store.py) -------------------------
 # Only used when a semantic embedding model is on (EMBEDDING_PROVIDER=ollama). A
 # passage that shares no word with the question (another language, a synonym) is

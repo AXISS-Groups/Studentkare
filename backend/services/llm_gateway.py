@@ -105,6 +105,14 @@ class ModelUnavailable(RuntimeError):
     """No model is configured, the runtime is cooling off, or the call failed."""
 
 
+class KillSwitchActive(ModelUnavailable):
+    """The AI kill switch (settings registry ``ai.kill_switch_active``) is on.
+
+    A ModelUnavailable, so every caller already shows its honest "AI is not
+    available" path instead of an answer.
+    """
+
+
 _force_constitution_failure = False
 _lock = threading.Lock()
 _unavailable_until = 0.0
@@ -165,6 +173,12 @@ def _call_ollama(prompt: str, system: str, *, model: str, timeout: float) -> str
 _transport: Callable[..., str] = _call_ollama
 
 
+def kill_switch_active() -> bool:
+    """The platform-wide AI kill switch (audit M2), persisted in the settings registry."""
+    from core.settings_registry import setting
+    return setting("ai.kill_switch_active") is True
+
+
 def invoke(prompt: str, *, rule_id: str, instructions: str = "",
            timeout: Optional[float] = None) -> str:
     """Call the model under the constitution. Returns sanitised text or raises.
@@ -173,6 +187,8 @@ def invoke(prompt: str, *, rule_id: str, instructions: str = "",
     """
     if not verify_constitution_loaded():
         raise ConstitutionError("AI constitution failed to load; model call blocked (fail-closed).")
+    if kill_switch_active():
+        raise KillSwitchActive("AI kill switch is on")
     if rule_id not in CONSTITUTION_RULES:
         raise ValueError(f"[AI CONSTITUTION VIOLATION]: Invalid rule ID '{rule_id}'.")
 

@@ -10,10 +10,17 @@ from __future__ import annotations
 
 import datetime
 import json
+import logging
 import os
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
+
+logger = logging.getLogger("services.agents.medical_guard")
+
+# The kill switch lives in the settings registry (audit M2), so every process
+# sees the same value and it survives a restart.
+KILL_SWITCH_SETTING = "ai.kill_switch_active"
 
 LOGS_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "logs")
 AUDIT_LOG_FILE = os.path.join(LOGS_DIR, "medical_audit.jsonl")
@@ -46,8 +53,13 @@ class AuditEvent(BaseModel):
 
 class MedicalGuard:
     def __init__(self) -> None:
-        self.system_frozen: bool = False
         self._ensure_logs_directory()
+
+    @property
+    def system_frozen(self) -> bool:
+        """Whether the AI kill switch is on, from the settings registry (never process memory)."""
+        from core.settings_registry import setting
+        return setting(KILL_SWITCH_SETTING) is True
 
     def _ensure_logs_directory(self) -> None:
         if not os.path.exists(LOGS_DIR):
@@ -78,8 +90,9 @@ class MedicalGuard:
         try:
             with open(AUDIT_LOG_FILE, "a", encoding="utf-8") as f:
                 f.write(json.dumps(event.model_dump()) + "\n")
-        except Exception:
-            pass  # Fallback gracefully if filesystem issue occurs
+        except OSError as exc:
+            # Never silent: a lost audit line is itself something ops must see.
+            logger.error("[medical_guard] audit event %s could not be written (%s)", event_id, type(exc).__name__)
         return event
 
     def classify_action(self, action_type: str) -> str:
@@ -183,8 +196,7 @@ class MedicalGuard:
         return {"allowed": True, "reason": "High-risk action approved by clinician.", "requires_approval": False, "risk_level": risk_level}
 
     def activate_emergency_kill_switch(self, triggered_by: str) -> Dict[str, Any]:
-        """Hardware/UI emergency kill switch freezing high-stakes operations."""
-        self.system_frozen = True
+        """Log the kill switch going on. The caller persists it (settings_api.write_override)."""
         self.log_audit_event(
             actor=triggered_by,
             action_type="EMERGENCY_KILL_SWITCH",
@@ -200,8 +212,7 @@ class MedicalGuard:
         }
 
     def reset_emergency_kill_switch(self, reset_by: str) -> Dict[str, Any]:
-        """Resets the emergency freeze back to normal operations."""
-        self.system_frozen = False
+        """Log the kill switch going off. The caller persists it (settings_api.write_override)."""
         self.log_audit_event(
             actor=reset_by,
             action_type="RESET_KILL_SWITCH",
