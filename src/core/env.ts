@@ -33,3 +33,11 @@ export const allowOfflineAuth = (): boolean => isDev() && read('VITE_ALLOW_OFFLI
 
 // Sample content for demos and screenshots. Development only, so no production build can show it.
 export const demoDataEnabled = (): boolean => isDev() && read('VITE_DEMO_DATA') === 'true';
+
+/**
+ * The public home page the logo links to. Expo inlines only static
+ * process.env.EXPO_PUBLIC_* reads. Without it the app opens its own landing
+ * screen (the root route), never a hard-coded host.
+ */
+export const publicHomeUrl = (): string =>
+  (typeof process !== 'undefined' ? process.env.EXPO_PUBLIC_SITE_URL : undefined)?.trim() || read('VITE_PUBLIC_SITE_URL')?.trim() || '/';

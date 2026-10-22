@@ -10,3 +10,10 @@ export const allowOfflineAuth = (): boolean => Boolean(import.meta.env.DEV) && i
 
 // Sample content for demos and screenshots. Dev server only, so no production build can show it.
 export const demoDataEnabled = (): boolean => Boolean(import.meta.env.DEV) && (import.meta.env.VITE_DEMO_DATA === 'true' || import.meta.env.MODE === 'demo');
+
+/**
+ * The public home page the logo links to (founder, 2026-10-22). VITE_PUBLIC_SITE_URL
+ * when the public site lives elsewhere; otherwise the site root on the app's own
+ * domain (e.g. studentkare.co/). Never a hard-coded host.
+ */
+export const publicHomeUrl = (): string => (import.meta.env.VITE_PUBLIC_SITE_URL as string | undefined)?.trim() || '/';

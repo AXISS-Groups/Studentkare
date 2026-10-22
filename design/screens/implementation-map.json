@@ -40,7 +40,10 @@
       "src/features/auth/views/SignInFrame.tsx",
       "src/features/auth/views/SignInNativeView.tsx",
       "src/features/auth/views/ChannelChoice.tsx",
-      "src/features/auth/views/AuthNativeParts.tsx"
+      "src/features/auth/views/AuthNativeParts.tsx",
+      "src/features/auth/views/AuthHeroSlides.tsx",
+      "src/features/auth/views/PasscodeSignInView.tsx",
+      "src/features/auth/views/PasscodeNativeParts.tsx"
     ],
     "OtpVerify": [
       "src/features/auth/views/OtpVerifyView.tsx",
@@ -54,7 +57,9 @@
       "src/features/auth/views/CreateAccountNativeView.tsx",
       "src/features/auth/views/channelCopy.ts",
       "src/features/auth/views/ChannelChoice.tsx",
-      "src/features/auth/views/AuthNativeParts.tsx"
+      "src/features/auth/views/AuthNativeParts.tsx",
+      "src/features/auth/views/SignInFrame.tsx",
+      "src/features/auth/views/AuthHeroSlides.tsx"
     ],
     "CampusVerify": [
       "src/features/auth/views/CampusVerifyView.tsx",
@@ -496,7 +501,9 @@
       "src/features/auth/screens/AuthenticatedFlowScreen.tsx",
       "src/features/auth/views/SignInView.tsx",
       "src/features/auth/views/SignInFrame.tsx",
-      "src/features/auth/views/ChannelChoice.tsx"
+      "src/features/auth/views/ChannelChoice.tsx",
+      "src/features/auth/views/AuthHeroSlides.tsx",
+      "src/features/auth/views/PasscodeSignInView.tsx"
     ],
     "WebLoggedOut": [
       "src/features/auth/views/LoggedOutView.tsx"

@@ -15,6 +15,8 @@ import {
 interface CreateAccountNativeViewProps {
   vm: AuthViewModel;
   onNavigateToSignIn?: () => void;
+  /** The logo: the public home page. */
+  onHome?: () => void;
   onSuccess?: () => void;
 }
 
@@ -32,6 +34,7 @@ const SUB_STEPS: readonly SubStep[] = ['profile', 'contact', 'otp', 'consent'];
 export const CreateAccountNativeView: React.FC<CreateAccountNativeViewProps> = observer(function CreateAccountNativeView({
   vm,
   onNavigateToSignIn,
+  onHome,
   onSuccess,
 }) {
   const [subStep, setSubStep] = useState<SubStep>('profile');
@@ -75,7 +78,7 @@ export const CreateAccountNativeView: React.FC<CreateAccountNativeViewProps> = o
     : vm.error ? <SendErrorNative message={vm.error} /> : null;
 
   return (
-    <AuthNativeFrame regionLabel="auth.signup.title" onBack={back}>
+    <AuthNativeFrame regionLabel="auth.signup.title" onBack={back} onHome={onHome}>
       <View
         style={styles.track}
         accessibilityRole="progressbar"
