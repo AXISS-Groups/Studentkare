@@ -4,7 +4,7 @@ import { DataTable } from '@/design-system/data/DataTable';
 import type { DataTableRow } from '@/design-system/data/DataTable';
 import { Avatar, SkButton, Skeleton } from '@/design-system/primitives';
 import { Icon, Icon3d } from '@/design-system/icons';
-import { apiRequest } from '@/data/services/http';
+import { ApiError, apiRequest } from '@/data/services/http';
 import { useAuth } from '@/data/contexts/AuthContext';
 import type { AccountRole } from '@/data/types/workflowTypes';
 import { initialsOf } from '@/features/clinician/shared/names';
@@ -65,14 +65,16 @@ const MATRIX_ROLES: ReadonlyArray<{ role: AccountRole; label: MessageKey }> = [
  * endpoint for it, and the board says so. The role matrix is read from the
  * app's route gate, so it can't drift from what each role can really open.
  * Hostel admin and medical officer roles do not exist yet and are not drawn.
+ * Only a super admin asks for the list: for anyone else the endpoint can only
+ * answer 403, so the board shows that answer without sending the request.
  */
 export function CampusAdminTeamScreen({ source = liveTeamSource }: { source?: TeamSource }): React.ReactElement {
   const t = useT();
   const { user } = useAuth();
   const boardRef = useBoardRef();
-  const [load] = useState(() => () => source.load());
-  const { state, retry } = useBoardLoad(load);
   const superAdmin = user?.role === 'SUPER_ADMIN';
+  const [load] = useState(() => (superAdmin ? () => source.load() : () => Promise.reject(new ApiError('forbidden', HTTP_FORBIDDEN))));
+  const { state, retry } = useBoardLoad(load);
 
   const header = (
     <ConsolePageHeader

@@ -49,6 +49,15 @@ describe('CampusAdminTeamScreen', () => {
     expect(invite).toHaveTextContent('Only a super admin can invite campus staff today.');
   });
 
+  it('never asks the super-admin-only endpoint for a campus admin', async () => {
+    auth.user = { fullName: 'Priya Rao', role: 'CAMPUS_ADMIN', university: 'VNR VJIET' };
+    const load = vi.fn(() => Promise.resolve([]));
+    render(<CampusAdminTeamScreen source={{ load }} />);
+    await flush();
+    expect(load).not.toHaveBeenCalled();
+    expect(screen.getByText('Only a super admin can see the team list today')).toBeInTheDocument();
+  });
+
   it('reads the role matrix from the app’s own route gate', async () => {
     auth.user = { fullName: 'Priya Rao', role: 'CAMPUS_ADMIN', university: 'VNR VJIET' };
     render(<CampusAdminTeamScreen source={source([])} />);
@@ -61,7 +70,8 @@ describe('CampusAdminTeamScreen', () => {
     expect(cells('Counsellor queue')).toEqual(['no', 'yes']);
     expect(cells('Break-glass emergency card')).toEqual(['yes', 'no']);
     expect(cells('Invite admins')).toEqual(['no', 'no']);
-    expect(screen.getByText('No campus staff yet.')).toBeInTheDocument();
+    // The staff list itself is super-admin only; the matrix still shows for a campus admin.
+    expect(screen.getByText('Only a super admin can see the team list today')).toBeInTheDocument();
     expect(screen.getByText('Team changes aren’t shown here yet')).toBeInTheDocument();
   });
 
