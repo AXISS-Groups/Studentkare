@@ -439,6 +439,11 @@ declare("auth.password_ip_max_attempts", INT, 20, area="auth", unit="attempts", 
         description="Password sign-in attempts one network address may make in the rate window.")
 declare("auth.password_id_max_attempts", INT, 10, area="auth", unit="attempts", minimum=5, maximum=100,
         description="Password sign-in attempts against one ID in the rate window, whoever makes them.")
+# B2B invites (services/student_invites.py, plan tier1-auth-password-2026-10-22 b):
+# a partner college creates a student's account and sends a one-time link; the
+# temporary password goes separately. Both stop working after this long.
+declare("auth.invite_link_hours", INT, 72, area="auth", unit="hours", minimum=1, maximum=336,
+        description="How long a college's invite link and its temporary password work.")
 declare("auth.whatsapp_status_cache_seconds", INT, 60, area="auth", unit="seconds", minimum=5, maximum=900,
         description="How long a WhatsApp session check (or a failed WhatsApp send) is trusted before checking again.")
 declare("auth.whatsapp_status_timeout_seconds", INT, 3, area="auth", unit="seconds", minimum=1, maximum=10,

@@ -64,6 +64,12 @@ export const authModule: FeatureModule = {
       load: () => import('./views/AdminSignInView').then((m) => ({ default: m.AdminSignInScreen })),
     },
     {
+      // A partner college's invite (B2B, plan tier1-auth-password-2026-10-22 b): the link is /claim#token=….
+      path: '/claim',
+      public: true,
+      load: () => import('./screens/ClaimInviteScreen').then((m) => ({ default: m.ClaimInviteScreen })),
+    },
+    {
       path: '/verify-gate',
       public: true,
       load: () => import('./views/VerifyGateView').then((m) => ({ default: m.VerifyGateView })),

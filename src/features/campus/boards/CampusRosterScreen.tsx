@@ -8,6 +8,9 @@ import { useLanguage, useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
 import { Unavailable, goTo } from './boardKit';
 import { ROSTER_FIELDS, checkRoster, hasRequiredColumns, rosterTemplate } from './rosterImport';
+import { StudentInvitesPanel } from '../invites/StudentInvitesPanel';
+import { studentInvitesRepository } from '../invites/studentInvitesRepository';
+import type { StudentInvitesRepository } from '../invites/studentInvitesRepository';
 import type { RosterCheck, RosterField, RowProblem } from './rosterImport';
 import './campus-boards.css';
 
@@ -48,9 +51,11 @@ const PROBLEM_LABEL: Record<RowProblem, MessageKey> = {
  * student is listed. Two parts are real: how many students wait for
  * verification (GET /ops/campus/pending, a count only), and the import
  * drawer, which reads and checks a CSV on this computer and says plainly that
- * sending invites isn't connected. Export is shown disabled for the same reason.
+ * sending invites from a CSV isn't connected yet (D-B4). Export is shown disabled
+ * for the same reason. Below it, "Invite students" invites one student at a time
+ * (B2B; plan tier1-auth-password-2026-10-22, amendment b).
  */
-export function CampusRosterScreen({ source = liveRosterSource }: { source?: RosterSource }): React.ReactElement {
+export function CampusRosterScreen({ source = liveRosterSource, invites = studentInvitesRepository }: { source?: RosterSource; invites?: StudentInvitesRepository }): React.ReactElement {
   const t = useT();
   const { lang } = useLanguage();
   const [importing, setImporting] = useState(false);
@@ -114,6 +119,7 @@ export function CampusRosterScreen({ source = liveRosterSource }: { source?: Ros
             <Icon name="arrow-right" size={16} strokeWidth={1.9} />
           </a>
         ) : null}
+        <StudentInvitesPanel repository={invites} />
       </ConsoleTablePage>
       <ImportDrawer open={importing} onClose={() => setImporting(false)} />
     </>

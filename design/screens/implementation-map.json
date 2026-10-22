@@ -791,7 +791,9 @@
       "src/features/campus/console/campusPages.tsx",
       "src/features/campus/boards/CampusRosterScreen.tsx",
       "src/features/campus/boards/rosterImport.ts",
-      "src/features/campus/boards/boardKit.tsx"
+      "src/features/campus/boards/boardKit.tsx",
+      "src/features/campus/invites/StudentInvitesPanel.tsx",
+      "src/features/campus/invites/StudentInvitesViewModel.ts"
     ],
     "CampusInsights": [
       "src/design-system/campus-shell/CampusShell.tsx",

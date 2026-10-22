@@ -38,6 +38,7 @@ import { rewardsTe } from './areas/rewards';
 import { safetyTe } from './areas/safety';
 import { shopwebTe } from './areas/shopweb';
 import { stepsTe } from './areas/steps';
+import { studentInvitesTe } from './areas/studentInvites';
 import { studentPasswordTe } from './areas/studentPassword';
 import { studentshellTe } from './areas/studentshell';
 import { studentwebT1Te } from './areas/studentwebT1';
@@ -93,6 +94,7 @@ export const areasTe = {
   ...safetyTe,
   ...shopwebTe,
   ...stepsTe,
+  ...studentInvitesTe,
   ...studentPasswordTe,
   ...studentshellTe,
   ...studentwebT1Te,

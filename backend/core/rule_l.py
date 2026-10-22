@@ -132,6 +132,7 @@ TABLE_PLANES: dict[str, str] = {
     "care_student_passcodes": PLATFORM,           # student passcode hashes and lockout counters; no grant to either role
     "care_account_passwords": PLATFORM,           # password hashes and lockout counters; no grant to either role
     "care_account_contacts": PLATFORM,            # each account's email and WhatsApp number, verified or not
+    "care_student_invites": PLATFORM,             # B2B invitations: link and temporary-password hashes only
     "care_workflow_audit": PLATFORM,
     "audit_logs": PLATFORM,
     "care_system_settings": PLATFORM,             # integration secrets

@@ -90,6 +90,7 @@ export const routePaths = [
   'catalogue',
   'checkout',
   'chronic',
+  'claim',
   'clinical-notes',
   'clinical-review',
   'clinician',
