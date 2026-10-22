@@ -81,6 +81,8 @@ const EXTRA: Partial<Record<RoutePath, StudentNavId>> = {
   'return-request': 'requests',
   'hostel-visit': 'requests',
   'refill-request': 'requests',
+  // My health (M2Insights) is the student's care overview, under "Your Care".
+  'your-care': 'your-care',
 };
 
 /** The sidebar item to mark current for a route, or null when the route is not in the sidebar. */

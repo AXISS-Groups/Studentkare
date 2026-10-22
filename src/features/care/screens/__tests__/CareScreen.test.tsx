@@ -17,8 +17,9 @@ describe('CareScreen: who gets the student workspace', () => {
   it.each([
     { path: 'shop', phone: false }, { path: 'checkout', phone: false },
     { path: 'shop', phone: true }, { path: 'checkout', phone: true },
-    // Mobile 2.0 Doctor consults (M2Consults) is a phone board.
-    { path: 'care', phone: true },
+    // Mobile 2.0 Doctor consults (M2Consults): the phone board, and above phone width the
+    // student shell (its own "Doctors" link must not open another site's header).
+    { path: 'care', phone: true }, { path: 'care', phone: false },
   ])('a signed-in student gets /$path in the workspace (phone: $phone)', async ({ path, phone }) => {
     Object.assign(state, { role: 'STUDENT', phone, path });
     render(<CareScreen />);
@@ -39,8 +40,8 @@ describe('CareScreen: who gets the student workspace', () => {
     }
   });
 
-  it('/care above phone width keeps the public marketplace', () => {
-    for (const next of [{ role: 'STUDENT', phone: false, path: 'care' }, { role: null, phone: false, path: 'care' }]) {
+  it('/care keeps the public marketplace for visitors and other roles', () => {
+    for (const next of [{ role: null, phone: false, path: 'care' }, { role: null, phone: true, path: 'care' }, { role: 'VENDOR', phone: false, path: 'care' }]) {
       Object.assign(state, next);
       const { unmount } = render(<CareScreen />);
       expect(screen.getByText('public marketplace')).toBeInTheDocument();

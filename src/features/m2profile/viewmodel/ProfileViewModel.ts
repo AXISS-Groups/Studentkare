@@ -80,7 +80,7 @@ export class ProfileViewModel implements ViewModel {
       if (typeof res.total !== 'number' || !res.categoryCounts) throw new Error('No document counts.');
       return { total: res.total, categoryCounts: res.categoryCounts };
     });
-    this.plans = new Resource(() => request<{ plans: Plan[] }>('/plans'));
+    this.plans = new Resource(() => request<{ plans: Plan[] }>('/billing/plans'));
     makeAutoObservable(this, { profile: false, body: false, documents: false, plans: false }, { autoBind: true });
   }
 

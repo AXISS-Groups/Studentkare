@@ -81,8 +81,8 @@ const M2RemindersRoute = lazy(() => import('@/features/reminders/views/M2Reminde
 const M2WaterRoute = lazy(() => import('@/features/reminders/views/M2WaterRoute').then(module => ({ default: module.M2WaterRoute })));
 const M2StepsRoute = lazy(() => import('@/features/steps/views/M2StepsRoute').then(module => ({ default: module.M2StepsRoute })));
 const M2LabsRoute = lazy(() => import('@/features/m2store/views/M2LabsRoute').then(module => ({ default: module.M2LabsRoute })));
-const MedicineInfoRoute = lazy(() => import('@/features/medicineInfo/views/MedicineInfoRoute').then(module => ({ default: module.MedicineInfoRoute })));
-const PharmacyMedicineInfoScreen = lazy(() => import('@/features/medicineInfo/admin/MedicineInfoReviewView').then(module => ({ default: module.PharmacyMedicineInfoScreen })));
+const M2ConsultsRoute = lazy(() => import('@/features/m2store/views/M2ConsultsRoute').then(module => ({ default: module.M2ConsultsRoute })));
+const M2InsightsRoute = lazy(() => import('@/features/insights/views/M2InsightsRoute').then(module => ({ default: module.M2InsightsRoute })));
 const CareDirectoryRoute = lazy(() => import('@/features/careDirectory/views/CareDirectoryRoute').then(module => ({ default: module.CareDirectoryRoute })));
 const WebEmergencyCard = lazy(() => import('@/features/emergency/views/WebEmergencyCard').then(module => ({ default: module.WebEmergencyCard })));
 const IdentityVerifyView = lazy(() => import('@/features/auth/views/IdentityVerifyView').then(module => ({ default: module.IdentityVerifyView })));
@@ -341,6 +341,10 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
       case 'delete-account': return <WebDeleteAccountRoute />;
       // Mobile 2.0 Lab tests: the student shell had no lab tests page (its nav item had no route).
       case 'lab-tests': return <M2LabsRoute />;
+      // Mobile 2.0 Doctor consults: the shell's "Doctors" link stays in the shell (it used to open the public marketplace).
+      case 'care': return <M2ConsultsRoute />;
+      // Mobile 2.0 My health (Tier 1 plan: M2Insights replaces YourCare's overview), in the page column like Trends.
+      case 'your-care': return <M2InsightsRoute />;
       // Find care near you (WebFindCare above phone width): the same board, two columns.
       case 'find-care': return <CareDirectoryRoute wide />;
       // Medicine information above phone width: the same screen, one wider column.

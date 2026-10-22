@@ -62,6 +62,8 @@ function RouterShell() {
   useEffect(() => {
     if (previousPath.current !== location.pathname) {
       previousPath.current = location.pathname;
+      // Focus moves for screen readers; the ring around the whole page is only for the skip link (workflows.css).
+      mainContent.current?.setAttribute('data-route-focus', '');
       mainContent.current?.focus({ preventScroll: true });
       window.scrollTo({ top: 0, behavior: 'instant' });
     }
@@ -135,6 +137,7 @@ function RouterShell() {
       {!isPublicView && <AmbientBackground />}
       <a className="wf-skip-link" href="#main-content" onClick={event => {
         event.preventDefault();
+        mainContent.current?.removeAttribute('data-route-focus');
         mainContent.current?.focus({ preventScroll: true });
         mainContent.current?.scrollIntoView({ behavior: 'instant', block: 'start' });
       }}>{t('common.skipToContent')}</a>
@@ -179,7 +182,7 @@ export function drawsStudentPhoneFrame(pathname: string, role: string | null, ph
  */
 export const STUDENT_PHONE_SHOP_PATHS: readonly string[] = ['/shop', '/checkout', '/lab-tests', '/care'];
 /** Pages a signed-in student gets in the student web shell (top nav with Alerts and SOS) above phone width. */
-export const STUDENT_SHELL_COMMERCE_PATHS: readonly string[] = ['/shop', '/checkout', '/lab-tests'];
+export const STUDENT_SHELL_COMMERCE_PATHS: readonly string[] = ['/shop', '/checkout', '/lab-tests', '/care'];
 
 /** A signed-in student's page above phone width draws the student web shell (its own Alerts and SOS), not the app bar. */
 export function drawsStudentWebShell(pathname: string, role: string | null, phoneWidth: boolean): boolean {
