@@ -1,9 +1,10 @@
 """Passwords: a sign-in password beside the PIN or the one-time code.
 
 Plan tier1-auth-password-2026-10-22 (approved by the founder, 2026-10-22). Team
-accounts get one first, set on the server (``python -m scripts.team_accounts
-set-password``) or by a super admin on Platform → Team accounts; students follow
-in a later change. It reuses the team-account PIN machinery
+accounts set one on the server (``python -m scripts.team_accounts set-password``)
+or by a super admin on Platform → Team accounts, and sign in on /staff-sign-in.
+Students create one at sign-up, sign in with either verified contact
+(``/auth/password/sign-in``), and change it on Sign-in & security. It reuses the team-account PIN machinery
 (services/team_accounts.py) rather than a copy of it: the same salted, peppered
 scrypt hash, the same lockout counting, the same audit rows.
 
@@ -42,9 +43,12 @@ from sqlalchemy.orm import Session as DBSession
 from core import workflow_models as M
 from core.settings_registry import setting
 from services import twofa_store
+from services.contact_store import CONTACT_KINDS, account_for_sign_in, verified_contact
+from services.otp_delivery import dispatch_message
 from services.student_passcode import (
     COMMON_PASSCODES,
     KEYBOARD_ROWS,
+    _code_proven_until,
     _is_repeat,
     _is_run,
     _personal_parts,
@@ -68,10 +72,14 @@ from services.team_accounts import (
 from services.workflow_auth import (
     SESSION_COOKIE,
     StrictModel,
+    authenticated_user,
     check_origin,
     digest,
     issue_session,
     limit,
+    normalize_identifier,
+    remember_device,
+    remembered_account,
     require_super_admin,
     session_payload,
     workflow_db,
@@ -132,6 +140,13 @@ def refusal(error: PasswordRefused, min_length: int) -> HTTPException:
                                "message": messages[error.code]})
 
 
+def store_new_password(db: DBSession, account: M.Account, password: str) -> None:
+    """A brand-new account's password, already checked (sign-up, an invite claim). Doesn't commit."""
+    db.add(M.AccountPassword(account_id=account.id, password_hash=hash_pin(password), failed_attempts=0,
+                             locked_until=0.0, created_at=time.time(), updated_at=0.0, last_sign_in_at=0.0))
+    audit(db, account.id, "PASSWORD_SET", account.id)
+
+
 def set_password(db: DBSession, account: M.Account, password: str, actor_id: str, keep_token_hash: str = "") -> None:
     """Hashes and stores the password, clears its lock and ends the account's other sessions.
 
@@ -178,7 +193,7 @@ def _refused(db: DBSession) -> HTTPException:
     return HTTPException(401, {"code": PASSWORD_FAILED, "message": failure_message(db)})
 
 
-# --- sign-in (team accounts, on /staff-sign-in) -------------------------------
+# --- sign-in (shared by the staff page and the student page) --------------------
 
 
 class PasswordSignIn(StrictModel):
@@ -186,59 +201,179 @@ class PasswordSignIn(StrictModel):
     password: str = Field(min_length=1, max_length=MAX_PASSWORD_LENGTH)
 
 
-@router.post("/auth/staff-password/sign-in")
-def staff_password_sign_in(body: PasswordSignIn, request: Request, response: Response,
-                           db: DBSession = Depends(workflow_db)):
-    check_origin(request)
-    if not password_login_enabled(db):
-        raise HTTPException(403, {"code": PASSWORD_DISABLED,
-                                  "message": "Sign-in with a password is turned off. Use your PIN or the emailed code."})
-    identifier = body.identifier.strip().lower()
+def _disabled(other: str) -> HTTPException:
+    return HTTPException(403, {"code": PASSWORD_DISABLED, "message": f"Sign-in with a password is turned off. {other}"})
+
+
+def _limit_tries(db: DBSession, request: Request, key: str) -> None:
     window = setting("auth.password_rate_window_minutes", db) * 60
     limit(db, f"password_ip:{request.client.host if request.client else 'unknown'}",
           setting("auth.password_ip_max_attempts", db), window)
-    limit(db, f"password_id:{identifier}", setting("auth.password_id_max_attempts", db), window)
+    limit(db, f"password_id:{key}", setting("auth.password_id_max_attempts", db), window)
 
+
+def _check(db: DBSession, account: M.Account | None, eligible: bool, password: str, typed: str,
+           named: bool) -> M.AccountPassword:
+    """The account's password row if the password is right; otherwise the one refusal. Commits on refusal.
+
+    ``named``: the audit row may name the account (a team account); anything else is
+    only a digest of what was typed, so the log never links a person to it.
+    """
     now = time.time()
-    account = db.scalar(select(M.Account).where(M.Account.identifier == identifier))
     credential = db.get(M.AccountPassword, account.id) if account is not None else None
-    eligible = (account is not None and credential is not None and account.active is True
-                and account.is_team_account is True and account.role in TEAM_ROLES and account.role != "STUDENT")
-    if not eligible:
-        _burn_hash_time(body.password)
-        # A team account is named; anything else is only a digest of what was typed,
-        # so the log never links a person to it.
-        team = account is not None and account.is_team_account is True
-        audit(db, account.id if team else ANONYMOUS_ACTOR, "PASSWORD_SIGN_IN_FAILED",
-              account.id if team else _typed_id_digest(identifier))
+    if account is None or credential is None or not eligible:
+        _burn_hash_time(password)
+        audit(db, account.id if named and account else ANONYMOUS_ACTOR, "PASSWORD_SIGN_IN_FAILED",
+              account.id if named and account else _typed_id_digest(typed))
         db.commit()
         raise _refused(db)
-
     if is_locked(credential, now):
-        _burn_hash_time(body.password)
+        _burn_hash_time(password)
         audit(db, account.id, "PASSWORD_SIGN_IN_WHILE_LOCKED", account.id)
         db.commit()
         raise _refused(db)
     clear_lock_if_run_out(credential)
-
-    if not verify_pin(body.password, credential.password_hash):
+    if not verify_pin(password, credential.password_hash):
         audit(db, account.id, "PASSWORD_SIGN_IN_FAILED", account.id)
         if count_wrong_attempt(db, credential, setting("auth.password_max_attempts", db),
                                setting("auth.password_lockout_minutes", db), now):
             audit(db, account.id, "PASSWORD_LOCKED", account.id)
         db.commit()
         raise _refused(db)
-
     credential.failed_attempts, credential.locked_until, credential.last_sign_in_at = 0, 0.0, now
     audit(db, account.id, "PASSWORD_SIGN_IN", account.id)
-    # The password replaces the PIN or code, never the authenticator: same branch as /auth/otp/verify.
-    if twofa_store.is_enabled(db, account.id):
-        temp = twofa_store.create_pending(db, account.id, first_factor="PASSWORD")
-        db.commit()
-        return {"success": True, "requires2FA": True, "tempToken": temp, "user": None}
+    return credential
+
+
+def _pending_second_step(db: DBSession, account: M.Account) -> dict | None:
+    """The password replaces the PIN or code, never the authenticator: same branch as /auth/otp/verify."""
+    if not twofa_store.is_enabled(db, account.id):
+        return None
+    temp = twofa_store.create_pending(db, account.id, first_factor="PASSWORD")
+    db.commit()
+    return {"success": True, "requires2FA": True, "tempToken": temp, "user": None}
+
+
+@router.post("/auth/staff-password/sign-in")
+def staff_password_sign_in(body: PasswordSignIn, request: Request, response: Response,
+                           db: DBSession = Depends(workflow_db)):
+    """Team accounts on /staff-sign-in. Individual staff accounts keep the emailed code."""
+    check_origin(request)
+    if not password_login_enabled(db):
+        raise _disabled("Use your PIN or the emailed code.")
+    identifier = body.identifier.strip().lower()
+    _limit_tries(db, request, identifier)
+    account = db.scalar(select(M.Account).where(M.Account.identifier == identifier))
+    team = account is not None and account.is_team_account is True
+    eligible = team and account.active is True and account.role in TEAM_ROLES and account.role != "STUDENT"
+    _check(db, account, eligible, body.password, identifier, named=team)
+    pending = _pending_second_step(db, account)
+    if pending:
+        return pending
     csrf = issue_session(db, account, response, request)
     db.commit()
     return {"success": True, "user": session_payload(db, account), "csrfToken": csrf, "requiresSignup": False}
+
+
+# --- students: sign-in with the email or WhatsApp number and the password -------
+
+NEW_SIGN_IN_SUBJECT = "New sign-in to your StudentKare account"
+NEW_SIGN_IN_TEXT = ("Someone just signed in to your StudentKare account with its password, on a device it hasn't "
+                    "been used on before.\nIf this was you, there is nothing to do.\nIf it wasn't, sign in with a "
+                    "code, change your password in Sign-in & security, and use \"Lost your phone?\" to sign out "
+                    "everywhere else.")
+
+
+def notify_new_sign_in(db: DBSession, account: M.Account) -> None:
+    """Tells both verified contacts about a password sign-in on a new device (plan D-4). Never raises."""
+    for kind in CONTACT_KINDS:
+        value = verified_contact(db, account, kind)
+        if value:
+            dispatch_message(value, kind, NEW_SIGN_IN_SUBJECT, NEW_SIGN_IN_TEXT, db)
+
+
+def _student_for(db: DBSession, typed: str) -> M.Account | None:
+    """The student whose *verified* email or number this is (services/contact_store.py), or None."""
+    kind = "EMAIL" if "@" in typed else "WHATSAPP"
+    try:
+        value = normalize_identifier(typed, kind)
+    except HTTPException:
+        return None
+    return account_for_sign_in(db, value, kind)
+
+
+@router.post("/auth/password/sign-in")
+def student_password_sign_in(body: PasswordSignIn, request: Request, response: Response,
+                             db: DBSession = Depends(workflow_db)):
+    """Students, by their verified email or WhatsApp number. Works on a new device; both contacts are told."""
+    check_origin(request)
+    if not password_login_enabled(db):
+        raise _disabled("Sign in with a code.")
+    typed = body.identifier.strip().lower()
+    _limit_tries(db, request, typed)
+    account = _student_for(db, typed)
+    eligible = account is not None and account.role == "STUDENT" and account.active is True
+    _check(db, account, eligible, body.password, typed, named=False)
+    _device, known = remembered_account(request, db)
+    new_device = known is None or known.id != account.id
+    pending = _pending_second_step(db, account)
+    if new_device:
+        notify_new_sign_in(db, account)
+    if pending:
+        return pending
+    # A password is not a code: the session is not "code-proven" (no passcode or password reset from it).
+    csrf = issue_session(db, account, response, request)
+    remember_device(db, account, request, response)
+    db.commit()
+    return {"success": True, "user": session_payload(db, account), "csrfToken": csrf, "requiresSignup": False}
+
+
+# --- students: Sign-in & security → Password -----------------------------------
+
+
+@router.get("/auth/password")
+def password_status(request: Request, response: Response, user=Depends(authenticated_user),
+                    db: DBSession = Depends(workflow_db)):
+    """Whether this student has a password, and until when it can be replaced without the current one."""
+    response.headers["Cache-Control"] = "no-store"
+    credential = db.get(M.AccountPassword, user["id"])
+    until = _code_proven_until(db, request)
+    return {"enabled": password_login_enabled(db), "hasPassword": credential is not None,
+            "locked": is_locked(credential, time.time()), "minLength": setting("auth.password_min_length", db),
+            "replaceWithoutCurrentUntil": until if until > time.time() else None}
+
+
+class StudentPasswordInput(StrictModel):
+    password: str = Field(min_length=1, max_length=MAX_PASSWORD_LENGTH)
+    currentPassword: str | None = Field(default=None, max_length=MAX_PASSWORD_LENGTH)
+
+
+PROOF_NEEDED = "PASSWORD_PROOF_NEEDED"  # noqa: S105 — an error code, not a password
+
+
+@router.post("/auth/password")
+def set_own_password(body: StudentPasswordInput, request: Request, user=Depends(authenticated_user),
+                     db: DBSession = Depends(workflow_db)):
+    """Set or change your password. Changing one needs the current password, or a code sign-in just now
+    ("Forgot password" is: sign in with a code, then set a new one). Your other sessions are signed out."""
+    check_origin(request)
+    account = db.get(M.Account, user["id"])
+    if account is None or account.role != "STUDENT":
+        raise HTTPException(403, {"code": "PASSWORD_STUDENTS_ONLY", "message": "Team accounts set passwords on Team accounts."})
+    credential = db.get(M.AccountPassword, account.id)
+    if credential is not None and _code_proven_until(db, request) <= time.time():
+        limit(db, f"password_set_self:{account.id}", setting("auth.password_max_attempts", db),
+              setting("auth.password_lockout_minutes", db) * 60)
+        if not body.currentPassword or not verify_pin(body.currentPassword, credential.password_hash):
+            audit(db, account.id, "PASSWORD_SET_SELF_REFUSED", account.id)
+            db.commit()
+            raise HTTPException(403, {"code": PROOF_NEEDED,
+                                      "message": "Enter your current password, or sign in with a code first."})
+    try:
+        set_password(db, account, body.password, account.id, digest(request.cookies.get(SESSION_COOKIE, "")))
+    except PasswordRefused as error:
+        raise refusal(error, setting("auth.password_min_length", db)) from error
+    return {"success": True, "hasPassword": True}
 
 
 # --- Super admin → Team accounts → Set password -------------------------------

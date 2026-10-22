@@ -27,6 +27,8 @@ describe('DPDP consent at signup', () => {
   it('sends the version, every required purpose and the reading language', async () => {
     const vm = new AuthViewModel('signup', null);
     SIGNUP_PURPOSES.forEach((purpose) => vm.consent.toggle(purpose));
+    vm.setNewPassword('Tamarind-river 42');
+    vm.setPasswordAgain('Tamarind-river 42');
     vm.setConsentLanguage('te');
     await vm.completeSignup(() => undefined);
     const [path, init] = apiRequest.mock.calls[0];

@@ -1,15 +1,24 @@
 """DPDP consent is recorded at signup, and there is no account without it."""
 import pytest
-from test_workflow_api import SIGNUP_CONSENT, harness, register  # noqa: F401 — pytest fixtures
+from test_workflow_api import (  # noqa: F401 — pytest fixtures
+    SIGNUP_CONSENT,
+    SIGNUP_PASSWORD,
+    harness,
+    register,
+    verify_second_contact,
+)
 
 from core import workflow_models as M
 
-DETAILS = {"fullName": "Consent Test", "dob": "2000-01-01", "university": "Test University", "rollNumber": "C1"}
+DETAILS = {"fullName": "Consent Test", "dob": "2000-01-01", "university": "Test University", "rollNumber": "C1",
+           "password": SIGNUP_PASSWORD}
 
 
 def _verified(client, codes, identifier):
     client.post("/api/auth/otp/send", json={"identifier": identifier, "channel": "EMAIL", "intent": "SIGNUP"})
-    return {"X-CSRF-Token": client.post("/api/auth/otp/verify", json={"otp": codes[-1]}).json()["csrfToken"]}
+    headers = {"X-CSRF-Token": client.post("/api/auth/otp/verify", json={"otp": codes[-1]}).json()["csrfToken"]}
+    verify_second_contact(client, codes, headers)
+    return headers
 
 
 def test_the_screen_is_told_the_current_version_and_required_items(harness):

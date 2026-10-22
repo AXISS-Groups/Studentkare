@@ -4,6 +4,7 @@ import { observer } from 'mobx-react-lite';
 import { useT } from '@/i18n';
 import { color, font, fontWeight, radius, size, space } from '@/design-system/theme';
 import { Icon } from '@/design-system/icons';
+import { PASSWORD_MAX_LENGTH } from '../viewmodel/AuthViewModel';
 import type { AuthViewModel } from '../viewmodel/AuthViewModel';
 import { PASSCODE_MAX_LENGTH } from '../viewmodel/passcodeRules';
 import { authNativeStyles as s } from './AuthNativeParts';
@@ -145,6 +146,94 @@ export const PasscodeEntryNative = observer(function PasscodeEntryNative({ vm, o
       <TouchableOpacity style={s.link} onPress={vm.leavePasscode} disabled={vm.busy} accessibilityRole="button">
         <Icon name="arrow-left" size={16} color={color.action} />
         <Text style={s.linkText}>{t('authpc.enter.back')}</Text>
+      </TouchableOpacity>
+    </View>
+  );
+});
+
+/** "Use my password", beside "Send a code" (plan tier1-auth-password-2026-10-22, D). */
+export const UsePasswordNative = observer(function UsePasswordNative({ vm }: { vm: AuthViewModel }) {
+  const t = useT();
+  if (!vm.studentPasswordEnabled) return null;
+  return (
+    <>
+      <TouchableOpacity style={styles.ghost} onPress={vm.startPassword} disabled={vm.busy} accessibilityRole="button" accessibilityLabel={t('authpw.usePassword')}>
+        <Icon name="lock-keyhole" size={18} color={color.action} />
+        <Text style={styles.ghostText}>{t('authpw.usePassword')}</Text>
+      </TouchableOpacity>
+      {vm.passwordProblem === 'NEED_ID' ? <Text style={s.hint} accessibilityLiveRegion="polite">{t('authpw.needId')}</Text> : null}
+    </>
+  );
+});
+
+/**
+ * The student's password with the email or number typed on the form. One answer
+ * from the server for every failure; the code path is always beside it.
+ */
+export const PasswordEntryNative = observer(function PasswordEntryNative({ vm, onSuccess }: { vm: AuthViewModel; onSuccess?: () => void }) {
+  const t = useT();
+  const [shown, setShown] = useState(false);
+  const problem = vm.passwordProblem;
+  return (
+    <View style={styles.stack}>
+      <View style={styles.head}>
+        <Text style={s.title} accessibilityRole="header">{t('authpw.enter.title')}</Text>
+        <Text style={s.lead}>{t('authpw.enter.lead', { id: vm.identifier.trim() })}</Text>
+      </View>
+      <View style={s.field}>
+        <Text style={s.label}>{t('authpw.enter.label')}</Text>
+        <View style={[s.control, problem === 'FAILED' ? s.controlInvalid : null]}>
+          <Icon name="lock-keyhole" size={18} color={color.text2} />
+          <TextInput
+            style={s.controlInput}
+            value={vm.password}
+            onChangeText={vm.setStudentPassword}
+            secureTextEntry={!shown}
+            autoCapitalize="none"
+            autoCorrect={false}
+            autoComplete="current-password"
+            textContentType="password"
+            maxLength={PASSWORD_MAX_LENGTH}
+            autoFocus
+            accessibilityLabel={t('authpw.enter.label')}
+            testID="password-input"
+          />
+          <TouchableOpacity style={styles.eye} onPress={() => setShown((v) => !v)} accessibilityRole="button"
+            accessibilityLabel={t(shown ? 'authpw.enter.hide' : 'authpw.enter.show')} aria-selected={shown}>
+            <Icon name="eye" size={20} color={shown ? color.action : color.text2} />
+          </TouchableOpacity>
+        </View>
+        <Text style={s.hint}>{t('authpw.enter.hint')}</Text>
+      </View>
+      {problem === 'FAILED' || problem === 'OTHER' || problem === 'DISABLED' ? (
+        <View style={[styles.note, styles.noteAttention]} accessibilityRole="alert">
+          <Icon name="alert-circle-4" size={20} color={color.attention} />
+          <View style={styles.noteWords}>
+            <Text style={styles.noteTitle}>{t(problem === 'FAILED' ? 'authpw.enter.failedTitle' : 'authpw.enter.otherTitle')}</Text>
+            <Text style={styles.noteBody}>{problem === 'DISABLED' ? t('authpw.disabled') : vm.passwordMessage}</Text>
+          </View>
+        </View>
+      ) : null}
+      <TouchableOpacity
+        style={[s.primary, !vm.canSubmitStudentPassword && s.primaryOff]}
+        onPress={() => void vm.signInWithStudentPassword(() => onSuccess?.())}
+        disabled={!vm.canSubmitStudentPassword}
+        accessibilityRole="button"
+        accessibilityLabel={t('authpw.enter.submit')}
+      >
+        {vm.busy ? <ActivityIndicator color={color.onAction} /> : (
+          <Text style={[s.primaryText, !vm.canSubmitStudentPassword && s.primaryTextOff]}>{t('authpw.enter.submit')}</Text>
+        )}
+      </TouchableOpacity>
+      <TouchableOpacity style={s.link} onPress={() => { vm.leavePassword(); void vm.sendCode(); }} disabled={vm.busy} accessibilityRole="button">
+        <Text style={s.linkText}>{t('authpw.enter.useCode')}</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={s.link} onPress={() => void vm.forgotPassword()} disabled={vm.busy} accessibilityRole="button">
+        <Text style={s.linkText}>{t('authpw.enter.forgot')}</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={s.link} onPress={vm.leavePassword} disabled={vm.busy} accessibilityRole="button">
+        <Icon name="arrow-left" size={16} color={color.action} />
+        <Text style={s.linkText}>{t('authpw.enter.back')}</Text>
       </TouchableOpacity>
     </View>
   );

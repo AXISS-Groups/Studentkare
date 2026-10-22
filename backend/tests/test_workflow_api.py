@@ -1,4 +1,5 @@
 """Real request contracts, isolated SQL storage, and a mocked delivery boundary."""
+import secrets
 import time
 from datetime import datetime, timezone
 
@@ -40,6 +41,21 @@ def harness(monkeypatch):
 SIGNUP_CONSENT = {"version": "signup-2026-10-16b", "purposes": ["RECORDS_STORAGE", "CAMPUS_ENROLMENT", "ADULT_18_PLUS"], "language": "en"}
 
 
+# Sign-up needs a password and, while WhatsApp can deliver, the second contact verified
+# too (plan tier1-auth-password-2026-10-22, B). Test harnesses offer both channels.
+SIGNUP_PASSWORD = "Tamarind-river 42"
+
+
+def verify_second_contact(client, codes, headers, number=None):
+    """Proves the sign-up's other contact (a fresh WhatsApp number by default) with its code."""
+    number = number or f"9{secrets.randbelow(10 ** 9):09d}"
+    sent = client.post("/api/auth/signup/contact/send-code", json={"value": number}, headers=headers)
+    assert sent.status_code == 200, sent.text
+    checked = client.post("/api/auth/signup/contact/verify", json={"otp": codes[-1]}, headers=headers)
+    assert checked.status_code == 200, checked.text
+    return number
+
+
 def register(client, codes, identifier="member@example.test"):
     sent = client.post("/api/auth/otp/send", json={"identifier": identifier, "channel": "EMAIL", "intent": "SIGNUP"})
     assert sent.status_code == 200, sent.text
@@ -48,7 +64,8 @@ def register(client, codes, identifier="member@example.test"):
     assert checked.json()["requiresSignup"] is True
     assert client.get("/api/auth/session").json()["user"] is None
     headers = {"X-CSRF-Token": checked.json()["csrfToken"]}
-    result = client.post("/api/auth/signup", headers=headers, json={"fullName": "Test Member", "dob": "2000-03-14", "university": "Test University", "rollNumber": "TEST-42", "consent": SIGNUP_CONSENT})
+    verify_second_contact(client, codes, headers)
+    result = client.post("/api/auth/signup", headers=headers, json={"fullName": "Test Member", "dob": "2000-03-14", "university": "Test University", "rollNumber": "TEST-42", "consent": SIGNUP_CONSENT, "password": SIGNUP_PASSWORD})
     assert result.status_code == 201, result.text
     return result.json()["user"], {"X-CSRF-Token": result.json()["csrfToken"]}
 
@@ -77,7 +94,8 @@ def test_signup_is_verified_pending_and_persistent(harness):
 
 def test_no_signup_without_verified_grant_or_role_injection(harness):
     client, _, codes = harness
-    body = {"fullName": "Test", "dob": "2000-01-01", "university": "Test", "rollNumber": "T1", "consent": SIGNUP_CONSENT}
+    body = {"fullName": "Test", "dob": "2000-01-01", "university": "Test", "rollNumber": "T1", "consent": SIGNUP_CONSENT,
+            "password": SIGNUP_PASSWORD}
     assert client.post("/api/auth/signup", json=body).status_code == 401
     client.post("/api/auth/otp/send", json={"identifier": "new@example.test", "channel": "EMAIL", "intent": "SIGNUP"})
     check = client.post("/api/auth/otp/verify", json={"otp": codes[-1]}).json()

@@ -124,6 +124,14 @@ export const SignInView = observer(function SignInView({ vm, onCreateAccount }: 
         </button>
       ) : null}
       {vm.passcodeProblem === 'NEED_ID' ? <p className="sk-signin__hint" id="sk-passcode-need-id" role="status">{t('authpc.needId')}</p> : null}
+      {/* Plan tier1-auth-password-2026-10-22 (D): works on any device; the code always stays beside it. */}
+      {vm.studentPasswordEnabled ? (
+        <button type="button" className="sk-signin__ghost" disabled={vm.busy} onClick={vm.startPassword} aria-describedby={vm.passwordProblem === 'NEED_ID' ? 'sk-password-need-id' : undefined}>
+          <Icon name="lock-keyhole" size={18} />
+          {t('authpw.usePassword')}
+        </button>
+      ) : null}
+      {vm.passwordProblem === 'NEED_ID' ? <p className="sk-signin__hint" id="sk-password-need-id" role="status">{t('authpw.needId')}</p> : null}
 
       <div className="sk-signin__or" aria-hidden="true">{t('ident.signin.or')}</div>
 

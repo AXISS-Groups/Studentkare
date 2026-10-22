@@ -18,6 +18,7 @@ from sqlalchemy.orm import Session as DBSession
 
 from core import workflow_models as M
 from core.app_env import is_dev_or_test, is_production, is_testing
+from core.settings_registry import setting
 from core.team_scope import RESERVED_CAMPUS_MESSAGE, is_reserved_campus
 from services import clinical_profile, twofa_store
 from services.contact_store import (
@@ -423,6 +424,9 @@ class Signup(StrictModel):
     # Required: no consent, no account (fail closed). Validated before the
     # signup grant is spent, so a refusal doesn't burn the verification.
     consent: SignupConsent
+    # Required (plan tier1-auth-password-2026-10-22, D-3). Checked for strength
+    # before the grant is spent, like consent. Never logged or sent back.
+    password: str = Field(min_length=1, max_length=128)
 
 
 @router.get("/consent")
@@ -448,6 +452,7 @@ def channel_unavailable(channel: str, db: DBSession) -> HTTPException:
                                "message": CHANNEL_UNAVAILABLE_MESSAGE})
 
 
+SECOND_CONTACT_REQUIRED = "SECOND_CONTACT_REQUIRED"
 STAFF_NOT_FOUND = "No staff account uses this email. Staff accounts are created by an administrator."
 
 
@@ -580,6 +585,21 @@ def signup(body: Signup, request: Request, response: Response, db: DBSession = D
         raise HTTPException(401, "Verify your contact details before completing registration.")
     if not hmac.compare_digest(request.headers.get("x-csrf-token", ""), grant.csrf_token):
         raise HTTPException(403, "Refresh the signup flow and verify your contact details again.")
+    # Both refusals below come before the grant is spent, so the student can fix them and go on.
+    from services.account_password import PasswordRefused, refusal, store_new_password
+    from services.account_password import check_password as check_new_password
+    min_length = setting("auth.password_min_length", db)
+    draft = M.Account(id="", identifier=grant.identifier, channel=grant.channel, full_name=body.fullName,
+                      profile={"dob": body.dob.isoformat()})
+    try:
+        check_new_password(body.password, min_length, draft)
+    except PasswordRefused as error:
+        raise refusal(error, min_length) from error
+    other = "WHATSAPP" if grant.channel == "EMAIL" else "EMAIL"
+    if other in available_channels(db) and not grant.second_verified_at:
+        # D-2: both contacts are verified at sign-up, whenever the other channel can deliver a code.
+        raise HTTPException(422, {"code": SECOND_CONTACT_REQUIRED, "channel": other,
+                                  "message": "Verify your other contact with a code before creating your account."})
     if not db.execute(update(M.SignupGrant).where(M.SignupGrant.token_hash == grant.token_hash, M.SignupGrant.consumed.is_(False)).values(consumed=True)).rowcount:
         db.rollback()
         raise HTTPException(409, "This registration verification has already been used.")
@@ -588,8 +608,11 @@ def signup(body: Signup, request: Request, response: Response, db: DBSession = D
     try:
         db.add(account)
         db.flush()
-        # The contact it signed up with was just proven by the code.
+        # The contact it signed up with was just proven by the code, and so was the other one if given.
         save_contact(db, account.id, grant.channel, grant.identifier, verified=True)
+        if grant.second_verified_at and grant.second_identifier:
+            save_contact(db, account.id, grant.second_channel, grant.second_identifier, verified=True)
+        store_new_password(db, account, body.password)
         # Blood group is clinical: it goes to care_clinical_profiles, never the identity row.
         if body.bloodGroup:
             clinical_profile.write(db, account.id, {"bloodGroup": body.bloodGroup})

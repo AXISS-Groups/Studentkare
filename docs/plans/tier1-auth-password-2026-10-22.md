@@ -52,6 +52,15 @@ yet. Erasure takes the contacts and their in-flight codes.
 5. Consent: unchanged, versioned wording, no session without it.
 6. Account ready → **Set a PIN** (the existing passcode flow, skippable) → optional authenticator.
 
+**As built (part 3, feat/student-password-signup):** sign-up asks for the other contact right after the
+first code (`POST /auth/signup/contact/send-code` and `/verify`, bound to the sign-up grant) and a password
+before consent; `POST /auth/signup` refuses without the password, and without the second contact
+**whenever its channel can deliver a code** (so a WhatsApp outage never blocks sign-up; the contact can be
+added later in Sign-in & security). Students sign in with `POST /auth/password/sign-in` (either verified
+contact); a password sign-in on a device the account hasn't used sends a notice to both contacts. Sign-in &
+security has a Password card (`GET/POST /auth/password`; changing needs the current one or a code sign-in
+in the last `auth.passcode_reset_window_minutes`). Web and Expo.
+
 ### C. Password
 - New table `care_account_passwords`, hashed with the same salted, peppered scrypt as the PIN (`OTP_HASH_SECRET`). Never logged, never sent back, never stored on the device.
 - Rules: at least `auth.password_min_length` (proposed 10), at most 128, no spaces only. Refused: common passwords (local list, no outside service), and the student's own email name, phone digits, name or date of birth. Strength hint on screen.

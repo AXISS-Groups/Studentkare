@@ -13,7 +13,8 @@ import { inviteCodeFromSearch } from '@/features/rewards/inviteCode';
 import type { RoutePath } from '@/lib/utils/workflowRouting';
 import type { SessionResponse } from '@/data/types/workflowTypes';
 import { CrisisLinks } from '@/design-system';
-import { AuthViewModel } from '../viewmodel/AuthViewModel';
+import { AuthViewModel, PASSWORD_STEP, SECOND_CONTACT_STEP } from '../viewmodel/AuthViewModel';
+import { CreatePasswordStep, PasswordSignInView, SecondContactStep } from '../views/StudentPasswordViews';
 import { SignInView } from '../views/SignInView';
 import { OtpVerifyView } from '../views/OtpVerifyView';
 import { SignInFrame, TermsLine, type AuthTab } from '../views/SignInFrame';
@@ -98,7 +99,7 @@ export const AuthenticatedFlowScreen = observer(function AuthenticatedFlowScreen
   );
 
   if (mode === 'login') {
-    const footer = vm.step === 1 && !vm.passcodeEntry ? (
+    const footer = vm.step === 1 && !vm.passcodeEntry && !vm.passwordEntry ? (
       <div className="sk-signin__links">
         <p>{t('auth.newTo')} <button type="button" className="sk-signin__secondary" onClick={toSignup}>{t('auth.createAccount')}</button></p>
         <a className="sk-signin__secondary" href="/lost-phone">
@@ -114,6 +115,7 @@ export const AuthenticatedFlowScreen = observer(function AuthenticatedFlowScreen
         web={!phone}
         onBack={() => {
           if (vm.passcodeEntry) vm.leavePasscode();
+          else if (vm.passwordEntry) vm.leavePassword();
           else if (vm.step === 1) navigate('welcome');
           else vm.advance(1);
         }}
@@ -124,8 +126,9 @@ export const AuthenticatedFlowScreen = observer(function AuthenticatedFlowScreen
         <FormError message={vm.step === 7 || (vm.step === 1 && vm.remembered && !vm.passcodeEntry) ? vm.error : ''} />
         {vm.twoFaRestart && <div className="wf-notice" role="alert"><p>{t(vm.twoFaRestart)}</p></div>}
         {vm.step === 1 && vm.passcodeEntry && <PasscodeSignInView vm={vm} onAccept={accept} />}
-        {vm.step === 1 && !vm.passcodeEntry && vm.remembered && <RememberedView vm={vm} />}
-        {vm.step === 1 && !vm.passcodeEntry && !vm.remembered && (
+        {vm.step === 1 && vm.passwordEntry && <PasswordSignInView vm={vm} onAccept={accept} />}
+        {vm.step === 1 && !vm.passcodeEntry && !vm.passwordEntry && vm.remembered && <RememberedView vm={vm} />}
+        {vm.step === 1 && !vm.passcodeEntry && !vm.passwordEntry && !vm.remembered && (
           <form className="sk-signin__column" onSubmit={(e) => { e.preventDefault(); void vm.sendCode(); }}>
             <SignInView vm={vm} onCreateAccount={toSignup} />
             {isDev() && demoLogins}
@@ -152,7 +155,7 @@ export const AuthenticatedFlowScreen = observer(function AuthenticatedFlowScreen
       <SignupConsent
         consent={vm.consent}
         busy={vm.busy}
-        onBack={() => vm.advance(6)}
+        onBack={() => vm.advance(PASSWORD_STEP)}
         progress={{ position: SIGNUP_STEPS, total: SIGNUP_STEPS }}
       />
     </form>
@@ -166,7 +169,10 @@ export const AuthenticatedFlowScreen = observer(function AuthenticatedFlowScreen
   const signupBack = vm.step === 2 ? undefined : () => {
     if (vm.step === 1) navigate('welcome');
     else if (vm.step === 3) vm.advance(2);
-    else if (vm.step === CONSENT_STEP) vm.advance(6);
+    else if (vm.step === SECOND_CONTACT_STEP) vm.advance(2);
+    else if (vm.step === 4) vm.advance(vm.secondRequired ? SECOND_CONTACT_STEP : 2);
+    else if (vm.step === PASSWORD_STEP) vm.advance(6);
+    else if (vm.step === CONSENT_STEP) vm.advance(PASSWORD_STEP);
     else vm.advance(vm.step - 1);
   };
   const signupFooter = (
@@ -178,7 +184,7 @@ export const AuthenticatedFlowScreen = observer(function AuthenticatedFlowScreen
 
   return (
     <SignInFrame web={!phone} onBack={signupBack} regionLabel="auth.signup.title" tabs={vm.step <= 2 ? tabs : undefined} footer={signupFooter}>
-      {vm.step !== CONSENT_STEP && vm.step !== 2 && vm.step !== 3 && <FormError message={vm.error} />}
+      {vm.step !== CONSENT_STEP && vm.step !== 2 && vm.step !== 3 && vm.step !== SECOND_CONTACT_STEP && vm.step !== PASSWORD_STEP && <FormError message={vm.error} />}
       <PageTransition key={vm.step}>
         {vm.step === 1 && (
           <div className="wf-auth-form sk-signup-step">
@@ -215,7 +221,7 @@ export const AuthenticatedFlowScreen = observer(function AuthenticatedFlowScreen
           </div>
         )}
         {vm.step === 6 && (
-          <form className="wf-auth-form sk-signup-step" onSubmit={(e) => { e.preventDefault(); vm.advance(CONSENT_STEP); }}>
+          <form className="wf-auth-form sk-signup-step" onSubmit={(e) => { e.preventDefault(); vm.advance(PASSWORD_STEP); }}>
             <h1 className="sk-signin__title">{t('auth.campus.title')}</h1>
             <Field label={t('auth.university')}><input required minLength={2} maxLength={160} value={vm.university} onChange={(e) => vm.setField('university', e.target.value)} /></Field>
             <Field label={t('auth.roll')}><input required maxLength={80} value={vm.rollNumber} onChange={(e) => vm.setField('rollNumber', e.target.value)} /></Field>
@@ -224,6 +230,8 @@ export const AuthenticatedFlowScreen = observer(function AuthenticatedFlowScreen
             <button type="button" className="sk-signin__secondary" onClick={() => vm.advance(4)}>{t('auth.editDetails')}</button>
           </form>
         )}
+        {vm.step === SECOND_CONTACT_STEP && <SecondContactStep vm={vm} />}
+        {vm.step === PASSWORD_STEP && <CreatePasswordStep vm={vm} next={CONSENT_STEP} />}
         {vm.step === CONSENT_STEP && consent}
       </PageTransition>
     </SignInFrame>

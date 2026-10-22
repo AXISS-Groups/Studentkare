@@ -43,7 +43,8 @@
       "src/features/auth/views/AuthNativeParts.tsx",
       "src/features/auth/views/AuthHeroSlides.tsx",
       "src/features/auth/views/PasscodeSignInView.tsx",
-      "src/features/auth/views/PasscodeNativeParts.tsx"
+      "src/features/auth/views/PasscodeNativeParts.tsx",
+      "src/features/auth/views/StudentPasswordViews.tsx"
     ],
     "OtpVerify": [
       "src/features/auth/views/OtpVerifyView.tsx",
@@ -59,7 +60,8 @@
       "src/features/auth/views/ChannelChoice.tsx",
       "src/features/auth/views/AuthNativeParts.tsx",
       "src/features/auth/views/SignInFrame.tsx",
-      "src/features/auth/views/AuthHeroSlides.tsx"
+      "src/features/auth/views/AuthHeroSlides.tsx",
+      "src/features/auth/views/StudentPasswordViews.tsx"
     ],
     "CampusVerify": [
       "src/features/auth/views/CampusVerifyView.tsx",
@@ -503,7 +505,8 @@
       "src/features/auth/views/SignInFrame.tsx",
       "src/features/auth/views/ChannelChoice.tsx",
       "src/features/auth/views/AuthHeroSlides.tsx",
-      "src/features/auth/views/PasscodeSignInView.tsx"
+      "src/features/auth/views/PasscodeSignInView.tsx",
+      "src/features/auth/views/StudentPasswordViews.tsx"
     ],
     "WebLoggedOut": [
       "src/features/auth/views/LoggedOutView.tsx"
@@ -708,6 +711,7 @@
       "src/features/account/views/SignInSecurityView.tsx",
       "src/features/account/viewmodel/TwoFactorViewModel.ts",
       "src/features/account/viewmodel/ContactsViewModel.ts",
+      "src/features/account/viewmodel/PasswordCardViewModel.ts",
       "src/design-system/student-shell/StudentWebShell.tsx",
       "src/design-system/student-shell/studentNav.ts",
       "src/design-system/overlays/ConfirmDialog.tsx"

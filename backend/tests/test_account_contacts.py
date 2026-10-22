@@ -45,7 +45,9 @@ def test_sign_up_records_its_contact_as_verified(harness):  # noqa: F811
         row = C.contact_of_kind(db, user["id"], "EMAIL")
     assert row is not None and row.value == "first@example.test" and row.verified_at > 0
     listed = client.get("/api/auth/contacts").json()["items"]
-    assert listed == [{"kind": "EMAIL", "value": "first@example.test", "verified": True, "primary": True}]
+    assert listed[0] == {"kind": "EMAIL", "value": "first@example.test", "verified": True, "primary": True}
+    # The second contact proven during sign-up (services/signup_contacts.py) is saved as verified too.
+    assert listed[1]["kind"] == "WHATSAPP" and listed[1]["verified"] is True and listed[1]["primary"] is False
 
 
 def test_add_and_verify_whatsapp_then_sign_in_with_it(harness):  # noqa: F811

@@ -7,6 +7,7 @@ import { color, font, fontWeight, radius, space } from '@/design-system/theme';
 import { ActivityIndicator, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { observer } from 'mobx-react-lite';
 import { Icon } from '@/design-system/icons';
+import { PASSWORD_MAX_LENGTH, PASSWORD_STEP, SECOND_CONTACT_STEP } from '../viewmodel/AuthViewModel';
 import type { AuthViewModel } from '../viewmodel/AuthViewModel';
 import {
   AuthNativeFrame, ChannelFailureNative, ChannelSwitchNative, NoChannelNative, SendErrorNative, authNativeStyles as s,
@@ -20,9 +21,10 @@ interface CreateAccountNativeViewProps {
   onSuccess?: () => void;
 }
 
-type SubStep = 'profile' | 'contact' | 'otp' | 'consent';
-/** The phone flow's own steps, in order: the "n of 4" progress counts these, never the web's six. */
-const SUB_STEPS: readonly SubStep[] = ['profile', 'contact', 'otp', 'consent'];
+type SubStep = 'profile' | 'contact' | 'otp' | 'second' | 'password' | 'consent';
+/** The phone flow's own steps, in order: the "n of m" progress counts these, never the web's six. */
+const ALL_STEPS: readonly SubStep[] = ['profile', 'contact', 'otp', 'second', 'password', 'consent'];
+const CODE_LENGTH = 6;
 
 /**
  * Create account on Expo, in the Mobile 2.0 frame shared with sign in. The
@@ -30,6 +32,10 @@ const SUB_STEPS: readonly SubStep[] = ['profile', 'contact', 'otp', 'consent'];
  * then the contact (only channels GET /auth/options returned), the code, and
  * the DPDP consent that creates the account. A WhatsApp send that fails keeps
  * every typed field and offers email in one tap.
+ *
+ * Plan tier1-auth-password-2026-10-22 (B): after the code, the other contact is
+ * verified with its own code (only while its channel can deliver), then a password
+ * is created, then consent.
  */
 export const CreateAccountNativeView: React.FC<CreateAccountNativeViewProps> = observer(function CreateAccountNativeView({
   vm,
@@ -51,7 +57,14 @@ export const CreateAccountNativeView: React.FC<CreateAccountNativeViewProps> = o
   const whatsapp = vm.channel === 'WHATSAPP';
   const deliverable = channelIsDeliverable(vm.channel, vm.offeredChannels);
   const canSend = deliverable && !vm.busy && vm.identifier.trim().length > 0;
+  // The second-contact step counts only while its channel can deliver a code.
+  const SUB_STEPS = ALL_STEPS.filter((step) => step !== 'second' || vm.secondRequired);
   const position = SUB_STEPS.indexOf(subStep) + 1;
+  const goFromVm = () => {
+    if (vm.step === SECOND_CONTACT_STEP) setSubStep('second');
+    else if (vm.step === PASSWORD_STEP) setSubStep('password');
+    else if (vm.step === 4) setSubStep('password');
+  };
 
   const handleContactNext = async () => {
     await vm.sendCode();
@@ -62,15 +75,31 @@ export const CreateAccountNativeView: React.FC<CreateAccountNativeViewProps> = o
     await vm.verify(() => {
       if (!vm.error && onSuccess) onSuccess();
     });
-    // A new account: the code is verified, now the consent that creates it.
-    if (!vm.error && vm.step === 4) setSubStep('consent');
+    // A new account: the code is verified; next the other contact (if it can be reached), then the password.
+    if (!vm.error) goFromVm();
+  };
+
+  const handleSecond = async () => {
+    if (vm.secondSent) await vm.verifySecondCode();
+    else await vm.sendSecondCode();
+    if (vm.secondVerified) setSubStep('password');
+  };
+
+  const handlePassword = () => {
+    vm.confirmNewPassword(vm.step);
+    if (!vm.newPasswordProblem) setSubStep('consent');
   };
 
   const handleCreate = async () => {
     await vm.completeSignup(() => {
       if (!vm.error && onSuccess) onSuccess();
     });
+    // The server sent it back for a stronger password or the other contact: show that step.
+    if (vm.step === PASSWORD_STEP) setSubStep('password');
+    else if (vm.step === SECOND_CONTACT_STEP) setSubStep('second');
   };
+  const secondWhatsapp = vm.secondChannel === 'WHATSAPP';
+  const secondReady = vm.secondSent ? vm.secondCode.length === CODE_LENGTH : vm.secondValue.trim().length > 0;
 
   const back = subStep === 'profile' ? undefined : () => setSubStep(SUB_STEPS[position - 2]);
   const sendError = vm.channelFailure
@@ -259,6 +288,108 @@ export const CreateAccountNativeView: React.FC<CreateAccountNativeViewProps> = o
 
           <TouchableOpacity style={s.link} onPress={() => setSubStep('contact')} accessibilityRole="button" accessibilityLabel={t('auth.changeContact')}>
             <Text style={s.linkText}>{t('auth.changeContact')}</Text>
+          </TouchableOpacity>
+        </>
+      )}
+
+      {subStep === 'second' && (
+        <>
+          <View style={styles.otpHeader}>
+            <Text style={styles.otpTitle} accessibilityRole="header">{t(secondWhatsapp ? 'authpw.second.title.WHATSAPP' : 'authpw.second.title.EMAIL')}</Text>
+            <Text style={s.lead}>{t('authpw.second.lead')}</Text>
+          </View>
+          {!vm.secondSent ? (
+            <View style={s.field}>
+              <Text style={s.label}>{t(secondWhatsapp ? 'contacts.phoneLabel' : 'contacts.emailLabel')}</Text>
+              <View style={[s.control, vm.secondProblem ? s.controlInvalid : null]}>
+                {secondWhatsapp
+                  ? <Text style={s.prefix}>{t('launch.create.countryCode')}</Text>
+                  : <Icon name="mail-2" size={18} color={color.text2} />}
+                <TextInput
+                  style={s.controlInput}
+                  value={vm.secondValue}
+                  onChangeText={(val: string) => vm.setSecondValue(val)}
+                  keyboardType={secondWhatsapp ? 'phone-pad' : 'email-address'}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  accessibilityLabel={t(secondWhatsapp ? 'contacts.phoneLabel' : 'contacts.emailLabel')}
+                />
+              </View>
+            </View>
+          ) : (
+            <View style={s.field}>
+              <Text style={s.label}>{t('authpw.second.codeLabel')}</Text>
+              <TextInput
+                style={[s.control, styles.otpInput]}
+                value={vm.secondCode}
+                onChangeText={(val: string) => vm.setSecondCode(val)}
+                keyboardType="number-pad"
+                textContentType="oneTimeCode"
+                autoComplete="one-time-code"
+                maxLength={CODE_LENGTH}
+                autoFocus
+                accessibilityLabel={t('authpw.second.codeLabel')}
+              />
+              <Text style={s.hint}>{t('authpw.second.codeHint', { target: vm.secondMasked })}</Text>
+            </View>
+          )}
+          {vm.secondProblem ? <SendErrorNative message={t(vm.secondProblem)} /> : null}
+          <TouchableOpacity
+            style={[s.primary, (!secondReady || vm.busy) && s.primaryOff]}
+            onPress={() => void handleSecond()}
+            disabled={!secondReady || vm.busy}
+            accessibilityRole="button"
+            aria-busy={vm.busy}
+            accessibilityLabel={t(vm.secondSent ? 'authpw.second.verify' : 'authpw.second.send')}
+          >
+            {vm.busy ? <ActivityIndicator color={color.onAction} /> : (
+              <Text style={[s.primaryText, !secondReady && s.primaryTextOff]}>{t(vm.secondSent ? 'authpw.second.verify' : 'authpw.second.send')}</Text>
+            )}
+          </TouchableOpacity>
+          {vm.secondSent ? (
+            <TouchableOpacity style={s.link} onPress={vm.editSecond} accessibilityRole="button" accessibilityLabel={t('authpw.second.edit')}>
+              <Text style={s.linkText}>{t('authpw.second.edit')}</Text>
+            </TouchableOpacity>
+          ) : null}
+        </>
+      )}
+
+      {subStep === 'password' && (
+        <>
+          <View style={styles.otpHeader}>
+            <Text style={styles.otpTitle} accessibilityRole="header">{t('authpw.create.title')}</Text>
+            <Text style={s.lead}>{t('authpw.create.lead', { min: vm.passwordMinLength })}</Text>
+          </View>
+          {(['create', 'again'] as const).map((which) => (
+            <View key={which} style={s.field}>
+              <Text style={s.label}>{t(which === 'create' ? 'authpw.create.label' : 'authpw.create.again')}</Text>
+              <View style={[s.control, vm.newPasswordProblem ? s.controlInvalid : null]}>
+                <Icon name="lock-keyhole" size={18} color={color.text2} />
+                <TextInput
+                  style={s.controlInput}
+                  value={which === 'create' ? vm.password : vm.passwordAgain}
+                  onChangeText={(val: string) => (which === 'create' ? vm.setNewPassword(val) : vm.setPasswordAgain(val))}
+                  secureTextEntry
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  textContentType="newPassword"
+                  autoComplete="password-new"
+                  maxLength={PASSWORD_MAX_LENGTH}
+                  accessibilityLabel={t(which === 'create' ? 'authpw.create.label' : 'authpw.create.again')}
+                />
+              </View>
+            </View>
+          ))}
+          <Text style={s.hint}>{t('authpw.create.hint')}</Text>
+          {vm.newPasswordProblem ? <SendErrorNative message={t(vm.newPasswordProblem, { min: vm.passwordMinLength })} /> : null}
+          <TouchableOpacity
+            style={[s.primary, (!vm.password || !vm.passwordAgain) && s.primaryOff]}
+            onPress={handlePassword}
+            disabled={!vm.password || !vm.passwordAgain}
+            accessibilityRole="button"
+            accessibilityLabel={t('authpw.create.continue')}
+          >
+            <Text style={[s.primaryText, (!vm.password || !vm.passwordAgain) && s.primaryTextOff]}>{t('authpw.create.continue')}</Text>
           </TouchableOpacity>
         </>
       )}

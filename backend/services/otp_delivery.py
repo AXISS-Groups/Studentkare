@@ -3,6 +3,7 @@
 Reads SuperAdmin runtime config (services.integration_config) first, with
 environment variables as fallback so the service boots without the admin UI.
 """
+import html
 import os
 import re
 import smtplib
@@ -355,3 +356,22 @@ def dispatch_otp(identifier: str, code: str, channel: str = "EMAIL", db=None) ->
     print(f"[OTP] Email result: {result.get('status')}", flush=True)
     return {"delivered": result.get("status") == "sent",
             "reason": result.get("reason", ""), "channel": channel}
+
+
+def dispatch_message(identifier: str, channel: str, subject: str, text: str, db=None) -> bool:
+    """Send one plain message (an invite link, a new-sign-in notice) by email or WhatsApp.
+
+    True when the provider accepted it. Never raises and never logs the identifier
+    (guardrail 9). Only channels that can deliver right now are tried.
+    """
+    if channel not in available_channels(db):
+        return False
+    try:
+        if channel == "WHATSAPP":
+            ow = _openwa()
+            return _send_openwa(normalize_chat_id(identifier, ow["cc"]), text).get("status") == "sent"
+        html_body = "".join(f"<p>{html.escape(line)}</p>" for line in text.split("\n") if line.strip())
+        return send_notification_email(identifier, subject, html_body, text).get("status") == "sent"
+    except Exception as err:  # noqa: BLE001 — a message that can't go out is reported as not sent, never raised
+        print(f"[MESSAGE] {channel} send failed ({type(err).__name__})", flush=True)
+        return False
