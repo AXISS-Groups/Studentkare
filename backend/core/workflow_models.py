@@ -160,6 +160,10 @@ class Session(Base):
     # e.g. a passcode or a team PIN). A refresh keeps it. A student may replace a
     # forgotten passcode only shortly after a code sign-in (services/student_passcode.py).
     code_verified_at: Mapped[float] = mapped_column(Float, default=0.0, server_default="0")
+    # When the sign-in that started this chain of refreshes happened. A refresh
+    # keeps it, so a session can't be renewed past auth.session_absolute_hours
+    # (audit L1). 0 = issued before this column existed.
+    signed_in_at: Mapped[float] = mapped_column(Float, default=0.0, server_default="0")
 
 
 class RememberedDevice(Base):

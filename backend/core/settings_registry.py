@@ -528,6 +528,11 @@ declare("auth.whatsapp_status_cache_seconds", INT, 60, area="auth", unit="second
 declare("auth.whatsapp_status_timeout_seconds", INT, 3, area="auth", unit="seconds", minimum=1, maximum=10,
         description="Longest the server waits for OpenWA to answer the WhatsApp session check.")
 
+# A session lasts 12 hours and /auth/refresh renews it; this caps the whole chain
+# from the sign-in, after which the person signs in again (audit L1).
+declare("auth.session_absolute_hours", INT, 168, area="auth", unit="hours", minimum=12, maximum=2160,
+        description="Longest a sign-in can be kept alive by refreshing before the person must sign in again.")
+
 # --- consultations ---------------------------------------------------------
 declare("consult.media_join_before_minutes", INT, 15, area="consult", unit="minutes", minimum=0, maximum=120,
         public=True, description="How early before the slot starts a video consult can be joined.")

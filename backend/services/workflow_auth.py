@@ -150,12 +150,21 @@ def account_payload(account: M.Account) -> dict:
             "isVerifiedStudent": profile.get("isVerifiedStudent") is True}
 
 
+HOUR_SECONDS = 3600
+
+
+def absolute_session_seconds(db: DBSession) -> float:
+    return int(setting("auth.session_absolute_hours", db)) * HOUR_SECONDS
+
+
 def resolve_session(request: Request, db: DBSession):
     raw = request.cookies.get(SESSION_COOKIE, "")
     if not raw:
         return None, None
     session = db.get(M.Session, digest(raw))
     if not session or session.expires_at <= time.time():
+        return None, None
+    if session.signed_in_at and time.time() - session.signed_in_at > absolute_session_seconds(db):
         return None, None
     account = db.get(M.Account, session.account_id)
     if not account or not account.active:
@@ -294,14 +303,18 @@ def require_clinician(user: dict = Depends(authenticated_user)) -> dict:
 
 
 def issue_session(db: DBSession, account: M.Account, response: Response, request: Request, *,
-                  code_verified_at: float = 0.0):
-    """A new session cookie. ``code_verified_at``: when this sign-in was proven with a one-time code (0 if not)."""
+                  code_verified_at: float = 0.0, signed_in_at: float = 0.0):
+    """A new session cookie. ``code_verified_at``: when this sign-in was proven with a one-time code (0 if not).
+
+    ``signed_in_at``: when the sign-in happened; a refresh passes the old session's, a sign-in leaves it 0 (now).
+    """
     old = request.cookies.get(SESSION_COOKIE)
     if old:
         db.execute(delete(M.Session).where(M.Session.token_hash == digest(old)))
     raw, csrf = secrets.token_urlsafe(32), secrets.token_urlsafe(32)
-    db.add(M.Session(token_hash=digest(raw), account_id=account.id, csrf_token=csrf, expires_at=time.time() + SESSION_SECONDS,
-                     code_verified_at=code_verified_at))
+    now = time.time()
+    db.add(M.Session(token_hash=digest(raw), account_id=account.id, csrf_token=csrf, expires_at=now + SESSION_SECONDS,
+                     code_verified_at=code_verified_at, signed_in_at=signed_in_at or now))
     set_cookie(response, SESSION_COOKIE, raw, SESSION_SECONDS)
     return csrf
 
@@ -694,9 +707,17 @@ def refresh_session(request: Request, response: Response, db: DBSession = Depend
     account, session = resolve_session(request, db)
     if not account or not session:
         raise HTTPException(401, "Invalid or expired session. Please sign in again.")
+    # A refresh rotates the session, so it is a write like any other: the origin
+    # and the session's CSRF token are checked (audit L1).
+    check_origin(request)
+    supplied = request.headers.get("x-csrf-token", "")
+    if not supplied or not hmac.compare_digest(supplied, session.csrf_token):
+        raise HTTPException(403, "The session security token is missing or invalid. Refresh and try again.")
 
-    # A refresh keeps how the sign-in was proven; it never makes a passcode sign-in code-proven.
-    csrf = issue_session(db, account, response, request, code_verified_at=session.code_verified_at or 0.0)
+    # A refresh keeps how and when the sign-in was proven; it never makes a
+    # passcode sign-in code-proven, and never extends past the absolute lifetime.
+    csrf = issue_session(db, account, response, request, code_verified_at=session.code_verified_at or 0.0,
+                         signed_in_at=session.signed_in_at or 0.0)
     db.commit()
     return {
         "success": True,
