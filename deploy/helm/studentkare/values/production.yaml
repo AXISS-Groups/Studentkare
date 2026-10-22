@@ -48,7 +48,7 @@ backend:
     enabled: true
     image:
       repository: edoburu/pgbouncer
-      tag: "latest"
+      tag: "v1.25.2-p0"  # pinned; was "latest" (bump deliberately, same as compose)
       pullPolicy: IfNotPresent
     port: 6432
     poolMode: transaction
