@@ -120,11 +120,11 @@ spec:
   tls:
     {{- if .Values.frontend.ingress.tls.enabled }}
     - hosts:
-        - {{ .Values.frontend.ingress.host }}
+        - {{ .Values.frontend.ingress.host | default .Values.global.domain }}
       secretName: {{ .Values.frontend.ingress.tls.secretName }}
     {{- end }}
   rules:
-    - host: {{ .Values.frontend.ingress.host }}
+    - host: {{ .Values.frontend.ingress.host | default .Values.global.domain }}
       http:
         paths:
           - path: /

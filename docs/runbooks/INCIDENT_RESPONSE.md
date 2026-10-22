@@ -31,9 +31,9 @@
 
 | Tool | Purpose | Access |
 |---|---|---|
-| **Grafana** | Dashboards, alerting, log visualization | `https://monitoring.studentkare.in` |
-| **Prometheus** | Metrics query, alerting rules | `https://monitoring.studentkare.in/prometheus` |
-| **Alertmanager** | Alert routing, silencing | `https://monitoring.studentkare.in/alertmanager` |
+| **Grafana** | Dashboards, alerting, log visualization | `https://monitoring.studentkare.co` |
+| **Prometheus** | Metrics query, alerting rules | `https://monitoring.studentkare.co/prometheus` |
+| **Alertmanager** | Alert routing, silencing | `https://monitoring.studentkare.co/alertmanager` |
 | **Loki** | Log aggregation, querying | Internal (via Grafana) |
 | **Tempo** | Distributed tracing | Internal (via Grafana) |
 | **Sentry** | Exception tracking, error context | `https://sentry.io/organizations/studentkare` |
@@ -76,7 +76,7 @@
 ### Global Kill-Switch (P0 Only)
 ```bash
 # Activate via API (requires SUPER_ADMIN)
-curl -X POST https://api.studentkare.in/api/v1/ops/kill-switch \
+curl -X POST https://studentkare.co/api/v1/ops/kill-switch \
   -H "Authorization: Bearer <token>" \
   -H "Content-Type: application/json" \
   -d '{"reason": "Active data breach - CERT-In notification pending"}'
@@ -92,7 +92,7 @@ curl -X POST https://api.studentkare.in/api/v1/ops/kill-switch \
 
 ### Reset Kill-Switch
 ```bash
-curl -X POST https://api.studentkare.in/api/v1/ops/kill-switch/reset \
+curl -X POST https://studentkare.co/api/v1/ops/kill-switch/reset \
   -H "Authorization: Bearer <token>"
 ```
 
@@ -120,9 +120,9 @@ curl -X POST https://api.studentkare.in/api/v1/ops/kill-switch/reset \
 
 ### P1: Synthetic Probe Down
 1. **Grafana**: Blackbox Exporter panel
-2. **Test**: `curl -v https://api.studentkare.in/api/health`
-3. **DNS**: `dig api.studentkare.in`
-4. **TLS**: `openssl s_client -connect api.studentkare.in:443`
+2. **Test**: `curl -v https://studentkare.co/api/health`
+3. **DNS**: `dig studentkare.co`
+4. **TLS**: `openssl s_client -connect studentkare.co:443`
 
 ### P0: Guardrail Violation
 1. **Grafana**: Error Tracking → Guardrail Violations

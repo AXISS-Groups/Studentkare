@@ -12,8 +12,8 @@ keywords:
   - fhir
 maintainers:
   - name: Studentkare Team
-    email: ops@studentkare.in
-home: https://studentkare.in
+    email: ops@studentkare.co
+home: https://studentkare.co
 sources:
   - https://github.com/studentkare/studentkare
-icon: https://studentkare.in/logo.png
+icon: https://studentkare.co/logo.png

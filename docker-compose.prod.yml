@@ -15,7 +15,8 @@
 x-app-env: &app-env
   DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL to a real Postgres database}
   APP_ENV: production
-  ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:?Set ALLOWED_ORIGINS to explicit FQDN allowlist}
+  # One app domain (APP_DOMAIN, default studentkare.co) drives CORS, links and Grafana.
+  ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-https://${APP_DOMAIN:-studentkare.co}}
   OTP_HASH_SECRET: ${OTP_HASH_SECRET:?Set OTP_HASH_SECRET from vault}
   OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
   ALERTMANAGER_WEBHOOK_SECRET: ${ALERTMANAGER_WEBHOOK_SECRET:?Set ALERTMANAGER_WEBHOOK_SECRET from vault}
@@ -318,7 +319,7 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:?Set GRAFANA_ADMIN_PASSWORD from vault}
       - GF_USERS_ALLOW_SIGN_UP=false
       - GF_AUTH_ANONYMOUS_ENABLED=false
-      - GF_SERVER_ROOT_URL=https://monitoring.studentkare.in
+      - GF_SERVER_ROOT_URL=https://monitoring.${APP_DOMAIN:-studentkare.co}
       - GF_SERVER_SERVE_FROM_SUB_PATH=true
     networks:
       - studentkare

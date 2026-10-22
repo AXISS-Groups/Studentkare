@@ -4,8 +4,10 @@
 global:
   environment: production
   cluster: studentkare-prod
-  domain: studentkare.in
-  monitoringDomain: monitoring.studentkare.in
+  # The one app domain: ingress host, CORS origins, APP_DOMAIN and APP_BASE_URL
+  # (email/invite links) all follow it. monitoringDomain is Grafana's root URL.
+  domain: studentkare.co
+  monitoringDomain: monitoring.studentkare.co
   imagePullSecrets:
     - name: registry-credentials
 
@@ -285,7 +287,7 @@ frontend:
     enabled: true
     className: nginx
     limitRps: 100   # per client address; see deploy/nginx.conf
-    host: studentkare.in
+    host: ""          # "" = global.domain
     tls:
       enabled: true
       secretName: studentkare-tls
@@ -508,7 +510,7 @@ grafana:
     security:
       admin_user: admin
     server:
-      root_url: https://monitoring.studentkare.in
+      root_url: ""    # "" = https://<global.monitoringDomain>
     users:
       allow_sign_up: false
     auth:

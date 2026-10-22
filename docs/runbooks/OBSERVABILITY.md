@@ -35,9 +35,9 @@ This runbook covers the Studentkare observability stack: **Prometheus + Grafana 
 
 | Service | Internal URL | External URL |
 |---------|--------------|--------------|
-| Grafana | `http://grafana:3000` | `https://monitoring.studentkare.in` |
-| Prometheus | `http://prometheus:9090` | `https://monitoring.studentkare.in/prometheus` |
-| Alertmanager | `http://alertmanager:9093` | `https://monitoring.studentkare.in/alertmanager` |
+| Grafana | `http://grafana:3000` | `https://monitoring.studentkare.co` |
+| Prometheus | `http://prometheus:9090` | `https://monitoring.studentkare.co/prometheus` |
+| Alertmanager | `http://alertmanager:9093` | `https://monitoring.studentkare.co/alertmanager` |
 | Loki | `http://loki:3100` | Internal only |
 | Tempo | `http://tempo:3200` | Internal only |
 | Blackbox | `http://blackbox:9115` | Internal only |
@@ -130,9 +130,9 @@ This runbook covers the Studentkare observability stack: **Prometheus + Grafana 
    - Scale DB read replicas
 
 ### 4. Synthetic Probe Down
-1. **Check Blackbox**: `http://blackbox:9115/probe?target=https://api.studentkare.in/api/health&module=http_2xx`
-2. **Check DNS**: `dig api.studentkare.in`
-3. **Check TLS**: `openssl s_client -connect api.studentkare.in:443 -servername api.studentkare.in`
+1. **Check Blackbox**: `http://blackbox:9115/probe?target=https://studentkare.co/api/health&module=http_2xx`
+2. **Check DNS**: `dig studentkare.co`
+3. **Check TLS**: `openssl s_client -connect studentkare.co:443 -servername studentkare.co`
 4. **Common Causes**:
    - Ingress controller down
    - TLS certificate expired

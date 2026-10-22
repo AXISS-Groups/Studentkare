@@ -217,8 +217,8 @@ kubectl get pods -n studentkare
 kubectl get ingress studentkare-frontend -n studentkare -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
 
 # Create DNS records
-# A record: studentkare.in → <ingress-ip>
-# A record: monitoring.studentkare.in → <ingress-ip>
+# A record: studentkare.co → <ingress-ip>
+# A record: monitoring.studentkare.co → <ingress-ip>
 ```
 
 ### 5. Configure TLS (cert-manager)
@@ -233,7 +233,7 @@ metadata:
 spec:
   acme:
     server: https://acme-v02.api.letsencrypt.org/directory
-    email: ops@studentkare.in
+    email: ops@studentkare.co
     privateKeySecretRef:
       name: letsencrypt-prod
     solvers:
@@ -271,15 +271,15 @@ kubectl get svc -n studentkare
 kubectl get ingress -n studentkare
 
 # Health checks
-curl -f https://studentkare.in/api/health
-curl -f https://studentkare.in/
-curl -f https://monitoring.studentkare.in/api/health
+curl -f https://studentkare.co/api/health
+curl -f https://studentkare.co/
+curl -f https://monitoring.studentkare.co/api/health
 
 # Check Prometheus targets
-curl -s https://monitoring.studentkare.in/prometheus/api/v1/targets | jq '.data.activeTargets[] | select(.health=="up") | .labels.job'
+curl -s https://monitoring.studentkare.co/prometheus/api/v1/targets | jq '.data.activeTargets[] | select(.health=="up") | .labels.job'
 
 # Check Grafana
-curl -f https://monitoring.studentkare.in/api/health
+curl -f https://monitoring.studentkare.co/api/health
 
 # Test alert
 kubectl exec -n studentkare alertmanager-0 -- amtool alert query
@@ -462,7 +462,7 @@ curl -s http://prometheus:9090/api/v1/targets | jq '.data.activeTargets[] | sele
 ### Grafana Dashboards Empty
 ```bash
 # Check datasource
-curl -u admin:password https://monitoring.studentkare.in/api/datasources
+curl -u admin:password https://monitoring.studentkare.co/api/datasources
 
 # Re-provision
 kubectl delete configmap grafana-datasources grafana-dashboards -n studentkare
