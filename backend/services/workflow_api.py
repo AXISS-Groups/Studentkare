@@ -343,6 +343,53 @@ def export_records(user=Depends(authenticated_user), db: Session = Depends(workf
         "readings": [{"id": r.id, "metric": r.metric, "value": r.value, "recordedAt": r.recorded_at, "source": r.source} for r in readings],
         "policies": [{"id": p.id, "insurer": p.insurer, "policyNumber": p.policy_number, "sumInsured": p.sum_insured, "validUntil": p.valid_until} for p in policies],
         **lab_results.export_rows(db, user["id"]),
+        # Care records about the student (audit M6, DPDP right of access).
+        **_care_export(db, user["id"]),
+    }
+
+
+def _care_export(db: Session, account_id: str) -> dict:
+    """The student's own appointments, prescriptions, final visit notes, consents and crisis events.
+
+    Visit notes are the signed (FINAL) ones the student can already read; a
+    clinician's draft isn't a record yet. A crisis event carries what was
+    recorded (kind, surface, times, outcome), never the student's words, which
+    are not stored, and not the counsellor's private follow-up note.
+    """
+    appointments = db.scalars(select(M.Appointment).where(M.Appointment.account_id == account_id)
+                              .order_by(M.Appointment.created_at)).all()
+    prescriptions = db.scalars(select(M.Prescription).where(M.Prescription.patient_id == account_id)
+                               .order_by(M.Prescription.issued_at)).all()
+    items: dict[str, list[M.PrescriptionItem]] = {}
+    if prescriptions:
+        for item in db.scalars(select(M.PrescriptionItem).where(
+                M.PrescriptionItem.prescription_id.in_([p.id for p in prescriptions]))).all():
+            items.setdefault(item.prescription_id, []).append(item)
+    notes = db.scalars(select(M.EncounterNote).where(M.EncounterNote.patient_id == account_id,
+                                                     M.EncounterNote.status == "FINAL")
+                       .order_by(M.EncounterNote.created_at)).all()
+    consents = db.scalars(select(M.ConsentRecord).where(M.ConsentRecord.account_id == account_id)
+                          .order_by(M.ConsentRecord.recorded_at)).all()
+    crises = db.scalars(select(M.CrisisEvent).where(M.CrisisEvent.account_id == account_id)
+                        .order_by(M.CrisisEvent.created_at)).all()
+    return {
+        "appointments": [{"id": a.id, "providerId": a.provider_id, "serviceId": a.catalog_item_id, "slotId": a.slot_id,
+                          "status": a.status, "createdAt": a.created_at, "updatedAt": a.updated_at} for a in appointments],
+        "prescriptions": [{"id": p.id, "prescriberRegNo": p.prescriber_reg_no, "issuedAt": p.issued_at,
+                           "validUntil": p.valid_until, "status": p.status, "advice": p.advice,
+                           "items": [{"genericName": i.generic_name, "brandName": i.brand_name, "strength": i.strength,
+                                      "form": i.form, "dose": i.dose, "frequency": i.frequency,
+                                      "durationDays": i.duration_days, "quantity": i.quantity,
+                                      "scheduleClass": i.schedule_class} for i in items.get(p.id, [])]}
+                          for p in prescriptions],
+        "visitNotes": [{"id": n.id, "appointmentId": n.appointment_id, "subjective": n.subjective,
+                        "objective": n.objective, "assessment": n.assessment, "plan": n.plan,
+                        "createdAt": n.created_at, "updatedAt": n.updated_at} for n in notes],
+        "consents": [{"version": c.version, "purposes": c.purposes, "language": c.language,
+                      "recordedAt": c.recorded_at, "withdrawnAt": c.withdrawn_at or None} for c in consents],
+        "crisisEvents": [{"id": e.id, "kind": e.kind, "language": e.language, "surface": e.surface,
+                          "detectedBy": e.detected_by, "createdAt": e.created_at,
+                          "acknowledgedAt": e.acknowledged_at or None, "outcome": e.outcome} for e in crises],
     }
 
 
