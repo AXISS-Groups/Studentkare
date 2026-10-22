@@ -35,12 +35,30 @@ describe('which shell a route gets', () => {
     expect(screen.queryByText('A clearer view of your care platform.')).toBeNull();
   });
 
-  it('keeps the old workspace for a super admin’s personal pages', () => {
+  // Live-run audit #8: staff pages opened inside the student layout (its nav, "Plan · My profile ·
+  // Digital ID", and student-only data). Each staff role keeps its own shell on every page.
+  it.each(['security', 'profile', 'notifications', 'counsellor'] as const)('a super admin’s %s page stays in the Super Admin shell', route => {
     auth.user = { fullName: 'Demo Administrator', role: 'SUPER_ADMIN' };
-    render(<WorkspaceScreen route="profile" />);
-    expect(screen.getByRole('navigation', { name: 'Main menu' })).toBeInTheDocument();
-    expect(screen.queryByRole('navigation', { name: 'Super admin navigation' })).toBeNull();
-    expect(screen.getByText(/good to see you, demo/i)).toBeInTheDocument();
+    render(<WorkspaceScreen route={route} />);
+    expect(screen.getByRole('navigation', { name: 'Super admin navigation' })).toBeInTheDocument();
+    expect(screen.queryByRole('navigation', { name: 'Main menu' })).toBeNull();
+    expect(screen.queryByRole('button', { name: /Digital ID/ })).toBeNull();
+  });
+
+  it.each(['counsellor', 'security', 'support'] as const)('a counsellor’s %s page opens in the counsellor console, with no student links', route => {
+    auth.user = { fullName: 'Team Counsellor', role: 'COUNSELLOR', university: 'Demo University' };
+    render(<WorkspaceScreen route={route} />);
+    const nav = screen.getByRole('navigation', { name: 'Counsellor navigation' });
+    expect(within(nav).getByRole('button', { name: 'Crisis follow-up' })).toBeInTheDocument();
+    expect(screen.queryByRole('navigation', { name: 'Main menu' })).toBeNull();
+    for (const label of [/Digital ID/, /^Plan$/, /Prescriptions|Medicines and lab tests/, /Health records/]) expect(screen.queryByRole('button', { name: label })).toBeNull();
+  });
+
+  it.each(['wellness-training', 'security'] as const)('a wellness partner’s %s page opens in the partner console shell', async route => {
+    auth.user = { fullName: 'Team Wellness', role: 'VENDOR', partnerKind: 'WELLNESS' };
+    render(<WorkspaceScreen route={route} />);
+    expect(await screen.findByRole('navigation', { name: 'Partner links' })).toBeInTheDocument();
+    expect(screen.queryByRole('navigation', { name: 'Main menu' })).toBeNull();
   });
 
   it('opens student pages inside the student web shell', () => {
@@ -75,7 +93,7 @@ describe('which shell a route gets', () => {
     expect(screen.queryByRole('navigation', { name: 'Super admin navigation' })).toBeNull();
   });
 
-  it.each(['SUPER_ADMIN', 'CAMPUS_ADMIN', 'COUNSELLOR', 'NMC_DOCTOR'] as const)('lists no My requests link for a %s, who cannot open it', role => {
+  it.each(['CAMPUS_ADMIN', 'NMC_DOCTOR'] as const)('lists no My requests link for a %s, who cannot open it', role => {
     auth.user = { fullName: 'Staff Member', role };
     render(<WorkspaceScreen route="profile" />);
     const menu = screen.getByRole('navigation', { name: 'Main menu' });

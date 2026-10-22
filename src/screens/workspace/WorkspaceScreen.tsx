@@ -59,6 +59,7 @@ import { RewardsRoute } from '@/features/rewards/views/RewardsView';
 import { LeaveCampusRoute } from '@/features/campus/views/LeaveCampusView';
 import { CareNavigatorPanel } from './CareNavigatorPanel';
 import { EncounterNotesPanel } from './EncounterNotesPanel';
+import { CounsellorShell } from './CounsellorShell';
 import { SuperAdminShell } from './admin/SuperAdminShell';
 import { superAdminScreen } from './admin/SuperAdminScreens';
 import { VendorShell } from '../vendor/VendorShell';
@@ -74,6 +75,7 @@ import { SearchPage, studentPhoneBoard } from '@/features/phoneKit/studentPhoneB
 import { EmergencyHelplinesDialog } from '../../components/interface/InterfaceBar';
 import { NotificationCenterModal } from '../../components/health/NotificationCenterModal';
 import { AyushWidget, ayushWidgetShownOn } from '@/features/ayush/AyushWidget';
+import { PartnerPage } from '@/features/partner/PartnerPage';
 
 const M2TrendsRoute = lazy(() => import('@/features/labResults/views/M2TrendsRoute').then(module => ({ default: module.M2TrendsRoute })));
 const M2ReportUploadRoute = lazy(() => import('@/features/labResults/views/M2ReportUploadRoute').then(module => ({ default: module.M2ReportUploadRoute })));
@@ -482,7 +484,28 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
     </>;
   }
 
-  if (admin) {
+  // Staff pages stay in their own console on every page, never the student layout and its
+  // student-only data (live-run audit #8).
+  if (user.role === 'LAB_COLLECTOR') return <Navigate to={`/${homeForRole(user.role)}`} replace />;
+  if (user.role === 'COUNSELLOR') {
+    return <>
+      <CounsellorShell route={route} onNavigate={open} onSignOut={() => setConfirmSignOut(true)} signingOut={mutation.busy} signOutError={mutation.error}>
+        <Suspense fallback={<ScreenLoading />}><PageTransition key={route}>{content()}</PageTransition></Suspense>
+      </CounsellorShell>
+      {signOutDialog}
+    </>;
+  }
+  if (user.role === 'VENDOR') {
+    return <>
+      <VendorShell route={route} role={user.role} partnerKind={effectivePartnerKind} assignedPartnerKind={partnerKindOf(user)} onNavigate={navigate} accountName={partnerDisplayName(user)} onSignOut={() => setConfirmSignOut(true)} signingOut={mutation.busy} signOutError={mutation.error}>
+        {/* Partner pages render their own <main>; a page from outside the console gets the same frame. */}
+        <PartnerPage><Suspense fallback={<ScreenLoading />}><PageTransition key={route}>{content()}</PageTransition></Suspense></PartnerPage>
+      </VendorShell>
+      {signOutDialog}
+    </>;
+  }
+
+  if (admin || user.role === 'SUPER_ADMIN') {
     return <>
       <SuperAdminShell route={route} role={user.role} onNavigate={open} onSignOut={() => setConfirmSignOut(true)} signingOut={mutation.busy} signOutError={mutation.error}>
         <Suspense fallback={<ScreenLoading />}><PageTransition key={route}>{content()}</PageTransition></Suspense>
