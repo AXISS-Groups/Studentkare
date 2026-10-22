@@ -284,6 +284,7 @@ frontend:
   ingress:
     enabled: true
     className: nginx
+    limitRps: 100   # per client address; see deploy/nginx.conf
     host: studentkare.in
     tls:
       enabled: true

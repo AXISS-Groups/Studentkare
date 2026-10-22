@@ -27,7 +27,11 @@ RUN npm run build
 FROM nginx:alpine
 COPY --from=build /app/dist /usr/share/nginx/html
 
-COPY deploy/nginx.conf /etc/nginx/conf.d/default.conf
+# Rendered to /etc/nginx/conf.d/default.conf at start by the image's envsubst
+# step; BACKEND_UPSTREAM is the API address (Helm sets the backend Service).
+COPY deploy/nginx.conf /etc/nginx/templates/default.conf.template
+COPY deploy/nginx/security-headers.conf /etc/nginx/snippets/security-headers.conf
+ENV BACKEND_UPSTREAM=backend:8000
 
 EXPOSE 80
 

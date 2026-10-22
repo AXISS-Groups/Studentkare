@@ -177,6 +177,13 @@ jobs:
           helm lint "$chart" "${args[@]}"
           helm template studentkare "$chart" "${args[@]}" > /tmp/studentkare-rendered.yaml
 
+      - name: nginx config test (the web image's template, rendered by the image's entrypoint)
+        run: |
+          docker run --rm -e BACKEND_UPSTREAM=127.0.0.1:8000 \
+            -v "$PWD/deploy/nginx.conf:/etc/nginx/templates/default.conf.template:ro" \
+            -v "$PWD/deploy/nginx/security-headers.conf:/etc/nginx/snippets/security-headers.conf:ro" \
+            nginx:alpine nginx -t
+
       - name: Alert rules and Alertmanager config (promtool / amtool, compose and rendered Helm)
         run: |
           set -euo pipefail
