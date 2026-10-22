@@ -75,8 +75,8 @@ def test_no_sign_in_code_for_an_unverified_contact(harness):  # noqa: F811
     client.post("/api/auth/logout", headers=headers)
     sent_before = len(codes)
     refused = client.post("/api/auth/otp/send", json={"identifier": PHONE, "channel": "WHATSAPP", "intent": "LOGIN"})
-    assert refused.status_code == 404
-    assert len(codes) == sent_before                                         # nothing was sent
+    assert refused.status_code == 200                                        # same answer as a send (audit M5)
+    assert len(codes) == sent_before                                         # but nothing was sent
 
 
 def test_a_value_belongs_to_one_account(harness):  # noqa: F811

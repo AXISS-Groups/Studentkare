@@ -460,7 +460,16 @@ def channel_unavailable(channel: str, db: DBSession) -> HTTPException:
 
 
 SECOND_CONTACT_REQUIRED = "SECOND_CONTACT_REQUIRED"
-STAFF_NOT_FOUND = "No staff account uses this email. Staff accounts are created by an administrator."
+
+
+OTP_TTL_SECONDS = 300
+
+
+def _sent_payload(identifier: str, channel: str) -> dict:
+    """The one shape /otp/send answers with, whether or not an account exists."""
+    return {"success": True, "targetMasked": mask_identifier(identifier, channel), "channelUsed": channel,
+            "expiresInSeconds": OTP_TTL_SECONDS, "fallbackSent": False, "fallbackChannel": None,
+            "fallbackTargetMasked": None}
 
 
 @router.post("/otp/send")
@@ -469,18 +478,9 @@ def send_otp(body: OtpSend, request: Request, response: Response, db: DBSession 
     identifier = normalize_identifier(body.identifier, body.channel)
     if body.audience == "STAFF" and (body.intent != "LOGIN" or body.channel != "EMAIL"):
         raise HTTPException(422, "Staff sign in with a work email.")
-    if body.intent == "LOGIN":
-        # Only a verified contact gets a sign-in code (services/contact_store.py).
-        account = account_for_sign_in(db, identifier, body.channel)
-        if body.audience == "STAFF" and (not account or account.role == "STUDENT"):
-            # One answer for "no account" and "a student account": the staff page
-            # never tells anyone which emails belong to students.
-            raise HTTPException(404, STAFF_NOT_FOUND)
-        if not account:
-            raise HTTPException(
-                404,
-                "No active account was found. Create an account to continue."
-            )
+    # The limits run first, before anything is looked up, so a burst of sends
+    # can't be used to probe which identifiers have accounts (audit M5). The
+    # per-identifier limit is first of all.
     limit(db, f"send:{identifier}", 3, 300)
     limit(db, f"ip:{request.client.host if request.client else 'unknown'}", 30, 900)
     if body.channel == "EMAIL":
@@ -490,6 +490,16 @@ def send_otp(body: OtpSend, request: Request, response: Response, db: DBSession 
         rejected = check_email_deliverable(identifier)
         if rejected is not None:
             raise HTTPException(rejected.status, rejected.reason)
+    if body.intent == "LOGIN":
+        # Only a verified contact gets a sign-in code (services/contact_store.py).
+        account = account_for_sign_in(db, identifier, body.channel)
+        if not account or (body.audience == "STAFF" and account.role == "STUDENT"):
+            # No account (or, on the staff page, a student's): the same answer as
+            # a real send, so nobody learns which identifiers have accounts. No
+            # code is minted or sent, and the challenge cookie is a random token
+            # that matches no challenge, so verifying it fails like a wrong code.
+            set_cookie(response, CHALLENGE_COOKIE, secrets.token_urlsafe(32), OTP_TTL_SECONDS)
+            return _sent_payload(identifier, body.channel)
     token = secrets.token_urlsafe(32)
     # The fixed demo code needs both demo accounts and the console opt-in; with
     # either off, a demo identifier gets a random code like anyone else.
@@ -524,11 +534,9 @@ def send_otp(body: OtpSend, request: Request, response: Response, db: DBSession 
     db.add(M.OtpChallenge(token_hash=digest(token), identifier=identifier, intent=body.intent, channel=body.channel,
                           code_hash=code_digest(token, code), expires_at=time.time() + 300, attempts=0, consumed=False))
     db.commit()
-    set_cookie(response, CHALLENGE_COOKIE, token, 300)
-    masked = mask_identifier(identifier, body.channel)
-    result = {"success": True, "targetMasked": masked, "channelUsed": body.channel, "expiresInSeconds": 300,
-              "fallbackSent": fallback_sent, "fallbackChannel": fallback_channel,
-              "fallbackTargetMasked": fallback_masked}
+    set_cookie(response, CHALLENGE_COOKIE, token, OTP_TTL_SECONDS)
+    result = _sent_payload(identifier, body.channel)
+    result.update(fallbackSent=fallback_sent, fallbackChannel=fallback_channel, fallbackTargetMasked=fallback_masked)
     if fallback_sent:
         result["message"] = (f"Code sent via {body.channel}. WhatsApp was not reachable — the same code was also sent "
                              f"to email {fallback_masked} in case it did not arrive on WhatsApp.")
