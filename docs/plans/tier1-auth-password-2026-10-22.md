@@ -36,6 +36,14 @@ So the PIN half of the request mostly exists. What's new is **two contacts per a
 - A code is sent only to a **verified** contact. An unverified number is never a way in.
 - Existing students add the missing contact from Profile → Sign-in & security, which verifies it with a code.
 
+**As built (part 2, feat/account-contacts):** `services/contact_store.py` is the one lookup every sign-in
+path uses (codes, passcode, sign-up), and `services/account_contacts.py` is Sign-in & security's
+"Your email and WhatsApp" card (`GET/DELETE /auth/contacts`, `POST /auth/contacts/send-code`,
+`POST /auth/contacts/verify`). A verification code is bound to the signed-in account and is refused by
+`/auth/otp/verify`. An account with no contact row of its sign-in ID's kind (made by a path that writes
+none, e.g. the demo seed) still signs in with that ID. The sign-in ID itself can't be changed or removed
+yet. Erasure takes the contacts and their in-flight codes.
+
 ### B. Sign-up order
 1. Name, email, WhatsApp number.
 2. A code to **each** contact, verified on its own (see D-2). One code proves the account. Both are needed before that contact can be used to sign in.

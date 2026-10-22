@@ -62,6 +62,25 @@ class StaffPinCredential(Base):
     last_sign_in_at: Mapped[float] = mapped_column(Float, default=0.0, server_default="0")
 
 
+class AccountContact(Base):
+    """One way to reach an account: its email or its WhatsApp number, at most one of each.
+
+    ``verified_at`` is when a one-time code sent to it was entered (0 = not yet).
+    Only a verified contact can receive a sign-in code (services/contact_store.py),
+    so a mistyped or someone else's number never becomes a way in. Each value
+    belongs to one account. ``care_accounts.identifier`` stays the primary
+    contact. Platform plane (core/rule_l.py). Plan tier1-auth-password-2026-10-22 (A).
+    """
+    __tablename__ = "care_account_contacts"
+    __table_args__ = (UniqueConstraint("account_id", "kind", name="uq_account_contact_kind"),)
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    account_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"), index=True)
+    kind: Mapped[str] = mapped_column(String(16))   # EMAIL | WHATSAPP
+    value: Mapped[str] = mapped_column(String(254), unique=True, index=True)
+    verified_at: Mapped[float] = mapped_column(Float, default=0.0, server_default="0")
+    created_at: Mapped[float] = mapped_column(Float)
+
+
 class AccountPassword(Base):
     """An account's sign-in password. Only a salted, peppered scrypt hash is kept
     (services/team_accounts.hash_pin), never the password.
@@ -157,6 +176,9 @@ class OtpChallenge(Base):
     expires_at: Mapped[float] = mapped_column(Float)
     attempts: Mapped[int] = mapped_column(Integer, default=0)
     consumed: Mapped[bool] = mapped_column(Boolean, default=False)
+    # VERIFY only: the signed-in account adding this contact. A code for one
+    # account's contact can never verify it for another.
+    account_id: Mapped[str] = mapped_column(String, default="", server_default="")
 
 
 class SignupGrant(Base):

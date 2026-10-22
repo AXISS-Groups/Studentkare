@@ -50,6 +50,7 @@ from core import workflow_models as M
 from core.settings_registry import setting
 from core.team_scope import TEAM_CAMPUS, TEAM_PARTNER_ORG
 from services import twofa_store
+from services.contact_store import save_contact
 from services.integration_config import app_domain
 from services.workflow_auth import (
     SESSION_COOKIE,
@@ -268,6 +269,7 @@ def create_missing(db: DBSession, actor_id: str = CLI_ACTOR) -> list[CreateResul
                                 created_at=now, partner_kind=spec.partner_kind, is_team_account=True)
             db.add(account)
             db.flush()
+            save_contact(db, account.id, "EMAIL", spec.identifier, verified=True)
             pin = _set_pin(db, account, now)
             audit(db, actor_id, "TEAM_ACCOUNT_CREATED", account.id)
             results.append(CreateResult(spec.identifier, spec.role, spec.partner_kind, pin, "created"))

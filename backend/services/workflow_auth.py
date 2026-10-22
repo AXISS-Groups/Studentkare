@@ -20,6 +20,12 @@ from core import workflow_models as M
 from core.app_env import is_dev_or_test, is_production, is_testing
 from core.team_scope import RESERVED_CAMPUS_MESSAGE, is_reserved_campus
 from services import clinical_profile, twofa_store
+from services.contact_store import (
+    account_for_sign_in,
+    account_holding,
+    save_contact,
+    verified_contact,
+)
 from services.db_sql import SessionLocal
 from services.demo_seed import is_demo_identifier
 from services.email_deliverability import check_email_deliverable
@@ -191,6 +197,8 @@ def session_payload(db: DBSession, account: M.Account) -> dict:
     It is not in account_payload: that is the identity every handler receives.
     """
     return {**account_payload(account), "bloodGroup": clinical_profile.blood_group(db, account.id),
+            # Both verified contacts, not only the sign-in ID (services/contact_store.py).
+            "email": verified_contact(db, account, "EMAIL"), "phone": verified_contact(db, account, "WHATSAPP"),
             "twoFactorSetupRequired": two_factor_setup_required(db, account)}
 
 
@@ -450,12 +458,8 @@ def send_otp(body: OtpSend, request: Request, response: Response, db: DBSession 
     if body.audience == "STAFF" and (body.intent != "LOGIN" or body.channel != "EMAIL"):
         raise HTTPException(422, "Staff sign in with a work email.")
     if body.intent == "LOGIN":
-        account = db.scalar(
-            select(M.Account).where(
-                M.Account.identifier == identifier,
-                M.Account.active.is_(True)
-            )
-        )
+        # Only a verified contact gets a sign-in code (services/contact_store.py).
+        account = account_for_sign_in(db, identifier, body.channel)
         if body.audience == "STAFF" and (not account or account.role == "STUDENT"):
             # One answer for "no account" and "a student account": the staff page
             # never tells anyone which emails belong to students.
@@ -486,7 +490,7 @@ def send_otp(body: OtpSend, request: Request, response: Response, db: DBSession 
         # already-verified recovery contact stored on the account. Never to a
         # client-supplied email that we cannot prove belongs to this account.
         fallback = None
-        account = db.scalar(select(M.Account).where(M.Account.identifier == identifier))
+        account = account_for_sign_in(db, identifier, body.channel)
         if account:
             fallback = (account.profile or {}).get("recovery_email", "").strip() or None
         if fallback and "@" in fallback:
@@ -542,8 +546,11 @@ def verify_otp(body: OtpVerify, request: Request, response: Response, db: DBSess
         raise HTTPException(401, "This code has already been used.")
     db.commit()
     response.delete_cookie(CHALLENGE_COOKIE, path="/api")
-    account = db.scalar(select(M.Account).where(M.Account.identifier == challenge.identifier))
+    if challenge.intent not in ("LOGIN", "SIGNUP"):
+        # A contact-verification code (services/account_contacts.py) is never a sign-in or a sign-up.
+        raise HTTPException(401, "Invalid or expired verification code. Request a new code if needed.")
     if challenge.intent == "LOGIN":
+        account = account_for_sign_in(db, challenge.identifier, challenge.channel)
         if not account or not account.active:
             raise HTTPException(404, "No active account was found. Create an account to continue.")
         if twofa_store.is_enabled(db, account.id):
@@ -554,7 +561,8 @@ def verify_otp(body: OtpVerify, request: Request, response: Response, db: DBSess
         remember_device(db, account, request, response)
         db.commit()
         return {"success": True, "user": session_payload(db, account), "csrfToken": csrf, "requiresSignup": False}
-    if account:
+    if account_holding(db, challenge.identifier) is not None:
+        # Any account using this address, verified or not: never a second account on it.
         raise HTTPException(409, "An account already exists. Please sign in.")
     grant, csrf = secrets.token_urlsafe(32), secrets.token_urlsafe(32)
     db.add(M.SignupGrant(token_hash=digest(grant), identifier=challenge.identifier, channel=challenge.channel,
@@ -580,6 +588,8 @@ def signup(body: Signup, request: Request, response: Response, db: DBSession = D
     try:
         db.add(account)
         db.flush()
+        # The contact it signed up with was just proven by the code.
+        save_contact(db, account.id, grant.channel, grant.identifier, verified=True)
         # Blood group is clinical: it goes to care_clinical_profiles, never the identity row.
         if body.bloodGroup:
             clinical_profile.write(db, account.id, {"bloodGroup": body.bloodGroup})

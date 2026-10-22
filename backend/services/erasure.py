@@ -138,9 +138,12 @@ def _collect(db: Session, account: M.Account) -> dict[str, list[dict]]:
                         frontier.append((table, new))
 
     # Personal rows with no foreign key: messages to the student and sign-in records.
+    # Each of its contacts (services/contact_store.py) may have a code or a grant in flight too.
+    values = {account.identifier} | {r["value"] for r in found["care_account_contacts"].values()}
     loose = (("care_outbox_events", "account_id", account.id),
-             ("care_otp_challenges", "identifier", account.identifier),
-             ("care_signup_grants", "identifier", account.identifier))
+             ("care_otp_challenges", "account_id", account.id),
+             *(("care_otp_challenges", "identifier", value) for value in sorted(values)),
+             *(("care_signup_grants", "identifier", value) for value in sorted(values)))
     for name, column_name, value in loose:
         table = metadata.tables.get(name)
         if table is not None and column_name in table.c:

@@ -48,6 +48,7 @@ from sqlalchemy.orm import Session as DBSession
 from core import workflow_models as M
 from core.settings_registry import setting
 from services import twofa_store
+from services.contact_store import verified_contact
 from services.team_accounts import (
     ANONYMOUS_ACTOR,
     _burn_hash_time,
@@ -347,9 +348,11 @@ class PasscodeSignIn(StrictModel):
     passcode: str = Field(min_length=1, max_length=MAX_INPUT)
 
 
-def _typed_account_matches(account: M.Account, typed: str) -> bool:
+def _typed_account_matches(db: DBSession, account: M.Account, typed: str) -> bool:
+    """The typed email or number is this account's sign-in ID or one of its verified contacts."""
     channel = "EMAIL" if "@" in typed else "WHATSAPP"
-    return normalize_identifier(typed, channel) == account.identifier
+    value = normalize_identifier(typed, channel)
+    return value == account.identifier or value == verified_contact(db, account, channel)
 
 
 @router.post("/passcode/sign-in")
@@ -368,7 +371,7 @@ def passcode_sign_in(body: PasscodeSignIn, request: Request, response: Response,
     limit(db, f"passcode_id:{known.id if known else typed.lower()}", setting("auth.passcode_id_max_attempts", db), window)
 
     # A device that hasn't signed in to this account gets the same answer whatever was typed.
-    if known is None or (typed and not _typed_account_matches(known, typed)):
+    if known is None or (typed and not _typed_account_matches(db, known, typed)):
         audit(db, ANONYMOUS_ACTOR, "STUDENT_PASSCODE_NEW_DEVICE_REFUSED", _typed_id_digest(typed or "remembered"))
         db.commit()
         raise HTTPException(403, {"code": PASSCODE_NEW_DEVICE,
