@@ -1980,6 +1980,26 @@
       "src/features/auth/views/SetPasscodeView.tsx",
       "src/features/auth/views/SignInFrame.tsx",
       "src/features/auth/views/AuthHeroSlides.tsx"
+    ],
+    "M2MedicineInfo": [
+      "src/features/medicineInfo/views/M2MedicineInfoView.tsx",
+      "src/features/medicineInfo/views/MedicineInfoRoute.tsx",
+      "src/features/medicineInfo/views/PublicMedicineInfoPage.tsx",
+      "src/features/medicineInfo/views/pickMedicinePhoto.web.ts",
+      "src/features/medicineInfo/screens/MedicineInfoScreen.tsx",
+      "src/features/medicineInfo/viewmodel/MedicineInfoViewModel.ts",
+      "src/features/medicineInfo/data/MedicineInfoRepository.ts",
+      "src/features/medicineInfo/model/ageBands.ts",
+      "src/native/MedicineInfoScreens.tsx",
+      "src/features/phoneKit/studentPhoneBoards.tsx",
+      "src/screens/workspace/StudentPhoneFrame.tsx"
+    ],
+    "AdminMedicineInfo": [
+      "src/features/medicineInfo/admin/MedicineInfoReviewView.tsx",
+      "src/features/medicineInfo/viewmodel/MedicineInfoReviewViewModel.ts",
+      "src/screens/workspace/admin/SuperAdminScreens.tsx",
+      "src/screens/workspace/admin/superAdminNavigation.ts",
+      "src/screens/vendor/vendorNavigation.ts"
     ]
   },
   "inProgress": {

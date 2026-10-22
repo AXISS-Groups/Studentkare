@@ -64,6 +64,10 @@ export const SearchResultsView = observer(function SearchResultsView({ vm, links
           </Pressable>
         </View>
 
+        {links.openMedicineInfo && vm.tab !== 'labs' && vm.tab !== 'doctors' ? (
+          <ResultCard icon="pill" tone="neutral" title={t('mi.lookUp', { query: vm.searched })} meta={t('mi.entryBody')}
+            onPress={() => links.openMedicineInfo?.(vm.searched)} testID="search-medicine-info-result" />
+        ) : null}
         {vm.tab === 'medicines'
           ? medicines.map((item, i) => <Rise key={item.id} index={i}><ListingCard item={item} onPress={() => links.openProduct(item)} /></Rise>)
           : all.map((hit, i) => (

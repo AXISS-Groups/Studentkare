@@ -20,6 +20,7 @@ const M2StepsRoute = lazy(() => import('@/features/steps/views/M2StepsRoute').th
 const M2TrendsRoute = lazy(() => import('@/features/labResults/views/M2TrendsRoute').then((m) => ({ default: m.M2TrendsRoute })));
 const M2VaccinesRoute = lazy(() => import('@/features/preventive/views/M2VaccinesRoute').then((m) => ({ default: m.M2VaccinesRoute })));
 const M2WaterRoute = lazy(() => import('@/features/reminders/views/M2WaterRoute').then((m) => ({ default: m.M2WaterRoute })));
+const MedicineInfoRoute = lazy(() => import('@/features/medicineInfo/views/MedicineInfoRoute').then((m) => ({ default: m.MedicineInfoRoute })));
 const ReturnRequestRoute = lazy(() => import('@/features/requests/views/ReturnRequestView').then((m) => ({ default: m.ReturnRequestRoute })));
 const SearchRoute = lazy(() => import('@/features/discover/views/SearchRoute').then((m) => ({ default: m.SearchRoute })));
 const ShopPhoneRoute = lazy(() => import('@/features/shopPhone/views/ShopPhoneRoute').then((m) => ({ default: m.ShopPhoneRoute })));
@@ -48,6 +49,7 @@ export function studentPhoneBoard(route: RoutePath): PhoneBoard | null {
     case 'lab-tests': return { node: <M2LabsRoute />, title: 'm2.labs.title', ownBack: true };
     case 'care': return { node: <M2ConsultsRoute />, title: 'm2.doc.eyebrow', ownBack: true };
     case 'find-care': return { node: <CareDirectoryRoute />, title: 'fc.eyebrow', ownBack: true };
+    case 'medicine-info': return { node: <MedicineInfoRoute />, title: 'mi.eyebrow', ownBack: true };
     case 'your-care': return { node: <M2InsightsRoute />, title: 'm2.nav.health', ownBack: true };
     case 'ayush': return { node: <M2AskAyushRoute />, title: 'm2.nav.ayush', ownBack: true };
     case 'preventive-care': return { node: <M2VaccinesRoute />, title: 'm2.vac.eyebrow', ownBack: true };

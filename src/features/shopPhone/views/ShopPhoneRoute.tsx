@@ -45,6 +45,7 @@ export function ShopPhoneRoute({ route }: { route: 'shop' | 'checkout' }): React
     bookLab: setLabItemId,
     trackOrder: (orderId) => routerNavigate(`/orders?order=${encodeURIComponent(orderId)}`),
     openOrders: () => navigate('orders'),
+    openMedicineInfo: (medicineId) => routerNavigate(medicineId ? `/medicine-info?medicine=${encodeURIComponent(medicineId)}` : '/medicine-info'),
   };
 
   return (

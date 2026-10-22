@@ -81,6 +81,8 @@ const M2RemindersRoute = lazy(() => import('@/features/reminders/views/M2Reminde
 const M2WaterRoute = lazy(() => import('@/features/reminders/views/M2WaterRoute').then(module => ({ default: module.M2WaterRoute })));
 const M2StepsRoute = lazy(() => import('@/features/steps/views/M2StepsRoute').then(module => ({ default: module.M2StepsRoute })));
 const M2LabsRoute = lazy(() => import('@/features/m2store/views/M2LabsRoute').then(module => ({ default: module.M2LabsRoute })));
+const MedicineInfoRoute = lazy(() => import('@/features/medicineInfo/views/MedicineInfoRoute').then(module => ({ default: module.MedicineInfoRoute })));
+const PharmacyMedicineInfoScreen = lazy(() => import('@/features/medicineInfo/admin/MedicineInfoReviewView').then(module => ({ default: module.PharmacyMedicineInfoScreen })));
 const CareDirectoryRoute = lazy(() => import('@/features/careDirectory/views/CareDirectoryRoute').then(module => ({ default: module.CareDirectoryRoute })));
 const WebEmergencyCard = lazy(() => import('@/features/emergency/views/WebEmergencyCard').then(module => ({ default: module.WebEmergencyCard })));
 const IdentityVerifyView = lazy(() => import('@/features/auth/views/IdentityVerifyView').then(module => ({ default: module.IdentityVerifyView })));
@@ -173,6 +175,8 @@ function vendorPageFor(route: RoutePath, role: AccountRole | null, onNavigate: (
     case 'console': case 'vendor-console': case 'performance': return <VendorConsoleScreen {...props} />;
     case 'settlement': case 'settlements': case 'vendor-settlement': return <VendorSettlementScreen {...props} />;
     case 'rx-review': case 'vendor-rx-review': return <VendorRxReviewScreen {...props} />;
+    // Medicine information review: pharmacists approve (plan tier1-medicine-info-2026-10-22); super admins see it too.
+    case 'medicine-info-review': return <PharmacyMedicineInfoScreen />;
     case 'staff': case 'partner-staff': case 'vendor-staff': case 'staff-roles': return <PartnerStaffScreen {...props} />;
     case 'orders': return role === 'VENDOR' ? <VendorOrdersScreen {...props} /> : null;
     case 'admin/catalog': return role === 'VENDOR' ? <VendorCatalogueScreen {...props} /> : null;
@@ -339,6 +343,8 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
       case 'lab-tests': return <M2LabsRoute />;
       // Find care near you (WebFindCare above phone width): the same board, two columns.
       case 'find-care': return <CareDirectoryRoute wide />;
+      // Medicine information above phone width: the same screen, one wider column.
+      case 'medicine-info': return <MedicineInfoRoute wide />;
       default: return null;
     }
   };

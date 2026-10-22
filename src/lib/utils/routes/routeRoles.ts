@@ -63,6 +63,7 @@ export const routeRoles: Readonly<Partial<Record<RoutePath, RouteRoles>>> = {
   'lab-queue': PARTNER,
   'lab-reporting': PARTNER,
   'leave-campus': STUDENT_ONLY,
+  'medicine-info-review': PARTNER, // pharmacists approve medicine information; the partner nav limits it to pharmacies
   'meo': MEO_TRIAGE, // features/care/module.ts
   'my-lab-tests': STUDENT_ONLY, // the student's own released reports (WP-09)
   'my-requests': STUDENT_ONLY,

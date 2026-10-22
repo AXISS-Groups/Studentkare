@@ -53,6 +53,8 @@ export const SUPER_ADMIN_NAVIGATION: SuperAdminNavGroup[] = [
       { label: 'Catalogue ops', labelKey: 'console.admin.nav.catalog', icon: 'box', route: 'admin/catalog' },
       // Not on the design canvas: the Find care directory's curated listings and partner verification.
       { label: 'Care directory', labelKey: 'console.admin.nav.careDirectory', icon: 'hospital', route: 'admin/care-directory' },
+      // Not on the design canvas: reviewed medicine information (pharmacists approve; super admins edit and import).
+      { label: 'Medicine info', labelKey: 'console.admin.nav.medicineInfo', icon: 'pill', route: 'admin/medicine-info' },
       // Not on the design canvas: added for held lab reports with no reviewer.
       { label: 'Lab report reviewers', labelKey: 'console.admin.nav.labReviews', icon: 'flask', route: 'admin/lab-reviews' },
     ],
