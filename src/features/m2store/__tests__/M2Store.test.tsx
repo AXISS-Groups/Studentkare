@@ -312,7 +312,7 @@ describe('M2Consults', () => {
     const book = vi.fn();
     wrap(<M2ConsultsView vm={vm} links={{ back: vi.fn(), book, plus: vi.fn() }} />);
     expect(screen.getByRole('link', { name: 'Consult now · from ₹299' })).toBeInTheDocument();
-    expect(screen.getByTestId('m2-doc-gp').getAttribute('aria-label')).toMatch(/^Dr\. Meera Rao, General medicine, From ₹299\. Free at /);
+    expect(screen.getByTestId('m2-doc-gp').getAttribute('aria-label')).toMatch(/^Dr\. Meera Rao, General medicine, From ₹299\. Free (Tomorrow )?at /);
     expect(screen.getByTestId('m2-doc-derm').getAttribute('aria-label')).toMatch(/No open slot yet/);
     fireEvent.click(screen.getByRole('link', { name: 'Consult now · from ₹299' }));
     expect(book).toHaveBeenCalledWith(expect.objectContaining({ id: 'gp' }));
