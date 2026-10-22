@@ -129,17 +129,18 @@ jobs:
         run: |
           cp .env.dev.example .env
           docker compose -f docker-compose.yml config >/dev/null
-          DATABASE_URL=postgresql://ci:ci@localhost:5432/ci?sslmode=disable \
-          ALLOWED_ORIGINS=https://example.test \
-          OTP_HASH_SECRET=dummy-config-check-only \
-          ALERTMANAGER_WEBHOOK_SECRET=dummy \
-          SENTRY_DSN=https://dummy@sentry.test/1 \
-          GRAFANA_ADMIN_PASSWORD=dummy \
-          TWO_FACTOR_ENCRYPTION_KEY=dummy \
-          PASS_SIGNING_SECRET=dummy \
-          DPDP_ARCHIVE_KEY=dummy \
-          DPDP_ARCHIVE_RETENTION_DAYS=30 \
-          INTEGRATIONS_ENCRYPTION_KEY=dummy \
+          # Exported (not a one-command prefix) so every prod check below sees them.
+          export DATABASE_URL='postgresql://ci:ci@localhost:5432/ci?sslmode=disable' \
+            ALLOWED_ORIGINS=https://example.test \
+            OTP_HASH_SECRET=dummy-config-check-only \
+            ALERTMANAGER_WEBHOOK_SECRET=dummy \
+            SENTRY_DSN=https://dummy@sentry.test/1 \
+            GRAFANA_ADMIN_PASSWORD=dummy \
+            TWO_FACTOR_ENCRYPTION_KEY=dummy \
+            PASS_SIGNING_SECRET=dummy \
+            DPDP_ARCHIVE_KEY=dummy \
+            DPDP_ARCHIVE_RETENTION_DAYS=30 \
+            INTEGRATIONS_ENCRYPTION_KEY=dummy
           docker compose -f docker-compose.yml -f docker-compose.prod.yml config > /tmp/compose-prod.yml
           # Uploads fail closed without a virus scanner: prod must run clamd with a health check.
           docker compose -f docker-compose.yml -f docker-compose.prod.yml config --services | grep -qx clamav
