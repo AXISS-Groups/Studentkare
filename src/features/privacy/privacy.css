@@ -63,3 +63,8 @@
 .sk-legal-text p { margin: 0; line-height: 1.6; white-space: pre-line; }
 .sk-legal-text .sk-legal-text__version { font-size: var(--sk-text-caption); color: var(--sk-color-text-3); }
 .sk-privacy .sk-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+/* A row whose action is a link, not a switch: on a phone the link goes under the words. */
+@media (max-width: 600px) {
+  .sk-privacy .sk-privacy__row--switch.is-stacked { flex-direction: column; align-items: stretch; }
+}

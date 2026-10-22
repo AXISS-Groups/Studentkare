@@ -104,7 +104,7 @@ export function PrivacyConsentView({ repository = privacyRepository }: { reposit
                     const stateId = `${titleId}-state`;
                     const working = busy === item.purpose;
                     return (
-                      <li key={item.purpose} className="sk-privacy__row sk-privacy__row--switch">
+                      <li key={item.purpose} className={`sk-privacy__row sk-privacy__row--switch${item.canGiveHere ? '' : ' is-stacked'}`}>
                         <span className="sk-privacy__words">
                           <strong id={titleId}>{t(`privacy.purpose.${item.purpose}.title` as MessageKey)}</strong>
                           <small>{t(`privacy.purpose.${item.purpose}.body` as MessageKey)}</small>
