@@ -299,6 +299,16 @@ jobs:
         # Blocking: a model change without a matching migration fails here.
         run: python -m alembic -c config/alembic.ini check
 
+      - name: Backup and restore drill (pg-backup + restore-check on the migrated schema)
+        # docs/guides/backups.md. The runner's client tools are Postgres 16.
+        working-directory: .
+        run: |
+          set -euo pipefail
+          export BACKUP_DIR="$RUNNER_TEMP/backups"
+          sh deploy/backup/pg-backup.sh
+          RESTORE_ADMIN_URL="postgresql://ci:ci@localhost:5432/postgres?sslmode=disable" \
+            sh scripts/ops/restore-check.sh
+
       - name: Backend Pytest Suite on Postgres
         # -rs prints every skip with its reason, so nothing skips silently.
         run: pytest tests/ -q -rs

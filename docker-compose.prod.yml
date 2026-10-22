@@ -399,6 +399,42 @@ services:
         reservations:
           memory: 1536M
 
+  # Nightly logical backup of DATABASE_URL (docs/guides/backups.md): pg_dump to the
+  # pg-backups volume, kept BACKUP_RETENTION_DAYS, and copied to S3-compatible
+  # storage when BACKUP_S3_URI is set. Restore drill: scripts/ops/restore-check.sh
+  # (also in this image as `restore-check`). Healthy while the last good backup is
+  # under 26 hours old.
+  backup:
+    build:
+      context: .
+      dockerfile: deploy/backup/Dockerfile
+    container_name: studentkare-backup
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: ${BACKUP_DATABASE_URL:-${DATABASE_URL:?Set DATABASE_URL to a real Postgres database}}
+      BACKUP_INTERVAL_SECONDS: ${BACKUP_INTERVAL_SECONDS:-86400}
+      BACKUP_RETENTION_DAYS: ${BACKUP_RETENTION_DAYS:-14}
+      BACKUP_S3_URI: ${BACKUP_S3_URI:-}
+      BACKUP_S3_ENDPOINT_URL: ${BACKUP_S3_ENDPOINT_URL:-}
+      AWS_ACCESS_KEY_ID: ${BACKUP_AWS_ACCESS_KEY_ID:-}
+      AWS_SECRET_ACCESS_KEY: ${BACKUP_AWS_SECRET_ACCESS_KEY:-}
+      AWS_DEFAULT_REGION: ${BACKUP_AWS_REGION:-ap-south-1}
+    volumes:
+      - pg-backups:/backups
+    networks:
+      - studentkare
+    healthcheck:
+      test: ["CMD-SHELL", "test -n \"$$(find /backups/last-success -mmin -1560 2>/dev/null)\""]
+      interval: 10m
+      timeout: 10s
+      retries: 1
+      start_period: 30m
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+
   # External database (managed by cloud provider)
   # No local Postgres container - use managed PostgreSQL (RDS, CloudSQL, etc.)
 
@@ -417,3 +453,4 @@ volumes:
   tempo-data:
   grafana-data:
   clamav-db:
+  pg-backups:

@@ -35,6 +35,10 @@ jobs:
           - name: frontend
             context: .
             dockerfile: deploy/Dockerfile
+          # Postgres backup + restore drill (Helm CronJob, compose `backup`).
+          - name: backup
+            context: .
+            dockerfile: deploy/backup/Dockerfile
     steps:
       - name: Resolve commit and tags
         id: meta

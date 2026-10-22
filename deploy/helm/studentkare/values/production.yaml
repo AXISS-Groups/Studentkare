@@ -215,6 +215,35 @@ clamav:
   signatureStorage:
     sizeLimit: 2Gi
 
+# Nightly logical Postgres backup (templates/06-backup.yaml, docs/guides/backups.md):
+# pg_dump of DATABASE_URL onto the studentkare-backups PVC, kept retentionDays, and
+# copied to S3-compatible storage when s3Uri is set. Image from release.yml; its tag
+# defaults to backend.image.tag (same commit). Restore drill: restore-check in the image.
+backup:
+  enabled: true
+  schedule: "30 20 * * *"   # 20:30 UTC = 02:00 IST
+  retentionDays: 14
+  image:
+    repository: ghcr.io/axiss-groups/studentkare-backup
+    tag: ""                 # "" = backend.image.tag
+    pullPolicy: IfNotPresent
+  s3Uri: ""                 # e.g. s3://studentkare-backups/postgres
+  s3EndpointUrl: ""         # S3-compatible endpoint (MinIO, R2, ...); "" = AWS
+  awsRegion: ap-south-1
+  secrets:
+    AWS_ACCESS_KEY_ID: ""
+    AWS_SECRET_ACCESS_KEY: ""
+  persistence:
+    size: 50Gi
+    storageClass: fast-ssd
+  resources:
+    limits:
+      cpu: "1"
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
 # Scheduled-jobs worker (templates/04-worker.yaml): backend image, same secrets.
 # Required for outbox delivery (SOS) and erasures to happen on a timer.
 worker:
