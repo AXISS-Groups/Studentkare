@@ -1,5 +1,6 @@
 import React from 'react';
 import { useT } from '@/i18n';
+import { publicHomeUrl } from '@/core/env';
 import { BrandLogo, Icon } from '../icons';
 import {
   PUBLIC_AUDIENCE_NAV,
@@ -38,7 +39,7 @@ export interface PublicSiteHeaderProps {
 function BrandLink({ size }: { size: number }): React.ReactElement {
   const t = useT();
   return (
-    <a className="sk-psite-brand" href={PUBLIC_ROUTES.home} aria-label={t('landing.site.home')}>
+    <a className="sk-psite-brand" href={publicHomeUrl()} aria-label={t('landing.site.home')}>
       <BrandLogo size={size} label="" />
       <PublicWordmark />
     </a>

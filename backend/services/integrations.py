@@ -31,6 +31,7 @@ from services.workflow_auth import (
     authenticated_user,
     issue_session,
     limit,
+    remember_device,
     require_super_admin,
     session_payload,
     two_factor_enforced_roles,
@@ -336,7 +337,7 @@ def disable_2fa(body: TwoFAToken, user: dict = Depends(authenticated_user), db: 
 
 @router.post("/auth/2fa/challenge")
 def challenge_2fa(body: TwoFAToken, request: Request, response: Response, db: DBSession = Depends(workflow_db)):
-    account_id = twofa_store.consume_pending(db, body.tempToken or "")
+    account_id, first_factor = twofa_store.consume_pending_with_factor(db, body.tempToken or "")
     if not account_id:
         db.commit()
         raise HTTPException(401, "Expired 2FA session. Verify your code again.")
@@ -347,7 +348,9 @@ def challenge_2fa(body: TwoFAToken, request: Request, response: Response, db: DB
     account = db.get(M.Account, account_id)
     if not account or not account.active:
         raise HTTPException(404, "No active account was found.")
-    csrf = issue_session(db, account, response, request)
+    code_proven = time.time() if first_factor == "CODE" else 0.0
+    csrf = issue_session(db, account, response, request, code_verified_at=code_proven)
+    remember_device(db, account, request, response)
     db.commit()
     return {"success": True, "user": session_payload(db, account), "csrfToken": csrf}
 

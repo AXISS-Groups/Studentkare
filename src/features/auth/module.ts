@@ -26,6 +26,12 @@ export const authModule: FeatureModule = {
       load: () => import('./screens/AccountReadyScreen').then((m) => ({ default: m.AccountReadyScreen })),
     },
     {
+      // The student's optional passcode: after sign-up, from Sign-in & security, and after "forgot passcode".
+      path: '/set-passcode',
+      access: (role) => role === 'STUDENT',
+      load: () => import('./screens/SetPasscodeScreen').then((m) => ({ default: m.SetPasscodeScreen })),
+    },
+    {
       path: '/profile-setup',
       load: () => import('./screens/ProfileSetupScreen').then((m) => ({ default: m.ProfileSetupScreen })),
     },

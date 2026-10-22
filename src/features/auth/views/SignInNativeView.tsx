@@ -10,12 +10,15 @@ import { channelFieldCopy, channelIsDeliverable } from './channelCopy';
 import {
   AuthNativeFrame, ChannelFailureNative, ChannelSwitchNative, NoChannelNative, SendErrorNative, authNativeStyles as s,
 } from './AuthNativeParts';
+import { PasscodeEntryNative, RememberedNative, UsePasscodeNative } from './PasscodeNativeParts';
 
 interface SignInNativeViewProps {
   vm: AuthViewModel;
   onNavigateToSignUp?: () => void;
   onNavigateToLostPhone?: () => void;
   onSuccess?: () => void;
+  /** The logo: the public home page (the app's landing screen unless a site URL is configured). */
+  onHome?: () => void;
 }
 
 /**
@@ -30,6 +33,7 @@ export const SignInNativeView: React.FC<SignInNativeViewProps> = observer(functi
   onNavigateToSignUp,
   onNavigateToLostPhone,
   onSuccess,
+  onHome,
 }) {
   const t = useT();
   const contact = useRef<{ focus: () => void } | null>(null);
@@ -38,7 +42,10 @@ export const SignInNativeView: React.FC<SignInNativeViewProps> = observer(functi
   const whatsapp = vm.channel === 'WHATSAPP';
   const canSend = deliverable && !vm.busy && vm.identifier.trim().length > 0;
 
-  useEffect(() => { void vm.loadOptions(); }, [vm]);
+  useEffect(() => {
+    void vm.loadOptions();
+    void vm.loadRemembered();
+  }, [vm]);
   useEffect(() => {
     if (vm.focusContactRequest > 0) contact.current?.focus();
   }, [vm.focusContactRequest]);
@@ -58,15 +65,22 @@ export const SignInNativeView: React.FC<SignInNativeViewProps> = observer(functi
     : vm.error ? <SendErrorNative message={vm.error} /> : null;
 
   return (
-    <AuthNativeFrame regionLabel="auth.signin.title" onBack={vm.step === 1 ? undefined : () => vm.advance(1)}>
+    <AuthNativeFrame
+      regionLabel="auth.signin.title"
+      onHome={onHome}
+      onBack={vm.passcodeEntry ? vm.leavePasscode : vm.step === 1 ? undefined : () => vm.advance(1)}
+    >
       <View style={styles.head}>
         <Text style={s.title} accessibilityRole="header">{t('auth.signin.title')}</Text>
         <Text style={s.lead}>{t('auth.signin.lead')}</Text>
       </View>
 
-      {vm.step === 1 && vm.noChannel ? <NoChannelNative vm={vm} /> : null}
+      {vm.step === 1 && vm.passcodeEntry ? <PasscodeEntryNative vm={vm} onSuccess={onSuccess} /> : null}
+      {vm.step === 1 && !vm.passcodeEntry && vm.remembered ? <RememberedNative vm={vm} /> : null}
 
-      {vm.step === 1 && !vm.noChannel && (
+      {vm.step === 1 && !vm.passcodeEntry && !vm.remembered && vm.noChannel ? <NoChannelNative vm={vm} /> : null}
+
+      {vm.step === 1 && !vm.passcodeEntry && !vm.remembered && !vm.noChannel && (
         <>
           {vm.twoFaRestart ? (
             <View style={styles.notice} accessibilityRole="alert" testID="twofa-restart">
@@ -118,6 +132,8 @@ export const SignInNativeView: React.FC<SignInNativeViewProps> = observer(functi
               </>
             )}
           </TouchableOpacity>
+
+          <UsePasscodeNative vm={vm} />
 
           <Text style={styles.orText}>{t('ident.signin.or')}</Text>
           {/* No single sign-on exists for any campus (D3-2): drawn off, with why. */}

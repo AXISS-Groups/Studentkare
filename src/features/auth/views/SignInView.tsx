@@ -116,6 +116,14 @@ export const SignInView = observer(function SignInView({ vm, onCreateAccount }: 
         {vm.busy ? t('auth.sending') : t('ident.signin.send')}
         {vm.busy ? null : <Icon name="arrow-right" size={20} />}
       </button>
+      {/* Beside the code, never instead of it: the server accepts it only on a device that has signed in before. */}
+      {vm.passcodeEnabled ? (
+        <button type="button" className="sk-signin__ghost" disabled={vm.busy} onClick={vm.startPasscode} aria-describedby={vm.passcodeProblem === 'NEED_ID' ? 'sk-passcode-need-id' : undefined}>
+          <Icon name="key" size={18} />
+          {t('authpc.usePasscode')}
+        </button>
+      ) : null}
+      {vm.passcodeProblem === 'NEED_ID' ? <p className="sk-signin__hint" id="sk-passcode-need-id" role="status">{t('authpc.needId')}</p> : null}
 
       <div className="sk-signin__or" aria-hidden="true">{t('ident.signin.or')}</div>
 

@@ -401,6 +401,25 @@ declare("auth.staff_pin_ip_max_attempts", INT, 20, area="auth", unit="attempts",
         description="PIN sign-in attempts one network address may make in the rate window.")
 declare("auth.staff_pin_id_max_attempts", INT, 10, area="auth", unit="attempts", minimum=5, maximum=100,
         description="PIN sign-in attempts against one ID in the rate window, whoever makes them.")
+# Student passcode (services/student_passcode.py, founder decision 2026-10-22): an
+# optional 4, 6 or 8 character secret a student may use instead of a code, only on
+# a device that has signed in to the account before. The switch is public so the
+# screens hide the option when it is off; the server refuses it then as well. A
+# 4-character passcode is weak, so the lockout and rate limits below matter.
+declare("auth.passcode_login_enabled", BOOL, True, area="auth", public=True,
+        description="Whether students may set a passcode and sign in with it on a device they have used before.")
+declare("auth.passcode_max_attempts", INT, 5, area="auth", unit="attempts", minimum=3, maximum=10,
+        description="Wrong passcodes in a row before a student's passcode is locked.")
+declare("auth.passcode_lockout_minutes", INT, 15, area="auth", unit="minutes", minimum=5, maximum=1440,
+        description="How long a student's passcode stays locked after too many wrong tries (a code still works).")
+declare("auth.passcode_rate_window_minutes", INT, 15, area="auth", unit="minutes", minimum=1, maximum=120,
+        description="The window the passcode sign-in rate limits below are counted over.")
+declare("auth.passcode_ip_max_attempts", INT, 20, area="auth", unit="attempts", minimum=5, maximum=200,
+        description="Passcode sign-in attempts one network address may make in the rate window.")
+declare("auth.passcode_id_max_attempts", INT, 10, area="auth", unit="attempts", minimum=5, maximum=100,
+        description="Passcode sign-in attempts against one account in the rate window, whoever makes them.")
+declare("auth.passcode_reset_window_minutes", INT, 15, area="auth", unit="minutes", minimum=5, maximum=120,
+        description="How long after signing in with a code a student may replace or remove a passcode without the old one.")
 declare("auth.whatsapp_status_cache_seconds", INT, 60, area="auth", unit="seconds", minimum=5, maximum=900,
         description="How long a WhatsApp session check (or a failed WhatsApp send) is trusted before checking again.")
 declare("auth.whatsapp_status_timeout_seconds", INT, 3, area="auth", unit="seconds", minimum=1, maximum=10,

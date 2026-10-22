@@ -28,6 +28,7 @@ export function SignInScreen(): React.ReactElement {
       onNavigateToSignUp={() => navigate('CreateAccount')}
       onNavigateToLostPhone={() => navigate('LostPhone')}
       onSuccess={refresh}
+      onHome={() => navigate('Landing')}
     />
   );
 }
@@ -42,6 +43,7 @@ export function CreateAccountScreen(): React.ReactElement {
       vm={vm}
       onNavigateToSignIn={() => navigate('SignIn')}
       onSuccess={refresh}
+      onHome={() => navigate('Landing')}
     />
   );
 }

@@ -1,5 +1,6 @@
 import React from 'react';
-import { Animated, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Animated, Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { publicHomeUrl } from '@/core/env';
 import { observer } from 'mobx-react-lite';
 import { LANGUAGE_NAMES, useLanguage, useT } from '@/i18n';
 import type { Lang, MessageKey } from '@/i18n';
@@ -77,12 +78,30 @@ function Orbs(): React.ReactElement {
 
 export interface AuthNativeFrameProps {
   onBack?: () => void;
+  /** The logo goes to the public home page (founder, 2026-10-22): the site URL when configured, else the app's landing screen. */
+  onHome?: () => void;
   regionLabel: MessageKey;
   children: React.ReactNode;
 }
 
-export function AuthNativeFrame({ onBack, regionLabel, children }: AuthNativeFrameProps): React.ReactElement {
+/** EXPO_PUBLIC_SITE_URL when it is a web address; otherwise the caller's own landing screen. */
+export function openPublicHome(fallback: () => void): void {
+  const url = publicHomeUrl();
+  if (/^https?:\/\//.test(url)) void Linking.openURL(url);
+  else fallback();
+}
+
+export function AuthNativeFrame({ onBack, onHome, regionLabel, children }: AuthNativeFrameProps): React.ReactElement {
   const t = useT();
+  const brand = (
+    <>
+      <BrandLogo size={26} label="" />
+      <Text style={styles.wordmark} numberOfLines={1}>
+        {t('launch.brand.student')}
+        <Text style={styles.wordmarkKare}>{` ${t('launch.brand.kare')}`}</Text>
+      </Text>
+    </>
+  );
   return (
     <View style={styles.screen}>
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled" accessibilityLabel={t(regionLabel)}>
@@ -94,13 +113,16 @@ export function AuthNativeFrame({ onBack, regionLabel, children }: AuthNativeFra
                 <Icon name="arrow-left" size={20} color={color.onHero} />
               </TouchableOpacity>
             ) : null}
-            <View style={styles.brand}>
-              <BrandLogo size={26} label="" />
-              <Text style={styles.wordmark} numberOfLines={1}>
-                {t('launch.brand.student')}
-                <Text style={styles.wordmarkKare}>{` ${t('launch.brand.kare')}`}</Text>
-              </Text>
-            </View>
+            {onHome ? (
+              <TouchableOpacity
+                style={[styles.brand, styles.brandLink]}
+                onPress={() => openPublicHome(onHome)}
+                accessibilityRole="link"
+                accessibilityLabel={t('landing.site.home')}
+              >
+                {brand}
+              </TouchableOpacity>
+            ) : <View style={styles.brand}>{brand}</View>}
             <LanguagePills />
           </View>
           <Text style={styles.eyebrow}>{t('authch.hero.eyebrow')}</Text>
@@ -262,6 +284,7 @@ const styles = StyleSheet.create({
     backgroundColor: color.onHeroVeil, borderWidth: 1, borderColor: color.onHeroRule,
   },
   brand: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: space.s8, minWidth: 0 },
+  brandLink: { minHeight: size.touchTarget },
   wordmark: { flexShrink: 1, fontFamily: font.family.sans, fontSize: font.size.body, fontWeight: fontWeight(800), color: color.onHero },
   wordmarkKare: { fontStyle: 'italic', fontFamily: font.family.serif },
   eyebrow: {

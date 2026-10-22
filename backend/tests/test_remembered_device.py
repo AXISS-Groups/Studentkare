@@ -26,7 +26,8 @@ def test_remembered_device_shows_only_a_masked_hint(harness):
     response = sign_out(client, headers, remember=True, lastRoute="records")
     assert "HttpOnly" in response.headers["set-cookie"]
     hint = client.get("/api/auth/remembered").json()
-    assert hint == {"remembered": True, "targetMasked": "m•••@example.test", "channel": "EMAIL", "lastRoute": "records"}
+    assert hint == {"remembered": True, "targetMasked": "m•••@example.test", "channel": "EMAIL", "lastRoute": "records",
+                    "passcode": False}
     # Remembering is not a session (guardrail 2).
     assert client.get("/api/auth/session").json()["user"] is None
     assert client.get("/api/health/readings").status_code == 401

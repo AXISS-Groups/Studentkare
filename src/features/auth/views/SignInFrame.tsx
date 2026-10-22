@@ -4,6 +4,8 @@ import { CrisisLinks } from '@/design-system';
 import { useAmbientMotion } from '@/design-system/m2';
 import { LANGUAGE_NAMES, useLanguage, useT } from '@/i18n';
 import type { Lang, MessageKey } from '@/i18n';
+import { publicHomeUrl } from '@/core/env';
+import { AuthHeroSlides, AuthSlideStrip } from './AuthHeroSlides';
 import './sign-in-frame.css';
 
 /** The board's short labels (EN · తె · हि); the full name is the accessible label. Never translated. */
@@ -52,16 +54,15 @@ export function Wordmark({ onNavy = false }: { onNavy?: boolean }): React.ReactE
   );
 }
 
-/**
- * The hero's three true lines (WP-03 decision: the board's unverified claims
- * are not used). Each sits on a glossy Mobile 2.0 service tile; the tick is the
- * board's `check`.
- */
-const BENEFITS: readonly { key: MessageKey; hue: 'violet' | 'teal' | 'sky' }[] = [
-  { key: 'ident.brand.b1', hue: 'violet' },
-  { key: 'ident.brand.b2', hue: 'teal' },
-  { key: 'ident.brand.b3', hue: 'sky' },
-];
+/** The logo goes to the public home page (founder, 2026-10-22): the site root, from config. */
+export function BrandHomeLink({ onNavy = false }: { onNavy?: boolean }): React.ReactElement {
+  const t = useT();
+  return (
+    <a className="sk-signin__home" href={publicHomeUrl()} aria-label={t('landing.site.home')} data-testid="auth-logo-home">
+      <Wordmark onNavy={onNavy} />
+    </a>
+  );
+}
 
 /** The soft orbs behind the hero. Decoration only: drift stops under reduced motion and when the page is hidden. */
 function HeroOrbs(): React.ReactElement {
@@ -74,6 +75,38 @@ function HeroOrbs(): React.ReactElement {
   );
 }
 
+export type AuthTab = 'signIn' | 'create';
+
+/**
+ * "Sign in" / "Create account": the two pages share this frame, and the one in
+ * view is the highlighted pill (aria-current). They are links to the two pages.
+ */
+export function AuthTabs({ current, onPick }: { current: AuthTab; onPick: (tab: AuthTab) => void }): React.ReactElement {
+  const t = useT();
+  const tabs: readonly { id: AuthTab; href: string; label: MessageKey }[] = [
+    { id: 'signIn', href: '/login', label: 'authpc.tabs.signIn' },
+    { id: 'create', href: '/signup', label: 'authpc.tabs.create' },
+  ];
+  return (
+    <nav className="sk-auth-tabs" aria-label={t('authpc.tabs.label')}>
+      {tabs.map((tab) => (
+        <a
+          key={tab.id}
+          href={tab.href}
+          className="sk-auth-tabs__tab"
+          aria-current={tab.id === current ? 'page' : undefined}
+          onClick={(event) => {
+            event.preventDefault();
+            if (tab.id !== current) onPick(tab.id);
+          }}
+        >
+          {t(tab.label)}
+        </a>
+      ))}
+    </nav>
+  );
+}
+
 export interface SignInFrameProps {
   /** Phone board (≤ 430 px and the Expo look) or the web board's two columns. */
   web: boolean;
@@ -81,6 +114,8 @@ export interface SignInFrameProps {
   onBack?: () => void;
   /** Names the form region for screen readers (sign in or create account). */
   regionLabel?: MessageKey;
+  /** The Sign in / Create account tabs above the form; omitted on pages that are neither. */
+  tabs?: { current: AuthTab; onPick: (tab: AuthTab) => void };
   children: React.ReactNode;
   /** Links under the form (create account, lost phone, staff, terms). */
   footer?: React.ReactNode;
@@ -88,14 +123,15 @@ export interface SignInFrameProps {
 
 /**
  * The sign-in and create-account frame (Tier 1, approved 2026-10-21; plan
- * tier1-canvas-wp03), in the Mobile 2.0 visual language: one navy gradient hero
- * with soft orbs for both screens. Web: the hero on the left, the form on the
- * right. Phone (and narrow web): the hero collapses to a compact header with
- * back, the brand mark and the language switch, and the form rises in on a
- * sheet over it. The emergency strip (112, Tele-MANAS) stays in view at the
- * bottom on every width, signed in or not (DESIGN.md §2.4).
+ * tier1-canvas-wp03, amendment 2026-10-22 b), in the Mobile 2.0 visual
+ * language. Web: the navy hero on the left with the auto-advancing slides
+ * (AuthHeroSlides), the form card on the right. Phone (and narrow web): a
+ * compact header with back, the logo, the language switch and the slides as a
+ * small swipeable strip; the form rises in on a sheet over it. The emergency
+ * strip (112, Tele-MANAS) stays in view at the bottom on every width, signed in
+ * or not (DESIGN.md §2.4). The logo links to the public home page.
  */
-export function SignInFrame({ web, onBack, regionLabel = 'auth.signin.title', children, footer }: SignInFrameProps): React.ReactElement {
+export function SignInFrame({ web, onBack, regionLabel = 'auth.signin.title', tabs, children, footer }: SignInFrameProps): React.ReactElement {
   const t = useT();
   const ambient = useAmbientMotion();
   const crisis = (
@@ -103,38 +139,31 @@ export function SignInFrame({ web, onBack, regionLabel = 'auth.signin.title', ch
       <CrisisLinks titleKey="crisis.noAccount" testID="crisis-links" />
     </div>
   );
+  const tabRow = tabs ? <AuthTabs current={tabs.current} onPick={tabs.onPick} /> : null;
 
   if (web) {
     return (
       <main className="sk-signin sk-signin--web" data-ambient={ambient ? 'on' : 'off'}>
         <aside className="sk-auth-hero">
           <HeroOrbs />
+          <span className="sk-auth-hero__grid" aria-hidden="true" />
           <div className="sk-auth-hero__bar">
-            <Wordmark onNavy />
+            <BrandHomeLink onNavy />
           </div>
-          <div className="sk-auth-hero__pitch sk-rise">
+          <div className="sk-auth-hero__pitch">
             <span className="sk-auth-hero__eyebrow">{t('authch.hero.eyebrow')}</span>
-            <h2 className="sk-auth-hero__title">
-              {t('ident.brand.title1')}
-              <br />
-              {t('ident.brand.title2')}
-            </h2>
-            <p className="sk-auth-hero__body">{t('ident.brand.body')}</p>
-            <ul className="sk-auth-hero__benefits">
-              {BENEFITS.map(({ key, hue }) => (
-                <li key={key}>
-                  <span className={`sk-auth-hero__tile sk-auth-hero__tile--${hue}`}>
-                    <Icon name="check" size={18} strokeWidth={2.6} />
-                  </span>
-                  {t(key)}
-                </li>
-              ))}
-            </ul>
+            <AuthHeroSlides />
           </div>
+          {/* Always in view, whichever slide is showing: help never needs an account. */}
+          <p className="sk-auth-hero__promise">
+            <span className="sk-auth-hero__promise-tick"><Icon name="check" size={16} strokeWidth={2.6} /></span>
+            {t('ident.brand.b3')}
+          </p>
         </aside>
         <section className="sk-signin__main" aria-label={t(regionLabel)}>
           <div className="sk-signin__top"><LanguageSwitch /></div>
           <div className="sk-signin__card sk-rise">
+            {tabRow}
             <div className="sk-signin__column">
               {children}
               {footer}
@@ -155,13 +184,14 @@ export function SignInFrame({ web, onBack, regionLabel = 'auth.signin.title', ch
               <Icon name="arrow-left" size={20} />
             </button>
           ) : null}
-          <Wordmark onNavy />
+          <BrandHomeLink onNavy />
           <span className="sk-signin__spacer" />
           <LanguageSwitch onNavy />
         </div>
-        <p className="sk-auth-hero__eyebrow">{t('authch.hero.eyebrow')}</p>
+        <AuthSlideStrip />
       </header>
       <section className="sk-signin__sheet sk-rise" aria-label={t(regionLabel)}>
+        {tabRow}
         <div className="sk-signin__column">
           {children}
           {footer}

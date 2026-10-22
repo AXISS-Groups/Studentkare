@@ -4,6 +4,7 @@ interface ImportMetaEnv {
   readonly VITE_DEMO_DATA?: string;
   readonly VITE_SENTRY_DSN?: string;
   readonly VITE_APP_VERSION?: string;
+  readonly VITE_PUBLIC_SITE_URL?: string;
   readonly DEV?: boolean;
   readonly MODE?: string;
 }
