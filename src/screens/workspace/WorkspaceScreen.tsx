@@ -83,6 +83,8 @@ const M2StepsRoute = lazy(() => import('@/features/steps/views/M2StepsRoute').th
 const M2LabsRoute = lazy(() => import('@/features/m2store/views/M2LabsRoute').then(module => ({ default: module.M2LabsRoute })));
 const M2ConsultsRoute = lazy(() => import('@/features/m2store/views/M2ConsultsRoute').then(module => ({ default: module.M2ConsultsRoute })));
 const M2InsightsRoute = lazy(() => import('@/features/insights/views/M2InsightsRoute').then(module => ({ default: module.M2InsightsRoute })));
+const MedicineInfoRoute = lazy(() => import('@/features/medicineInfo/views/MedicineInfoRoute').then(module => ({ default: module.MedicineInfoRoute })));
+const PharmacyMedicineInfoScreen = lazy(() => import('@/features/medicineInfo/admin/MedicineInfoReviewView').then(module => ({ default: module.PharmacyMedicineInfoScreen })));
 const CareDirectoryRoute = lazy(() => import('@/features/careDirectory/views/CareDirectoryRoute').then(module => ({ default: module.CareDirectoryRoute })));
 const WebEmergencyCard = lazy(() => import('@/features/emergency/views/WebEmergencyCard').then(module => ({ default: module.WebEmergencyCard })));
 const IdentityVerifyView = lazy(() => import('@/features/auth/views/IdentityVerifyView').then(module => ({ default: module.IdentityVerifyView })));

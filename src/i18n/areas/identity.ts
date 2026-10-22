@@ -9,6 +9,11 @@ export const identityEn = {
   'ident.lang.group': 'Language',
   'ident.close': 'Close',
 
+  // Session check (RouteGuard, src/core/routing/Router.tsx)
+  'ident.session.checkFailed': 'Your session could not be checked.',
+  'ident.session.retry': 'Retry session check',
+  'ident.session.tooMany': 'Too many requests — try again in a moment',
+
   // Sign in (SignIn, WebSignIn)
   'ident.signin.back': 'Back',
   'ident.signin.send': 'Send verification code',
@@ -138,6 +143,9 @@ export const identityEn = {
 export const identityTe: Record<keyof typeof identityEn, string> = {
   'ident.lang.group': 'భాష',
   'ident.close': 'మూసివేయండి',
+  'ident.session.checkFailed': 'మీ సెషన్‌ను తనిఖీ చేయలేకపోయాం.',
+  'ident.session.retry': 'సెషన్‌ను మళ్లీ తనిఖీ చేయండి',
+  'ident.session.tooMany': 'చాలా ఎక్కువ అభ్యర్థనలు — కొద్దిసేపట్లో మళ్లీ ప్రయత్నించండి',
 
   'ident.signin.back': 'వెనక్కి',
   'ident.signin.send': 'ధృవీకరణ కోడ్ పంపండి',
@@ -262,6 +270,9 @@ export const identityTe: Record<keyof typeof identityEn, string> = {
 export const identityHi: Record<keyof typeof identityEn, string> = {
   'ident.lang.group': 'भाषा',
   'ident.close': 'बंद करें',
+  'ident.session.checkFailed': 'आपका सेशन जाँचा नहीं जा सका।',
+  'ident.session.retry': 'सेशन फिर से जाँचें',
+  'ident.session.tooMany': 'बहुत ज़्यादा अनुरोध — थोड़ी देर में फिर कोशिश करें',
 
   'ident.signin.back': 'वापस',
   'ident.signin.send': 'सत्यापन कोड भेजें',

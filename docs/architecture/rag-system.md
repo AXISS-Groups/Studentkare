@@ -70,7 +70,7 @@ flowchart LR
 | Embedder | `local-hashing-v1` (in-process, no dependency) | `EMBEDDING_PROVIDER` env (`embeddings.active_embedder`) | **Every value falls back to the local embedder**, including a non-local one: the `if provider in ("", "local")` branch and the fallback both return `_ACTIVE`. There is no real model behind the switch yet. |
 | Generator (optional) | None by default → extractive quoting | `OLLAMA_URL`, `LLM_MODEL` (default `llama3.1:8b`), `LLM_TIMEOUT_SECONDS` (8), `LLM_RETRY_AFTER_SECONDS` (30), all read in `backend/services/llm_gateway.py` | On-prem Ollama only (Rule-C, air-gapped); `temperature: 0`. After a transport failure the gateway stops trying for the cool-off window. |
 | Vector database | None: Postgres/SQLite table with a JSON column | `backend/core/workflow_models.py` `KnowledgeChunk.vector` | No pgvector, no ANN index. Search is a Python loop over every chunk. |
-| Rate limit | `ai_rate_limiter` (30/min) exists in `backend/core/rate_limiter.py` | — | **Not wired**: `/agents/ayush/ask` has no `rate_limit_ai_requests` dependency (the file itself says "PR2 wiring pending"). Only the global per-IP limit (100/min, `RATE_LIMIT_API_PER_MINUTE`) applies. |
+| Rate limit | `ai_rate_limiter` (30/min) exists in `backend/core/rate_limiter.py` | — | **Not wired**: `/agents/ayush/ask` has no `rate_limit_ai_requests` dependency (the file itself says "PR2 wiring pending"). Only the general API limits apply (per session 300/min, per IP 3000/min; `platform.api_rate_per_*` in the settings registry). |
 
 None of these are in the settings registry (`backend/core/settings_registry.py`): the thresholds
 (`TARGET_CHUNK_CHARS`, `RELEVANCE_FLOOR`, `MIN_TERM_OVERLAP`, `REPHRASE_MIN_SUPPORT`, top-k) are module

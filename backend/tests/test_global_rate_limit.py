@@ -1,4 +1,4 @@
-"""Global IP rate-limit middleware: flood → 429, health never 429, buckets isolated."""
+"""Global rate-limit middleware: per-session budget, per-IP ceiling, health never 429."""
 import pytest
 from fastapi.testclient import TestClient
 
@@ -6,8 +6,10 @@ from app.main import app
 from core import rate_limiter
 from core.rate_limiter import (
     GlobalRateLimitMiddleware,
+    account_api_limiter,
     client_ip_from_scope,
     global_api_limiter,
+    session_key_from_scope,
     should_skip_rate_limit,
 )
 
@@ -16,12 +18,21 @@ from core.rate_limiter import (
 def _reset_global_limiter():
     """Local safety net; suite-wide reset lives in tests/conftest.py."""
     global_api_limiter.reset()
+    account_api_limiter.reset()
     yield
     global_api_limiter.reset()
+    account_api_limiter.reset()
 
 
-def test_flood_returns_429_with_retry_after():
-    limit = global_api_limiter.max_requests
+@pytest.fixture
+def small_ceiling(monkeypatch):
+    """A per-IP ceiling small enough to reach in a test."""
+    monkeypatch.setattr(global_api_limiter, "max_requests", 20)
+    return 20
+
+
+def test_flood_returns_429_with_retry_after(small_ceiling):
+    limit = small_ceiling
     with TestClient(app, raise_server_exceptions=False) as client:
         statuses = []
         for _ in range(limit + 1):
@@ -34,8 +45,8 @@ def test_flood_returns_429_with_retry_after():
         assert "Too many requests" in blocked.json()["detail"]
 
 
-def test_health_and_info_never_rate_limited():
-    limit = global_api_limiter.max_requests
+def test_health_and_info_never_rate_limited(small_ceiling):
+    limit = small_ceiling
     with TestClient(app, raise_server_exceptions=False) as client:
         for _ in range(limit + 5):
             assert client.get("/api/health").status_code != 429
@@ -61,8 +72,8 @@ def test_docs_paths_skipped():
     assert not should_skip_rate_limit("/api/blood/sos-request")
 
 
-def test_different_ips_have_isolated_budgets():
-    limit = global_api_limiter.max_requests
+def test_different_ips_have_isolated_budgets(small_ceiling):
+    limit = small_ceiling
     assert global_api_limiter.is_rate_limited("10.0.0.1")[0] is False
     for _ in range(limit - 1):
         global_api_limiter.is_rate_limited("10.0.0.1")
@@ -204,3 +215,125 @@ def test_middleware_blocks_over_limit(monkeypatch):
     # First call reaches inner app; second is short-circuited with 429
     assert called["n"] == 1
     assert sent["status"] == 429
+
+
+# --- per-account budgets (founder decision 2026-10-22) ------------------------
+
+def _scope(ip, session=None, path="/api/whatever"):
+    headers = [(b"cookie", f"theme=dark; sacare_session={session}".encode())] if session else []
+    return {"type": "http", "path": path, "headers": headers, "client": (ip, 1)}
+
+
+def _statuses(scopes):
+    """Run each scope through the middleware; 200 when it reached the app."""
+    import asyncio
+
+    results = []
+
+    async def inner_app(scope, receive, send):
+        results.append(200)
+
+    async def receive():
+        return {"type": "http.request", "body": b"", "more_body": False}
+
+    async def send(message):
+        if message["type"] == "http.response.start":
+            results.append(message["status"])
+
+    mw = GlobalRateLimitMiddleware(inner_app)
+
+    async def run():
+        for scope in scopes:
+            await mw(scope, receive, send)
+
+    asyncio.run(run())
+    return results
+
+
+def test_defaults_come_from_the_settings_registry(monkeypatch):
+    from core.settings_registry import get_declaration
+
+    monkeypatch.delenv("RATE_LIMIT_API_PER_ACCOUNT_PER_MINUTE", raising=False)
+    monkeypatch.delenv("RATE_LIMIT_API_PER_IP_PER_MINUTE", raising=False)
+    assert get_declaration("platform.api_rate_per_account_per_minute").default == 300
+    assert get_declaration("platform.api_rate_per_ip_per_minute").default == 3000
+    assert account_api_limiter.limit() == 300
+    assert global_api_limiter.limit() == 3000
+
+
+def test_env_pins_a_limit_and_a_bad_value_is_ignored(monkeypatch):
+    monkeypatch.setenv("RATE_LIMIT_API_PER_ACCOUNT_PER_MINUTE", "42")
+    assert account_api_limiter.limit() == 42
+    monkeypatch.setenv("RATE_LIMIT_API_PER_ACCOUNT_PER_MINUTE", "-5")
+    assert account_api_limiter.limit() == 300
+    monkeypatch.setenv("RATE_LIMIT_API_PER_IP_PER_MINUTE", "lots")
+    assert global_api_limiter.limit() == 3000
+
+
+def test_many_accounts_behind_one_campus_ip_are_not_blocked(monkeypatch):
+    # 40 students on one NAT address, each loading a 15-call page twice: 1200
+    # requests from one IP, far past the old 100/min per-IP limit.
+    monkeypatch.setattr(account_api_limiter, "max_requests", 300)
+    monkeypatch.setattr(global_api_limiter, "max_requests", 3000)
+    scopes = [_scope("203.0.113.50", f"student-{n}") for n in range(40) for _ in range(30)]
+    assert set(_statuses(scopes)) == {200}
+
+
+def test_one_account_flooding_is_blocked_and_others_are_not(monkeypatch):
+    monkeypatch.setattr(account_api_limiter, "max_requests", 5)
+    statuses = _statuses([_scope("203.0.113.51", "flooder") for _ in range(7)])
+    assert statuses == [200] * 5 + [429, 429]
+    # A classmate on the same address is unaffected.
+    assert _statuses([_scope("203.0.113.51", "classmate")]) == [200]
+
+
+def test_the_ip_ceiling_still_holds_across_accounts(monkeypatch):
+    monkeypatch.setattr(global_api_limiter, "max_requests", 3)
+    scopes = [_scope("203.0.113.52", f"forged-{n}") for n in range(5)]
+    assert _statuses(scopes) == [200, 200, 200, 429, 429]
+
+
+def test_signed_out_requests_count_against_the_ip_ceiling_only(monkeypatch):
+    monkeypatch.setattr(global_api_limiter, "max_requests", 2)
+    assert _statuses([_scope("203.0.113.53") for _ in range(3)]) == [200, 200, 429]
+    assert account_api_limiter.request_history == {}
+
+
+def test_account_429_carries_retry_after():
+    with TestClient(app, raise_server_exceptions=False) as client:
+        account_api_limiter.max_requests = 1
+        client.cookies.set("sacare_session", "a-session-token", path="/api")
+        assert client.get("/api/auth/options").status_code == 200
+        blocked = client.get("/api/auth/options")
+        assert blocked.status_code == 429
+        assert blocked.headers.get("retry-after") == str(account_api_limiter.window_seconds)
+        assert "Too many requests" in blocked.json()["detail"]
+
+
+def test_session_key_is_a_hash_of_the_session_cookie_only():
+    import hashlib
+
+    key = session_key_from_scope(_scope("1.1.1.1", "tok"))
+    assert key == hashlib.sha256(b"tok").hexdigest()
+    assert session_key_from_scope(_scope("1.1.1.1")) is None
+    other = {"headers": [(b"cookie", b"sacare_session_old=x; sacare_challenge=y")]}
+    assert session_key_from_scope(other) is None
+
+
+def test_the_cookie_name_matches_the_auth_service():
+    from core.rate_limiter import SESSION_COOKIE_NAME
+    from services.workflow_auth import SESSION_COOKIE
+
+    assert SESSION_COOKIE_NAME == SESSION_COOKIE.encode()
+
+
+def test_a_super_admin_override_reaches_the_limiter_without_a_query(monkeypatch):
+    from core import settings_registry
+
+    monkeypatch.delenv("RATE_LIMIT_API_PER_ACCOUNT_PER_MINUTE", raising=False)
+    settings_registry.reset_cache()
+    assert account_api_limiter.limit() == 300
+    # What a request handler's setting() call leaves in the cache after an override.
+    monkeypatch.setitem(settings_registry._cache, "values", {"platform.api_rate_per_account_per_minute": 600})
+    assert account_api_limiter.limit() == 600
+    settings_registry.reset_cache()

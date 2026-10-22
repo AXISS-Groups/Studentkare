@@ -1,6 +1,6 @@
 import React, { createContext, ReactNode, useCallback, useContext, useEffect, useState } from 'react';
 import { Account, SessionResponse } from '../types/workflowTypes';
-import { apiRequest, setCsrfToken } from '../services/http';
+import { ApiError, apiRequest, setCsrfToken } from '../services/http';
 import { navigate } from '../../lib/utils/workflowRouting';
 import type { RoutePath } from '../../lib/utils/workflowRouting';
 
@@ -14,6 +14,8 @@ interface AuthContextValue {
   user: Account | null;
   status: 'loading' | 'authenticated' | 'anonymous' | 'error';
   error: string;
+  /** HTTP status of the failed session check (429 = rate limited), 0 when none. */
+  errorStatus: number;
   acceptSession: (session: SessionResponse) => void;
   refresh: () => void;
   updateUser: (user: Account) => void;
@@ -25,12 +27,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<Account | null>(null);
   const [status, setStatus] = useState<AuthContextValue['status']>('loading');
   const [error, setError] = useState('');
+  const [errorStatus, setErrorStatus] = useState(0);
   const [version, setVersion] = useState(0);
   const acceptSession = useCallback((session: SessionResponse) => {
     if (session.user && (!session.user.id || !session.user.fullName || !['STUDENT', 'SUPER_ADMIN', 'CAMPUS_ADMIN', 'COUNSELLOR', 'VENDOR', 'NMC_DOCTOR'].includes(session.user.role) || !session.csrfToken)) throw new Error('Invalid authenticated session.');
     setCsrfToken(session.csrfToken || '');
     setUser(session.user);
     setError('');
+    setErrorStatus(0);
     setStatus(session.user ? 'authenticated' : 'anonymous');
   }, []);
 
@@ -38,7 +42,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const controller = new AbortController();
     setStatus('loading');
     apiRequest<SessionResponse>('/auth/session', { signal: controller.signal }).then(result => { if (!controller.signal.aborted) acceptSession(result); }).catch(reason => {
-      if (!controller.signal.aborted) { setError(reason.message); setStatus('error'); setUser(null); setCsrfToken(''); }
+      if (!controller.signal.aborted) { setError(reason.message); setErrorStatus(reason instanceof ApiError ? reason.status : 0); setStatus('error'); setUser(null); setCsrfToken(''); }
     });
     return () => controller.abort();
   }, [version, acceptSession]);
@@ -57,7 +61,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     acceptSession({ user: null, csrfToken: '' });
   };
   const updateUser = (updated: Account) => setUser(current => current?.id === updated.id ? updated : current);
-  return <AuthContext.Provider value={{ user, status, error, acceptSession, refresh: () => setVersion(value => value + 1), updateUser, logout }}>{children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={{ user, status, error, errorStatus, acceptSession, refresh: () => setVersion(value => value + 1), updateUser, logout }}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {

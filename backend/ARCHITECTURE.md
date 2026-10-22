@@ -108,7 +108,8 @@ PYTHONPATH=. uvicorn app.main:app --reload --port 8000
 | `RAZORPAY_KEY_ID` / `RAZORPAY_KEY_SECRET` | none | Student Plus subscription checkout and order payments |
 | `PAYMENT_PROVIDER` | `mock` in dev/test, `razorpay` in production | order payments; `mock` refuses to start in production |
 | `EMBEDDING_PROVIDER` | `local` | only `local` is implemented (hashed character n-grams) |
-| `RATE_LIMIT_API_PER_MINUTE` | 100 | per-IP global limit |
+| `RATE_LIMIT_API_PER_ACCOUNT_PER_MINUTE` | unset (registry: 300) | per-session API budget; pins `platform.api_rate_per_account_per_minute` |
+| `RATE_LIMIT_API_PER_IP_PER_MINUTE` | unset (registry: 3000) | per-IP API ceiling; pins `platform.api_rate_per_ip_per_minute` |
 | `SENTRY_DSN` | none | Sentry, off without it |
 
 `OLLAMA_URL` (unset = no model), `LLM_MODEL` (default `llama3.1:8b`),

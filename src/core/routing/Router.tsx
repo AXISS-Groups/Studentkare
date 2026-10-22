@@ -5,6 +5,9 @@ import type { FeatureRoute } from './registry';
 import { ScreenLoading } from '@/components/health/ScreenLoading';
 import { useAuth } from '@/data/contexts/AuthContext';
 import { homeForRole } from '@/lib/utils/workflowRouting';
+import { useT } from '@/i18n';
+
+const HTTP_TOO_MANY_REQUESTS = 429;
 
 // Keep lazy identities and their resolved promises across shell/auth rerenders.
 const components = new WeakMap<FeatureRoute['load'], React.LazyExoticComponent<React.ComponentType>>();
@@ -57,13 +60,21 @@ export function RouteGuard({
 }) {
   const location = useLocation();
   const auth = useAuth();
+  const t = useT();
   if (isPublic) return <>{children}</>;
   if (auth.status === 'loading') return <ScreenLoading />;
   if (auth.status === 'error') {
+    // A 429 is the server asking for a pause, not a broken session: say so.
+    if (auth.errorStatus === HTTP_TOO_MANY_REQUESTS) {
+      return <section className="wf-state" role="alert">
+        <h2>{t('ident.session.tooMany')}</h2>
+        <button className="health-button" onClick={auth.refresh}>{t('ident.session.retry')}</button>
+      </section>;
+    }
     return <section className="wf-state" role="alert">
-      <h2>Your session could not be checked.</h2>
+      <h2>{t('ident.session.checkFailed')}</h2>
       <p>{auth.error}</p>
-      <button className="health-button" onClick={auth.refresh}>Retry session check</button>
+      <button className="health-button" onClick={auth.refresh}>{t('ident.session.retry')}</button>
     </section>;
   }
   if (!auth.user) {

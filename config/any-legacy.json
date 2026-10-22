@@ -31,7 +31,6 @@
   "src/screens/fabric/M19ProviderRegistryScreen.tsx",
   "src/screens/fabric/M21PartnerOpsScreen.tsx",
   "src/screens/vault/Flow02AddRecordScreen.tsx",
-  "src/screens/vault/MedicationInfoScreen.tsx",
   "src/types/admin.ts",
   "src/types/index.ts",
   "src/types/react-native.d.ts"
