@@ -45,14 +45,8 @@ const CONSTANT = /[A-Z_]+_PATH\s*=\s*['"`](\/[^'"`?$]*)(\$\{)?/g;
  * View models no route renders, whose endpoints were never built. Remove an
  * entry when the feature is wired up or deleted; never add one for a mounted screen.
  */
-const UNMOUNTED = new Set([
-  '/ai/medication-search', // features/scanners (MedicalScannerViewModel)
-  '/incidents/history', // features/incidents (IncidentTriageViewModel)
-  '/incidents/triage',
-  '/lifeshare/feed', // features/lifeshare (LifeShareViewModel); /lifeshare renders LifeShareExchangeScreen
-  '/lifeshare/request',
-  '/teleconsult/eprescription', // features/teleconsult (TeleconsultViewModel)
-]);
+// Empty since the four unmounted features were deleted (fix/cleanup-limits, 2026-10-22).
+const UNMOUNTED = new Set<string>([]);
 
 describe('client API paths', () => {
   const declared = backendRoutes();

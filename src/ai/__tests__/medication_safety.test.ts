@@ -5,14 +5,12 @@
  * Tests:
  * 1. Overdose queries trigger Crisis Gate & Poison Helpline (1800-116-117) with zero toxicity info.
  * 2. Deterministic allergy cross-check matching.
- * 3. OCR confidence scoring and low-confidence resolution handling.
- * 4. Unlabelled pill resolution refusal.
+ * (The OCR tests went with the unrouted MedicationInfoScreen's made-up drug index, 2026-10-22.)
  */
 
 import { describe, it, expect } from 'vitest';
 import { evaluateCrisisGate } from '../core/crisisGate';
 import { performAllergyCrossCheck, StudentAllergyRecord } from '../engines/allergyCrossCheck';
-import { resolveOCRTextToCDCI, normalizeOCRText } from '../engines/ocrResolutionPipeline';
 
 describe('Medication Safety Test Suite (M-5.2)', () => {
   it('must intercept overdose queries and route to Poison Helpline (1800-116-117) with zero toxicity output', () => {
@@ -45,19 +43,5 @@ describe('Medication Safety Test Suite (M-5.2)', () => {
     const clearMatch = performAllergyCrossCheck('SUB_PARACETAMOL_500', 'Paracetamol', studentAllergies);
     expect(clearMatch.hasConflict).toBe(false);
     expect(clearMatch.warningFlagText).toBeUndefined(); // Never claims "safe for you"
-  });
-
-  it('must handle low-confidence OCR scans without guessing', () => {
-    const unreadableText = "XYZ_BLURRED_TEXT_99";
-    const result = resolveOCRTextToCDCI(unreadableText);
-    expect(result.status).toBe('LOW_CONFIDENCE_UNRESOLVED');
-    expect(result.confidenceScore).toBeLessThan(0.5);
-    expect(result.message).toContain("I couldn't read this clearly enough");
-  });
-
-  it('must normalize common OCR character confusions correctly', () => {
-    const raw = "crocin 65O mg";
-    const clean = normalizeOCRText(raw);
-    expect(clean).toBe("CROCIN 650 MG");
   });
 });
