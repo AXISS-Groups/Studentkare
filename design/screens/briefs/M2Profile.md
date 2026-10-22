@@ -11,7 +11,7 @@
 
 ## Icons this screen must show (all of them)
 
-- **Line / solid icons (16):** `chevron-right`, `credit-card`, `doc`, `flask`, `lock-4`, `map-pin-2`, `message-circle-3`, `plus`, `plus-square`, `scan`, `settings`, `shield-2`, `star`, `syringe`, `translate`, `user-5`
+- **Line / solid icons (17):** `chevron-right`, `credit-card`, `doc`, `flask`, `lock-4`, `map-pin-2`, `message-circle-3`, `plus`, `plus-square`, `scan`, `settings`, `shield-2`, `sparkles`, `star`, `syringe`, `translate`, `user-5`
 - **3D icon tiles (0):** —
 - **Small glyphs (0):** —
 - **Brand mark:** —
@@ -52,3 +52,7 @@ Same object as the manifest icon, drawn a little differently on this board:
 - `user-5`: person drawn as half-head and shoulders (share with family)
 
 > Icons, glyphs and illustrations live in `design/icons/` and `design/illustrations/` — names match `design/icons/icon-manifest.json`. The boards draw icons as inline SVG; this list names the manifest icon for each drawing. Colours: see `design/screens/mobile-2-supersedes.md`. Verify with `node scripts/icons/check-icons.mjs --screen M2Profile`.
+
+## Added 2026-10-23: What's new
+
+A "What's new" row (`sparkles`, "Changes in the app, from the team") above Help opens `M2WhatsNew` (/whats-new): the team's product update posts.

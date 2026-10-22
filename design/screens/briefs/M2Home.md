@@ -11,8 +11,8 @@
 
 ## Icons this screen must show (all of them)
 
-- **Line / solid icons (37):** `arrow-right`, `ayush-spark`, `bottle`, `box`, `calendar-2`, `card-lines`, `cart`, `chevron-down`, `doc`, `doc-upload`, `droplet`, `eye`, `first-aid-kit`, `heart-3`, `home`, `home-2`, `lab`, `map-pin-2`, `med-bottle`, `mic`, `moon-2`, `phone`, `pill-3`, `pill-alt`, `plus`, `plus-slash`, `qr-code-2`, `refresh`, `search`, `shield`, `shield-alert`, `star`, `stetho`, `syringe`, `thermo`, `trend-arrow`, `user-5`
-- **3D icon tiles (0):** —
+- **Line / solid icons (40):** `arrow-right`, `ayush-spark`, `book`, `bottle`, `box`, `calendar-2`, `card-lines`, `cart`, `chevron-down`, `doc`, `doc-upload`, `droplet`, `eye`, `first-aid-kit`, `heart-3`, `heart-pulse`, `home`, `home-2`, `lab`, `map-pin-2`, `med-bottle`, `mic`, `moon-2`, `phone`, `pill-3`, `pill-alt`, `plus`, `plus-slash`, `qr-code-2`, `refresh`, `search`, `shield`, `shield-alert`, `shield-check`, `star`, `stetho`, `syringe`, `thermo`, `trend-arrow`, `user-5`
+- **3D icon tiles (4):** `brain-alt--p3`, `heart--p1`, `thermo-alt--p1`, `wellness-alt--p5` (the health tip cover art on the blog card)
 - **Small glyphs (0):** —
 - **Brand mark:** —
 - **Text symbols to replace with icons:** —
@@ -67,3 +67,7 @@ Same object as the manifest icon, drawn a little differently on this board:
 - `refresh`: two-arc refresh (both arrowheads); `refresh` is a single arc
 
 > Icons, glyphs and illustrations live in `design/icons/` and `design/illustrations/` — names match `design/icons/icon-manifest.json`. The boards draw icons as inline SVG; this list names the manifest icon for each drawing. Colours: see `design/screens/mobile-2-supersedes.md`. Verify with `node scripts/icons/check-icons.mjs --screen M2Home`.
+
+## Added 2026-10-23: From the StudentKare blog
+
+After Today: "From the StudentKare blog" (See all opens /blog) with the latest `newsroom.home_teasers` (2) published health tips as phone cards: the health tip's green cover (`heart-pulse` label, its art), title, summary, date, reading time and `shield-check` "Reviewed by {clinician}". Loading: a card skeleton; none: "No posts yet" (`book`); failed: tap to try again (`refresh`). Editorial only (Rule L): no health data is mixed in and no post is about a student. Built in `src/features/newsroom/views/M2PostParts.tsx`.
