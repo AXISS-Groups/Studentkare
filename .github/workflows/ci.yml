@@ -143,6 +143,30 @@ jobs:
           docker compose -f docker-compose.yml -f docker-compose.prod.yml config >/dev/null
           rm -f .env
 
+  ops-config:
+    # Production deploy config: the Helm chart renders and lints with the
+    # production values. A chart that cannot render cannot be deployed.
+    name: Ops config (Helm chart)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v4
+
+      - name: Setup Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.17.3
+
+      - name: Helm lint + template (production values)
+        run: |
+          set -euo pipefail
+          chart=deploy/helm/studentkare
+          args=(-f "$chart/values/production.yaml"
+                --set backend.image.tag=sha-ci,frontend.image.tag=sha-ci
+                --set backend.secrets.ALERTMANAGER_WEBHOOK_SECRET=ci-dummy)
+          helm lint "$chart" "${args[@]}"
+          helm template studentkare "$chart" "${args[@]}" > /tmp/studentkare-rendered.yaml
+
   design-coverage:
     # Report only: how many of the 239 canvas screens are built to their brief.
     # Never blocks a merge; the blocking check is icons:ratchet above.

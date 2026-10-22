@@ -7,7 +7,7 @@ metadata:
   namespace: {{ .Release.Namespace }}
 data:
   prometheus.yml: |
-{{ .Values.prometheus.config | indent 4 }}
+{{ toYaml .Values.prometheus.config | indent 4 }}
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -149,7 +149,7 @@ spec:
             - containerPort: 4317
               name: grpc
             - containerPort: 4318
-              name: http
+              name: otlp-http
           volumeMounts:
             - name: config
               mountPath: /etc/tempo.yaml
@@ -182,7 +182,7 @@ spec:
       name: grpc
     - port: 4318
       targetPort: 4318
-      name: http
+      name: otlp-http
   selector:
     app: tempo
 ---
@@ -335,7 +335,9 @@ metadata:
   namespace: {{ .Release.Namespace }}
 data:
   datasources.yaml: |
-{{ .Values.grafana.config.datasources | indent 4 }}
+    apiVersion: 1
+    datasources:
+{{ toYaml .Values.grafana.config.datasources | indent 6 }}
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -343,9 +345,9 @@ metadata:
   name: grafana-dashboards
   namespace: {{ .Release.Namespace }}
 data:
-{{- range $name, $json := .Values.grafana.config.dashboards.default }}
+{{- range $name, $dashboard := .Values.grafana.config.dashboards.default }}
   {{ $name }}.json: |
-{{ $json | indent 4 }}
+{{ tpl $dashboard.json $ | trim | indent 4 }}
 {{- end }}
 ---
 apiVersion: apps/v1
@@ -379,7 +381,7 @@ spec:
             - name: GF_SERVER_ROOT_URL
               value: "{{ .Values.grafana.config.server.root_url }}"
             - name: GF_SERVER_SERVE_FROM_SUB_PATH
-              value: "{{ .Values.grafana.config.server.serve_from_sub_path }}"
+              value: {{ .Values.grafana.config.server.serve_from_sub_path | default false | quote }}
           ports:
             - containerPort: 3000
               name: http
@@ -583,7 +585,7 @@ metadata:
   namespace: {{ .Release.Namespace }}
 data:
   otel-collector-config.yaml: |
-{{ .Values.otelCollector.config | indent 4 }}
+{{ toYaml .Values.otelCollector.config | indent 4 }}
 ---
 apiVersion: apps/v1
 kind: Deployment
