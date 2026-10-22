@@ -25,6 +25,9 @@ opentelemetry-api==1.45.0
 opentelemetry-sdk==1.45.0
 opentelemetry-exporter-prometheus==0.66b0
 alembic>=1.13.0
+# The newsroom's 1200x630 share image is drawn on our own server (services/newsroom_cover.py):
+# a gradient, the shield PNG and the brand font, with no outside image service.
+Pillow==12.3.0
 # Video consults: signs LiveKit join tokens (services/livekit_media.py). Brings
 # PyJWT, protobuf, livekit-protocol and aiohttp; only AccessToken is used.
 livekit-api==1.2.1
