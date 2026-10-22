@@ -76,6 +76,23 @@ def normalize_identifier(value: str, channel: str) -> str:
     return value
 
 
+DEV_ORIGINS = ("http://testserver", "http://localhost", "http://127.0.0.1", "http://localhost:3000",
+               "http://127.0.0.1:3000", "http://localhost:4173", "http://127.0.0.1:4173")
+
+
+def allowed_origins() -> list[str]:
+    """Cross-origin callers allowed for credentialed requests (CORS and check_origin).
+
+    ALLOWED_ORIGINS when set. Unset: local origins in development and testing
+    only; in production nothing cross-origin (fail closed, audit L3), and the
+    same-origin app keeps working.
+    """
+    configured = [entry.strip().rstrip('/') for entry in os.getenv("ALLOWED_ORIGINS", "").split(',') if entry.strip()]
+    if configured:
+        return configured
+    return list(DEV_ORIGINS) if is_dev_or_test() else []
+
+
 def check_origin(request: Request):
     """Defense-in-depth origin check. Primary security is CSRF token + httponly cookies."""
     origin = request.headers.get("origin")
@@ -92,10 +109,7 @@ def check_origin(request: Request):
     own_origin = f"{request.url.scheme}://{request.headers.get('host', '')}"
     if origin.rstrip('/') == own_origin.rstrip('/'):
         return
-    allowed = {entry.strip().rstrip('/') for entry in os.getenv("ALLOWED_ORIGINS", "").split(',') if entry.strip()}
-    if not allowed:
-        allowed = {"http://testserver", "http://localhost", "http://127.0.0.1"}
-    if origin.rstrip('/') in allowed:
+    if origin.rstrip('/') in set(allowed_origins()):
         return
     raise HTTPException(403, "This request origin is not allowed.")
 

@@ -93,7 +93,7 @@ from services.student_requests import router as student_requests_router
 from services.team_accounts import router as team_accounts_router
 from services.wellness_api import router as wellness_router
 from services.workflow_api import router as workflow_router
-from services.workflow_auth import require_super_admin, workflow_db
+from services.workflow_auth import allowed_origins, require_super_admin, workflow_db
 from services.workflow_auth import router as auth_router
 
 
@@ -276,7 +276,9 @@ async def response_headers(request, call_next):
 # reaches, or spends budget in, the rate limiter. The allow-list is unchanged:
 # a disallowed origin still gets no Access-Control-Allow-Origin header.
 app.add_middleware(CORSMiddleware,
-    allow_origins=[value.strip() for value in os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000,http://localhost:4173,http://127.0.0.1:4173").split(',')],
+    # ALLOWED_ORIGINS, or local origins in development/testing only; none in
+    # production when unset (fail closed, audit L3).
+    allow_origins=allowed_origins(),
     allow_credentials=True, allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
     allow_headers=["Content-Type", "X-CSRF-Token", "Idempotency-Key"],
 )
