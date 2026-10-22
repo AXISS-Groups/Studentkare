@@ -675,6 +675,21 @@ def setting(key: str, db=None) -> Any:
     return overrides[key] if key in overrides else decl.default
 
 
+def cached_setting(key: str) -> Any:
+    """Like ``setting`` but never reads the database: the override last loaded by
+    any ``setting`` call (however old), else the declared default.
+
+    For the outermost ASGI middleware (core/rate_limiter.py), which runs on the
+    event loop before any request session exists and must not block on a query.
+    Request handlers reload the cache every CACHE_TTL_SECONDS, so an override
+    reaches it within about that window.
+    """
+    decl = get_declaration(key)
+    with _lock:
+        values = _cache["values"]
+        return values[key] if key in values else decl.default
+
+
 def effective_values(db=None) -> dict[str, Any]:
     overrides = _overrides(db)
     return {key: overrides.get(key, decl.default) for key, decl in REGISTRY.items()}

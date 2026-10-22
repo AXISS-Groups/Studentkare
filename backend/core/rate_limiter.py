@@ -125,13 +125,14 @@ ai_rate_limiter = SlidingWindowRateLimiter(max_requests=30, window_seconds=60)
 
 def _configured_limit(env_name: str, setting_key: str) -> Callable[[], int]:
     """The deployment's pinned value when the env var is a positive whole number,
-    else the settings registry (a super admin's override or the declared default)."""
+    else the settings registry (a super admin's override or the declared default),
+    read from the registry's cache so this middleware never queries the database."""
     def read() -> int:
         raw = (os.getenv(env_name) or "").strip()
         if raw.isdigit() and int(raw) > 0:
             return int(raw)
-        from core.settings_registry import setting
-        return int(setting(setting_key))
+        from core.settings_registry import cached_setting
+        return int(cached_setting(setting_key))
     return read
 
 

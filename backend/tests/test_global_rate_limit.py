@@ -325,3 +325,15 @@ def test_the_cookie_name_matches_the_auth_service():
     from services.workflow_auth import SESSION_COOKIE
 
     assert SESSION_COOKIE_NAME == SESSION_COOKIE.encode()
+
+
+def test_a_super_admin_override_reaches_the_limiter_without_a_query(monkeypatch):
+    from core import settings_registry
+
+    monkeypatch.delenv("RATE_LIMIT_API_PER_ACCOUNT_PER_MINUTE", raising=False)
+    settings_registry.reset_cache()
+    assert account_api_limiter.limit() == 300
+    # What a request handler's setting() call leaves in the cache after an override.
+    monkeypatch.setitem(settings_registry._cache, "values", {"platform.api_rate_per_account_per_minute": 600})
+    assert account_api_limiter.limit() == 600
+    settings_registry.reset_cache()

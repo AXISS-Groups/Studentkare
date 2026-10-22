@@ -38,7 +38,7 @@ def _reset_global_rate_limiter():
     for limiter in limiters:
         limiter.reset()
     yield
-    for limiter, original in zip(limiters, originals):
+    for limiter, original in zip(limiters, originals, strict=True):
         limiter.reset()
         limiter.max_requests = original
 
