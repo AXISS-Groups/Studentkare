@@ -99,7 +99,7 @@ export const PasscodeEntryNative = observer(function PasscodeEntryNative({ vm, o
             testID="passcode-input"
           />
           <TouchableOpacity style={styles.eye} onPress={() => setShown((v) => !v)} accessibilityRole="button" accessibilityLabel={t('authpc.enter.show')} aria-selected={shown}>
-            <Icon name="eye" size={20} color={shown ? color.action : color.text2} />
+            <Icon name={shown ? 'eye-off' : 'eye'} size={20} color={shown ? color.action : color.text2} />
           </TouchableOpacity>
         </View>
         <Text style={s.hint}>{t('authpc.enter.hint')}</Text>
@@ -200,7 +200,7 @@ export const PasswordEntryNative = observer(function PasswordEntryNative({ vm, o
           />
           <TouchableOpacity style={styles.eye} onPress={() => setShown((v) => !v)} accessibilityRole="button"
             accessibilityLabel={t(shown ? 'authpw.enter.hide' : 'authpw.enter.show')} aria-selected={shown}>
-            <Icon name="eye" size={20} color={shown ? color.action : color.text2} />
+            <Icon name={shown ? 'eye-off' : 'eye'} size={20} color={shown ? color.action : color.text2} />
           </TouchableOpacity>
         </View>
         <Text style={s.hint}>{t('authpw.enter.hint')}</Text>

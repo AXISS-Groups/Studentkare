@@ -11,7 +11,8 @@
 
 ## Icons this screen must show (all of them)
 
-- **Line / solid icons (4):** `arrow-left`, `mail-2`, `shield-check-4`, `user-5`
+- **Line / solid icons (8):** `arrow-left`, `eye`, `eye-off`, `mail-2`, `pause`, `play`, `shield-check-4`, `user-5`
+- **Added in code (plan tier1-canvas-wp03, amendment 2026-10-22 b; not on the board):** `eye` / `eye-off` (show or hide a passcode or password), `pause` / `play` (the hero slides' control, web)
 - **3D icon tiles (0):** —
 - **Small glyphs (0):** —
 - **Brand mark:** —

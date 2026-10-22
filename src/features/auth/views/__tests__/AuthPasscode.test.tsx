@@ -282,13 +282,27 @@ describe('hero slides', () => {
     expect(active(container)).toBe('auth-slide-meds');
   });
 
-  it('has a pause button while it runs', () => {
+  it('has one icon button that pauses and plays the slides', () => {
     vi.useFakeTimers();
     const { container } = renderSlides();
-    fireEvent.click(screen.getByRole('button', { name: 'Pause slides' }));
+    const pause = screen.getByRole('button', { name: 'Pause slides' });
+    expect(pause.querySelector('[data-icon]')?.getAttribute('data-icon')).toBe('pause');
+    fireEvent.click(pause);
     act(() => { vi.advanceTimersByTime(9000); });
     expect(active(container)).toBe('auth-slide-records');
     expect(screen.queryByRole('button', { name: 'Pause slides' })).toBeNull();
+    const play = screen.getByRole('button', { name: 'Play slides' });
+    expect(play.querySelector('[data-icon]')?.getAttribute('data-icon')).toBe('play');
+    fireEvent.click(play);
+    act(() => { vi.advanceTimersByTime(4200); });
+    expect(active(container)).toBe('auth-slide-care');
+    expect(screen.getByRole('button', { name: 'Pause slides' })).toBeTruthy();
+  });
+
+  it('a dot stops the slides and the button then offers play', () => {
+    renderSlides();
+    fireEvent.click(screen.getByRole('button', { name: 'Show slide 2: A doctor when you need one' }));
+    expect(screen.getByRole('button', { name: 'Play slides' })).toBeTruthy();
   });
 
   it('under reduced motion never advances and offers no pause (nothing moves)', () => {
@@ -299,6 +313,7 @@ describe('hero slides', () => {
     act(() => { vi.advanceTimersByTime(20000); });
     expect(active(container)).toBe('auth-slide-records');
     expect(screen.queryByRole('button', { name: 'Pause slides' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Play slides' })).toBeNull();
     expect(container.querySelector('.sk-slides')?.getAttribute('data-running')).toBe('false');
   });
 

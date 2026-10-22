@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Icon3d, Illustration } from '@/design-system/icons';
+import { Icon, Icon3d, Illustration } from '@/design-system/icons';
 import type { SkIcon3dName, SkIllustrationName } from '@/design-system/icons';
 import { useAutoAdvance, useOnScreen } from '@/design-system/m2';
 import { useReducedMotion } from '@/design-system/motion';
@@ -80,14 +80,15 @@ function Dots({ index, onPick, labelFor }: { index: number; onPick: (i: number) 
 /**
  * Web hero: one slide at a time, cross-fading and sliding. Advances every
  * `motion.carousel` (useAutoAdvance) while on screen and in front; hover or
- * focus holds it; a dot or "Pause slides" stops it for good (WCAG 2.2.2).
- * Under reduced motion it never advances and nothing moves.
+ * focus holds it; a dot or the pause button stops it for good (WCAG 2.2.2), and
+ * the same button (pause / play icon, labelled) starts it again. Under reduced
+ * motion it never advances, nothing moves and there is no button.
  */
 export function AuthHeroSlides(): React.ReactElement {
   const t = useT();
   const [node, setNode] = useState<HTMLElement | null>(null);
   const onScreen = useOnScreen(node);
-  const { index, pick, hold, running } = useAutoAdvance(AUTH_SLIDES.length, onScreen);
+  const { index, pick, hold, running, canRun, paused, resume } = useAutoAdvance(AUTH_SLIDES.length, onScreen);
   const total = AUTH_SLIDES.length;
   const labelFor = (i: number) => t('authpc.slide.go', { n: i + 1, title: t(key(AUTH_SLIDES[i], 'title')) });
 
@@ -123,8 +124,15 @@ export function AuthHeroSlides(): React.ReactElement {
       </div>
       <div className="sk-slides__controls">
         <Dots index={index} onPick={pick} labelFor={labelFor} />
-        {running ? (
-          <button type="button" className="sk-slides__pause" onClick={() => pick(index)}>{t('authpc.slide.pause')}</button>
+        {canRun ? (
+          <button
+            type="button"
+            className="sk-slides__pause"
+            aria-label={t(paused ? 'authpc.slide.play' : 'authpc.slide.pause')}
+            onClick={() => (paused ? resume() : pick(index))}
+          >
+            <Icon name={paused ? 'play' : 'pause'} size={20} />
+          </button>
         ) : null}
       </div>
     </section>

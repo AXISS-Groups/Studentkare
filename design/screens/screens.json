@@ -282,9 +282,13 @@
   "icons": [
    "arrow-left",
    "chevron-right",
+   "eye",
+   "eye-off",
    "graduation-cap",
    "mail-2",
-   "message-circle-3"
+   "message-circle-3",
+   "pause",
+   "play"
   ],
   "icons3d": [],
   "glyphs": [],
@@ -347,7 +351,11 @@
   "states": [],
   "icons": [
    "arrow-left",
+   "eye",
+   "eye-off",
    "mail-2",
+   "pause",
+   "play",
    "shield-check-4",
    "user-5"
   ],
@@ -3777,8 +3785,12 @@
   "icons": [
    "check",
    "chevron-right",
+   "eye",
+   "eye-off",
    "graduation-cap",
-   "mail-2"
+   "mail-2",
+   "pause",
+   "play"
   ],
   "icons3d": [],
   "glyphs": [],
@@ -14304,6 +14316,76 @@
    "chart-profile-complete-ring"
   ],
   "brand": [],
+  "assets": [],
+  "textGlyphs": [],
+  "missingIcons": []
+ },
+ {
+  "screen": "SetPasscode",
+  "page": "New \u00b7 Sign-in passcode (2026-10-22, no canvas board)",
+  "folder": null,
+  "title": "Add, change or reset your passcode (no board; designed in code in the Mobile 2.0 language)",
+  "size": "390x844",
+  "platform": "Phone + Web",
+  "tier": 1,
+  "tickets": [
+   "auth-passcode"
+  ],
+  "links": [
+   "AccountReady",
+   "SignIn",
+   "WebSecurity",
+   "WebSignIn"
+  ],
+  "states": [
+   "loading",
+   "load failed (retry)",
+   "passcodes off / team account",
+   "add",
+   "change (current passcode needed)",
+   "reset after a code sign-in",
+   "saved",
+   "turned off",
+   "mismatch",
+   "shape problem",
+   "weak (server)",
+   "save failed"
+  ],
+  "icons": [
+   "alert-circle-4",
+   "arrow-left",
+   "arrow-right",
+   "check",
+   "check-2",
+   "eye",
+   "eye-off",
+   "info",
+   "key",
+   "lock-keyhole",
+   "pause",
+   "play"
+  ],
+  "icons3d": [
+   "doctor-alt--p4",
+   "heart--p1",
+   "lab-alt--p5",
+   "phone--p5",
+   "pill-alt--p3",
+   "shield--p5",
+   "sos-alt--p1",
+   "stetho-alt--p4",
+   "vault-alt--p4",
+   "video-alt--p4"
+  ],
+  "glyphs": [],
+  "illustrations": [
+   "illustration-phones-dashboard",
+   "illustration-test-tubes"
+  ],
+  "charts": [],
+  "brand": [
+   "studentkare-logo"
+  ],
   "assets": [],
   "textGlyphs": [],
   "missingIcons": []

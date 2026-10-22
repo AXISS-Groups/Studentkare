@@ -103,6 +103,19 @@ describe('set a passcode', () => {
     expect(await screen.findByText('That one is too common. Pick something only you would know.')).toBeTruthy();
   });
 
+  it('show / hide draws eye while hidden and eye-off while shown', async () => {
+    await renderView();
+    const field = screen.getByLabelText('New passcode') as HTMLInputElement;
+    const toggle = screen.getAllByRole('button', { name: 'Show passcode' })[0];
+    expect(field.type).toBe('password');
+    expect(toggle.getAttribute('aria-pressed')).toBe('false');
+    expect(toggle.querySelector('[data-icon]')?.getAttribute('data-icon')).toBe('eye');
+    fireEvent.click(toggle);
+    expect(field.type).toBe('text');
+    expect(toggle.getAttribute('aria-pressed')).toBe('true');
+    expect(toggle.querySelector('[data-icon]')?.getAttribute('data-icon')).toBe('eye-off');
+  });
+
   it('"Not now" leaves without saving', async () => {
     const { onDone } = await renderView();
     fireEvent.click(screen.getByRole('button', { name: 'Not now' }));

@@ -89,6 +89,12 @@ export interface AutoAdvance {
   hold: (held: boolean) => void;
   /** Whether it is still advancing by itself. */
   running: boolean;
+  /** Whether it can move at all: ambient motion allowed (not reduced) and more than one item. */
+  canRun: boolean;
+  /** The student stopped it (a pick or a pause); hover and focus holds don't count. */
+  paused: boolean;
+  /** Play again after a pause: lets go of any hold too, since the student asked for it. */
+  resume: () => void;
 }
 
 /**
@@ -101,7 +107,8 @@ export function useAutoAdvance(count: number, onScreen: boolean): AutoAdvance {
   const [index, setIndex] = useState(0);
   const [stopped, setStopped] = useState(false);
   const [held, setHeld] = useState(false);
-  const running = ambient && onScreen && !held && !stopped && count > 1;
+  const canRun = ambient && count > 1;
+  const running = canRun && onScreen && !held && !stopped;
 
   useEffect(() => {
     if (!running) return undefined;
@@ -117,7 +124,11 @@ export function useAutoAdvance(count: number, onScreen: boolean): AutoAdvance {
     setStopped(true);
     setIndex(i);
   }, []);
-  return { index: count > 0 ? index % count : 0, pick, hold: setHeld, running };
+  const resume = useCallback(() => {
+    setStopped(false);
+    setHeld(false);
+  }, []);
+  return { index: count > 0 ? index % count : 0, pick, hold: setHeld, running, canRun, paused: stopped, resume };
 }
 
 /**

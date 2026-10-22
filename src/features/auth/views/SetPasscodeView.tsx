@@ -62,7 +62,7 @@ function PasscodeField({ id, label, value, onChange, describedBy, invalid, autoC
           aria-describedby={describedBy}
         />
         <button type="button" className="sk-passcode__show" aria-pressed={shown} aria-label={t('authpc.enter.show')} onClick={() => setShown((s) => !s)}>
-          <Icon name="eye" size={20} />
+          <Icon name={shown ? 'eye-off' : 'eye'} size={20} />
         </button>
       </div>
     </div>

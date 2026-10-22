@@ -11,7 +11,8 @@
 
 ## Icons this screen must show (all of them)
 
-- **Line / solid icons (5):** `arrow-left`, `chevron-right`, `graduation-cap`, `mail-2`, `message-circle-3`
+- **Line / solid icons (9):** `arrow-left`, `chevron-right`, `eye`, `eye-off`, `graduation-cap`, `mail-2`, `message-circle-3`, `pause`, `play`
+- **Added in code (plan tier1-canvas-wp03, amendment 2026-10-22 b; not on the board):** `eye` / `eye-off` (show or hide a passcode or password), `pause` / `play` (the hero slides' control, web)
 - **3D icon tiles (0):** —
 - **Small glyphs (0):** —
 - **Brand mark:** `studentkare-logo`

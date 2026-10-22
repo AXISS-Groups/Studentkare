@@ -39,7 +39,7 @@ export function PasswordInput({ id, label, value, onChange, autoComplete, invali
         />
         <button type="button" className="sk-passcode__show" aria-pressed={shown} aria-controls={id}
           aria-label={t(shown ? 'authpw.enter.hide' : 'authpw.enter.show')} onClick={() => setShown((v) => !v)}>
-          <Icon name="eye" size={20} />
+          <Icon name={shown ? 'eye-off' : 'eye'} size={20} />
         </button>
       </div>
     </div>

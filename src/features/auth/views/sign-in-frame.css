@@ -240,15 +240,16 @@
 }
 .sk-slides__dot[aria-current='true'] span { width: 28px; background: var(--sk-color-hero-current); }
 .sk-signin .sk-slides__pause {
-  min-height: var(--sk-size-touch-target);
-  padding: 0 var(--sk-space-14);
+  width: var(--sk-size-touch-target);
+  height: var(--sk-size-touch-target);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
   border: 1px solid var(--sk-color-on-hero-rule);
   border-radius: var(--sk-radius-full);
   background: var(--sk-color-on-hero-veil);
   color: var(--sk-color-on-hero);
-  font: inherit;
-  font-size: var(--sk-text-caption);
-  font-weight: 800;
   cursor: pointer;
 }
 

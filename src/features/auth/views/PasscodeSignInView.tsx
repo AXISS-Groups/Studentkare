@@ -122,7 +122,7 @@ export const PasscodeSignInView = observer(function PasscodeSignInView({ vm, onA
             aria-describedby={note ? `${errorId} ${hintId}` : hintId}
           />
           <button type="button" className="sk-passcode__show" aria-pressed={shown} aria-label={t('authpc.enter.show')} onClick={() => setShown((value) => !value)}>
-            <Icon name="eye" size={20} />
+            <Icon name={shown ? 'eye-off' : 'eye'} size={20} />
           </button>
         </div>
         <p className="sk-signin__hint" id={hintId}>{t('authpc.enter.hint')}</p>

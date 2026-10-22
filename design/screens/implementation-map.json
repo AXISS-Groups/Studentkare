@@ -1974,6 +1974,12 @@
       "src/design-system/m2/m2Motion.ts",
       "src/screens/workspace/StudentPhoneFrame.tsx",
       "src/native/StudentTabBar.tsx"
+    ],
+    "SetPasscode": [
+      "src/features/auth/screens/SetPasscodeScreen.tsx",
+      "src/features/auth/views/SetPasscodeView.tsx",
+      "src/features/auth/views/SignInFrame.tsx",
+      "src/features/auth/views/AuthHeroSlides.tsx"
     ]
   },
   "inProgress": {
