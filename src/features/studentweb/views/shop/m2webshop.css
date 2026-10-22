@@ -132,6 +132,8 @@
 .sk-m2w .sk-m2w-soft--md { width: 56px; height: 56px; border-radius: 20px; }
 .sk-m2w .sk-m2w-soft--lg { width: 88px; height: 88px; border-radius: 28px; }
 
+.sk-m2w .sk-m2w-link { display: inline-flex; align-items: center; gap: var(--sk-space-6); min-height: 44px; color: var(--sk-color-action); font-weight: 700; text-decoration: none; }
+.sk-m2w .sk-m2w-link:focus-visible { outline: 3px solid var(--sk-color-focus); outline-offset: 3px; border-radius: var(--sk-radius-sm); }
 .sk-m2w .sk-m2w-links { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sk-space-14); }
 .sk-m2w .sk-m2w-linkcard {
   display: flex; align-items: center; gap: var(--sk-space-12); min-height: 72px; padding: var(--sk-space-14) var(--sk-space-16); box-sizing: border-box;

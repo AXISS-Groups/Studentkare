@@ -39,6 +39,8 @@ export const VENDOR_NAVIGATION: VendorNavGroup[] = [
       { label: 'OTP handover', labelKey: 'partner.vcon.nav.handover', icon: 'key', route: 'handover', activeFor: ['vendor-handover', 'staff-handover'], kinds: PHARMACY },
       { label: 'Returns', labelKey: 'partner.vcon.nav.returns', icon: 'undo', route: 'returns', activeFor: ['vendor-returns'], kinds: PHARMACY },
       { label: 'Dispense register', labelKey: 'partner.vcon.nav.dispensing', icon: 'clipboard', route: 'dispensing', activeFor: ['dispense-register', 'vendor-dispense-register'], kinds: PHARMACY },
+      // Medicine information review (plan tier1-medicine-info-2026-10-22): a pharmacist approves what people see.
+      { label: 'Medicine info', labelKey: 'partner.vcon.nav.medicineInfo', icon: 'pill', route: 'medicine-info-review', kinds: PHARMACY },
       { label: 'Reorder rules', labelKey: 'partner.vcon.nav.reorder', icon: 'repeat', route: 'reorder', activeFor: ['vendor-reorder'], kinds: PHARMACY },
     ],
   },

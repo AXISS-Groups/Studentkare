@@ -31,6 +31,8 @@ export interface M2ProductLinks {
   addRx?: () => void;
   /** Send a prescription to a pharmacy (the dispense flow). */
   sendRx?: () => void;
+  /** Medicine information for this listing's medicine (reviewed label information; plan tier1-medicine-info-2026-10-22). */
+  info?: (medicineId: string) => void;
 }
 
 const SHOWN = 3;
@@ -117,6 +119,15 @@ export const M2ProductView = observer(function M2ProductView({ vm, cartCount, li
               <Icon name="flask" size={16} color={color.action} strokeWidth={2.2} />
               <Text style={styles.containsText}>{t('m2.prod.contains', { composition: vm.composition })}</Text>
             </View>
+          ) : null}
+          {item.medicineId && links.info ? (
+            <Pressable role="link" accessibilityRole="link" accessibilityLabel={t('mi.productLink')} aria-label={t('mi.productLink')}
+              onPress={() => links.info?.(item.medicineId ?? '')} testID="m2-prod-info"
+              style={({ focused }: PressState) => [styles.infoLink, focused ? focusRing : null]}>
+              <Icon name="info" size={16} color={color.action} strokeWidth={2.2} />
+              <Text style={[m2Text.link, styles.grow]}>{t('mi.productLink')}</Text>
+              <Icon name="chevron-right" size={16} color={color.action} strokeWidth={2.4} />
+            </Pressable>
           ) : null}
         </Rise>
 
@@ -254,6 +265,7 @@ const styles = StyleSheet.create({
   name: { marginTop: space.s12, fontFamily: font.family.sans, fontSize: 25, lineHeight: 30, fontWeight: fontWeight(font.weight.heavy), letterSpacing: -0.7, color: color.text },
   pack: { marginTop: space.s4, fontFamily: font.family.sans, fontSize: 13, fontWeight: fontWeight(font.weight.strong), color: color.text2 },
   contains: { marginTop: space.s12, paddingVertical: space.s10, paddingHorizontal: space.s12, borderRadius: radius.lg, flexDirection: 'row', alignItems: 'center', gap: space.s8, backgroundColor: color.surface2 },
+  infoLink: { minHeight: size.touchTarget, marginTop: space.s4, flexDirection: 'row', alignItems: 'center', gap: space.s8 },
   containsText: { flex: 1, fontFamily: font.family.sans, fontSize: 12.5, fontWeight: fontWeight(font.weight.strong), color: color.action },
   priceCard: { borderRadius: 24, padding: space.s16, flexDirection: 'row', alignItems: 'center', gap: space.s12 },
   price: { fontFamily: font.family.sans, fontSize: 26, fontWeight: fontWeight(font.weight.heavy), letterSpacing: -0.8, color: color.text, fontVariant: ['tabular-nums'] },

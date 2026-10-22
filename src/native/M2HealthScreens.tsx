@@ -199,6 +199,7 @@ const ProductBoard = observer(function ProductBoard({ itemId }: { itemId: string
         navigate('Checkout');
       },
       addRx: () => navigate('CaptureRecord'),
+      info: (medicineId) => navigate('MedicineInfo', { medicineId }),
     }} />
   );
 });

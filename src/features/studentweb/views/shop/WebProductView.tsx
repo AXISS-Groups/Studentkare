@@ -12,6 +12,7 @@ import { addToCart } from '@/features/shopPhone/views/M2ProductBoard';
 import { strengthOf } from '@/features/shopPhone/views/M2ProductView';
 import { rememberListing } from '@/features/phoneKit/listingCache';
 import { navigate } from '@/lib/utils/workflowRouting';
+import { useNavigate } from '@/core/navigation';
 import { EmptyPanel, LoadingRows } from '../parts';
 import { cannotAdd, useAddToCart } from './shopShared';
 import { hueStyle, itemArt, rise } from './m2WebParts';
@@ -54,6 +55,7 @@ export const WebProductView = observer(function WebProductView({ itemId, signedI
   onBookLab: (item: LiveCatalogItem) => void;
 }) {
   const t = useT();
+  const routerNavigate = useNavigate();
   const cart = useLiveCart();
   const [vm] = useState(() => new M2ProductViewModel());
   const [all, setAll] = useState(false);
@@ -129,6 +131,12 @@ export const WebProductView = observer(function WebProductView({ itemId, signedI
             <p className="sk-m2w-meta">{item.pack}</p>
             {vm.composition ? (
               <p className="sk-m2w-contains"><Icon name="flask" size={16} />{t('m2.prod.contains', { composition: vm.composition })}</p>
+            ) : null}
+            {item.medicineId ? (
+              <a className="sk-m2w-link" href={`/medicine-info?medicine=${encodeURIComponent(item.medicineId)}`} data-testid="m2w-prod-info"
+                onClick={(event) => { event.preventDefault(); routerNavigate(`/medicine-info?medicine=${encodeURIComponent(item.medicineId ?? '')}`); }}>
+                <Icon name="info" size={16} />{t('mi.productLink')}
+              </a>
             ) : null}
           </div>
 

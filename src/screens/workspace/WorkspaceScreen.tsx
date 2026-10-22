@@ -175,6 +175,8 @@ function vendorPageFor(route: RoutePath, role: AccountRole | null, onNavigate: (
     case 'console': case 'vendor-console': case 'performance': return <VendorConsoleScreen {...props} />;
     case 'settlement': case 'settlements': case 'vendor-settlement': return <VendorSettlementScreen {...props} />;
     case 'rx-review': case 'vendor-rx-review': return <VendorRxReviewScreen {...props} />;
+    // Medicine information review: pharmacists approve (plan tier1-medicine-info-2026-10-22); super admins see it too.
+    case 'medicine-info-review': return <PharmacyMedicineInfoScreen />;
     case 'staff': case 'partner-staff': case 'vendor-staff': case 'staff-roles': return <PartnerStaffScreen {...props} />;
     case 'orders': return role === 'VENDOR' ? <VendorOrdersScreen {...props} /> : null;
     case 'admin/catalog': return role === 'VENDOR' ? <VendorCatalogueScreen {...props} /> : null;
@@ -345,6 +347,8 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
       case 'your-care': return <M2InsightsRoute />;
       // Find care near you (WebFindCare above phone width): the same board, two columns.
       case 'find-care': return <CareDirectoryRoute wide />;
+      // Medicine information above phone width: the same screen, one wider column.
+      case 'medicine-info': return <MedicineInfoRoute wide />;
       default: return null;
     }
   };

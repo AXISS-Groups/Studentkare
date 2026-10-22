@@ -126,6 +126,9 @@ const workspacePaths: { path: string; access?: (role: AccountRole | null) => boo
   { path: '/admin/team-accounts', access: hasRole('SUPER_ADMIN') },
   // Find care near you: the curated directory listings (super admin: every campus).
   { path: '/admin/care-directory', access: hasRole('SUPER_ADMIN') },
+  // Medicine information review: super admins edit and import; pharmacists (partner console) approve.
+  { path: '/admin/medicine-info', access: hasRole('SUPER_ADMIN') },
+  { path: '/medicine-info-review', access: hasRole('VENDOR', 'SUPER_ADMIN') },
   { path: '/delete-account', access: hasRole('STUDENT') },
   // The student's Your Care overview (the phone tab), account details and data export.
   { path: '/your-care', access: hasRole('STUDENT') },

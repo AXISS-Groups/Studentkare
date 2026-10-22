@@ -37,6 +37,7 @@ const HOME_STORE_ROUTES: ReadonlySet<RoutePath> = new Set<RoutePath>([
   'find-care',
   'insurance',
   'lab-tests',
+  'medicine-info',
   'preventive-care',
   'shop',
   // keep-sorted end

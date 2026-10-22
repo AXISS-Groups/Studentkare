@@ -48,6 +48,7 @@ export const ShopFlow = observer(function ShopFlow({ vm, cart, links, orderArt }
         open: (alt) => vm.openProduct(M2ProductViewModel.asItem(alt, '')),
         addRx: links.openRecords,
         sendRx: links.openPrescriptions,
+        info: links.openMedicineInfo,
         afterAdd: () => vm.push({ name: 'cart' }),
       }} />
     );

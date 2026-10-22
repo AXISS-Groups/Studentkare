@@ -38,6 +38,7 @@ export function SearchScreen(): React.ReactElement {
     openEmergencyCard: () => navigate('Emergency'),
     openPass: () => navigate('DigitalId'),
     openCrisis: () => navigate('Emergency'),
+    openMedicineInfo: (query) => navigate('MedicineInfo', query ? { query } : undefined),
   };
   return (
     <SafeAreaView edges={['left', 'right', 'bottom']} style={{ flex: 1 }}>

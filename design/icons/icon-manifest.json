@@ -18,6 +18,7 @@
     "AdminHandover",
     "AdminIntake",
     "AdminKnowledge",
+    "AdminMedicineInfo",
     "AdminOps",
     "AdminPartners",
     "AdminPlansPricing",
@@ -80,6 +81,7 @@
     "LabCollection",
     "LabQueue",
     "LabReporting",
+    "M2MedicineInfo",
     "MyPass",
     "Prescribe",
     "ReportReviews",
@@ -144,6 +146,7 @@
     "LeaveCampus",
     "LoggedOut",
     "LostPhone",
+    "M2MedicineInfo",
     "M2ReportUpload",
     "M2Steps",
     "M2Vaccines",
@@ -518,6 +521,7 @@
     "Landing",
     "LandingCampus",
     "LandingClinician",
+    "M2MedicineInfo",
     "M2Product",
     "M2Profile",
     "M2ReportUpload",
@@ -967,6 +971,7 @@
     "LabCollection",
     "LabQueue",
     "LabReporting",
+    "M2MedicineInfo",
     "PartnerStaff",
     "Prescribe",
     "ReportReviews",
@@ -1128,6 +1133,7 @@
     "M2FindCare",
     "M2Insurance",
     "M2Labs",
+    "M2MedicineInfo",
     "M2Medicines",
     "M2Product",
     "M2ReportUpload",
@@ -1220,6 +1226,7 @@
     "M2Insights",
     "M2Insurance",
     "M2Labs",
+    "M2MedicineInfo",
     "M2Medicines",
     "M2Orders",
     "M2Trends",
@@ -1991,6 +1998,7 @@
     "LabCollection",
     "LabQueue",
     "LabReporting",
+    "M2MedicineInfo",
     "PartnerStaff",
     "Prescribe",
     "ReportReviews",
@@ -3457,6 +3465,7 @@
    "uses": 25,
    "screens": [
     "AdminCareDirectory",
+    "AdminMedicineInfo",
     "CampusAccessRequests",
     "CampusAdminConsole",
     "CampusAdminTeam",
@@ -3484,6 +3493,7 @@
     "CampusWellness",
     "M2FacilityDetail",
     "M2FindCare",
+    "M2MedicineInfo",
     "WebFindCare"
    ],
    "elements": [
@@ -3584,7 +3594,8 @@
     "CampusSettings",
     "CampusSla",
     "CampusWater",
-    "CampusWellness"
+    "CampusWellness",
+    "M2MedicineInfo"
    ],
    "elements": [
     [
@@ -3648,6 +3659,7 @@
    "source": "IconSystem",
    "uses": 22,
    "screens": [
+    "AdminMedicineInfo",
     "CampusAccessRequests",
     "CampusAdminTeam",
     "CampusAnnouncements",
@@ -3665,6 +3677,7 @@
     "ClinicianToday",
     "M2Home",
     "M2Labs",
+    "M2MedicineInfo",
     "M2Medicines",
     "VendorHome",
     "VendorRxReview",
@@ -3827,6 +3840,7 @@
    "uses": 19,
    "screens": [
     "AdminCareDirectory",
+    "AdminMedicineInfo",
     "ConfirmDialogs",
     "M2Steps",
     "WebAccount",
@@ -4629,6 +4643,7 @@
     "M2Consults",
     "M2FindCare",
     "M2Insights",
+    "M2MedicineInfo",
     "M2Medicines",
     "M2Profile",
     "M2ReportUpload",
@@ -5391,6 +5406,7 @@
    "screens": [
     "AdminBreakGlassLog",
     "AdminFlags",
+    "AdminMedicineInfo",
     "AdminPlansPricing",
     "CampusAdminTeam",
     "CampusBreakGlass",
@@ -5403,6 +5419,7 @@
     "ClinicianToday",
     "M2FacilityDetail",
     "M2FindCare",
+    "M2MedicineInfo",
     "M2Steps",
     "WebFindCare"
    ],
@@ -5855,8 +5872,10 @@
    "source": "canvas",
    "uses": 5,
    "screens": [
+    "AdminMedicineInfo",
     "CampusOverview",
     "CampusRoster",
+    "M2MedicineInfo",
     "ReturnRequest",
     "WebReportInsights"
    ],
@@ -5920,6 +5939,7 @@
    "source": "canvas",
    "uses": 5,
    "screens": [
+    "AdminMedicineInfo",
     "PaymentResult",
     "ResultCampBooked",
     "ResultLabBooked",
@@ -6552,6 +6572,7 @@
     "AccountReady",
     "M2FacilityDetail",
     "M2FindCare",
+    "M2MedicineInfo",
     "WebFindCare",
     "WebHome"
    ],
@@ -6855,7 +6876,9 @@
    "source": "canvas",
    "uses": 2,
    "screens": [
+    "AdminMedicineInfo",
     "LoggedOut",
+    "M2MedicineInfo",
     "WebLoggedOut"
    ],
    "elements": [
@@ -7150,9 +7173,11 @@
    "source": "IconSystem",
    "uses": 2,
    "screens": [
+    "AdminMedicineInfo",
     "IconSystem",
     "M2FacilityDetail",
     "M2FindCare",
+    "M2MedicineInfo",
     "WebFindCare"
    ],
    "elements": [
@@ -7521,6 +7546,7 @@
    "source": "canvas",
    "uses": 2,
    "screens": [
+    "AdminMedicineInfo",
     "PrescriptionUpload",
     "SearchEntry"
    ],
@@ -8063,6 +8089,7 @@
    "screens": [
     "IconSystem",
     "M2Home",
+    "M2MedicineInfo",
     "M2Medicines",
     "M2Product"
    ],
@@ -9889,6 +9916,7 @@
    "source": "canvas",
    "uses": 1,
    "screens": [
+    "M2MedicineInfo",
     "M2ReportUpload",
     "StaffHandover"
    ],
@@ -21164,6 +21192,60 @@
    "brand": [
     "studentkare-logo"
    ],
+   "assets": [],
+   "textGlyphs": []
+  },
+  "M2MedicineInfo": {
+   "page": "New \u00b7 Medicine information (2026-10-22, no canvas board)",
+   "size": "390x1800",
+   "icons": [
+    "alert-triangle",
+    "arrow-left",
+    "box",
+    "camera-2",
+    "cart",
+    "check",
+    "check-circle",
+    "chevron-right",
+    "flask",
+    "info",
+    "lock",
+    "pill",
+    "prescription",
+    "search",
+    "shield-check",
+    "stethoscope",
+    "upload",
+    "users"
+   ],
+   "icons3d": [],
+   "glyphs": [],
+   "illustrations": [],
+   "charts": [],
+   "brand": [],
+   "assets": [],
+   "textGlyphs": []
+  },
+  "AdminMedicineInfo": {
+   "page": "New \u00b7 Medicine information (2026-10-22, no canvas board)",
+   "size": "1440x1100",
+   "icons": [
+    "alert-triangle",
+    "check-circle",
+    "file-text",
+    "info",
+    "pencil",
+    "pill",
+    "rotate-ccw",
+    "search",
+    "shield-check",
+    "upload"
+   ],
+   "icons3d": [],
+   "glyphs": [],
+   "illustrations": [],
+   "charts": [],
+   "brand": [],
    "assets": [],
    "textGlyphs": []
   }

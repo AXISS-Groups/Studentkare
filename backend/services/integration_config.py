@@ -86,6 +86,15 @@ INTEGRATIONS_DB: dict = {
         "client_id": os.getenv("ABDM_HFR_CLIENT_ID", ""),
         "client_secret": os.getenv("ABDM_HFR_CLIENT_SECRET", ""),
     },
+    # Reading the printed text on a photo of a medicine strip or box (Medicine
+    # information, plan tier1-medicine-info-2026-10-22, D-MI-10). Tesseract on our
+    # own server, no third party. Off until the AI-constitution owner and the DPO
+    # sign; the screen says so (services/medicine_ocr.py).
+    "medicine_ocr": {
+        "enabled": os.getenv("MEDICINE_OCR_ENABLED", "false").lower() == "true",
+        "engine": "tesseract",
+        "binary": os.getenv("MEDICINE_OCR_TESSERACT", "tesseract"),
+    },
     "apilayer": {
         "enabled": os.getenv("APILAYER_ENABLED", "false").lower() == "true",
         "api_key": os.getenv("APILAYER_API_KEY", ""),

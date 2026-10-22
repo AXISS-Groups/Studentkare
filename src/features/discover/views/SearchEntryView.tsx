@@ -36,6 +36,19 @@ export const SearchEntryView = observer(function SearchEntryView({ vm, links }: 
             <Icon name="arrow-right" size={18} color={color.action} />
           </Pressable>
         </Rise>
+        {links.openMedicineInfo ? (
+          <Rise index={1}>
+            <Pressable role="link" accessibilityRole="link" accessibilityLabel={`${t('mi.entryTitle')}. ${t('mi.entryBody')}`}
+              onPress={() => links.openMedicineInfo?.()} testID="search-medicine-info" style={({ focused }: Pressed) => [styles.rx, focused ? focusRing : null]}>
+              <IconTile icon="pill" solid size={42} iconSize={20} />
+              <View style={phoneLayout.grow}>
+                <Text style={styles.rxTitle}>{t('mi.entryTitle')}</Text>
+                <Text style={styles.rxBody}>{t('mi.entryBody')}</Text>
+              </View>
+              <Icon name="arrow-right" size={18} color={color.action} />
+            </Pressable>
+          </Rise>
+        ) : null}
 
         {vm.recents.length > 0 ? (
           <View style={styles.section} testID="search-recents">

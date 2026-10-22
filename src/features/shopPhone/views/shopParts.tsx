@@ -27,6 +27,8 @@ export interface ShopLinks {
   /** The records vault, where a prescription document is added (M2Product "Add Rx"). */
   openRecords?: () => void;
   openLabTests: () => void;
+  /** Medicine information (plan tier1-medicine-info-2026-10-22): the lookup, or one medicine when an id is given. */
+  openMedicineInfo?: (medicineId?: string) => void;
   bookLab: (itemId: string) => void;
   trackOrder: (orderId: string) => void;
   openOrders: () => void;

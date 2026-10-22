@@ -31,6 +31,7 @@ export const M2MedicinesBoard = observer(function M2MedicinesBoard({ vm, cart, l
         seeAll: () => vm.openList({}),
         rewards: links.openRewards,
         labs: links.openLabTests,
+        medicineInfo: links.openMedicineInfo ? () => links.openMedicineInfo?.() : undefined,
       }}
     />
   );
