@@ -58,6 +58,7 @@ from core.sentry import init_sentry
 from core.telemetry import (
     get_prometheus_app,
     init_telemetry,
+    internal_only,
     shutdown_telemetry,
     update_db_pool_metrics,
     update_job_metrics,
@@ -182,7 +183,8 @@ async def lifespan(app):
     # Initialize Sentry (fail-closed: no DSN = no Sentry)
     init_sentry()
     # Mount Prometheus metrics endpoint
-    app.mount("/metrics", get_prometheus_app())
+    # Internal network only (audit L2): core/telemetry.internal_only.
+    app.mount("/metrics", internal_only(get_prometheus_app()))
     # Periodic DB pool metrics update
     import asyncio
     async def update_pool_metrics():
