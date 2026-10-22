@@ -6,6 +6,8 @@ import { usePhoneFrame } from '@/design-system/navigation/usePhoneFrame';
 import { useRoutePath } from '@/core/navigation';
 import { navigate } from '@/lib/utils/workflowRouting';
 import { LegalView } from './LegalView';
+import { LegalText, useLegalDocument } from '@/features/privacy/LegalText';
+import type { LegalKind } from '@/features/privacy/privacyRepository';
 import '@/features/studentweb/studentweb.css';
 import '@/features/studentweb/views/t1/t1web.css';
 import './legal.css';
@@ -16,6 +18,7 @@ const TABS: ReadonlyArray<{ id: LegalTab; label: MessageKey }> = [
   { id: 'terms', label: 'member.legal.termsTitle' },
   { id: 'grievance', label: 'swt.legal.tab.grievance' },
 ];
+const KIND: Record<LegalTab, LegalKind> = { privacy: 'PRIVACY_NOTICE', terms: 'TERMS', grievance: 'GRIEVANCE_OFFICER' };
 const NOW: readonly MessageKey[] = ['member.legal.nowShare', 'member.legal.nowEndShare', 'member.legal.nowConsents', 'member.legal.nowAdults'];
 const REQUIRED: ReadonlyArray<{ lead: MessageKey; body: MessageKey }> = [
   { lead: 'member.legal.officerLead', body: 'member.legal.officerBody' },
@@ -29,11 +32,12 @@ const REQUIRED: ReadonlyArray<{ lead: MessageKey; body: MessageKey }> = [
  * by Krishna Chintakayala, 2026-10-21). Its own frame (logo and Help centre, no
  * sidebar) with the board's three tabs, public at /privacy and /terms.
  *
- * The notice text comes only from legal (D6-10). None has been supplied, so —
- * as before — each tab says plainly that it isn't published, what has to exist
- * first, and what the code does today. No officer name, address, version or
- * response time is printed, because none exists. At phone width the phone
- * board (LegalView) is drawn instead.
+ * The notice text comes only from legal (D6-10): a super admin publishes the
+ * version legal supplies (Super admin → Legal documents, GET /legal/{kind}) and
+ * this page shows it with its version and date. Until a kind is published its
+ * tab says plainly that it isn't, what has to exist first, and what the code
+ * does today; no officer name, address, version or response time is printed
+ * then. At phone width the phone board (LegalView) is drawn instead.
  */
 export function WebLegalView(): React.ReactElement {
   const phone = usePhoneFrame();
@@ -45,6 +49,7 @@ function WebLegalPage(): React.ReactElement {
   const t = useT();
   const route = useRoutePath();
   const [tab, setTab] = useState<LegalTab>(route.includes('terms') ? 'terms' : 'privacy');
+  const doc = useLegalDocument(KIND[tab]);
   return (
     <div className="sk-swt-legal">
       <header className="sk-swt-legal__top">
@@ -63,7 +68,18 @@ function WebLegalPage(): React.ReactElement {
                 <button key={entry.id} type="button" className="sk-sw-tab is-dark" aria-pressed={tab === entry.id} onClick={() => setTab(entry.id)}>{t(entry.label)}</button>
               ))}
             </div>
-            {tab === 'grievance' ? (
+            {doc.status === 'loading' ? <p className="sk-sw-muted" role="status">{t('privacy.legal.loading')}</p>
+              : doc.status === 'error' ? (
+                <div className="sk-swt-col">
+                  <p className="sk-sw-error" role="alert">{t('privacy.legal.error')}</p>
+                  <button type="button" className="sk-sw-btn sk-sw-btn--outline" onClick={doc.retry}>{t('common.tryAgain')}</button>
+                </div>
+              ) : doc.doc.published ? (
+                <section className="sk-swt-col" aria-label={t(TABS.find((entry) => entry.id === tab)?.label ?? 'member.legal.privacyTitle')}>
+                  <LegalText doc={doc.doc} />
+                  {tab === 'grievance' ? <button type="button" className="sk-sw-btn sk-sw-btn--outline" onClick={() => navigate('my-requests')}>{t('swt.legal.grievanceCta')}<Icon name="arrow-right" size={16} /></button> : null}
+                </section>
+              ) : tab === 'grievance' ? (
               <section className="sk-swt-col" aria-labelledby="sk-swt-legal-g">
                 <h2 id="sk-swt-legal-g" className="sk-sw-h2">{t('swt.legal.grievanceTitle')}</h2>
                 <p className="sk-sw-note" role="status">{t('member.legal.officerBody')}</p>

@@ -6,6 +6,7 @@ import { color, focusRing, font, fontWeight, radius, size, space } from '@/desig
 import { LANGUAGE_NAMES, useLanguage, useT } from '@/i18n';
 import type { Lang, MessageKey } from '@/i18n';
 import type { SignupConsentState, SignupPurpose } from '../viewmodel/signupConsent';
+import { legalLine, useSignupLegal } from '../viewmodel/useSignupLegal';
 
 const LANGS: readonly Lang[] = ['en', 'te', 'hi'];
 
@@ -30,6 +31,7 @@ const PLAIN: [MessageKey, MessageKey][] = [
 export const SignupConsentNative = observer(function SignupConsentNative({ consent, privacyUrl }: { consent: SignupConsentState; privacyUrl: string }) {
   const t = useT();
   const { lang, setLang } = useLanguage();
+  useSignupLegal(consent);
   return (
     <View style={styles.wrap}>
       <View style={styles.langs} accessibilityRole="radiogroup" accessibilityLabel={t('ident.consent.readIn')}>
@@ -66,6 +68,8 @@ export const SignupConsentNative = observer(function SignupConsentNative({ conse
       <Text accessibilityRole="link" style={[styles.body, styles.link]} onPress={() => void Linking.openURL(privacyUrl)}>
         {t('member.consent.privacy')}
       </Text>
+      {consent.noticeVersion ? <Text style={styles.fine}>{legalLine(t, consent.noticeVersion, 'privacy.signup.notice', 'privacy.signup.noticeSoon')}</Text> : null}
+      {consent.termsVersion ? <Text style={styles.fine}>{legalLine(t, consent.termsVersion, 'privacy.signup.terms', 'privacy.signup.termsSoon')}</Text> : null}
       <Text style={styles.fine}>{t('member.consent.recorded')}</Text>
     </View>
   );

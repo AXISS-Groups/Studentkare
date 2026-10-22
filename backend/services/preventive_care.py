@@ -28,7 +28,7 @@ from sqlalchemy.orm import Session
 
 from core import preventive_models as P
 from core import workflow_models as M
-from services import ops_feed
+from services import consent_ledger, ops_feed
 from services.workflow_auth import (
     StrictModel,
     authenticated_user,
@@ -327,11 +327,16 @@ def put_preferences(body: PreferenceInput, user: dict = Depends(authenticated_us
     if row is None:
         row = P.PreventivePreference(account_id=user["id"], consent_version=1)
         db.add(row)
+    was = {"SEASONAL_EDUCATION": bool(row.seasonal_education_enabled), "PREVENTIVE_OFFERS": bool(row.promotions_enabled)}
     row.seasonal_education_enabled = body.seasonalEducationEnabled
     row.promotions_enabled = body.promotionsEnabled
     row.region = body.region
     row.topics = body.topics
     row.updated_at = time.time()
+    # Both are optional consents: the ledger records each change (services/consent_ledger.py).
+    for purpose, on in (("SEASONAL_EDUCATION", body.seasonalEducationEnabled), ("PREVENTIVE_OFFERS", body.promotionsEnabled)):
+        if on != was[purpose]:
+            consent_ledger.record_change(db, user["id"], user["id"], purpose, on)
     audit(db, user, "PREVENTIVE_PREFERENCES_UPDATED", user["id"])
     db.commit()
     return preference_payload(row)

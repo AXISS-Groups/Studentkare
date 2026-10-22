@@ -23,6 +23,8 @@ export interface TeamAccount {
   rotatedAt: number | null;
   /** The account this session is signed in with. */
   isSelf: boolean;
+  /** The shared super admin, retired for named super admins (audit H3): stays off, can't be rotated. */
+  retired?: boolean;
 }
 
 export interface TeamAccountList { items: TeamAccount[]; pinSignInEnabled: boolean; passwordSignInEnabled: boolean }
@@ -57,3 +59,40 @@ export const teamAccountsRepository: TeamAccountsRepository = {
     method: 'POST', body: JSON.stringify({ password, ...current }),
   }),
 };
+
+/** A super admin who is one named person (GET /ops/super-admins; audit H3). */
+export interface NamedSuperAdmin {
+  id: string;
+  fullName: string;
+  identifier: string;
+  active: boolean;
+  twoFactorEnabled: boolean;
+  createdAt: number;
+  /** The first sign-in through the authenticator step; what retiring the shared one waits for. */
+  totpSignedInAt: number | null;
+  isSelf: boolean;
+}
+
+export interface NamedSuperAdminState {
+  items: NamedSuperAdmin[];
+  shared: { id: string; identifier: string; active: boolean; retired: boolean } | null;
+  readyToRetire: boolean;
+  viewerIsNamed: boolean;
+}
+
+/** The only place that knows the /ops/super-admins endpoints. */
+export interface NamedSuperAdminsRepository {
+  state(): Promise<NamedSuperAdminState>;
+  create(email: string, fullName: string): Promise<NamedSuperAdminState>;
+  /** The typed confirmation word is checked by the server too. */
+  retireShared(confirm: string): Promise<NamedSuperAdminState>;
+}
+
+export const namedSuperAdminsRepository: NamedSuperAdminsRepository = {
+  state: () => apiRequest<NamedSuperAdminState>('/ops/super-admins'),
+  create: (email, fullName) => apiRequest<NamedSuperAdminState>('/ops/super-admins', { method: 'POST', body: JSON.stringify({ email, fullName }) }),
+  retireShared: confirm => apiRequest<NamedSuperAdminState>('/ops/super-admins/retire-shared', { method: 'POST', body: JSON.stringify({ confirm }) }),
+};
+
+/** What the person types to retire the shared super admin (backend named_super_admins.CONFIRM_WORD). */
+export const RETIRE_CONFIRM_WORD = 'RETIRE';

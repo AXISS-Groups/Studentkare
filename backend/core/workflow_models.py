@@ -12,6 +12,7 @@ from sqlalchemy import (
     Integer,
     LargeBinary,
     String,
+    Text,
     UniqueConstraint,
     event,
 )
@@ -1731,6 +1732,57 @@ class ConsentRecord(Base):
     language: Mapped[str] = mapped_column(String(5), default="en")
     recorded_at: Mapped[float] = mapped_column(Float, index=True)
     withdrawn_at: Mapped[float] = mapped_column(Float, default=0.0)
+    # Sign-up rows only: the privacy notice and terms versions shown on the
+    # consent screen (care_legal_documents), or "unpublished" when none was
+    # published then. "" on optional-purpose rows and on rows from before this.
+    notice_version: Mapped[str] = mapped_column(String(40), default="", server_default="")
+    terms_version: Mapped[str] = mapped_column(String(40), default="", server_default="")
+
+
+LEGAL_DOCUMENT_KINDS = ("PRIVACY_NOTICE", "TERMS", "GRIEVANCE_OFFICER")
+LEGAL_DOCUMENT_STATUSES = ("DRAFT", "PUBLISHED", "RETIRED")
+
+
+class LegalDocument(Base):
+    """A version of the privacy notice, the terms or the grievance officer details.
+
+    Written by a super admin from the text legal supplies (services/legal_documents.py);
+    nothing in the code authors it. A draft can be edited; publishing freezes it and
+    retires the version it replaces, so every sign-up record can name the exact text
+    it was shown. Platform plane: legal text, no person's data.
+    """
+    __tablename__ = "care_legal_documents"
+    __table_args__ = (
+        UniqueConstraint("kind", "version", name="uq_care_legal_documents_kind_version"),
+        CheckConstraint("kind IN ('PRIVACY_NOTICE', 'TERMS', 'GRIEVANCE_OFFICER')", name="ck_care_legal_documents_kind"),
+        CheckConstraint("status IN ('DRAFT', 'PUBLISHED', 'RETIRED')", name="ck_care_legal_documents_status"),
+    )
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    kind: Mapped[str] = mapped_column(String(24), index=True)
+    version: Mapped[str] = mapped_column(String(40))
+    title: Mapped[str] = mapped_column(String(200))
+    body: Mapped[str] = mapped_column(Text)
+    status: Mapped[str] = mapped_column(String(12), default="DRAFT")
+    created_by: Mapped[str] = mapped_column(String(64))
+    created_at: Mapped[float] = mapped_column(Float)
+    updated_at: Mapped[float] = mapped_column(Float)
+    published_by: Mapped[str] = mapped_column(String(64), default="", server_default="")
+    published_at: Mapped[float] = mapped_column(Float, default=0.0, server_default="0")
+
+
+class NamedSuperAdmin(Base):
+    """A super admin who is one named person, not the shared team account (audit H3).
+
+    Created only by another super admin (services/named_super_admins.py). The account
+    must use an authenticator whatever the 2FA policy says; ``totp_signed_in_at`` is the
+    first sign-in that passed the authenticator step, which the guided retirement of
+    the shared super admin waits for. Platform plane: no grant to either group role.
+    """
+    __tablename__ = "care_named_super_admins"
+    account_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"), primary_key=True)
+    created_by: Mapped[str] = mapped_column(String(64))
+    created_at: Mapped[float] = mapped_column(Float)
+    totp_signed_in_at: Mapped[float] = mapped_column(Float, default=0.0, server_default="0")
 
 
 class DPDPConsentPolicyVersion(Base):

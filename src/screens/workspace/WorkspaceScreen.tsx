@@ -85,6 +85,8 @@ const M2StepsRoute = lazy(() => import('@/features/steps/views/M2StepsRoute').th
 const M2LabsRoute = lazy(() => import('@/features/m2store/views/M2LabsRoute').then(module => ({ default: module.M2LabsRoute })));
 const M2ConsultsRoute = lazy(() => import('@/features/m2store/views/M2ConsultsRoute').then(module => ({ default: module.M2ConsultsRoute })));
 const M2InsightsRoute = lazy(() => import('@/features/insights/views/M2InsightsRoute').then(module => ({ default: module.M2InsightsRoute })));
+const PrivacyConsentView = lazy(() => import('@/features/privacy/PrivacyConsentView').then(module => ({ default: module.PrivacyConsentView })));
+const DataRightsView = lazy(() => import('@/features/privacy/DataRightsView').then(module => ({ default: module.DataRightsView })));
 const MedicineInfoRoute = lazy(() => import('@/features/medicineInfo/views/MedicineInfoRoute').then(module => ({ default: module.MedicineInfoRoute })));
 const PharmacyMedicineInfoScreen = lazy(() => import('@/features/medicineInfo/admin/MedicineInfoReviewView').then(module => ({ default: module.PharmacyMedicineInfoScreen })));
 const CareDirectoryRoute = lazy(() => import('@/features/careDirectory/views/CareDirectoryRoute').then(module => ({ default: module.CareDirectoryRoute })));
@@ -410,6 +412,9 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
       case 'delete-account': return <DeleteAccountRoute links={{ exportData: () => navigate('data-export'), crisis: () => navigate('crisis') }} />;
       // WP-06 boards with no desktop twin yet: the phone board in the page column.
       case 'ice-contacts': case 'consent': case 'care-circle': return safetyBoardFor(route);
+      // Privacy & consent and data rights (audit H2): one page at every width.
+      case 'privacy-consent': return <PrivacyConsentView />;
+      case 'data-rights': return <DataRightsView />;
       case 'prescriptions': return <MyPrescriptionsPanel />;
       case 'visit-summaries': return <VisitSummaryRoute links={{ openPrescriptions: () => navigate('prescriptions'), openAppointments: () => navigate('appointments') }} />;
       case 'ayush': return <AgentAyushPanel />;

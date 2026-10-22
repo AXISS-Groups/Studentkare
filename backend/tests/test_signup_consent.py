@@ -24,7 +24,9 @@ def _verified(client, codes, identifier):
 def test_the_screen_is_told_the_current_version_and_required_items(harness):
     client, _factory, _codes = harness
     terms = client.get("/api/auth/consent").json()
-    assert terms == {"version": SIGNUP_CONSENT["version"], "required": SIGNUP_CONSENT["purposes"]}
+    # Nothing published: the screen says so and sign-up records "unpublished" (audit H2).
+    assert terms == {"version": SIGNUP_CONSENT["version"], "required": SIGNUP_CONSENT["purposes"],
+                     "noticeVersion": "unpublished", "termsVersion": "unpublished"}
 
 
 @pytest.mark.parametrize("consent", [

@@ -36,6 +36,7 @@ import { partnerWorkTe } from './areas/partnerWork';
 import { payTe } from './areas/pay';
 import { phoneboardsTe } from './areas/phoneboards';
 import { phonestoreTe } from './areas/phonestore';
+import { privacyTe } from './areas/privacy';
 import { rewardsTe } from './areas/rewards';
 import { safetyTe } from './areas/safety';
 import { shopwebTe } from './areas/shopweb';
@@ -94,6 +95,7 @@ export const areasTe = {
   ...payTe,
   ...phoneboardsTe,
   ...phonestoreTe,
+  ...privacyTe,
   ...rewardsTe,
   ...safetyTe,
   ...shopwebTe,

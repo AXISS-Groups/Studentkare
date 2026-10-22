@@ -164,6 +164,8 @@ TABLE_PLANES: dict[str, str] = {
     "care_health_camp_stations": PLATFORM,
     "care_preventive_providers": PLATFORM,
     "care_dpdp_consent_policy_versions": PLATFORM,
+    "care_legal_documents": PLATFORM,             # privacy notice, terms, grievance officer: legal text, no person
+    "care_named_super_admins": PLATFORM,          # which super admins are named people; no grant to either role
     "care_campus_security_contacts": PLATFORM,
     "care_appearance_preferences": PLATFORM,      # System / Dark / Light per account; a display choice only
     "care_setting_overrides": PLATFORM,           # business settings (core/settings_registry.py)

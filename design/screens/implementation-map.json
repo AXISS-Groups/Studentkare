@@ -96,7 +96,8 @@
     ],
     "OnboardingConsent": [
       "src/features/auth/views/SignupConsent.tsx",
-      "src/features/auth/views/SignupConsentNative.tsx"
+      "src/features/auth/views/SignupConsentNative.tsx",
+      "src/features/auth/viewmodel/useSignupLegal.ts"
     ],
     "VerifyIdentity": [
       "src/features/auth/views/IdentityVerifyView.tsx",
@@ -386,7 +387,8 @@
       "src/features/requests/views/RequestsViews.tsx"
     ],
     "Legal": [
-      "src/features/legal/views/LegalBoard.tsx"
+      "src/features/legal/views/LegalBoard.tsx",
+      "src/features/privacy/LegalText.tsx"
     ],
     "Landing": [
       "src/features/landing/views/LandingView.tsx",
@@ -736,7 +738,8 @@
       "src/features/studentweb/views/t1/t1web.css"
     ],
     "WebLegal": [
-      "src/features/legal/views/WebLegalView.tsx"
+      "src/features/legal/views/WebLegalView.tsx",
+      "src/features/privacy/LegalText.tsx"
     ],
     "WebLeaveCampus": [
       "src/features/studentweb/views/t1/WebLeaveCampusView.tsx",

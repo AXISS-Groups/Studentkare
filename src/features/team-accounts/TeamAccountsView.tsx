@@ -7,9 +7,10 @@ import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
 import { when } from '@/features/admin/model/format';
 import { PASSWORD_MAX_LENGTH, STAFF_PIN_LENGTH } from '@/features/auth/viewmodel/AuthViewModel';
-import { teamAccountsRepository } from './teamAccountsRepository';
-import type { TeamAccount, TeamAccountsRepository } from './teamAccountsRepository';
+import { namedSuperAdminsRepository, teamAccountsRepository } from './teamAccountsRepository';
+import type { NamedSuperAdminsRepository, TeamAccount, TeamAccountsRepository } from './teamAccountsRepository';
 import { TeamAccountsViewModel } from './TeamAccountsViewModel';
+import { NamedSuperAdminsSection } from './NamedSuperAdminsSection';
 import './team-accounts.css';
 
 type Translate = ReturnType<typeof useT>;
@@ -21,6 +22,7 @@ function roleLabel(account: TeamAccount, t: Translate): string {
 
 function StateTag({ account }: { account: TeamAccount }) {
   const t = useT();
+  if (account.retired) return <span className="sk-admin-tag is-neutral">{t('team.state.retired')}</span>;
   if (!account.active) return <span className="sk-admin-tag is-neutral">{t('team.state.disabled')}</span>;
   if (account.locked || account.passwordLocked) {
     return <span className="sk-admin-tag is-attention">
@@ -42,7 +44,7 @@ const NOTICES = { unlocked: 'team.action.unlocked', disabled: 'team.action.disab
  * shown back; plan tier1-auth-password-2026-10-22), Unlock and Disable; the server
  * audits each. Changing your own PIN or password asks for the current one first.
  */
-export const TeamAccountsView = observer(function TeamAccountsView({ repository = teamAccountsRepository }: { repository?: TeamAccountsRepository }) {
+export const TeamAccountsView = observer(function TeamAccountsView({ repository = teamAccountsRepository, namedRepository = namedSuperAdminsRepository }: { repository?: TeamAccountsRepository; namedRepository?: NamedSuperAdminsRepository }) {
   const t = useT();
   const [vm] = useState(() => new TeamAccountsViewModel(repository));
   useEffect(() => { void vm.load(); return vm.dispose; }, [vm]);
@@ -90,9 +92,9 @@ export const TeamAccountsView = observer(function TeamAccountsView({ repository 
                 </td>
                 <td>{account.lastSignInAt ? when(account.lastSignInAt) : t('team.lastSignIn.never')}</td>
                 <td><div className="sk-team-accounts__actions">
-                  <button type="button" className="sk-admin-button" disabled={busy} aria-label={t('team.action.rotateAria', { name: account.fullName })} onClick={() => vm.openRotate(account)}>
+                  {account.retired ? null : <button type="button" className="sk-admin-button" disabled={busy} aria-label={t('team.action.rotateAria', { name: account.fullName })} onClick={() => vm.openRotate(account)}>
                     <Icon name="refresh" size={16} />{t('team.action.rotate')}
-                  </button>
+                  </button>}
                   <button type="button" className="sk-admin-button" disabled={busy} aria-label={t('team.action.passwordAria', { name: account.fullName })} onClick={() => vm.openPassword(account)}>
                     <Icon name="lock" size={16} />{t('team.action.password')}
                   </button>
@@ -108,6 +110,7 @@ export const TeamAccountsView = observer(function TeamAccountsView({ repository 
           </table>}
     </div>
     <p className="sk-admin-note"><Icon name="info" size={16} />{' '}{t('team.screen.superAdminReal')}</p>
+    <NamedSuperAdminsSection repository={namedRepository} onChanged={vm.reload} />
 
     <ConfirmDialog
       open={vm.rotateTarget !== null}

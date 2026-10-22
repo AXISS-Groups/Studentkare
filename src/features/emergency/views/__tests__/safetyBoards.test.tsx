@@ -309,14 +309,26 @@ describe('DeleteAccount (Tier 1)', () => {
 });
 
 describe('Legal (Tier 1)', () => {
-  it('each tab says plainly what is not published, and the 112 line ships now', () => {
+  const unpublished = (kind: string) => ({ kind, published: false, version: null, title: null, body: null, publishedAt: null });
+
+  it('each tab says plainly what is not published, and the 112 line ships now', async () => {
+    serve({ '/legal/PRIVACY_NOTICE': unpublished('PRIVACY_NOTICE'), '/legal/TERMS': unpublished('TERMS'), '/legal/GRIEVANCE_OFFICER': unpublished('GRIEVANCE_OFFICER') });
     render(<LegalBoard links={{ help: vi.fn() }} />);
-    expect(screen.getByText(en('member.legal.privacyNotPublished'))).toBeInTheDocument();
-    fireEvent.click(screen.getByTestId('legal-tab-grievance'));
-    expect(screen.getByText(en('sf.legal.officerNotAppointed'))).toBeInTheDocument();
-    fireEvent.click(screen.getByTestId('legal-tab-terms'));
-    expect(screen.getByText(en('member.legal.termsNotPublished'))).toBeInTheDocument();
     expect(screen.getByTestId('legal-emergency')).toHaveTextContent(en('sf.legal.notEmergency'));
+    expect(await screen.findByText(en('member.legal.privacyNotPublished'))).toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('legal-tab-grievance'));
+    expect(await screen.findByText(en('sf.legal.officerNotAppointed'))).toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('legal-tab-terms'));
+    expect(await screen.findByText(en('member.legal.termsNotPublished'))).toBeInTheDocument();
+  });
+
+  it('shows the published text with its version once a super admin publishes it', async () => {
+    serve({ '/legal/PRIVACY_NOTICE': { kind: 'PRIVACY_NOTICE', published: true, version: '2026-11-01', title: 'Privacy notice', body: 'First.\n\nSecond.', publishedAt: 1_760_000_000 } });
+    render(<LegalBoard links={{ help: vi.fn() }} />);
+    expect(await screen.findByText('First.')).toBeInTheDocument();
+    expect(screen.getByText('Second.')).toBeInTheDocument();
+    expect(screen.getByText(/Version 2026-11-01/)).toBeInTheDocument();
+    expect(screen.queryByText(en('member.legal.privacyNotPublished'))).toBeNull();
   });
 });
 

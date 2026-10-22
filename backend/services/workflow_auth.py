@@ -215,9 +215,24 @@ def two_factor_enforced_roles() -> frozenset[str]:
     return configured | _FAIL_CLOSED_ENFORCED_ROLES if is_production() else configured
 
 
+def is_named_super_admin(db: DBSession, account_id: str) -> bool:
+    """A super admin who is one named person (services/named_super_admins.py)."""
+    return db.get(M.NamedSuperAdmin, account_id) is not None
+
+
+def two_factor_required(db: DBSession, account: M.Account) -> bool:
+    """Whether this account must use an authenticator.
+
+    Its role's policy, and always for a named super admin, whatever the policy
+    says (audit H3): the authenticator is what makes the account one person's.
+    """
+    return account.role in two_factor_enforced_roles() or (
+        account.role == "SUPER_ADMIN" and is_named_super_admin(db, account.id))
+
+
 def two_factor_setup_required(db: DBSession, account: M.Account) -> bool:
-    """True while an account whose role must use 2FA has not turned it on."""
-    return account.role in two_factor_enforced_roles() and not twofa_store.is_enabled(db, account.id)
+    """True while an account that must use 2FA has not turned it on."""
+    return two_factor_required(db, account) and not twofa_store.is_enabled(db, account.id)
 
 
 def session_payload(db: DBSession, account: M.Account) -> dict:
@@ -410,6 +425,12 @@ class SignupConsent(StrictModel):
     version: str = Field(max_length=40)
     purposes: list[str] = Field(max_length=10)
     language: Literal["en", "te", "hi"] = "en"
+    # The privacy notice and terms versions the screen showed (GET /auth/consent),
+    # "unpublished" when none was published. Checked against what is published now
+    # (shown_legal_versions) so the record names the words that were on screen.
+    # None: an older client that showed neither; recorded as "".
+    noticeVersion: str | None = Field(default=None, max_length=40)
+    termsVersion: str | None = Field(default=None, max_length=40)
 
     @field_validator("version")
     @classmethod
@@ -463,10 +484,35 @@ class Signup(StrictModel):
     password: str = Field(min_length=1, max_length=128)
 
 
+LEGAL_CHANGED = "LEGAL_DOCUMENT_CHANGED"
+
+
+def shown_legal_versions(db: DBSession, consent: SignupConsent) -> tuple[str, str]:
+    """The notice and terms versions to record with a sign-up consent.
+
+    Each one sent must be the version published now ("unpublished" when none is):
+    a notice published or replaced while the student was reading is refused, so
+    they reload and read the new one, like a changed consent wording.
+    """
+    from services.legal_documents import current_version
+    recorded = []
+    for sent, kind in ((consent.noticeVersion, "PRIVACY_NOTICE"), (consent.termsVersion, "TERMS")):
+        if sent is None:
+            recorded.append("")
+            continue
+        if sent != current_version(db, kind):
+            raise HTTPException(422, {"code": LEGAL_CHANGED,
+                                      "message": "The privacy notice or terms have changed. Reload and read them again."})
+        recorded.append(sent)
+    return recorded[0], recorded[1]
+
+
 @router.get("/consent")
-def signup_consent_terms():
-    """The consent version and required purposes the signup screen must show."""
-    return {"version": SIGNUP_CONSENT_VERSION, "required": list(SIGNUP_REQUIRED_PURPOSES)}
+def signup_consent_terms(db: DBSession = Depends(workflow_db)):
+    """The consent version and required purposes the signup screen must show, and the legal versions it links to."""
+    from services.legal_documents import current_version
+    return {"version": SIGNUP_CONSENT_VERSION, "required": list(SIGNUP_REQUIRED_PURPOSES),
+            "noticeVersion": current_version(db, "PRIVACY_NOTICE"), "termsVersion": current_version(db, "TERMS")}
 
 
 @router.get("/options")
@@ -637,6 +683,7 @@ def signup(body: Signup, request: Request, response: Response, db: DBSession = D
         check_new_password(body.password, min_length, draft)
     except PasswordRefused as error:
         raise refusal(error, min_length) from error
+    notice_version, terms_version = shown_legal_versions(db, body.consent)
     other = "WHATSAPP" if grant.channel == "EMAIL" else "EMAIL"
     if other in available_channels(db) and not grant.second_verified_at:
         # D-2: both contacts are verified at sign-up, whenever the other channel can deliver a code.
@@ -660,7 +707,8 @@ def signup(body: Signup, request: Request, response: Response, db: DBSession = D
             clinical_profile.write(db, account.id, {"bloodGroup": body.bloodGroup})
         # Same transaction as the account: there is never an account without its consent record.
         db.add(M.ConsentRecord(id=str(uuid.uuid4()), account_id=account.id, version=body.consent.version,
-                               purposes=body.consent.purposes, language=body.consent.language, recorded_at=time.time()))
+                               purposes=body.consent.purposes, language=body.consent.language, recorded_at=time.time(),
+                               notice_version=notice_version, terms_version=terms_version))
         # Sign-up says the account "starts with campus verification pending": the university
         # and roll number given here are that request, the one the campus queue reads
         # (GET /ops/campus/pending), the same as POST /campus/verification (live-run audit #4).

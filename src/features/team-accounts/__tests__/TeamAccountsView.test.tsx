@@ -6,6 +6,15 @@ import { axeViolations, describeViolations } from '@/test/axe';
 import { TeamAccountsView } from '../TeamAccountsView';
 import type { TeamAccount, TeamAccountList, TeamAccountsRepository } from '../teamAccountsRepository';
 
+// The named super admins section has its own tests (NamedSuperAdminsSection.test.tsx): a quiet stub here.
+vi.mock('../teamAccountsRepository', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../teamAccountsRepository')>()),
+  namedSuperAdminsRepository: {
+    state: async () => ({ items: [], shared: null, readyToRetire: false, viewerIsNamed: false }),
+    create: vi.fn(), retireShared: vi.fn(),
+  },
+}));
+
 // Super admin → Team accounts: every state (loading, error, empty, data, switch
 // off), Rotate PIN showing the new PIN once, your own PIN needing the current
 // one, Set password (never shown back, your own needing the current PIN or

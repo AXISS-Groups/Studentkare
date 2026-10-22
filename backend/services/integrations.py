@@ -38,7 +38,7 @@ from services.workflow_auth import (
     remember_device,
     require_super_admin,
     session_payload,
-    two_factor_enforced_roles,
+    two_factor_required,
     two_factor_setup_user,
     workflow_db,
 )
@@ -320,7 +320,8 @@ def _qr_rows(text: str) -> list[str]:
 def status_2fa(response: Response, user: dict = Depends(two_factor_setup_user), db: DBSession = Depends(workflow_db)):
     response.headers["Cache-Control"] = "no-store"
     enabled = twofa_store.is_enabled(db, user["id"])
-    required = user["role"] in two_factor_enforced_roles()
+    account = db.get(M.Account, user["id"])
+    required = account is not None and two_factor_required(db, account)
     return {"enabled": enabled, "required": required, "setupRequired": required and not enabled}
 
 
@@ -366,7 +367,8 @@ def disable_2fa(body: TwoFAToken, user: dict = Depends(authenticated_user), db: 
         return {"success": True, "message": "2FA already disabled"}
     # A role that must use 2FA can't switch it off: that would hand the next
     # sign-in back to the OTP alone. A lost app is a reset, not a disable.
-    if user["role"] in two_factor_enforced_roles():
+    account = db.get(M.Account, user["id"])
+    if account is None or two_factor_required(db, account):
         raise HTTPException(403, {"code": "TWO_FACTOR_REQUIRED_FOR_ROLE",
                                   "message": "Your role needs two-step sign-in, so it can't be turned off."})
     limit(db, f"2fa-code:{user['id']}", 10, 300)
@@ -393,6 +395,12 @@ def challenge_2fa(body: TwoFAToken, request: Request, response: Response, db: DB
     if not account or not account.active:
         raise HTTPException(404, "No active account was found.")
     code_proven = time.time() if first_factor == "CODE" else 0.0
+    named = db.get(M.NamedSuperAdmin, account.id) if account.role == "SUPER_ADMIN" else None
+    if named is not None and not named.totp_signed_in_at:
+        # The first sign-in through the authenticator: what retiring the shared
+        # super admin waits for (services/named_super_admins.py).
+        named.totp_signed_in_at = time.time()
+        _audit(db, {"id": account.id}, "NAMED_SUPER_ADMIN_TOTP_SIGN_IN", account.id)
     csrf = issue_session(db, account, response, request, code_verified_at=code_proven)
     remember_device(db, account, request, response)
     db.commit()
@@ -441,4 +449,4 @@ def reset_2fa(account_id: str, body: TwoFactorResetInput, user: dict = Depends(r
                     resource_type="account", resource_id=account_id)
     db.commit()
     return {"id": account_id, "sessionsEnded": ended,
-            "setupRequired": account.role in two_factor_enforced_roles()}
+            "setupRequired": two_factor_required(db, account)}

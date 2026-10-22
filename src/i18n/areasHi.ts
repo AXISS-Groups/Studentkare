@@ -36,6 +36,7 @@ import { partnerWorkHi } from './areas/partnerWork';
 import { payHi } from './areas/pay';
 import { phoneboardsHi } from './areas/phoneboards';
 import { phonestoreHi } from './areas/phonestore';
+import { privacyHi } from './areas/privacy';
 import { rewardsHi } from './areas/rewards';
 import { safetyHi } from './areas/safety';
 import { shopwebHi } from './areas/shopweb';
@@ -94,6 +95,7 @@ export const areasHi = {
   ...payHi,
   ...phoneboardsHi,
   ...phonestoreHi,
+  ...privacyHi,
   ...rewardsHi,
   ...safetyHi,
   ...shopwebHi,
