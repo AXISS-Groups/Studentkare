@@ -12,7 +12,7 @@ Data only: no schema change. Identity plane (core/rule_l.py). Downgrade leaves
 the rows: a campus may already have acted on them.
 
 Revision ID: a4e8c2d6f013
-Revises: b7d3e1f9a6c2
+Revises: e3c9a7f5b124
 Create Date: 2026-10-22
 """
 import sqlalchemy as sa
@@ -20,7 +20,7 @@ import sqlalchemy as sa
 from alembic import op
 
 revision = "a4e8c2d6f013"
-down_revision = "b7d3e1f9a6c2"
+down_revision = "e3c9a7f5b124"
 branch_labels = None
 depends_on = None
 
