@@ -2,7 +2,8 @@
 
 **Approved by:** Krishna Chintakayala (founder, named Tier 1 reviewer), 2026-10-22 ("approve all"),
 with the team-account amendment below. Every decision D-1 to D-8 is taken as recommended.
-**Status:** approved. Build order: (1) team-account password, (2) contacts, (3) student password and screens.
+**Status:** approved. Build order: (1) team-account password (PR open), (2) contacts, (3) student password and
+sign-up screens, (4) B2B invites (amendment b).
 **Asked for by:** the founder, 2026-10-22.
 **Amends:** `docs/plans/tier1-canvas-wp03-2026-10-20.md` (WP-03, both 2026-10-22 amendments).
 
@@ -89,6 +90,79 @@ team accounts one. Built first, because it's what gets the team into the console
 - Super admin and counsellor are still held to the authenticator after a password (D-5).
 - Individual staff accounts keep the emailed code; their passwords are not in this plan.
 - `docs/guides/team-accounts.md` gains the command.
+
+## Amendment 2026-10-22 (b): B2B invites and B2C sign-up (approved 2026-10-22)
+
+Asked for and approved by the founder (Krishna Chintakayala, named Tier 1 reviewer) on 2026-10-22
+("approve"). D-B1, D-B2, D-B3, D-B5 and D-B6 are taken as recommended. D-B4 had no answer, so the smaller
+option is taken: **one student at a time first, CSV upload in a later PR**. The founder's answers: B2B means **students of a partner college**; **super admins and campus admins** create the accounts;
+the first sign-in is a **link plus a temporary password**.
+
+### Two ways an account starts
+
+| | B2B (partner college) | B2C (student on their own) |
+|---|---|---|
+| Who creates it | A campus admin (their own campus only) or a super admin | The student, on Create account |
+| Details | Name, email, WhatsApp number, roll number, typed by the admin (one at a time, or a CSV) | Name, email, WhatsApp number, typed by the student |
+| First sign-in | One-time link + temporary password, then a forced new password | Code to each contact (section B) |
+| Contacts verified | Later, by the student (see B4) | At sign-up, by the code (automatic) |
+| After that | Same for both: set a PIN (optional), sign in with a code, password or PIN, optional authenticator | |
+
+### B1. Creating B2B accounts
+- New: Campus admin → Students → **Invite students** (one form; CSV upload with a preview and a per-row
+  result follows in a later PR, D-B4). Super admin gets the same screen for any partner campus.
+- A campus admin can create **students only, on their own campus only**. They can never create staff and
+  can never pick another campus (server-enforced, fail closed).
+- An email or number already on an account is refused per row, with "already has an account" and nothing
+  else. The admin never learns whose it is.
+- The account is created **pending**: no consent, no confirmed date of birth, no verified contact. It
+  can't be used for anything until the student claims it (B2).
+- Admins never see a student's health records because of this. Creating the account gives no access
+  (Rule L and the consent rules are unchanged).
+
+### B2. The link and the temporary password
+- The server makes a **one-time link** (random token, only its hash stored, expires after
+  `auth.invite_link_hours`, proposed 72) and a **temporary password** (random, 12 characters, hashed like
+  any password, expires with the link, works once).
+- The link goes to the student's email or WhatsApp. The temporary password is **shown once to the admin**
+  to hand over in class or send by the *other* channel, so one leaked message isn't enough to get in.
+- The admin can **resend** (a new link and a new temporary password; the old ones stop working) or
+  **cancel** an invite. Every create, send, resend, cancel and claim is audited, never the password or token.
+- Wrong temporary passwords lock the invite like any password. An expired or used link gets one answer,
+  "This link has expired. Ask your college to send a new one", whatever the reason.
+
+### B3. Claiming the account (first sign-in)
+The link opens a claim page, all in one sitting, and nothing gives a session until the end:
+1. Enter the temporary password.
+2. **Set your own password** (section C rules). The temporary one stops working.
+3. **Confirm your date of birth** (18+, fail closed). The college's date is never taken as the student's word.
+4. **Consent**, by the student themselves (the same versioned consent as B2C). A college can't consent for
+   a student.
+5. Account ready → **Set a PIN** (optional, common flow) → optional authenticator.
+
+### B4. Verifying a B2B student's email or WhatsApp
+- Contacts the admin typed start **unverified**, and **a code is never sent to an unverified contact to sign
+  in**. If the admin mistyped a number, a stranger holding that number must not get a sign-in code.
+- Verifying happens **while signed in**: Profile → Sign-in & security → "Verify" beside each contact sends a
+  code to it. Once it's verified, codes on that contact work for sign-in.
+- **D-B5 (recommended: yes):** claiming through the link counts as proof of the contact the link was sent
+  to, so that one is verified at claim. The other stays to verify later. If no, both start unverified.
+- Until at least one contact is verified, the student sees a banner asking them to verify one, and
+  "Forgot password" only works through a verified contact.
+
+### B5. B2C
+- Unchanged from sections B to D: name, email and WhatsApp; a code to each, which **verifies each
+  automatically**; password; date of birth; consent; then the common PIN flow.
+- A B2C student whose email or number was already invited by a college gets "already has an account"
+  and the option to ask the college to resend the link. Two accounts are never created.
+
+### Decisions for the reviewer (this amendment)
+- **D-B1** Approve B1 to B4 as written (campus admin: own campus, students only).
+- **D-B2** Link life 72 hours (`auth.invite_link_hours`), and the temporary password works once and expires with it.
+- **D-B3** The temporary password is shown once to the admin and handed over separately, never in the same message as the link.
+- **D-B4** CSV upload in the first version, or one-at-a-time first and CSV later?
+- **D-B5** Claiming through the link verifies the contact it was sent to (recommended yes).
+- **D-B6** The college's date of birth and roll number are kept as the college's record, and the student must confirm their own date of birth at claim (recommended).
 
 ## Not in this plan
 - Passwords for individual staff accounts (team accounts are in, see the amendment above).
