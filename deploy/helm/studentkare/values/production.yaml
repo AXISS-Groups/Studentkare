@@ -93,7 +93,7 @@ backend:
     CLAMAV_HOST: ""
     CLAMAV_PORT: ""
     CLAMAV_STRICT: ""
-    MEDICINE_OCR_ENABLED: ""
+    MEDICINE_OCR_ENABLED: "false"    # tesseract is in the image; stays off until the plan sign-off
     MEDICINE_OCR_TESSERACT: ""
     # Agent Ayush tuning.
     LLM_ENABLED: ""

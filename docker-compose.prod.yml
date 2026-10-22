@@ -77,8 +77,9 @@ x-app-env: &app-env
   CLAMAV_HOST: ${CLAMAV_HOST:-clamav}
   CLAMAV_PORT: ${CLAMAV_PORT:-3310}
   CLAMAV_STRICT:
-  # Medicine-photo OCR.
-  MEDICINE_OCR_ENABLED:
+  # Medicine-photo OCR: tesseract (eng+hin+tel) is in the image; the switch stays
+  # off until the AI-constitution owner and the DPO sign (Admin › Integrations wins).
+  MEDICINE_OCR_ENABLED: ${MEDICINE_OCR_ENABLED:-false}
   MEDICINE_OCR_TESSERACT:
   # Agent Ayush tuning.
   LLM_ENABLED:
