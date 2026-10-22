@@ -12,6 +12,8 @@ import { QrCells } from '@/features/digital_id/views/DigitalIdNativeView';
 import { TwoFactorViewModel } from '../viewmodel/TwoFactorViewModel';
 import { PasscodeViewModel } from '@/features/auth/viewmodel/PasscodeViewModel';
 import { CONTACT_KINDS, ContactsViewModel } from '../viewmodel/ContactsViewModel';
+import { PasswordCardViewModel } from '../viewmodel/PasswordCardViewModel';
+import { PASSWORD_MAX_LENGTH } from '@/features/auth/viewmodel/AuthViewModel';
 import type { ContactKind } from '../viewmodel/ContactsViewModel';
 
 /** Groups the key in fours ("JBSW Y3DP EHPK 3PXP"): easier to type into an app. */
@@ -57,6 +59,54 @@ const PasscodeCard = observer(function PasscodeCard({ vm }: { vm: PasscodeViewMo
         onPress={() => navigate('set-passcode')}
         icon={on ? undefined : <Icon name="key" size={16} color={color.onAction} />}
       />
+    </Card>
+  );
+});
+
+/**
+ * The student's password (plan tier1-auth-password-2026-10-22, C): set or not,
+ * Set / Change, and the form. Changing needs the current one unless the student
+ * has just signed in with a code ("Forgot your password?" goes through a code).
+ */
+const PasswordCard = observer(function PasswordCard({ vm }: { vm: PasswordCardViewModel }) {
+  const t = useT();
+  if (vm.phase !== 'ready' || !vm.status?.enabled) return null;
+  const on = vm.status.hasPassword;
+  const problem = vm.problem ? t(vm.problem, { min: vm.minLength }) : undefined;
+  return (
+    <Card testID="password-card">
+      <View style={styles.cardHead}>
+        <Icon name="lock-keyhole" size={22} color={color.action} />
+        <View style={styles.cardHeadText}>
+          <Text accessibilityRole="header" style={styles.cardTitle}>{t('authpw.card.title')}</Text>
+          <Text style={styles.body}>{t('authpw.card.lead')}</Text>
+        </View>
+        <View style={[styles.pill, on ? styles.pillOn : styles.pillOff]}>
+          {on ? <Icon name="check-2" size={14} color={color.positive} /> : null}
+          <Text style={[styles.pillText, { color: on ? color.positive : color.text2 }]}>{t(on ? 'authpw.card.on' : 'authpw.card.off')}</Text>
+        </View>
+      </View>
+      {vm.saved ? <Note tone="positive">{t('authpw.card.saved')}</Note> : null}
+      {vm.editing ? (
+        <View style={styles.contactForm}>
+          {vm.needsCurrent ? (
+            <TextField label={t('authpw.card.current')} value={vm.current} onChangeText={vm.setCurrent} secure autoComplete="current-password"
+              maxLength={PASSWORD_MAX_LENGTH} hint={t('authpw.card.currentHint')} error={vm.problem === 'authpw.card.proofNeeded' ? problem : undefined} disabled={vm.busy} testID="password-current" />
+          ) : on ? <Note tone="info">{t('authpw.card.noCurrent')}</Note> : null}
+          <TextField label={t('authpw.card.new')} value={vm.password} onChangeText={vm.setPassword} secure autoComplete="new-password"
+            maxLength={PASSWORD_MAX_LENGTH} hint={t('authpw.length', { min: vm.minLength })}
+            error={vm.problem && vm.problem !== 'authpw.card.proofNeeded' && vm.problem !== 'authpw.mismatch' ? problem : undefined} disabled={vm.busy} testID="password-new" />
+          <TextField label={t('authpw.card.again')} value={vm.again} onChangeText={vm.setAgain} secure autoComplete="new-password"
+            maxLength={PASSWORD_MAX_LENGTH} error={vm.problem === 'authpw.mismatch' ? problem : undefined} disabled={vm.busy} testID="password-again" />
+          <View style={styles.actions}>
+            <Button label={vm.busy ? t('authpw.card.saving') : t('authpw.card.save')} onPress={() => void vm.save()} busy={vm.busy} disabled={!vm.canSave && !vm.busy} />
+            <Button label={t('authpw.card.cancel')} variant="ghost" onPress={vm.close} disabled={vm.busy} />
+          </View>
+        </View>
+      ) : (
+        <Button label={t(on ? 'authpw.card.change' : 'authpw.card.set')} variant={on ? 'secondary' : 'primary'} onPress={vm.open}
+          icon={on ? undefined : <Icon name="lock-keyhole" size={16} color={color.onAction} />} />
+      )}
     </Card>
   );
 });
@@ -155,6 +205,7 @@ export const SignInSecurityView = observer(function SignInSecurityView({
   onContinue,
   passcode,
   contacts,
+  password,
 }: {
   viewModel: TwoFactorViewModel;
   /** Shown once a held session has turned 2FA on: back to the workspace. */
@@ -163,6 +214,8 @@ export const SignInSecurityView = observer(function SignInSecurityView({
   passcode?: PasscodeViewModel;
   /** Students: their email and WhatsApp number. */
   contacts?: ContactsViewModel;
+  /** Students: their password. */
+  password?: PasswordCardViewModel;
 }) {
   const t = useT();
   const status = vm.status;
@@ -193,6 +246,7 @@ export const SignInSecurityView = observer(function SignInSecurityView({
       </Pressable>
 
       {contacts ? <Rise index={1}><ContactsCard vm={contacts} /></Rise> : null}
+      {password ? <Rise index={1}><PasswordCard vm={password} /></Rise> : null}
       {passcode ? <Rise index={1}><PasscodeCard vm={passcode} /></Rise> : null}
 
       {vm.phase === 'loading' ? <Skeleton label={t('sec.loading')} lines={['50%', '100%', '80%']} /> : null}
@@ -339,19 +393,22 @@ export function SignInSecurityRoute(): React.ReactElement {
   const role = auth.user?.role;
   const [passcode] = useState(() => new PasscodeViewModel());
   const [contacts] = useState(() => new ContactsViewModel());
+  const [password] = useState(() => new PasswordCardViewModel());
   useEffect(() => {
     if (role === 'STUDENT') {
       void passcode.load();
       void contacts.load();
+      void password.load();
     }
-    return () => contacts.dispose();
-  }, [passcode, contacts, role]);
+    return () => { contacts.dispose(); password.dispose(); };
+  }, [passcode, contacts, password, role]);
   return (
     <SignInSecurityView
       viewModel={vm}
       onContinue={role ? () => navigate(homeForRole(role)) : undefined}
       passcode={role === 'STUDENT' ? passcode : undefined}
       contacts={role === 'STUDENT' ? contacts : undefined}
+      password={role === 'STUDENT' ? password : undefined}
     />
   );
 }

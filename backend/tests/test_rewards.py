@@ -14,7 +14,13 @@ from sqlalchemy import delete, select, text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from test_rule_l import pg_db  # noqa: F401 — pytest fixture
-from test_workflow_api import SIGNUP_CONSENT, harness, login  # noqa: F401 — harness is a fixture
+from test_workflow_api import (  # noqa: F401 — harness is a fixture
+    SIGNUP_CONSENT,
+    SIGNUP_PASSWORD,
+    harness,
+    login,
+    verify_second_contact,
+)
 
 from core import rule_l
 from core import settings_registry as R
@@ -32,8 +38,9 @@ HEALTH_WORDS = ("STEP", "WEIGHT", "BMI", "HEART", "WATER", "HYDRAT", "READING", 
 def signup(client, codes, email, roll, ref=None, dob="2000-03-14"):
     assert client.post("/api/auth/otp/send", json={"identifier": email, "channel": "EMAIL", "intent": "SIGNUP"}).status_code == 200
     checked = client.post("/api/auth/otp/verify", json={"otp": codes[-1]}).json()
+    verify_second_contact(client, codes, {"X-CSRF-Token": checked["csrfToken"]})
     body = {"fullName": "Test Student", "dob": dob, "university": "Test University", "rollNumber": roll,
-            "consent": SIGNUP_CONSENT}
+            "consent": SIGNUP_CONSENT, "password": SIGNUP_PASSWORD}
     if ref is not None:
         body["referralCode"] = ref
     result = client.post("/api/auth/signup", headers={"X-CSRF-Token": checked["csrfToken"]}, json=body)

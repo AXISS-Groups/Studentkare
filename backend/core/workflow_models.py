@@ -189,6 +189,11 @@ class SignupGrant(Base):
     csrf_token: Mapped[str] = mapped_column(String(100))
     expires_at: Mapped[float] = mapped_column(Float)
     consumed: Mapped[bool] = mapped_column(Boolean, default=False)
+    # The other contact, proven with its own code during sign-up (services/signup_contacts.py):
+    # the email if the account signs up by WhatsApp, or the other way round.
+    second_channel: Mapped[str] = mapped_column(String(16), default="", server_default="")
+    second_identifier: Mapped[str] = mapped_column(String(254), default="", server_default="")
+    second_verified_at: Mapped[float] = mapped_column(Float, default=0.0, server_default="0")
 
 
 class RateBucket(Base):

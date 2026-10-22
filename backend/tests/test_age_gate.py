@@ -72,7 +72,8 @@ class TestSignupIsGated:
 
     def test_an_adult_can(self):
         assert Signup(fullName="A Student", dob=born_years_ago(21).isoformat(),
-                      university="Demo University", rollNumber="R-1", consent=CONSENT).dob == born_years_ago(21)
+                      university="Demo University", rollNumber="R-1", consent=CONSENT,
+                      password="Tamarind-river 42").dob == born_years_ago(21)
 
 
 class TestProfileEditIsGatedToo:

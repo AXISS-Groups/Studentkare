@@ -16,8 +16,10 @@ export interface TextFieldProps {
   /** Clinical values, codes and IDs use the mono face (DESIGN.md §3). */
   mono?: boolean;
   keyboardType?: 'default' | 'numeric' | 'email-address' | 'phone-pad';
-  autoComplete?: 'email' | 'name' | 'tel' | 'off' | 'one-time-code';
+  autoComplete?: 'email' | 'name' | 'tel' | 'off' | 'one-time-code' | 'current-password' | 'new-password';
   maxLength?: number;
+  /** A password: the text is hidden and never auto-capitalised or corrected. */
+  secure?: boolean;
   testID?: string;
 }
 
@@ -37,6 +39,7 @@ export function TextField({
   keyboardType = 'default',
   autoComplete,
   maxLength,
+  secure = false,
   testID,
 }: TextFieldProps) {
   const [focused, setFocused] = useState(false);
@@ -60,6 +63,9 @@ export function TextField({
         keyboardType={keyboardType}
         autoComplete={autoComplete}
         maxLength={maxLength}
+        secureTextEntry={secure}
+        autoCapitalize={secure ? 'none' : undefined}
+        autoCorrect={secure ? false : undefined}
         accessibilityLabel={label}
         accessibilityLabelledBy={`${inputId}-label`}
         accessibilityState={{ disabled }}

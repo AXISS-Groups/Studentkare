@@ -14,6 +14,8 @@ beforeEach(() => apiRequest.mockClear());
 async function signupBody(ref: string | null): Promise<Record<string, unknown>> {
   const vm = new AuthViewModel('signup', null);
   SIGNUP_PURPOSES.forEach((purpose) => vm.consent.toggle(purpose));
+  vm.setNewPassword('Tamarind-river 42');
+  vm.setPasswordAgain('Tamarind-river 42');
   vm.setReferralCode(ref);
   await vm.completeSignup(() => undefined);
   return JSON.parse(String(apiRequest.mock.calls[0][1]?.body)) as Record<string, unknown>;

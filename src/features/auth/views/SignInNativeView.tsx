@@ -10,7 +10,7 @@ import { channelFieldCopy, channelIsDeliverable } from './channelCopy';
 import {
   AuthNativeFrame, ChannelFailureNative, ChannelSwitchNative, NoChannelNative, SendErrorNative, authNativeStyles as s,
 } from './AuthNativeParts';
-import { PasscodeEntryNative, RememberedNative, UsePasscodeNative } from './PasscodeNativeParts';
+import { PasscodeEntryNative, PasswordEntryNative, RememberedNative, UsePasscodeNative, UsePasswordNative } from './PasscodeNativeParts';
 
 interface SignInNativeViewProps {
   vm: AuthViewModel;
@@ -68,7 +68,7 @@ export const SignInNativeView: React.FC<SignInNativeViewProps> = observer(functi
     <AuthNativeFrame
       regionLabel="auth.signin.title"
       onHome={onHome}
-      onBack={vm.passcodeEntry ? vm.leavePasscode : vm.step === 1 ? undefined : () => vm.advance(1)}
+      onBack={vm.passcodeEntry ? vm.leavePasscode : vm.passwordEntry ? vm.leavePassword : vm.step === 1 ? undefined : () => vm.advance(1)}
     >
       <View style={styles.head}>
         <Text style={s.title} accessibilityRole="header">{t('auth.signin.title')}</Text>
@@ -76,11 +76,12 @@ export const SignInNativeView: React.FC<SignInNativeViewProps> = observer(functi
       </View>
 
       {vm.step === 1 && vm.passcodeEntry ? <PasscodeEntryNative vm={vm} onSuccess={onSuccess} /> : null}
-      {vm.step === 1 && !vm.passcodeEntry && vm.remembered ? <RememberedNative vm={vm} /> : null}
+      {vm.step === 1 && vm.passwordEntry ? <PasswordEntryNative vm={vm} onSuccess={onSuccess} /> : null}
+      {vm.step === 1 && !vm.passcodeEntry && !vm.passwordEntry && vm.remembered ? <RememberedNative vm={vm} /> : null}
 
-      {vm.step === 1 && !vm.passcodeEntry && !vm.remembered && vm.noChannel ? <NoChannelNative vm={vm} /> : null}
+      {vm.step === 1 && !vm.passcodeEntry && !vm.passwordEntry && !vm.remembered && vm.noChannel ? <NoChannelNative vm={vm} /> : null}
 
-      {vm.step === 1 && !vm.passcodeEntry && !vm.remembered && !vm.noChannel && (
+      {vm.step === 1 && !vm.passcodeEntry && !vm.passwordEntry && !vm.remembered && !vm.noChannel && (
         <>
           {vm.twoFaRestart ? (
             <View style={styles.notice} accessibilityRole="alert" testID="twofa-restart">
@@ -134,6 +135,7 @@ export const SignInNativeView: React.FC<SignInNativeViewProps> = observer(functi
           </TouchableOpacity>
 
           <UsePasscodeNative vm={vm} />
+          <UsePasswordNative vm={vm} />
 
           <Text style={styles.orText}>{t('ident.signin.or')}</Text>
           {/* No single sign-on exists for any campus (D3-2): drawn off, with why. */}

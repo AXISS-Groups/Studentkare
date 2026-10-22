@@ -3,7 +3,7 @@ import { ApiError, apiRequest, setCsrfToken } from '@/data/services/http';
 import type { SessionResponse } from '@/data/types/workflowTypes';
 import { canAccessRoute, homeForRole, isRoutePath, navigate } from '@/lib/utils/workflowRouting';
 import type { RoutePath } from '@/lib/utils/workflowRouting';
-import type { Lang } from '@/i18n';
+import type { Lang, MessageKey } from '@/i18n';
 import { SignupConsentState } from './signupConsent';
 import { normalizeInviteCode } from '@/features/rewards/inviteCode';
 import { getSetting } from '@/data/services/config';
@@ -14,6 +14,8 @@ type AuthMode = 'login' | 'signup';
 const CHANNEL_ORDER: readonly Channel[] = ['EMAIL', 'WHATSAPP'];
 const HTTP_NOT_FOUND = 404;
 const HTTP_UNAVAILABLE = 503;
+const HTTP_TOO_MANY_REQUESTS = 429;
+const HTTP_UNPROCESSABLE = 422;
 
 /**
  * A send that failed because the channel could not deliver (503). The server
@@ -51,6 +53,32 @@ export type StaffSignInMethod = 'CODE' | 'PIN' | 'PASSWORD';
 export const STAFF_PIN_LENGTH = 6;
 /** The longest password the server takes (services/account_password.py MAX_PASSWORD_LENGTH). */
 export const PASSWORD_MAX_LENGTH = 128;
+/** Sign-up: verify the other contact (after the first code), then create a password (before consent). */
+export const SECOND_CONTACT_STEP = 9;
+export const PASSWORD_STEP = 10;
+const CODE_LENGTH = 6;
+/** Why a student password sign-in didn't open a session. FAILED is the server's one answer for everything. */
+export type PasswordProblem = 'FAILED' | 'DISABLED' | 'NEED_ID' | 'OTHER' | '';
+
+function errorCode(error: unknown): string {
+  if (!(error instanceof ApiError) || !error.detail || typeof error.detail !== 'object') return '';
+  const code = (error.detail as { code?: unknown }).code;
+  return typeof code === 'string' ? code : '';
+}
+
+/** A refused new password or second contact, as a message key the sign-up screens show. */
+function signupProblem(error: unknown): MessageKey {
+  const code = errorCode(error);
+  if (code === 'PASSWORD_WEAK') return 'authpw.weak';
+  if (code === 'PASSWORD_LENGTH') return 'authpw.length';
+  if (code === 'PASSWORD_CHARACTERS') return 'authpw.characters';
+  if (code === 'CONTACT_IN_USE') return 'contacts.inUse';
+  if (code === 'CONTACT_CODE_FAILED') return 'contacts.codeFailed';
+  if (error instanceof ApiError && error.status === HTTP_TOO_MANY_REQUESTS) return 'contacts.tooMany';
+  if (error instanceof ApiError && error.status === HTTP_UNAVAILABLE) return 'contacts.unavailable';
+  if (error instanceof ApiError && error.status === HTTP_UNPROCESSABLE) return 'contacts.invalid';
+  return 'contacts.failed';
+}
 type Channel = 'EMAIL' | 'WHATSAPP';
 
 /** What the server says about the account this device remembers (masked). Never a session. */
@@ -152,6 +180,20 @@ export class AuthViewModel {
   passcodeProblem: PasscodeProblem = '';
   /** The server's own words for a refused passcode (they carry its attempt and lockout numbers). */
   passcodeMessage = '';
+  /** Student sign-in: the password panel is open instead of the code form. */
+  passwordEntry = false;
+  passwordProblem: PasswordProblem = '';
+  passwordMessage = '';
+  /** Sign-up: the other contact, verified with its own code before the account exists. */
+  secondValue = '';
+  secondCode = '';
+  secondMasked = '';
+  secondSent = false;
+  secondVerified = false;
+  secondProblem: MessageKey | null = null;
+  /** Sign-up: the password typed twice. Never stored; emptied after it is sent. */
+  passwordAgain = '';
+  newPasswordProblem: MessageKey | null = null;
 
   constructor(
     mode: AuthMode,
@@ -204,6 +246,15 @@ export class AuthViewModel {
     this.consent.reset();
     this.pin = '';
     this.password = '';
+    this.passwordAgain = '';
+    this.passwordEntry = false;
+    this.passwordProblem = '';
+    this.newPasswordProblem = null;
+    this.secondValue = '';
+    this.secondCode = '';
+    this.secondSent = false;
+    this.secondVerified = false;
+    this.secondProblem = null;
     this.passcodeEntry = false;
     this.passcode = '';
     this.passcodeProblem = '';
@@ -662,7 +713,8 @@ export class AuthViewModel {
         }
         if (this.mode === 'signup' && response.requiresSignup) {
           setCsrfToken(response.csrfToken);
-          this.step = 4;
+          // D-2: the other contact is verified too, whenever its channel can deliver a code.
+          this.step = this.secondRequired ? SECOND_CONTACT_STEP : 4;
           return;
         }
         this.accept(response, onAccept);
@@ -711,11 +763,203 @@ export class AuthViewModel {
     }
   }
 
+  // --- student password sign-in (plan tier1-auth-password-2026-10-22, D) ---------
+
+  /** The public switch (auth.password_login_enabled): off, no password option is drawn for students. */
+  get studentPasswordEnabled(): boolean {
+    return this.audience === 'STUDENT' && this.isLogin && getSetting('auth.password_login_enabled') === true;
+  }
+
+  get canSubmitStudentPassword(): boolean {
+    return !this.busy && this.identifier.trim().length > 0 && this.password.length > 0;
+  }
+
+  /** Opens the password panel. It needs the email or number typed first. */
+  startPassword(): void {
+    this.error = '';
+    this.errorStatus = 0;
+    this.password = '';
+    this.passwordMessage = '';
+    if (!this.identifier.trim()) {
+      this.passwordProblem = 'NEED_ID';
+      this.focusContactRequest += 1;
+      return;
+    }
+    this.passwordProblem = '';
+    this.passwordEntry = true;
+  }
+
+  leavePassword(): void {
+    this.passwordEntry = false;
+    this.password = '';
+    this.passwordProblem = '';
+    this.passwordMessage = '';
+  }
+
+  setStudentPassword(value: string): void {
+    this.password = value.slice(0, PASSWORD_MAX_LENGTH);
+    if (this.passwordProblem === 'FAILED') this.passwordProblem = '';
+  }
+
+  /**
+   * POST /auth/password/sign-in with the typed email or number. One answer for
+   * every failure; the authenticator step follows where there is one. The field
+   * empties after every try, right or wrong.
+   */
+  async signInWithStudentPassword(onAccept: (response: SessionResponse) => void): Promise<void> {
+    if (!this.canSubmitStudentPassword) return;
+    const password = this.password;
+    this.password = '';
+    this.busy = true;
+    this.passwordProblem = '';
+    this.passwordMessage = '';
+    this.twoFaRestart = '';
+    try {
+      const response = await apiRequest<SessionResponse>('/auth/password/sign-in', {
+        method: 'POST',
+        body: JSON.stringify({ identifier: this.identifier.trim(), password }),
+      });
+      runInAction(() => {
+        if (response.requires2FA && response.tempToken) {
+          this.tempToken = response.tempToken;
+          this.twoFaCode = '';
+          this.passwordEntry = false;
+          this.step = 7;
+          return;
+        }
+        this.accept(response, onAccept);
+      });
+    } catch (error) {
+      runInAction(() => {
+        const code = errorCode(error);
+        this.passwordProblem = code === 'PASSWORD_FAILED' ? 'FAILED' : code === 'PASSWORD_DISABLED' ? 'DISABLED' : 'OTHER';
+        this.passwordMessage = error instanceof Error ? error.message : '';
+      });
+    } finally {
+      runInAction(() => { this.busy = false; });
+    }
+  }
+
+  /** "Forgot your password?": sign in with a code, then on to Sign-in & security to set a new one. */
+  async forgotPassword(): Promise<void> {
+    this.next = 'security';
+    this.leavePassword();
+    await this.sendCode();
+  }
+
+  // --- sign-up: the other contact, then a password ------------------------------
+
+  /** The contact not used to start sign-up: email if it began with WhatsApp, and the other way round. */
+  get secondChannel(): Channel {
+    return this.channel === 'EMAIL' ? 'WHATSAPP' : 'EMAIL';
+  }
+
+  /** Required while its channel can deliver a code (the server checks the same). */
+  get secondRequired(): boolean {
+    return this.offeredChannels.includes(this.secondChannel);
+  }
+
+  setSecondValue(value: string): void {
+    this.secondValue = value;
+    this.secondProblem = null;
+  }
+
+  setSecondCode(value: string): void {
+    this.secondCode = value.replace(/\D/g, '').slice(0, CODE_LENGTH);
+    this.secondProblem = null;
+  }
+
+  /** Back to typing the other contact (a mistyped one). */
+  editSecond(): void {
+    this.secondSent = false;
+    this.secondVerified = false;
+    this.secondCode = '';
+    this.secondProblem = null;
+  }
+
+  async sendSecondCode(): Promise<void> {
+    if (this.busy || !this.secondValue.trim()) return;
+    this.busy = true;
+    this.secondProblem = null;
+    try {
+      const sent = await apiRequest<{ targetMasked: string }>('/auth/signup/contact/send-code', {
+        method: 'POST', body: JSON.stringify({ value: this.secondValue.trim() }),
+      });
+      runInAction(() => {
+        this.secondMasked = sent.targetMasked;
+        this.secondSent = true;
+        this.secondVerified = false;
+        this.secondCode = '';
+      });
+    } catch (error) {
+      runInAction(() => { this.secondProblem = signupProblem(error); });
+    } finally {
+      runInAction(() => { this.busy = false; });
+    }
+  }
+
+  async verifySecondCode(): Promise<void> {
+    if (this.busy || this.secondCode.length !== CODE_LENGTH) return;
+    const otp = this.secondCode;
+    this.secondCode = '';
+    this.busy = true;
+    this.secondProblem = null;
+    try {
+      await apiRequest('/auth/signup/contact/verify', { method: 'POST', body: JSON.stringify({ otp }) });
+      runInAction(() => {
+        this.secondVerified = true;
+        this.step = 4;
+      });
+    } catch (error) {
+      runInAction(() => { this.secondProblem = signupProblem(error); });
+    } finally {
+      runInAction(() => { this.busy = false; });
+    }
+  }
+
+  setNewPassword(value: string): void {
+    this.password = value.slice(0, PASSWORD_MAX_LENGTH);
+    this.newPasswordProblem = null;
+  }
+
+  setPasswordAgain(value: string): void {
+    this.passwordAgain = value.slice(0, PASSWORD_MAX_LENGTH);
+    this.newPasswordProblem = null;
+  }
+
+  /** The shortest password the server takes (public setting auth.password_min_length). */
+  get passwordMinLength(): number {
+    return getSetting('auth.password_min_length');
+  }
+
+  get newPasswordReady(): boolean {
+    return this.password.length >= this.passwordMinLength && this.password === this.passwordAgain;
+  }
+
+  /** The password step's Continue: checks length and match here; strength is the server's, at sign-up. */
+  confirmNewPassword(next: number): void {
+    if (this.password.length < this.passwordMinLength) {
+      this.newPasswordProblem = 'authpw.length';
+      return;
+    }
+    if (this.password !== this.passwordAgain) {
+      this.newPasswordProblem = 'authpw.mismatch';
+      this.passwordAgain = '';
+      return;
+    }
+    this.newPasswordProblem = null;
+    this.advance(next);
+  }
+
   async completeSignup(onAccept: (response: SessionResponse) => void): Promise<void> {
     // No consent, no request: the server refuses it too, but don't send it.
     const consent = this.consent.payload(this.consentLanguage);
     if (!consent) {
       this.error = 'Tick the three required items to create your account.';
+      return;
+    }
+    if (!this.newPasswordReady) {
+      this.step = PASSWORD_STEP;
       return;
     }
     this.busy = true;
@@ -730,14 +974,31 @@ export class AuthViewModel {
           rollNumber: this.rollNumber,
           bloodGroup: this.bloodGroup,
           consent,
+          password: this.password,
           ...(this.referralCode ? { referralCode: this.referralCode } : {}),
         }),
       });
       runInAction(() => {
+        this.password = '';
+        this.passwordAgain = '';
         this.accept(response, onAccept);
       });
     } catch (error) {
       runInAction(() => {
+        const code = errorCode(error);
+        if (code.startsWith('PASSWORD_')) {
+          // Back to the password step with the reason; nothing was spent.
+          this.newPasswordProblem = signupProblem(error);
+          this.password = '';
+          this.passwordAgain = '';
+          this.step = PASSWORD_STEP;
+          return;
+        }
+        if (code === 'SECOND_CONTACT_REQUIRED') {
+          this.secondVerified = false;
+          this.step = SECOND_CONTACT_STEP;
+          return;
+        }
         this.error = error instanceof Error ? error.message : 'Could not complete registration.';
       });
     } finally {

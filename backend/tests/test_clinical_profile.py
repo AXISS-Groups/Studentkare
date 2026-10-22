@@ -6,9 +6,11 @@ import pytest
 from cryptography.fernet import Fernet
 from test_workflow_api import (  # noqa: F401 — pytest fixtures
     SIGNUP_CONSENT,
+    SIGNUP_PASSWORD,
     harness,
     login,
     register,
+    verify_second_contact,
 )
 
 from core import rule_l
@@ -81,9 +83,10 @@ def test_signup_blood_group_goes_to_the_clinical_table(harness):
     client, factory, codes = harness
     client.post("/api/auth/otp/send", json={"identifier": "bg@example.test", "channel": "EMAIL", "intent": "SIGNUP"})
     checked = client.post("/api/auth/otp/verify", json={"otp": codes[-1]})
+    verify_second_contact(client, codes, {"X-CSRF-Token": checked.json()["csrfToken"]})
     result = client.post("/api/auth/signup", headers={"X-CSRF-Token": checked.json()["csrfToken"]}, json={
         "fullName": "Blood Group", "dob": "2000-03-14", "university": "Test University", "rollNumber": "T-1",
-        "bloodGroup": "AB+", "consent": SIGNUP_CONSENT})
+        "bloodGroup": "AB+", "consent": SIGNUP_CONSENT, "password": SIGNUP_PASSWORD})
     assert result.status_code == 201, result.text
     assert result.json()["user"]["bloodGroup"] == "AB+"
     with factory() as db:
