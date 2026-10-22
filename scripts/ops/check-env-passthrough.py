@@ -200,15 +200,15 @@ def helm_env_rendered(values: dict) -> dict[str, set[str]] | None:
     fill = {
         "backend": {
             "image": {"tag": "sha-envcheck"},
-            "env": {k: "env-check" for k in (backend.get("env") or {})},
-            "secrets": {k: "env-check" for k in (backend.get("secrets") or {})},
+            "env": dict.fromkeys(backend.get("env") or {}, "env-check"),
+            "secrets": dict.fromkeys(backend.get("secrets") or {}, "env-check"),
         },
         "frontend": {"image": {"tag": "sha-envcheck"}},
     }
     with tempfile.NamedTemporaryFile("w", suffix=".yaml", delete=False) as fh:
         yaml.safe_dump(fill, fh)
         fill_path = fh.name
-    out = subprocess.run(
+    out = subprocess.run(  # noqa: S603 — fixed argv, repo-local chart
         [helm, "template", "envcheck", str(CHART), "-f", str(CHART_VALUES), "-f", fill_path],
         capture_output=True, text=True, check=False,
     )

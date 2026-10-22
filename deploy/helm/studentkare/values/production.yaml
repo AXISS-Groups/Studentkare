@@ -192,6 +192,29 @@ backend:
     initialDelaySeconds: 30
     periodSeconds: 10
 
+# Upload virus scanner (templates/05-clamav.yaml). The backend scans every upload
+# over clamd INSTREAM and refuses prescriptions while it is unreachable, so keep it
+# enabled. backend.env.CLAMAV_HOST defaults to this Service ("clamav").
+clamav:
+  enabled: true
+  replicaCount: 2
+  image:
+    repository: clamav/clamav
+    tag: "1.4.3"
+    pullPolicy: IfNotPresent
+  port: 3310
+  freshclamChecksPerDay: 12
+  # clamd keeps signatures in memory (~1.2 GB) and about doubles while reloading.
+  resources:
+    limits:
+      cpu: "1"
+      memory: 3Gi
+    requests:
+      cpu: 250m
+      memory: 1536Mi
+  signatureStorage:
+    sizeLimit: 2Gi
+
 # Scheduled-jobs worker (templates/04-worker.yaml): backend image, same secrets.
 # Required for outbox delivery (SOS) and erasures to happen on a timer.
 worker:

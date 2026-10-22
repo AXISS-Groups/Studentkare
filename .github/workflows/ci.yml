@@ -140,7 +140,11 @@ jobs:
           DPDP_ARCHIVE_KEY=dummy \
           DPDP_ARCHIVE_RETENTION_DAYS=30 \
           INTEGRATIONS_ENCRYPTION_KEY=dummy \
-          docker compose -f docker-compose.yml -f docker-compose.prod.yml config >/dev/null
+          docker compose -f docker-compose.yml -f docker-compose.prod.yml config > /tmp/compose-prod.yml
+          # Uploads fail closed without a virus scanner: prod must run clamd with a health check.
+          docker compose -f docker-compose.yml -f docker-compose.prod.yml config --services | grep -qx clamav
+          docker compose -f docker-compose.yml -f docker-compose.prod.yml config --format json clamav \
+            | python -c "import json,sys; s=json.load(sys.stdin)['services']['clamav']; assert s['healthcheck']['test'] and s['deploy']['resources']['limits']['memory'], s"
           rm -f .env
 
   ops-config:

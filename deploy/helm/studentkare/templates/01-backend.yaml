@@ -150,9 +150,12 @@ data:
   # Order payments (docs/billing-payments.md). The backend refuses to start with
   # "mock" in production; Razorpay keys come from studentkare-secrets.
   PAYMENT_PROVIDER: {{ .Values.backend.env.PAYMENT_PROVIDER | default "razorpay" | quote }}
+  # Upload virus scanner (templates/05-clamav.yaml). Prescriptions fail closed without it.
+  CLAMAV_HOST: {{ .Values.backend.env.CLAMAV_HOST | default (ternary "clamav" "" .Values.clamav.enabled) | quote }}
+  CLAMAV_PORT: {{ .Values.backend.env.CLAMAV_PORT | default .Values.clamav.port | toString | quote }}
   # Every other non-empty backend.env value (empty = unset, the code default
   # applies). Keys set on the containers directly are skipped here.
-  {{- $skip := list "APP_DOMAIN" "APP_BASE_URL" "ALLOWED_ORIGINS" "FORWARDED_ALLOW_IPS" "PAYMENT_PROVIDER" "APP_ENV" "OTEL_EXPORTER_OTLP_ENDPOINT" "RULE_L_REQUIRE_GRANTS" "USE_PGBOUNCER" }}
+  {{- $skip := list "APP_DOMAIN" "APP_BASE_URL" "ALLOWED_ORIGINS" "FORWARDED_ALLOW_IPS" "PAYMENT_PROVIDER" "CLAMAV_HOST" "CLAMAV_PORT" "APP_ENV" "OTEL_EXPORTER_OTLP_ENDPOINT" "RULE_L_REQUIRE_GRANTS" "USE_PGBOUNCER" }}
   {{- range $key, $value := .Values.backend.env }}
   {{- if and (not (has $key $skip)) (ne (toString $value) "") }}
   {{ $key }}: {{ toString $value | quote }}
