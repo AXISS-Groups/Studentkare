@@ -1,7 +1,7 @@
 # Canonical frontend image. Build context: repo root (e.g. docker build -f deploy/Dockerfile .).
 # Build-time contract: ARG VITE_API_BASE_URL (default /api, proxied to backend:8000 via deploy/nginx.conf).
-#                       ARG VITE_SENTRY_DSN (optional, for Sentry error tracking)
-#                       ARG VITE_APP_VERSION (optional, for release tracking)
+#                       ARG VITE_SENTRY_DSN (optional; empty = Sentry off, build still succeeds)
+#                       ARG VITE_APP_VERSION (optional; the Sentry release, e.g. sha-<12>)
 FROM node:20-alpine AS build
 
 WORKDIR /app
@@ -12,8 +12,9 @@ RUN npm install --legacy-peer-deps
 COPY . .
 
 ARG VITE_API_BASE_URL=/api
-ARG VITE_SENTRY_DSN
-ARG VITE_APP_VERSION
+# Empty is fine: Sentry stays off (src/lib/sentry.ts) and the build does not fail.
+ARG VITE_SENTRY_DSN=
+ARG VITE_APP_VERSION=dev
 ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 ENV VITE_SENTRY_DSN=$VITE_SENTRY_DSN
 ENV VITE_APP_VERSION=$VITE_APP_VERSION

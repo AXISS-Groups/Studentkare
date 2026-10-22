@@ -108,7 +108,8 @@ services:
     build:
       args:
         VITE_API_BASE_URL: /api
-        VITE_SENTRY_DSN: ${SENTRY_DSN}
+        # Browser DSN; falls back to the backend project's DSN. Empty = Sentry off.
+        VITE_SENTRY_DSN: ${VITE_SENTRY_DSN:-${SENTRY_DSN:-}}
         VITE_APP_VERSION: ${APP_VERSION:-latest}
     deploy:
       resources:

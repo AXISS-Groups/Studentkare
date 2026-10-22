@@ -71,6 +71,9 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      # Front-end error reporting: VITE_SENTRY_DSN is a repository variable
+      # (Settings › Variables; a browser DSN is public by design). Unset builds
+      # fine and the app logs "Sentry disabled"; the release is the image version.
       - uses: docker/build-push-action@v6
         with:
           context: ${{ matrix.context }}
@@ -82,6 +85,7 @@ jobs:
             GIT_COMMIT=${{ steps.meta.outputs.sha }}
             VITE_APP_VERSION=${{ steps.meta.outputs.version }}
             VITE_API_BASE_URL=/api
+            VITE_SENTRY_DSN=${{ vars.VITE_SENTRY_DSN }}
           labels: |
             org.opencontainers.image.revision=${{ steps.meta.outputs.sha }}
             org.opencontainers.image.version=${{ steps.meta.outputs.version }}
