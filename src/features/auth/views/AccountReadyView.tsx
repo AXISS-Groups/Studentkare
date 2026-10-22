@@ -48,9 +48,9 @@ export interface AccountReadyViewProps {
  *
  * The design's headline is "You're verified. Workspace is ready." Half of that
  * is false at the moment it appears: signup writes isVerifiedStudent: false and
- * creates no CampusVerification row, so `GET /campus/verification` answers
- * NOT_SUBMITTED. Telling a student they are verified when the campus has not
- * been asked is the kind of claim guardrail 6 exists to stop — and it would be
+ * opens a PENDING campus request, so `GET /campus/verification` answers
+ * PENDING. Telling a student they are verified when the campus has not yet
+ * decided is the kind of claim guardrail 6 exists to stop — and it would be
  * the first thing the app ever told them. The workspace part is true, so that
  * is what the headline says, and the real verification state is shown beneath
  * it.

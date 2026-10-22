@@ -100,7 +100,7 @@ def test_identity_change_requires_reverification_and_revokes_card(harness):
     with factory() as db:
         row = db.get(M.Account, user["id"])
         row.profile = {**row.profile, "isVerifiedStudent": True, "ageVerified": True}
-        db.add(M.CampusVerification(account_id=user["id"], university="Test University", roll_number="TEST-42", status="VERIFIED"))
+        db.get(M.CampusVerification, user["id"]).status = "VERIFIED"   # sign-up opened it as PENDING
         db.commit()
     assert client.post("/api/identity", headers=headers).status_code == 201
     response = client.patch("/api/profile", headers=headers, json={"fullName": "New Member Name"})
@@ -135,7 +135,7 @@ def test_qr_issue_verify_reissue_revoke_and_no_medical_disclosure(harness, monke
     checked = client.post("/api/identity/verify", headers=staff_headers, json={"code": second["code"]})
     assert checked.status_code == 200, checked.text
     assert checked.json()["fullName"] == user["fullName"]
-    assert checked.json()["campusStatus"] == "NOT_SUBMITTED"
+    assert checked.json()["campusStatus"] == "PENDING"   # sign-up asked the campus; nobody has decided
     assert not {"bloodGroup", "allergies", "dob", "email", "phone", "qrSvg", "qrMatrix", "code"} & checked.json().keys()
     headers = login(client, codes, "member@example.test")
     assert client.delete("/api/identity", headers=headers).status_code == 200

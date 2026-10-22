@@ -1574,7 +1574,9 @@ def pending_campus(user=Depends(require_campus_admin), db: Session = Depends(wor
     scope = campus_scope(user, db)
     rows = db.execute(
         select(M.CampusVerification, M.Account).join(M.Account, M.Account.id == M.CampusVerification.account_id)
-        .where(M.CampusVerification.status == "PENDING").order_by(M.CampusVerification.verified_at)
+        # Students only: a request left on an account that was later made staff is not a student to verify.
+        .where(M.CampusVerification.status == "PENDING", M.Account.role == "STUDENT")
+        .order_by(M.CampusVerification.verified_at)
     ).all()
     if scope is not None:
         rows = [(cv, account) for cv, account in rows if _campus_key(cv.university) == scope]

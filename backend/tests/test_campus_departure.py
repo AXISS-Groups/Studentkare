@@ -30,8 +30,13 @@ def give_seat(factory, account_id):
 
 
 def test_nothing_to_leave_without_a_campus(harness):
-    client, _factory, codes = harness
-    _user, headers = register(client, codes)
+    client, factory, codes = harness
+    user, headers = register(client, codes)
+    with factory() as db:   # sign-up asks the campus; this account never did
+        db.delete(db.get(M.CampusVerification, user["id"]))
+        account = db.get(M.Account, user["id"])
+        account.profile = {**account.profile, "university": "", "rollNumber": ""}
+        db.commit()
     response = client.post(URL, headers=headers, json={"reason": "PAUSING"})
     assert response.status_code == 409
 

@@ -194,6 +194,15 @@ def seed_demo_data(db: Session, include_demo_users: bool = True) -> dict:
         elif identifier == DEMO_VENDOR:
             vendor = existing
     db.flush()
+    # The demo students signed up like anyone else: their campus request waits in the campus queue.
+    for identifier, _name, role, _channel, profile in accounts:
+        if role != "STUDENT" or not include_demo_users:
+            continue
+        student = db.scalar(select(M.Account).where(M.Account.identifier == identifier))
+        if student is not None and db.get(M.CampusVerification, student.id) is None:
+            db.add(M.CampusVerification(account_id=student.id, university=profile["university"],
+                                        roll_number=profile["rollNumber"], status="PENDING"))
+    db.flush()
     # Demo medicine master rows (source DEMO_SEED), before the listings that point at them.
     for medicine_id, name, ingredients, form, pack, manufacturer, schedule, _price, _mrp in DEMO_MEDICINES:
         if db.get(M.Medicine, medicine_id) is not None:

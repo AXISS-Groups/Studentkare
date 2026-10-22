@@ -619,6 +619,11 @@ def signup(body: Signup, request: Request, response: Response, db: DBSession = D
         # Same transaction as the account: there is never an account without its consent record.
         db.add(M.ConsentRecord(id=str(uuid.uuid4()), account_id=account.id, version=body.consent.version,
                                purposes=body.consent.purposes, language=body.consent.language, recorded_at=time.time()))
+        # Sign-up says the account "starts with campus verification pending": the university
+        # and roll number given here are that request, the one the campus queue reads
+        # (GET /ops/campus/pending), the same as POST /campus/verification (live-run audit #4).
+        db.add(M.CampusVerification(account_id=account.id, university=" ".join(body.university.split())[:160],
+                                    roll_number=body.rollNumber.strip()[:80], status="PENDING"))
         referral_applied = False
         if body.referralCode:
             from services.rewards import attach_referral
