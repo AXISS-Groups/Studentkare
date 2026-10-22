@@ -46,8 +46,8 @@ export const landingModule: FeatureModule = {
     {
       path: '/consult',
       public: true,
-      load: () =>
-        import('./views/LandingConsultView').then((m) => ({ default: m.LandingConsultView })),
+      // A signed-in student books in the workspace; everyone else the public page.
+      load: () => import('./screens/ConsultScreen').then((m) => ({ default: m.ConsultScreen })),
     },
     {
       path: '/wellness',

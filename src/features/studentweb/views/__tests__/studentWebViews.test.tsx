@@ -315,7 +315,7 @@ describe('WebCheckout', () => {
     serve({ '/cart/validate': { serviceable: true, items: [{ id: 'a', available: true, reason: '' }] }, '/orders': order('new0000000', 'REQUESTED') });
     render(withCart(<><Seed items={[item('a')]} /><WebCheckoutView /></>));
     await settle();
-    expect(screen.getByText('Your cart · 1 items')).toBeInTheDocument();
+    expect(screen.getByText('Your cart · 1 item')).toBeInTheDocument();
     expect(screen.getByText(/Paying confers no access to anyone’s records/)).toBeInTheDocument();
     fill();
     fireEvent.click(screen.getByRole('button', { name: /Continue to pay/ }));
