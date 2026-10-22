@@ -209,6 +209,44 @@ jobs:
           pip install pyyaml
           python scripts/ops/check-env-passthrough.py
 
+  expo-bundle:
+    # Blocking: the phone app must bundle for both platforms. tsc on the native
+    # sources (step 2.5 above) does not catch a Metro/Babel config, alias or
+    # missing-package break; only a real export does.
+    name: Expo bundle (export android + ios)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+
+      - name: Install Frontend Dependencies
+        run: npm ci --legacy-peer-deps || npm install
+
+      - name: Resolved app config (version, build numbers, plugins)
+        run: npx expo config --type public --json > /dev/null
+
+      - name: Export Android bundle
+        env:
+          CI: '1'
+          EXPO_PUBLIC_API_BASE_URL: https://api.studentkare.co/api
+        run: npx expo export --platform android --output-dir "$RUNNER_TEMP/expo-android"
+
+      - name: Export iOS bundle
+        env:
+          CI: '1'
+          EXPO_PUBLIC_API_BASE_URL: https://api.studentkare.co/api
+        run: npx expo export --platform ios --output-dir "$RUNNER_TEMP/expo-ios"
+
+      - name: Bundle sizes
+        run: du -h "$RUNNER_TEMP"/expo-*/_expo/static/js/*/*.hbc
+
   design-coverage:
     # Report only: how many of the 239 canvas screens are built to their brief.
     # Never blocks a merge; the blocking check is icons:ratchet above.

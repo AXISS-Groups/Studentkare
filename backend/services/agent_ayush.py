@@ -64,6 +64,23 @@ _OUT_OF_SCOPE = [
     (re.compile(r"\bhow\s+(much|many)\s+\w+\s+should\s+i\s+take\b", re.IGNORECASE), "dosage"),
     (re.compile(r"\b(dose|dosage)\s+(of|for)\b", re.IGNORECASE), "dosage"),
     (re.compile(r"\bis\s+it\s+safe\s+to\s+(take|mix|combine)\b", re.IGNORECASE), "dosage"),
+    # Added 2026-10-23 from the gold set (tests/data/ayush_eval_set.json): a guard may
+    # only ever refuse more, never less.
+    (re.compile(r"\bwhat(['’]?s|\s+is)\s+wrong\s+with\s+me\b", re.IGNORECASE), "diagnosis"),
+    (re.compile(r"\b(which|what)\s+(medicine|medication|tablet|pill|antibiotic|drug|syrup)s?\s+(is|are|works?)\s+"
+                r"(best|good|better|right)\b", re.IGNORECASE), "prescribing"),
+    # Hinglish "which medicine": kaunsi / konsi dawai, goli, tablet.
+    (re.compile(r"\b(kaun\s*s[aei]|kon\s*s[aei]|kaunsi|konsi)\s+(dawai|dawa|dava|medicine|tablet|goli)\b",
+                re.IGNORECASE), "prescribing"),
+    (re.compile(r"\bshould\s+i\s+(take|start|stop)\b", re.IGNORECASE), "prescribing"),
+    (re.compile(r"\bmy\s+(rash|pain|fever|cough|cold|headache|symptoms?|lump|swelling|infection|wound|injury|"
+                r"acne|spots?|bleeding|periods?)\b[\w\s]{0,20}\b(serious|normal|bad|dangerous|worrying|okay|ok)\b",
+                re.IGNORECASE), "diagnosis"),
+    (re.compile(r"\bcan\s+i\s+take\s+(\d|two|three|four|five|another|more|extra|double)\b", re.IGNORECASE), "dosage"),
+    (re.compile(r"\b(\d+|two|three|four|five|double)\s+[\w-]+\s+(at\s+once|together|in\s+a\s+day|a\s+day|per\s+day)\b",
+                re.IGNORECASE), "dosage"),
+    (re.compile(r"\bhow\s+(much|many)\b[\w\s-]{0,40}\b(can|should|do|may|must)\s+i\s+(take|give|swallow)\b",
+                re.IGNORECASE), "dosage"),
 ]
 
 # Phrases that would mean the composed answer had drifted into advice. Checked on the
@@ -105,6 +122,20 @@ PERSONAL_RECORD_ANSWER = (
 _PERSONAL_RECORD = re.compile(
     r"\b(my|these|this)\b[\w\s]{0,30}?\b"
     r"(results?|reports?|readings?|tests?|scans?|x-?rays?|blood\s*work|vitals?)\b", re.IGNORECASE)
+
+# Asks about the student's own values or what their own document says: "is my
+# hemoglobin normal", "is my sugar high", "what did the doctor write in my prescription".
+_PERSONAL_VALUE = re.compile(
+    r"\b(is|are|was|were)\s+my\b[\w\s-]{0,30}?\b(normal|high|low|ok|okay|fine|bad|good|dangerous|serious|"
+    r"worrying|too\s+(high|low))\b", re.IGNORECASE)
+_PERSONAL_DOCUMENT = re.compile(
+    r"\b(what|which)\b[\w\s'-]{0,40}\b(write|wrote|written|say|says|said|mean|means|meant)\b[\w\s-]{0,20}?"
+    r"\b(in|on|by|about)?\s*my\s+(prescriptions?|records?|documents?|notes?|reports?|results?)\b", re.IGNORECASE)
+
+
+def asks_about_own_record(question: str) -> bool:
+    """Whether a question asks about the student's own record, which Ayush cannot read."""
+    return any(pattern.search(question) for pattern in (_PERSONAL_RECORD, _PERSONAL_VALUE, _PERSONAL_DOCUMENT))
 
 
 def _outcome(kind: str, answer: str, *, citations=None, score: float = 0.0,
@@ -310,7 +341,7 @@ def ask(db, question: str, *, account_id: str = "", conversation_id: str = "",
         return result
 
     # 3. The agent has no access to the clinical vault, by design.
-    if _PERSONAL_RECORD.search(text):
+    if asks_about_own_record(text):
         result = _outcome("REFUSED_PERSONAL", PERSONAL_RECORD_ANSWER, extra={"rule": RULE_NO_DIAGNOSIS})
         _record_turn(db, account_id, conversation_id, text, result, started)
         return result

@@ -7,7 +7,7 @@ import { hi } from '@/i18n/hi';
 
 const read = (file: string) => readFileSync(resolve(process.cwd(), file), 'utf8');
 const appJson = JSON.parse(read('app.json')) as {
-  expo: { ios: { infoPlist: Record<string, unknown> }; android: { permissions: string[] }; plugins: (string | [string, Record<string, string | boolean>])[] };
+  expo: { ios: { infoPlist: Record<string, unknown> }; android: { permissions: string[]; blockedPermissions: string[] }; plugins: (string | [string, Record<string, string | boolean>])[] };
 };
 
 describe('every OS permission the app declares has a screen that uses it', () => {
@@ -16,13 +16,33 @@ describe('every OS permission the app declares has a screen that uses it', () =>
     expect(app).not.toMatch(/registerForPushNotificationsAsync|requestPermissionsAsync|requestCameraPermissions/);
   });
 
-  it('the camera is used by the record-capture screen, as the permission text says', () => {
+  it('the camera is used by record capture, report upload and medicine info, as the permission text says', () => {
     expect(read('src/native/App.tsx')).toMatch(/name="CaptureRecord"/);
     expect(read('src/native/RecordCaptureScreen.tsx')).toMatch(/useCameraPermissions/);
+    expect(read('src/native/M2HealthScreens.tsx')).toMatch(/useCameraPermissions/);
+    expect(read('src/native/MedicineInfoScreens.tsx')).toMatch(/useCameraPermissions/);
     const text = String(appJson.expo.ios.infoPlist.NSCameraUsageDescription);
-    expect(text).toMatch(/prescription or health document/);
+    expect(text).toMatch(/prescription, lab report or health document/);
+    expect(text).toMatch(/medicine strip/);
     const plugin = appJson.expo.plugins.find((p) => Array.isArray(p) && p[0] === 'expo-camera');
     expect(Array.isArray(plugin) ? plugin[1].cameraPermission : '').toBe(text);
+  });
+
+  it('declares no microphone: the phone has no calls or recording', () => {
+    expect(appJson.expo.ios.infoPlist).not.toHaveProperty('NSMicrophoneUsageDescription');
+    expect(appJson.expo.android.permissions.join(' ')).not.toMatch(/RECORD_AUDIO|MODIFY_AUDIO_SETTINGS/);
+    expect(appJson.expo.android.blockedPermissions).toEqual(expect.arrayContaining(['android.permission.RECORD_AUDIO', 'android.permission.MODIFY_AUDIO_SETTINGS']));
+    const plugin = appJson.expo.plugins.find((p) => Array.isArray(p) && p[0] === 'expo-camera');
+    expect(Array.isArray(plugin) ? plugin[1].microphonePermission : true).toBe(false);
+    expect(Array.isArray(plugin) ? plugin[1].recordAudioAndroid : true).toBe(false);
+  });
+
+  it('location is approximate only (Find care sorts by distance)', () => {
+    expect(appJson.expo.android.permissions).toContain('android.permission.ACCESS_COARSE_LOCATION');
+    expect(appJson.expo.android.permissions).not.toContain('android.permission.ACCESS_FINE_LOCATION');
+    expect(appJson.expo.android.blockedPermissions).toEqual(expect.arrayContaining(['android.permission.ACCESS_FINE_LOCATION', 'android.permission.ACCESS_BACKGROUND_LOCATION']));
+    expect(appJson.expo.ios.infoPlist.NSLocationDefaultAccuracyReduced).toBe(true);
+    expect(read('src/native/deviceLocation.ts')).not.toMatch(/Accuracy\.(High|Highest|BestForNavigation)/);
   });
 
   it('notifications are used by medicine reminders', () => {

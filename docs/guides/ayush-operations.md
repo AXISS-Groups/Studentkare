@@ -17,7 +17,7 @@ Open **Super admin › Knowledge**. The **Ayush health** card says, in plain wor
 |---|---|---|
 | Status pill | **Answering**, **Needs a look**, or **Not answering** (no indexed source, so every question gets "I couldn't find this in StudentKare's help yet"). | See below. |
 | Sources published / indexed | Approved, unexpired sources, and how many are searchable. Should be equal. | Publishing indexes in the same request; the knowledge job (every 2 hours) and every restart repair anything missed. **Rebuild index** forces a full rebuild. |
-| StudentKare help articles live | The help pack (section 2). Normally "17 of 17". | Load the help pack. |
+| StudentKare help articles live | The help pack (section 2). Normally "19 of 19". | Load the help pack. |
 | How Ayush finds sources | **Keyword matching** (default), **Semantic search · model**, or **Semantic model not answering** (some passages fell back to keywords). | Section 3. |
 | How Ayush answers | **Quotes the source word for word** (no model) or **Rephrased by the on-prem model · model**. | Section 4. |
 | Model server | Reachable / not reachable / model not pulled (only when a model is configured). | Start Ollama, `ollama pull <model>`. |
@@ -28,12 +28,28 @@ The same data as JSON: `GET /api/ops/agents/ayush/health` (super admin).
 
 ## 2. The help pack (product help, not clinical)
 
-Seventeen articles about how StudentKare works live in `backend/content/ayush_help/*.md`: booking a
+Nineteen articles about how StudentKare works live in `backend/content/ayush_help/*.md`: booking a
 consult, medicines, lab tests, prescriptions, orders and returns, emergency card, SOS, crisis numbers,
 privacy, consent and sharing, deleting your account, plans and prices, campus verification, Find care,
-steps/water/reminders, sign-in and passcode, and what Ayush can do. Each one names, in a comment, the
-screens and endpoints it was written from. Prices and limits are written as `{{setting:key}}` and
-filled from the settings registry when published, so they always match what the server charges.
+Medicine info, steps/water/reminders, sign-in and passcode, getting help and support, and what Ayush
+can do. Each one names, in a comment, the screens and endpoints it was written from. Prices and limits
+are written as `{{setting:key}}` and filled from the settings registry when published, so they always
+match what the server charges.
+
+Each article's header can carry `keywords:`, the words and phrases students use for its topic
+("talk to a doctor", "otp not received", Hinglish "dawai"). They are never published or quoted; they
+only help retrieval find the article. Write each paragraph of an article about one thing: Ayush quotes
+the paragraph that answers the question, not the whole article.
+
+**Check a change against the gold set.** `backend/tests/data/ayush_eval_set.json` holds the questions
+students ask (English, Hinglish, Hindi, Telugu, typos, out-of-scope, clinical, own-record, crisis,
+injection) with the outcome and article each must get. `backend/tests/test_ayush_eval.py` runs them
+through Ayush with the pack loaded and fails CI if a refusal or crisis phrase regresses or retrieval
+falls below its floors:
+
+```bash
+cd backend && python -m pytest tests/test_ayush_eval.py -q -s -p no:cacheprovider
+```
 
 **It loads itself.** On every start the API publishes the pack (category *Product help*, reviewed,
 versioned) and indexes it. A changed article is published as the next version; an unchanged one is
@@ -60,8 +76,9 @@ a pull request (product help only, written from what the code does) and bump `re
 
 ## 3. Semantic retrieval (optional, on-prem)
 
-By default Ayush matches on words (a local, dependency-free embedder). It finds "book a consult" but
-not "see a doctor", and not a question typed in Hindi or Telugu. A multilingual embedding model on
+By default Ayush matches on words (a local, dependency-free embedder), with the help pack's keywords
+and typo correction. It finds "book a consult", "see a doctor" and "doctor appointment kaise book
+kare", but not a question typed in Hindi or Telugu script. A multilingual embedding model on
 your own Ollama fixes that. Never point these at a cloud API (Rule-C): the student's question is sent
 to it, after the guardrail masks emails, phone numbers, Aadhaar, ABHA numbers and addresses, and roll
 numbers.
@@ -91,6 +108,11 @@ With a semantic model, a passage that shares no word with the question is admitt
 `ayush.semantic_admit_similarity` setting (default 0.8, deliberately strict). Calibrate it for your
 model before lowering it: ask 20 real questions, including Hindi/Telugu ones, and check the citations.
 Change it in **Settings** (reason required, audited).
+
+In every mode a passage must hold the `ayush.min_term_overlap` share of the question's subject words
+(default 0.5; title and help-pack keywords count, a typo counts a little less, a word that is in no
+article counts double against it). Lower it and off-topic questions ("cricket score today") start
+getting answers; raise it and paraphrases stop finding their article. Re-run the gold set after a change.
 
 Vectors are stored as JSON in `care_knowledge_chunks` and searched in Python. That is fine for
 hundreds of sources. pgvector is not used yet: it needs the extension on the production Postgres, a

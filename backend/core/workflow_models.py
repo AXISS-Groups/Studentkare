@@ -1846,3 +1846,73 @@ def _history_is_append_only(mapper, connection, target):
 
 event.listen(SettingOverrideHistory, "before_update", _history_is_append_only)
 event.listen(SettingOverrideHistory, "before_delete", _history_is_append_only)
+
+
+class Post(Base):
+    """A News or Blog post (the newsroom), written by the team in one of the SK templates.
+
+    Platform plane: public editorial content that never names or describes a
+    student (services/newsroom.py refuses nothing about a person because nothing
+    about a person is ever read into it). ``template`` fixes the layout, the
+    cover and the body blocks allowed; ``section`` follows from it (blog or news).
+
+    A post is public only while ``status`` is PUBLISHED, or SCHEDULED with
+    ``publish_at`` in the past. A HEALTH_TIP is public only while a clinician's
+    approval (``reviewed_hash``) still equals the hash of its current content: any
+    edit after the review takes it off the site until it is reviewed again.
+    ``sample`` rows exist only in development and test builds (services/demo_seed.py).
+    """
+    __tablename__ = "care_posts"
+    __table_args__ = (
+        CheckConstraint("status IN ('DRAFT', 'SCHEDULED', 'PUBLISHED', 'UNPUBLISHED')", name="ck_care_posts_status"),
+        CheckConstraint("section IN ('BLOG', 'NEWS')", name="ck_care_posts_section"),
+    )
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    slug: Mapped[str] = mapped_column(String(80), unique=True, index=True)
+    template: Mapped[str] = mapped_column(String(20), index=True)   # HEALTH_TIP | CAMPUS_NEWS | PRODUCT_UPDATE | PRESS_RELEASE | STORY
+    section: Mapped[str] = mapped_column(String(8), index=True)     # BLOG | NEWS, from the template
+    title: Mapped[str] = mapped_column(String(160))
+    summary: Mapped[str] = mapped_column(String(300), default="")
+    body: Mapped[list] = mapped_column(JSON, default=list)          # the template's blocks (services/newsroom.py)
+    tags: Mapped[list] = mapped_column(JSON, default=list)
+    cover_alt: Mapped[str] = mapped_column(String(200), default="")
+    cover_art: Mapped[str] = mapped_column(String(40), default="")  # one of the template's kit art names, or ""
+    seo_title: Mapped[str] = mapped_column(String(70), default="")
+    seo_description: Mapped[str] = mapped_column(String(160), default="")
+    featured: Mapped[bool] = mapped_column(Boolean, default=False)
+    author_id: Mapped[str] = mapped_column(String, default="")       # a team member's account
+    status: Mapped[str] = mapped_column(String(12), default="DRAFT", index=True)
+    publish_at: Mapped[float] = mapped_column(Float, default=0.0, index=True)
+    first_published_at: Mapped[float] = mapped_column(Float, default=0.0)
+    reviewed_by: Mapped[str | None] = mapped_column(String, nullable=True, default=None)  # an NMC_DOCTOR account id
+    reviewed_at: Mapped[float] = mapped_column(Float, default=0.0)
+    reviewed_hash: Mapped[str] = mapped_column(String(64), default="")
+    sample: Mapped[bool] = mapped_column(Boolean, default=False)
+    created_by: Mapped[str] = mapped_column(String, default="")
+    created_at: Mapped[float] = mapped_column(Float, default=0.0)
+    updated_by: Mapped[str] = mapped_column(String, default="")
+    updated_at: Mapped[float] = mapped_column(Float, default=0.0)
+
+
+class PostEvent(Base):
+    """Append-only trail of a post: created, edited, reviewed, published, … (ids and hashes, no text)."""
+    __tablename__ = "care_post_events"
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    post_id: Mapped[str] = mapped_column(String, index=True)
+    action: Mapped[str] = mapped_column(String(24))
+    actor_id: Mapped[str] = mapped_column(String, default="")
+    actor_role: Mapped[str] = mapped_column(String(20), default="")
+    content_hash: Mapped[str] = mapped_column(String(64), default="")
+    created_at: Mapped[float] = mapped_column(Float, default=0.0, index=True)
+
+
+class PostImage(Base):
+    """An image placed in a post's body, virus-scanned before it was stored (like care_catalog_images)."""
+    __tablename__ = "care_post_images"
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    post_id: Mapped[str] = mapped_column(String, index=True)
+    filename: Mapped[str] = mapped_column(String(200), default="")
+    mime_type: Mapped[str] = mapped_column(String(40))
+    content: Mapped[bytes] = mapped_column(LargeBinary)
+    uploaded_by: Mapped[str] = mapped_column(String, default="")
+    created_at: Mapped[float] = mapped_column(Float, default=0.0)

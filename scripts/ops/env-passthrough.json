@@ -1,5 +1,5 @@
 {
-  "_comment": "Read by scripts/ops/check-env-passthrough.py. Every environment variable the backend or the web build reads must reach production through docker-compose.prod.yml AND the Helm chart, unless it is listed here with the reason it must not (or need not) be set in production. Keep entries sorted.",
+  "_comment": "Read by scripts/ops/check-env-passthrough.py. Every environment variable the backend or the web build reads must reach production through docker-compose.prod.yml AND the Helm chart, unless it is listed here with the reason it must not (or need not) be set in production. Keep entries sorted. nativeBuildTime: variables the Expo app or app.config.ts read at EAS build time; they never reach the servers, so each says where it is set.",
   "backendExempt": {
     "APP_VERSION": "Baked into the image by release.yml (build arg), reported by /api/info.",
     "DEV_OTP_CONSOLE": "Development/staging only: prints OTPs to the log. Must stay unset in production.",
@@ -18,6 +18,17 @@
   "frontendExempt": {
     "VITE_ALLOW_OFFLINE_AUTH": "Dev server only (gated on import.meta.env.DEV); never in a production build.",
     "VITE_DEMO_DATA": "Dev server only (gated on import.meta.env.DEV); never in a production build."
+  },
+  "nativeBuildTime": {
+    "EAS_PROJECT_ID": "EAS environment variable (docs: eas env:create); app.config.ts extra.eas.projectId.",
+    "EXPO_OWNER": "EAS environment variable; app.config.ts owner.",
+    "EXPO_PUBLIC_API_BASE_URL": "eas.json build.base.env (https://api.studentkare.co/api); CI Expo job sets it too.",
+    "EXPO_PUBLIC_APP_ENV": "eas.json per profile (development / preview / production); the native Sentry environment.",
+    "EXPO_PUBLIC_SENTRY_DSN": "EAS environment variable; native crash reporting is off without it.",
+    "EXPO_PUBLIC_SITE_URL": "eas.json build.base.env (https://studentkare.co).",
+    "SENTRY_ORG": "EAS environment variable; enables the Sentry source-map upload plugin with SENTRY_PROJECT.",
+    "SENTRY_PROJECT": "EAS environment variable; see SENTRY_ORG.",
+    "SENTRY_URL": "EAS environment variable, optional (default https://sentry.io/)."
   },
   "retired": {
     "RATE_LIMIT_API_PER_MINUTE": "Ignored since #221; use RATE_LIMIT_API_PER_IP_PER_MINUTE / RATE_LIMIT_API_PER_ACCOUNT_PER_MINUTE."

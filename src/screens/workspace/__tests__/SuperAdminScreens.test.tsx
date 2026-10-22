@@ -53,7 +53,7 @@ beforeEach(() => {
 
 describe('routes', () => {
   it('gives every admin route a canonical screen, reachable only by a super admin', () => {
-    expect(ADMIN_ROUTES.length).toBe(40);
+    expect(ADMIN_ROUTES.length).toBe(41);
     ADMIN_ROUTES.forEach(route => {
       expect(isRoutePath(route)).toBe(true);
       expect(superAdminScreen(route), route).not.toBeNull();

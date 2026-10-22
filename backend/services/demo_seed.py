@@ -158,7 +158,7 @@ def seed_demo_data(db: Session, include_demo_users: bool = True) -> dict:
     which is what ``seed_catalog_data`` uses to populate a deployed environment.
     """
     now = time.time()
-    created = {"accounts": 0, "catalog": 0, "medicines": 0, "content": 0, "articles": 0}
+    created = {"accounts": 0, "catalog": 0, "medicines": 0, "content": 0, "articles": 0, "posts": 0}
 
     accounts = [
         (DEMO_STUDENT, "Demo Student", "STUDENT", "EMAIL", {"dob": "2000-01-01", "university": "Demo University", "rollNumber": "DEMO-001", "ageVerified": False, "isVerifiedStudent": False}),
@@ -293,6 +293,11 @@ def seed_demo_data(db: Session, include_demo_users: bool = True) -> dict:
             db.add(M.Article(id=entry["id"], tag=entry["tag"], title=entry["title"], read_time=entry["read_time"],
                              color=entry["color"], body=entry["body"], active=True, sort=0))
             created["articles"] += 1
+
+    # Newsroom samples ("Sample:" titles, a Sample chip on the site): demo builds only, never a deployed catalogue seed.
+    if include_demo_users and demo_accounts_enabled():
+        from services.newsroom_samples import seed_sample_posts
+        created["posts"] = seed_sample_posts(db, now)
 
     db.commit()
     return created

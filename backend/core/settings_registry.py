@@ -233,6 +233,24 @@ declare("care_directory.location_timeout_seconds", INT, 15, area="care_directory
 declare("care_directory.location_max_age_seconds", INT, 120, area="care_directory", unit="seconds", minimum=0,
         maximum=900, public=True, description="Oldest device location fix the app reuses to sort by distance.")
 
+# --- newsroom: News and Blog (services/newsroom.py) ---------------------------------
+# How many posts a list page, a feed and the related list show, how long public
+# readers (and the CDN) may keep a response, and the size of an image placed in a post.
+declare("newsroom.page_size", INT, 9, area="newsroom", unit="posts", minimum=3, maximum=30, public=True,
+        description="Posts on one page of the Blog or News list.")
+declare("newsroom.related_count", INT, 3, area="newsroom", unit="posts", minimum=0, maximum=6, public=True,
+        description="Related posts shown under a post.")
+declare("newsroom.home_teasers", INT, 2, area="newsroom", unit="posts", minimum=0, maximum=4, public=True,
+        description="Latest health tips on the student Home card ('From the StudentKare blog').")
+declare("newsroom.feed_items_max", INT, 30, area="newsroom", unit="posts", minimum=5, maximum=100,
+        description="Most posts in one RSS or Atom feed.")
+declare("newsroom.public_cache_seconds", INT, 120, area="newsroom", unit="seconds", minimum=0, maximum=3600,
+        description="How long a public post response may be cached (a scheduled post can appear this much later).")
+declare("newsroom.image_max_bytes", INT, 5 * 1024 * 1024, area="newsroom", unit="bytes", minimum=256 * 1024,
+        maximum=10 * 1024 * 1024, description="Largest image an editor can place in a post.")
+declare("newsroom.words_per_minute", INT, 200, area="newsroom", unit="words per minute", minimum=100, maximum=400,
+        public=True, description="Reading speed used for a post's reading time.")
+
 # --- medicine information (services/medicine_info.py; plan tier1-medicine-info-2026-10-22) ---
 # The "Who is it for?" age bands. The band a person picks stays on the device;
 # these only say where each band starts. Below ask_doctor_below_years the screen
@@ -440,6 +458,12 @@ declare("support.inquiries_per_ip_per_hour", INT, 10, area="support", unit="inqu
 # it against the model in use (docs/guides/ayush-operations.md) before lowering it.
 declare("ayush.semantic_admit_similarity", FLOAT, 0.8, area="ayush", unit="cosine similarity", minimum=0.5,
         maximum=0.99, description="Semantic mode: lowest similarity at which a passage with no shared word is admitted.")
+# The share of a question's subject words (after typo correction, counting the
+# article's title and help-pack keywords) a passage must contain to be considered at
+# all. Half keeps "cricket score today" from matching an article that says "today";
+# measured on the gold set in backend/tests/test_ayush_eval.py, re-run it after a change.
+declare("ayush.min_term_overlap", FLOAT, 0.5, area="ayush", unit="share of subject words", minimum=0.2,
+        maximum=1.0, description="Lowest share of a question's subject words a passage must contain to be retrieved.")
 
 # --- platform --------------------------------------------------------------
 # A name zoneinfo does not know (in an override or a student's preference) is

@@ -388,3 +388,43 @@ def test_ordinary_text_is_not_masked():
     for text in ("Student Plus costs ₹2,199 for 3 months", "Book a slot on 2026-10-22 at 10:30",
                  "Call 112 or Tele-MANAS 14416, or 108 for an ambulance", "The poison helpline is 1800-116-117"):
         assert mask_pii(text) == (text, 0)
+
+
+# ── Keywords and paragraph passages (2026-10-23) ──────────────────────────────
+
+def test_keywords_help_retrieval_and_are_never_published(harness):
+    _client, factory, _codes = harness
+    _publish_pack(factory)
+    keywords = help_pack.retrieval_keywords()
+    assert "talk to a doctor" in keywords["kb_help_booking-a-consult"]
+    with factory() as db:
+        for row in db.query(M.KnowledgeSource).filter(M.KnowledgeSource.id.like("kb_help_%")).all():
+            assert "keywords:" not in row.content and "talk to a doctor" not in row.content.lower()
+    answer = _ask(factory, "I want to talk to a doctor")
+    assert answer["citations"][0]["sourceId"] == "kb_help_booking-a-consult"
+
+
+def test_the_answer_quotes_the_paragraph_that_answers(harness):
+    _client, factory, _codes = harness
+    _publish_pack(factory)
+    answer = _ask(factory, "can i cancel my appointment?")
+    assert "cancel a requested or a confirmed appointment" in answer["answer"]
+
+
+def test_a_change_of_chunking_re_indexes_at_the_next_sync(harness):
+    _client, factory, _codes = harness
+    _publish_pack(factory)
+    with factory() as db:
+        chunk = db.query(M.KnowledgeChunk).filter(M.KnowledgeChunk.source_id == "kb_help_sos").first()
+        chunk.content = "an old passage made by an older chunker"
+        db.commit()
+        assert vector_store.sync_index(db)["indexed"] == 1
+        contents = [c.content for c in db.query(M.KnowledgeChunk).filter(M.KnowledgeChunk.source_id == "kb_help_sos")]
+    assert "an old passage made by an older chunker" not in contents
+
+
+def test_off_topic_questions_sharing_one_word_get_no_answer(harness):
+    _client, factory, _codes = harness
+    _publish_pack(factory)
+    for question in ("what's the cricket score today?", "write me a poem about love"):
+        assert _ask(factory, question)["outcome"] == "NO_SOURCE", question

@@ -4,7 +4,7 @@ import { useT } from '@/i18n';
 
 /** `seo` names the `shopweb.seo.<seo>.title` / `.description` copy; keywords stay English for crawlers. */
 interface RouteMeta {
-  seo: 'home' | 'campuses' | 'clinicians' | 'partnerships' | 'labTests' | 'shop' | 'care' | 'pricing' | 'privacy' | 'terms' | 'lifeshare';
+  seo: 'home' | 'campuses' | 'clinicians' | 'partnerships' | 'labTests' | 'shop' | 'care' | 'pricing' | 'privacy' | 'terms' | 'lifeshare' | 'blog' | 'news';
   keywords?: string;
   canonicalPath?: string;
 }
@@ -27,9 +27,12 @@ const PUBLIC_SEO_CONFIG: Record<string, RouteMeta> = {
   '/privacy': { seo: 'privacy', keywords: 'health data privacy, consent, student health record privacy' },
   '/terms': { seo: 'terms', keywords: 'studentkare terms, campus health terms of service, healthcare platform agreement' },
   '/lifeshare': { seo: 'lifeshare', keywords: 'emergency helpline India, blood group compatibility, campus emergency' },
+  '/blog': { seo: 'blog', keywords: 'student health tips, campus wellbeing, clinician reviewed health advice' },
+  '/news': { seo: 'news', keywords: 'studentkare news, campus health news, studentkare product updates' },
 };
 
 const DEFAULT_BASE_URL = 'https://studentkare.co';
+const POST_PAGE = /^\/(blog|news)\/[^/]+$/;
 
 export function SEOHead() {
   const t = useT();
@@ -37,6 +40,8 @@ export function SEOHead() {
   const rawPath = location.pathname.replace(/\/$/, '') || '/';
 
   useEffect(() => {
+    // A post page (/blog/:slug, /news/:slug) writes its own title, image and JSON-LD (features/newsroom).
+    if (POST_PAGE.test(rawPath)) return;
     const meta = PUBLIC_SEO_CONFIG[rawPath];
     const seo = meta?.seo ?? 'default';
     const routeConfig = {

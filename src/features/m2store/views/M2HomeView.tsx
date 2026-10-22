@@ -72,6 +72,8 @@ export interface M2HomeViewProps {
   recent: readonly LiveCatalogItem[];
   /** Under the board (the Expo app keeps its other destinations and sign-out there). */
   footer?: React.ReactNode;
+  /** "From the StudentKare blog": the latest reviewed health tips (features/newsroom M2BlogCard). Editorial, never about the student. */
+  blog?: React.ReactNode;
 }
 
 const NOON = 12;
@@ -192,7 +194,7 @@ function CampusTile({ icon, hue, title, onPress, testID }: { icon: 'qr-code-2' |
   );
 }
 
-export function M2HomeView({ name, campus, verified, data, links, cart, recent, footer }: M2HomeViewProps): React.ReactElement {
+export function M2HomeView({ name, campus, verified, data, links, cart, recent, footer, blog }: M2HomeViewProps): React.ReactElement {
   const t = useT();
   useOwnPhoneChrome();
   const phone = orderLinePhone();
@@ -276,6 +278,8 @@ export function M2HomeView({ name, campus, verified, data, links, cart, recent, 
         </View>
         <ConsultCard data={data.consult} links={links} />
       </Rise>
+
+      {blog ? <Rise index={6} style={styles.gutter}>{blog}</Rise> : null}
 
       <Rise index={6} style={styles.gutter}>
         <M2SectionHead title={t('m2.home.concern')} action={links.services.medicines ? { label: t('m2.seeAll'), spoken: t('m2.home.seeAllMedicines'), onPress: links.services.medicines } : undefined} />

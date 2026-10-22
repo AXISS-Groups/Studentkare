@@ -46,3 +46,4 @@ User-agent: CCBot
 Allow: /
 
 Sitemap: https://studentkare.co/sitemap.xml
+Sitemap: https://studentkare.co/sitemap-posts.xml

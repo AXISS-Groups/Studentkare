@@ -8,8 +8,10 @@ The retrieval half of the RAG pipeline. Three things it does deliberately:
 time as well as query time, so an unapproved source cannot reach a student even if a
 later query forgets to filter.
 
-**It chunks on sentence boundaries.** A passage cut mid-sentence retrieves badly and
-reads worse when quoted back with a citation.
+**It chunks on paragraphs, then sentences.** A paragraph of an article is one topic,
+so it is the passage quoted back: "how do I cancel" quotes the cancelling paragraph,
+not the opening one. A paragraph longer than the target is split on sentence
+boundaries; a passage cut mid-sentence retrieves badly and reads worse when quoted.
 
 **It re-ranks, it does not only rank.** Pure vector similarity on a morphological
 embedder over-rewards long chunks that share common substrings, so the score is
@@ -18,8 +20,10 @@ answer can be recognised as one.
 """
 from __future__ import annotations
 
+import difflib
 import re
 import time
+import unicodedata
 import uuid
 
 from sqlalchemy import delete, select
@@ -42,9 +46,8 @@ RELEVANCE_FLOOR = 0.25
 # character similarity says. This gate is what the local embedder makes necessary:
 # hashed n-grams over English share enough common substrings ("tion", "the", "ing")
 # that unrelated text still scores 0.3-0.5 cosine. Term overlap is the trustworthy
-# signal here and similarity re-ranks within what it admits. A real semantic model
-# would justify lowering this, which is one of the things swapping one in buys.
-MIN_TERM_OVERLAP = 0.2
+# signal here and similarity re-ranks within what it admits. The share required is
+# the ``ayush.min_term_overlap`` setting (default 0.5, core/settings_registry.py).
 
 # The shortest question (letters, without spaces) a semantic model may match when it
 # carries no English subject word, e.g. a question typed in Devanagari or Telugu.
@@ -66,7 +69,30 @@ over same too very own just now get got use used using please tell know need
 """.split())
 
 
+_PARAGRAPH = re.compile(r"\n\s*\n")
+
+
 def split_into_chunks(text: str) -> list[str]:
+    """One passage per paragraph; long paragraphs grouped by sentence, short ones joined."""
+    body = (text or "").strip()
+    if not body:
+        return []
+    pieces: list[str] = []
+    for paragraph in _PARAGRAPH.split(body):
+        pieces.extend(_sentence_chunks(" ".join(paragraph.split())))
+    # A short paragraph ("Not available yet.") is folded into its neighbour rather
+    # than indexed as its own weak passage.
+    chunks: list[str] = []
+    for piece in pieces:
+        if chunks and (len(piece) < MIN_CHUNK_CHARS or len(chunks[-1]) < MIN_CHUNK_CHARS) \
+                and len(chunks[-1]) + len(piece) <= TARGET_CHUNK_CHARS + MIN_CHUNK_CHARS:
+            chunks[-1] = f"{chunks[-1]} {piece}"
+        else:
+            chunks.append(piece)
+    return [chunk[:2000] for chunk in chunks]
+
+
+def _sentence_chunks(text: str) -> list[str]:
     """Group sentences up to the target size, overlapping by one."""
     body = (text or "").strip()
     if not body:
@@ -92,7 +118,7 @@ def split_into_chunks(text: str) -> list[str]:
     if len(chunks) > 1 and len(chunks[-1]) < MIN_CHUNK_CHARS:
         chunks[-2] = f"{chunks[-2]} {chunks[-1]}"
         chunks.pop()
-    return [chunk[:2000] for chunk in chunks]
+    return chunks
 
 
 def _approved_sources(db) -> list[M.KnowledgeSource]:
@@ -195,13 +221,20 @@ def reindex_all(db) -> dict:
     }
 
 
+def _chunked_as_today(source: M.KnowledgeSource, chunks: list[M.KnowledgeChunk]) -> bool:
+    """Whether the stored passages are what the current chunker makes of the source,
+    so a change to chunking re-indexes at the next sync like a change of model."""
+    return [chunk.content for chunk in chunks] == split_into_chunks(f"{source.title}. {source.content}")
+
+
 def sync_index(db, *, commit: bool = True) -> dict:
     """Bring the index in line with the approved set, touching only what is out of date.
 
     Removes passages of sources no longer approved (unpublished, unreviewed, expired),
     and (re)indexes every approved source that is missing, was edited since it was
-    indexed, or was embedded by a different model than the active one — which is how
-    a change of ``EMBEDDING_PROVIDER`` or ``EMBEDDING_MODEL`` re-embeds everything.
+    indexed, was embedded by a different model than the active one — which is how
+    a change of ``EMBEDDING_PROVIDER`` or ``EMBEDDING_MODEL`` re-embeds everything —
+    or was chunked differently from how the current chunker would.
     Runs at startup, after every publish/edit/unpublish, and in the periodic
     knowledge job. ``commit=False`` flushes only (the scheduler commits).
     """
@@ -218,9 +251,9 @@ def sync_index(db, *, commit: bool = True) -> dict:
 
     indexed = 0
     for source in sources:
-        chunks = by_source.get(source.id, [])
+        chunks = sorted(by_source.get(source.id, []), key=lambda chunk: chunk.ordinal)
         if chunks and all(chunk.source_version == source.version and chunk.embedder == active
-                          for chunk in chunks):
+                          for chunk in chunks) and _chunked_as_today(source, chunks):
             continue
         index_source(db, source)
         indexed += 1
@@ -256,6 +289,9 @@ MIN_STEM_CHARS = 4
 
 
 def _stem(word: str) -> str:
+    # A plain plural of a short word ("sees", "labs", "tabs"), but not "class" or "status".
+    if word.endswith("s") and not word.endswith(("ss", "us", "is")) and len(word) == MIN_STEM_CHARS:
+        return word[:-1]
     for suffix in _SUFFIXES:
         if word.endswith(suffix) and len(word) - len(suffix) >= MIN_STEM_CHARS:
             word = word[: -len(suffix)]
@@ -267,17 +303,123 @@ def _stems(text: str) -> set[str]:
     return {_stem(word) for word in content_terms(text)}
 
 
+# Words that carry no subject in the questions students type, in Hinglish and
+# Tenglish as well as English. Retrieval only: grounding (``support``) is unchanged.
+_RETRIEVAL_STOPWORDS = frozenset("""
+want wants like able okay today tomorrow yesterday tonight cant dont wont didnt
+until while since still yet already
+kaise kaisa kare karu karna karen karein karo kya hai hain kab kahan kaha kitne kitna
+kitni milega milegi mujhe mera meri mere hum aap apna apni kaun kaunsa kaunsi nahi aur
+bhi ela enti emi cheyali cheyyali ekkada eppudu naku
+""".split())
+
+# A question word not found anywhere in the index is matched to the closest indexed
+# word at or above this similarity ("bok" -> "book", "pasword" -> "password"), and
+# counts for less than an exact match. Strict on purpose: "score" must not become "store".
+FUZZY_CUTOFF = 0.85
+FUZZY_WEIGHT = 0.8
+# A question word that appears nowhere in the index, even allowing for a typo
+# ("cricket", "granite", "capital"), says the question is about something the help
+# does not cover, so it counts double against the overlap.
+UNKNOWN_WEIGHT = 2.0
+MIN_COVERED_TERMS = 2
+
+# A passage whose source title names what the question asks about ranks above one
+# that only mentions it ("Deleting your account" over a privacy page that links to it).
+TITLE_WEIGHT = 0.15
+# Among the passages of one article, the one whose own words answer the question is
+# the one quoted ("how do I cancel" quotes the cancelling paragraph).
+PASSAGE_WEIGHT = 0.2
+# A help-pack keyword phrase found whole in the question ("where is my order") is the
+# strongest sign of which article is meant.
+PHRASE_WEIGHT = 0.2
+
+
+# Devanagari and Telugu words, for retrieval only: a question typed in Hindi or Telugu
+# (including the Ask Ayush starter chips in those languages) can match an article's
+# Hindi or Telugu keywords. Not stemmed; joiners removed and the text NFC-normalised.
+_INDIC_WORD = re.compile(r"[\u0900-\u097F\u0C00-\u0C7F]{2,}")
+_JOINERS = dict.fromkeys(map(ord, "\u200c\u200d"))
+_INDIC_STOPWORDS = frozenset("""
+कैसे कैसा करें करूँ करूं करना करे करो होता होती है हैं का की के को से में पर मैं मेरा मेरी मेरे
+क्या कब कहाँ कहां किसी कोई एक और भी नहीं चाहिए चाहता चाहती साथ लिए
+ఎలా చేయాలి చేయాలో చేస్తారు నా నాకు నేను ఏమిటి ఎక్కడ ఎప్పుడు ఒక ఒక్క మరియు కూడా లేదు జరుగుతుంది
+పనిచేస్తుంది
+""".split())
+
+
+def _stems_of(words) -> set[str]:
+    return {_stem(word) for word in words}
+
+
+def _indic_terms(text: str) -> set[str]:
+    normal = unicodedata.normalize("NFC", (text or "").translate(_JOINERS))
+    return {word for word in _INDIC_WORD.findall(normal) if word not in _INDIC_STOPWORDS}
+
+
+def _retrieval_terms(text: str) -> set[str]:
+    return (_stems_of(word for word in content_terms(text) if word not in _RETRIEVAL_STOPWORDS)
+            | _indic_terms(text))
+
+
 def _term_overlap(query: str, chunk: str) -> float:
     """Proportion of the query's subject terms present in the chunk (light stemming)."""
-    terms = _stems(query)
+    terms = _retrieval_terms(query)
     if not terms:
         return 0.0
     return len(terms & _stems(chunk)) / len(terms)
 
 
-# A passage whose source title names what the question asks about ranks above one
-# that only mentions it ("Deleting your account" over a privacy page that links to it).
-TITLE_WEIGHT = 0.15
+def _phrase_text(text: str) -> str:
+    return f" {' '.join(re.findall(r'[a-z0-9]+', (text or '').lower()))} "
+
+
+def _source_keywords() -> dict[str, tuple[str, ...]]:
+    """Help-pack keywords per source id (services.help_pack). Retrieval only."""
+    try:
+        from services import help_pack
+        return help_pack.retrieval_keywords()
+    except Exception:  # noqa: BLE001 — without keywords, retrieval still works on the text
+        return {}
+
+
+class _Query:
+    """A question's subject terms, typo-corrected against the words in the index."""
+
+    def __init__(self, text: str, vocabulary: set[str]):
+        self.terms = _retrieval_terms(text)
+        self.phrase_text = _phrase_text(text)
+        self.fuzzy: dict[str, str] = {}
+        unknown = 0
+        for term in self.terms - vocabulary:
+            close = difflib.get_close_matches(term, vocabulary, n=1, cutoff=FUZZY_CUTOFF)
+            if close:
+                self.fuzzy[term] = close[0]
+            else:
+                unknown += 1
+        self.weight = len(self.terms) + (UNKNOWN_WEIGHT - 1) * unknown
+        self.known = len(self.terms) - unknown
+
+    def overlap(self, words: set[str]) -> float:
+        """Share of the question's terms found in ``words``; corrected typos count less,
+        words the index has never seen count double against it."""
+        if not self.terms:
+            return 0.0
+        hits = sum(1.0 if term in words else FUZZY_WEIGHT if self.fuzzy.get(term) in words else 0.0
+                   for term in self.terms)
+        return hits / self.weight
+
+    def covers_known(self, words: set[str]) -> bool:
+        """Every word of the question the index knows is in ``words``, and there are at
+        least two: "this assignment is killing me, how do I book a consult" is about
+        booking even though "assignment" and "killing" are in no article. One known
+        word among unknown ones ("cricket score") is not enough."""
+        matched = sum(1 for term in self.terms if term in words or self.fuzzy.get(term) in words)
+        return matched >= MIN_COVERED_TERMS and matched == self.known
+
+    def phrase_bonus(self, phrases) -> float:
+        whole = any(" " in phrase and _phrase_text(phrase) in self.phrase_text for phrase in phrases)
+        return PHRASE_WEIGHT if whole else 0.0
 
 
 def _query_vectors(text: str, names: set[str]) -> dict[str, list[float] | None]:
@@ -306,16 +448,24 @@ def _semantic_admit_similarity(db) -> float:
     return float(setting("ayush.semantic_admit_similarity", db))
 
 
+def _min_term_overlap(db) -> float:
+    from core.settings_registry import setting
+    return float(setting("ayush.min_term_overlap", db))
+
+
 def search(db, query: str, *, limit: int = 4, floor: float = RELEVANCE_FLOOR) -> list[dict]:
     """Retrieve the best approved passages for a query, best first.
 
     Returns an empty list rather than a weak best guess when nothing clears the floor —
     the agent's refusal depends on that being an honest signal.
 
-    Term overlap establishes the subject and similarity orders what survives. With a
-    semantic model, a passage that shares no word with the question (a Hindi or Telugu
-    question, a synonym) is admitted only when its similarity reaches the
-    ``ayush.semantic_admit_similarity`` setting.
+    Term overlap establishes the subject and similarity orders what survives. A
+    passage's terms are its own words, its article's title and, for help-pack
+    articles, the article's keywords; a misspelt question word is matched to the
+    closest indexed word. A passage must hold the ``ayush.min_term_overlap`` share of
+    the question's subject words. With a semantic model, a passage that shares no word
+    with the question (a Hindi or Telugu question, a synonym) is admitted only when its
+    similarity reaches the ``ayush.semantic_admit_similarity`` setting.
     """
     text = (query or "").strip()
     if not text:
@@ -324,7 +474,7 @@ def search(db, query: str, *, limit: int = 4, floor: float = RELEVANCE_FLOOR) ->
     semantic_on = embeddings.is_semantic()
     # A query with no subject words ("what is this?") cannot be matched honestly on
     # words; only a semantic model may still try, and only on a non-trivial question.
-    if not content_terms(text) and not (semantic_on and len(text.replace(" ", "")) >= MIN_SEMANTIC_QUERY_CHARS):
+    if not _retrieval_terms(text) and not (semantic_on and len(text.replace(" ", "")) >= MIN_SEMANTIC_QUERY_CHARS):
         return []
 
     sources = {source.id: source for source in _approved_sources(db)}
@@ -333,29 +483,46 @@ def search(db, query: str, *, limit: int = 4, floor: float = RELEVANCE_FLOOR) ->
 
     chunks = db.scalars(select(M.KnowledgeChunk).where(
         M.KnowledgeChunk.source_id.in_(sources.keys()))).all()
+    keywords = _source_keywords()
+    title_terms = {source_id: _stems(source.title) for source_id, source in sources.items()}
+    keyword_terms = {source_id: set().union(*(_retrieval_terms(phrase) for phrase in keywords.get(source_id, ())))
+                     for source_id in sources}
+    # A passage's own words, without the title the first passage opens with: the title
+    # already counts for every passage of its article.
+    chunk_terms = {chunk.id: _stems(chunk.content.removeprefix(f"{sources[chunk.source_id].title}. "))
+                   for chunk in chunks}
+    vocabulary = set().union(*chunk_terms.values(), *title_terms.values(), *keyword_terms.values())
+    question = _Query(text, vocabulary)
+
     vectors = _query_vectors(text, {chunk.embedder for chunk in chunks})
     admit = _semantic_admit_similarity(db) if semantic_on else None
+    min_overlap = _min_term_overlap(db)
 
     scored = []
     for chunk in chunks:
+        source = sources[chunk.source_id]
+        own = chunk_terms[chunk.id]
+        words = own | title_terms[source.id] | keyword_terms[source.id]
+        overlap = question.overlap(words)
+        on_subject = overlap >= min_overlap or question.covers_known(words)
         query_vector = vectors.get(chunk.embedder)
-        overlap = _term_overlap(text, chunk.content)
         if query_vector is None:
             # No usable vector for this passage's embedder: words alone.
-            if overlap < MIN_TERM_OVERLAP:
+            if not on_subject:
                 continue
             similarity, score = 0.0, overlap
         else:
             similarity = embeddings.cosine(query_vector, list(chunk.vector or []))
             semantic_match = (admit is not None and embeddings.is_semantic_name(chunk.embedder)
                               and similarity >= admit)
-            if overlap < MIN_TERM_OVERLAP and not semantic_match:
+            if not on_subject and not semantic_match:
                 continue
             score = 0.6 * similarity + 0.4 * overlap
         if score < floor:
             continue
-        source = sources[chunk.source_id]
-        score += TITLE_WEIGHT * _term_overlap(text, source.title)
+        score += (TITLE_WEIGHT * question.overlap(title_terms[source.id])
+                  + PASSAGE_WEIGHT * question.overlap(own)
+                  + question.phrase_bonus(keywords.get(source.id, ())))
         scored.append({
             "chunkId": chunk.id, "sourceId": source.id, "title": source.title,
             "category": source.category, "version": source.version,

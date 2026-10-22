@@ -102,6 +102,7 @@ export const routeRoles: Readonly<Partial<Record<RoutePath, RouteRoles>>> = {
   'vendor-settlement': PARTNER,
   'vendor-staff': PARTNER,
   'vendor-substitutions': PARTNER,
+  'whats-new': STUDENT_ONLY, // newsroom product updates, from Profile (features/newsroom)
   'your-care': STUDENT_ONLY, // the student's own overview (the phone tab)
   // keep-sorted end
 };

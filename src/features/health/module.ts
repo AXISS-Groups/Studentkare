@@ -129,6 +129,9 @@ const workspacePaths: { path: string; access?: (role: AccountRole | null) => boo
   // Medicine information review: super admins edit and import; pharmacists (partner console) approve.
   { path: '/admin/medicine-info', access: hasRole('SUPER_ADMIN') },
   { path: '/medicine-info-review', access: hasRole('VENDOR', 'SUPER_ADMIN') },
+  // Posts (News and Blog): the super admin edits and publishes; clinicians review health tips.
+  { path: '/admin/posts', access: hasRole('SUPER_ADMIN') },
+  { path: '/clinician/post-reviews', access: hasRole('NMC_DOCTOR') },
   { path: '/delete-account', access: hasRole('STUDENT') },
   // The student's Your Care overview (the phone tab), account details and data export.
   { path: '/your-care', access: hasRole('STUDENT') },
@@ -146,6 +149,8 @@ const workspacePaths: { path: string; access?: (role: AccountRole | null) => boo
   { path: '/health/water', access: hasRole('STUDENT') },
   // Steps (Mobile 2.0, Tier 2): the student's own step totals; a browser counts none, typed entry only.
   { path: '/health/steps', access: hasRole('STUDENT') },
+  // What's new (newsroom product update posts), opened from Profile.
+  { path: '/whats-new', access: hasRole('STUDENT') },
   { path: '/vendor', access: hasRole('VENDOR') },
   { path: '/clinician', access: hasRole('NMC_DOCTOR') },
   { path: '/clinician/queue', access: hasRole('NMC_DOCTOR') },

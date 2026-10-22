@@ -2,6 +2,7 @@
 id: ordering-medicines
 title: Ordering medicines and health products
 reviewed: 2026-10-22
+keywords: buy, buy medicines, purchase, order medicines, shop, cart, checkout, delivery, deliver, home delivery, pay, payment, upi, card, cash on delivery, cod, dawai, dawa, medicine order, दवाई, दवा, दवाइयाँ, ऑर्डर, మందులు, మందు, ఆర్డర్
 ---
 <!--
 Written from: /shop (src/features/studentweb/views/shop/WebShopView.tsx, phone ShopPhoneRoute),

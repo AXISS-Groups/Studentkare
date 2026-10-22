@@ -6,19 +6,7 @@
 
 import * as Sentry from "@sentry/react";
 import { browserTracingIntegration } from "@sentry/browser";
-
-const PHI_KEYWORDS = [
-  "diagnosis",
-  "prescription",
-  "hiv",
-  "cancer",
-  "mental health",
-  "therapy",
-  "blood test result",
-  "aadhaar",
-  "abha",
-  "patient",
-];
+import { containsPhi, scrubPhi } from "./sentryScrub";
 
 // Force module inclusion to prevent tree-shaking
 if (typeof window !== 'undefined') {
@@ -26,29 +14,6 @@ if (typeof window !== 'undefined') {
 }
 
 let initialized = false;
-
-function containsPhi(text: string): boolean {
-  const lowered = (text || "").toLowerCase();
-  return PHI_KEYWORDS.some((k) => lowered.includes(k));
-}
-
-function scrubPhi(obj: any): any {
-  if (obj === null || obj === undefined) return obj;
-  if (typeof obj === "string") {
-    return containsPhi(obj) ? "[REDACTED: PHI]" : obj;
-  }
-  if (Array.isArray(obj)) {
-    return obj.map(scrubPhi);
-  }
-  if (typeof obj === "object") {
-    const scrubbed: Record<string, any> = {};
-    for (const [key, value] of Object.entries(obj)) {
-      scrubbed[key] = scrubPhi(value);
-    }
-    return scrubbed;
-  }
-  return obj;
-}
 
 export function initSentry(): void {
   if (initialized) return;

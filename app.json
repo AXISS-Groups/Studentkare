@@ -3,7 +3,6 @@
     "name": "Studentkare",
     "slug": "studentkare",
     "scheme": "studentkare",
-    "version": "0.5.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "newArchEnabled": false,
@@ -19,9 +18,9 @@
       "bundleIdentifier": "co.studentkare.app",
       "supportsTablet": true,
       "infoPlist": {
-        "NSCameraUsageDescription": "Studentkare uses the camera only when you choose to photograph a prescription or health document to add to your records.",
-        "NSMicrophoneUsageDescription": "Studentkare uses microphone access for secure doctor teleconsultations.",
+        "NSCameraUsageDescription": "Studentkare uses the camera only when you choose \"Take a photo\": a prescription, lab report or health document you add to your records, or a medicine strip you look up (that photo is read once and not kept).",
         "NSLocationWhenInUseUsageDescription": "Studentkare uses your location only when you tap \"Use my location\" in Find care, to sort places by distance on your phone. It is never sent or stored.",
+        "NSLocationDefaultAccuracyReduced": true,
         "NSMotionUsageDescription": "Studentkare counts your steps with this phone's motion sensor, only after you connect it on the Steps screen. Steps are never turned into a score or shown on shop pages.",
         "NSHealthShareUsageDescription": "Studentkare reads your daily steps and walking distance from Apple Health, only after you connect it on the Steps screen. Nothing else is read.",
         "NSHealthUpdateUsageDescription": "Studentkare does not write anything to Apple Health.",
@@ -48,13 +47,19 @@
         "android.permission.POST_NOTIFICATIONS",
         "android.permission.RECEIVE_BOOT_COMPLETED",
         "android.permission.VIBRATE",
-        "android.permission.RECORD_AUDIO",
-        "android.permission.MODIFY_AUDIO_SETTINGS",
         "android.permission.ACCESS_COARSE_LOCATION",
-        "android.permission.ACCESS_FINE_LOCATION",
         "android.permission.ACTIVITY_RECOGNITION",
         "android.permission.health.READ_STEPS",
         "android.permission.health.READ_DISTANCE"
+      ],
+      "blockedPermissions": [
+        "android.permission.ACCESS_BACKGROUND_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.MODIFY_AUDIO_SETTINGS",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.SYSTEM_ALERT_WINDOW",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
       ],
       "allowBackup": false,
       "usesCleartextTraffic": false,
@@ -69,7 +74,9 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "Studentkare uses the camera only when you choose to photograph a prescription or health document to add to your records."
+          "cameraPermission": "Studentkare uses the camera only when you choose \"Take a photo\": a prescription, lab report or health document you add to your records, or a medicine strip you look up (that photo is read once and not kept).",
+          "microphonePermission": false,
+          "recordAudioAndroid": false
         }
       ],
       [

@@ -24,9 +24,16 @@ price the server charges.
 
 HTML comments in an article (the code each article was written from) are stripped
 before publishing.
+
+An article's ``keywords:`` header lists the words and phrases students use for its
+topic ("talk to a doctor", "otp not received", Hinglish "dawai"). They are never
+published or quoted: ``retrieval_keywords`` hands them to retrieval
+(``services.vector_store``) as extra terms for the article, so a paraphrase finds the
+right article without the article's text having to carry every synonym.
 """
 from __future__ import annotations
 
+import functools
 import os
 import re
 import time
@@ -50,6 +57,7 @@ MAX_CONTENT_CHARS = 4000  # care_knowledge_sources.content
 MAX_TITLE_CHARS = 180
 ACTOR = "system:help-pack"
 NOON_HOUR = 12
+MAX_KEYWORD_CHARS = 60
 
 _FRONT_MATTER = re.compile(r"\A---\n(.*?)\n---\n", re.DOTALL)
 _COMMENT = re.compile(r"<!--.*?-->", re.DOTALL)
@@ -68,6 +76,7 @@ class Article:
     reviewed: date
     body: str  # with placeholders, comments removed
     path: Path
+    keywords: tuple[str, ...] = ()  # retrieval only, never published
 
     @property
     def source_id(self) -> str:
@@ -100,7 +109,10 @@ def parse(path: Path) -> Article:
         raise HelpPackError(f"{path.name}: reviewed must be a date, YYYY-MM-DD") from exc
     body = _COMMENT.sub("", text[match.end():])
     body = "\n\n".join(part.strip() for part in body.split("\n\n") if part.strip())
-    return Article(slug=slug, title=title, reviewed=reviewed, body=body, path=path)
+    keywords = tuple(word.strip().lower() for word in header.get("keywords", "").split(",") if word.strip())
+    if any(len(word) > MAX_KEYWORD_CHARS for word in keywords):
+        raise HelpPackError(f"{path.name}: a keyword is longer than {MAX_KEYWORD_CHARS} characters")
+    return Article(slug=slug, title=title, reviewed=reviewed, body=body, path=path, keywords=keywords)
 
 
 def load_articles(directory: Path = PACK_DIR) -> list[Article]:
@@ -109,6 +121,19 @@ def load_articles(directory: Path = PACK_DIR) -> list[Article]:
     if len(slugs) != len(set(slugs)):
         raise HelpPackError("two articles share an id")
     return articles
+
+
+@functools.lru_cache(maxsize=4)
+def _keywords_in(directory: Path) -> dict[str, tuple[str, ...]]:
+    try:
+        return {article.source_id: article.keywords for article in load_articles(directory) if article.keywords}
+    except (HelpPackError, OSError):
+        return {}  # a broken pack must not break retrieval; the loader reports it
+
+
+def retrieval_keywords(directory: Path = PACK_DIR) -> dict[str, tuple[str, ...]]:
+    """Source id -> the article's keywords, for retrieval. Read once per process."""
+    return _keywords_in(directory)
 
 
 def _format(value, how: str | None) -> str:

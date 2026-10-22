@@ -1,0 +1,17 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["APPLE_TEAM_ID.co.studentkare.app"],
+        "components": [
+          { "/": "/claim*", "exclude": true, "comment": "Invites are redeemed on the web until the app can redeem them" },
+          { "/": "/login*", "comment": "Sign in" },
+          { "/": "/orders*", "comment": "Orders and an order's details (/orders/<id>)" },
+          { "/": "/consult*", "comment": "Doctor consults" },
+          { "/": "/medicine-info*", "comment": "Medicine information (?medicine=<id> or ?q=<search>)" },
+          { "/": "/find-care*", "comment": "Find care (?segment=hospitals|pharmacies|ambulance|doctors, ?place=<id>)" }
+        ]
+      }
+    ]
+  }
+}

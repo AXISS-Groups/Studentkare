@@ -9,7 +9,7 @@ import type { SkIconName } from '../icons';
  * an unrelated page.
  */
 
-export type PublicNavId = 'discover' | 'wellness' | 'training' | 'labTests' | 'findDoctor' | 'findCare' | 'programmes' | 'plans';
+export type PublicNavId = 'discover' | 'wellness' | 'training' | 'labTests' | 'findDoctor' | 'findCare' | 'programmes' | 'plans' | 'blog' | 'news';
 
 export interface PublicLink {
   label: MessageKey;
@@ -25,6 +25,9 @@ export const PUBLIC_NAV: ReadonlyArray<PublicLink & { id: PublicNavId }> = [
   { id: 'findCare', label: 'fc.nav.findCare', href: '/find-care' },
   { id: 'programmes', label: 'landing.home.nav.programmes', href: '/programs' },
   { id: 'plans', label: 'landing.home.nav.plans', href: '/plans' },
+  // The newsroom (src/features/newsroom): health tips and stories, and News.
+  { id: 'blog', label: 'news.nav.blog', href: '/blog' },
+  { id: 'news', label: 'news.nav.news', href: '/news' },
 ];
 
 /** The shop has no category filter yet, so each category opens the shop itself. */
@@ -72,6 +75,8 @@ export const FOOTER_COLUMNS: readonly FooterColumn[] = [
     aria: 'landing.site.footer.col.studentkareAria',
     links: [
       { label: 'landing.site.footer.about', href: '/campuses' },
+      { label: 'news.nav.blog', href: '/blog' },
+      { label: 'news.nav.news', href: '/news' },
       { label: 'landing.site.footer.money', href: '/plans' },
       { label: 'landing.site.footer.contact', href: '/support' },
     ],

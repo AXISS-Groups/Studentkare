@@ -80,7 +80,7 @@ describe('ClinicianShell', () => {
     const nav = screen.getByRole('navigation', { name: 'Clinician' });
     const icons = Array.from(nav.querySelectorAll('svg')).map((icon) => icon.getAttribute('data-icon'));
     expect(icons).toEqual([
-      'clock', 'scan', 'inbox', 'align-left', 'video-2', 'flask', 'file', 'doc', 'prescription',
+      'clock', 'scan', 'inbox', 'align-left', 'video-2', 'flask', 'file', 'heart-pulse', 'doc', 'prescription',
       'flask', 'arrow-up-right', 'repeat',
       'users', 'heart', 'leaf', 'sparkle',
       'calendar-2', 'banknote',

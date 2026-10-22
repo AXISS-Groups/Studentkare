@@ -159,6 +159,26 @@ def frontend_env_reads() -> dict[str, list[str]]:
     return found
 
 
+# --- native app (Expo / EAS) ----------------------------------------------
+
+NATIVE_READ = re.compile(r"(?:process\.env\.|optionalEnv\(\s*['\"])([A-Z][A-Z0-9_]*[A-Z0-9])\b")
+
+
+def native_env_reads() -> dict[str, list[str]]:
+    """process.env.X in src/ (Metro inlines EXPO_PUBLIC_*) and app.config.ts's optionalEnv("X").
+    These are set on the EAS build, not on the servers, so each must be classed in
+    env-passthrough.json under nativeBuildTime (or dev/test only)."""
+    found: dict[str, list[str]] = {}
+    paths = [ROOT / "app.config.ts", *sorted((ROOT / "src").rglob("*"))]
+    for path in paths:
+        if not path.is_file() or path.suffix not in {".ts", ".tsx"} or "__tests__" in path.parts or ".test." in path.name:
+            continue
+        for lineno, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+            for name in NATIVE_READ.findall(line):
+                found.setdefault(name, []).append(f"{path.relative_to(ROOT).as_posix()}:{lineno}")
+    return found
+
+
 # --- production configs ---------------------------------------------------
 
 class _ComposeLoader(yaml.SafeLoader):
@@ -254,12 +274,20 @@ def main() -> int:
         problems.append(f"backend reads an env var by a computed name at {d}; read it by a literal "
                         "name or explain it under backendDynamicReads in env-passthrough.json")
     web_reads = frontend_env_reads()
+    native_reads = native_env_reads()
+    native_classed = set(cfg.get("nativeBuildTime", {}))
+    for name in sorted(native_reads):
+        if name not in native_classed:
+            problems.append(f"{name} (read at {native_reads[name][0]}) is read by the native app/app.config.ts but not "
+                            "classed under nativeBuildTime in env-passthrough.json (say where EAS sets it)")
 
     if "--list" in sys.argv:
         for name in sorted(backend_reads):
             print(f"backend {name:40} {'exempt' if name in backend_exempt else ''}")
         for name in sorted(web_reads):
             print(f"web     {name:40} {'exempt' if name in frontend_exempt else ''}")
+        for name in sorted(native_reads):
+            print(f"native  {name:40} {'EAS build' if name in native_classed else ''}")
 
     compose = compose_prod()
     values = helm_values()
@@ -317,7 +345,8 @@ def main() -> int:
         for p in problems:
             print(f"  - {p}")
         return 1
-    print(f"env passthrough: OK ({len(backend_reads)} backend and {len(web_reads)} web variables; "
+    print(f"env passthrough: OK ({len(backend_reads)} backend, {len(web_reads)} web and "
+          f"{len(native_reads)} native/EAS build-time variables; "
           f"{len(backend_exempt)} + {len(frontend_exempt)} exempt with reasons)")
     return 0
 
