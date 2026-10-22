@@ -203,9 +203,11 @@ describe('Manage accounts', () => {
     fireEvent.change(within(dialog).getByLabelText('Sign-in channel'), { target: { value: 'WHATSAPP' } });
     expect(within(dialog).getByLabelText('Contact address')).toHaveAttribute('type', 'tel');
     fireEvent.change(within(dialog).getByLabelText('Contact address'), { target: { value: '+919800000000' } });
+    // A doctor needs their NMC registration number (audit M1).
+    fireEvent.change(within(dialog).getByLabelText('NMC registration number'), { target: { value: 'TSMC-12345' } });
     fireEvent.click(within(dialog).getByRole('button', { name: 'Create account' }));
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
-    expect(apiRequest).toHaveBeenCalledWith('/ops/accounts', { method: 'POST', body: JSON.stringify({ fullName: 'Dr Meera Iyer', identifier: '+919800000000', channel: 'WHATSAPP', role: 'NMC_DOCTOR' }) });
+    expect(apiRequest).toHaveBeenCalledWith('/ops/accounts', { method: 'POST', body: JSON.stringify({ fullName: 'Dr Meera Iyer', identifier: '+919800000000', channel: 'WHATSAPP', role: 'NMC_DOCTOR', registrationNumber: 'TSMC-12345' }) });
     await waitFor(() => expect(paths().filter(path => path === LIST)).toHaveLength(2));
     // Name and contact clear; role and channel stay as last chosen.
     fireEvent.click(screen.getByRole('button', { name: 'Create staff account' }));

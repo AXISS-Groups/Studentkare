@@ -105,6 +105,10 @@ def _encode(value: Any) -> Any:
     return value
 
 
+# Commerce tables that hold a payer's account id without a foreign key.
+COMMERCE_ACCOUNT_TABLES = ("care_payment_intents", "care_dispense_quotes", "care_lab_order_charges")
+
+
 def _collect(db: Session, account: M.Account) -> dict[str, list[dict]]:
     """Every row tied to the account, by following foreign keys to a fixed point."""
     metadata = M.Base.metadata
@@ -140,7 +144,10 @@ def _collect(db: Session, account: M.Account) -> dict[str, list[dict]]:
     # Personal rows with no foreign key: messages to the student and sign-in records.
     # Each of its contacts (services/contact_store.py) may have a code or a grant in flight too.
     values = {account.identifier} | {r["value"] for r in found["care_account_contacts"].values()}
+    # The commerce plane keeps no foreign key to care_accounts (Rule L keeps the
+    # planes apart), so its payer rows are matched on the exact account id (audit M6).
     loose = (("care_outbox_events", "account_id", account.id),
+             *((name, "account_id", account.id) for name in COMMERCE_ACCOUNT_TABLES),
              ("care_otp_challenges", "account_id", account.id),
              *(("care_otp_challenges", "identifier", value) for value in sorted(values)),
              *(("care_signup_grants", "identifier", value) for value in sorted(values)))

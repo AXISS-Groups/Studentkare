@@ -9,7 +9,8 @@ from core import workflow_models as M
 def _admin(factory, account_id, university, active=True, role="CAMPUS_ADMIN"):
     with factory() as db:
         db.add(M.Account(id=account_id, identifier=f"{account_id}@example.test", channel="EMAIL", full_name="Staff",
-                         role=role, active=active, profile={"university": university}, created_at=time.time()))
+                         role=role, active=active, profile={"university": university}, created_at=time.time(),
+                         staff_campus=university))
         db.commit()
 
 

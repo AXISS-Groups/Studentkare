@@ -207,7 +207,9 @@ def seed_people(db: Session, world: World, students: int) -> None:
         created = now - rng.randint(1, 400) * DAY
         row = {"id": account_id, "identifier": email, "channel": "EMAIL", "full_name": name, "role": role,
                "active": True, "profile": {**profile, "seed": MARK}, "created_at": created, "partner_kind": kind,
-               "is_team_account": False}
+               "is_team_account": False,
+               # Campus scope is its own server-assigned column (audit C1).
+               "staff_campus": profile.get("university", "") if role in ("CAMPUS_ADMIN", "COUNSELLOR") else ""}
         accounts.append(row)
         contacts.append({"id": sid("ct", 2 * n), "account_id": account_id, "kind": "EMAIL", "value": email,
                          "verified_at": created, "created_at": created})

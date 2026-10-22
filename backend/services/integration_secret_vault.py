@@ -31,6 +31,31 @@ _SECRET_HINTS = ("key", "secret", "token", "password", "service_account_json")
 
 _warned_no_key = False
 
+KEY_MISSING_MESSAGE = ("Provider secrets can't be saved: INTEGRATIONS_ENCRYPTION_KEY is not set to a valid "
+                       "Fernet key on the server. Set it and restart, then save again. Nothing was changed.")
+
+
+class VaultKeyMissing(RuntimeError):
+    """Production refuses to store a provider secret it cannot encrypt (audit M4)."""
+
+
+def key_available() -> bool:
+    return _fernet() is not None
+
+
+def has_secret(config: Dict[str, Any]) -> bool:
+    return any(_is_secret_field(k, v) for k, v in (config or {}).items())
+
+
+def require_key_for(config: Dict[str, Any]) -> None:
+    """Fail closed in production: a config holding a secret needs the encryption key.
+
+    Development and tests keep the old plaintext fallback (with its warning).
+    """
+    from core.app_env import is_production
+    if is_production() and has_secret(config) and not key_available():
+        raise VaultKeyMissing(KEY_MISSING_MESSAGE)
+
 
 def _fernet() -> Optional[Any]:
     """Return a Fernet instance when a valid key is configured, else None."""
@@ -56,7 +81,12 @@ def _is_secret_field(name: str, value: Any) -> bool:
 
 
 def encrypt_config(config: Dict[str, Any]) -> Dict[str, Any]:
-    """Return a copy with secret strings Fernet-enveloped (or unchanged). Never raises."""
+    """Return a copy with secret strings Fernet-enveloped (or unchanged outside production).
+
+    Raises VaultKeyMissing in production when a secret is present and there is no
+    valid key, rather than writing it in plaintext.
+    """
+    require_key_for(config)
     f = _fernet()
     out: Dict[str, Any] = {}
     for k, v in (config or {}).items():
@@ -65,6 +95,9 @@ def encrypt_config(config: Dict[str, Any]) -> Dict[str, Any]:
                 out[k] = {MARKER: VERSION, "data": f.encrypt(str(v).encode("utf-8")).decode("utf-8")}
                 continue
             except Exception as err:
+                from core.app_env import is_production
+                if is_production():
+                    raise VaultKeyMissing("A provider secret could not be encrypted; nothing was saved.") from None
                 logger.warning("[vault] encrypt failed for field, storing plaintext: %s", str(err)[:120])
         out[k] = v
     return out

@@ -87,10 +87,11 @@ def test_nothing_signs_in_to_a_pending_account(harness, sent):  # noqa: F811
     invite(client, headers)
     client.post("/api/auth/logout", headers=headers)
     before = len(codes)
+    # The same answer as any send (audit M5), but no code goes out (checked below).
     assert client.post("/api/auth/otp/send", json={"identifier": "ravi@partner.test", "channel": "EMAIL",
-                                                   "intent": "LOGIN"}).status_code == 404
+                                                   "intent": "LOGIN"}).status_code == 200
     assert client.post("/api/auth/otp/send", json={"identifier": PHONE, "channel": "WHATSAPP",
-                                                   "intent": "LOGIN"}).status_code == 404
+                                                   "intent": "LOGIN"}).status_code == 200
     assert len(codes) == before
     assert client.post("/api/auth/password/sign-in", json={"identifier": "ravi@partner.test",
                                                            "password": SIGNUP_PASSWORD}).status_code == 401

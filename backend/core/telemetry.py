@@ -234,6 +234,48 @@ def get_prometheus_app():
     return _prometheus_app
 
 
+# Who may scrape /metrics (audit L2): the internal network only. The metrics name
+# routes, job states and pool sizes, which is reconnaissance for anyone outside.
+# METRICS_ALLOWED_NETWORKS (comma-separated CIDRs) replaces the default private
+# ranges for one deployment. The peer address is the one uvicorn resolved with
+# --proxy-headers / FORWARDED_ALLOW_IPS (core/rate_limiter.py), never a header.
+DEFAULT_METRICS_NETWORKS = "127.0.0.0/8,::1/128,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,fc00::/7"
+
+
+def metrics_networks() -> list:
+    import ipaddress
+    raw = os.getenv("METRICS_ALLOWED_NETWORKS", DEFAULT_METRICS_NETWORKS)
+    networks = []
+    for entry in raw.split(","):
+        try:
+            networks.append(ipaddress.ip_network(entry.strip(), strict=False))
+        except ValueError:
+            logger.warning("[metrics] ignoring invalid network in METRICS_ALLOWED_NETWORKS")
+    return networks
+
+
+def metrics_client_allowed(host: str | None) -> bool:
+    """True only for a peer address inside an allowed network. Unknown or unparsable is refused."""
+    import ipaddress
+    try:
+        address = ipaddress.ip_address(host or "")
+    except ValueError:
+        return False
+    return any(address in network for network in metrics_networks())
+
+
+def internal_only(app):
+    """Wrap an ASGI app so only the internal network reaches it; everyone else gets a plain 404."""
+    async def guarded(scope, receive, send):
+        if scope.get("type") == "http" and not metrics_client_allowed((scope.get("client") or (None,))[0]):
+            await send({"type": "http.response.start", "status": 404,
+                        "headers": [(b"content-type", b"text/plain; charset=utf-8")]})
+            await send({"type": "http.response.body", "body": b"Not Found"})
+            return
+        await app(scope, receive, send)
+    return guarded
+
+
 def shutdown_telemetry() -> None:
     """Gracefully shut down telemetry providers."""
     global _tracer_provider, _meter_provider

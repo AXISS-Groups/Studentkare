@@ -13,17 +13,43 @@ from test_workflow_api import harness, login, register  # noqa: F401 — pytest 
 from core import workflow_models as M
 from services import clinical_fulfilment as F
 
+# The medicine master the prescribing tests read schedules from (audit M1: the
+# server takes the schedule from here, never from the client). Each schedule also
+# has a record addressable by id, for tests that need one particular schedule.
+TEST_MASTER = {"Paracetamol": "OTC", "Azithromycin": "H1", "Amoxicillin": "H", "Pantoprazole": "H"}
+SCHEDULE_MEDICINE_IDS = {"OTC": "med-otc", "H": "med-h", "H1": "med-h1", "X": "med-x"}
+
+
+def seed_medicine_master(factory):
+    rows = [(f"med-{name.lower()}", name, schedule) for name, schedule in TEST_MASTER.items()]
+    rows += [(medicine_id, f"Test {schedule} medicine", schedule) for schedule, medicine_id in SCHEDULE_MEDICINE_IDS.items()]
+    with factory() as db:
+        for medicine_id, name, schedule in rows:
+            if db.get(M.Medicine, medicine_id) is None:
+                db.add(M.Medicine(id=medicine_id, name=name, composition_key=name.lower(), dosage_form="TABLET",
+                                  pack="10 tablets", manufacturer="Test Pharma", schedule=schedule,
+                                  requires_prescription=schedule != "OTC", active=True, source="ADMIN",
+                                  created_at=time.time(), updated_at=time.time()))
+        db.commit()
+
 
 def make_staff(factory, account_id, role, identifier, name="Staff", profile=None):
+    if role == "NMC_DOCTOR" and profile is None:
+        # A real doctor account carries its NMC registration (audit M1).
+        profile = {"registrationNumber": f"NMC-{account_id}"}
     with factory() as db:
         db.add(M.Account(id=account_id, identifier=identifier, channel="EMAIL", full_name=name,
-                         role=role, active=True, profile=profile or {}, created_at=time.time()))
+                         role=role, active=True, profile=profile or {}, created_at=time.time(),
+                         # Campus scope is the server-assigned column (audit C1).
+                         staff_campus=(profile or {}).get("university", "")
+                         if role in ("CAMPUS_ADMIN", "COUNSELLOR") else ""))
         db.commit()
 
 
 def put_in_care(factory, doctor_id, patient_id, status="CONFIRMED"):
     """A confirmed appointment between doctor and patient — the relationship prescribing requires."""
     suffix = f"{doctor_id}-{patient_id}"[:40]
+    seed_medicine_master(factory)
     with factory() as db:
         if not db.get(M.CatalogEntry, f"consult-{doctor_id}"):
             db.add(M.CatalogEntry(id=f"consult-{doctor_id}", provider_id=doctor_id, kind="consultation", name="Consult",
@@ -440,7 +466,8 @@ def issue_and_send(client, factory, codes, patient_identifier="disp@example.test
     put_in_care(factory, "doc", patient["id"])
     prescription = client.post("/api/prescriptions", json={
         "patientId": patient["id"],
-        "items": [{"genericName": "Azithromycin", "dose": "500mg", "quantity": 3, "scheduleClass": schedule}],
+        "items": [{"genericName": "Azithromycin", "dose": "500mg", "quantity": 3,
+                   "medicineId": SCHEDULE_MEDICINE_IDS[schedule]}],
     }, headers=doc_headers).json()
     patient_headers = login(client, codes, patient_identifier)
     dispense = client.post("/api/dispenses", json={

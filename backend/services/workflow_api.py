@@ -44,7 +44,7 @@ from services import (
 )
 from services.agents.blood_emergency_agent import blood_emergency_agent
 from services.agents.hitl_approval_agent import hitl_approval_agent
-from services.agents.medical_guard import medical_guard
+from services.agents.medical_guard import KILL_SWITCH_SETTING, medical_guard
 from services.agents.medication_adherence_loop_agent import medication_adherence_loop_agent
 from services.code_sentinel_scanner import CodeSentinelScanner
 from services.commerce_session import commerce_db, grants_required
@@ -343,6 +343,53 @@ def export_records(user=Depends(authenticated_user), db: Session = Depends(workf
         "readings": [{"id": r.id, "metric": r.metric, "value": r.value, "recordedAt": r.recorded_at, "source": r.source} for r in readings],
         "policies": [{"id": p.id, "insurer": p.insurer, "policyNumber": p.policy_number, "sumInsured": p.sum_insured, "validUntil": p.valid_until} for p in policies],
         **lab_results.export_rows(db, user["id"]),
+        # Care records about the student (audit M6, DPDP right of access).
+        **_care_export(db, user["id"]),
+    }
+
+
+def _care_export(db: Session, account_id: str) -> dict:
+    """The student's own appointments, prescriptions, final visit notes, consents and crisis events.
+
+    Visit notes are the signed (FINAL) ones the student can already read; a
+    clinician's draft isn't a record yet. A crisis event carries what was
+    recorded (kind, surface, times, outcome), never the student's words, which
+    are not stored, and not the counsellor's private follow-up note.
+    """
+    appointments = db.scalars(select(M.Appointment).where(M.Appointment.account_id == account_id)
+                              .order_by(M.Appointment.created_at)).all()
+    prescriptions = db.scalars(select(M.Prescription).where(M.Prescription.patient_id == account_id)
+                               .order_by(M.Prescription.issued_at)).all()
+    items: dict[str, list[M.PrescriptionItem]] = {}
+    if prescriptions:
+        for item in db.scalars(select(M.PrescriptionItem).where(
+                M.PrescriptionItem.prescription_id.in_([p.id for p in prescriptions]))).all():
+            items.setdefault(item.prescription_id, []).append(item)
+    notes = db.scalars(select(M.EncounterNote).where(M.EncounterNote.patient_id == account_id,
+                                                     M.EncounterNote.status == "FINAL")
+                       .order_by(M.EncounterNote.created_at)).all()
+    consents = db.scalars(select(M.ConsentRecord).where(M.ConsentRecord.account_id == account_id)
+                          .order_by(M.ConsentRecord.recorded_at)).all()
+    crises = db.scalars(select(M.CrisisEvent).where(M.CrisisEvent.account_id == account_id)
+                        .order_by(M.CrisisEvent.created_at)).all()
+    return {
+        "appointments": [{"id": a.id, "providerId": a.provider_id, "serviceId": a.catalog_item_id, "slotId": a.slot_id,
+                          "status": a.status, "createdAt": a.created_at, "updatedAt": a.updated_at} for a in appointments],
+        "prescriptions": [{"id": p.id, "prescriberRegNo": p.prescriber_reg_no, "issuedAt": p.issued_at,
+                           "validUntil": p.valid_until, "status": p.status, "advice": p.advice,
+                           "items": [{"genericName": i.generic_name, "brandName": i.brand_name, "strength": i.strength,
+                                      "form": i.form, "dose": i.dose, "frequency": i.frequency,
+                                      "durationDays": i.duration_days, "quantity": i.quantity,
+                                      "scheduleClass": i.schedule_class} for i in items.get(p.id, [])]}
+                          for p in prescriptions],
+        "visitNotes": [{"id": n.id, "appointmentId": n.appointment_id, "subjective": n.subjective,
+                        "objective": n.objective, "assessment": n.assessment, "plan": n.plan,
+                        "createdAt": n.created_at, "updatedAt": n.updated_at} for n in notes],
+        "consents": [{"version": c.version, "purposes": c.purposes, "language": c.language,
+                      "recordedAt": c.recorded_at, "withdrawnAt": c.withdrawn_at or None} for c in consents],
+        "crisisEvents": [{"id": e.id, "kind": e.kind, "language": e.language, "surface": e.surface,
+                          "detectedBy": e.detected_by, "createdAt": e.created_at,
+                          "acknowledgedAt": e.acknowledged_at or None, "outcome": e.outcome} for e in crises],
     }
 
 
@@ -1326,7 +1373,7 @@ def accounts(
                    "partnerKind": partner_kind_of(row),
                    "twoFactorEnabled": row.id in with_two_factor,
                    # Only campus-scoped staff show their campus; a student's profile stays private.
-                   **({"campus": (row.profile or {}).get("university", "")} if row.role in CAMPUS_SCOPED_ROLES else {})}
+                   **({"campus": row.staff_campus or ""} if row.role in CAMPUS_SCOPED_ROLES else {})}
                   for row in rows],
         "total": total,
         "limit": limit,
@@ -1351,6 +1398,18 @@ class StaffInput(StrictModel):
     # The campus a campus administrator or counsellor acts for. Required for
     # those roles: without it they have no scope, and an unscoped one sees nobody.
     university: str | None = Field(default=None, max_length=160)
+    # NMC_DOCTOR only, and required for it: a prescription carries the
+    # prescriber's NMC / state medical council registration number (audit M1).
+    registrationNumber: str | None = Field(default=None, max_length=60)
+
+    @model_validator(mode="after")
+    def doctors_need_a_registration(self):
+        self.registrationNumber = (self.registrationNumber or "").strip() or None
+        if self.role == "NMC_DOCTOR" and not self.registrationNumber:
+            raise ValueError("A doctor needs their NMC or state medical council registration number.")
+        if self.role != "NMC_DOCTOR":
+            self.registrationNumber = None
+        return self
 
     @model_validator(mode="after")
     def partner_kind_matches_role(self):
@@ -1376,7 +1435,10 @@ class StaffInput(StrictModel):
 def create_staff(body: StaffInput, user=Depends(require_super_admin), db: Session = Depends(workflow_db)):
     row = M.Account(id=new_id(), identifier=normalize_identifier(body.identifier, body.channel), channel=body.channel,
                      full_name=body.fullName, role=body.role, active=True,
-                     profile={"university": body.university} if body.university else {}, created_at=time.time(),
+                     profile=({"university": body.university} if body.university else {})
+                     | ({"registrationNumber": body.registrationNumber} if body.registrationNumber else {}),
+                     created_at=time.time(),
+                     staff_campus=body.university or "",
                      partner_kind=body.partnerKind or "")
     db.add(row)
     audit(db, user, "STAFF_ACCOUNT_CREATED", row.id)
@@ -1418,6 +1480,24 @@ def set_partner_kind(account_id: str, body: PartnerKindInput, user=Depends(requi
     return {"id": row.id, "partnerKind": partner_kind_of(row)}
 
 
+class RegistrationInput(StrictModel):
+    registrationNumber: str = Field(min_length=3, max_length=60)
+
+
+@router.patch("/ops/accounts/{account_id}/registration")
+def set_doctor_registration(account_id: str, body: RegistrationInput, user=Depends(require_super_admin),
+                            db: Session = Depends(workflow_db)):
+    """Record a doctor's NMC registration number. Super admin only; a doctor can't set their own."""
+    account = db.scalar(select(M.Account).where(M.Account.id == account_id).with_for_update()
+                        .execution_options(populate_existing=True))
+    if account is None or account.role != "NMC_DOCTOR":
+        raise HTTPException(404, "No doctor account with that id.")
+    account.profile = {**(account.profile or {}), "registrationNumber": body.registrationNumber.strip()}
+    audit(db, user, "DOCTOR_REGISTRATION_SET", account_id)
+    db.commit()
+    return {"id": account_id, "registrationNumber": account.profile["registrationNumber"]}
+
+
 class CampusAssignmentInput(StrictModel):
     university: str = Field(min_length=2, max_length=160)
 
@@ -1428,26 +1508,45 @@ def assign_campus(account_id: str, body: CampusAssignmentInput, user=Depends(req
     account = db.scalar(select(M.Account).where(M.Account.id == account_id).with_for_update().execution_options(populate_existing=True))
     if account is None or account.role not in CAMPUS_SCOPED_ROLES:
         raise HTTPException(404, "No campus administrator or counsellor with that id.")
-    account.profile = {**(account.profile or {}), "university": body.university.strip()}
+    if account.is_team_account:
+        # Team accounts stay on the team test campus (core/team_scope.py).
+        raise HTTPException(409, "A team account always acts for the team campus.")
+    campus = " ".join(body.university.split())
+    if is_reserved_campus(campus):
+        raise HTTPException(422, RESERVED_CAMPUS_MESSAGE)
+    # The scope lives in its own column; the profile copy is for display only.
+    account.staff_campus = campus
+    account.profile = {**(account.profile or {}), "university": campus}
     audit(db, user, f"{account.role}_SCOPE_SET", account_id)
     db.commit()
-    return {"id": account_id, "university": account.profile["university"]}
+    return {"id": account_id, "university": account.staff_campus}
 
 
 def _campus_key(value: str) -> str:
     return " ".join((value or "").split()).casefold()
 
 
+def staff_campus_of(account: M.Account | None) -> str:
+    """The campus a campus administrator or counsellor acts for, as a super admin assigned it.
+
+    Read from ``care_accounts.staff_campus`` only, never from the self-service
+    profile (audit C1). "" for every other role and for unassigned staff.
+    """
+    if account is None or account.role not in CAMPUS_SCOPED_ROLES:
+        return ""
+    return " ".join((account.staff_campus or "").split())
+
+
 def campus_scope(user: dict, db: Session) -> str | None:
     """The campus a staff member may act for. None means every campus (super admin only).
 
-    Fails closed: a campus administrator with no campus recorded gets a 403,
-    never an unfiltered view of every college's students.
+    Fails closed: a campus administrator with no campus assigned gets a 403,
+    never an unfiltered view of every college's students. The campus comes from
+    the server-assigned membership (``staff_campus_of``), not the profile.
     """
     if user["role"] == "SUPER_ADMIN":
         return None
-    account = db.get(M.Account, user["id"])
-    university = _campus_key((account.profile or {}).get("university", "")) if account else ""
+    university = _campus_key(staff_campus_of(db.get(M.Account, user["id"])))
     if not university:
         raise HTTPException(403, "Your account isn't assigned to a campus yet. Ask a super admin to set it.")
     return university
@@ -1478,7 +1577,7 @@ def partner_campuses(user=Depends(authenticated_user), db: Session = Depends(wor
                                               M.Account.is_team_account.is_(False))).all()
     seen: dict[str, str] = {}
     for row in rows:
-        name = " ".join(str((row.profile or {}).get("university", "")).split())
+        name = staff_campus_of(row)
         key = _campus_key(name)
         if key and key not in seen:
             seen[key] = name
@@ -1505,6 +1604,10 @@ class CampusSubmitInput(StrictModel):
 
 @router.post("/campus/verification")
 def submit_campus_verification(body: CampusSubmitInput, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+    # Students only. Staff campus scope is assigned by a super admin, and a team
+    # account stays on the team campus (audit C1).
+    if user["role"] != "STUDENT" or user.get("isTeamAccount") is True:
+        raise HTTPException(403, "Only a student account can submit a campus affiliation.")
     account = db.scalar(select(M.Account).where(M.Account.id == user["id"]).with_for_update().execution_options(populate_existing=True))
     row = db.get(M.CampusVerification, user["id"])
     if row and row.status == "VERIFIED":
@@ -2850,63 +2953,148 @@ def schedule_reminder(appointment_id: str, body: ReminderInput, user=Depends(aut
     return {"queued": True, "eventId": event_id, "message": "Reminder queued."}
 
 
+BloodGroup = Literal["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]
+BLOOD_GROUP_VALUES = frozenset(("A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"))
+PHONE_NOT_VERIFIED = "PHONE_NOT_VERIFIED"
+CAMPUS_NOT_VERIFIED = "CAMPUS_NOT_VERIFIED"
+HOUR_SECONDS = 3600
+DAY_SECONDS = 86400
+LINK_MARKERS = ("http", "www.", "://")
+
+
 class BloodDonorInput(StrictModel):
-    fullName: str
-    bloodGroup: str
-    hostelBlock: str
-    phone: str
+    bloodGroup: BloodGroup
+    hostelBlock: str = Field(min_length=1, max_length=120)
     visible: bool = False
+    # Optional; when sent it must be the account's own verified WhatsApp number.
+    # The number used is always that contact, never what was typed (audit H1).
+    phone: str | None = Field(default=None, max_length=32)
+
+
+def _digits(value: str) -> str:
+    return re.sub(r"\D", "", value or "")
+
+
+def _blood_campus_staff(user: dict, db: Session) -> str | None:
+    """None for a super admin; the assigned campus for campus staff; "" for nobody else."""
+    if user["role"] == "SUPER_ADMIN":
+        return None
+    if user["role"] in CAMPUS_SCOPED_ROLES:
+        return staff_campus_of(db.get(M.Account, user["id"]))
+    return ""
 
 
 @router.post("/blood/register-donor")
 def register_blood_donor(body: BloodDonorInput, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
-    from services.agents.blood_emergency_agent import BloodDonor
-    donor = BloodDonor(
-        id=f"bd_{new_id()[:6]}",
-        name=body.fullName,
-        blood_group=body.bloodGroup,
-        hostel_block=body.hostelBlock,
-        phone=body.phone,
-        last_donated="Recently registered",
-        is_available=True,
-        visible=body.visible,
-    )
-    res = blood_emergency_agent.register_donor(db, user["id"], donor)
+    """A student registers their own donor record, on their verified number and verified campus."""
+    from services.agents.blood_emergency_agent import BloodDonor, verified_campus, verified_phone
+    if user["role"] != "STUDENT" or user.get("isTeamAccount") is True:
+        raise HTTPException(403, "Only a student can register as a blood donor.")
+    if not verified_campus(db, user["id"]):
+        raise HTTPException(409, {"code": CAMPUS_NOT_VERIFIED,
+                                  "message": "Verify your campus first: donors are matched within a campus."})
+    phone = verified_phone(db, user["id"])
+    if not phone:
+        raise HTTPException(409, {"code": PHONE_NOT_VERIFIED,
+                                  "message": "Verify your WhatsApp number with a one-time code first."})
+    if body.phone and _digits(body.phone)[-10:] != _digits(phone)[-10:]:
+        raise HTTPException(409, {"code": PHONE_NOT_VERIFIED,
+                                  "message": "Donors are reached only on their own verified WhatsApp number."})
+    res = blood_emergency_agent.register_donor(db, user["id"], BloodDonor(
+        blood_group=body.bloodGroup, hostel_block=body.hostelBlock.strip(), visible=body.visible))
+    audit(db, user, "BLOOD_DONOR_REGISTERED", res["id"])
+    db.commit()
     return res
 
 
 @router.get("/blood/donors")
-def get_blood_donors(bloodGroup: str = Query("ALL"), user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
-    donors = blood_emergency_agent.get_donors(db, bloodGroup, public=True)
-    return {"donors": donors}
+def get_blood_donors(bloodGroup: str = Query("ALL", max_length=4), user=Depends(authenticated_user),
+                     db: Session = Depends(workflow_db)):
+    """Donors' blood group and hostel block, only to whom they belong.
+
+    A super admin, or a campus admin / counsellor for their own campus, sees that
+    campus's listed donors. A student sees only their own record. Every other
+    role (partners, doctors) sees nothing. Phone numbers are never returned.
+    """
+    groups = None if bloodGroup == "ALL" else [bloodGroup.strip().upper()]
+    if groups and groups[0] not in BLOOD_GROUP_VALUES:
+        raise HTTPException(422, "Unknown blood group.")
+    scope = _blood_campus_staff(user, db)
+    if scope is None or scope:
+        donors = blood_emergency_agent.campus_donors(db, scope, groups)
+        return {"donors": [blood_emergency_agent.donor_payload(d) for d in donors]}
+    own = db.scalars(select(M.BloodDonor).where(M.BloodDonor.account_id == user["id"])).all()
+    return {"donors": [blood_emergency_agent.donor_payload(d) for d in own
+                       if not groups or d.blood_group in groups]}
 
 
 class BloodSOSInput(StrictModel):
-    patientName: str
-    requiredGroup: str
-    unitsNeeded: int = 1
-    hospitalLocation: str
-    urgency: str = "CRITICAL"
+    requiredGroup: BloodGroup
+    unitsNeeded: int = Field(default=1, ge=1)
+    urgency: Literal["CRITICAL", "URGENT"] = "CRITICAL"
+    # The only free text that goes out, under the fixed template (length from the registry).
+    note: str = Field(default="", max_length=280)
+    # Super admin only: the campus to reach ("" or absent = every campus).
+    campus: str | None = Field(default=None, max_length=160)
+
+
+def _blood_sos_campus(user: dict, body: BloodSOSInput, db: Session) -> str:
+    """Where this requester may broadcast. Fails closed for everyone else."""
+    from services.agents.blood_emergency_agent import verified_campus
+    if user["role"] == "SUPER_ADMIN":
+        return " ".join((body.campus or "").split())
+    if body.campus is not None:
+        raise HTTPException(403, "A blood SOS goes to your own campus only.")
+    if user.get("isTeamAccount") is True:
+        raise HTTPException(403, "Team accounts can't send a blood SOS to real students.")
+    if user["role"] == "STUDENT":
+        campus = verified_campus(db, user["id"])
+    elif user["role"] in CAMPUS_SCOPED_ROLES:
+        campus = staff_campus_of(db.get(M.Account, user["id"]))
+    else:
+        raise HTTPException(403, "Only a student or campus staff can send a blood SOS.")
+    if not campus:
+        raise HTTPException(409, {"code": CAMPUS_NOT_VERIFIED,
+                                  "message": "Verify your campus first: a blood SOS goes to your campus's donors."})
+    return campus
 
 
 @router.post("/blood/sos-request")
 def trigger_blood_sos(body: BloodSOSInput, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+    campus = _blood_sos_campus(user, body, db)
+    if body.unitsNeeded > int(setting("blood.sos_max_units", db)):
+        raise HTTPException(422, "That is more units than one blood SOS can ask for. Call the blood bank directly.")
+    note = " ".join(body.note.split())
+    if len(note) > int(setting("blood.sos_note_max_chars", db)):
+        raise HTTPException(422, "The note is too long.")
+    if any(marker in note.casefold() for marker in LINK_MARKERS):
+        raise HTTPException(422, "The note can't contain links.")
+    now = time.time()
+    mine = db.scalar(select(func.count()).select_from(M.BloodSOSRequest).where(
+        M.BloodSOSRequest.account_id == user["id"], M.BloodSOSRequest.created_at > now - DAY_SECONDS)) or 0
+    if mine >= int(setting("blood.sos_per_account_per_day", db)):
+        raise HTTPException(429, "You have sent the most blood SOS requests allowed today. Call your campus health centre.")
+    if campus:
+        key = _campus_key(campus)
+        recent = db.scalars(select(M.BloodSOSRequest.campus).where(
+            M.BloodSOSRequest.created_at > now - HOUR_SECONDS)).all()
+        if sum(1 for c in recent if _campus_key(c) == key) >= int(setting("blood.sos_per_campus_per_hour", db)):
+            raise HTTPException(429, "Several blood SOS requests already went to this campus in the last hour. "
+                                     "Call your campus health centre.")
     res = blood_emergency_agent.trigger_sos_broadcast(
-        db=db,
-        account_id=user["id"],
-        patient_name=body.patientName,
-        required_group=body.requiredGroup,
-        units=body.unitsNeeded,
-        location=body.hospitalLocation,
-        urgency=body.urgency,
+        db=db, account_id=user["id"], required_group=body.requiredGroup, units=body.unitsNeeded,
+        campus=campus, urgency=body.urgency, note=note,
     )
-    audit(db, user, "BLOOD_SOS_TRIGGERED", user["id"])
-    # The group and unit count are what an operator needs; the patient is not named.
+    # Every send is audited: the request, and each donor it was staged for (ids only).
+    audit(db, user, "BLOOD_SOS_TRIGGERED", res["request_id"])
+    for donor_id in res.pop("staged_donor_ids"):
+        audit(db, user, "BLOOD_SOS_SENT", donor_id)
     ops_feed.publish(
         db, "BLOOD_SOS_TRIGGERED", "SAFETY", severity="CRITICAL",
-        summary=f"Blood SOS broadcast Â· {body.unitsNeeded} unit(s) {body.requiredGroup} Â· {body.urgency.lower()}",
+        summary=f"Blood SOS broadcast · {body.unitsNeeded} unit(s) {body.requiredGroup} · {body.urgency.lower()}"
+                f" · {res['events_staged']} donor(s)",
         actor_id=user["id"], actor_role=user.get("role", ""), subject_id=user["id"],
-        resource_type="blood_sos", resource_id=user["id"],
+        resource_type="blood_sos", resource_id=res["request_id"],
     )
     db.commit()
     return res
@@ -3193,8 +3381,11 @@ def my_visit_summary(note_id: str, response: Response, user=Depends(authenticate
     }
 
 
+# Held AI actions name the student they are about and the medical audit trail
+# records clinical decisions, so only the super admin reads or releases them
+# (audit M2). There is no clinical-reviewer role yet; partners never see them.
 @router.get("/ops/approvals")
-def get_pending_approvals(user=Depends(require_staff)):
+def get_pending_approvals(user=Depends(require_super_admin)):
     # The pending actions are about real students; a team account sees none (core/team_scope.py).
     if team_sandboxed(user):
         return {"pending_actions": []}
@@ -3207,7 +3398,7 @@ class ApproveActionInput(StrictModel):
 
 
 @router.post("/ops/approve-action")
-def approve_pending_action(body: ApproveActionInput, user=Depends(require_staff), db: Session = Depends(workflow_db)):
+def approve_pending_action(body: ApproveActionInput, user=Depends(require_super_admin), db: Session = Depends(workflow_db)):
     if team_sandboxed(user):
         raise HTTPException(403, "Team accounts can't approve actions about real students.")
     # Only authorized staff (clinician/admin) may approve. Uses the server-derived
@@ -3358,7 +3549,7 @@ def lookup_medication(body: MedicationLookupInput, user=Depends(authenticated_us
 # -----------------------------------------------------------------------------
 
 @router.get("/v1/ops/audit-trail")
-def get_medical_audit_trail(limit: int = Query(default=50, ge=1, le=100), user=Depends(require_staff)):
+def get_medical_audit_trail(limit: int = Query(default=50, ge=1, le=100), user=Depends(require_super_admin)):
     if team_sandboxed(user):
         return {"events": [], "count": 0}
     trail = medical_guard.get_audit_trail(limit)
@@ -3368,6 +3559,10 @@ def get_medical_audit_trail(limit: int = Query(default=50, ge=1, le=100), user=D
 @router.post("/v1/ops/kill-switch")
 def trigger_emergency_kill_switch(user=Depends(require_super_admin), db: Session = Depends(workflow_db)):
     actor_name = user.get("fullName") or user.get("full_name") or user.get("email") or "Staff"
+    # Persisted in the settings registry: every worker, replica and the model
+    # gateway (services/llm_gateway.py) obey it, and it survives a restart.
+    from services.settings_api import write_override
+    write_override(db, user, KILL_SWITCH_SETTING, True, "Emergency kill switch activated")
     result = medical_guard.activate_emergency_kill_switch(triggered_by=actor_name)
     audit(db, user, "KILL_SWITCH_ACTIVATED", user["id"])
     ops_feed.publish(
@@ -3383,6 +3578,8 @@ def trigger_emergency_kill_switch(user=Depends(require_super_admin), db: Session
 @router.post("/v1/ops/kill-switch/reset")
 def reset_emergency_kill_switch(user=Depends(require_super_admin), db: Session = Depends(workflow_db)):
     actor_name = user.get("fullName") or user.get("full_name") or user.get("email") or "SuperAdmin"
+    from services.settings_api import write_override
+    write_override(db, user, KILL_SWITCH_SETTING, None, "Emergency kill switch reset")
     result = medical_guard.reset_emergency_kill_switch(reset_by=actor_name)
     audit(db, user, "KILL_SWITCH_RESET", user["id"])
     ops_feed.publish(

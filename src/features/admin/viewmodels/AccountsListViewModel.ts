@@ -36,6 +36,8 @@ export class AccountsListViewModel {
   channel = 'EMAIL';
   /** Campus administrators only: the campus they act for. */
   university = '';
+  /** Doctors only, and required: their NMC / state medical council registration number. */
+  registrationNumber = '';
   creating = false;
   scopeError = '';
   scoping = false;
@@ -84,6 +86,7 @@ export class AccountsListViewModel {
   setPartnerKind(value: PartnerKind | '') { this.partnerKind = value; }
   setChannel(value: string) { this.channel = value; }
   setUniversity(value: string) { this.university = value; }
+  setRegistrationNumber(value: string) { this.registrationNumber = value; }
 
   /** The current page again. */
   reload() { void this.load(); }
@@ -173,13 +176,14 @@ export class AccountsListViewModel {
       fullName: this.fullName, identifier: this.identifier, channel: this.channel, role: this.role,
       ...(this.role === 'VENDOR' && this.partnerKind ? { partnerKind: this.partnerKind } : {}),
       ...(isCampusScopedRole(this.role) ? { university: this.university.trim() } : {}),
+      ...(this.role === 'NMC_DOCTOR' ? { registrationNumber: this.registrationNumber.trim() } : {}),
     };
     this.creating = true;
     this.createError = '';
     try {
       await this.repository.create(account);
       if (generation !== this.generation) return false;
-      runInAction(() => { this.fullName = ''; this.identifier = ''; this.partnerKind = ''; this.university = ''; });
+      runInAction(() => { this.fullName = ''; this.identifier = ''; this.partnerKind = ''; this.university = ''; this.registrationNumber = ''; });
       this.reload();
       return true;
     } catch (reason) {

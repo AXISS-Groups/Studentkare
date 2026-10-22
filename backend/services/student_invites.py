@@ -129,8 +129,9 @@ def _campus_of(db: DBSession, user: dict, asked: str | None) -> str:
     if user["role"] == "SUPER_ADMIN":
         campus = (asked or "").strip()
     else:
-        account = db.get(M.Account, user["id"])
-        campus = str(((account.profile or {}) if account else {}).get("university") or "").strip()
+        # The super-admin-assigned campus, never the self-service profile (audit C1).
+        from services.workflow_api import staff_campus_of
+        campus = staff_campus_of(db.get(M.Account, user["id"]))
     if not campus:
         raise HTTPException(422, "Choose the campus these students belong to.")
     if is_reserved_campus(campus):
