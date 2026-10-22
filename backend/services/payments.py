@@ -71,6 +71,24 @@ PROVIDER_FAILED_MESSAGE = "The payment provider could not be reached. Nothing wa
 UNPAID, PAID, PARTIALLY_REFUNDED, REFUNDED, EXPIRED, CANCELLED = (
     "UNPAID", "PAID", "PARTIALLY_REFUNDED", "REFUNDED", "EXPIRED", "CANCELLED")
 REFUNDABLE_ORDER_STATES = {PAID, PARTIALLY_REFUNDED, EXPIRED, CANCELLED}
+# The money is in: a partner may act on the order.
+PAYMENT_CONFIRMED_STATES = (PAID, PARTIALLY_REFUNDED)
+
+
+def order_awaits_payment(order) -> bool:
+    """A shop order that needs paying before a partner may accept, pack or dispatch it.
+
+    Online payment was on offer when it was placed (``payment_due_at`` set) and the
+    server has not confirmed it. An order placed while payments were off stays a
+    plain request, as before.
+    """
+    return bool(order is not None and (order.payment_due_at or 0) > 0
+                and order.payment_status not in PAYMENT_CONFIRMED_STATES)
+
+
+def order_awaits_payment_clause():
+    """``order_awaits_payment`` as SQL over ``care_orders``."""
+    return (M.Order.payment_due_at > 0) & M.Order.payment_status.not_in(PAYMENT_CONFIRMED_STATES)
 
 
 def now() -> float:

@@ -60,7 +60,7 @@ export type RequestStatus = 'REQUESTED' | 'ACCEPTED' | 'DECLINED' | 'DISPATCHED'
 export interface OrderLine { id: string; itemId: string; name: string; kind: LiveCatalogItem['kind']; quantity: number; pricePaise: number; status: RequestStatus }
 export interface Delivery { mode: 'delivery' | 'pickup'; address: string; city: string; pincode: string }
 export interface LiveOrder { id: string; createdAt: number; totalPaise: number; delivery: Delivery; requestedSlot: string; paymentStatus: string; lines: OrderLine[] }
-export interface WorkRequest extends OrderLine { orderId: string; customer: string; contact: string; delivery: Delivery; requestedSlot: string; createdAt: number }
+export interface WorkRequest extends OrderLine { orderId: string; customer: string; contact: string; delivery: Delivery; requestedSlot: string; createdAt: number; /** Placed with online payment on offer and not paid: only a decline is allowed. */ awaitingPayment?: boolean }
 export interface StaffAppointment { id: string; catalogItemId: string; providerId: string; slotStart: string; slotEnd: string; status: string; createdAt: number; updatedAt: number; customer: string; contact: string }
 export interface LivePolicy { id: string; insurer: string; policyNumber: string; sumInsured: number; validUntil: string; verification: string }
 export interface ReviewedBenefit { id: string; category: string; title: string; description: string; reviewed: boolean }

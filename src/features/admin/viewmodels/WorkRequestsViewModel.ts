@@ -65,6 +65,8 @@ export class WorkRequestsViewModel {
 
   /** The steps open to a request: accept or decline it, then dispatch a product or complete anything else. */
   requestSteps(request: WorkRequest): WorkRequestTransition[] {
+    // Not paid yet: the server refuses every move but a decline (live-run audit #1).
+    if (request.awaitingPayment) return request.status === 'REQUESTED' ? ['DECLINED'] : [];
     if (request.status === 'REQUESTED') return ['ACCEPTED', 'DECLINED'];
     if (request.status === 'ACCEPTED') return [request.kind === 'product' ? 'DISPATCHED' : 'COMPLETED'];
     if (request.status === 'DISPATCHED') return ['COMPLETED'];

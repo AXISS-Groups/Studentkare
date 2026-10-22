@@ -25,8 +25,8 @@ import './vendor-console.css';
  * state behind it (order lines are never held): it is not shown.
  */
 
-export type ConsoleFilter = 'ALL' | 'REQUESTED' | 'ACCEPTED' | 'DISPATCHED';
-const FILTERS: ConsoleFilter[] = ['ALL', 'REQUESTED', 'ACCEPTED', 'DISPATCHED'];
+export type ConsoleFilter = 'ALL' | 'REQUESTED' | 'ACCEPTED' | 'DISPATCHED' | 'AWAITING_PAYMENT';
+const FILTERS: ConsoleFilter[] = ['ALL', 'REQUESTED', 'ACCEPTED', 'DISPATCHED', 'AWAITING_PAYMENT'];
 const PAGE_SIZE = 20;
 
 export interface ConsoleData {
@@ -39,15 +39,16 @@ export interface ConsoleData {
 export type ConsoleSource = (filter: ConsoleFilter, offset: number, pharmacy: boolean, signal: AbortSignal) => Promise<ConsoleData>;
 
 export const liveConsoleSource: ConsoleSource = async (filter, offset, pharmacy, signal) => {
-  const [page, all, requested, accepted, dispatched, rxWaiting] = await Promise.all([
+  const [page, all, requested, accepted, dispatched, unpaid, rxWaiting] = await Promise.all([
     loadRequests({ status: filter, limit: PAGE_SIZE, offset }, signal),
     countRequests('ALL', signal),
     countRequests('REQUESTED', signal),
     countRequests('ACCEPTED', signal),
     countRequests('DISPATCHED', signal),
+    countRequests('AWAITING_PAYMENT', signal),
     pharmacy ? countRxReviews(signal).catch(() => null) : Promise.resolve(null),
   ]);
-  return { page, totals: { ALL: all, REQUESTED: requested, ACCEPTED: accepted, DISPATCHED: dispatched }, rxWaiting };
+  return { page, totals: { ALL: all, REQUESTED: requested, ACCEPTED: accepted, DISPATCHED: dispatched, AWAITING_PAYMENT: unpaid }, rxWaiting };
 };
 
 const STATE: Record<RequestStatus, { key: MessageKey; tone: SkTone }> = {
@@ -57,6 +58,9 @@ const STATE: Record<RequestStatus, { key: MessageKey; tone: SkTone }> = {
   COMPLETED: { key: 'pc.state.delivered', tone: 'neutral' },
   DECLINED: { key: 'pc.state.declined', tone: 'neutral' },
 };
+/** Placed but not paid: the partner can't act on it yet (the server refuses). */
+const AWAITING_PAYMENT_STATE = { key: 'pc.state.awaitingPayment', tone: 'neutral' } as const;
+const stateOf = (line: PartnerRequest) => (line.awaitingPayment ? AWAITING_PAYMENT_STATE : STATE[line.status]);
 
 export interface VendorConsoleScreenProps {
   source?: ConsoleSource;
@@ -99,7 +103,7 @@ export function VendorConsoleScreen({ source = liveConsoleSource, onNavigate }: 
       { text: line.name, sub: t('pc.console.itemsMeta', { qty: line.quantity, amount: money(line.pricePaise * line.quantity) }), weight: 'regular' },
       { text: dropPoint(line, t), weight: 'regular' },
       { text: line.requestedSlot || t('pc.console.noSlot'), weight: line.requestedSlot ? 'regular' : 'muted' },
-      { pill: { label: t(STATE[line.status].key), tone: STATE[line.status].tone } },
+      { pill: { label: t(stateOf(line).key), tone: stateOf(line).tone } },
     ],
   }));
   const pages = Math.max(1, Math.ceil(data.page.total / PAGE_SIZE));

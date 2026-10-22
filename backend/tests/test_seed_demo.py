@@ -137,6 +137,14 @@ def test_seeded_catalog_order_and_vendor_fulfilment(harness):
                               "requestedSlot": ""})
     assert order.status_code == 201, order.text
     assert order.json()["totalPaise"] == 34900
+    # The partner sees it only once it is paid (live-run audit #1): pay on the test gateway.
+    order_id = order.json()["id"]
+    intent = client.post(f"/api/orders/{order_id}/payment", headers=buyer_headers).json()
+    paid = client.post(f"/api/orders/{order_id}/payment/mock-checkout", headers=buyer_headers,
+                       json={"providerOrderId": intent["providerOrderId"], "cardNumber": "4111111111111111"}).json()
+    assert client.post(f"/api/orders/{order_id}/payment/verify", headers=buyer_headers, json={
+        "providerOrderId": paid["providerOrderId"], "providerPaymentId": paid["providerPaymentId"],
+        "signature": paid["signature"]}).json()["paymentStatus"] == "PAID"
     client.post("/api/auth/logout", headers=buyer_headers)
 
     client.post("/api/auth/otp/send", json={"identifier": DEMO_VENDOR, "channel": "EMAIL", "intent": "LOGIN"})

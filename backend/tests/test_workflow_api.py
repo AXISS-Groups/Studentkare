@@ -198,6 +198,11 @@ def test_catalog_orders_authoritative_prices_and_vendor_isolation(harness):
     client.post("/api/auth/logout", headers=other_headers)
     vendor_headers = login(client, codes, "vendor@example.test")
     assert client.patch(f"/api/work/requests/{line_id}", headers=vendor_headers, json={"status": "COMPLETED"}).status_code == 409
+    # Unpaid: refused until the money is in (live-run audit #1).
+    assert client.patch(f"/api/work/requests/{line_id}", headers=vendor_headers, json={"status": "ACCEPTED"}).status_code == 409
+    with factory() as db:
+        db.get(M.Order, first.json()["id"]).payment_status = "PAID"
+        db.commit()
     assert client.patch(f"/api/work/requests/{line_id}", headers=vendor_headers, json={"status": "ACCEPTED"}).status_code == 200
 
 
