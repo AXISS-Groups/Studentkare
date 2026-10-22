@@ -38,7 +38,7 @@ export const hi: Catalog = {
   'crisis.call112': '112 पर कॉल करें',
   'crisis.call112Spoken': '112 पर कॉल करें, आपातकालीन सेवाएँ',
   'crisis.callTeleManas': 'Tele-MANAS 14416 पर कॉल करें',
-  'crisis.callTeleManasSpoken': 'Tele-MANAS को 14416 पर कॉल करें, मानसिक स्वास्थ्य सहायता, 24 घंटे',
+  'crisis.callTeleManasSpoken': 'Tele-MANAS 14416 पर कॉल करें, मानसिक स्वास्थ्य सहायता, 24 घंटे',
   'crisis.noAccount': 'आपातकाल? कॉल करने के लिए खाते की ज़रूरत नहीं है।',
   'crisis.noVerify': 'आपातकाल? कॉल करने के लिए सत्यापन की ज़रूरत नहीं है।',
   'crisis.pageCannotSend': 'आपातकाल या संकट? अभी कॉल करें — यह पेज मदद नहीं भेज सकता।',

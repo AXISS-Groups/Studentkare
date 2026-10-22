@@ -32,7 +32,7 @@ describe('CampusIncidentsScreen', () => {
     apiRequest.mockReturnValue(new Promise(() => undefined));
     render(<CampusIncidentsScreen />);
     expect(screen.getByRole('status', { name: 'Loading incidents' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Call 108, the ambulance service' })).toHaveAttribute('href', 'tel:108');
+    expect(screen.getByRole('link', { name: 'Call 108 ambulance', description: 'Call 108, the ambulance service' })).toHaveAttribute('href', 'tel:108');
   });
 
   it('sorts SOS alerts into New, Acknowledged and Resolved; Dispatched says it is not tracked', async () => {
@@ -62,7 +62,7 @@ describe('CampusIncidentsScreen', () => {
     await act(async () => { fireEvent.click(screen.getByRole('button', { name: /Open incident: SOS from a student, Block C · room 214, 6 min/ })); });
     const panel = screen.getByRole('dialog', { name: 'SOS from Asha Rao' });
     expect(panel).toHaveAttribute('aria-modal', 'true');
-    expect(within(panel).getByRole('link', { name: 'Call 108, the ambulance service' })).toHaveAttribute('href', 'tel:108');
+    expect(within(panel).getByRole('link', { name: 'Call 108 ambulance', description: 'Call 108, the ambulance service' })).toHaveAttribute('href', 'tel:108');
     expect(within(panel).getByRole('button', { name: /Send medical officer/ })).toBeDisabled();
     expect(within(panel).getByRole('button', { name: /Hostel visit/ })).toBeDisabled();
     fireEvent.click(within(panel).getByRole('button', { name: 'Emergency card' }));
@@ -88,7 +88,7 @@ describe('CampusIncidentsScreen', () => {
     await flush();
     expect(screen.getByRole('alert')).toHaveTextContent('Couldn’t load incidents');
     expect(screen.getByRole('alert')).toHaveTextContent('Ref ERR-503 · CampusIncidents');
-    expect(screen.getByRole('link', { name: 'Call 108, the ambulance service' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Call 108 ambulance', description: 'Call 108, the ambulance service' })).toBeInTheDocument();
     serve([alert()]);
     await act(async () => { fireEvent.click(screen.getByRole('button', { name: 'Try again' })); });
     await flush();

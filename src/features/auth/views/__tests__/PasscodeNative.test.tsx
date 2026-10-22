@@ -54,7 +54,7 @@ describe('Expo: remembered sign-in and passcode', () => {
 
   it('the logo goes to the public home (the landing screen without a site URL)', async () => {
     const { onHome } = view();
-    fireEvent.click(await screen.findByRole('link', { name: 'Student Kare home' }));
+    fireEvent.click(await screen.findByRole('link', { name: /Student Kare home/ }));
     expect(onHome).toHaveBeenCalled();
   });
 });

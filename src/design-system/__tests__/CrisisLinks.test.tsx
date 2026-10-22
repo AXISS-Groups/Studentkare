@@ -11,7 +11,7 @@ describe('CrisisLinks', () => {
     const open = vi.spyOn(Linking, 'openURL').mockResolvedValue(undefined);
     render(<CrisisLinks />);
     fireEvent.click(screen.getByRole('button', { name: /Call 112, emergency services/ }));
-    fireEvent.click(screen.getByRole('button', { name: /Tele-MANAS on 14416/ }));
+    fireEvent.click(screen.getByRole('button', { name: /Tele-MANAS 14416/ }));
     expect(open).toHaveBeenCalledWith('tel:112');
     expect(open).toHaveBeenCalledWith('tel:14416');
     open.mockRestore();

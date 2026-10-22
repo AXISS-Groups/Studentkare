@@ -4,7 +4,7 @@ import { observer } from 'mobx-react-lite';
 import { Icon } from '@/design-system/icons';
 import type { SkIconName } from '@/design-system/icons';
 import { AMBULANCE_NUMBER, EMERGENCY_NUMBER } from '@/design-system/CrisisLinks';
-import { M2Card, SERVICE_HUES, m2Text, useLift } from '@/design-system/m2';
+import { cardLabel, M2Card, SERVICE_HUES, m2Text, useLift } from '@/design-system/m2';
 import type { PressState, ServiceHue } from '@/design-system/m2';
 import { color, focusRing, font, fontWeight, radius, shadow, shadowStyle, size, space } from '@/design-system/theme';
 import { useT } from '@/i18n';
@@ -65,7 +65,7 @@ export function EmergencyStrip({ compact = false, testID = 'fc-emergency' }: { c
       {compact ? null : <Text style={m2Text.eyebrow}>{t('fc.emergencyEyebrow')}</Text>}
       <View style={styles.stripRow}>
         {lines.map((line) => (
-          <Pressable key={line.number} role="link" accessibilityRole="link" accessibilityLabel={t(line.spoken)} aria-label={t(line.spoken)}
+          <Pressable key={line.number} role="link" accessibilityRole="link" {...cardLabel(t(line.spoken))}
             onPress={() => openTel(line.number)} testID={`${testID}-${line.number}`}
             style={({ focused }: PressState) => [styles.callBtn, focused ? focusRing : null]}>
             <Icon name={line.icon} size={20} color={color.onDangerFill} strokeWidth={2.2} />

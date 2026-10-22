@@ -107,7 +107,7 @@ describe('web shop (Mobile 2.0), signed in', () => {
     await settle();
     expect(window.location.search).toBe('?kind=lab');
     expect(screen.getByRole('heading', { level: 1, name: 'Health checks and lab packages' })).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Book Thyroid profile' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Book a slot, Thyroid profile' }));
     expect(screen.getByRole('dialog')).toBeInTheDocument();
   });
 
@@ -115,7 +115,7 @@ describe('web shop (Mobile 2.0), signed in', () => {
     serve({ '/catalog': catalog() });
     render(withCart(<WebShopView />));
     await settle();
-    fireEvent.click(screen.getByRole('button', { name: 'Add Paracetamol 650 mg to cart' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Add, Paracetamol 650 mg' }));
     const rail = screen.getByTestId('m2w-cart');
     expect(rail).toHaveTextContent('Paracetamol 650 mg');
     expect(screen.getByText('Paracetamol 650 mg added to your cart.')).toBeInTheDocument();
@@ -126,7 +126,7 @@ describe('web shop (Mobile 2.0), signed in', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Remove Paracetamol 650 mg' }));
     expect(rail).not.toHaveTextContent('Paracetamol 650 mg');
     // A prescription medicine never goes in the cart.
-    expect(screen.getByRole('button', { name: 'Add Azithromycin 500 mg to cart' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Add, Azithromycin 500 mg' })).toBeDisabled();
   });
 
   it('error: calm copy and a retry that loads again', async () => {
@@ -137,7 +137,7 @@ describe('web shop (Mobile 2.0), signed in', () => {
     serve({ '/catalog': catalog() });
     fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
     await settle();
-    expect(screen.getByRole('button', { name: 'Add Paracetamol 650 mg to cart' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Add, Paracetamol 650 mg' })).toBeInTheDocument();
   });
 
   it('offline: says so and offers nothing that needs the network', async () => {
@@ -184,7 +184,7 @@ describe('web shop (Mobile 2.0), signed out', () => {
     expect(screen.queryByText(/Refills for your regular medicines/)).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Sign in to continue' }));
     expect(go).toHaveBeenCalledWith('login', 'checkout');
-    fireEvent.click(screen.getByRole('button', { name: 'Book Thyroid profile' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Book a slot, Thyroid profile' }));
     expect(go).toHaveBeenCalledWith('login', 'shop');
   });
 });

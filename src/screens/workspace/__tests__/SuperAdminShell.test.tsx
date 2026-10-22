@@ -71,8 +71,8 @@ describe('theme toggle', () => {
 });
 
 describe('navigation structure', () => {
-  // The design's entries, plus six not on the canvas: Team accounts, Care directory, Medicine info, Lab report reviewers, Message outbox and Posts.
-  it('follows the design’s groups and order, with only the six added entries', () => {
+  // The design's entries, plus seven not on the canvas: Team accounts, Care directory, Medicine info, Lab report reviewers, Message outbox, Posts and Legal documents.
+  it('follows the design’s groups and order, with only the seven added entries', () => {
     expect(SUPER_ADMIN_NAVIGATION.map(group => group.title)).toEqual(['Platform', 'Tenants', 'Gatekeeping', 'Commerce', 'Content & AI', 'Governance']);
     const designed = SUPER_ADMIN_NAVIGATION.flatMap(group => group.items.map(item => item.label));
     expect(designed).toEqual([
@@ -81,14 +81,14 @@ describe('navigation structure', () => {
       'Clinician verification', 'Partner applications', 'Catalogue ops', 'Care directory', 'Medicine info', 'Lab report reviewers',
       'Plans & pricing', 'Billing ledger',
       'Message templates', 'Message outbox', 'Knowledge base', 'Posts', 'Intake & OCR',
-      'Rule L firewall', 'Consent policy', 'Break-glass log', 'Check-in audit', 'Casualty handover', 'Audit explorer', 'AI governance', 'Erasure queue',
+      'Rule L firewall', 'Consent policy', 'Legal documents', 'Break-glass log', 'Check-in audit', 'Casualty handover', 'Audit explorer', 'AI governance', 'Erasure queue',
     ]);
   });
 
   it('gives every designed entry its own screen', () => {
     SUPER_ADMIN_NAVIGATION.forEach(group => group.items.forEach(item => expect(item.route, item.label).toBeDefined()));
     const routes = SUPER_ADMIN_NAVIGATION.flatMap(group => group.items.flatMap(item => item.route ? [item.route] : []));
-    expect(new Set(routes).size).toBe(31);
+    expect(new Set(routes).size).toBe(32);
     // Removed from the sidebar on request; the routes still exist.
     ['admin/activity', 'admin/billing', 'admin/requests', 'admin/support', 'admin/telemetry', 'admin/preventive'].forEach(route => expect(routes).not.toContain(route));
   });
@@ -102,7 +102,7 @@ describe('navigation structure', () => {
       'shield', 'hand-pointer', 'box', 'hospital', 'pill', 'flask',
       'banknote', 'bar-chart',
       'message-circle', 'inbox', 'file', 'megaphone', 'clipboard',
-      'rows-split', 'book', 'heart-plus', 'heart-plus', 'arrows-left-right', 'book', 'cpu', 'shield-2',
+      'rows-split', 'book', 'file-text', 'heart-plus', 'heart-plus', 'arrows-left-right', 'book', 'cpu', 'shield-2',
     ]);
   });
 
@@ -134,9 +134,9 @@ describe('available entries', () => {
     expect(onNavigate).toHaveBeenCalledWith('admin/ops');
   });
 
-  it('has the design’s 25 links plus the 6 added ones, and no More tools group', () => {
+  it('has the design’s 25 links plus the 7 added ones, and no More tools group', () => {
     renderShell();
-    expect(within(nav()).getAllByRole('button')).toHaveLength(31);
+    expect(within(nav()).getAllByRole('button')).toHaveLength(32);
     expect(within(nav()).queryByRole('heading', { name: 'More tools' })).toBeNull();
   });
 

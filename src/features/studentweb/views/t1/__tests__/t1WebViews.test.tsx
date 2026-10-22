@@ -221,7 +221,7 @@ describe('WebEmergencyCard', () => {
     serve({ '/profile': new Error('down') });
     render(<WebEmergencyCardRoute />);
     await settle();
-    expect(screen.getAllByRole('link', { name: 'Call Tele-MANAS on 14416' }).length).toBeGreaterThan(0);
+    expect(screen.getAllByRole('link', { name: 'Call Tele-MANAS 14416' }).length).toBeGreaterThan(0);
   });
 });
 
@@ -315,7 +315,7 @@ describe('WebDeleteAccount', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Continue to delete' }));
     const confirm = screen.getByRole('button', { name: 'Delete my account in 7 days' });
     expect((confirm as HTMLButtonElement).disabled).toBe(true);
-    expect(screen.getByRole('link', { name: 'Call Tele-MANAS on 14416' })).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'Call Tele-MANAS 14416' })).toBeTruthy();
     fireEvent.change(screen.getByLabelText('Type DELETE to confirm'), { target: { value: 'delete' } });
     expect((confirm as HTMLButtonElement).disabled).toBe(false);
     await axeClean(container);

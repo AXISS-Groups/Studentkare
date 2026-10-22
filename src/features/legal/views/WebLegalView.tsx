@@ -11,6 +11,7 @@ import type { LegalKind } from '@/features/privacy/privacyRepository';
 import '@/features/studentweb/studentweb.css';
 import '@/features/studentweb/views/t1/t1web.css';
 import './legal.css';
+import '@/design-system/design-system.css';
 
 type LegalTab = 'privacy' | 'terms' | 'grievance';
 const TABS: ReadonlyArray<{ id: LegalTab; label: MessageKey }> = [
@@ -53,9 +54,11 @@ function WebLegalPage(): React.ReactElement {
   return (
     <div className="sk-swt-legal">
       <header className="sk-swt-legal__top">
-        <a className="sk-swt-legal__brand" href="/" aria-label={t('member.legal.backHome')}>
+        {/* Named by the wordmark it shows (label-in-name), then where it goes. */}
+        <a className="sk-swt-legal__brand" href="/">
           <BrandLogo size={30} label="" />
-          <span aria-hidden="true">{t('shell.brand.student')}<em>&nbsp;{t('shell.brand.kare')}</em></span>
+          <span>{t('shell.brand.student')}<em>&nbsp;{t('shell.brand.kare')}</em></span>
+          <span className="sk-visually-hidden">{t('member.legal.backHome')}</span>
         </a>
         <button type="button" className="sk-sw-link" onClick={() => navigate('support')}>{t('swt.legal.help')}</button>
       </header>

@@ -51,7 +51,7 @@ describe('AyushChatNativeView', () => {
     const vm = new AyushViewModel(replying(crisis).request);
     await vm.send('I want to hurt myself');
     render(<AyushChatNativeView viewModel={vm} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Call Tele-MANAS on 14416' }));
+    fireEvent.click(screen.getByRole('button', { name: /^Call Tele-MANAS 14416/ }));
     expect(open).toHaveBeenCalledWith('tel:14416');
     open.mockRestore();
   });

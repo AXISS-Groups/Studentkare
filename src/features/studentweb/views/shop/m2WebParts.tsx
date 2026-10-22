@@ -75,7 +75,8 @@ export function ProductCard({ item, inCart, onOpen, onAdd, index = 0 }: {
   else action = inCart ? t('shopweb.card.inCart') : t('shopweb.card.bookSlot');
   return (
     <li className="sk-m2w-card sk-m2w-lift sk-m2w-rise" style={rise(index)} data-testid={`m2w-card-${item.id}`}>
-      <button type="button" className="sk-m2w-card__art" style={hueStyle(art.hue)} aria-label={t('shopweb.view', { name: item.name })} onClick={onOpen}>
+      {/* The art opens the item for a pointer; keyboard and screen readers use the name button below (one stop, named by its text). */}
+      <button type="button" className="sk-m2w-card__art" style={hueStyle(art.hue)} tabIndex={-1} aria-hidden="true" onClick={onOpen}>
         {off > 0 ? <span className="sk-m2w-off">{t('m2.med.off', { percent: off })}</span> : null}
         <Icon name={art.icon} size={40} strokeWidth={1.8} />
         <span className="sk-m2w-card__artnote">{t('shopweb.card.illustration')}</span>
@@ -95,7 +96,8 @@ export function ProductCard({ item, inCart, onOpen, onAdd, index = 0 }: {
             type="button"
             className={item.kind === 'product' ? 'sk-m2w-btn sk-m2w-btn--outline sk-m2w-btn--sm' : 'sk-m2w-btn sk-m2w-btn--positive sk-m2w-btn--sm'}
             disabled={blocked}
-            aria-label={item.kind === 'product' ? t('shop.addSpoken', { name: item.name }) : t('sw.shop.bookSpoken', { name: item.name })}
+            // Starts with what it shows (label-in-name, WCAG 2.5.3), then which item.
+            aria-label={`${action}, ${item.name}`}
             onClick={onAdd}
           >
             {action}

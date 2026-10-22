@@ -17,6 +17,7 @@ import { countRequests, countRxReviews, loadRequests, updateRequest } from '@/fe
 import type { PartnerRequest, RequestStatus } from '@/features/partner/partnerApi';
 import { PartnerError, PartnerEmpty, PartnerKpis, PartnerLoading, PartnerPage, shortRef, usePartnerLoad } from '@/features/partner/PartnerPage';
 import './vendor-home.css';
+import '@/design-system/design-system.css';
 
 export type ProviderType = 'pharmacy' | 'lab' | 'clinic' | 'wellness';
 
@@ -338,8 +339,10 @@ function AccountMenu({ name, email, typeLabel, onSwitchRole, onSignOut }: { name
   const pick = (action: () => void) => () => { setOpen(false); action(); };
   return (
     <div className="vh-account" ref={root}>
-      <button type="button" className="vh-account__chip" aria-expanded={open} aria-haspopup="menu" aria-label={t('pc.home.accountMenu', { name })} onClick={() => setOpen(!open)}>
+      <button type="button" className="vh-account__chip" aria-expanded={open} aria-haspopup="menu" onClick={() => setOpen(!open)}>
         <span className="vh-account__avatar" aria-hidden="true">{partnerInitials(name)}</span>
+        {/* Named by its visible words where they show; on a phone they are hidden, so this names it there. */}
+        <span className="sk-visually-hidden">{t('pc.home.accountMenu', { name })}</span>
         <span className="vh-account__words">
           <span className="vh-account__name">{name}</span>
           {typeLabel ? <span className="vh-account__sub">{typeLabel}</span> : null}

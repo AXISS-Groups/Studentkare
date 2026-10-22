@@ -45,9 +45,9 @@ describe('CampusBreakGlassScreen (no break-glass route)', () => {
 
   it('keeps 108 and 112 one tap away, as keyboard-reachable tel: links', () => {
     render(<CampusBreakGlassScreen />);
-    const ambulance = screen.getByRole('link', { name: 'Call 108, the ambulance service' });
+    const ambulance = screen.getByRole('link', { name: 'Call 108 ambulance', description: 'Call 108, the ambulance service' });
     expect(ambulance).toHaveAttribute('href', 'tel:108');
     expect(ambulance.tabIndex).toBe(0);
-    expect(screen.getByRole('link', { name: 'Call 112, India’s emergency number' })).toHaveAttribute('href', 'tel:112');
+    expect(screen.getByRole('link', { name: 'Call 112', description: 'Call 112, India’s emergency number' })).toHaveAttribute('href', 'tel:112');
   });
 });

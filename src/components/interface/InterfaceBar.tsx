@@ -7,6 +7,7 @@ import { ShopDialog } from '../marketplace/ShopDialog';
 import { navigate } from '../../lib/utils/workflowRouting';
 import { Icon } from '@/design-system/icons';
 import { useAuth } from '../../data/contexts/AuthContext';
+import '@/design-system/design-system.css';
 
 export function InterfaceBar({ section }: { section: string }) {
   const t = useT();
@@ -33,12 +34,14 @@ export function InterfaceBar({ section }: { section: string }) {
 
 
   return <div className="care-interface-bar" ref={root}>
-    <button type="button" className="care-workspace-label care-workspace-logo-btn" onClick={() => navigate('shop')} aria-label={t('bar.home')}>
-      <Sparkles size={14} aria-hidden="true" />Studentkare <span>/</span><strong>{section}</strong>
+    {/* Named by its visible text (label-in-name, WCAG 2.5.3), with where it goes for screen readers. */}
+    <button type="button" className="care-workspace-label care-workspace-logo-btn" onClick={() => navigate('shop')}>
+      <Sparkles size={14} aria-hidden="true" />Studentkare <span aria-hidden="true">/</span><strong>{section}</strong>
+      <span className="sk-visually-hidden">{t('bar.home')}</span>
     </button>
     <div className="care-interface-actions">
       {isAccountPage && <>
-        <button type="button" className="care-bar-action-btn" aria-label={t('bar.notifications')} onClick={() => setNotificationsOpen(true)}>
+        <button type="button" className="care-bar-action-btn" aria-label={t('bar.alerts')} title={t('bar.notifications')} onClick={() => setNotificationsOpen(true)}>
           <Bell size={16} aria-hidden="true" /><span className="care-action-label">{t('bar.alerts')}</span>
         </button>
         {/* SOS is for students. Staff dashboards (partner, clinician, admin) do not show it. */}

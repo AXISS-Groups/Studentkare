@@ -46,7 +46,7 @@ describe('search boards', () => {
     expect(screen.getByRole('img', { name: 'Voice search isn’t available yet' })).toBeInTheDocument();
     fireEvent.click(screen.getByRole('link', { name: /Have a prescription/ }));
     expect(l.openPrescriptions).toHaveBeenCalled();
-    fireEvent.click(screen.getByRole('link', { name: 'Skin care' }));
+    fireEvent.click(screen.getByRole('link', { name: /^Skin care/ }));
     expect(l.openList).toHaveBeenCalledWith({ category: 'skin' });
     // No recent searches yet: nothing is read from the device.
     expect(screen.queryByText('Recent searches')).toBeNull();
