@@ -95,7 +95,7 @@ export function AuthHeroSlides(): React.ReactElement {
     <section
       ref={setNode}
       className="sk-slides"
-      aria-roledescription="carousel"
+      aria-roledescription={t('authpc.hero.carousel')}
       aria-label={t('authpc.hero.label')}
       data-running={running ? 'true' : 'false'}
       {...holdHandlers(hold)}
@@ -106,7 +106,7 @@ export function AuthHeroSlides(): React.ReactElement {
             key={slide.id}
             className="sk-slide"
             role="group"
-            aria-roledescription="slide"
+            aria-roledescription={t('authpc.hero.slide')}
             aria-label={t('authpc.slide.position', { n: i + 1, total })}
             aria-hidden={i === index ? undefined : true}
             data-active={i === index ? 'true' : 'false'}
@@ -174,7 +174,7 @@ export function AuthSlideStrip(): React.ReactElement {
     <section
       ref={setNode}
       className="sk-strip"
-      aria-roledescription="carousel"
+      aria-roledescription={t('authpc.hero.carousel')}
       aria-label={t('authpc.hero.label')}
       data-running={running ? 'true' : 'false'}
       {...holdHandlers(hold)}
@@ -185,7 +185,7 @@ export function AuthSlideStrip(): React.ReactElement {
             key={slide.id}
             className="sk-strip__card"
             role="group"
-            aria-roledescription="slide"
+            aria-roledescription={t('authpc.hero.slide')}
             aria-label={t('authpc.slide.position', { n: i + 1, total: AUTH_SLIDES.length })}
             data-active={i === index ? 'true' : 'false'}
           >

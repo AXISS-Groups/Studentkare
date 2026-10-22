@@ -8,6 +8,8 @@
 export const authPasscodeEn = {
   // Hero slides
   'authpc.hero.label': 'What Student Kare does',
+  'authpc.hero.carousel': 'carousel',
+  'authpc.hero.slide': 'slide',
   'authpc.slide.records.eyebrow': 'Records',
   'authpc.slide.records.title': 'Your health records, in one place',
   'authpc.slide.records.body': 'Reports, prescriptions and visit notes stay in one account you own, and stay yours after you graduate.',
@@ -114,6 +116,8 @@ export const authPasscodeEn = {
 
 export const authPasscodeTe: Record<keyof typeof authPasscodeEn, string> = {
   'authpc.hero.label': 'Student Kare ఏమి చేస్తుంది',
+  'authpc.hero.carousel': 'కరోసెల్',
+  'authpc.hero.slide': 'స్లైడ్',
   'authpc.slide.records.eyebrow': 'రికార్డులు',
   'authpc.slide.records.title': 'మీ ఆరోగ్య రికార్డులు, ఒకే చోట',
   'authpc.slide.records.body': 'రిపోర్టులు, ప్రిస్క్రిప్షన్లు, విజిట్ నోట్స్ మీ సొంత ఖాతాలో ఉంటాయి — చదువు పూర్తయ్యాక కూడా మీవే.',
@@ -208,6 +212,8 @@ export const authPasscodeTe: Record<keyof typeof authPasscodeEn, string> = {
 
 export const authPasscodeHi: Record<keyof typeof authPasscodeEn, string> = {
   'authpc.hero.label': 'Student Kare क्या करता है',
+  'authpc.hero.carousel': 'कैरोसेल',
+  'authpc.hero.slide': 'स्लाइड',
   'authpc.slide.records.eyebrow': 'रिकॉर्ड',
   'authpc.slide.records.title': 'आपके हेल्थ रिकॉर्ड, एक जगह',
   'authpc.slide.records.body': 'रिपोर्ट, प्रिस्क्रिप्शन और विज़िट नोट्स आपके अपने खाते में रहते हैं — और पढ़ाई के बाद भी आपके ही रहते हैं।',
