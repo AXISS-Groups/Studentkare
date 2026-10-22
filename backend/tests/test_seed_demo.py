@@ -58,11 +58,12 @@ def test_seed_is_idempotent_and_marks_samples(harness):
     _, factory, _ = harness
     first = seed(factory)
     lab = first.pop("lab")
+    assert first.pop("consultSlots") > 0   # the demo doctor's consult times (live-run audit #7)
     assert first == {"accounts": 10, "catalog": len(DEMO_CATALOG), "medicines": len(DEMO_MEDICINES), "content": 11, "articles": 3}
     # The demo lab: its partner account and two collectors, and a week of slots.
     assert lab["accounts"] == 3 and lab["collectors"] == 2 and lab["slots"] > 0
     assert seed(factory) == {"accounts": 0, "catalog": 0, "medicines": 0, "content": 0, "articles": 0,
-                             "lab": {"accounts": 0, "collectors": 0, "slots": 0}}
+                             "lab": {"accounts": 0, "collectors": 0, "slots": 0}, "consultSlots": 0}
     with factory() as db:
         roles = {row.identifier: row.role for row in db.scalars(select(M.Account)).all()}
         assert roles[DEMO_STUDENT] == "STUDENT"
