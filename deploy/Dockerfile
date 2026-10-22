@@ -15,7 +15,10 @@ ARG VITE_API_BASE_URL=/api
 # Empty is fine: Sentry stays off (src/lib/sentry.ts) and the build does not fail.
 ARG VITE_SENTRY_DSN=
 ARG VITE_APP_VERSION=dev
+# Public home page the logo links to; empty = the app's own landing route.
+ARG VITE_PUBLIC_SITE_URL=
 ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
+ENV VITE_PUBLIC_SITE_URL=$VITE_PUBLIC_SITE_URL
 ENV VITE_SENTRY_DSN=$VITE_SENTRY_DSN
 ENV VITE_APP_VERSION=$VITE_APP_VERSION
 

@@ -146,11 +146,16 @@ jobs:
   ops-config:
     # Production deploy config: the Helm chart renders and lints with the
     # production values. A chart that cannot render cannot be deployed.
-    name: Ops config (Helm chart)
+    name: Ops config (Helm chart, env passthrough)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Codebase
         uses: actions/checkout@v4
+
+      - name: Setup Python Environment
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
 
       - name: Setup Helm
         uses: azure/setup-helm@v4
@@ -166,6 +171,11 @@ jobs:
                 --set backend.secrets.ALERTMANAGER_WEBHOOK_SECRET=ci-dummy)
           helm lint "$chart" "${args[@]}"
           helm template studentkare "$chart" "${args[@]}" > /tmp/studentkare-rendered.yaml
+
+      - name: Env passthrough (every env var the app reads reaches prod compose AND Helm)
+        run: |
+          pip install pyyaml
+          python scripts/ops/check-env-passthrough.py
 
   design-coverage:
     # Report only: how many of the 239 canvas screens are built to their brief.

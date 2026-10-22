@@ -86,6 +86,7 @@ jobs:
             VITE_APP_VERSION=${{ steps.meta.outputs.version }}
             VITE_API_BASE_URL=/api
             VITE_SENTRY_DSN=${{ vars.VITE_SENTRY_DSN }}
+            VITE_PUBLIC_SITE_URL=${{ vars.VITE_PUBLIC_SITE_URL }}
           labels: |
             org.opencontainers.image.revision=${{ steps.meta.outputs.sha }}
             org.opencontainers.image.version=${{ steps.meta.outputs.version }}

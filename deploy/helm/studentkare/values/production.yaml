@@ -66,7 +66,92 @@ backend:
     LLM_MODEL: ""
     EMBEDDING_PROVIDER: local
     EMBEDDING_MODEL: ""
-  # Secrets (populated from Vault/SealedSecrets)
+    EMBEDDING_OLLAMA_URL: ""
+    AYUSH_HELP_PACK_AUTOLOAD: "true"
+    # Every key below goes into the studentkare-backend-config ConfigMap when it is
+    # non-empty; "" leaves the variable unset so the code's default applies.
+    # scripts/ops/check-env-passthrough.py keeps this list complete. The app
+    # domain and APP_BASE_URL come from global.domain (override APP_BASE_URL here).
+    # Integration keys are fallbacks: Admin › Integrations wins.
+    ALLOWED_ORIGINS: ""          # default https://<global.domain>
+    FORWARDED_ALLOW_IPS: ""      # default the RFC 1918 ranges (ingress pod network)
+    APP_BASE_URL: ""             # default https://<global.domain>; links in email and invites
+    RULE_L_REQUIRE_GRANTS: "1"
+    LLM_TIMEOUT_SECONDS: ""
+    # Payments: Student Plus plan id (create it in Razorpay); unpaid-order hold minutes (default 30).
+    RAZORPAY_PLUS_PLAN_ID: ""
+    RAZORPAY_BASE_URL: ""
+    PAYMENT_HOLD_MINUTES: ""
+    # ABDM gateway. Empty = not configured; a sandbox URL is refused in production.
+    ABDM_BASE_URL: ""
+    ABDM_CLIENT_ID: ""
+    ABDM_FACILITY_ID: ""
+    ABDM_HFR_ENABLED: ""
+    ABDM_HFR_REGISTRY_URL: ""
+    ABDM_HFR_CLIENT_ID: ""
+    # Upload virus scanner and medicine-photo OCR.
+    CLAMAV_HOST: ""
+    CLAMAV_PORT: ""
+    CLAMAV_STRICT: ""
+    MEDICINE_OCR_ENABLED: ""
+    MEDICINE_OCR_TESSERACT: ""
+    # Agent Ayush tuning.
+    LLM_ENABLED: ""
+    LLM_PROVIDER: ""
+    LLM_RETRY_AFTER_SECONDS: ""
+    EMBEDDING_TIMEOUT_SECONDS: ""
+    # Sign-in codes and 2FA.
+    OTP_CHANNEL: ""
+    OTP_LENGTH: ""
+    OTP_TTL_SECONDS: ""
+    OTP_MAX_ATTEMPTS: ""
+    TWOFA_ENFORCED_ROLES: ""
+    TWOFA_ISSUER: ""
+    # Delivery channels (secrets are under backend.secrets).
+    SMTP_HOST: ""
+    SMTP_PORT: ""
+    SMTP_TLS: ""
+    SMTP_FROM: ""
+    SMTP_USERNAME: ""
+    DEFAULT_FROM_EMAIL: ""
+    POSTAL_ENABLED: ""
+    POSTAL_API_URL: ""
+    POSTAL_FROM_EMAIL: ""
+    OPENWA_ENABLED: ""
+    OPENWA_BASE_URL: ""
+    OPENWA_SESSION_ID: ""
+    OPENWA_DEFAULT_COUNTRY_CODE: ""
+    SLACK_ENABLED: ""
+    SLACK_DEFAULT_CHANNEL: ""
+    SLACK_OPS_CHANNEL: ""
+    SLACK_BOOKING_CHANNEL: ""
+    FIREBASE_ENABLED: ""
+    FIREBASE_API_KEY: ""         # Firebase web config key (public by design)
+    FIREBASE_AUTH_DOMAIN: ""
+    FIREBASE_PROJECT_ID: ""
+    FIREBASE_MESSAGING_SENDER_ID: ""
+    FIREBASE_APP_ID: ""
+    FIREBASE_VAPID_KEY: ""
+    POSTHOG_ENABLED: ""
+    POSTHOG_HOST: ""
+    APILAYER_ENABLED: ""
+    # Platform identity shown in mail and on the site.
+    BRAND_NAME: ""
+    PARENT_COMPANY: ""
+    SUPPORT_EMAIL: ""
+    SUPPORT_PHONE: ""
+    COMPANY_ADDRESS: ""
+    COPYRIGHT_TEXT: ""
+    LOGO_URL: ""
+    FAVICON_URL: ""
+    # Database pool, API limits (#221: per IP and per account), /metrics allowlist.
+    DB_POOL_SIZE: ""
+    DB_MAX_OVERFLOW: ""
+    RATE_LIMIT_API_PER_IP_PER_MINUTE: ""
+    RATE_LIMIT_API_PER_ACCOUNT_PER_MINUTE: ""
+    METRICS_ALLOWED_NETWORKS: ""
+  # Secrets (populated from Vault/SealedSecrets). A key left "" is not written to
+  # the Secret, and the env var stays unset (secretKeyRef is optional).
   secrets:
     DATABASE_URL: ""
     OTP_HASH_SECRET: ""
@@ -87,6 +172,18 @@ backend:
     # LiveKit (docs/video-consults.md). Empty = no video consult can be started, said so in the app.
     LIVEKIT_API_KEY: ""               # API key id (the token issuer)
     LIVEKIT_API_SECRET: ""            # signs join tokens; never leaves the server
+    PAYMENT_WEBHOOK_SECRET: ""        # HMAC secret for the generic signed payment webhook
+    ABDM_CLIENT_SECRET: ""            # ABDM gateway client secret
+    ABDM_HFR_CLIENT_SECRET: ""        # ABDM Health Facility Registry client secret
+    LLM_API_KEY: ""                   # only for a non-Ollama provider (Rule-C: on-prem by default)
+    SMTP_PASSWORD: ""
+    POSTAL_SERVER_API_KEY: ""
+    OPENWA_API_KEY: ""
+    SLACK_BOT_TOKEN: ""
+    FIREBASE_SERVER_KEY: ""
+    FIREBASE_SERVICE_ACCOUNT_JSON: ""
+    POSTHOG_API_KEY: ""
+    APILAYER_API_KEY: ""
   service:
     type: ClusterIP
     port: 8000
