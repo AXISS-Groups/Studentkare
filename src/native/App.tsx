@@ -1,4 +1,5 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { Linking } from 'react-native';
 import { LanguageProvider, useT } from '@/i18n';
 import { color } from '@/design-system/theme';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -70,6 +71,8 @@ import {
   VaccinesScreen,
 } from './M2HealthScreens';
 import { NativeSessionProvider, useNativeSession } from './session';
+import type { NativeSessionStatus } from './session';
+import { createLinking } from './linking';
 import { StudentHomeScreen } from './StudentHomeScreen';
 import { StudentShell } from './StudentTabBar';
 import { SessionCheckingScreen } from './SessionCheckingScreen';
@@ -78,6 +81,7 @@ import { YourCareBoard } from '@/features/yourcare/views/YourCareBoard';
 import { AppointmentsBoard } from '@/features/appointments/views/AppointmentsBoard';
 import { MoreHubBoard } from '@/features/account/views/MoreHubBoard';
 import { BoardScreen } from '@/design-system/board/BoardKit';
+import { LegalLinksNative } from '@/features/auth/views/LegalLinksNative';
 
 export type RootStackParamList = {
   // keep-sorted start
@@ -116,7 +120,7 @@ export type RootStackParamList = {
   MyRequests: undefined;
   NotificationSettings: undefined;
   Notifications: undefined;
-  Orders: undefined;
+  Orders: { orderId?: string } | undefined;
   Partnerships: undefined;
   Plans: undefined;
   PreventiveCare: undefined;
@@ -251,6 +255,8 @@ function MoreRoute() {
             signingOut,
           }}
         />
+        {/* The public Terms and Privacy Policy pages (the stores ask for an in-app link). */}
+        <LegalLinksNative />
       </BoardScreen>
     </SafeAreaView>
   );
@@ -507,6 +513,32 @@ function SignedOutNotice() {
 }
 
 /**
+ * Deep links (studentkare:// and https://studentkare.co, see ./linking). The
+ * first link waits for the session check, because the stack it opens into is
+ * built from the session; until then the checking screen shows.
+ */
+function LinkedNavigation({ children }: { children: React.ReactNode }) {
+  const { status } = useNativeSession();
+  const statusRef = useRef<NativeSessionStatus>(status);
+  statusRef.current = status;
+  const settled = useRef<{ promise: Promise<void>; resolve: () => void } | null>(null);
+  if (settled.current === null) {
+    let resolve: () => void = () => undefined;
+    const promise = new Promise<void>((done) => { resolve = done; });
+    settled.current = { promise, resolve };
+  }
+  useEffect(() => {
+    if (status !== 'checking') settled.current?.resolve();
+  }, [status]);
+  const [linking] = useState(() => createLinking(
+    () => statusRef.current,
+    () => settled.current?.promise ?? Promise.resolve(),
+    () => Linking.getInitialURL(),
+  ));
+  return <NavigationProvider linking={linking} fallback={<SessionCheckingScreen />}>{children}</NavigationProvider>;
+}
+
+/**
  * Nothing is asked for at launch. The camera is requested when a student
  * photographs a record, notifications when they turn on a medicine reminder.
  */
@@ -517,9 +549,9 @@ export default function NativeApp() {
         <AppStoresProvider>
           <NativeSessionProvider>
             <SignedOutNotice />
-            <NavigationProvider>
+            <LinkedNavigation>
               <RootNavigator />
-            </NavigationProvider>
+            </LinkedNavigation>
           </NativeSessionProvider>
         </AppStoresProvider>
       </SafeAreaProvider>

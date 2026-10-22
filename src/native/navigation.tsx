@@ -8,14 +8,20 @@
 //       react-native-screens react-native-safe-area-context
 import React from 'react';
 import { NavigationContainer, useNavigation, useNavigationState } from '@react-navigation/native';
-import type { NavigationProp, ParamListBase } from '@react-navigation/native';
+import type { LinkingOptions, NavigationProp, ParamListBase } from '@react-navigation/native';
 
 /**
  * Hosts the native navigation container. Feature screens are mounted as
  * children (via a navigator built from the module registry in a full setup).
+ * `linking` maps deep links to screens (see ./linking); `fallback` shows while
+ * the first link waits to be resolved.
  */
-export function NavigationProvider({ children }: { children?: React.ReactNode }) {
-  return <NavigationContainer>{children}</NavigationContainer>;
+export function NavigationProvider<P extends ParamListBase>({ children, linking, fallback }: {
+  children?: React.ReactNode;
+  linking?: LinkingOptions<P>;
+  fallback?: React.ReactNode;
+}) {
+  return <NavigationContainer linking={linking} fallback={fallback}>{children}</NavigationContainer>;
 }
 
 /** Current route name, normalized to the same format the web facade returns. */

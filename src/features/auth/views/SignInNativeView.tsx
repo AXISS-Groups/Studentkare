@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { useT } from '@/i18n';
+import { LegalLinksNative } from './LegalLinksNative';
 import { color, font, fontWeight, radius, size, space } from '@/design-system/theme';
 import { ActivityIndicator, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { observer } from 'mobx-react-lite';
@@ -253,6 +254,7 @@ export const SignInNativeView: React.FC<SignInNativeViewProps> = observer(functi
           </TouchableOpacity>
         )}
         <Text style={s.terms}>{t('auth.terms')}</Text>
+        <LegalLinksNative />
       </View>
     </AuthNativeFrame>
   );
