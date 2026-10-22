@@ -135,7 +135,7 @@ describe('the Discover page', () => {
     await settle();
     const band = screen.getByRole('region', { name: 'Health checks, made simpler.' });
     expect(within(band).getByText('Thyroid profile')).toBeInTheDocument();
-    expect(within(band).getByRole('link', { name: 'Book Thyroid profile in the shop' })).toHaveAttribute('href', '/shop?kind=lab');
+    expect(within(band).getByRole('link', { name: 'Book in the shop: Thyroid profile' })).toHaveAttribute('href', '/shop?kind=lab');
   });
 
   it('says no article is published rather than listing reading times', async () => {

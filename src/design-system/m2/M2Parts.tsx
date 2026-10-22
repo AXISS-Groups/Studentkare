@@ -58,7 +58,18 @@ export function M2Heading({ children, style, level = 2, testID }: { children: Re
   );
 }
 
-/** A tappable card: lifts on hover and press, focus ring, ≥ 44 px. */
+/**
+ * The label for a tappable card whose visible text already names it. On the web
+ * the browser names it from that text (joining its lines), so voice-control
+ * users can say what they see (WCAG 2.5.3, axe label-content-name-mismatch,
+ * live-run audit #10); a native screen reader gets `label`, where the card's
+ * lines are not read as one.
+ */
+export function cardLabel(label: string): { accessibilityLabel?: string; 'aria-label'?: string } {
+  return Platform.OS === 'web' ? {} : { accessibilityLabel: label, 'aria-label': label };
+}
+
+/** A tappable card: lifts on hover and press, focus ring, ≥ 44 px. Named as `cardLabel` says. */
 export function LiftCard({ label, onPress, role = 'link', style, children, testID, disabled = false }: {
   label: string; onPress?: () => void; role?: 'link' | 'button'; style?: StyleProp<ViewStyle>; children: React.ReactNode; testID?: string; disabled?: boolean;
 }) {
@@ -67,8 +78,7 @@ export function LiftCard({ label, onPress, role = 'link', style, children, testI
     <Pressable
       role={role}
       accessibilityRole={role}
-      accessibilityLabel={label}
-      aria-label={label}
+      {...cardLabel(label)}
       accessibilityState={disabled ? { disabled: true } : undefined}
       disabled={disabled}
       onPress={onPress}

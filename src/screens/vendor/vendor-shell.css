@@ -103,6 +103,8 @@
 @media (max-width: 1024px) {
   .sk-vendor-shell {
     grid-template-columns: minmax(0, 1fr);
+    /* A short page must not stretch the phone header row (live-run audit #8). */
+    align-content: start;
   }
   .sk-vendor-shell .sk-vendor-shell-mobilebar {
     position: sticky;

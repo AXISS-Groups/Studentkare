@@ -946,7 +946,8 @@
       "src/features/clinician/queue/ClinicianQueueViewModel.ts",
       "src/features/clinician/queue/queueModel.ts",
       "src/features/clinician/queue/queueSource.ts",
-      "src/features/clinician/shared/ClinicianStates.tsx"
+      "src/features/clinician/shared/ClinicianStates.tsx",
+      "src/features/clinician/shared/BookingRequestsPanel.tsx"
     ],
     "ClinicalReview": [
       "src/design-system/clinician-shell/ClinicianShell.tsx",
@@ -1112,7 +1113,8 @@
       "src/features/clinician/today/ClinicianTodayViewModel.ts",
       "src/features/clinician/today/todayModel.ts",
       "src/features/clinician/today/todaySource.ts",
-      "src/features/clinician/shared/ClinicianStates.tsx"
+      "src/features/clinician/shared/ClinicianStates.tsx",
+      "src/features/clinician/shared/BookingRequestsPanel.tsx"
     ],
     "ClinicianInbox": [
       "src/design-system/clinician-shell/ClinicianShell.tsx",

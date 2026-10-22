@@ -289,6 +289,7 @@
   overscroll-behavior-x: contain;
 }
 .sk-strip__track::-webkit-scrollbar { display: none; }
+.sk-strip__track:focus-visible { outline: 3px solid var(--sk-color-focus); outline-offset: 2px; }
 .sk-strip__card {
   flex: 0 0 100%;
   scroll-snap-align: start;

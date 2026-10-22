@@ -33,8 +33,10 @@ export interface StatRowProps {
 const UNKNOWN_FIGURE = '\u2014';
 
 export function StatRow({ stats, variant = 'tile', label }: StatRowProps): React.ReactElement {
-  return (
-    <dl className={`sk-stats sk-stats--${variant}`} role={label ? 'group' : undefined} aria-label={label}>
+  // A role on the <dl> itself drops its list semantics, leaving every <dt>/<dd> outside a list
+  // (axe dlitem, live-run audit #10): the name goes on a wrapping group instead.
+  const list = (
+    <dl className={`sk-stats sk-stats--${variant}`}>
       {stats.map((stat) => (
         <div key={stat.label} className={`sk-stat sk-rise${stat.value === null ? ' is-unknown' : ''}`}>
           <dt className="sk-stat__label">{stat.label}</dt>
@@ -44,6 +46,7 @@ export function StatRow({ stats, variant = 'tile', label }: StatRowProps): React
       ))}
     </dl>
   );
+  return label ? <div role="group" aria-label={label}>{list}</div> : list;
 }
 
 /* ---------------------------------------------------------------- DataTable */

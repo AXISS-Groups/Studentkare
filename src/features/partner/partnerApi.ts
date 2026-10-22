@@ -36,7 +36,13 @@ export interface PartnerRequest {
   delivery: PartnerDelivery | null;
   requestedSlot: string;
   createdAt: number;
+  /** Placed with online payment on offer and not paid yet: nothing may be accepted or sent (server-enforced). */
+  awaitingPayment?: boolean;
+  paymentStatus?: string;
 }
+
+/** A queue filter: a line status, everything, or the placed-but-unpaid lines kept apart from "New". */
+export type QueueFilter = RequestStatus | 'ALL' | 'AWAITING_PAYMENT';
 
 export interface Page<T> {
   items: T[];
@@ -45,7 +51,7 @@ export interface Page<T> {
   offset: number;
 }
 
-export function requestsPath(options: { status?: RequestStatus | 'ALL'; limit?: number; offset?: number } = {}): string {
+export function requestsPath(options: { status?: QueueFilter; limit?: number; offset?: number } = {}): string {
   const params = new URLSearchParams();
   params.set('limit', String(options.limit ?? 20));
   params.set('offset', String(options.offset ?? 0));
@@ -53,12 +59,12 @@ export function requestsPath(options: { status?: RequestStatus | 'ALL'; limit?: 
   return `/work/requests?${params.toString()}`;
 }
 
-export function loadRequests(options: { status?: RequestStatus | 'ALL'; limit?: number; offset?: number } = {}, signal?: AbortSignal): Promise<Page<PartnerRequest>> {
+export function loadRequests(options: { status?: QueueFilter; limit?: number; offset?: number } = {}, signal?: AbortSignal): Promise<Page<PartnerRequest>> {
   return apiRequest<Page<PartnerRequest>>(requestsPath(options), { signal });
 }
 
 /** How many lines are in a state: the server's own `total`, one row fetched. */
-export async function countRequests(status: RequestStatus | 'ALL', signal?: AbortSignal): Promise<number> {
+export async function countRequests(status: QueueFilter, signal?: AbortSignal): Promise<number> {
   const page = await loadRequests({ status, limit: 1 }, signal);
   return page.total;
 }

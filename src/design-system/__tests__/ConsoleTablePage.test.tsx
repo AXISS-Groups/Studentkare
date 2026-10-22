@@ -177,7 +177,8 @@ describe('ConsoleTablePage controls', () => {
 
   it('plain variants: figures and table straight on the canvas', () => {
     const { container } = at('ready', { statVariant: 'plain', statsLabel: 'Accounts summary', table: { ...props().table, variant: 'plain' } });
-    expect(screen.getByRole('group', { name: 'Accounts summary' })).toHaveClass('sk-stats--plain');
+    // The named group wraps the <dl> (axe dlitem, live-run audit #10).
+    expect(screen.getByRole('group', { name: 'Accounts summary' }).querySelector('dl')).toHaveClass('sk-stats--plain');
     expect(container.querySelector('.sk-table-card--plain')).not.toBeNull();
   });
 

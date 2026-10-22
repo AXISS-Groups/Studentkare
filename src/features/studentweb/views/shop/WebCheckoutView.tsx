@@ -170,7 +170,7 @@ export const WebCheckoutView = observer(function WebCheckoutView() {
 
         <aside className="sk-m2w-checkout__side">
           <section className="sk-m2w-panel sk-m2w-summary" aria-labelledby="sk-m2w-cart-title">
-            <span id="sk-m2w-cart-title" className="sk-m2w-eyebrow">{t('sw.checkout.cart', { count: units })}</span>
+            <span id="sk-m2w-cart-title" className="sk-m2w-eyebrow">{units === 1 ? t('sw.checkout.cartOne') : t('sw.checkout.cart', { count: units })}</span>
             <CartLines lines={cart.lines} onSet={cart.setQuantity} onAdd={cart.add} />
             <dl className="sk-m2w-totals">
               <div><dt>{t('cart.itemsTotal')}</dt><dd>{money(total)}</dd></div>

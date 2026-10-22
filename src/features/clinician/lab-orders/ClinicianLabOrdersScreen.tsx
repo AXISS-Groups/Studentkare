@@ -157,7 +157,8 @@ export function ClinicianLabOrdersScreen({ source, orderViewModel }: { source?: 
   const [drawer, setDrawer] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   useEffect(() => { void table.load(); }, [table]);
-  useEffect(() => () => order.dispose(), [order]);
+  // Live while mounted. StrictMode mounts, disposes and mounts again: activate() on every mount.
+  useEffect(() => { order.activate(); return () => order.dispose(); }, [order]);
   const openOrder = () => {
     order.startAnother();
     setDrawer(true);

@@ -102,7 +102,7 @@ def test_a_student_changing_campus_goes_back_through_verification(harness):  # n
     client, factory, codes = harness
     user, headers = register(client, codes, "mover@x.test")
     with factory() as db:
-        db.add(M.CampusVerification(account_id=user["id"], university="IIT Hyderabad", roll_number="R1", status="VERIFIED"))
+        db.merge(M.CampusVerification(account_id=user["id"], university="IIT Hyderabad", roll_number="R1", status="VERIFIED"))
         db.commit()
     changed = client.patch("/api/profile", headers=headers, json={"university": "BITS Pilani"})
     assert changed.status_code == 200

@@ -71,6 +71,24 @@ PROVIDER_FAILED_MESSAGE = "The payment provider could not be reached. Nothing wa
 UNPAID, PAID, PARTIALLY_REFUNDED, REFUNDED, EXPIRED, CANCELLED = (
     "UNPAID", "PAID", "PARTIALLY_REFUNDED", "REFUNDED", "EXPIRED", "CANCELLED")
 REFUNDABLE_ORDER_STATES = {PAID, PARTIALLY_REFUNDED, EXPIRED, CANCELLED}
+# The money is in: a partner may act on the order.
+PAYMENT_CONFIRMED_STATES = (PAID, PARTIALLY_REFUNDED)
+
+
+def order_awaits_payment(order) -> bool:
+    """A shop order that needs paying before a partner may accept, pack or dispatch it.
+
+    Online payment was on offer when it was placed (``payment_due_at`` set) and the
+    server has not confirmed it. An order placed while payments were off stays a
+    plain request, as before.
+    """
+    return bool(order is not None and (order.payment_due_at or 0) > 0
+                and order.payment_status not in PAYMENT_CONFIRMED_STATES)
+
+
+def order_awaits_payment_clause():
+    """``order_awaits_payment`` as SQL over ``care_orders``."""
+    return (M.Order.payment_due_at > 0) & M.Order.payment_status.not_in(PAYMENT_CONFIRMED_STATES)
 
 
 def now() -> float:
@@ -376,8 +394,41 @@ def intent_payload(intent: M.PaymentIntent, provider: PaymentProvider) -> dict:
             "checkout": provider.client_options()}
 
 
-def start_payment(db, payable: Payable) -> dict:
-    """Open (or reuse) a provider order for ``payable``. Commits."""
+def _usable(intent: M.PaymentIntent | None, payable: Payable, provider: PaymentProvider) -> bool:
+    """Still open, for this amount, at this provider: safe to hand back instead of a new one."""
+    return (intent is not None and intent.status == "CREATED" and intent.provider == provider.name
+            and intent.amount_paise == payable.amount_paise and intent.expires_at > now())
+
+
+def _keyed_intent(db, payable: Payable, key: str) -> M.PaymentIntent | None:
+    return db.scalar(select(M.PaymentIntent).where(
+        M.PaymentIntent.payable_kind == payable.kind, M.PaymentIntent.payable_id == payable.id,
+        M.PaymentIntent.idempotency_key == key))
+
+
+def _reusable_intent(db, payable: Payable, provider: PaymentProvider, key: str) -> M.PaymentIntent | None:
+    """The intent this request should get back, if one exists: the key's own, else any open one."""
+    if key:
+        keyed = _keyed_intent(db, payable, key)
+        if _usable(keyed, payable, provider):
+            return keyed
+    open_intent = db.scalar(select(M.PaymentIntent).where(
+        M.PaymentIntent.payable_kind == payable.kind, M.PaymentIntent.payable_id == payable.id,
+        M.PaymentIntent.status == "CREATED", M.PaymentIntent.provider == provider.name,
+        M.PaymentIntent.amount_paise == payable.amount_paise, M.PaymentIntent.expires_at > now(),
+    ).order_by(M.PaymentIntent.created_at.desc()))
+    return open_intent
+
+
+def start_payment(db, payable: Payable, idempotency_key: str = "") -> dict:
+    """Open (or reuse) a provider order for ``payable``. Commits.
+
+    ``idempotency_key`` (the client's Idempotency-Key) makes a repeated or
+    concurrent start for the same checkout return the same intent: the key is
+    unique per payable, so of two racing requests one saves and the other gets
+    that one back (live-run audit #9). A key whose intent is spent (paid,
+    expired, failed over) opens a fresh, unkeyed one.
+    """
     handler = payable_kind(payable.kind)
     refusal = handler.refuse_payment(db, payable.id)
     if refusal:
@@ -386,13 +437,15 @@ def start_payment(db, payable: Payable) -> dict:
         provider = get_provider(db)
     except ProviderUnavailable:
         return unavailable_payload()
-    open_intent = db.scalar(select(M.PaymentIntent).where(
-        M.PaymentIntent.payable_kind == payable.kind, M.PaymentIntent.payable_id == payable.id,
-        M.PaymentIntent.status == "CREATED", M.PaymentIntent.provider == provider.name,
-        M.PaymentIntent.amount_paise == payable.amount_paise, M.PaymentIntent.expires_at > now(),
-    ).order_by(M.PaymentIntent.created_at.desc()))
-    if open_intent is not None:
-        return intent_payload(open_intent, provider)
+    key = (idempotency_key or "").strip()
+    reusable = _reusable_intent(db, payable, provider, key)
+    if reusable is not None:
+        return intent_payload(reusable, provider)
+    keyed = _keyed_intent(db, payable, key) if key else None
+    if _usable(keyed, payable, provider):
+        return intent_payload(keyed, provider)   # saved by a request that raced this one
+    if keyed is not None:
+        key = ""   # this key's intent is spent; the new one is not keyed
     intent_id = _id("pi")
     try:
         order = provider.create_order(payable, receipt=intent_id)
@@ -403,10 +456,20 @@ def start_payment(db, payable: Payable) -> dict:
         id=intent_id, payable_kind=payable.kind, payable_id=payable.id, account_id=payable.account_id,
         amount_paise=order.amount_paise, currency=order.currency, provider=provider.name,
         provider_order_id=order.provider_order_id, test_mode=provider.test_mode, status="CREATED",
-        expires_at=handler.expires_at(db, payable.id), created_at=stamp, updated_at=stamp)
+        expires_at=handler.expires_at(db, payable.id), created_at=stamp, updated_at=stamp,
+        idempotency_key=key or None)
     db.add(intent)
     _audit(db, payable.account_id, "PAYMENT_STARTED", payable.id)
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:
+        # Another request with this key saved first: that one is this checkout's payment.
+        # (The provider order made here is never paid and lapses at the provider.)
+        db.rollback()
+        winner = _keyed_intent(db, payable, key) if key else None
+        if winner is None:
+            raise
+        return intent_payload(winner, provider)
     return intent_payload(intent, provider)
 
 

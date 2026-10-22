@@ -1000,9 +1000,13 @@ def _own_order_payable(db, order_id: str, user: dict):
 
 
 @router.post("/orders/{order_id}/payment")
-def initiate_payment(order_id: str, user=Depends(authenticated_user), db: Session = Depends(commerce_db)):
-    """Open a provider order for this order's server-side total, or say plainly that none is connected."""
-    return payments.start_payment(db, _own_order_payable(db, order_id, user))
+def initiate_payment(order_id: str, user=Depends(authenticated_user), db: Session = Depends(commerce_db),
+                     idempotency_key: str = Header("", max_length=80)):
+    """Open a provider order for this order's server-side total, or say plainly that none is connected.
+
+    The same Idempotency-Key always gets the same payment back (one checkout, one payment).
+    """
+    return payments.start_payment(db, _own_order_payable(db, order_id, user), idempotency_key)
 
 
 class PaymentVerifyInput(StrictModel):
@@ -1174,6 +1178,13 @@ def cancel_order(order_id: str, user=Depends(authenticated_user), db: Session = 
     return {"success": True}
 
 
+# The queue filter for placed-but-unpaid lines (not an OrderLine status).
+AWAITING_PAYMENT = "AWAITING_PAYMENT"
+# Moves that hand over goods or a service: refused until the order is paid.
+PAID_ONLY_MOVES = frozenset({"ACCEPTED", "DISPATCHED", "COMPLETED"})
+UNPAID_MOVE_MESSAGE = "This order isn't paid yet. It moves to your queue once the payment is confirmed."
+
+
 @router.get("/work/requests")
 def provider_requests(
     limit: int = Query(20, ge=1, le=200),
@@ -1188,8 +1199,15 @@ def provider_requests(
     statement = select(M.OrderLine, M.Order).join(M.Order, M.Order.id == M.OrderLine.order_id)
     if user["role"] != "SUPER_ADMIN":
         statement = statement.where(M.OrderLine.provider_id == user["id"])
-    if status.strip() and status.strip() != "ALL":
-        statement = statement.where(M.OrderLine.status == status.strip())
+    wanted = status.strip()
+    awaiting = payments.order_awaits_payment_clause()
+    if wanted == AWAITING_PAYMENT:
+        # Placed but not paid: shown apart, never as "waiting for you".
+        statement = statement.where(M.OrderLine.status == "REQUESTED", awaiting)
+    elif wanted == "REQUESTED":
+        statement = statement.where(M.OrderLine.status == "REQUESTED", ~awaiting)
+    elif wanted and wanted != "ALL":
+        statement = statement.where(M.OrderLine.status == wanted)
     total = db.scalar(select(func.count()).select_from(statement.subquery()))
     rows = db.execute(statement.order_by(M.Order.created_at.desc()).offset(offset).limit(limit)).all()
     ids = sorted({order.account_id for _line, order in rows})
@@ -1198,7 +1216,9 @@ def provider_requests(
     rows = [(line, order, people[order.account_id]) for line, order in rows if order.account_id in people]
     return {
         "items": [{**line_payload(line), "orderId": order.id, "customer": account.full_name, "contact": account.identifier,
-                   "delivery": order.delivery, "requestedSlot": order.requested_slot, "createdAt": order.created_at} for line, order, account in rows],
+                   "delivery": order.delivery, "requestedSlot": order.requested_slot, "createdAt": order.created_at,
+                   "paymentStatus": order.payment_status, "awaitingPayment": payments.order_awaits_payment(order)}
+                  for line, order, account in rows],
         "total": total,
         "limit": limit,
         "offset": offset,
@@ -1220,6 +1240,8 @@ def update_request(line_id: str, body: RequestStatus, user=Depends(require_staff
         raise HTTPException(404, "Request not found.")
     if line.status == body.status:
         return line_payload(line)
+    if body.status in PAID_ONLY_MOVES and payments.order_awaits_payment(db.get(M.Order, line.order_id)):
+        raise HTTPException(409, UNPAID_MOVE_MESSAGE)
     transitions = {"REQUESTED": {"ACCEPTED", "DECLINED"}, "ACCEPTED": {"DISPATCHED"} if line.kind == "product" else {"COMPLETED"}, "DISPATCHED": {"COMPLETED"}}
     if body.status not in transitions.get(line.status, set()):
         raise HTTPException(409, "That status change is not allowed.")
@@ -1659,7 +1681,9 @@ def pending_campus(user=Depends(require_campus_admin), db: Session = Depends(wor
     scope = campus_scope(user, db)
     rows = db.execute(
         select(M.CampusVerification, M.Account).join(M.Account, M.Account.id == M.CampusVerification.account_id)
-        .where(M.CampusVerification.status == "PENDING").order_by(M.CampusVerification.verified_at)
+        # Students only: a request left on an account that was later made staff is not a student to verify.
+        .where(M.CampusVerification.status == "PENDING", M.Account.role == "STUDENT")
+        .order_by(M.CampusVerification.verified_at)
     ).all()
     if scope is not None:
         rows = [(cv, account) for cv, account in rows if _campus_key(cv.university) == scope]
@@ -2328,7 +2352,10 @@ def update_appointment(appointment_id: str, body: AppointmentStatusInput, user=D
 
 def appointment_payload(db, appt):
     slot = db.get(M.AvailabilitySlot, appt.slot_id)
+    item = db.get(M.CatalogEntry, appt.catalog_item_id) if appt.catalog_item_id else None
     return {"id": appt.id, "catalogItemId": appt.catalog_item_id, "providerId": appt.provider_id,
+            # The listed service's name, so a card says what was booked (live-run audit #13).
+            "serviceName": item.name if item else "",
             "slotStart": slot.slot_start if slot else "", "slotEnd": slot.slot_end if slot else "",
             "status": appt.status, "createdAt": appt.created_at, "updatedAt": appt.updated_at}
 

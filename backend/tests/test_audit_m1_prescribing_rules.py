@@ -102,7 +102,7 @@ def test_the_team_doctor_prescribes_only_for_team_campus_students(harness):  # n
     client.cookies.clear()
     test_student, _ = register(client, codes, "teamstudent@x.test")
     with factory() as db:
-        db.add(M.CampusVerification(account_id=test_student["id"], university=TEAM_CAMPUS, roll_number="T1",
+        db.merge(M.CampusVerification(account_id=test_student["id"], university=TEAM_CAMPUS, roll_number="T1",
                                     status="VERIFIED", verified_at=time.time()))
         db.add(M.Account(id="team-doctor", identifier="doctor@team.test", channel="EMAIL", full_name="Team doctor",
                          role="NMC_DOCTOR", active=True, profile={}, is_team_account=True, created_at=time.time()))

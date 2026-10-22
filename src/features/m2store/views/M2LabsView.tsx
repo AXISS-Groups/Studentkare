@@ -4,7 +4,7 @@ import { Icon } from '@/design-system/icons';
 import type { SkIconName } from '@/design-system/icons';
 import { ErrorState, Rise, Skeleton, useReducedMotion } from '@/design-system';
 import {
-  Gradient, GradientHeroCard, LiftCard, M2Card, M2Header, M2SearchField, M2SectionHead, M2_NAV_CLEARANCE, NotYetTile, SERVICE_HUES, SoftIcon,
+  cardLabel, Gradient, GradientHeroCard, LiftCard, M2Card, M2Header, M2SearchField, M2SectionHead, M2_NAV_CLEARANCE, NotYetTile, SERVICE_HUES, SoftIcon,
   heroStops, m2Text, tileStops, useAmbientMotion, useLift, useLoop, useOwnPhoneChrome,
 } from '@/design-system/m2';
 import type { PressState, ServiceHue } from '@/design-system/m2';
@@ -179,8 +179,7 @@ export function M2LabsView({ links, phase, packages, retry, block }: M2LabsViewP
             {shown.map((p) => {
               const art = labArt(p.name);
               return (
-                <Pressable key={p.id} role="link" accessibilityRole="link" accessibilityLabel={`${p.name}, ${packageMeta(p, t)}, ${money(p.pricePaise)}. ${t('m2.labs.book')}`}
-                  aria-label={`${p.name}, ${packageMeta(p, t)}, ${money(p.pricePaise)}. ${t('m2.labs.book')}`}
+                <Pressable key={p.id} role="link" accessibilityRole="link" {...cardLabel(`${p.name}, ${packageMeta(p, t)}, ${money(p.pricePaise)}. ${t('m2.labs.book')}`)}
                   onPress={() => links.book(p)} testID={`m2-labs-pkg-${p.id}`} style={(state: PressState) => [styles.row, lift(state)]}>
                   <SoftIcon icon={art.icon} hue={art.hue} tile={46} iconSize={22} />
                   <View style={styles.grow}>

@@ -13,6 +13,11 @@
   font-size: 13px; font-weight: 800; color: var(--sk-color-danger); text-decoration: none;
 }
 .cs-line--first { border-color: transparent; background: var(--sk-color-danger-fill); color: var(--sk-color-on-danger-fill); }
+/* Inside the app frame `.wf-application a { color: inherit }` outranks one class, so the first line's
+   label took the dark text colour onto the red fill (3.65:1). Two classes win; tokens unchanged
+   (on-danger-fill on danger-fill is 4.7:1). Live-run audit #10. */
+.cs-lines .cs-line { color: var(--sk-color-danger); }
+.cs-lines .cs-line--first { color: var(--sk-color-on-danger-fill); }
 .cs-line:hover { filter: brightness(.97); }
 .cs-line:focus-visible { outline: 3px solid var(--sk-color-focus); outline-offset: 3px; }
 

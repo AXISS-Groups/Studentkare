@@ -18,6 +18,8 @@ const CLINICIAN_OR_ADMIN: RouteRoles = ['NMC_DOCTOR', 'SUPER_ADMIN'];
 const COUNSELLOR_DESK: RouteRoles = ['COUNSELLOR', 'SUPER_ADMIN'];
 const MEO_TRIAGE: RouteRoles = ['CAMPUS_ADMIN', 'NMC_DOCTOR', 'SUPER_ADMIN'];
 const PARTNER: RouteRoles = ['VENDOR', 'SUPER_ADMIN'];
+/** The staff app's pickup boards: the lab's partner account and its collectors (backend services/lab_booking.py). */
+const STAFF_APP: RouteRoles = ['VENDOR', 'SUPER_ADMIN', 'LAB_COLLECTOR'];
 const STUDENT_ONLY: RouteRoles = ['STUDENT'];
 const VENDOR_ONLY: RouteRoles = ['VENDOR'];
 
@@ -83,10 +85,10 @@ export const routeRoles: Readonly<Partial<Record<RoutePath, RouteRoles>>> = {
   'settlement': PARTNER,
   'settlements': PARTNER,
   'staff': PARTNER,
-  'staff-collect': PARTNER,
-  'staff-handover': PARTNER,
+  'staff-collect': STAFF_APP,
+  'staff-handover': STAFF_APP,
   'staff-roles': PARTNER,
-  'staff-verify': PARTNER,
+  'staff-verify': STAFF_APP,
   'substitutions': PARTNER,
   'vendor': VENDOR_ONLY,
   'vendor-camp-intake': PARTNER,

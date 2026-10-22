@@ -215,7 +215,7 @@ export function M2HomeView({ name, campus, verified, data, links, cart, recent, 
       <Rise>
         <View style={styles.header}>
           {links.menu ? (
-            <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('m2.home.openMenu')} aria-label={t('m2.home.openMenu')} onPress={links.menu}
+            <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('m2.home.openMenuInitials', { initials: initials(name) })} aria-label={t('m2.home.openMenuInitials', { initials: initials(name) })} onPress={links.menu}
               testID="m2-home-avatar" style={({ focused }: PressState) => [styles.avatar, focused ? focusRing : null]}>
               <Text style={styles.avatarText}>{initials(name)}</Text>
             </Pressable>

@@ -51,13 +51,16 @@ describe('app bar above a console', () => {
       expect(consoleHasOwnChrome(path, 'CAMPUS_ADMIN')).toBe(true);
     }
     expect(consoleHasOwnChrome('/campus/reports', 'SUPER_ADMIN')).toBe(true);
+    // Their personal and shared pages open in their own console too (live-run audit #8).
+    expect(consoleHasOwnChrome('/support', 'COUNSELLOR')).toBe(true);
+    expect(consoleHasOwnChrome('/clinical-review', 'SUPER_ADMIN')).toBe(true);
+    expect(consoleHasOwnChrome('/security', 'SUPER_ADMIN')).toBe(true);
+    expect(consoleHasOwnChrome('/wellness-training', 'VENDOR')).toBe(true);
   });
 
   it('is still drawn for everyone else, including a student on the shared pages', () => {
     expect(consoleHasOwnChrome('/notifications', 'STUDENT')).toBe(false);
-    expect(consoleHasOwnChrome('/support', 'COUNSELLOR')).toBe(false);
     expect(consoleHasOwnChrome('/campus', 'STUDENT')).toBe(false);
-    expect(consoleHasOwnChrome('/clinical-review', 'SUPER_ADMIN')).toBe(false);
     expect(consoleHasOwnChrome('/health', 'NMC_DOCTOR')).toBe(false);
     expect(consoleHasOwnChrome('/administration', 'STUDENT')).toBe(false);
   });

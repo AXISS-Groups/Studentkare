@@ -11,6 +11,7 @@ import { ProviderDirectoryPanel } from './FulfilmentQueuePanel';
 import { useT, type MessageKey, type Vars } from '@/i18n';
 import { navigate } from '../../lib/utils/workflowRouting';
 import '../../theme/workflows.css';
+import { awaitsLabPayment } from '@/features/labBooking/views/labPaymentState';
 
 interface PrescriptionItem {
   id: string; genericName: string; brandName: string; strength: string; dose: string;
@@ -29,6 +30,8 @@ interface LabOrder {
   slotStart?: string;
   /** The ordering doctor's name; empty for a test the student booked themselves. */
   orderedByDoctor?: string;
+  /** A self-booked test's payment (null for a doctor-ordered one). */
+  paymentStatus?: string | null;
 }
 
 const LAB_PROGRESS = ['BOOKED', 'ASSIGNED', 'SAMPLE_COLLECTED', 'RECEIVED_AT_LAB', 'IN_ANALYSIS', 'REPORT_READY', 'REPORT_RELEASED'];
@@ -130,7 +133,9 @@ export function MyPrescriptionsPanel() {
     <DataState {...labOrders} retry={labOrders.reload}>
       {labOrders.data?.items.length ? <div className="wf-order-list">
         {labOrders.data.items.map(order => {
-          const stage = LAB_PROGRESS.indexOf(order.status);
+          const unpaid = awaitsLabPayment(order);
+          const status = unpaid ? t('care.rx.status.AWAITING_PAYMENT') : label(order.status, t);
+          const stage = unpaid ? -1 : LAB_PROGRESS.indexOf(order.status);
           return <article className="wf-card" key={order.id}>
             <div className="wf-panel-heading">
               <div>
@@ -144,10 +149,11 @@ export function MyPrescriptionsPanel() {
                 </p>
                 {order.slotStart ? <p>{t('care.rx.slot', { time: displayDate(order.slotStart) })}</p> : null}
               </div>
-              <span className="wf-status status-accepted">{label(order.status, t)}</span>
+              <span className={`wf-status ${unpaid ? 'status-requested' : 'status-accepted'}`}>{status}</span>
             </div>
+            {unpaid ? <p className="wf-fineprint">{t('care.rx.awaitingPayment')}</p> : null}
             {stage >= 0 && <progress max={LAB_PROGRESS.length - 1} value={stage}
-              aria-label={t('care.rx.progress', { status: label(order.status, t) })} />}
+              aria-label={t('care.rx.progress', { status })} />}
             {order.orderedByDoctor && order.status === 'BOOKED' && <div className="wf-row-actions">
               <button type="button" className={`health-button ${order.slotStart ? '' : 'health-button-primary'}`} style={{ minHeight: 44 }}
                 aria-label={t(order.slotStart ? 'care.rx.changeTimeSpoken' : 'care.rx.chooseTimeSpoken', { test: order.testPanel.join(', ') })}

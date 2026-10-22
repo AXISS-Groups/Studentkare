@@ -187,7 +187,9 @@ export function AuthSlideStrip(): React.ReactElement {
       data-running={running ? 'true' : 'false'}
       {...holdHandlers(hold)}
     >
-      <div className="sk-strip__track" ref={track} onScroll={onScroll} onTouchStart={stopForGood} onPointerDown={stopForGood}>
+      {/* A scroll area a keyboard can reach and scroll (axe scrollable-region-focusable, live-run audit #10). */}
+      <div className="sk-strip__track" ref={track} onScroll={onScroll} onTouchStart={stopForGood} onPointerDown={stopForGood}
+        tabIndex={0} role="group" aria-label={t('authpc.hero.label')}>
         {AUTH_SLIDES.map((slide, i) => (
           <div
             key={slide.id}

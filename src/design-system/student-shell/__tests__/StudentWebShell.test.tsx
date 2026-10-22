@@ -114,7 +114,7 @@ describe('StudentWebShell', () => {
     expect(props.onNavigate).toHaveBeenCalledWith('checkout');
     fireEvent.click(screen.getByRole('button', { name: 'My orders' }));
     expect(props.onNavigate).toHaveBeenCalledWith('orders');
-    fireEvent.click(screen.getByRole('button', { name: 'My account' }));
+    fireEvent.click(screen.getByRole('button', { name: /, my account$/ }));
     expect(props.onNavigate).toHaveBeenCalledWith('profile');
   });
 

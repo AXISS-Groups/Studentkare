@@ -29,7 +29,8 @@ export function LanguageSwitch({ onNavy = false }: { onNavy?: boolean }): React.
           key={code}
           type="button"
           lang={code}
-          aria-label={LANGUAGE_NAMES[code]}
+          // Starts with what it shows ("EN English"), so voice control can say it (live-run audit #10).
+          aria-label={`${short} ${LANGUAGE_NAMES[code]}`}
           aria-pressed={lang === code}
           onClick={() => setLang(code)}
         >

@@ -16,7 +16,7 @@ const line = (over: Partial<PartnerRequest> = {}): PartnerRequest => ({
 });
 const data = (over: Partial<ConsoleData> = {}): ConsoleData => ({
   page: { items: [line(), line({ id: 'line-2', orderId: 'order-00048115', name: 'Omega 3 Fish Oil', quantity: 1, status: 'COMPLETED', delivery: { mode: 'pickup' }, requestedSlot: '' })], total: 2, limit: 20, offset: 0 },
-  totals: { ALL: 9, REQUESTED: 2, ACCEPTED: 4, DISPATCHED: 1 },
+  totals: { ALL: 9, REQUESTED: 2, ACCEPTED: 4, DISPATCHED: 1, AWAITING_PAYMENT: 0 },
   rxWaiting: 2,
   ...over,
 });
@@ -51,6 +51,19 @@ describe('VendorConsole — the fulfilment queue', () => {
     expect(screen.queryByRole('button', { name: /Blocked/ })).toBeNull();
   });
 
+  it('keeps an unpaid order apart as "Awaiting payment", never "New" (live-run audit #1)', async () => {
+    const source: ConsoleSource = vi.fn(async () => data({
+      page: { items: [line({ status: 'REQUESTED', awaitingPayment: true, paymentStatus: 'UNPAID' })], total: 1, limit: 20, offset: 0 },
+      totals: { ALL: 9, REQUESTED: 0, ACCEPTED: 4, DISPATCHED: 1, AWAITING_PAYMENT: 1 },
+    }));
+    render(<VendorConsoleScreen source={source} />);
+    const table = await screen.findByRole('table');
+    expect(within(table).getByText('Awaiting payment')).toBeInTheDocument();
+    expect(within(table).queryByText('New')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: /^Awaiting payment/ }));
+    await waitFor(() => expect(source).toHaveBeenLastCalledWith('AWAITING_PAYMENT', 0, true, expect.anything()));
+  });
+
   it('a non-pharmacy partner gets no pharmacist note and no Rx call', async () => {
     partner.partnerKind = 'CLINIC';
     const source: ConsoleSource = vi.fn(async () => data({ rxWaiting: null }));
@@ -61,7 +74,7 @@ describe('VendorConsole — the fulfilment queue', () => {
   });
 
   it('empty and error states', async () => {
-    const { unmount } = render(<VendorConsoleScreen source={vi.fn(async () => data({ page: { items: [], total: 0, limit: 20, offset: 0 }, totals: { ALL: 0, REQUESTED: 0, ACCEPTED: 0, DISPATCHED: 0 } }))} />);
+    const { unmount } = render(<VendorConsoleScreen source={vi.fn(async () => data({ page: { items: [], total: 0, limit: 20, offset: 0 }, totals: { ALL: 0, REQUESTED: 0, ACCEPTED: 0, DISPATCHED: 0, AWAITING_PAYMENT: 0 } }))} />);
     expect(await screen.findByRole('heading', { name: 'Nothing in the fulfilment queue yet.' })).toBeInTheDocument();
     unmount();
     render(<VendorConsoleScreen source={vi.fn(async () => { throw new Error('down'); })} />);

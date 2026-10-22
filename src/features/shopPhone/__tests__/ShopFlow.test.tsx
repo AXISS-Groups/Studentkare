@@ -40,7 +40,11 @@ describe('shop boards', () => {
   it('opens on Mobile 2.0 Medicines: points, lab price, categories, the Rule L line, and no health data', async () => {
     const vm = setup({ name: 'home' }, { '/catalog': VITAMINS, '/points/me': { balance: 120, pointsNote: '' }, '/lab-packages': { items: [{ pricePaise: 39900 }] } });
     expect(screen.getByTestId('m2-medicines')).toBeInTheDocument();
-    expect(await screen.findByRole('link', { name: '120 Kare points' })).toBeInTheDocument();
+    // Named by its visible text on the web (label in name, live-run audit #10).
+    const points = await screen.findByTestId('m2-med-points');
+    expect(points).toHaveAttribute('role', 'link');
+    expect(points).toHaveTextContent(/120/);
+    expect(points).toHaveTextContent(/Kare points/);
     expect(screen.getByText('Nothing here is chosen from your health records')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Lab packages from ₹399' })).toBeInTheDocument();
     for (const name of ['Vitamins', 'Skin care', 'Cold and cough', 'Ayurveda']) expect(screen.getByRole('link', { name })).toBeInTheDocument();

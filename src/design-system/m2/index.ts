@@ -14,7 +14,7 @@ export type { HeroSlide, HeroCarouselProps } from './HeroCarousel';
 export { GradientHeroCard } from './GradientHeroCard';
 export type { GradientHeroCardProps } from './GradientHeroCard';
 export {
-  LiftCard, M2Card, M2Header, M2Heading, M2SearchField, M2SectionHead, M2_BOTTOM_SPACE, NotYetTile, RoundButton, SoftIcon, SoftTileGrid, SosButton,
+  cardLabel, LiftCard, M2Card, M2Header, M2Heading, M2SearchField, M2SectionHead, M2_BOTTOM_SPACE, NotYetTile, RoundButton, SoftIcon, SoftTileGrid, SosButton,
   m2Text, useLift, webAttrs,
 } from './M2Parts';
 export type { M2SearchFieldProps, PressState, SoftTileItem } from './M2Parts';

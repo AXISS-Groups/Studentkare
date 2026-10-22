@@ -59,6 +59,7 @@ import { RewardsRoute } from '@/features/rewards/views/RewardsView';
 import { LeaveCampusRoute } from '@/features/campus/views/LeaveCampusView';
 import { CareNavigatorPanel } from './CareNavigatorPanel';
 import { EncounterNotesPanel } from './EncounterNotesPanel';
+import { CounsellorShell } from './CounsellorShell';
 import { SuperAdminShell } from './admin/SuperAdminShell';
 import { superAdminScreen } from './admin/SuperAdminScreens';
 import { VendorShell } from '../vendor/VendorShell';
@@ -74,6 +75,7 @@ import { SearchPage, studentPhoneBoard } from '@/features/phoneKit/studentPhoneB
 import { EmergencyHelplinesDialog } from '../../components/interface/InterfaceBar';
 import { NotificationCenterModal } from '../../components/health/NotificationCenterModal';
 import { AyushWidget, ayushWidgetShownOn } from '@/features/ayush/AyushWidget';
+import { PartnerPage } from '@/features/partner/PartnerPage';
 
 const M2TrendsRoute = lazy(() => import('@/features/labResults/views/M2TrendsRoute').then(module => ({ default: module.M2TrendsRoute })));
 const M2ReportUploadRoute = lazy(() => import('@/features/labResults/views/M2ReportUploadRoute').then(module => ({ default: module.M2ReportUploadRoute })));
@@ -152,6 +154,9 @@ const WebDeleteAccountRoute = lazy(() => import('@/features/studentweb/views/t1/
 function vendorPageFor(route: RoutePath, role: AccountRole | null, onNavigate: (target: string) => void, onLogout: () => Promise<void>, onSwitchRole: (role: 'student' | 'admin' | 'vendor') => void): React.ReactNode {
   const props = { onNavigate, onLogout };
   const labStaff = role === 'VENDOR' || role === 'SUPER_ADMIN';
+  // A lab's collector signs in to the staff app's phone boards only (live-run audit #6).
+  const collector = role === 'LAB_COLLECTOR';
+  if (collector && route !== 'staff-collect' && route !== 'staff-verify' && route !== 'staff-handover') return null;
   switch (route) {
     case 'vendor': return <VendorHomeScreen {...props} onSwitchRole={onSwitchRole} />;
     // /verify is the student identity page; the partner scanner lives at /scan-verify.
@@ -166,7 +171,7 @@ function vendorPageFor(route: RoutePath, role: AccountRole | null, onNavigate: (
     // The staff app's phone boards (WP-15): full screen, outside the console shell.
     case 'staff-verify': return <StaffScanVerifyScreen onNavigate={(target) => onNavigate(target)} />;
     case 'staff-handover': return <StaffHandoverScreen onNavigate={(target) => onNavigate(target)} />;
-    case 'staff-collect': return labStaff ? <StaffCollectScreen onNavigate={(target) => onNavigate(target)} /> : null;
+    case 'staff-collect': return labStaff || collector ? <StaffCollectScreen onNavigate={(target) => onNavigate(target)} /> : null;
     // The live lab desk (GET /work/lab-orders): sample custody through to filing the report for a doctor.
     case 'lab-queue': case 'vendor-lab-queue': return <LabSampleToReportScreen onNavigate={onNavigate} />;
     // Release results (WP-15): where each filed report has got to. The doctor releases.
@@ -479,7 +484,28 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
     </>;
   }
 
-  if (admin) {
+  // Staff pages stay in their own console on every page, never the student layout and its
+  // student-only data (live-run audit #8).
+  if (user.role === 'LAB_COLLECTOR') return <Navigate to={`/${homeForRole(user.role)}`} replace />;
+  if (user.role === 'COUNSELLOR') {
+    return <>
+      <CounsellorShell route={route} onNavigate={open} onSignOut={() => setConfirmSignOut(true)} signingOut={mutation.busy} signOutError={mutation.error}>
+        <Suspense fallback={<ScreenLoading />}><PageTransition key={route}>{content()}</PageTransition></Suspense>
+      </CounsellorShell>
+      {signOutDialog}
+    </>;
+  }
+  if (user.role === 'VENDOR') {
+    return <>
+      <VendorShell route={route} role={user.role} partnerKind={effectivePartnerKind} assignedPartnerKind={partnerKindOf(user)} onNavigate={navigate} accountName={partnerDisplayName(user)} onSignOut={() => setConfirmSignOut(true)} signingOut={mutation.busy} signOutError={mutation.error}>
+        {/* Partner pages render their own <main>; a page from outside the console gets the same frame. */}
+        <PartnerPage><Suspense fallback={<ScreenLoading />}><PageTransition key={route}>{content()}</PageTransition></Suspense></PartnerPage>
+      </VendorShell>
+      {signOutDialog}
+    </>;
+  }
+
+  if (admin || user.role === 'SUPER_ADMIN') {
     return <>
       <SuperAdminShell route={route} role={user.role} onNavigate={open} onSignOut={() => setConfirmSignOut(true)} signingOut={mutation.busy} signOutError={mutation.error}>
         <Suspense fallback={<ScreenLoading />}><PageTransition key={route}>{content()}</PageTransition></Suspense>

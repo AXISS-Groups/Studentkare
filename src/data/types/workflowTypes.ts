@@ -1,4 +1,6 @@
-export type AccountRole = 'STUDENT' | 'SUPER_ADMIN' | 'CAMPUS_ADMIN' | 'COUNSELLOR' | 'VENDOR' | 'NMC_DOCTOR';
+export type AccountRole = 'STUDENT' | 'SUPER_ADMIN' | 'CAMPUS_ADMIN' | 'COUNSELLOR' | 'VENDOR' | 'NMC_DOCTOR' | 'LAB_COLLECTOR';
+/** Every role the server may sign in. A session with any other role is refused (fails closed). */
+export const ACCOUNT_ROLES: readonly AccountRole[] = ['STUDENT', 'SUPER_ADMIN', 'CAMPUS_ADMIN', 'COUNSELLOR', 'VENDOR', 'NMC_DOCTOR', 'LAB_COLLECTOR'];
 /** Set on a VENDOR account by a super admin; decides which partner dashboard it gets. */
 export type PartnerKind = 'PHARMACY' | 'LAB' | 'CLINIC' | 'WELLNESS';
 export interface Account {
@@ -60,7 +62,7 @@ export type RequestStatus = 'REQUESTED' | 'ACCEPTED' | 'DECLINED' | 'DISPATCHED'
 export interface OrderLine { id: string; itemId: string; name: string; kind: LiveCatalogItem['kind']; quantity: number; pricePaise: number; status: RequestStatus }
 export interface Delivery { mode: 'delivery' | 'pickup'; address: string; city: string; pincode: string }
 export interface LiveOrder { id: string; createdAt: number; totalPaise: number; delivery: Delivery; requestedSlot: string; paymentStatus: string; lines: OrderLine[] }
-export interface WorkRequest extends OrderLine { orderId: string; customer: string; contact: string; delivery: Delivery; requestedSlot: string; createdAt: number }
+export interface WorkRequest extends OrderLine { orderId: string; customer: string; contact: string; delivery: Delivery; requestedSlot: string; createdAt: number; /** Placed with online payment on offer and not paid: only a decline is allowed. */ awaitingPayment?: boolean }
 export interface StaffAppointment { id: string; catalogItemId: string; providerId: string; slotStart: string; slotEnd: string; status: string; createdAt: number; updatedAt: number; customer: string; contact: string }
 export interface LivePolicy { id: string; insurer: string; policyNumber: string; sumInsured: number; validUntil: string; verification: string }
 export interface ReviewedBenefit { id: string; category: string; title: string; description: string; reviewed: boolean }

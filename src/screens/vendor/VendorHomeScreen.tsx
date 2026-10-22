@@ -130,6 +130,9 @@ const STATE: Record<RequestStatus, { key: MessageKey; tone: SkTone }> = {
   COMPLETED: { key: 'pc.state.delivered', tone: 'neutral' },
   DECLINED: { key: 'pc.state.declined', tone: 'neutral' },
 };
+/** Placed but not paid: not "New" for the partner until the payment is confirmed. */
+const AWAITING_PAYMENT_STATE = { key: 'pc.state.awaitingPayment', tone: 'neutral' } as const;
+const stateOf = (line: PartnerRequest) => (line.awaitingPayment ? AWAITING_PAYMENT_STATE : STATE[line.status]);
 
 export interface VendorHomeScreenProps {
   initialProviderType?: ProviderType;
@@ -240,7 +243,7 @@ export function VendorHomeScreen({ initialProviderType, source = liveHomeSource,
                     <span className="vh-row__id">{shortRef(line.orderId)}</span>
                     <span className="vh-row__what">{t('pc.lineWhat', { name: line.name, qty: line.quantity })}</span>
                     <span className="vh-row__meta">{deliveryMeta(line, t)}</span>
-                    <StatusPill tone={STATE[line.status].tone} className="vh-row__state">{t(STATE[line.status].key)}</StatusPill>
+                    <StatusPill tone={stateOf(line).tone} className="vh-row__state">{t(stateOf(line).key)}</StatusPill>
                   </li>
                 ))}
               </ul>

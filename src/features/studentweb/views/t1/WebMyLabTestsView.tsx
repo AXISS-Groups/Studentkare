@@ -13,6 +13,7 @@ import { useNavigate } from '@/core/navigation';
 import { shortNameOf } from '@/design-system/student-shell/StudentWebShell';
 import { EmptyPanel, ErrorPanel, LoadingRows, OfflinePanel, PageHead, Pill, StudentWebFooter, TrustBand } from '../parts';
 import { dayDate, shortDate } from './shared';
+import { awaitsLabPayment } from '@/features/labBooking/views/labPaymentState';
 import '../../studentweb.css';
 import './t1web.css';
 
@@ -31,6 +32,8 @@ export interface StudentLabTest {
   reviewedByDoctor?: string;
   orderedByDoctor?: string;
   createdAt: number;
+  /** A self-booked test's payment (null for a doctor-ordered one). */
+  paymentStatus?: string | null;
 }
 
 export type LabTab = 'released' | 'awaiting' | 'outside';
@@ -182,7 +185,8 @@ function ReleasedCard({ test, who }: { test: StudentLabTest; who: string }) {
 
 function AwaitingCard({ test, who }: { test: StudentLabTest; who: string }) {
   const t = useT();
-  const status = STATUS[test.status];
+  const unpaid = awaitsLabPayment(test);
+  const status = unpaid ? 'care.rx.status.AWAITING_PAYMENT' : STATUS[test.status];
   return (
     <article className="sk-sw-card sk-swt-report" aria-labelledby={`lab-${test.id}`}>
       <header className="sk-swt-report__head is-waiting">
@@ -194,7 +198,7 @@ function AwaitingCard({ test, who }: { test: StudentLabTest; who: string }) {
       </header>
       <div className="sk-swt-report__body">
         <Facts test={test} who={who} />
-        <p className="sk-sw-fine">{t('swt.labs.releaseRule')}</p>
+        <p className="sk-sw-fine">{t(unpaid ? 'care.rx.awaitingPayment' : 'swt.labs.releaseRule')}</p>
       </div>
     </article>
   );

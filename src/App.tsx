@@ -200,8 +200,13 @@ export function consoleHasOwnChrome(pathname: string, role: string | null): bool
   // The passcode page is drawn in the sign-in frame: its own logo, language switch and emergency strip.
   if (pathname === '/set-passcode') return true;
   if (opensInCampusConsole(pathname, role)) return true;
+  // These roles' pages all open in their own console (WorkspaceScreen, live-run audit #8).
+  if (role !== null && STAFF_SHELL_ROLES.has(role)) return true;
   return role === 'NMC_DOCTOR' && isClinicianConsolePath(pathname);
 }
+
+/** Roles whose every workspace page is drawn inside their own console shell. */
+const STAFF_SHELL_ROLES: ReadonlySet<string> = new Set(['COUNSELLOR', 'LAB_COLLECTOR', 'SUPER_ADMIN', 'VENDOR']);
 
 /** One key each for the /admin area, the partner, clinician and campus consoles, so no shell is remounted between sections. */
 export function pageTransitionKey(pathname: string, role: string | null = null): string {

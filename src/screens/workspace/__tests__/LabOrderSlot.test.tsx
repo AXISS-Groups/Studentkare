@@ -34,6 +34,16 @@ beforeEach(() => {
   answers['/prescriptions?limit=20'] = { items: [], total: 0 };
 });
 
+describe('A test the student booked and has not paid for (live-run audit #2)', () => {
+  it('reads "Awaiting payment" and says it has not gone to the lab, not "Booked"', async () => {
+    answers['/lab-orders?limit=20'] = { items: [order({ orderedByDoctor: '', paymentStatus: 'UNPAID' })], total: 1 };
+    render(<MyPrescriptionsPanel />);
+    expect(await screen.findByText('Awaiting payment')).toBeTruthy();
+    expect(screen.getByText(/Not sent to the lab yet/)).toBeTruthy();
+    expect(screen.queryByText('Booked')).toBeNull();
+  });
+});
+
 describe('Choosing a collection time for a doctor-ordered test', () => {
   it('saves the chosen time on the order, with fasting guidance and no price', async () => {
     answers['/lab-orders?limit=20'] = { items: [order()], total: 1 };

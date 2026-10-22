@@ -20,9 +20,9 @@ def test_campus_verify_flow(harness):
     client, factory, codes = harness
     user, headers = register(client, codes, "student@example.test")
 
-    # Student submits verification.
+    # Sign-up already asked the campus (live-run audit #4); the student can resubmit.
     status = client.get("/api/campus/verification", headers=headers).json()
-    assert status["status"] == "NOT_SUBMITTED"
+    assert status["status"] == "PENDING"
     sub = client.post("/api/campus/verification", json={"university": "Test University", "rollNumber": "S-42"}, headers=headers).json()
     assert sub["status"] == "PENDING"
 

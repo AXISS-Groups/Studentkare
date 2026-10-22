@@ -41,6 +41,8 @@ def test_counsellor_sees_and_closes_only_their_own_campus_crises(harness):
     with factory() as db:
         other = db.get(M.Account, theirs["id"])
         other.profile = {**(other.profile or {}), "university": "Another College"}
+        # Sign-up also asked the campus (live-run audit #4); that request names the college too.
+        db.get(M.CampusVerification, theirs["id"]).university = "Another College"
         db.commit()
     make_staff(factory, "counsellor-a", "COUNSELLOR", "counsellor-a@example.test", profile={"university": "Test University"})
 

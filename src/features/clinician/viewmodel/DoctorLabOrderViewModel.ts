@@ -58,10 +58,37 @@ export class DoctorLabOrderViewModel implements ViewModel {
   busy = false;
   error: string | null = null;
   placed: { testName: string; patientName: string } | null = null;
+  /**
+   * Bumped by dispose(): a reply to a request started before it is stale and
+   * dropped, and the request itself is aborted. activate() makes the view model
+   * live again, so React's StrictMode (mount, dispose, mount) leaves it working
+   * (live-run audit #5: the order form's lists stayed empty).
+   */
+  private generation = 0;
   private disposed = false;
+  private readonly inFlight = new Set<AbortController>();
 
   constructor(private readonly request: typeof apiRequest = apiRequest) {
-    makeAutoObservable<DoctorLabOrderViewModel, 'disposed' | 'request'>(this, { disposed: false, request: false }, { autoBind: true });
+    makeAutoObservable<DoctorLabOrderViewModel, 'disposed' | 'request' | 'generation' | 'inFlight'>(
+      this, { disposed: false, request: false, generation: false, inFlight: false }, { autoBind: true });
+  }
+
+  /** Mounted (again): replies from now on are applied. */
+  activate(): void { this.disposed = false; }
+
+  /** Runs `fetch` with an abort signal; resolves to null when the reply is stale or the screen has gone. */
+  private async fresh<R>(fetch: (signal: AbortSignal) => Promise<R>): Promise<{ value: R } | { failed: true } | null> {
+    const generation = this.generation;
+    const controller = new AbortController();
+    this.inFlight.add(controller);
+    try {
+      const value = await fetch(controller.signal);
+      return generation === this.generation && !this.disposed ? { value } : null;
+    } catch {
+      return generation === this.generation && !this.disposed ? { failed: true } : null;
+    } finally {
+      this.inFlight.delete(controller);
+    }
   }
 
   get selectedTest(): OrderableLabTest | undefined {
@@ -84,44 +111,35 @@ export class DoctorLabOrderViewModel implements ViewModel {
   }
 
   async load(): Promise<void> {
-    this.disposed = false;
+    this.activate();
     await Promise.all([this.loadPatients(), this.loadTests(), this.loadOrders()]);
   }
 
   async loadPatients(): Promise<void> {
     this.patientsFailed = false;
-    try {
-      const res = await this.request<{ items: StaffAppointment[] }>('/work/appointments');
-      if (this.disposed) return;
-      const seen = new Map<string, CarePatient>();
-      for (const appt of res.items) {
-        if (appt.status !== 'CONFIRMED' && appt.status !== 'COMPLETED') continue;
-        if (!seen.has(appt.patientId)) seen.set(appt.patientId, { patientId: appt.patientId, name: appt.customer, lastVisit: appt.slotStart });
-      }
-      runInAction(() => { this.patients = [...seen.values()]; });
-    } catch {
-      if (!this.disposed) runInAction(() => { this.patientsFailed = true; });
+    const reply = await this.fresh((signal) => this.request<{ items: StaffAppointment[] }>('/work/appointments', { signal }));
+    if (!reply) return;
+    if ('failed' in reply) { runInAction(() => { this.patientsFailed = true; }); return; }
+    const seen = new Map<string, CarePatient>();
+    for (const appt of reply.value.items) {
+      if (appt.status !== 'CONFIRMED' && appt.status !== 'COMPLETED') continue;
+      if (!seen.has(appt.patientId)) seen.set(appt.patientId, { patientId: appt.patientId, name: appt.customer, lastVisit: appt.slotStart });
     }
+    runInAction(() => { this.patients = [...seen.values()]; });
   }
 
   async loadTests(): Promise<void> {
     this.testsFailed = false;
-    try {
-      const res = await this.request<{ items: OrderableLabTest[] }>('/work/lab-tests');
-      if (!this.disposed) runInAction(() => { this.tests = res.items; });
-    } catch {
-      if (!this.disposed) runInAction(() => { this.testsFailed = true; });
-    }
+    const reply = await this.fresh((signal) => this.request<{ items: OrderableLabTest[] }>('/work/lab-tests', { signal }));
+    if (!reply) return;
+    runInAction(() => { if ('failed' in reply) this.testsFailed = true; else this.tests = reply.value.items; });
   }
 
   async loadOrders(): Promise<void> {
     this.ordersFailed = false;
-    try {
-      const res = await this.request<{ items: PlacedLabOrder[] }>('/work/doctor-lab-orders');
-      if (!this.disposed) runInAction(() => { this.orders = res.items; });
-    } catch {
-      if (!this.disposed) runInAction(() => { this.ordersFailed = true; });
-    }
+    const reply = await this.fresh((signal) => this.request<{ items: PlacedLabOrder[] }>('/work/doctor-lab-orders', { signal }));
+    if (!reply) return;
+    runInAction(() => { if ('failed' in reply) this.ordersFailed = true; else this.orders = reply.value.items; });
   }
 
   selectPatient(patientId: string): void { this.patientId = patientId; }
@@ -177,7 +195,12 @@ export class DoctorLabOrderViewModel implements ViewModel {
     this.error = null;
   }
 
-  dispose(): void { this.disposed = true; }
+  dispose(): void {
+    this.disposed = true;
+    this.generation += 1;
+    this.inFlight.forEach((controller) => controller.abort());
+    this.inFlight.clear();
+  }
 
   reset(): void {
     this.patientId = '';

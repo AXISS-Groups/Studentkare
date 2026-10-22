@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useT } from '@/i18n';
 import { navigate } from '@/lib/utils/workflowRouting';
 import { ClinicianConsoleFrame } from '../shared/ClinicianConsoleFrame';
+import { BookingRequestsPanel } from '../shared/BookingRequestsPanel';
 import { ClinicianQueueViewModel } from './ClinicianQueueViewModel';
 import { ClinicianQueueView } from './ClinicianQueueView';
 import { defaultQueueSource } from './queueSource';
@@ -16,6 +17,7 @@ export function ClinicianQueueScreen({ source }: { source?: ClinicianQueueSource
   return (
     <ClinicianConsoleFrame current="queue" context={t('console.clin.nav.queue')}>
       <ClinicianQueueView viewModel={viewModel} onNavigate={navigate} />
+      <BookingRequestsPanel onChanged={() => void viewModel.load()} />
     </ClinicianConsoleFrame>
   );
 }

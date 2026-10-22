@@ -7,7 +7,7 @@ import { appAccess, clinicalAccess, ROLE_ROWS } from '../../model/accessRules';
 import { AccountsListViewModel } from '../AccountsListViewModel';
 import { AccountsOverviewViewModel } from '../AccountsOverviewViewModel';
 
-const TOTALS: Record<AccountRole, number> = { STUDENT: 900, NMC_DOCTOR: 40, VENDOR: 12, CAMPUS_ADMIN: 6, COUNSELLOR: 0, SUPER_ADMIN: 2 };
+const TOTALS: Record<AccountRole, number> = { STUDENT: 900, NMC_DOCTOR: 40, VENDOR: 12, CAMPUS_ADMIN: 6, COUNSELLOR: 0, SUPER_ADMIN: 2, LAB_COLLECTOR: 2 };
 const settle = async () => { for (let i = 0; i < 8; i += 1) await Promise.resolve(); };
 const account = (id: string): StaffAccount => ({ id, fullName: id, identifier: `${id}@example.test`, role: 'VENDOR', active: true });
 const feedEvent = (id: string, kind: string): OpsFeedEvent => ({ id, kind, domain: 'ACCOUNT', severity: 'INFO', actorId: '', actorRole: '', subjectId: '', providerId: '', resourceType: '', resourceId: '', summary: id, createdAt: 1, acknowledgedAt: null, acknowledgedBy: '' });
@@ -42,11 +42,12 @@ describe('account access rules', () => {
       ['CAMPUS_ADMIN', { label: 'No clinical access', tone: 'is-positive' }],
       ['COUNSELLOR', { label: 'Permission policy unavailable', tone: 'is-attention' }],
       ['SUPER_ADMIN', { label: 'No clinical access', tone: 'is-positive' }],
+      ['LAB_COLLECTOR', { label: 'Permission policy unavailable', tone: 'is-attention' }],
     ]);
   });
 
   it('names the workspace each role is sent to after sign-in', () => {
-    expect(ROLE_ROWS.map(([role]) => appAccess(role))).toEqual(['Student portal', 'Clinical workspace', 'Vendor workspace', 'Campus administration', 'Counsellor queue', 'Platform administration']);
+    expect(ROLE_ROWS.map(([role]) => appAccess(role))).toEqual(['Student portal', 'Clinical workspace', 'Vendor workspace', 'Campus administration', 'Counsellor queue', 'Platform administration', 'Staff app (sample collection)']);
   });
 });
 
@@ -56,13 +57,14 @@ describe('AccountsOverviewViewModel', () => {
     const vm = new AccountsOverviewViewModel(repo, ops());
     expect(vm.loading).toBe(true);
     vm.load();
-    expect(vi.mocked(repo.countByRole).mock.calls.map(([role]) => role)).toEqual(['STUDENT', 'NMC_DOCTOR', 'VENDOR', 'CAMPUS_ADMIN', 'COUNSELLOR', 'SUPER_ADMIN']);
+    expect(vi.mocked(repo.countByRole).mock.calls.map(([role]) => role)).toEqual(['STUDENT', 'NMC_DOCTOR', 'VENDOR', 'CAMPUS_ADMIN', 'COUNSELLOR', 'SUPER_ADMIN', 'LAB_COLLECTOR']);
     expect(vi.mocked(repo.countByRole).mock.calls.every(([, signal]) => signal instanceof AbortSignal)).toBe(true);
     await settle();
     expect(vm.loading).toBe(false);
     expect(vm.error).toBeNull();
-    expect(vm.total).toBe(960);
-    expect(vm.roleCount).toBe(6);
+    // Every role the server signs in, lab collectors too: the same total as the overview (live-run audit #15).
+    expect(vm.total).toBe(962);
+    expect(vm.roleCount).toBe(7);
     expect(vm.roleRows.map(row => [row.role, row.count, row.access.label, row.app])).toEqual([
       ['STUDENT', 900, 'Own record only', 'Student portal'],
       ['NMC_DOCTOR', 40, 'Consented records only', 'Clinical workspace'],
@@ -70,6 +72,7 @@ describe('AccountsOverviewViewModel', () => {
       ['CAMPUS_ADMIN', 6, 'No clinical access', 'Campus administration'],
       ['COUNSELLOR', 0, 'Permission policy unavailable', 'Counsellor queue'],
       ['SUPER_ADMIN', 2, 'No clinical access', 'Platform administration'],
+      ['LAB_COLLECTOR', 2, 'Permission policy unavailable', 'Staff app (sample collection)'],
     ]);
   });
 
@@ -101,9 +104,9 @@ describe('AccountsOverviewViewModel', () => {
     vm.load();
     expect(vm.loading).toBe(true);
     await settle();
-    expect(countByRole).toHaveBeenCalledTimes(12);
+    expect(countByRole).toHaveBeenCalledTimes(14);
     expect(vm.error).toBeNull();
-    expect(vm.total).toBe(960);
+    expect(vm.total).toBe(962);
   });
 
   it('loads recent changes on request, keeping only staff accounts created', async () => {
@@ -160,7 +163,7 @@ describe('AccountsOverviewViewModel', () => {
     await settle();
     expect(vm.countOf('NMC_DOCTOR')).toBe(0);
     vm.load();
-    expect(countByRole).toHaveBeenCalledTimes(9);
+    expect(countByRole).toHaveBeenCalledTimes(10);
   });
 });
 

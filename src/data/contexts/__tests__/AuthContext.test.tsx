@@ -27,6 +27,16 @@ describe('the session check', () => {
     expect(screen.getByTestId('probe').textContent).not.toMatch(/^authenticated/);
   });
 
+  it('accepts a lab collector’s session (live-run audit #6), and still refuses a role it does not know', async () => {
+    respond(200, { user: { id: 'c1', fullName: 'Demo Collector', role: 'LAB_COLLECTOR' }, csrfToken: 'csrf' });
+    const { unmount } = render(<AuthProvider><Probe /></AuthProvider>);
+    await waitFor(() => expect(screen.getByTestId('probe')).toHaveTextContent('authenticated|0|'));
+    unmount();
+    respond(200, { user: { id: 'x1', fullName: 'Someone', role: 'ROOT' }, csrfToken: 'csrf' });
+    render(<AuthProvider><Probe /></AuthProvider>);
+    await waitFor(() => expect(screen.getByTestId('probe')).toHaveTextContent('error|0|Invalid authenticated session.'));
+  });
+
   it('clears the status once a check succeeds', async () => {
     respond(200, { user: null, csrfToken: '' });
     render(<AuthProvider><Probe /></AuthProvider>);

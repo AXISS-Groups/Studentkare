@@ -6,7 +6,7 @@ import type { SkIconName } from '../icons';
 import { color, font, fontWeight, motion, radius, shadow, shadowStyle, space } from '../theme';
 import { Gradient } from './Gradient';
 import { floatTransform, useAmbientMotion, useLoop } from './m2Motion';
-import { useLift } from './M2Parts';
+import { cardLabel, useLift } from './M2Parts';
 import type { PressState } from './M2Parts';
 
 /**
@@ -45,7 +45,7 @@ export function GradientHeroCard({ stops, chipFill, eyebrow, title, body, cta, a
   const float = useLoop(ambient, motion.duration.ambient);
   const lift = useLift();
   return (
-    <Pressable role="link" accessibilityRole="link" accessibilityLabel={label} aria-label={label} onPress={onPress} testID={testID}
+    <Pressable role="link" accessibilityRole="link" {...cardLabel(label)} onPress={onPress} testID={testID}
       style={(state: PressState) => [styles.press, style, lift(state)]}>
       <Gradient colors={stops} style={[styles.card, { height }]}>
         <View pointerEvents="none" style={styles.ringBig} />
