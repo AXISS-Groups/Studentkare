@@ -34,7 +34,7 @@ const REQUIRED: ReadonlyArray<{ lead: MessageKey; body: MessageKey }> = [
  * sidebar) with the board's three tabs, public at /privacy and /terms.
  *
  * The notice text comes only from legal (D6-10): a super admin publishes the
- * version legal supplies (Super admin → Legal documents, GET /legal/{kind}) and
+ * version legal supplies (Super admin, Legal documents, GET /legal/{kind}) and
  * this page shows it with its version and date. Until a kind is published its
  * tab says plainly that it isn't, what has to exist first, and what the code
  * does today; no officer name, address, version or response time is printed

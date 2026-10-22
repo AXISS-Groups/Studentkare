@@ -20,7 +20,7 @@ import './onboarding-consent.css';
  * - no named grievance officer or reply time until legal names one (D3-5);
  * - the three required items can only be withdrawn by deleting the account, so
  *   that line stays; optional consents are given and withdrawn later in
- *   Profile → Privacy & consent (D3-4, amended 2026-10-23).
+ *   Profile, Privacy & consent (D3-4, amended 2026-10-23).
  * The privacy notice and terms versions shown come from GET /auth/consent and
  * are recorded with the consent; when none is published it says so and the
  * server records "unpublished" (audit H2).
