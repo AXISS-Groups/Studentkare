@@ -175,6 +175,7 @@ describe('student nav data', () => {
 
   it('maps related routes to their sidebar item', () => {
     expect(studentNavIdFor('health')).toBe('your-care');
+    expect(studentNavIdFor('your-care')).toBe('your-care');
     expect(studentNavIdFor('digital-id')).toBe('account');
     expect(studentNavIdFor('notification-settings')).toBe('notifications');
     expect(studentNavIdFor('notifications')).toBe('notifications');

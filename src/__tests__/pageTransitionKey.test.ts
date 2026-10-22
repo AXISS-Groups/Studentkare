@@ -63,12 +63,14 @@ describe('app bar above a console', () => {
   });
 
   it('draws no app bar above the student web shell: its top nav carries Alerts and SOS', () => {
-    for (const path of ['/health', '/orders', '/profile', '/security', '/notification-settings', '/home', '/buy-again', '/shop', '/checkout']) {
+    for (const path of ['/health', '/orders', '/profile', '/security', '/notification-settings', '/home', '/buy-again', '/shop', '/checkout', '/lab-tests', '/care', '/your-care']) {
       expect(drawsStudentWebShell(path, 'STUDENT', false)).toBe(true);
     }
     // At phone width the phone frame draws its own header; other roles keep their chrome.
     expect(drawsStudentWebShell('/health', 'STUDENT', true)).toBe(false);
     expect(drawsStudentWebShell('/health', 'NMC_DOCTOR', false)).toBe(false);
     expect(drawsStudentWebShell('/shop', null, false)).toBe(false);
+    // Visitors on /care keep the public marketplace and its own header.
+    expect(drawsStudentWebShell('/care', null, false)).toBe(false);
   });
 });

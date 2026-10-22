@@ -61,7 +61,7 @@ const PROFILE_ROUTES = {
   '/profile': PROFILE,
   '/body/measurements': { height: { id: 'h', value: 174, unit: 'cm', recordedAt: '2026-06-02T10:00:00Z', source: 'MANUAL' }, weight: null },
   '/health/documents': { items: [], total: 12, categoryCounts: { LAB: 6, PRESCRIPTION: 4, OTHER: 1, VACCINE: 1 } },
-  '/plans': { plans: [{ id: 'STUDENT_PLUS', name: 'Student Plus', price: 149, period: 'per month', packages: [{ id: 'QUARTER', months: 3, price: 2199 }] }] },
+  '/billing/plans': { plans: [{ id: 'STUDENT_PLUS', name: 'Student Plus', price: 149, period: 'per month', packages: [{ id: 'QUARTER', months: 3, price: 2199 }] }] },
 };
 
 describe('M2Profile', () => {
@@ -107,7 +107,7 @@ describe('M2Profile', () => {
   });
 
   it('keeps SOS and the emergency card reachable, and each card fails on its own', async () => {
-    const { request } = fakeRequest({ ...PROFILE_ROUTES, '/body/measurements': new Error('down'), '/plans': new Error('down') });
+    const { request } = fakeRequest({ ...PROFILE_ROUTES, '/body/measurements': new Error('down'), '/billing/plans': new Error('down') });
     const vm = new ProfileViewModel(request);
     vm.load();
     const links = profileLinks();

@@ -454,8 +454,9 @@ html[data-ui-motion='reduced'] .wf-application button:hover > svg,
 html[data-ui-motion='reduced'] .wf-application .shop-concerns > button:hover > span { transform: none !important; translate: none !important; }
 
 /* Accessibility guarantees: visible focus, accessible names, touch targets,
-   and reduced-motion respect across all interactive surfaces. */
-.wf-application :where(button, a, input, select, textarea, summary, [role='button'], [tabindex]):focus-visible {
+   and reduced-motion respect across all interactive surfaces.
+   #main-content (the skip-link and route-change focus target) has its own rules in workflows.css. */
+.wf-application :where(button, a, input, select, textarea, summary, [role='button'], [tabindex]:not(#main-content)):focus-visible {
   outline: 3px solid var(--data, var(--sk-color-focus)) !important;
   outline-offset: 3px;
   border-radius: 4px;

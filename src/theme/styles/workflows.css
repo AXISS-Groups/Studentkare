@@ -137,6 +137,8 @@
 
 /* Scoped accessibility refinements: retain the existing palette and layout. */
 .wf-application #main-content:focus-visible { outline: 2px solid var(--action, var(--sk-color-action)); outline-offset: -2px; }
+/* Focus moved there by a route change is for screen readers: no 3 px frame around the whole page. */
+.wf-application #main-content[data-route-focus]:focus-visible { outline: none; }
 .wf-application [data-ui='page'] [data-ui='page'] { animation: none; }
 .wf-application .wf-modal-backdrop {
   box-sizing: border-box;
