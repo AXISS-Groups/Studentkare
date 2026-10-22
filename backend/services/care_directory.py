@@ -46,7 +46,7 @@ from core.settings_registry import setting
 from services import hfr_registry
 from services.preventive_care import https_url
 from services.student_time import default_zone, local_today
-from services.workflow_api import _campus_key, campus_scope
+from services.workflow_api import _campus_key, campus_scope, staff_campus_of
 from services.workflow_auth import (
     StrictModel,
     authenticated_user,
@@ -102,8 +102,10 @@ def viewer_campus_key(db: Session, viewer: dict | None) -> str:
         verification = db.get(M.CampusVerification, viewer["id"])
         if verification and verification.university:
             return _campus_key(verification.university)
-    account = db.get(M.Account, viewer["id"])
-    return _campus_key((account.profile or {}).get("university", "")) if account else ""
+        account = db.get(M.Account, viewer["id"])
+        return _campus_key((account.profile or {}).get("university", "")) if account else ""
+    # Staff: the campus a super admin assigned, never a profile field (audit C1).
+    return _campus_key(staff_campus_of(db.get(M.Account, viewer["id"])))
 
 
 # --- verification ---------------------------------------------------------
@@ -336,8 +338,7 @@ def _admin_campus(db: Session, user: dict) -> str | None:
     """None for a super admin (any campus); otherwise the administrator's own campus, as recorded."""
     if campus_scope(user, db) is None:
         return None
-    account = db.get(M.Account, user["id"])
-    return " ".join(((account.profile or {}).get("university", "") if account else "").split())
+    return staff_campus_of(db.get(M.Account, user["id"]))
 
 
 def _check_verified_on(value: date | None, db: Session) -> None:

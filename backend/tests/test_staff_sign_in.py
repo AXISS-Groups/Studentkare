@@ -11,7 +11,6 @@ import time
 from test_workflow_api import harness  # noqa: F401 — pytest fixture
 
 from core import workflow_models as M
-from services.workflow_auth import STAFF_NOT_FOUND
 
 
 def seed(factory, *, role, active=True):
@@ -40,11 +39,15 @@ def test_staff_account_gets_a_code(harness):
 def test_student_account_is_refused_like_an_unknown_email(harness):
     client, factory, codes = harness
     student = seed(factory, role="STUDENT")
+    staff_email = seed(factory, role="CAMPUS_ADMIN")
     refused_student = send(client, student)
     refused_unknown = send(client, f"nobody.{secrets.token_hex(4)}@example.test")
-    assert refused_student.status_code == refused_unknown.status_code == 404
-    assert refused_student.json()["detail"] == refused_unknown.json()["detail"] == STAFF_NOT_FOUND
     assert codes == []
+    real = send(client, staff_email)
+    # The same answer as a real send (audit M5): nothing says which emails have accounts.
+    assert refused_student.status_code == refused_unknown.status_code == real.status_code == 200
+    assert set(refused_student.json()) == set(refused_unknown.json()) == set(real.json())
+    assert len(codes) == 1
     assert client.get("/api/auth/session").json()["user"] is None
 
 
@@ -52,9 +55,11 @@ def test_inactive_staff_account_is_refused(harness):
     client, factory, codes = harness
     email = seed(factory, role="SUPER_ADMIN", active=False)
     refused = send(client, email)
-    assert refused.status_code == 404
-    assert refused.json()["detail"] == STAFF_NOT_FOUND
+    assert refused.status_code == 200 and refused.json()["success"] is True   # same shape, audit M5
     assert codes == []
+    # The decoy challenge verifies like a wrong code: no session.
+    assert client.post("/api/auth/otp/verify", json={"otp": "123456"}).status_code in (400, 401)
+    assert client.get("/api/auth/session").json()["user"] is None
 
 
 def test_staff_audience_is_email_and_sign_in_only(harness):

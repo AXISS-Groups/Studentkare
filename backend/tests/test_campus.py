@@ -11,7 +11,8 @@ def _staff(factory):
     with factory() as db:
         db.add(M.Account(id="campusadmin", identifier="campus@example.test", channel="EMAIL", full_name="Campus Admin", role="CAMPUS_ADMIN", active=True,
                          # Campus admins act only for their own campus.
-                         profile={"university": "Test University"}, created_at=time.time()))
+                         profile={"university": "Test University"}, created_at=time.time(),
+                         staff_campus="Test University"))
         db.commit()
 
 

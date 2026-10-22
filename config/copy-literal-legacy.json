@@ -43,7 +43,6 @@
   "src/components/clinician/CriticalValueEscalationTimer.tsx",
   "src/components/emergency/EmergencyCasualtyHandoverModal.tsx",
   "src/components/emergency/EmergencySosBeaconWidget.tsx",
-  "src/components/health/DiseaseAwarenessHub.tsx",
   "src/components/health/PrescriptionRefillRequestModal.tsx",
   "src/components/health/ServiceDeskTicketsModal.tsx",
   "src/components/health/WeatherSeasonalAlertBanner.tsx",

@@ -43,6 +43,12 @@ class Account(Base):
     # with a PIN, scoped to the test campus / test partner organisation so it sees
     # no real student's data. Set only by the team-accounts command, never by an API.
     is_team_account: Mapped[bool] = mapped_column(Boolean, default=False, server_default=sa_false())
+    # CAMPUS_ADMIN / COUNSELLOR only: the campus this staff member acts for. Its own
+    # column, never a profile key, because PATCH /profile writes the profile and a
+    # campus scope taken from there let staff move themselves into any college
+    # (audit C1). Set only by a super admin (create_staff, assign_campus), the
+    # provisioning script and the team-accounts command.
+    staff_campus: Mapped[str] = mapped_column(String(160), default="", server_default="")
 
 
 class StaffPinCredential(Base):
@@ -154,6 +160,10 @@ class Session(Base):
     # e.g. a passcode or a team PIN). A refresh keeps it. A student may replace a
     # forgotten passcode only shortly after a code sign-in (services/student_passcode.py).
     code_verified_at: Mapped[float] = mapped_column(Float, default=0.0, server_default="0")
+    # When the sign-in that started this chain of refreshes happened. A refresh
+    # keeps it, so a session can't be renewed past auth.session_absolute_hours
+    # (audit L1). 0 = issued before this column existed.
+    signed_in_at: Mapped[float] = mapped_column(Float, default=0.0, server_default="0")
 
 
 class RememberedDevice(Base):
@@ -1242,6 +1252,9 @@ class BloodSOSRequest(Base):
     hospital_location: Mapped[str] = mapped_column(String(200))
     urgency: Mapped[str] = mapped_column(String(20), default="CRITICAL")
     matching_donors_count: Mapped[int] = mapped_column(Integer, default=0)
+    # The campus the broadcast went to ("" = every campus, super admin only). Also
+    # what the per-campus rate limit counts (audit H1).
+    campus: Mapped[str] = mapped_column(String(160), default="", server_default="", index=True)
     status: Mapped[str] = mapped_column(String(24), default="QUEUED")
     created_at: Mapped[float] = mapped_column(Float, default=0.0)
 class CrisisEvent(Base):

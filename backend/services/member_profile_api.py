@@ -27,6 +27,7 @@ from services.workflow_auth import (
 )
 
 router = APIRouter(prefix="/api", tags=["Member profile and identity"])
+CAMPUS_FIELDS = frozenset({"university", "rollNumber"})
 MedicalItem = Annotated[str, Field(min_length=1, max_length=160)]
 
 
@@ -133,6 +134,12 @@ def update_profile(body: ProfileUpdate, response: Response, user: dict = Depends
     account = owned_account(db, user, lock=True)
     stored = dict(account.profile or {})
     changes = body.model_dump(mode="json", exclude_unset=True)
+    # Campus and roll number are a student's own claim, checked by campus
+    # verification. Staff campus scope is assigned by a super admin
+    # (care_accounts.staff_campus) and team accounts stay on the team campus, so
+    # no other account may write them here (audit C1).
+    if CAMPUS_FIELDS & changes.keys() and (account.role != "STUDENT" or account.is_team_account):
+        raise HTTPException(403, "Your campus is assigned by a super admin and can't be changed here.")
     clinical_profile.write(db, account.id, clinical_profile.pop_changes(changes))
     identity_changed = any(value != (account.full_name if key == "fullName" else stored.get(key, ""))
                            for key, value in changes.items() if key in {"fullName", "dob", "university", "rollNumber"})

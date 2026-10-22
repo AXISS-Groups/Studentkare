@@ -29,7 +29,7 @@ from sqlalchemy.orm import Session
 from core import workflow_models as M
 from services import ops_feed
 from services.otp_delivery import _send_openwa, normalize_chat_id
-from services.workflow_api import _campus_key, campus_scope
+from services.workflow_api import _campus_key, campus_scope, staff_campus_of
 from services.workflow_auth import (
     StrictModel,
     authenticated_user,
@@ -266,8 +266,7 @@ def _contact_campus(db: Session, user: dict, requested: str | None) -> str:
         if not requested or len(requested.strip()) < 2:
             raise HTTPException(422, "Name the campus these contacts are for.")
         return requested.strip()
-    account = db.get(M.Account, user["id"])
-    return (account.profile or {}).get("university", "").strip()
+    return staff_campus_of(db.get(M.Account, user["id"]))
 
 
 @router.get("/ops/campus/security-contacts")

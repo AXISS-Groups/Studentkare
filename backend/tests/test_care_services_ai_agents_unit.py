@@ -57,30 +57,28 @@ def test_blood_emergency_agent():
     Base.metadata.create_all(engine)
     factory = sessionmaker(bind=engine, expire_on_commit=False)
     with factory() as db:
-        db.add(M.Account(id="donor-acct", identifier="donor@example.test", channel="EMAIL",
+        db.add(M.Account(id="donor-acct", identifier="9999999999", channel="WHATSAPP",
                          full_name="Donor", role="STUDENT", active=True, profile={}, created_at=1))
+        db.add(M.Account(id="asker", identifier="asker@example.test", channel="EMAIL",
+                         full_name="Asker", role="STUDENT", active=True, profile={}, created_at=1))
+        db.add(M.CampusVerification(account_id="donor-acct", university="Test University", roll_number="R1",
+                                    status="VERIFIED"))
         db.commit()
         blood_emergency_agent.register_donor(db, "donor-acct", BloodDonor(
-            id="bd_unit01", name="Consenting Donor", blood_group="O-",
-            hostel_block="Block A", phone="+91 9999999999",
-            last_donated="6 months ago", is_available=True, visible=True,
+            blood_group="O-", hostel_block="Block A", is_available=True, visible=True,
         ))
-        donors = blood_emergency_agent.get_donors(db, "ALL", public=True)
-        assert len(donors) > 0
-        assert all(d.get("phone") == "" for d in donors)
+        donors = blood_emergency_agent.campus_donors(db, "Test University")
+        assert len(donors) == 1
+        assert blood_emergency_agent.campus_donors(db, "Another College") == []
 
         sos_res = blood_emergency_agent.trigger_sos_broadcast(
-            db=db,
-            account_id="donor-acct",
-            patient_name="Demo Student Patient",
-            required_group="O-",
-            units=2,
-            location="Campus Health Centre",
+            db=db, account_id="asker", required_group="O+", units=2, campus="Test University",
         )
+        db.commit()
         assert sos_res["status"] == "SOS_QUEUED"
-        assert sos_res["events_staged"] >= 1
-        assert sos_res["matching_donors_count"] >= 1
+        assert sos_res["events_staged"] == 1
+        assert sos_res["matching_donors_count"] == 1
         pending = db.scalars(select(M.OutboxEvent).where(M.OutboxEvent.status == "PENDING")).all()
         assert len(pending) == sos_res["events_staged"]
-        assert all(e.event_type == "BLOOD_SOS" for e in pending)
+        assert all(e.event_type == "BLOOD_SOS" and e.payload["phone"] == "9999999999" for e in pending)
     engine.dispose()

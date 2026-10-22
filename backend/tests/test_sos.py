@@ -24,7 +24,7 @@ def staff(client, codes, factory, identifier, campus, role="CAMPUS_ADMIN"):
     user, h = register(client, codes, identifier)
     with factory() as db:
         a = db.get(M.Account, user["id"])
-        a.role, a.profile = role, {**a.profile, "university": campus}
+        a.role, a.staff_campus = role, campus
         db.commit()
     client.post("/api/auth/logout", headers=h)
     return user, login(client, codes, identifier)

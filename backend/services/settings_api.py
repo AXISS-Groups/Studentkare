@@ -85,10 +85,20 @@ def patch_setting(key: str, body: SettingPatch, user=Depends(require_super_admin
         decl = R.get_declaration(key)
     except R.UnknownSetting:
         raise HTTPException(404, "No such setting.")
+    return _view(decl, write_override(db, user, key, body.value, body.reason))
+
+
+def write_override(db: Session, user: dict, key: str, value: Any, reason: str) -> M.SettingOverride | None:
+    """Set (or, with None, clear) one override: validated, audited, history kept, committed.
+
+    The one write path, used by PATCH /ops/settings/{key} and by actions that are
+    a setting underneath (the AI kill switch). The caller has checked the role.
+    """
+    decl = R.get_declaration(key)
     new_value = None
-    if body.value is not None:
+    if value is not None:
         try:
-            new_value = R.validate(decl, body.value)
+            new_value = R.validate(decl, value)
         except R.InvalidSettingValue as exc:
             raise HTTPException(422, str(exc))
 
@@ -121,15 +131,14 @@ def patch_setting(key: str, body: SettingPatch, user=Depends(require_super_admin
         row.updated_by = user["id"]
         row.updated_at = now
     db.add(M.SettingOverrideHistory(id=uuid.uuid4().hex, key=key, old_value=old_value, new_value=new_value,
-                                    reason=body.reason, changed_by=user["id"], changed_at=now))
+                                    reason=reason, changed_by=user["id"], changed_at=now))
     audit(db, user["id"], AUDIT_CLEAR if new_value is None else AUDIT_SET, key)
     ops_feed.publish(db, OPS_KIND, "ACCOUNT", severity="INFO", actor_id=user["id"], actor_role=user["role"],
                      summary=f"Setting {key} {'reset to its default' if new_value is None else 'changed'}.",
                      resource_type=R.OPS_RESOURCE_TYPE, resource_id=key)
     db.commit()
     R.reset_cache()
-    fresh = db.get(M.SettingOverride, key)
-    return _view(decl, fresh)
+    return db.get(M.SettingOverride, key)
 
 
 @router.get("/ops/settings/{key}/history")

@@ -33,7 +33,8 @@ def main():
             parser.exit(1, "An account already exists for this contact. No changes were made.\n")
         db.add(Account(id=str(uuid.uuid4()), identifier=identifier, channel=args.channel, full_name=args.name.strip(),
                        role=args.role, active=True,
-                       profile={"university": args.university.strip()} if args.university.strip() else {}, created_at=time.time()))
+                       profile={"university": args.university.strip()} if args.university.strip() else {}, created_at=time.time(),
+                       staff_campus=args.university.strip() if args.role in ("CAMPUS_ADMIN", "COUNSELLOR") else ""))
         db.commit()
     print("Staff account created. Sign in by verifying the configured contact address.")
 

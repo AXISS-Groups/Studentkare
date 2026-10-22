@@ -261,7 +261,7 @@ export const clinicianEn = {
 
   // ---- ClinicianLabOrder ----
   'clinLab.title': 'Lab orders',
-  'clinLab.subtitle': 'Panels you have ordered · NABL labs only',
+  'clinLab.subtitle': 'Panels you have ordered',
   'clinLab.caption': 'Lab orders you have placed, with the reason for each and its state',
   'clinLab.col.student': 'Student',
   'clinLab.col.panel': 'Panel & indication',
@@ -717,7 +717,7 @@ export const clinicianTe: Record<ClinicianKey, string> = {
   'clinReviews.reference': 'Ref REVIEWS · ReportReviews',
   'clinReviews.loading': 'రిపోర్ట్ సమీక్షలు లోడ్ అవుతున్నాయి',
   'clinLab.title': 'ల్యాబ్ ఆర్డర్లు',
-  'clinLab.subtitle': 'మీరు ఆర్డర్ చేసిన ప్యానెల్స్ · NABL ల్యాబ్‌లు మాత్రమే',
+  'clinLab.subtitle': 'మీరు ఆర్డర్ చేసిన ప్యానెల్స్',
   'clinLab.caption': 'మీరు ఇచ్చిన ల్యాబ్ ఆర్డర్లు, ఒక్కోదానికి కారణం మరియు స్థితి',
   'clinLab.col.student': 'విద్యార్థి',
   'clinLab.col.panel': 'ప్యానెల్ & కారణం',
@@ -1159,7 +1159,7 @@ export const clinicianHi: Record<ClinicianKey, string> = {
   'clinReviews.reference': 'Ref REVIEWS · ReportReviews',
   'clinReviews.loading': 'रिपोर्ट समीक्षाएँ लोड हो रही हैं',
   'clinLab.title': 'लैब ऑर्डर',
-  'clinLab.subtitle': 'आपके ऑर्डर किए पैनल · सिर्फ़ NABL लैब',
+  'clinLab.subtitle': 'आपके ऑर्डर किए पैनल',
   'clinLab.caption': 'आपके दिए लैब ऑर्डर, हर एक का कारण और उसकी स्थिति',
   'clinLab.col.student': 'छात्र',
   'clinLab.col.panel': 'पैनल और कारण',

@@ -42,10 +42,15 @@ def test_medical_guard_permission_evaluation():
     assert res_high_risk["requires_approval"] is True
 
 
-def test_emergency_kill_switch_and_audit_logging():
-    # Activate emergency freeze
+def test_emergency_kill_switch_and_audit_logging(monkeypatch):
+    from core import settings_registry as R
+    stored = {}
+    monkeypatch.setattr(R, "_overrides", lambda db=None: stored)
+    # The switch is the settings registry value, not process memory (audit M2).
     freeze_res = medical_guard.activate_emergency_kill_switch(triggered_by="Dr. Test")
     assert freeze_res["status"] == "FROZEN"
+    assert medical_guard.system_frozen is False      # logging it alone freezes nothing
+    stored["ai.kill_switch_active"] = True
     assert medical_guard.system_frozen is True
 
     # High-risk approval attempt while frozen must fail
@@ -61,4 +66,5 @@ def test_emergency_kill_switch_and_audit_logging():
     # Reset freeze
     reset_res = medical_guard.reset_emergency_kill_switch(reset_by="SuperAdmin Test")
     assert reset_res["status"] == "ACTIVE"
+    stored.clear()
     assert medical_guard.system_frozen is False

@@ -180,7 +180,7 @@ def test_a_passcode_sign_in_never_counts_as_proven_with_a_code(student):
     assert client.get("/api/auth/passcode", headers=headers).json()["replaceWithoutCurrentUntil"] is None
     assert set_code(client, headers, GOOD_8).status_code == 403
     # A refresh keeps it that way.
-    refreshed = client.post("/api/auth/refresh")
+    refreshed = client.post("/api/auth/refresh", headers=headers)
     headers = {"X-CSRF-Token": refreshed.json()["csrfToken"]}
     assert set_code(client, headers, GOOD_8).status_code == 403
     assert set_code(client, headers, GOOD_8, current=GOOD).status_code == 200
@@ -385,8 +385,10 @@ def test_lost_phone_makes_every_other_device_forget_the_account(student):
     client, _factory, codes, user = student
     lost = TestClient(app)
     sign_out(lost, code_login(lost, codes, "member@example.test"), remember=True)
-    assert passcode_in(lost, GOOD).status_code == 200
-    sign_out(lost, {"X-CSRF-Token": lost.post("/api/auth/refresh").json()["csrfToken"]}, remember=True)
+    signed = passcode_in(lost, GOOD)
+    assert signed.status_code == 200
+    refreshed = lost.post("/api/auth/refresh", headers={"X-CSRF-Token": signed.json()["csrfToken"]})
+    sign_out(lost, {"X-CSRF-Token": refreshed.json()["csrfToken"]}, remember=True)
     headers = code_login(client, codes, "member@example.test")
     assert client.post("/api/auth/sessions/revoke-others", headers=headers).status_code == 200
     assert lost.get("/api/auth/remembered").json() == {"remembered": False}

@@ -369,6 +369,19 @@ declare("health.readings_list_cap", INT, 1000, area="health", unit="rows", minim
 # without a reload (SosBeacon). The server pushes nothing; this is a read.
 declare("emergency.sos_poll_seconds", INT, 15, area="emergency", unit="seconds", minimum=5, maximum=120, public=True,
         description="How often the SOS screen re-reads an open alert from GET /api/emergency/sos/current.")
+# Blood SOS (services/agents/blood_emergency_agent.py, audit H1). A broadcast goes
+# out on the platform's own WhatsApp to every matching donor on the campus, so it
+# is a fixed template plus a short optional note, and it is rate limited per
+# account and per campus. Counted from care_blood_sos_requests, so the limits hold
+# across replicas.
+declare("blood.sos_note_max_chars", INT, 140, area="emergency", unit="characters", minimum=0, maximum=280,
+        description="Longest optional note a requester may add to the fixed blood SOS message (0 turns notes off).")
+declare("blood.sos_max_units", INT, 4, area="emergency", unit="units", minimum=1, maximum=10,
+        description="Most units of blood one blood SOS may ask for.")
+declare("blood.sos_per_account_per_day", INT, 3, area="emergency", unit="requests per 24 hours", minimum=1,
+        maximum=20, description="Blood SOS broadcasts one account may send in 24 hours.")
+declare("blood.sos_per_campus_per_hour", INT, 5, area="emergency", unit="requests per hour", minimum=1,
+        maximum=100, description="Blood SOS broadcasts that may go to one campus's donors in an hour.")
 # --- lab results (services/lab_results.py; Mobile 2.0 plan Gap 1) ------------
 # Input bounds only. None of these is a clinical threshold: whether a value is
 # in range is decided by the range the lab printed, stored with the value.
@@ -402,6 +415,23 @@ declare("lab.collect_verification_minutes", INT, 15, area="lab", unit="minutes",
 # shorten it only with the DPDP owner's sign-off quoted in the override reason.
 declare("privacy.deletion_grace_days", INT, 7, area="privacy", unit="days", minimum=1, maximum=30, public=True,
         description="Days between a student's account-deletion request and its erasure; they can cancel until then.")
+
+# --- AI kill switch (audit M2) --------------------------------------------------
+# Persisted here, not in one process's memory, so every worker and replica obeys
+# it (within CACHE_TTL_SECONDS) and it survives a restart. services/llm_gateway.py
+# refuses every model call while it is on. Set through POST /api/v1/ops/kill-switch
+# (and /reset), which record a reason and an audit row like any other override.
+declare("ai.kill_switch_active", BOOL, False, area="ai",
+        description="Emergency stop: while true, no AI model call is made anywhere on the platform.")
+
+# Per-account and per-sender limits on the costly or abusable endpoints (audit L6).
+# The global per-session limiter (core/rate_limiter.py) is too coarse for these.
+declare("ai.ayush_questions_per_account_per_hour", INT, 30, area="ai", unit="questions per hour", minimum=5,
+        maximum=500, description="Questions one account may ask Agent Ayush in an hour.")
+declare("support.inquiries_per_email_per_day", INT, 3, area="support", unit="inquiries per 24 hours", minimum=1,
+        maximum=50, description="Institutional inquiries accepted from one email address in 24 hours.")
+declare("support.inquiries_per_ip_per_hour", INT, 10, area="support", unit="inquiries per hour", minimum=1,
+        maximum=500, description="Institutional inquiries accepted from one network address in an hour.")
 
 # --- Agent Ayush retrieval (services/vector_store.py) -------------------------
 # Only used when a semantic embedding model is on (EMBEDDING_PROVIDER=ollama). A
@@ -506,6 +536,11 @@ declare("auth.whatsapp_status_cache_seconds", INT, 60, area="auth", unit="second
         description="How long a WhatsApp session check (or a failed WhatsApp send) is trusted before checking again.")
 declare("auth.whatsapp_status_timeout_seconds", INT, 3, area="auth", unit="seconds", minimum=1, maximum=10,
         description="Longest the server waits for OpenWA to answer the WhatsApp session check.")
+
+# A session lasts 12 hours and /auth/refresh renews it; this caps the whole chain
+# from the sign-in, after which the person signs in again (audit L1).
+declare("auth.session_absolute_hours", INT, 168, area="auth", unit="hours", minimum=12, maximum=2160,
+        description="Longest a sign-in can be kept alive by refreshing before the person must sign in again.")
 
 # --- consultations ---------------------------------------------------------
 declare("consult.media_join_before_minutes", INT, 15, area="consult", unit="minutes", minimum=0, maximum=120,

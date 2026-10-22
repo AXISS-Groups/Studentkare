@@ -76,6 +76,23 @@ def normalize_identifier(value: str, channel: str) -> str:
     return value
 
 
+DEV_ORIGINS = ("http://testserver", "http://localhost", "http://127.0.0.1", "http://localhost:3000",
+               "http://127.0.0.1:3000", "http://localhost:4173", "http://127.0.0.1:4173")
+
+
+def allowed_origins() -> list[str]:
+    """Cross-origin callers allowed for credentialed requests (CORS and check_origin).
+
+    ALLOWED_ORIGINS when set. Unset: local origins in development and testing
+    only; in production nothing cross-origin (fail closed, audit L3), and the
+    same-origin app keeps working.
+    """
+    configured = [entry.strip().rstrip('/') for entry in os.getenv("ALLOWED_ORIGINS", "").split(',') if entry.strip()]
+    if configured:
+        return configured
+    return list(DEV_ORIGINS) if is_dev_or_test() else []
+
+
 def check_origin(request: Request):
     """Defense-in-depth origin check. Primary security is CSRF token + httponly cookies."""
     origin = request.headers.get("origin")
@@ -92,10 +109,7 @@ def check_origin(request: Request):
     own_origin = f"{request.url.scheme}://{request.headers.get('host', '')}"
     if origin.rstrip('/') == own_origin.rstrip('/'):
         return
-    allowed = {entry.strip().rstrip('/') for entry in os.getenv("ALLOWED_ORIGINS", "").split(',') if entry.strip()}
-    if not allowed:
-        allowed = {"http://testserver", "http://localhost", "http://127.0.0.1"}
-    if origin.rstrip('/') in allowed:
+    if origin.rstrip('/') in set(allowed_origins()):
         return
     raise HTTPException(403, "This request origin is not allowed.")
 
@@ -150,12 +164,21 @@ def account_payload(account: M.Account) -> dict:
             "isVerifiedStudent": profile.get("isVerifiedStudent") is True}
 
 
+HOUR_SECONDS = 3600
+
+
+def absolute_session_seconds(db: DBSession) -> float:
+    return int(setting("auth.session_absolute_hours", db)) * HOUR_SECONDS
+
+
 def resolve_session(request: Request, db: DBSession):
     raw = request.cookies.get(SESSION_COOKIE, "")
     if not raw:
         return None, None
     session = db.get(M.Session, digest(raw))
     if not session or session.expires_at <= time.time():
+        return None, None
+    if session.signed_in_at and time.time() - session.signed_in_at > absolute_session_seconds(db):
         return None, None
     account = db.get(M.Account, session.account_id)
     if not account or not account.active:
@@ -166,6 +189,10 @@ def resolve_session(request: Request, db: DBSession):
 TWO_FACTOR_SETUP_REQUIRED = "TWO_FACTOR_SETUP_REQUIRED"
 # Counsellors are here because the crisis queue shows students' names and contacts.
 _FAIL_CLOSED_ENFORCED_ROLES = frozenset({"SUPER_ADMIN", "COUNSELLOR"})
+FAIL_CLOSED_TWO_FACTOR_ROLES = _FAIL_CLOSED_ENFORCED_ROLES
+# Every account role there is (care_accounts.role).
+KNOWN_ROLES = frozenset({"STUDENT", "SUPER_ADMIN", "CAMPUS_ADMIN", "COUNSELLOR", "VENDOR", "NMC_DOCTOR",
+                         "LAB_COLLECTOR"})
 
 
 def two_factor_enforced_roles() -> frozenset[str]:
@@ -182,7 +209,10 @@ def two_factor_enforced_roles() -> frozenset[str]:
         raw = raw.split(",")
     if not isinstance(raw, (list, tuple)) or not all(isinstance(role, str) for role in raw):
         return _FAIL_CLOSED_ENFORCED_ROLES
-    return frozenset(role.strip().upper() for role in raw if role.strip())
+    configured = frozenset(role.strip().upper() for role in raw if role.strip())
+    # In production the floor can't be configured away, whatever a stored or
+    # in-memory config says (audit M4): roles can be added, never removed.
+    return configured | _FAIL_CLOSED_ENFORCED_ROLES if is_production() else configured
 
 
 def two_factor_setup_required(db: DBSession, account: M.Account) -> bool:
@@ -287,14 +317,18 @@ def require_clinician(user: dict = Depends(authenticated_user)) -> dict:
 
 
 def issue_session(db: DBSession, account: M.Account, response: Response, request: Request, *,
-                  code_verified_at: float = 0.0):
-    """A new session cookie. ``code_verified_at``: when this sign-in was proven with a one-time code (0 if not)."""
+                  code_verified_at: float = 0.0, signed_in_at: float = 0.0):
+    """A new session cookie. ``code_verified_at``: when this sign-in was proven with a one-time code (0 if not).
+
+    ``signed_in_at``: when the sign-in happened; a refresh passes the old session's, a sign-in leaves it 0 (now).
+    """
     old = request.cookies.get(SESSION_COOKIE)
     if old:
         db.execute(delete(M.Session).where(M.Session.token_hash == digest(old)))
     raw, csrf = secrets.token_urlsafe(32), secrets.token_urlsafe(32)
-    db.add(M.Session(token_hash=digest(raw), account_id=account.id, csrf_token=csrf, expires_at=time.time() + SESSION_SECONDS,
-                     code_verified_at=code_verified_at))
+    now = time.time()
+    db.add(M.Session(token_hash=digest(raw), account_id=account.id, csrf_token=csrf, expires_at=now + SESSION_SECONDS,
+                     code_verified_at=code_verified_at, signed_in_at=signed_in_at or now))
     set_cookie(response, SESSION_COOKIE, raw, SESSION_SECONDS)
     return csrf
 
@@ -453,7 +487,16 @@ def channel_unavailable(channel: str, db: DBSession) -> HTTPException:
 
 
 SECOND_CONTACT_REQUIRED = "SECOND_CONTACT_REQUIRED"
-STAFF_NOT_FOUND = "No staff account uses this email. Staff accounts are created by an administrator."
+
+
+OTP_TTL_SECONDS = 300
+
+
+def _sent_payload(identifier: str, channel: str) -> dict:
+    """The one shape /otp/send answers with, whether or not an account exists."""
+    return {"success": True, "targetMasked": mask_identifier(identifier, channel), "channelUsed": channel,
+            "expiresInSeconds": OTP_TTL_SECONDS, "fallbackSent": False, "fallbackChannel": None,
+            "fallbackTargetMasked": None}
 
 
 @router.post("/otp/send")
@@ -462,18 +505,9 @@ def send_otp(body: OtpSend, request: Request, response: Response, db: DBSession 
     identifier = normalize_identifier(body.identifier, body.channel)
     if body.audience == "STAFF" and (body.intent != "LOGIN" or body.channel != "EMAIL"):
         raise HTTPException(422, "Staff sign in with a work email.")
-    if body.intent == "LOGIN":
-        # Only a verified contact gets a sign-in code (services/contact_store.py).
-        account = account_for_sign_in(db, identifier, body.channel)
-        if body.audience == "STAFF" and (not account or account.role == "STUDENT"):
-            # One answer for "no account" and "a student account": the staff page
-            # never tells anyone which emails belong to students.
-            raise HTTPException(404, STAFF_NOT_FOUND)
-        if not account:
-            raise HTTPException(
-                404,
-                "No active account was found. Create an account to continue."
-            )
+    # The limits run first, before anything is looked up, so a burst of sends
+    # can't be used to probe which identifiers have accounts (audit M5). The
+    # per-identifier limit is first of all.
     limit(db, f"send:{identifier}", 3, 300)
     limit(db, f"ip:{request.client.host if request.client else 'unknown'}", 30, 900)
     if body.channel == "EMAIL":
@@ -483,6 +517,16 @@ def send_otp(body: OtpSend, request: Request, response: Response, db: DBSession 
         rejected = check_email_deliverable(identifier)
         if rejected is not None:
             raise HTTPException(rejected.status, rejected.reason)
+    if body.intent == "LOGIN":
+        # Only a verified contact gets a sign-in code (services/contact_store.py).
+        account = account_for_sign_in(db, identifier, body.channel)
+        if not account or (body.audience == "STAFF" and account.role == "STUDENT"):
+            # No account (or, on the staff page, a student's): the same answer as
+            # a real send, so nobody learns which identifiers have accounts. No
+            # code is minted or sent, and the challenge cookie is a random token
+            # that matches no challenge, so verifying it fails like a wrong code.
+            set_cookie(response, CHALLENGE_COOKIE, secrets.token_urlsafe(32), OTP_TTL_SECONDS)
+            return _sent_payload(identifier, body.channel)
     token = secrets.token_urlsafe(32)
     # The fixed demo code needs both demo accounts and the console opt-in; with
     # either off, a demo identifier gets a random code like anyone else.
@@ -517,11 +561,9 @@ def send_otp(body: OtpSend, request: Request, response: Response, db: DBSession 
     db.add(M.OtpChallenge(token_hash=digest(token), identifier=identifier, intent=body.intent, channel=body.channel,
                           code_hash=code_digest(token, code), expires_at=time.time() + 300, attempts=0, consumed=False))
     db.commit()
-    set_cookie(response, CHALLENGE_COOKIE, token, 300)
-    masked = mask_identifier(identifier, body.channel)
-    result = {"success": True, "targetMasked": masked, "channelUsed": body.channel, "expiresInSeconds": 300,
-              "fallbackSent": fallback_sent, "fallbackChannel": fallback_channel,
-              "fallbackTargetMasked": fallback_masked}
+    set_cookie(response, CHALLENGE_COOKIE, token, OTP_TTL_SECONDS)
+    result = _sent_payload(identifier, body.channel)
+    result.update(fallbackSent=fallback_sent, fallbackChannel=fallback_channel, fallbackTargetMasked=fallback_masked)
     if fallback_sent:
         result["message"] = (f"Code sent via {body.channel}. WhatsApp was not reachable — the same code was also sent "
                              f"to email {fallback_masked} in case it did not arrive on WhatsApp.")
@@ -679,9 +721,17 @@ def refresh_session(request: Request, response: Response, db: DBSession = Depend
     account, session = resolve_session(request, db)
     if not account or not session:
         raise HTTPException(401, "Invalid or expired session. Please sign in again.")
+    # A refresh rotates the session, so it is a write like any other: the origin
+    # and the session's CSRF token are checked (audit L1).
+    check_origin(request)
+    supplied = request.headers.get("x-csrf-token", "")
+    if not supplied or not hmac.compare_digest(supplied, session.csrf_token):
+        raise HTTPException(403, "The session security token is missing or invalid. Refresh and try again.")
 
-    # A refresh keeps how the sign-in was proven; it never makes a passcode sign-in code-proven.
-    csrf = issue_session(db, account, response, request, code_verified_at=session.code_verified_at or 0.0)
+    # A refresh keeps how and when the sign-in was proven; it never makes a
+    # passcode sign-in code-proven, and never extends past the absolute lifetime.
+    csrf = issue_session(db, account, response, request, code_verified_at=session.code_verified_at or 0.0,
+                         signed_in_at=session.signed_in_at or 0.0)
     db.commit()
     return {
         "success": True,
