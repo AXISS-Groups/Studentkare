@@ -247,6 +247,7 @@ services:
     volumes:
       - ./deploy/prometheus.yml:/etc/prometheus/prometheus.yml
       - ./deploy/alerts.yml:/etc/prometheus/alerts.yml
+      - ./deploy/slo-alerts.yml:/etc/prometheus/slo-alerts.yml
       - prometheus-data:/prometheus
     deploy:
       resources:
@@ -337,6 +338,11 @@ services:
     restart: unless-stopped
     volumes:
       - ./deploy/alertmanager-prod.yml:/etc/alertmanager/alertmanager.yml
+    # alertmanager-prod.yml reads the Slack webhook from this file
+    # (slack_api_url_file); Alertmanager never expands ${...} in its config.
+    secrets:
+      - source: slack_webhook_url
+        target: /etc/alertmanager-secrets/slack_webhook_url
     ports: !reset []
     networks:
       - studentkare
@@ -395,6 +401,10 @@ services:
 
   # External database (managed by cloud provider)
   # No local Postgres container - use managed PostgreSQL (RDS, CloudSQL, etc.)
+
+secrets:
+  slack_webhook_url:
+    environment: SLACK_WEBHOOK_URL
 
 networks:
   studentkare:

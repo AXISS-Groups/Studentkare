@@ -70,7 +70,8 @@ def test_helm_points_the_scanner_at_the_clamav_service():
     out = subprocess.run(  # noqa: S603 — fixed argv, repo-local chart
         [shutil.which("helm"), "template", "t", str(CHART), "-f", str(CHART / "values" / "production.yaml"),
          "--set", "backend.image.tag=sha-test,frontend.image.tag=sha-test",
-         "--set", "backend.secrets.ALERTMANAGER_WEBHOOK_SECRET=test"],
+         "--set", "backend.secrets.ALERTMANAGER_WEBHOOK_SECRET=test",
+         "--set", "alertmanager.config.global.slack_api_url=https://hooks.slack.test/t"],
         capture_output=True, text=True, check=True,
     ).stdout
     docs = [d for d in yaml.safe_load_all(out) if d]

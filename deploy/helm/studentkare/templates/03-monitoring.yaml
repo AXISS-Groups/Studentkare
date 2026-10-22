@@ -16,9 +16,9 @@ metadata:
   namespace: {{ .Release.Namespace }}
 data:
   alerts.yml: |
-{{ .Files.Get "deploy/alerts.yml" | indent 4 }}
+{{ .Files.Get "files/alerts.yml" | indent 4 }}
   slo-alerts.yml: |
-{{ .Files.Get "deploy/slo-alerts.yml" | indent 4 }}
+{{ .Files.Get "files/slo-alerts.yml" | indent 4 }}
 ---
 apiVersion: apps/v1
 kind: StatefulSet
@@ -55,8 +55,10 @@ spec:
           volumeMounts:
             - name: config
               mountPath: /etc/prometheus
+            # Alert rules (deploy/alerts.yml, deploy/slo-alerts.yml via files/);
+            # prometheus.config.rule_files globs this directory.
             - name: rules
-              mountPath: /etc/prometheus/rules
+              mountPath: /etc/prometheus-rules
             - name: data
               mountPath: /prometheus
           resources:
@@ -119,7 +121,7 @@ metadata:
   namespace: {{ .Release.Namespace }}
 data:
   tempo.yaml: |
-{{ .Files.Get "deploy/tempo-config.yaml" | indent 4 }}
+{{ .Files.Get "files/tempo-config.yaml" | indent 4 }}
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -207,8 +209,8 @@ metadata:
   name: loki-config
   namespace: {{ .Release.Namespace }}
 data:
-  loki-config.yaml: |
-{{ .Files.Get "deploy/loki-config-prod.yaml" | indent 4 }}
+  local-config.yaml: |
+{{ .Files.Get "files/loki-config-prod.yaml" | indent 4 }}
 ---
 apiVersion: apps/v1
 kind: StatefulSet
@@ -279,8 +281,8 @@ metadata:
   name: promtail-config
   namespace: {{ .Release.Namespace }}
 data:
-  promtail-config.yml: |
-{{ .Files.Get "deploy/promtail-config-prod.yml" | indent 4 }}
+  config.yml: |
+{{ .Files.Get "files/promtail-config-prod.yml" | indent 4 }}
 ---
 apiVersion: apps/v1
 kind: DaemonSet
@@ -452,7 +454,7 @@ metadata:
   namespace: {{ .Release.Namespace }}
 data:
   alertmanager.yml: |
-{{ .Files.Get "deploy/alertmanager-prod.yml" | indent 4 }}
+{{ .Files.Get "files/alertmanager-prod.yml" | indent 4 }}
 ---
 apiVersion: apps/v1
 kind: StatefulSet
@@ -484,6 +486,10 @@ spec:
           volumeMounts:
             - name: config
               mountPath: /etc/alertmanager
+            # alertmanager-prod.yml: slack_api_url_file (Alertmanager does not expand env vars).
+            - name: slack-webhook
+              mountPath: /etc/alertmanager-secrets
+              readOnly: true
             - name: data
               mountPath: /alertmanager
           resources:
@@ -492,6 +498,12 @@ spec:
         - name: config
           configMap:
             name: alertmanager-config
+        - name: slack-webhook
+          secret:
+            secretName: studentkare-secrets
+            items:
+              - key: SLACK_WEBHOOK_URL
+                path: slack_webhook_url
   volumeClaimTemplates:
     - metadata:
         name: data
@@ -524,8 +536,8 @@ metadata:
   name: blackbox-config
   namespace: {{ .Release.Namespace }}
 data:
-  blackbox.yml: |
-{{ .Files.Get "deploy/blackbox-config.yml" | indent 4 }}
+  config.yml: |
+{{ .Files.Get "files/blackbox-config.yml" | indent 4 }}
 ---
 apiVersion: apps/v1
 kind: Deployment

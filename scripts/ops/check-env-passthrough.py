@@ -204,6 +204,7 @@ def helm_env_rendered(values: dict) -> dict[str, set[str]] | None:
             "secrets": dict.fromkeys(backend.get("secrets") or {}, "env-check"),
         },
         "frontend": {"image": {"tag": "sha-envcheck"}},
+        "alertmanager": {"config": {"global": {"slack_api_url": "https://hooks.slack.test/envcheck"}}},
     }
     with tempfile.NamedTemporaryFile("w", suffix=".yaml", delete=False) as fh:
         yaml.safe_dump(fill, fh)

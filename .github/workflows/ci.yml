@@ -172,9 +172,22 @@ jobs:
           chart=deploy/helm/studentkare
           args=(-f "$chart/values/production.yaml"
                 --set backend.image.tag=sha-ci,frontend.image.tag=sha-ci
-                --set backend.secrets.ALERTMANAGER_WEBHOOK_SECRET=ci-dummy)
+                --set backend.secrets.ALERTMANAGER_WEBHOOK_SECRET=ci-dummy
+                --set alertmanager.config.global.slack_api_url=https://hooks.slack.test/ci)
           helm lint "$chart" "${args[@]}"
           helm template studentkare "$chart" "${args[@]}" > /tmp/studentkare-rendered.yaml
+
+      - name: Alert rules and Alertmanager config (promtool / amtool, compose and rendered Helm)
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/bin"
+          # Same versions as the prom/prometheus and prom/alertmanager images.
+          curl -sSL https://github.com/prometheus/prometheus/releases/download/v2.53.0/prometheus-2.53.0.linux-amd64.tar.gz \
+            | tar -xz -C "$RUNNER_TEMP/bin" --strip-components=1 prometheus-2.53.0.linux-amd64/promtool
+          curl -sSL https://github.com/prometheus/alertmanager/releases/download/v0.27.0/alertmanager-0.27.0.linux-amd64.tar.gz \
+            | tar -xz -C "$RUNNER_TEMP/bin" --strip-components=1 alertmanager-0.27.0.linux-amd64/amtool
+          pip install pyyaml
+          PATH="$RUNNER_TEMP/bin:$PATH" python scripts/ops/check-monitoring.py
 
       - name: Env passthrough (every env var the app reads reaches prod compose AND Helm)
         run: |
