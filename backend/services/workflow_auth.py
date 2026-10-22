@@ -166,6 +166,10 @@ def resolve_session(request: Request, db: DBSession):
 TWO_FACTOR_SETUP_REQUIRED = "TWO_FACTOR_SETUP_REQUIRED"
 # Counsellors are here because the crisis queue shows students' names and contacts.
 _FAIL_CLOSED_ENFORCED_ROLES = frozenset({"SUPER_ADMIN", "COUNSELLOR"})
+FAIL_CLOSED_TWO_FACTOR_ROLES = _FAIL_CLOSED_ENFORCED_ROLES
+# Every account role there is (care_accounts.role).
+KNOWN_ROLES = frozenset({"STUDENT", "SUPER_ADMIN", "CAMPUS_ADMIN", "COUNSELLOR", "VENDOR", "NMC_DOCTOR",
+                         "LAB_COLLECTOR"})
 
 
 def two_factor_enforced_roles() -> frozenset[str]:
@@ -182,7 +186,10 @@ def two_factor_enforced_roles() -> frozenset[str]:
         raw = raw.split(",")
     if not isinstance(raw, (list, tuple)) or not all(isinstance(role, str) for role in raw):
         return _FAIL_CLOSED_ENFORCED_ROLES
-    return frozenset(role.strip().upper() for role in raw if role.strip())
+    configured = frozenset(role.strip().upper() for role in raw if role.strip())
+    # In production the floor can't be configured away, whatever a stored or
+    # in-memory config says (audit M4): roles can be added, never removed.
+    return configured | _FAIL_CLOSED_ENFORCED_ROLES if is_production() else configured
 
 
 def two_factor_setup_required(db: DBSession, account: M.Account) -> bool:

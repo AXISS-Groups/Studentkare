@@ -17,6 +17,8 @@ from sqlalchemy.orm import Session as DBSession
 
 from core import settings_registry
 from core import workflow_models as M
+from core.app_env import is_production
+from services import integration_secret_vault as vault
 from services import ops_feed, twofa_store
 from services.integration_config import (
     INTEGRATIONS_DB,
@@ -27,6 +29,8 @@ from services.integration_config import (
 )
 from services.otp_delivery import reset_whatsapp_status, whatsapp_status
 from services.workflow_auth import (
+    FAIL_CLOSED_TWO_FACTOR_ROLES,
+    KNOWN_ROLES,
     StrictModel,
     authenticated_user,
     issue_session,
@@ -66,6 +70,28 @@ def get_public_config(response: Response, db: DBSession = Depends(workflow_db)):
     return {**public_config(), "settings": settings_registry.public_values(db)}
 
 
+TWOFA_KEYS = frozenset({"enforced_roles", "issuer"})
+
+
+def _check_two_factor_policy(candidate: dict) -> None:
+    """The 2FA policy can be tightened through this API but never switched off in production (audit M4)."""
+    unknown = set(candidate) - TWOFA_KEYS
+    if unknown:
+        raise HTTPException(422, f"Unknown 2FA settings: {', '.join(sorted(unknown))}.")
+    roles = candidate.get("enforced_roles")
+    if isinstance(roles, str):
+        roles = roles.split(",")
+    if not isinstance(roles, list) or not all(isinstance(r, str) for r in roles):
+        raise HTTPException(422, "enforced_roles must be a list of role names.")
+    roles = sorted({r.strip().upper() for r in roles if r.strip()})
+    if not set(roles) <= KNOWN_ROLES:
+        raise HTTPException(422, f"Unknown role in enforced_roles: {', '.join(sorted(set(roles) - KNOWN_ROLES))}.")
+    if is_production() and not FAIL_CLOSED_TWO_FACTOR_ROLES <= set(roles):
+        raise HTTPException(422, "Two-step sign-in can't be switched off for "
+                                 f"{', '.join(sorted(FAIL_CLOSED_TWO_FACTOR_ROLES))} in production.")
+    candidate["enforced_roles"] = roles
+
+
 @router.get("/admin/integrations")
 def list_integrations(user: dict = Depends(require_super_admin), db: DBSession = Depends(workflow_db)):
     # WhatsApp can be configured and still not deliver (the session logged out):
@@ -81,13 +107,23 @@ def update_integration(provider: str, body: ConfigUpdate,
     if provider not in INTEGRATIONS_DB:
         raise HTTPException(404, f"Unknown provider '{provider}'")
     current = INTEGRATIONS_DB[provider]
+    candidate = dict(current)
     for k, v in (body.config or {}).items():
         if k.endswith(("_masked", "_set")):
             continue
         # A form that round-trips the masked placeholder must not overwrite the real secret with it.
         if is_secret_field(k) and isinstance(v, str) and "••••" in v:
             continue
-        current[k] = v
+        candidate[k] = v
+    if provider == "twofa":
+        _check_two_factor_policy(candidate)
+    # Fail closed before anything changes: no plaintext secret in production (audit M4).
+    try:
+        vault.require_key_for(candidate)
+    except vault.VaultKeyMissing as exc:
+        raise HTTPException(503, {"code": "INTEGRATIONS_KEY_MISSING", "message": str(exc)})
+    current.clear()
+    current.update(candidate)
     save_to_db(provider)
     if provider == "openwa":
         reset_whatsapp_status()

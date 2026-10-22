@@ -184,6 +184,9 @@ def save_to_db(provider: str):
                 row.updated_at = time.time()
             db.commit()
     except Exception as e:
+        from services.integration_secret_vault import VaultKeyMissing
+        if isinstance(e, VaultKeyMissing):
+            raise  # never fall back to plaintext in production (audit M4)
         print(f"[CONFIG] Could not persist {provider} to database: {e}", flush=True)
 
 
