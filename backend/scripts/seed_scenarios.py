@@ -51,6 +51,14 @@ EMAIL_DOMAIN = "seed.studentkare.test"
 MARK = "scenarios-v1"
 SEED_PASSWORD = "Staging-river 2026"  # noqa: S105 — the published test password for seeded accounts
 SEED_PIN = "482915"
+# Ten named accounts per role, easy to type: student01@studentkare.test … campus10@studentkare.test.
+# On staging (APP_ENV=testing, SEED_DEMO_DATA=true, DEV_OTP_CONSOLE=true) any @studentkare.test account
+# takes the fixed code 123456 (services/demo_seed.is_demo_identifier); students also have the password and PIN.
+NAMED_DOMAIN = "studentkare.test"
+NAMED_PER_ROLE = 10
+NAMED_ROLES = (("student", "STUDENT", ""), ("lab", "VENDOR", "LAB"), ("clinic", "VENDOR", "CLINIC"),
+               ("doctor", "NMC_DOCTOR", ""), ("pharmacy", "VENDOR", "PHARMACY"), ("campus", "CAMPUS_ADMIN", ""))
+NAMED_PHONE_BASE = 9_600_000_000
 REAL_STUDENT_LIMIT = 50
 CHUNK = 2000
 DAY = 86_400
@@ -191,11 +199,11 @@ def seed_people(db: Session, world: World, students: int) -> None:
     n = 0
 
     def account(role: str, name: str, profile: dict, kind: str = "", verified_phone: bool | None = True,
-                password: bool = True) -> dict:
+                password: bool = True, named: str = "", phone: str = "") -> dict:
         nonlocal n
         n += 1
-        account_id = sid("acc", n)
-        email = f"{role.lower()}.{n:06d}@{EMAIL_DOMAIN}"
+        account_id = f"{PREFIX}named-{named}" if named else sid("acc", n)
+        email = f"{named}@{NAMED_DOMAIN}" if named else f"{role.lower()}.{n:06d}@{EMAIL_DOMAIN}"
         created = now - rng.randint(1, 400) * DAY
         row = {"id": account_id, "identifier": email, "channel": "EMAIL", "full_name": name, "role": role,
                "active": True, "profile": {**profile, "seed": MARK}, "created_at": created, "partner_kind": kind,
@@ -205,7 +213,7 @@ def seed_people(db: Session, world: World, students: int) -> None:
                          "verified_at": created, "created_at": created})
         if verified_phone is not None:
             contacts.append({"id": sid("ct", 2 * n + 1), "account_id": account_id, "kind": "WHATSAPP",
-                             "value": phone_for(n), "verified_at": created if verified_phone else 0.0,
+                             "value": phone or phone_for(n), "verified_at": created if verified_phone else 0.0,
                              "created_at": created})
         if password:
             passwords.append({"account_id": account_id, "password_hash": password_hash, "failed_attempts": 0,
@@ -214,6 +222,36 @@ def seed_people(db: Session, world: World, students: int) -> None:
 
     def person() -> str:
         return f"Test {rng.choice(FIRST)} {rng.choice(LAST)}"
+
+    # The named accounts first, so they are the same on every run and join the scenarios below.
+    k = 0
+    for label, role, kind in NAMED_ROLES:
+        for i in range(1, NAMED_PER_ROLE + 1):
+            k += 1
+            named, campus = f"{label}{i:02d}", world.campuses[(i - 1) % len(world.campuses)]
+            title = f"Test {label.title()} {i:02d}"
+            profile = ({"university": campus, "rollNumber": f"NAMED{i:02d}", "dob": "2003-06-15", "ageVerified": True,
+                        "isVerifiedStudent": True, "seedScenario": "NAMED"} if role == "STUDENT"
+                       else {"university": campus} if role == "CAMPUS_ADMIN"
+                       else {"registrationNo": f"TEST-NMC-NAMED-{i:02d}"} if role == "NMC_DOCTOR"
+                       else {"organisation": title})
+            row = account(role, title, profile, kind=kind, named=named, phone=str(NAMED_PHONE_BASE + k))
+            if role == "STUDENT":
+                consents.append({"id": f"{PREFIX}named-cons-{named}", "account_id": row["id"], "version": SIGNUP_CONSENT_VERSION,
+                                 "purposes": list(SIGNUP_REQUIRED_PURPOSES), "language": "en", "recorded_at": row["created_at"],
+                                 "withdrawn_at": 0.0})
+                passcodes.append({"account_id": row["id"], "passcode_hash": pin_hash, "length": len(SEED_PIN),
+                                  "failed_attempts": 0, "locked_until": 0.0, "created_at": row["created_at"],
+                                  "updated_at": 0.0, "last_sign_in_at": 0.0})
+                verifications.append({"account_id": row["id"], "university": campus, "roll_number": profile["rollNumber"],
+                                      "status": "VERIFIED", "verified_by": "", "verified_at": row["created_at"] + DAY})
+                world.students.append({"id": row["id"], "campus": campus, "created": row["created_at"]})
+            elif role == "CAMPUS_ADMIN":
+                world.campus_admins.append(row["id"])
+            elif role == "NMC_DOCTOR":
+                world.doctors.append(row["id"])
+            else:
+                world.vendors[kind].append(row["id"])
 
     for campus in world.campuses:
         world.campus_admins.append(account("CAMPUS_ADMIN", f"{person()} (campus admin)", {"university": campus})["id"])

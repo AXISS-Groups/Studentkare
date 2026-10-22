@@ -73,7 +73,7 @@ def test_seeds_every_scenario_and_purges_only_its_own(db):
                   M.CrisisEvent, M.SosAlert, M.StudentInvite, M.ConsentRecord, M.AccountPassword):
         assert db.scalar(select(func.count()).select_from(model)) > 0, model.__tablename__
     # Every email is on the reserved test domain, and the one test password works.
-    assert all(row.identifier.endswith(f"@{S.EMAIL_DOMAIN}") for row in db.scalars(select(M.Account).where(M.Account.id.startswith(S.PREFIX))))
+    assert all(row.identifier.endswith((f"@{S.EMAIL_DOMAIN}", f"@{S.NAMED_DOMAIN}")) for row in db.scalars(select(M.Account).where(M.Account.id.startswith(S.PREFIX))))
     stored = db.scalar(select(M.AccountPassword.password_hash).limit(1))
     assert verify_pin(S.SEED_PASSWORD, stored)
     # A pending invite has no verified contact and no password: nothing can sign in to it.
@@ -88,3 +88,24 @@ def test_seeds_every_scenario_and_purges_only_its_own(db):
     assert removed["care_accounts"] == before["care_accounts"]
     assert S.count(db) == {}                                                            # nothing seeded is left
     assert db.get(M.Account, "real-0") is not None                                     # the real one stays
+
+
+def test_ten_named_accounts_per_role(db, monkeypatch):
+    S.seed(db, scale=0.01, random_seed=7)
+    for label, role, kind in S.NAMED_ROLES:
+        for i in (1, S.NAMED_PER_ROLE):
+            account = db.scalar(select(M.Account).where(M.Account.identifier == f"{label}{i:02d}@{S.NAMED_DOMAIN}"))
+            assert account is not None and account.role == role and (account.partner_kind or "") == kind
+            assert account.id.startswith(S.PREFIX)
+    student = db.scalar(select(M.Account).where(M.Account.identifier == f"student01@{S.NAMED_DOMAIN}"))
+    assert verify_pin(S.SEED_PASSWORD, db.get(M.AccountPassword, student.id).password_hash)
+    assert verify_pin(S.SEED_PIN, db.get(M.StudentPasscode, student.id).passcode_hash)
+    # On staging with the demo switches on, the named accounts take the fixed code.
+    from services import demo_seed
+    monkeypatch.setenv("SEED_DEMO_DATA", "true")
+    assert demo_seed.is_demo_identifier(f"doctor03@{S.NAMED_DOMAIN}")
+    monkeypatch.setenv("APP_ENV", "production")
+    assert not demo_seed.is_demo_identifier(f"doctor03@{S.NAMED_DOMAIN}")
+    S.purge(db)
+    db.commit()
+    assert db.scalar(select(M.Account).where(M.Account.identifier == f"student01@{S.NAMED_DOMAIN}")) is None

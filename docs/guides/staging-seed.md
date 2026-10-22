@@ -21,6 +21,22 @@ Every seeded row is marked: ids start `seed-`, emails end `@seed.studentkare.tes
 receive mail), names say "Test", and profiles carry `"seed"`. Every seeded account's password is
 **`Staging-river 2026`** and every seeded PIN is **`482915`**, so testers can sign in as any scenario.
 
+## Named test accounts (10 per role)
+
+| Role | Sign-in IDs | How they sign in |
+|---|---|---|
+| Student | `student01@studentkare.test` … `student10@studentkare.test` | Password `Staging-river 2026`, PIN `482915` (on a device that has signed in once), or code `123456` |
+| Lab | `lab01@studentkare.test` … `lab10@studentkare.test` | `/staff-sign-in`, emailed code `123456` |
+| Clinic | `clinic01@studentkare.test` … `clinic10@studentkare.test` | `/staff-sign-in`, code `123456` |
+| Doctor | `doctor01@studentkare.test` … `doctor10@studentkare.test` | `/staff-sign-in`, code `123456` |
+| Pharmacy | `pharmacy01@studentkare.test` … `pharmacy10@studentkare.test` | `/staff-sign-in`, code `123456` |
+| Campus admin | `campus01@studentkare.test` … `campus10@studentkare.test` | `/staff-sign-in`, code `123456` |
+
+`studentNN` and `campusNN` share Test Campus NN, so a campus admin sees those students. The fixed code
+`123456` works only on staging with **all three** set: `APP_ENV=testing`, `SEED_DEMO_DATA=true` and
+`DEV_OTP_CONSOLE=true` (`services/demo_seed.is_demo_identifier`); production never accepts it. Staff
+accounts other than the team accounts sign in with a code, not a password, so the code is how testers get in.
+
 ## Running it
 
 On the staging server, from `backend/`, with the staging database's `DATABASE_URL`:
