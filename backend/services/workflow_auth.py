@@ -277,12 +277,15 @@ def require_clinician(user: dict = Depends(authenticated_user)) -> dict:
     return user
 
 
-def issue_session(db: DBSession, account: M.Account, response: Response, request: Request):
+def issue_session(db: DBSession, account: M.Account, response: Response, request: Request, *,
+                  code_verified_at: float = 0.0):
+    """A new session cookie. ``code_verified_at``: when this sign-in was proven with a one-time code (0 if not)."""
     old = request.cookies.get(SESSION_COOKIE)
     if old:
         db.execute(delete(M.Session).where(M.Session.token_hash == digest(old)))
     raw, csrf = secrets.token_urlsafe(32), secrets.token_urlsafe(32)
-    db.add(M.Session(token_hash=digest(raw), account_id=account.id, csrf_token=csrf, expires_at=time.time() + SESSION_SECONDS))
+    db.add(M.Session(token_hash=digest(raw), account_id=account.id, csrf_token=csrf, expires_at=time.time() + SESSION_SECONDS,
+                     code_verified_at=code_verified_at))
     set_cookie(response, SESSION_COOKIE, raw, SESSION_SECONDS)
     return csrf
 
@@ -544,10 +547,11 @@ def verify_otp(body: OtpVerify, request: Request, response: Response, db: DBSess
         if not account or not account.active:
             raise HTTPException(404, "No active account was found. Create an account to continue.")
         if twofa_store.is_enabled(db, account.id):
-            temp = twofa_store.create_pending(db, account.id)
+            temp = twofa_store.create_pending(db, account.id, first_factor="CODE")
             db.commit()
             return {"success": True, "requires2FA": True, "tempToken": temp, "user": None}
-        csrf = issue_session(db, account, response, request)
+        csrf = issue_session(db, account, response, request, code_verified_at=time.time())
+        remember_device(db, account, request, response)
         db.commit()
         return {"success": True, "user": session_payload(db, account), "csrfToken": csrf, "requiresSignup": False}
     if account:
@@ -586,7 +590,8 @@ def signup(body: Signup, request: Request, response: Response, db: DBSession = D
         if body.referralCode:
             from services.rewards import attach_referral
             referral_applied = attach_referral(db, account, body.referralCode)
-        csrf = issue_session(db, account, response, request)
+        csrf = issue_session(db, account, response, request, code_verified_at=time.time())
+        remember_device(db, account, request, response)
         db.commit()
     except IntegrityError:
         db.rollback()
@@ -642,7 +647,8 @@ def refresh_session(request: Request, response: Response, db: DBSession = Depend
     if not account or not session:
         raise HTTPException(401, "Invalid or expired session. Please sign in again.")
 
-    csrf = issue_session(db, account, response, request)
+    # A refresh keeps how the sign-in was proven; it never makes a passcode sign-in code-proven.
+    csrf = issue_session(db, account, response, request, code_verified_at=session.code_verified_at or 0.0)
     db.commit()
     return {
         "success": True,
@@ -661,6 +667,11 @@ def revoke_other_sessions(request: Request, user=Depends(authenticated_user), db
     """
     current = digest(request.cookies.get(SESSION_COOKIE, ""))
     revoked = db.execute(delete(M.Session).where(M.Session.account_id == user["id"], M.Session.token_hash != current)).rowcount
+    # Every other device forgets the account too, so a passcode stops working there
+    # (it needs a device that has signed in before) and no "Continue as" is offered.
+    this_device = digest(request.cookies.get(REMEMBER_COOKIE, ""))
+    db.execute(delete(M.RememberedDevice).where(M.RememberedDevice.account_id == user["id"],
+                                                M.RememberedDevice.token_hash != this_device))
     account = db.scalar(select(M.Account).where(M.Account.id == user["id"]).with_for_update().execution_options(populate_existing=True))
     pass_cancelled = False
     if account is not None:
@@ -694,6 +705,31 @@ def remembered_account(request: Request, db: DBSession):
     if not account or not account.active:
         return None, None
     return device, account
+
+
+def remember_device(db: DBSession, account: M.Account, request: Request, response: Response) -> None:
+    """After a student signs in, this device remembers the account (founder decision 2026-10-22).
+
+    The browser or phone keeps only an opaque HttpOnly token; the identifier is
+    never written where page scripts can read it (guardrail 9). The screen shows it
+    masked. Another account signing in on the device replaces it (a fresh token);
+    staff accounts are not remembered. "Forget this device" and a sign-out without
+    "remember me" clear it.
+    """
+    if account.role != "STUDENT":
+        return
+    now = time.time()
+    raw = request.cookies.get(REMEMBER_COOKIE, "")
+    row = db.get(M.RememberedDevice, digest(raw)) if raw else None
+    if row is not None and row.account_id == account.id and row.expires_at > now:
+        row.expires_at = now + REMEMBER_SECONDS
+    else:
+        if row is not None:
+            db.delete(row)
+        raw = secrets.token_urlsafe(32)
+        db.add(M.RememberedDevice(token_hash=digest(raw), account_id=account.id, last_route="",
+                                  expires_at=now + REMEMBER_SECONDS))
+    set_cookie(response, REMEMBER_COOKIE, raw, REMEMBER_SECONDS)
 
 
 def forget_device(request: Request, response: Response, db: DBSession):
@@ -734,8 +770,11 @@ def remembered(request: Request, response: Response, db: DBSession = Depends(wor
             forget_device(request, response, db)
             db.commit()
         return {"remembered": False}
+    from services.student_passcode import passcode_offered
     return {"remembered": True, "targetMasked": mask_identifier(account.identifier, account.channel),
-            "channel": account.channel, "lastRoute": device.last_route}
+            "channel": account.channel, "lastRoute": device.last_route,
+            # Only to the device that already holds this account: whether "Use my passcode" applies.
+            "passcode": passcode_offered(db, account)}
 
 
 @router.post("/remembered/send")

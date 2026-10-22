@@ -62,17 +62,43 @@ class StaffPinCredential(Base):
     last_sign_in_at: Mapped[float] = mapped_column(Float, default=0.0, server_default="0")
 
 
+class StudentPasscode(Base):
+    """A student's optional secret passcode (4, 6 or 8 characters). Only a salted,
+    peppered scrypt hash is kept (services/team_accounts.hash_pin), never the passcode.
+
+    Wrong tries count towards a lockout (auth.passcode_max_attempts, then
+    auth.passcode_lockout_minutes). Platform plane (core/rule_l.py): neither group
+    role has any grant on it. See services/student_passcode.py.
+    """
+    __tablename__ = "care_student_passcodes"
+    account_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"), primary_key=True)
+    passcode_hash: Mapped[str] = mapped_column(String(255))
+    length: Mapped[int] = mapped_column(Integer)
+    failed_attempts: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
+    locked_until: Mapped[float] = mapped_column(Float, default=0.0, server_default="0")
+    created_at: Mapped[float] = mapped_column(Float)
+    updated_at: Mapped[float] = mapped_column(Float, default=0.0, server_default="0")
+    last_sign_in_at: Mapped[float] = mapped_column(Float, default=0.0, server_default="0")
+
+
 class Session(Base):
     __tablename__ = "care_sessions"
     token_hash: Mapped[str] = mapped_column(String(64), primary_key=True)
     account_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"), index=True)
     csrf_token: Mapped[str] = mapped_column(String(100))
     expires_at: Mapped[float] = mapped_column(Float, index=True)
+    # When this session's sign-in was proven with a one-time code (0: it wasn't,
+    # e.g. a passcode or a team PIN). A refresh keeps it. A student may replace a
+    # forgotten passcode only shortly after a code sign-in (services/student_passcode.py).
+    code_verified_at: Mapped[float] = mapped_column(Float, default=0.0, server_default="0")
 
 
 class RememberedDevice(Base):
-    """A device the student chose to be remembered on at sign-out. Grants no session:
-    it only lets the login screen offer the masked account and start an OTP for it."""
+    """A device that remembers a student's last sign-in (set after every student
+    sign-in, and by "remember me" at sign-out). Grants no session: it lets the
+    login screen offer the masked account and start an OTP for it, and it is the
+    proof that this device has signed in to the account before, which a passcode
+    sign-in needs (services/student_passcode.py)."""
     __tablename__ = "care_remembered_devices"
     token_hash: Mapped[str] = mapped_column(String(64), primary_key=True)
     account_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"), index=True)
@@ -97,6 +123,9 @@ class TwoFactorPending(Base):
     token_hash: Mapped[str] = mapped_column(String(64), primary_key=True)
     account_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"), index=True)
     expires_at: Mapped[float] = mapped_column(Float, index=True)
+    # Which first factor passed: CODE (a one-time code), PASSCODE or PIN. Only a
+    # code counts as code-proven for the session that follows.
+    first_factor: Mapped[str] = mapped_column(String(12), default="CODE", server_default="CODE")
 
 
 class OtpChallenge(Base):

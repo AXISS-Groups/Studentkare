@@ -144,20 +144,26 @@ def check_code(db: Session, account_id: str, token: str) -> bool:
     return True
 
 
-def create_pending(db: Session, account_id: str, ttl_seconds: int = PENDING_SECONDS) -> str:
+def create_pending(db: Session, account_id: str, ttl_seconds: int = PENDING_SECONDS, first_factor: str = "CODE") -> str:
+    """``first_factor`` says what passed before this step: CODE (a one-time code), PASSCODE or PIN."""
     temp = secrets.token_urlsafe(24)
     db.add(M.TwoFactorPending(token_hash=hashlib.sha256(temp.encode()).hexdigest(), account_id=account_id,
-                              expires_at=time.time() + ttl_seconds))
+                              expires_at=time.time() + ttl_seconds, first_factor=first_factor))
     return temp
+
+
+def consume_pending_with_factor(db: Session, temp_token: str) -> tuple[str | None, str]:
+    """Single use: the row is deleted whether or not the code that follows is right. (account id, first factor)."""
+    if not temp_token:
+        return None, ""
+    row = db.get(M.TwoFactorPending, hashlib.sha256(temp_token.encode()).hexdigest())
+    if not row:
+        return None, ""
+    account_id, expired, factor = row.account_id, time.time() > row.expires_at, row.first_factor or "CODE"
+    db.delete(row)
+    return (None, "") if expired else (account_id, factor)
 
 
 def consume_pending(db: Session, temp_token: str) -> str | None:
     """Single use: the row is deleted whether or not the code that follows is right."""
-    if not temp_token:
-        return None
-    row = db.get(M.TwoFactorPending, hashlib.sha256(temp_token.encode()).hexdigest())
-    if not row:
-        return None
-    account_id, expired = row.account_id, time.time() > row.expires_at
-    db.delete(row)
-    return None if expired else account_id
+    return consume_pending_with_factor(db, temp_token)[0]

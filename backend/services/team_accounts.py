@@ -321,8 +321,30 @@ def disable(db: DBSession, account: M.Account, actor_id: str) -> int:
     return ended
 
 
-def is_locked(credential: M.StaffPinCredential | None, now: float) -> bool:
+def is_locked(credential: M.StaffPinCredential | M.StudentPasscode | None, now: float) -> bool:
     return credential is not None and credential.locked_until > now
+
+
+# --- lockout (shared with the student passcode, services/student_passcode.py) ---
+
+
+def clear_lock_if_run_out(credential: M.StaffPinCredential | M.StudentPasscode) -> None:
+    """A lock that has run out gives a fresh set of tries. Call only after ``is_locked`` said no."""
+    if credential.locked_until:
+        credential.failed_attempts, credential.locked_until = 0, 0.0
+
+
+def count_wrong_attempt(db: DBSession, credential: M.StaffPinCredential | M.StudentPasscode,
+                        max_attempts: int, lockout_minutes: int, now: float) -> bool:
+    """Adds one wrong try (atomically, so parallel guesses all count); locks at the limit. True when it locked now."""
+    model = type(credential)
+    db.execute(update(model).where(model.account_id == credential.account_id)
+               .values(failed_attempts=model.failed_attempts + 1))
+    db.refresh(credential)
+    if credential.failed_attempts >= max_attempts:
+        credential.locked_until = now + lockout_minutes * 60
+        return True
+    return False
 
 
 def account_row(db: DBSession, account: M.Account, now: float, viewer_id: str = "") -> dict:
@@ -401,17 +423,12 @@ def pin_sign_in(body: PinSignIn, request: Request, response: Response, db: DBSes
         audit(db, account.id, "STAFF_PIN_SIGN_IN_WHILE_LOCKED", account.id)
         db.commit()
         raise _refused(db)
-    if credential.locked_until:
-        # The lock has run out: a fresh set of tries.
-        credential.failed_attempts, credential.locked_until = 0, 0.0
+    clear_lock_if_run_out(credential)
 
     if not verify_pin(body.pin, credential.pin_hash):
-        db.execute(update(M.StaffPinCredential).where(M.StaffPinCredential.account_id == account.id)
-                   .values(failed_attempts=M.StaffPinCredential.failed_attempts + 1))
-        db.refresh(credential)
         audit(db, account.id, "STAFF_PIN_SIGN_IN_FAILED", account.id)
-        if credential.failed_attempts >= setting("auth.staff_pin_max_attempts", db):
-            credential.locked_until = now + setting("auth.staff_pin_lockout_minutes", db) * 60
+        if count_wrong_attempt(db, credential, setting("auth.staff_pin_max_attempts", db),
+                               setting("auth.staff_pin_lockout_minutes", db), now):
             audit(db, account.id, "STAFF_PIN_LOCKED", account.id)
         db.commit()
         raise _refused(db)
@@ -420,7 +437,7 @@ def pin_sign_in(body: PinSignIn, request: Request, response: Response, db: DBSes
     audit(db, account.id, "STAFF_PIN_SIGN_IN", account.id)
     # The PIN replaces the emailed code, never the authenticator: same branch as /auth/otp/verify.
     if twofa_store.is_enabled(db, account.id):
-        temp = twofa_store.create_pending(db, account.id)
+        temp = twofa_store.create_pending(db, account.id, first_factor="PIN")
         db.commit()
         return {"success": True, "requires2FA": True, "tempToken": temp, "user": None}
     csrf = issue_session(db, account, response, request)
