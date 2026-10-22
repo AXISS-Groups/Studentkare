@@ -27,6 +27,7 @@ from core.team_scope import team_sandboxed
 from services import ops_feed
 from services.clinical_api import LAB_CHARGE_PAID_STATES
 from services.commerce_session import commerce_db
+from services.security_scanner import scan_file_for_viruses
 from services.workflow_auth import StrictModel, authenticated_user, require_staff, workflow_db
 
 router = APIRouter(prefix="/api", tags=["Student requests"])
@@ -163,6 +164,9 @@ async def add_return_photo(return_id: str, file: UploadFile = File(...), user=De
         raise HTTPException(413, "Photos can be up to 5 MB.")
     if magic is None or not content.startswith(magic):
         raise HTTPException(415, "Use a PNG or JPEG photo.")
+    # Scanned like every other upload before it is stored (audit L5). Raises (and
+    # fails closed in production) on a detection or an unreachable scanner.
+    scan_file_for_viruses(content)
     request.photo, request.photo_mime, request.updated_at = content, file.content_type or "", _now()
     db.commit()
     return {"return": _return_payload(db, request)}
