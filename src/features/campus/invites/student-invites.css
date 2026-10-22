@@ -1,0 +1,29 @@
+/* Campus, Students, Invite students. Tokens only (DESIGN.md §3). */
+.cb-invites { display: flex; flex-direction: column; gap: var(--sk-space-14); padding: var(--sk-space-20); border-radius: var(--sk-radius-xl); background: var(--sk-color-surface); }
+.cb-invites__head { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: var(--sk-space-12); }
+.cb-invites__head h2 { margin: 0; font-size: var(--sk-text-title-sm); font-weight: 800; color: var(--sk-color-text); }
+.cb-invites__head p { margin: var(--sk-space-4) 0 0; font-size: var(--sk-text-body-sm); color: var(--sk-color-text-2); }
+.cb-invites__table { width: 100%; border-collapse: collapse; font-size: var(--sk-text-body-sm); }
+.cb-invites__table th { padding: var(--sk-space-8); text-align: left; font-size: var(--sk-text-caption); font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: var(--sk-color-text-2); }
+.cb-invites__table td { padding: var(--sk-space-10) var(--sk-space-8); border-top: 1px solid var(--sk-color-rule); vertical-align: top; color: var(--sk-color-text); }
+.cb-invites__meta { display: block; margin-top: var(--sk-space-2); font-size: var(--sk-text-caption); color: var(--sk-color-text-2); overflow-wrap: anywhere; }
+.cb-invites__actions { display: flex; flex-wrap: wrap; gap: var(--sk-space-6); }
+.cb-invites__radio { display: flex; flex-wrap: wrap; gap: var(--sk-space-12); margin: 0; padding: 0; border: 0; }
+.cb-invites__radio label { display: inline-flex; align-items: center; gap: var(--sk-space-6); min-height: var(--sk-size-touch-target); font-size: var(--sk-text-body-sm); }
+.cb-invites__temp-card { display: flex; flex-direction: column; align-items: center; gap: var(--sk-space-8); text-align: center; }
+.cb-invites__temp-card p { margin: 0; }
+.cb-invites__temp-label { font-size: var(--sk-text-caption); font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: var(--sk-color-text-2); }
+.cb-invites__temp { padding: var(--sk-space-10) var(--sk-space-20); border-radius: var(--sk-radius-md); background: var(--sk-color-surface-2); font-family: var(--sk-font-mono); font-size: var(--sk-text-title); font-weight: 700; letter-spacing: 2px; color: var(--sk-color-clinical-value); }
+.cb-invites__copy {
+  display: inline-flex; align-items: center; gap: var(--sk-space-6);
+  min-height: var(--sk-size-touch-target); padding: 0 var(--sk-space-16);
+  border: 1px solid var(--sk-color-rule); border-radius: var(--sk-radius-md);
+  background: var(--sk-color-surface); color: var(--sk-color-action);
+  font: inherit; font-size: var(--sk-text-body-sm); font-weight: 700; cursor: pointer;
+}
+.cb-invites__copy:focus-visible { outline: 3px solid var(--sk-color-focus); outline-offset: 2px; }
+@media (max-width: 720px) {
+  .cb-invites__table thead { display: none; }
+  .cb-invites__table tr { display: block; padding: var(--sk-space-10) 0; border-top: 1px solid var(--sk-color-rule); }
+  .cb-invites__table td { display: block; padding: var(--sk-space-4) 0; border: 0; }
+}

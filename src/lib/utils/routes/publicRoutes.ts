@@ -11,6 +11,7 @@ export const publicRoutes: RoutePath[] = [
   'campuses',
   'campuses/apply',
   'care',
+  'claim',
   'clinicians',
   'clinicians/apply',
   'crisis',

@@ -167,6 +167,13 @@ The link opens a claim page, all in one sitting, and nothing gives a session unt
 - Until at least one contact is verified, the student sees a banner asking them to verify one, and
   "Forgot password" only works through a verified contact.
 
+**As built (part 4, feat/b2b-invites):** `services/student_invites.py`. Campus admin (own campus) or super
+admin: `POST/GET /campus/invites`, `POST /campus/invites/{id}/resend` and `/cancel`, on Students ("Invite
+students", one at a time; the CSV drawer's invite step stays off until a later PR, D-B4). The link is
+`/claim#token=…` (the token never reaches a server log); the claim page (`/claim`) calls
+`POST /auth/invite/lookup` and `POST /auth/invite/claim`. Cancelling removes the pending account so the
+student can sign up on their own. Link lifetime: `auth.invite_link_hours` (72). Migration f6c4a2e81d37.
+
 ### B5. B2C
 - Unchanged from sections B to D: name, email and WhatsApp; a code to each, which **verifies each
   automatically**; password; date of birth; consent; then the common PIN flow.

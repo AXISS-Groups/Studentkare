@@ -85,6 +85,7 @@ from services.rewards_api import router as rewards_router
 from services.rx_uploads import router as rx_uploads_router
 from services.settings_api import router as settings_router
 from services.signup_contacts import router as signup_contacts_router
+from services.student_invites import router as student_invites_router
 from services.student_passcode import router as student_passcode_router
 from services.student_requests import router as student_requests_router
 from services.team_accounts import router as team_accounts_router
@@ -352,4 +353,5 @@ app.include_router(student_passcode_router)
 app.include_router(account_password_router)
 app.include_router(account_contacts_router)
 app.include_router(signup_contacts_router)
+app.include_router(student_invites_router)
 app.include_router(apilayer_router, dependencies=[Depends(require_super_admin)])

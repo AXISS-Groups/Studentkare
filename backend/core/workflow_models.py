@@ -81,6 +81,31 @@ class AccountContact(Base):
     created_at: Mapped[float] = mapped_column(Float)
 
 
+class StudentInvite(Base):
+    """A partner college's invitation to a student account it created (B2B).
+
+    The student claims it through a one-time link sent to their email or WhatsApp
+    and a temporary password the college hands over separately. Only hashes of
+    the link token and the temporary password are kept. Wrong temporary passwords
+    lock it like a password. Platform plane (core/rule_l.py). Plan
+    tier1-auth-password-2026-10-22, amendment (b); services/student_invites.py.
+    """
+    __tablename__ = "care_student_invites"
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    account_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"), index=True)
+    token_hash: Mapped[str] = mapped_column(String(64), unique=True, index=True)
+    temp_password_hash: Mapped[str] = mapped_column(String(255))
+    link_channel: Mapped[str] = mapped_column(String(16))   # EMAIL | WHATSAPP
+    university: Mapped[str] = mapped_column(String(160))
+    created_by: Mapped[str] = mapped_column(String)
+    created_at: Mapped[float] = mapped_column(Float)
+    expires_at: Mapped[float] = mapped_column(Float)
+    sent_at: Mapped[float] = mapped_column(Float, default=0.0, server_default="0")
+    claimed_at: Mapped[float] = mapped_column(Float, default=0.0, server_default="0")
+    failed_attempts: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
+    locked_until: Mapped[float] = mapped_column(Float, default=0.0, server_default="0")
+
+
 class AccountPassword(Base):
     """An account's sign-in password. Only a salted, peppered scrypt hash is kept
     (services/team_accounts.hash_pin), never the password.

@@ -10,7 +10,7 @@ import './sign-in-frame.css';
 const CODE_LENGTH = 6;
 
 /** A password field with the eye toggle the passcode field uses. Never pre-filled, never stored. */
-function PasswordInput({ id, label, value, onChange, autoComplete, invalid, describedBy, autoFocus = false }: {
+export function PasswordInput({ id, label, value, onChange, autoComplete, invalid, describedBy, autoFocus = false }: {
   id: string; label: string; value: string; onChange: (value: string) => void;
   autoComplete: 'current-password' | 'new-password'; invalid: boolean; describedBy?: string; autoFocus?: boolean;
 }) {

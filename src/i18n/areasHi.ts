@@ -1,4 +1,5 @@
 // keep-sorted start
+import { accountContactsHi } from './areas/accountContacts';
 import { adminBoardHi } from './areas/adminBoard';
 import { adminGovHi } from './areas/adminGov';
 import { adminHi } from './areas/admin';
@@ -37,12 +38,12 @@ import { rewardsHi } from './areas/rewards';
 import { safetyHi } from './areas/safety';
 import { shopwebHi } from './areas/shopweb';
 import { stepsHi } from './areas/steps';
+import { studentInvitesHi } from './areas/studentInvites';
+import { studentPasswordHi } from './areas/studentPassword';
 import { studentshellHi } from './areas/studentshell';
 import { studentwebHi } from './areas/studentweb';
 import { studentwebT1Hi } from './areas/studentwebT1';
 import { teamAccountsHi } from './areas/teamAccounts';
-import { accountContactsHi } from './areas/accountContacts';
-import { studentPasswordHi } from './areas/studentPassword';
 import { wellnessHi } from './areas/wellness';
 // keep-sorted end
 
@@ -54,6 +55,7 @@ import { wellnessHi } from './areas/wellness';
  */
 export const areasHi = {
   // keep-sorted start
+  ...accountContactsHi,
   ...adminBoardHi,
   ...adminGovHi,
   ...adminHi,
@@ -92,12 +94,12 @@ export const areasHi = {
   ...safetyHi,
   ...shopwebHi,
   ...stepsHi,
+  ...studentInvitesHi,
+  ...studentPasswordHi,
   ...studentshellHi,
   ...studentwebHi,
   ...studentwebT1Hi,
   ...teamAccountsHi,
-  ...accountContactsHi,
-  ...studentPasswordHi,
   ...wellnessHi,
   // keep-sorted end
 };
