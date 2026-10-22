@@ -11,7 +11,7 @@
   admin. Platform plane.
 
 Revision ID: d8b2f4a6c135
-Revises: c5f9d3e7a024
+Revises: d4e8b2a7c1f6
 Create Date: 2026-10-23
 """
 import sqlalchemy as sa
@@ -19,7 +19,7 @@ import sqlalchemy as sa
 from alembic import op
 
 revision = "d8b2f4a6c135"
-down_revision = "c5f9d3e7a024"
+down_revision = "d4e8b2a7c1f6"
 branch_labels = None
 depends_on = None
 
