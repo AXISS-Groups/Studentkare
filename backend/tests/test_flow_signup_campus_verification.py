@@ -14,7 +14,9 @@ from core import workflow_models as M
 def _campus_admin(factory, university="Test University", identifier="campus-admin@example.test"):
     with factory() as db:
         db.add(M.Account(id=f"ca-{identifier}", identifier=identifier, channel="EMAIL", full_name="Campus Admin",
-                         role="CAMPUS_ADMIN", active=True, profile={"university": university}, created_at=time.time()))
+                         role="CAMPUS_ADMIN", active=True, profile={"university": university}, created_at=time.time(),
+                         # The campus a super admin assigned (#224, audit C1); the profile grants no scope.
+                         staff_campus=university))
         db.commit()
 
 

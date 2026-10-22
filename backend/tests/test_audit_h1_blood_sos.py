@@ -26,7 +26,7 @@ def fresh(client, codes, identifier):
 def verified_student(client, codes, factory, identifier, campus=CAMPUS):
     user, headers = fresh(client, codes, identifier)
     with factory() as db:
-        db.add(M.CampusVerification(account_id=user["id"], university=campus, roll_number=identifier,
+        db.merge(M.CampusVerification(account_id=user["id"], university=campus, roll_number=identifier,
                                     status="VERIFIED", verified_at=time.time()))
         db.commit()
     return user, headers

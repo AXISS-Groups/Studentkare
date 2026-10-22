@@ -38,7 +38,7 @@ def test_donor_directory_requires_auth_and_never_returns_contact(harness):
     assert client.get("/api/blood/donors").status_code == 401
     user, headers = register(client, codes)
     with factory() as db:
-        db.add(M.CampusVerification(account_id=user["id"], university="Test University", roll_number="R1",
+        db.merge(M.CampusVerification(account_id=user["id"], university="Test University", roll_number="R1",
                                     status="VERIFIED"))
         db.commit()
     registered = client.post("/api/blood/register-donor", headers=headers, json={
