@@ -420,6 +420,25 @@ declare("auth.passcode_id_max_attempts", INT, 10, area="auth", unit="attempts", 
         description="Passcode sign-in attempts against one account in the rate window, whoever makes them.")
 declare("auth.passcode_reset_window_minutes", INT, 15, area="auth", unit="minutes", minimum=5, maximum=120,
         description="How long after signing in with a code a student may replace or remove a passcode without the old one.")
+# Passwords (services/account_password.py, plan tier1-auth-password-2026-10-22):
+# team accounts first, students next. The switch and the minimum length are public
+# so the screens hide the option when off and show the rule; the server refuses
+# then as well. Unlike a PIN, a password works on a new device, so the lockout and
+# rate limits below are what stand between it and guessing.
+declare("auth.password_login_enabled", BOOL, True, area="auth", public=True,
+        description="Whether accounts that have a password may sign in with it.")
+declare("auth.password_min_length", INT, 10, area="auth", unit="characters", minimum=8, maximum=64, public=True,
+        description="The shortest password that can be set.")
+declare("auth.password_max_attempts", INT, 5, area="auth", unit="attempts", minimum=3, maximum=10,
+        description="Wrong passwords in a row before an account's password is locked.")
+declare("auth.password_lockout_minutes", INT, 15, area="auth", unit="minutes", minimum=5, maximum=1440,
+        description="How long a password stays locked after too many wrong tries (other sign-in methods still work).")
+declare("auth.password_rate_window_minutes", INT, 15, area="auth", unit="minutes", minimum=1, maximum=120,
+        description="The window the password sign-in rate limits below are counted over.")
+declare("auth.password_ip_max_attempts", INT, 20, area="auth", unit="attempts", minimum=5, maximum=200,
+        description="Password sign-in attempts one network address may make in the rate window.")
+declare("auth.password_id_max_attempts", INT, 10, area="auth", unit="attempts", minimum=5, maximum=100,
+        description="Password sign-in attempts against one ID in the rate window, whoever makes them.")
 declare("auth.whatsapp_status_cache_seconds", INT, 60, area="auth", unit="seconds", minimum=5, maximum=900,
         description="How long a WhatsApp session check (or a failed WhatsApp send) is trusted before checking again.")
 declare("auth.whatsapp_status_timeout_seconds", INT, 3, area="auth", unit="seconds", minimum=1, maximum=10,

@@ -9,6 +9,10 @@ export interface PublicSettings {
   "auth.otp_resend_seconds": number;
   /** Whether students may set a passcode and sign in with it on a device they have used before. */
   "auth.passcode_login_enabled": boolean;
+  /** Whether accounts that have a password may sign in with it. */
+  "auth.password_login_enabled": boolean;
+  /** The shortest password that can be set. (characters) */
+  "auth.password_min_length": number;
   /** Whether team accounts may sign in on the staff page with their ID and PIN. */
   "auth.staff_pin_login_enabled": boolean;
   /** Starting price of Premium, per month. Always shown as "from" this amount. (₹ per month (starting price)) */
@@ -159,6 +163,8 @@ export const publicSettingDefaults: Readonly<PublicSettings> = {
   "appearance.boot_wait_ms": 1500,
   "auth.otp_resend_seconds": 45,
   "auth.passcode_login_enabled": true,
+  "auth.password_login_enabled": true,
+  "auth.password_min_length": 10,
   "auth.staff_pin_login_enabled": true,
   "billing.premium.from_monthly_inr": 499,
   "billing.student_plus.monthly_inr": 149,
@@ -231,6 +237,8 @@ export const publicSettingSpecs: Readonly<Record<PublicSettingKey, PublicSetting
   "appearance.boot_wait_ms": { type: "int", min: 0, max: 10000, allowed: [], unit: "ms" },
   "auth.otp_resend_seconds": { type: "int", min: 10, max: 300, allowed: [], unit: "seconds" },
   "auth.passcode_login_enabled": { type: "bool", min: null, max: null, allowed: [], unit: "" },
+  "auth.password_login_enabled": { type: "bool", min: null, max: null, allowed: [], unit: "" },
+  "auth.password_min_length": { type: "int", min: 8, max: 64, allowed: [], unit: "characters" },
   "auth.staff_pin_login_enabled": { type: "bool", min: null, max: null, allowed: [], unit: "" },
   "billing.premium.from_monthly_inr": { type: "int", min: 1, max: 100000, allowed: [], unit: "\u20b9 per month (starting price)" },
   "billing.student_plus.monthly_inr": { type: "int", min: 1, max: 100000, allowed: [], unit: "\u20b9 per month" },

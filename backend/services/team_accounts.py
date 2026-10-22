@@ -304,10 +304,11 @@ def rotate(db: DBSession, account: M.Account, actor_id: str, keep_token_hash: st
 
 
 def unlock(db: DBSession, account: M.Account, actor_id: str) -> None:
-    credential = db.get(M.StaffPinCredential, account.id)
-    if credential is not None:
-        credential.failed_attempts = 0
-        credential.locked_until = 0.0
+    """Clears the PIN lockout and the password lockout."""
+    for credential in (db.get(M.StaffPinCredential, account.id), db.get(M.AccountPassword, account.id)):
+        if credential is not None:
+            credential.failed_attempts = 0
+            credential.locked_until = 0.0
     audit(db, actor_id, "TEAM_ACCOUNT_UNLOCKED", account.id)
     db.commit()
 
@@ -321,20 +322,21 @@ def disable(db: DBSession, account: M.Account, actor_id: str) -> int:
     return ended
 
 
-def is_locked(credential: M.StaffPinCredential | M.StudentPasscode | None, now: float) -> bool:
+def is_locked(credential: M.StaffPinCredential | M.StudentPasscode | M.AccountPassword | None, now: float) -> bool:
     return credential is not None and credential.locked_until > now
 
 
-# --- lockout (shared with the student passcode, services/student_passcode.py) ---
+# --- lockout (shared with the student passcode and passwords, services/student_passcode.py,
+# services/account_password.py) ---
 
 
-def clear_lock_if_run_out(credential: M.StaffPinCredential | M.StudentPasscode) -> None:
+def clear_lock_if_run_out(credential: M.StaffPinCredential | M.StudentPasscode | M.AccountPassword) -> None:
     """A lock that has run out gives a fresh set of tries. Call only after ``is_locked`` said no."""
     if credential.locked_until:
         credential.failed_attempts, credential.locked_until = 0, 0.0
 
 
-def count_wrong_attempt(db: DBSession, credential: M.StaffPinCredential | M.StudentPasscode,
+def count_wrong_attempt(db: DBSession, credential: M.StaffPinCredential | M.StudentPasscode | M.AccountPassword,
                         max_attempts: int, lockout_minutes: int, now: float) -> bool:
     """Adds one wrong try (atomically, so parallel guesses all count); locks at the limit. True when it locked now."""
     model = type(credential)
@@ -349,6 +351,8 @@ def count_wrong_attempt(db: DBSession, credential: M.StaffPinCredential | M.Stud
 
 def account_row(db: DBSession, account: M.Account, now: float, viewer_id: str = "") -> dict:
     credential = db.get(M.StaffPinCredential, account.id)
+    password = db.get(M.AccountPassword, account.id)
+    last_sign_in = max([row.last_sign_in_at or 0.0 for row in (credential, password) if row is not None], default=0.0)
     profile = account.profile or {}
     return {
         "id": account.id, "identifier": account.identifier, "fullName": account.full_name, "role": account.role,
@@ -358,7 +362,9 @@ def account_row(db: DBSession, account: M.Account, now: float, viewer_id: str = 
         "locked": is_locked(credential, now),
         "lockedUntil": credential.locked_until if is_locked(credential, now) else None,
         "failedAttempts": credential.failed_attempts if credential else 0,
-        "lastSignInAt": (credential.last_sign_in_at or None) if credential else None,
+        "hasPassword": password is not None,
+        "passwordLocked": is_locked(password, now),
+        "lastSignInAt": last_sign_in or None,
         "rotatedAt": (credential.rotated_at or None) if credential else None,
         "isSelf": account.id == viewer_id,
     }
@@ -370,12 +376,16 @@ STAFF_PIN_DISABLED = "STAFF_PIN_DISABLED"
 SIGN_IN_FAILED = "STAFF_PIN_FAILED"
 
 
-def pin_login_enabled(db: DBSession) -> bool:
-    """The master switch. Fails closed: an unreadable value is off."""
+def switch_on(db: DBSession, key: str) -> bool:
+    """A sign-in master switch. Fails closed: an unreadable value is off."""
     try:
-        return setting("auth.staff_pin_login_enabled", db) is True
-    except Exception:  # noqa: BLE001 — any failure to read the switch means PIN sign-in stays off
+        return setting(key, db) is True
+    except Exception:  # noqa: BLE001 — any failure to read the switch means that sign-in stays off
         return False
+
+
+def pin_login_enabled(db: DBSession) -> bool:
+    return switch_on(db, "auth.staff_pin_login_enabled")
 
 
 def failure_message(db: DBSession) -> str:
@@ -462,7 +472,8 @@ def list_team_accounts(response: Response, user=Depends(require_super_admin), db
     rows = db.scalars(select(M.Account).where(M.Account.is_team_account.is_(True))
                       .order_by(M.Account.role, M.Account.identifier)).all()
     return {"items": [account_row(db, row, now, user["id"]) for row in rows],
-            "pinSignInEnabled": pin_login_enabled(db)}
+            "pinSignInEnabled": pin_login_enabled(db),
+            "passwordSignInEnabled": switch_on(db, "auth.password_login_enabled")}
 
 
 class RotateInput(StrictModel):

@@ -8,12 +8,13 @@ import type { TeamAccount, TeamAccountList, TeamAccountsRepository } from '../te
 
 // Super admin → Team accounts: every state (loading, error, empty, data, switch
 // off), Rotate PIN showing the new PIN once, your own PIN needing the current
-// one, Unlock and Disable, and axe.
+// one, Set password (never shown back, your own needing the current PIN or
+// password), Unlock and Disable, and axe.
 
 const row = (over: Partial<TeamAccount>): TeamAccount => ({
   id: 'team-campus', identifier: 'campus@studentkare.co', fullName: 'StudentKare Team · Campus admin', role: 'CAMPUS_ADMIN',
   partnerKind: '', active: true, scope: 'StudentKare Team Campus', hasPin: true, locked: false, lockedUntil: null,
-  failedAttempts: 0, lastSignInAt: null, rotatedAt: null, isSelf: false, ...over,
+  failedAttempts: 0, hasPassword: false, passwordLocked: false, lastSignInAt: null, rotatedAt: null, isSelf: false, ...over,
 });
 
 const ACCOUNTS: TeamAccount[] = [
@@ -23,12 +24,13 @@ const ACCOUNTS: TeamAccount[] = [
   row({ id: 'team-wellness', identifier: 'wellness@studentkare.co', fullName: 'StudentKare Team · Wellness centre', role: 'VENDOR', partnerKind: 'WELLNESS', scope: 'StudentKare Team Partners', active: false }),
 ];
 
-function repo(over: Partial<TeamAccountsRepository> = {}, list: TeamAccountList = { items: ACCOUNTS, pinSignInEnabled: true }): TeamAccountsRepository {
+function repo(over: Partial<TeamAccountsRepository> = {}, list: TeamAccountList = { items: ACCOUNTS, pinSignInEnabled: true, passwordSignInEnabled: true }): TeamAccountsRepository {
   return {
     list: vi.fn(async () => list),
     rotate: vi.fn(async (id: string) => ({ id, identifier: `${id}@x`, pin: '493817' })),
     unlock: vi.fn(async (id: string) => ({ ...ACCOUNTS.find(a => a.id === id)!, locked: false, lockedUntil: null })),
     disable: vi.fn(async (id: string) => ({ ...ACCOUNTS.find(a => a.id === id)!, active: false })),
+    setPassword: vi.fn(async (id: string) => ({ ...ACCOUNTS.find(a => a.id === id)!, hasPassword: true })),
     ...over,
   };
 }
@@ -58,13 +60,13 @@ describe('Team accounts', { timeout: 20_000 }, () => {
   });
 
   it('says when PIN sign-in is off', async () => {
-    render(<TeamAccountsView repository={repo({}, { items: ACCOUNTS, pinSignInEnabled: false })} />);
+    render(<TeamAccountsView repository={repo({}, { items: ACCOUNTS, pinSignInEnabled: false, passwordSignInEnabled: true })} />);
     expect(await screen.findByText(/PIN sign-in is off/)).toBeInTheDocument();
   });
 
   it('shows loading, then an error with retry', async () => {
     let fail = true;
-    const repository = repo({ list: vi.fn(async () => { if (fail) throw new ApiError('Server unavailable', 503); return { items: ACCOUNTS, pinSignInEnabled: true }; }) });
+    const repository = repo({ list: vi.fn(async () => { if (fail) throw new ApiError('Server unavailable', 503); return { items: ACCOUNTS, pinSignInEnabled: true, passwordSignInEnabled: true }; }) });
     render(<TeamAccountsView repository={repository} />);
     expect(screen.getByText('Loading team accounts…')).toBeInTheDocument();
     expect(await screen.findByText('Team accounts couldn’t load')).toBeInTheDocument();
@@ -74,7 +76,7 @@ describe('Team accounts', { timeout: 20_000 }, () => {
   });
 
   it('says how to create them when there are none', async () => {
-    render(<TeamAccountsView repository={repo({}, { items: [], pinSignInEnabled: true })} />);
+    render(<TeamAccountsView repository={repo({}, { items: [], pinSignInEnabled: true, passwordSignInEnabled: true })} />);
     expect(await screen.findByText('No team accounts yet')).toBeInTheDocument();
     expect(screen.getByText(/scripts.team_accounts create/)).toBeInTheDocument();
   });
@@ -134,6 +136,77 @@ describe('Team accounts', { timeout: 20_000 }, () => {
     fireEvent.click(within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Disable' }));
     await waitFor(() => expect(repository.disable).toHaveBeenCalledWith('team-campus'));
     expect(await screen.findByText(/is disabled and signed out everywhere/)).toBeInTheDocument();
+  });
+
+  it('sets a password for another account and never shows it back', async () => {
+    const repository = repo();
+    render(<TeamAccountsView repository={repository} />);
+    await screen.findByText('StudentKare Team · Campus admin');
+    expect(within(rowFor('StudentKare Team · Campus admin')).getByText('No password')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Set the password for StudentKare Team · Campus admin' }));
+    const dialog = await screen.findByRole('alertdialog');
+    expect(within(dialog).queryByLabelText('Current PIN or password')).toBeNull();
+    expect(within(dialog).getByText(/At least 10 characters/)).toBeInTheDocument();
+    fireEvent.change(within(dialog).getByLabelText('New password'), { target: { value: 'Tamarind-river 42' } });
+    fireEvent.change(within(dialog).getByLabelText('Type it again'), { target: { value: 'Tamarind-river 42' } });
+    const violations = await axeViolations(dialog);
+    expect(violations, describeViolations(violations)).toEqual([]);
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Set password' }));
+    await waitFor(() => expect(repository.setPassword).toHaveBeenCalledWith('team-campus', 'Tamarind-river 42', undefined));
+    expect(await screen.findByText(/has a new password and is signed out everywhere/)).toBeInTheDocument();
+    expect(within(rowFor('StudentKare Team · Campus admin')).getByText('Password set')).toBeInTheDocument();
+    expect(screen.queryByDisplayValue('Tamarind-river 42')).toBeNull();
+  });
+
+  it('refuses two passwords that differ without sending, and shows a weak one the server refused', async () => {
+    const repository = repo({
+      setPassword: vi.fn(async () => { throw new ApiError('That password is too easy to guess.', 422, { code: 'PASSWORD_WEAK' }); }),
+    });
+    render(<TeamAccountsView repository={repository} />);
+    fireEvent.click(await screen.findByRole('button', { name: 'Set the password for StudentKare Team · Campus admin' }));
+    const dialog = await screen.findByRole('alertdialog');
+    const save = within(dialog).getByRole('button', { name: 'Set password' });
+    fireEvent.change(within(dialog).getByLabelText('New password'), { target: { value: 'short' } });
+    fireEvent.change(within(dialog).getByLabelText('Type it again'), { target: { value: 'short' } });
+    fireEvent.click(save);
+    expect(repository.setPassword).not.toHaveBeenCalled();     // shorter than the minimum: nothing sent
+    fireEvent.change(within(dialog).getByLabelText('New password'), { target: { value: 'Tamarind-river 42' } });
+    fireEvent.change(within(dialog).getByLabelText('Type it again'), { target: { value: 'Tamarind-river 43' } });
+    fireEvent.click(save);
+    expect(await within(dialog).findByText('The two passwords don’t match.')).toBeInTheDocument();
+    expect(repository.setPassword).not.toHaveBeenCalled();
+    fireEvent.change(within(dialog).getByLabelText('Type it again'), { target: { value: 'Tamarind-river 42' } });
+    fireEvent.click(save);
+    expect(await within(dialog).findByText(/too short or too easy to guess/)).toBeInTheDocument();
+    expect(within(dialog).getByLabelText('New password')).toHaveValue('');
+  });
+
+  it('asks for your current PIN or password before setting your own', async () => {
+    const repository = repo({
+      setPassword: vi.fn(async () => { throw new ApiError('Enter your current PIN or password to change it.', 403, { code: 'PASSWORD_SELF_NEEDS_CURRENT' }); }),
+    });
+    render(<TeamAccountsView repository={repository} />);
+    fireEvent.click(await screen.findByRole('button', { name: 'Set the password for StudentKare Team · Super admin' }));
+    const dialog = await screen.findByRole('alertdialog');
+    const fill = (current: string) => {
+      fireEvent.change(within(dialog).getByLabelText('Current PIN or password'), { target: { value: current } });
+      fireEvent.change(within(dialog).getByLabelText('New password'), { target: { value: 'Tamarind-river 42' } });
+      fireEvent.change(within(dialog).getByLabelText('Type it again'), { target: { value: 'Tamarind-river 42' } });
+      fireEvent.click(within(dialog).getByRole('button', { name: 'Set password' }));
+    };
+    fill('111222');
+    await waitFor(() => expect(repository.setPassword).toHaveBeenCalledWith('team-superadmin', 'Tamarind-river 42', { currentPin: '111222' }));
+    expect(await within(dialog).findByText('That isn’t the current PIN or password.')).toBeInTheDocument();
+    fill('Monsoon kettle 7!');
+    await waitFor(() => expect(repository.setPassword).toHaveBeenLastCalledWith('team-superadmin', 'Tamarind-river 42', { currentPassword: 'Monsoon kettle 7!' }));
+  });
+
+  it('offers Unlock for a password lock and says when password sign-in is off', async () => {
+    const locked = ACCOUNTS.map(a => a.id === 'team-campus' ? { ...a, passwordLocked: true, hasPassword: true } : a);
+    render(<TeamAccountsView repository={repo({}, { items: locked, pinSignInEnabled: true, passwordSignInEnabled: false })} />);
+    expect(await screen.findByText(/Password sign-in is off/)).toBeInTheDocument();
+    expect(within(rowFor('StudentKare Team · Campus admin')).getByText('Locked')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Unlock StudentKare Team · Campus admin' })).toBeInTheDocument();
   });
 
   it('is axe-clean with data', async () => {

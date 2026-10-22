@@ -83,7 +83,8 @@
    Two pills in a radio group; the chosen one is the action fill. */
 .sk-staff .sk-staff__methods {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
   gap: var(--sk-space-4);
   padding: var(--sk-space-4);
   border-radius: var(--sk-radius-md);
@@ -112,6 +113,21 @@
   box-shadow: var(--sk-shadow-hairline);
 }
 .sk-staff .sk-staff__method:focus-visible { outline: 3px solid var(--sk-color-focus); outline-offset: 2px; }
+.sk-staff .sk-staff__reveal {
+  flex: 0 0 auto;
+  min-width: var(--sk-size-touch-target);
+  min-height: var(--sk-size-touch-target);
+  margin: 0;
+  padding: 0 var(--sk-space-8);
+  border: 0;
+  border-radius: var(--sk-radius-sm);
+  background: transparent;
+  color: var(--sk-color-action);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.sk-staff .sk-staff__reveal:focus-visible { outline: 3px solid var(--sk-color-focus); outline-offset: 2px; }
 .sk-staff .sk-staff__hint {
   margin: var(--sk-space-4) 0 0;
   font-size: var(--sk-text-caption);

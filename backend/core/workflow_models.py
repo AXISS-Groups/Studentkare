@@ -62,6 +62,25 @@ class StaffPinCredential(Base):
     last_sign_in_at: Mapped[float] = mapped_column(Float, default=0.0, server_default="0")
 
 
+class AccountPassword(Base):
+    """An account's sign-in password. Only a salted, peppered scrypt hash is kept
+    (services/team_accounts.hash_pin), never the password.
+
+    Wrong tries count towards a lockout (auth.password_max_attempts, then
+    auth.password_lockout_minutes). Team accounts only for now; students follow
+    (plan tier1-auth-password-2026-10-22). Platform plane (core/rule_l.py): neither
+    group role has any grant on it. See services/account_password.py.
+    """
+    __tablename__ = "care_account_passwords"
+    account_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"), primary_key=True)
+    password_hash: Mapped[str] = mapped_column(String(255))
+    failed_attempts: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
+    locked_until: Mapped[float] = mapped_column(Float, default=0.0, server_default="0")
+    created_at: Mapped[float] = mapped_column(Float)
+    updated_at: Mapped[float] = mapped_column(Float, default=0.0, server_default="0")
+    last_sign_in_at: Mapped[float] = mapped_column(Float, default=0.0, server_default="0")
+
+
 class StudentPasscode(Base):
     """A student's optional secret passcode (4, 6 or 8 characters). Only a salted,
     peppered scrypt hash is kept (services/team_accounts.hash_pin), never the passcode.

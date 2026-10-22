@@ -6,6 +6,7 @@ Run from the backend directory after a deploy (docs/guides/team-accounts.md):
     python -m scripts.team_accounts rotate campus   # a new PIN for one account (id, sign-in ID or short name)
     python -m scripts.team_accounts unlock campus
     python -m scripts.team_accounts disable campus
+    python -m scripts.team_accounts set-password superadmin   # asks for it twice; never shown or logged
     python -m scripts.team_accounts list
 
 A PIN is printed only when it is made (create for a new account, or rotate) and
@@ -15,6 +16,7 @@ be replaced by individual logins.
 from __future__ import annotations
 
 import argparse
+import getpass
 import sys
 import time
 from datetime import datetime, timezone
@@ -25,6 +27,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from sqlalchemy import select  # noqa: E402
 
 from core import workflow_models as M  # noqa: E402
+from core.settings_registry import setting  # noqa: E402
+from services.account_password import PasswordRefused, refusal, set_password  # noqa: E402
 from services.db_sql import SessionLocal, create_all_tables  # noqa: E402
 from services.team_accounts import (  # noqa: E402
     CLI_ACTOR,
@@ -97,6 +101,24 @@ def cmd_disable(db, key: str) -> int:
     return 0
 
 
+def cmd_set_password(db, key: str) -> int:
+    account = _resolve(db, key)
+    if account is None:
+        return 1
+    ask = getpass.getpass   # never echoed
+    password = ask(f"New password for {account.identifier}: ")
+    if ask("Type it again: ") != password:
+        print("The two don't match. Nothing was changed.", file=sys.stderr)
+        return 1
+    try:
+        set_password(db, account, password, CLI_ACTOR)
+    except PasswordRefused as error:
+        print(refusal(error, setting("auth.password_min_length", db)).detail["message"], file=sys.stderr)
+        return 1
+    print(f"{account.identifier} password set. Its sessions were signed out.")
+    return 0
+
+
 def cmd_list(db) -> int:
     now = time.time()
     rows = db.scalars(select(M.Account).where(M.Account.is_team_account.is_(True)).order_by(M.Account.identifier)).all()
@@ -106,7 +128,8 @@ def cmd_list(db) -> int:
     for account in rows:
         row = account_row(db, account, now)
         state = "disabled" if not row["active"] else "locked" if row["locked"] else "active"
-        print(f"{row['identifier']:<32} {_kind(row['role'], row['partnerKind']):<20} {state:<9} "
+        password = "password" if row["hasPassword"] else "no password"
+        print(f"{row['identifier']:<32} {_kind(row['role'], row['partnerKind']):<20} {state:<9} {password:<12} "
               f"last sign-in {_when(row['lastSignInAt'])}")
     return 0
 
@@ -119,7 +142,8 @@ def main(argv: list[str] | None = None) -> int:
     sub.add_parser("list", help="List the team accounts, their state and last sign-in.")
     for name, text in (("rotate", "Give one account a new PIN (printed once) and sign out its sessions."),
                        ("unlock", "Clear a lockout after too many wrong PINs."),
-                       ("disable", "Turn one account off and end its sessions.")):
+                       ("disable", "Turn one account off and end its sessions."),
+                       ("set-password", "Set or replace one account's password (typed in, never shown).")):
         command = sub.add_parser(name, help=text)
         command.add_argument("id", help="Account id, sign-in ID (campus@…) or short name (campus).")
     args = parser.parse_args(argv)
@@ -129,7 +153,8 @@ def main(argv: list[str] | None = None) -> int:
             return cmd_create(db)
         if args.command == "list":
             return cmd_list(db)
-        handler = {"rotate": cmd_rotate, "unlock": cmd_unlock, "disable": cmd_disable}[args.command]
+        handler = {"rotate": cmd_rotate, "unlock": cmd_unlock, "disable": cmd_disable,
+                   "set-password": cmd_set_password}[args.command]
         return handler(db, args.id)
 
 

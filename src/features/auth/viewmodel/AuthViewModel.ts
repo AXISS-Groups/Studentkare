@@ -42,10 +42,15 @@ export function channelFailureFrom(error: ApiError, chosen: Channel, known: Chan
 }
 /** STAFF: the staff sign-in page (AdminSignIn). The server then sends codes only to staff accounts. */
 export type AuthAudience = 'STUDENT' | 'STAFF';
-/** Staff page only: an emailed code, or a team account's ID and PIN (POST /auth/staff-pin/sign-in). */
-export type StaffSignInMethod = 'CODE' | 'PIN';
+/**
+ * Staff page only: an emailed code, or a team account's ID with its PIN
+ * (POST /auth/staff-pin/sign-in) or its password (POST /auth/staff-password/sign-in).
+ */
+export type StaffSignInMethod = 'CODE' | 'PIN' | 'PASSWORD';
 /** A team account's PIN is six digits (services/team_accounts.py PIN_LENGTH). */
 export const STAFF_PIN_LENGTH = 6;
+/** The longest password the server takes (services/account_password.py MAX_PASSWORD_LENGTH). */
+export const PASSWORD_MAX_LENGTH = 128;
 type Channel = 'EMAIL' | 'WHATSAPP';
 
 /** What the server says about the account this device remembers (masked). Never a session. */
@@ -138,6 +143,8 @@ export class AuthViewModel {
   signInMethod: StaffSignInMethod = 'CODE';
   /** A team account's PIN while it is typed. Never kept after a try, right or wrong. */
   pin = '';
+  /** A team account's password while it is typed. Never kept after a try, right or wrong, and never stored. */
+  password = '';
   /** Student sign-in: the passcode panel is open instead of the code form. */
   passcodeEntry = false;
   /** The student's passcode while it is typed. Never kept after a try, right or wrong, and never stored. */
@@ -195,6 +202,8 @@ export class AuthViewModel {
     this.university = '';
     this.rollNumber = '';
     this.consent.reset();
+    this.pin = '';
+    this.password = '';
     this.passcodeEntry = false;
     this.passcode = '';
     this.passcodeProblem = '';
@@ -271,6 +280,7 @@ export class AuthViewModel {
   setSignInMethod(method: StaffSignInMethod): void {
     this.signInMethod = method;
     this.pin = '';
+    this.password = '';
     this.error = '';
     this.errorStatus = 0;
     this.twoFaRestart = '';
@@ -284,6 +294,15 @@ export class AuthViewModel {
     return !this.busy && this.identifier.includes('@') && this.pin.length === STAFF_PIN_LENGTH;
   }
 
+  /** Kept exactly as typed: spaces inside a password are part of it. */
+  setPassword(value: string): void {
+    this.password = value;
+  }
+
+  get canSubmitPassword(): boolean {
+    return !this.busy && this.identifier.includes('@') && this.password.length > 0;
+  }
+
   /**
    * A team account's ID and PIN (staff page). The server answers every failure
    * the same way and decides lockout; the authenticator step follows when the
@@ -292,17 +311,26 @@ export class AuthViewModel {
    */
   async signInWithPin(onAccept: (response: SessionResponse) => void): Promise<void> {
     if (!this.canSubmitPin) return;
+    const pin = this.pin;
+    this.pin = '';
+    await this.signInWithSecret('/auth/staff-pin/sign-in', { identifier: this.identifier.trim(), pin }, onAccept);
+  }
+
+  /** A team account's ID and password (staff page): the same rules as the PIN, and the field empties. */
+  async signInWithPassword(onAccept: (response: SessionResponse) => void): Promise<void> {
+    if (!this.canSubmitPassword) return;
+    const password = this.password;
+    this.password = '';
+    await this.signInWithSecret('/auth/staff-password/sign-in', { identifier: this.identifier.trim(), password }, onAccept);
+  }
+
+  private async signInWithSecret(path: string, body: Record<string, string>, onAccept: (response: SessionResponse) => void): Promise<void> {
     this.busy = true;
     this.error = '';
     this.errorStatus = 0;
     this.twoFaRestart = '';
-    const pin = this.pin;
-    this.pin = '';
     try {
-      const response = await apiRequest<SessionResponse>('/auth/staff-pin/sign-in', {
-        method: 'POST',
-        body: JSON.stringify({ identifier: this.identifier.trim(), pin }),
-      });
+      const response = await apiRequest<SessionResponse>(path, { method: 'POST', body: JSON.stringify(body) });
       runInAction(() => {
         if (response.requires2FA && response.tempToken) {
           this.tempToken = response.tempToken;

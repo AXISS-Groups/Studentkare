@@ -108,7 +108,7 @@ describe('Staff sign-in with a team PIN', { timeout: 20_000 }, () => {
   it('has no PIN option when the switch is off', () => {
     const vm = new AuthViewModel('login', null, vi.fn());
     vm.setAudience('STAFF');
-    render(<AdminSignInView vm={vm} onAccept={vi.fn()} pinEnabled={false} />);
+    render(<AdminSignInView vm={vm} onAccept={vi.fn()} pinEnabled={false} passwordEnabled={false} />);
     expect(screen.queryByRole('radiogroup')).toBeNull();
     expect(screen.queryByLabelText('PIN')).toBeNull();
     expect(screen.getByLabelText('Work email')).toBeInTheDocument();
