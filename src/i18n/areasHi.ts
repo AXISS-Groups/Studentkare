@@ -1,4 +1,5 @@
 // keep-sorted start
+import { accountContactsHi } from './areas/accountContacts';
 import { adminBoardHi } from './areas/adminBoard';
 import { adminGovHi } from './areas/adminGov';
 import { adminHi } from './areas/admin';
@@ -54,6 +55,7 @@ import { wellnessHi } from './areas/wellness';
  */
 export const areasHi = {
   // keep-sorted start
+  ...accountContactsHi,
   ...adminBoardHi,
   ...adminGovHi,
   ...adminHi,

@@ -1,4 +1,5 @@
 // keep-sorted start
+import { accountContactsTe } from './areas/accountContacts';
 import { adminBoardTe } from './areas/adminBoard';
 import { adminGovTe } from './areas/adminGov';
 import { adminTe } from './areas/admin';
@@ -54,6 +55,7 @@ import { wellnessTe } from './areas/wellness';
  */
 export const areasTe = {
   // keep-sorted start
+  ...accountContactsTe,
   ...adminBoardTe,
   ...adminGovTe,
   ...adminTe,
