@@ -424,6 +424,15 @@ declare("privacy.deletion_grace_days", INT, 7, area="privacy", unit="days", mini
 declare("ai.kill_switch_active", BOOL, False, area="ai",
         description="Emergency stop: while true, no AI model call is made anywhere on the platform.")
 
+# Per-account and per-sender limits on the costly or abusable endpoints (audit L6).
+# The global per-session limiter (core/rate_limiter.py) is too coarse for these.
+declare("ai.ayush_questions_per_account_per_hour", INT, 30, area="ai", unit="questions per hour", minimum=5,
+        maximum=500, description="Questions one account may ask Agent Ayush in an hour.")
+declare("support.inquiries_per_email_per_day", INT, 3, area="support", unit="inquiries per 24 hours", minimum=1,
+        maximum=50, description="Institutional inquiries accepted from one email address in 24 hours.")
+declare("support.inquiries_per_ip_per_hour", INT, 10, area="support", unit="inquiries per hour", minimum=1,
+        maximum=500, description="Institutional inquiries accepted from one network address in an hour.")
+
 # --- Agent Ayush retrieval (services/vector_store.py) -------------------------
 # Only used when a semantic embedding model is on (EMBEDDING_PROVIDER=ollama). A
 # passage that shares no word with the question (another language, a synonym) is

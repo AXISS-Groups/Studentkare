@@ -25,7 +25,8 @@ from sqlalchemy.orm import Session as DBSession
 
 from core import billing_models as B
 from core import workflow_models as W
-from core.settings_registry import setting
+from core.rate_limiter import SlidingWindowRateLimiter
+from core.settings_registry import cached_setting, setting
 from services import ops_feed, razorpay_client
 from services.commerce_session import commerce_db
 from services.workflow_auth import authenticated_user, require_super_admin, workflow_db
@@ -475,10 +476,32 @@ class InquiryInput(BaseModel):
         return value.lower()
 
 
+INQUIRY_EMAIL_WINDOW_SECONDS = 86400
+INQUIRY_IP_WINDOW_SECONDS = 3600
+
+
+def _inquiries_per_ip() -> int:
+    return int(cached_setting("support.inquiries_per_ip_per_hour"))
+
+
+# Unauthenticated, so per sender (audit L6): per network address here (per
+# process), per email address below from the stored inquiries (across replicas).
+inquiry_ip_limiter = SlidingWindowRateLimiter(max_requests=None, window_seconds=INQUIRY_IP_WINDOW_SECONDS,
+                                              limit_source=_inquiries_per_ip, label="IP")
+
+
 @router.post("/inquiries", status_code=201)
-def submit_inquiry(body: InquiryInput, db: DBSession = Depends(commerce_db)):
+def submit_inquiry(body: InquiryInput, request: Request, db: DBSession = Depends(commerce_db)):
     if not body.consent:
         raise HTTPException(422, "Consent to be contacted is required.")
+    limited, _count = inquiry_ip_limiter.is_rate_limited(request.client.host if request.client else "unknown")
+    if limited:
+        raise HTTPException(429, "Too many inquiries from this network. Please try again later.")
+    recent = db.scalar(select(func.count()).select_from(B.EnterpriseInquiry).where(
+        B.EnterpriseInquiry.email == body.email,
+        B.EnterpriseInquiry.created_at > now() - INQUIRY_EMAIL_WINDOW_SECONDS)) or 0
+    if recent >= int(setting("support.inquiries_per_email_per_day", db)):
+        raise HTTPException(429, "We already have your inquiry. Our team will be in touch.")
     row = B.EnterpriseInquiry(id=_new_id("inq"), organization=body.organization, contact_name=body.contactName,
                               email=body.email, seats=body.seats, plan_id=body.planId, message=body.message,
                               consent=True, created_at=now(), updated_at=now())

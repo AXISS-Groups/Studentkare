@@ -33,7 +33,9 @@ def _reset_global_rate_limiter():
     reset, earlier tests exhaust the per-IP ceiling and later tests see 429.
     Also restores max_requests in case a unit test mutated the shared instances.
     """
-    limiters = (global_api_limiter, account_api_limiter)
+    from services.billing import inquiry_ip_limiter
+
+    limiters = (global_api_limiter, account_api_limiter, inquiry_ip_limiter)
     originals = [limiter.max_requests for limiter in limiters]
     for limiter in limiters:
         limiter.reset()

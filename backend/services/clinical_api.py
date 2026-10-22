@@ -2485,6 +2485,9 @@ def telemetry_activity(
 # Agent Ayush — retrieval-augmented care assistant
 # ══════════════════════════════════════════════════════════════════════════════
 
+AYUSH_WINDOW_SECONDS = 3600
+
+
 class AyushQuestion(StrictModel):
     question: str = Field(min_length=1, max_length=1000)
     conversationId: str = Field(default="", max_length=64)
@@ -2498,6 +2501,10 @@ def ayush_ask(body: AyushQuestion, user=Depends(authenticated_user), db: Session
     nothing clears the relevance floor the agent says so rather than composing
     something plausible. Crisis language is intercepted before retrieval runs.
     """
+    # Per account, across replicas (audit L6). Crisis help is never behind this:
+    # the crisis lines are on every screen, not only in Ayush's answer.
+    from services.workflow_auth import limit
+    limit(db, f"ayush:{user['id']}", int(setting("ai.ayush_questions_per_account_per_hour", db)), AYUSH_WINDOW_SECONDS)
     return agent_ayush.ask(
         db, body.question, account_id=user["id"],
         conversation_id=body.conversationId,
