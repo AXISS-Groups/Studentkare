@@ -54,6 +54,12 @@ describe('VendorHome', () => {
     expect(within(kpis).getByText('Not connected')).toBeInTheDocument();
   });
 
+  it('shows an order the student cancelled instead of failing the whole page', async () => {
+    render(<VendorHomeScreen source={sourceOf(data({ recent: [line({ status: 'CANCELLED' })] }))} />);
+    expect(await screen.findByText('Cancelled by student')).toBeInTheDocument();
+    expect(screen.getByText('Paracetamol 650 × 2', { selector: '.vh-row__what' })).toBeInTheDocument();
+  });
+
   it('lists the latest orders by reference only: no student name on the page', async () => {
     render(<VendorHomeScreen source={sourceOf(data())} />);
     expect(await screen.findByText('Paracetamol 650 × 2', { selector: '.vh-row__what' })).toBeInTheDocument();

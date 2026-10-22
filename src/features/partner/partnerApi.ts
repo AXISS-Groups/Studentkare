@@ -13,7 +13,7 @@ import { apiRequest } from '@/data/services/http';
  */
 
 /** Order-line states (workflow_api.update_request transitions). */
-export type RequestStatus = 'REQUESTED' | 'ACCEPTED' | 'DECLINED' | 'DISPATCHED' | 'COMPLETED';
+export type RequestStatus = 'REQUESTED' | 'ACCEPTED' | 'DECLINED' | 'DISPATCHED' | 'COMPLETED' | 'CANCELLED';
 
 export interface PartnerDelivery {
   mode?: 'delivery' | 'pickup';

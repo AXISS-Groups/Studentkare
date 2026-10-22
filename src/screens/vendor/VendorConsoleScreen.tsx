@@ -56,6 +56,7 @@ const STATE: Record<RequestStatus, { key: MessageKey; tone: SkTone }> = {
   DISPATCHED: { key: 'pc.state.out', tone: 'positive' },
   COMPLETED: { key: 'pc.state.delivered', tone: 'neutral' },
   DECLINED: { key: 'pc.state.declined', tone: 'neutral' },
+  CANCELLED: { key: 'pc.state.cancelled', tone: 'neutral' },
 };
 
 export interface VendorConsoleScreenProps {
