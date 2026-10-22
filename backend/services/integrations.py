@@ -167,6 +167,14 @@ def test_integration(provider: str, user: dict = Depends(require_super_admin)):
         from services import hfr_registry
         current = hfr_registry.status()
         return {"success": False, "state": current["state"], "message": current["message"]}
+    if provider == "medicine_ocr":
+        # Says whether photos of medicine strips can be read here; reads nothing.
+        from services import medicine_ocr
+        state = medicine_ocr.status()["state"]
+        return {"success": state == medicine_ocr.READY, "state": state,
+                "message": {"READY": "The Tesseract reader is installed and on.",
+                            "UNAVAILABLE": "Switched on, but the Tesseract program is not installed on this server.",
+                            }.get(state, "Not switched on. Reading photos of medicine strips is off.")}
     if provider in ("otp", "twofa"):
         return {"success": True, "message": f"{provider} policy valid", "config": sanitize(provider)}
     if provider == "platform":

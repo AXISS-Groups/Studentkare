@@ -77,6 +77,7 @@ from services.erasure import router as erasure_router
 from services.integrations import router as integrations_router
 from services.lab_booking import router as lab_booking_router
 from services.lab_results import router as lab_results_router
+from services.medicine_info import router as medicine_info_router
 from services.medicine_master import router as medicine_master_router
 from services.member_profile_api import router as member_profile_router
 from services.otp_delivery import available_channels, whatsapp_status
@@ -342,6 +343,7 @@ app.include_router(erasure_router)
 app.include_router(student_requests_router)
 app.include_router(clinical_router)
 app.include_router(medicine_master_router)
+app.include_router(medicine_info_router)
 app.include_router(lab_booking_router)
 app.include_router(rx_uploads_router)
 app.include_router(lab_results_router)

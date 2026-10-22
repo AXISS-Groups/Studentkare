@@ -108,6 +108,26 @@ def compositions_for(db: Session, items: list[M.CatalogEntry]) -> dict[str, str]
             for item in items if item.medicine_id in active and grouped.get(item.medicine_id)}
 
 
+# The six identity fields a pharmacist reviews before an imported medicine reaches
+# any lookup (services/medicine_info.py; plan tier1-medicine-info-2026-10-22, D-MI-4).
+IDENTITY_FIELD_COUNT = 6
+
+
+def published_medicine_clause():
+    """Active, and not an imported medicine whose identity no pharmacist has reviewed yet.
+
+    A SQL pre-filter only: services/medicine_info.py re-checks each review
+    against the current value before showing anything.
+    """
+    reviewed_imports = (select(M.MedicineInfoField.medicine_id)
+                        .where(M.MedicineInfoField.field.in_(("brand", "composition", "form", "pack", "manufacturer",
+                                                               "schedule")),
+                               M.MedicineInfoField.state == "REVIEWED")
+                        .group_by(M.MedicineInfoField.medicine_id)
+                        .having(func.count() == IDENTITY_FIELD_COUNT))
+    return M.Medicine.active.is_(True) & or_(M.Medicine.source != "IMPORT", M.Medicine.id.in_(reviewed_imports))
+
+
 def salt_match(query: str):
     """A catalogue filter: the listing's medicine contains a salt matching ``query``."""
     return M.CatalogEntry.medicine_id.in_(
@@ -129,7 +149,7 @@ def lookup_medicine(db: Session, query: str) -> dict:
         clauses.append(M.Medicine.name.icontains(term, autoescape=True))
         clauses.append(M.Medicine.id.in_(select(M.MedicineIngredient.medicine_id)
                                          .where(M.MedicineIngredient.salt.icontains(term, autoescape=True))))
-    medicine = db.scalars(select(M.Medicine).where(M.Medicine.active.is_(True), or_(*clauses))
+    medicine = db.scalars(select(M.Medicine).where(published_medicine_clause(), or_(*clauses))
                           .order_by(M.Medicine.name, M.Medicine.id).limit(1)).first()
     if medicine is None:
         return {"status": "NO_MATCH", "query": query}

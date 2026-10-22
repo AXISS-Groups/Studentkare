@@ -164,6 +164,10 @@ ORDERED_PAIRS: tuple[tuple[str, str], ...] = (
     ("wellness.height_cm_min", "wellness.height_cm_max"),
     ("wellness.bmi_cutoff_low", "wellness.bmi_cutoff_mid"),
     ("wellness.bmi_cutoff_mid", "wellness.bmi_cutoff_high"),
+    ("medicine_info.child_from_years", "medicine_info.teen_from_years"),
+    ("medicine_info.teen_from_years", "medicine_info.adult_from_years"),
+    ("medicine_info.adult_from_years", "medicine_info.older_adult_from_years"),
+    ("medicine_info.child_from_years", "medicine_info.ask_doctor_below_years"),
 )
 
 
@@ -227,6 +231,35 @@ declare("care_directory.location_timeout_seconds", INT, 15, area="care_directory
         maximum=60, public=True, description="How long the app waits for the device location before saying so.")
 declare("care_directory.location_max_age_seconds", INT, 120, area="care_directory", unit="seconds", minimum=0,
         maximum=900, public=True, description="Oldest device location fix the app reuses to sort by distance.")
+
+# --- medicine information (services/medicine_info.py; plan tier1-medicine-info-2026-10-22) ---
+# The "Who is it for?" age bands. The band a person picks stays on the device;
+# these only say where each band starts. Below ask_doctor_below_years the screen
+# always says "Ask a doctor or pharmacist before giving this" (D-MI-7).
+declare("medicine_info.child_from_years", INT, 2, area="medicine_info", unit="years", minimum=1, maximum=5, public=True,
+        description="Age at which the medicine-information 'child' band starts (below it: under-2).")
+declare("medicine_info.teen_from_years", INT, 12, area="medicine_info", unit="years", minimum=6, maximum=16, public=True,
+        description="Age at which the 'teen' band starts.")
+declare("medicine_info.adult_from_years", INT, 18, area="medicine_info", unit="years", minimum=12, maximum=21, public=True,
+        description="Age at which the 'adult' band starts.")
+declare("medicine_info.older_adult_from_years", INT, 65, area="medicine_info", unit="years", minimum=50, maximum=80,
+        public=True, description="Age at which the 'older adult' band starts.")
+declare("medicine_info.ask_doctor_below_years", INT, 12, area="medicine_info", unit="years", minimum=2, maximum=18,
+        public=True, description="Bands that end below this age always show 'Ask a doctor or pharmacist before giving this'.")
+declare("medicine_info.search_min_chars", INT, 2, area="medicine_info", unit="characters", minimum=2, maximum=6,
+        public=True, description="Fewest characters before a medicine search runs.")
+declare("medicine_info.results_max", INT, 20, area="medicine_info", unit="medicines", minimum=5, maximum=50,
+        description="Most medicines one search or photo returns.")
+declare("medicine_info.match_min_similarity", FLOAT, 0.75, area="medicine_info", unit="ratio 0-1", minimum=0.6,
+        maximum=1.0, description="How close a typed or printed word must be to a brand or salt to count as a match.")
+declare("medicine_info.photo_max_kb", INT, 6144, area="medicine_info", unit="KB", minimum=256, maximum=20480,
+        public=True, description="Largest photo of a strip or box the server reads.")
+declare("medicine_info.photo_per_hour", INT, 30, area="medicine_info", unit="photos per address per hour",
+        minimum=1, maximum=500, description="How many photos one address may have read in an hour.")
+declare("medicine_info.ocr_timeout_seconds", INT, 20, area="medicine_info", unit="seconds", minimum=3, maximum=120,
+        description="Longest the server spends reading the text on one photo.")
+declare("medicine_info.import_max_rows", INT, 5000, area="medicine_info", unit="rows", minimum=1, maximum=100000,
+        description="Most rows one medicine-information CSV import may hold.")
 
 # --- medicines -------------------------------------------------------------
 declare("meds.dose_undo_minutes", INT, 30, area="meds", unit="minutes", minimum=0, maximum=240, public=True,

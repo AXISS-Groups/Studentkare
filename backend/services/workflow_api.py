@@ -33,6 +33,7 @@ from services import (
     clinical_profile,
     lab_results,
     livekit_media,
+    medicine_info,
     medicine_master,
     ops_feed,
     payments,
@@ -2941,7 +2942,7 @@ def rule_l_firewall_status(user=Depends(require_super_admin), db: Session = Depe
     status["commercePaths"] = {
         "runAs": COMMERCE_ROLE if usable else "app role (sk_commerce not in force)",
         "failClosed": grants_required(),
-        "endpoints": list(RULE_L_COMMERCE_PATHS) + list(medicine_master.MEDICINE_COMMERCE_PATHS) + list(LAB_BOOKING_COMMERCE_PATHS),
+        "endpoints": list(RULE_L_COMMERCE_PATHS) + list(medicine_master.MEDICINE_COMMERCE_PATHS) + list(medicine_info.MEDICINE_INFO_COMMERCE_PATHS) + list(LAB_BOOKING_COMMERCE_PATHS),
     }
     return status
 
