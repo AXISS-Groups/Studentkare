@@ -399,6 +399,68 @@ class MedicineIngredient(Base):
     strength_unit: Mapped[str] = mapped_column(String(12))
 
 
+class MedicineInfoField(Base):
+    """One field of a medicine's information, with where it came from and who reviewed it.
+
+    Plan tier1-medicine-info-2026-10-22. Product reference data (commerce plane,
+    beside the master), never about a person. Identity fields (brand,
+    composition, form, pack, manufacturer, schedule) keep no value here: they are
+    read from the master and reviewed against its current value. Monograph fields
+    (uses, side effects, warnings, storage, age availability) keep their value in
+    ``value``. A field reaches users only while ``state`` is REVIEWED and the hash
+    of its current value equals ``reviewed_hash`` (services/medicine_info.py).
+    """
+    __tablename__ = "care_medicine_info_fields"
+    __table_args__ = (
+        UniqueConstraint("medicine_id", "field"),
+        CheckConstraint("state IN ('UNREVIEWED', 'REVIEWED')", name="ck_care_medicine_info_fields_state"),
+    )
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    medicine_id: Mapped[str] = mapped_column(ForeignKey("care_medicines.id"), index=True)
+    field: Mapped[str] = mapped_column(String(24))
+    value: Mapped[dict | None] = mapped_column(JSON, nullable=True, default=None)
+    source_title: Mapped[str] = mapped_column(String(200), default="")
+    source_url: Mapped[str] = mapped_column(String(2000), default="")
+    state: Mapped[str] = mapped_column(String(12), default="UNREVIEWED", index=True)
+    reviewed_by: Mapped[str | None] = mapped_column(String, nullable=True, default=None)   # a pharmacist's account id
+    reviewed_on: Mapped[date | None] = mapped_column(Date, nullable=True, default=None)
+    reviewed_at: Mapped[float] = mapped_column(Float, default=0.0)
+    reviewed_hash: Mapped[str] = mapped_column(String(64), default="")
+    import_id: Mapped[str | None] = mapped_column(String, nullable=True, default=None)
+    updated_by: Mapped[str] = mapped_column(String, default="")
+    updated_at: Mapped[float] = mapped_column(Float, default=0.0)
+
+
+class MedicineInfoEvent(Base):
+    """Append-only trail of medicine-information changes (ids and hashes only, no text)."""
+    __tablename__ = "care_medicine_info_events"
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    medicine_id: Mapped[str] = mapped_column(ForeignKey("care_medicines.id"), index=True)
+    field: Mapped[str] = mapped_column(String(24), default="")
+    action: Mapped[str] = mapped_column(String(24))                 # IMPORTED | EDITED | REVIEWED | REVIEW_WITHDRAWN
+    actor_id: Mapped[str] = mapped_column(String, default="")
+    actor_role: Mapped[str] = mapped_column(String(24), default="")
+    value_hash: Mapped[str] = mapped_column(String(64), default="")
+    created_at: Mapped[float] = mapped_column(Float, index=True)
+
+
+class MedicineInfoImport(Base):
+    """One CSV import from a licensed dataset. Everything it brings in lands UNREVIEWED."""
+    __tablename__ = "care_medicine_info_imports"
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    filename: Mapped[str] = mapped_column(String(200), default="")
+    dataset: Mapped[str] = mapped_column(String(200))
+    licence: Mapped[str] = mapped_column(String(300))
+    source_url: Mapped[str] = mapped_column(String(2000), default="")
+    rows_total: Mapped[int] = mapped_column(Integer, default=0)
+    rows_created: Mapped[int] = mapped_column(Integer, default=0)
+    rows_matched: Mapped[int] = mapped_column(Integer, default=0)
+    rows_rejected: Mapped[int] = mapped_column(Integer, default=0)
+    errors: Mapped[list] = mapped_column(JSON, default=list)
+    created_by: Mapped[str] = mapped_column(String, default="")
+    created_at: Mapped[float] = mapped_column(Float, default=0.0)
+
+
 class Order(Base):
     __tablename__ = "care_orders"
     __table_args__ = (UniqueConstraint("account_id", "idempotency_key"),)

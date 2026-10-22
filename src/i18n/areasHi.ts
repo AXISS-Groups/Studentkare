@@ -22,6 +22,7 @@ import { landingHi } from './areas/landing';
 import { launchHi } from './areas/launch';
 import { m2remindersHi } from './areas/m2reminders';
 import { m2valuesHi } from './areas/m2values';
+import { medicineInfoHi } from './areas/medicineInfo';
 import { memberHi } from './areas/member';
 import { mobile2HealthHi } from './areas/mobile2health';
 import { mobile2Hi } from './areas/mobile2';
@@ -78,6 +79,7 @@ export const areasHi = {
   ...launchHi,
   ...m2remindersHi,
   ...m2valuesHi,
+  ...medicineInfoHi,
   ...memberHi,
   ...mobile2HealthHi,
   ...mobile2Hi,

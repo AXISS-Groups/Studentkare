@@ -32,6 +32,8 @@ export interface SearchLinks {
   openEmergencyCard: () => void;
   openPass: () => void;
   openCrisis: () => void;
+  /** Medicine information (reviewed label information, lookup by name or photo), optionally with the words searched. */
+  openMedicineInfo?: (query?: string) => void;
 }
 
 export const SearchBar = observer(function SearchBar({ vm, onBack, focused = false, editable = true }: {

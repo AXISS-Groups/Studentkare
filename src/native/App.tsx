@@ -51,6 +51,7 @@ import { RewardsRoute } from '@/features/rewards/views/RewardsView';
 import { MyRequestsRoute, NewRequestRoute } from '@/features/requests/views/RequestsViews';
 import { ReturnRequestBoardScreen, SearchScreen } from './PhoneBoardsScreens';
 import { FindCareScreen } from './CareDirectoryScreens';
+import { MedicineInfoScreen } from './MedicineInfoScreens';
 import {
   ConsultsScreen,
   InsuranceScreen,
@@ -108,6 +109,7 @@ export type RootStackParamList = {
   LeaveCampus: undefined;
   LostPhone: undefined;
   Marketplace: undefined;
+  MedicineInfo: { medicineId?: string; query?: string } | undefined;
   MedicineReminders: undefined;
   Medicines: undefined;
   More: undefined;
@@ -490,6 +492,8 @@ function RootNavigator() {
         <Stack.Screen name="Camp" component={CampRoute} options={{ title: t('onboard.nav.camp') }} />
         {/* Find care near you: public, signed in or out (location stays on the phone). */}
         <Stack.Screen name="FindCare" component={FindCareScreen} options={{ title: t('fc.eyebrow'), headerShown: false }} />
+        {/* Medicine information: public, signed in or out (reviewed information only; photos never kept). */}
+        <Stack.Screen name="MedicineInfo" component={MedicineInfoScreen} options={{ title: t('mi.eyebrow'), headerShown: false }} />
       </Stack.Group>
     </Stack.Navigator>
   );

@@ -276,3 +276,6 @@
 | 259 | [AdminCareDirectory](briefs/AdminCareDirectory.md) | Care directory listings (super admin and campus console) | Web 1440x1100 | 3 | Find care | 7 | 0 | 0 | 0 |
 | | **New · Sign-in passcode (2026-10-22, no canvas board)** | | | | | | | | |
 | 260 | [SetPasscode](briefs/SetPasscode.md) | Add, change or reset your passcode (no board; designed in code in the Mobile 2.0 language) | Phone 390x844 | 1 | auth-passcode | 12 | 10 | 0 | 2 |
+| | **New · Medicine information (2026-10-22, no canvas board)** | | | | | | | | |
+| 261 | [M2MedicineInfo](briefs/M2MedicineInfo.md) | Medicine information: look up by name or photo, who it is for | Phone 390x1800 | 1 | Medicine info | 18 | 0 | 0 | 0 |
+| 262 | [AdminMedicineInfo](briefs/AdminMedicineInfo.md) | Medicine information review (pharmacy and super admin console) | Web 1440x1100 | 1 | Medicine info | 10 | 0 | 0 | 0 |

@@ -49,6 +49,7 @@ export function SearchRoute(): React.ReactElement {
     openEmergencyCard: () => navigate('emergency-card'),
     openPass: () => navigate('pass'),
     openCrisis: () => navigate('sos'),
+    openMedicineInfo: (query) => routerNavigate(query ? `/medicine-info?q=${encodeURIComponent(query)}` : '/medicine-info'),
   };
 
   return (

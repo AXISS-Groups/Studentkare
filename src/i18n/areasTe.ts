@@ -22,6 +22,7 @@ import { landingTe } from './areas/landing';
 import { launchTe } from './areas/launch';
 import { m2remindersTe } from './areas/m2reminders';
 import { m2valuesTe } from './areas/m2values';
+import { medicineInfoTe } from './areas/medicineInfo';
 import { memberTe } from './areas/member';
 import { mobile2HealthTe } from './areas/mobile2health';
 import { mobile2OrdersTe } from './areas/mobile2Orders';
@@ -78,6 +79,7 @@ export const areasTe = {
   ...launchTe,
   ...m2remindersTe,
   ...m2valuesTe,
+  ...medicineInfoTe,
   ...memberTe,
   ...mobile2HealthTe,
   ...mobile2OrdersTe,

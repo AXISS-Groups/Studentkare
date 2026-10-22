@@ -22,7 +22,7 @@ describe('partner console sidebar (VendorConsole / VendorHome boards)', () => {
     expect(VENDOR_NAVIGATION.flatMap(group => group.items.map(item => [item.label, item.icon]))).toEqual([
       ['Home', 'home-2'], ['Verify student', 'scan'], ['Orders', 'box-2'], ['Rx review', 'prescription'],
       ['Substitutions', 'arrows-left-right-2'], ['OTP handover', 'key'], ['Returns', 'undo'],
-      ['Dispense register', 'clipboard'], ['Reorder rules', 'repeat'],
+      ['Dispense register', 'clipboard'], ['Medicine info', 'pill'], ['Reorder rules', 'repeat'],
       ['Sample queue', 'flask'], ['Run sheet', 'truck'], ['Cold chain', 'asterisk'], ['Lab reports', 'file'], ['Camp intake', 'alert-triangle-2'],
       ['Staff & roles', 'users'], ['Catalogue', 'grid'], ['Settlement', 'banknote'], ['Performance', 'bar-chart'],
     ]);
@@ -33,7 +33,7 @@ describe('partner console sidebar (VendorConsole / VendorHome boards)', () => {
     expect(within(nav()).getByRole('button', { name: 'Home' })).toHaveAttribute('aria-current', 'page');
     expect(within(nav()).queryByRole('heading', { name: 'LAB' })).toBeNull();
     const icons = Array.from(nav().querySelectorAll('svg')).map(icon => icon.getAttribute('data-icon'));
-    expect(icons).toEqual(['home-2', 'scan', 'box-2', 'prescription', 'arrows-left-right-2', 'key', 'undo', 'clipboard', 'repeat', 'users', 'grid', 'banknote', 'bar-chart']);
+    expect(icons).toEqual(['home-2', 'scan', 'box-2', 'prescription', 'arrows-left-right-2', 'key', 'undo', 'clipboard', 'pill', 'repeat', 'users', 'grid', 'banknote', 'bar-chart']);
   });
 
   it('marks the lab page being shown as the current pill', () => {

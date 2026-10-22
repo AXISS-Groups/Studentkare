@@ -71,14 +71,14 @@ describe('theme toggle', () => {
 });
 
 describe('navigation structure', () => {
-  // The design's entries, plus four not on the canvas: Team accounts, Care directory, Lab report reviewers and Message outbox.
-  it('follows the design’s groups and order, with only the four added entries', () => {
+  // The design's entries, plus five not on the canvas: Team accounts, Care directory, Medicine info, Lab report reviewers and Message outbox.
+  it('follows the design’s groups and order, with only the five added entries', () => {
     expect(SUPER_ADMIN_NAVIGATION.map(group => group.title)).toEqual(['Platform', 'Tenants', 'Gatekeeping', 'Commerce', 'Content & AI', 'Governance']);
     const designed = SUPER_ADMIN_NAVIGATION.flatMap(group => group.items.map(item => item.label));
     expect(designed).toEqual([
       'Overview', 'Operations & SOS', 'Surveillance map', 'Feature flags', 'Accounts', 'Team accounts',
       'Organisations', 'Integrations', 'Code sentinel', 'Token sync',
-      'Clinician verification', 'Partner applications', 'Catalogue ops', 'Care directory', 'Lab report reviewers',
+      'Clinician verification', 'Partner applications', 'Catalogue ops', 'Care directory', 'Medicine info', 'Lab report reviewers',
       'Plans & pricing', 'Billing ledger',
       'Message templates', 'Message outbox', 'Knowledge base', 'Intake & OCR',
       'Rule L firewall', 'Consent policy', 'Break-glass log', 'Check-in audit', 'Casualty handover', 'Audit explorer', 'AI governance', 'Erasure queue',
@@ -88,7 +88,7 @@ describe('navigation structure', () => {
   it('gives every designed entry its own screen', () => {
     SUPER_ADMIN_NAVIGATION.forEach(group => group.items.forEach(item => expect(item.route, item.label).toBeDefined()));
     const routes = SUPER_ADMIN_NAVIGATION.flatMap(group => group.items.flatMap(item => item.route ? [item.route] : []));
-    expect(new Set(routes).size).toBe(29);
+    expect(new Set(routes).size).toBe(30);
     // Removed from the sidebar on request; the routes still exist.
     ['admin/activity', 'admin/billing', 'admin/requests', 'admin/support', 'admin/telemetry', 'admin/preventive'].forEach(route => expect(routes).not.toContain(route));
   });
@@ -99,7 +99,7 @@ describe('navigation structure', () => {
     expect(icons).toEqual([
       'users-small', 'alert-triangle-3', 'map', 'settings-2', 'users-2', 'key',
       'box', 'plug', 'shield-2', 'settings-2',
-      'shield', 'hand-pointer', 'box', 'hospital', 'flask',
+      'shield', 'hand-pointer', 'box', 'hospital', 'pill', 'flask',
       'banknote', 'bar-chart',
       'message-circle', 'inbox', 'file', 'clipboard',
       'rows-split', 'book', 'heart-plus', 'heart-plus', 'arrows-left-right', 'book', 'cpu', 'shield-2',
@@ -134,9 +134,9 @@ describe('available entries', () => {
     expect(onNavigate).toHaveBeenCalledWith('admin/ops');
   });
 
-  it('has the design’s 25 links plus the 4 added ones, and no More tools group', () => {
+  it('has the design’s 25 links plus the 5 added ones, and no More tools group', () => {
     renderShell();
-    expect(within(nav()).getAllByRole('button')).toHaveLength(29);
+    expect(within(nav()).getAllByRole('button')).toHaveLength(30);
     expect(within(nav()).queryByRole('heading', { name: 'More tools' })).toBeNull();
   });
 

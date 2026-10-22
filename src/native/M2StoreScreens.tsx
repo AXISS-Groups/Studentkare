@@ -63,6 +63,7 @@ const MedicinesBoard = observer(function MedicinesBoard({ vm }: { vm: PhoneShopV
         seeAll: () => navigate('Marketplace'),
         rewards: () => navigate('Rewards'),
         labs: () => navigate('Labs'),
+        medicineInfo: () => navigate('MedicineInfo'),
       }}
     />
   );

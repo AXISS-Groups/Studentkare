@@ -20,6 +20,7 @@ export const publicRoutes: RoutePath[] = [
   'landing',
   'logged-out',
   'login',
+  'medicine-info',
   'partnerships',
   'partnerships/apply',
   'pricing',

@@ -22,6 +22,7 @@ import { landingEn } from './areas/landing';
 import { launchEn } from './areas/launch';
 import { m2remindersEn } from './areas/m2reminders';
 import { m2valuesEn } from './areas/m2values';
+import { medicineInfoEn } from './areas/medicineInfo';
 import { memberEn } from './areas/member';
 import { mobile2En } from './areas/mobile2';
 import { mobile2HealthEn } from './areas/mobile2health';
@@ -78,6 +79,7 @@ export const areasEn = {
   ...launchEn,
   ...m2remindersEn,
   ...m2valuesEn,
+  ...medicineInfoEn,
   ...memberEn,
   ...mobile2En,
   ...mobile2HealthEn,
