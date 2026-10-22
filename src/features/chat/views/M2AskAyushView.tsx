@@ -28,6 +28,10 @@ import type { AyushReply, AyushViewModel } from '../viewmodel/AyushViewModel';
 export interface M2AskAyushLinks {
   back: () => void;
   sos: () => void;
+  /** The help centre. Omitted where there is none (the Expo app has no Help screen yet). */
+  help?: () => void;
+  /** Doctor consults. */
+  book?: () => void;
 }
 
 /** General questions that pass the scope guard (the starters every Ayush surface offers). */
@@ -76,9 +80,39 @@ function CrisisCard({ reply }: { reply: AyushReply }) {
   );
 }
 
-function Answer({ reply }: { reply: AyushReply }) {
+/** "I couldn't find this": never a dead end — the help centre and a doctor, where the app has them. */
+function NoSourceNext({ links }: { links: M2AskAyushLinks }) {
+  const t = useT();
+  const next = [
+    links.help ? { key: 'help', label: t('assist.ayush.noSource.help'), onPress: links.help } : null,
+    links.book ? { key: 'book', label: t('assist.ayush.noSource.book'), onPress: links.book } : null,
+  ].filter((item): item is { key: string; label: string; onPress: () => void } => item !== null);
+  if (!next.length) return null;
+  return (
+    <View style={styles.nextRow} testID="m2-ask-no-source-next">
+      {next.map((item) => (
+        <Pressable key={item.key} role="link" accessibilityRole="link" accessibilityLabel={item.label} aria-label={item.label} onPress={item.onPress}
+          testID={`m2-ask-next-${item.key}`} style={({ focused }: PressState) => [styles.next, focused ? focusRing : null]}>
+          <Text style={styles.nextText}>{item.label}</Text>
+          <Icon name="arrow-right" size={14} color={color.action} />
+        </Pressable>
+      ))}
+    </View>
+  );
+}
+
+function Answer({ reply, links }: { reply: AyushReply; links: M2AskAyushLinks }) {
   const t = useT();
   if (reply.outcome === 'CRISIS' && reply.crisis) return <CrisisCard reply={reply} />;
+  if (reply.outcome === 'NO_SOURCE') {
+    return (
+      <View style={[styles.bubble, styles.theirs]} testID="m2-ask-answer">
+        <Text style={styles.theirText}>{t('assist.ayush.noSource.title')}</Text>
+        <Text style={styles.refusal}>{t('assist.ayush.noSource.next')}</Text>
+        <NoSourceNext links={links} />
+      </View>
+    );
+  }
   const note = REFUSAL_NOTE[reply.outcome];
   return (
     <View style={[styles.bubble, styles.theirs]} testID="m2-ask-answer">
@@ -144,7 +178,7 @@ export const M2AskAyushView = observer(function M2AskAyushView({ vm, links }: { 
               <Gradient colors={[color.brandNavyLight, color.brandNavy]} angle={150} style={[styles.bubble, styles.mine]}>
                 <Text style={styles.mineText}>{question}</Text>
               </Gradient>
-              <Answer reply={reply} />
+              <Answer reply={reply} links={links} />
             </View>
           </Rise>
         ))}
@@ -236,6 +270,12 @@ const styles = StyleSheet.create({
   refusal: { marginTop: space.s8, fontFamily: font.family.sans, fontSize: font.size.caption, lineHeight: 17, fontWeight: fontWeight(font.weight.strong), color: color.text2 },
   sources: { marginTop: space.s8, flexDirection: 'row', flexWrap: 'wrap', gap: space.s6 },
   source: { flexDirection: 'row', alignItems: 'center', gap: space.s4, paddingHorizontal: space.s8, paddingVertical: space.s2, borderRadius: radius.full, backgroundColor: color.positiveBg },
+  nextRow: { marginTop: space.s8, flexDirection: 'row', flexWrap: 'wrap', gap: space.s8 },
+  next: {
+    minHeight: size.touchTarget, paddingHorizontal: space.s12, borderRadius: radius.full, flexDirection: 'row', alignItems: 'center', gap: space.s4,
+    borderWidth: 1, borderColor: color.rule, backgroundColor: color.surface,
+  },
+  nextText: { fontFamily: font.family.sans, fontSize: 12.5, fontWeight: fontWeight(font.weight.heavy), color: color.action },
   sourceText: { fontFamily: font.family.sans, fontSize: 11, fontWeight: fontWeight(font.weight.strong), color: color.positive },
   typing: { flexDirection: 'row', gap: 5, paddingVertical: space.s12 },
   typingDot: { width: 7, height: 7, borderRadius: radius.full, backgroundColor: color.action },

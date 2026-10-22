@@ -345,6 +345,33 @@ describe('M2AskAyush', () => {
     fireEvent.click(screen.getByRole('button', { name: en('ayush.starter1') }));
     expect(await screen.findByText(en('ayush.refusal.REFUSED_PERSONAL'))).toBeInTheDocument();
   });
+
+  it('when nothing matches, says it could not find it in the help and offers Help and a consult, not a dead end', async () => {
+    const { request } = fakeRequest({
+      'POST /agents/ayush/ask': { agent: 'ayush', outcome: 'NO_SOURCE', answer: 'server text', citations: [], answered: false },
+    });
+    const vm = new AyushViewModel(request);
+    const links = { back: vi.fn(), sos: vi.fn(), help: vi.fn(), book: vi.fn() };
+    const { container } = wrap(<M2AskAyushView vm={vm} links={links} />);
+    fireEvent.click(screen.getByRole('button', { name: en('ayush.starter1') }));
+    expect(await screen.findByText(en('assist.ayush.noSource.title'))).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('link', { name: en('assist.ayush.noSource.help') }));
+    fireEvent.click(screen.getByRole('link', { name: en('assist.ayush.noSource.book') }));
+    expect(links.help).toHaveBeenCalled();
+    expect(links.book).toHaveBeenCalled();
+    const violations = await axeViolations(container);
+    expect(violations, describeViolations(violations)).toEqual([]);
+  });
+
+  it('offers only what the app has: no Help link where there is no help screen', async () => {
+    const { request } = fakeRequest({
+      'POST /agents/ayush/ask': { agent: 'ayush', outcome: 'NO_SOURCE', answer: 'server text', citations: [], answered: false },
+    });
+    wrap(<M2AskAyushView vm={new AyushViewModel(request)} links={{ back: vi.fn(), sos: vi.fn(), book: vi.fn() }} />);
+    fireEvent.click(screen.getByRole('button', { name: en('ayush.starter1') }));
+    expect(await screen.findByRole('link', { name: en('assist.ayush.noSource.book') })).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: en('assist.ayush.noSource.help') })).toBeNull();
+  });
 });
 
 // ── M2Product ────────────────────────────────────────────────────────────────

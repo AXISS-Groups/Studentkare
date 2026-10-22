@@ -180,7 +180,7 @@ def test_no_approved_source_means_no_answer(harness):
         result = agent_ayush.ask(db, "what is the boiling point of mercury", account_id=student["id"])
     assert result["outcome"] == "NO_SOURCE"
     assert result["citations"] == []
-    assert "rather say so than guess" in result["answer"]
+    assert "couldn't find this in StudentKare's help yet" in result["answer"]
 
 
 def test_an_empty_index_refuses_everything(harness):

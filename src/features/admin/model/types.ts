@@ -26,6 +26,35 @@ export interface KnowledgeSources { items: KnowledgeSource[] }
 /** GET /ops/knowledge/index-status — what the retrieval index holds. `missing` lists approved source ids not indexed. */
 export interface IndexStatus { approvedSources: number; indexedSources: number; chunks: number; embedder: string; semantic: boolean; missing: string[]; mismatchedEmbedder: number }
 
+/** GET /ops/agents/ayush/health (backend/services/ayush_health.py) — can Ayush answer, and if not, why. */
+export interface AyushHealth {
+  status: 'ok' | 'attention' | 'down';
+  published: number;
+  indexed: number;
+  missing: number;
+  stale: number;
+  chunks: number;
+  helpPack: { articles: number; published: number };
+  retrieval: {
+    mode: 'keyword' | 'semantic' | 'degraded';
+    embedder: string;
+    requestedProvider: string;
+    model: string;
+    misconfigured: '' | 'unsupported-provider' | 'missing-url';
+    fallbackPassages: number;
+    reachable?: boolean | null;
+    modelPulled?: boolean | null;
+  };
+  answers: {
+    mode: 'quotes' | 'rephrased';
+    model: string;
+    reachable: boolean | null;
+    modelPulled: boolean | null;
+    recent: { rephrased: number; quoted: number; fellBack: number };
+  };
+  lastError: { where: string; error: string; at: number } | null;
+}
+
 /** POST /ops/knowledge — a source to publish. */
 export interface NewKnowledgeSource { title: string; category: string; content: string; author: string; expiresInDays: number }
 

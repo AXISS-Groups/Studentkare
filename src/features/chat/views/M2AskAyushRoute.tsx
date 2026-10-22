@@ -16,6 +16,8 @@ export function M2AskAyushRoute(): React.ReactElement {
     <M2AskAyushView vm={vm} links={{
       back: () => navigate('your-care'),
       sos: () => (slot?.openSos ? slot.openSos() : navigate('sos')),
+      help: () => navigate('support'),
+      book: () => navigate('care'),
     }} />
   );
 }

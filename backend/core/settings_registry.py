@@ -402,6 +402,14 @@ declare("lab.collect_verification_minutes", INT, 15, area="lab", unit="minutes",
 declare("privacy.deletion_grace_days", INT, 7, area="privacy", unit="days", minimum=1, maximum=30, public=True,
         description="Days between a student's account-deletion request and its erasure; they can cancel until then.")
 
+# --- Agent Ayush retrieval (services/vector_store.py) -------------------------
+# Only used when a semantic embedding model is on (EMBEDDING_PROVIDER=ollama). A
+# passage that shares no word with the question (another language, a synonym) is
+# admitted only at or above this cosine similarity. Set high on purpose: calibrate
+# it against the model in use (docs/guides/ayush-operations.md) before lowering it.
+declare("ayush.semantic_admit_similarity", FLOAT, 0.8, area="ayush", unit="cosine similarity", minimum=0.5,
+        maximum=0.99, description="Semantic mode: lowest similarity at which a passage with no shared word is admitted.")
+
 # --- platform --------------------------------------------------------------
 # A name zoneinfo does not know (in an override or a student's preference) is
 # never used: the student's day then falls back to this declared default.

@@ -40,6 +40,7 @@ from services import (
     rewards,
     student_time,
     upload_files,
+    vector_store,
 )
 from services.agents.blood_emergency_agent import blood_emergency_agent
 from services.agents.hitl_approval_agent import hitl_approval_agent
@@ -1834,7 +1835,65 @@ def create_knowledge(body: KnowledgeInput, user=Depends(require_super_admin), db
                              created_at=time.time(), expires_at=time.time() + body.expiresInDays * 86400))
     audit(db, user, "KNOWLEDGE_CREATED", source_id)
     db.commit()
-    return {"id": source_id}
+    # Answerable straight away: no "Rebuild index" needed. A failure is reported, and
+    # the next sync (startup or the periodic knowledge job) indexes it.
+    return {"id": source_id, "indexed": vector_store.reindex_one(db, source_id)}
+
+
+class KnowledgeEdit(StrictModel):
+    title: str | None = Field(default=None, min_length=3, max_length=180)
+    category: str | None = Field(default=None, max_length=60)
+    content: str | None = Field(default=None, min_length=10, max_length=4000)
+    expiresInDays: int | None = Field(default=None, ge=1, le=3650)
+
+
+def _knowledge_or_404(db, source_id: str) -> M.KnowledgeSource:
+    source = db.get(M.KnowledgeSource, source_id)
+    if source is None:
+        raise HTTPException(404, "Knowledge source not found.")
+    return source
+
+
+@router.patch("/ops/knowledge/{source_id}")
+def edit_knowledge(source_id: str, body: KnowledgeEdit, user=Depends(require_super_admin), db: Session = Depends(workflow_db)):
+    """Edit a source. A content change is a new version, re-indexed in this request."""
+    source = _knowledge_or_404(db, source_id)
+    changed = False
+    for field, value in (("title", body.title), ("category", body.category), ("content", body.content)):
+        if value is not None and value.strip() != getattr(source, field):
+            setattr(source, field, value.strip())
+            changed = True
+    if body.expiresInDays is not None:
+        source.expires_at = time.time() + body.expiresInDays * 86400
+    if changed:
+        source.version += 1
+        # The editor now answers for the text (and the help-pack loader leaves it alone).
+        source.author = user.get("fullName", "") or source.author
+        source.reviewed = True
+    audit(db, user, "KNOWLEDGE_EDITED", source_id)
+    db.commit()
+    return {"id": source_id, "version": source.version, "indexed": vector_store.reindex_one(db, source_id)}
+
+
+@router.post("/ops/knowledge/{source_id}/unpublish")
+def unpublish_knowledge(source_id: str, user=Depends(require_super_admin), db: Session = Depends(workflow_db)):
+    """Withdraw a source: Ayush stops quoting it as soon as this returns."""
+    source = _knowledge_or_404(db, source_id)
+    source.active = False
+    audit(db, user, "KNOWLEDGE_UNPUBLISHED", source_id)
+    db.commit()
+    return {"id": source_id, "indexed": vector_store.reindex_one(db, source_id)}
+
+
+@router.post("/ops/knowledge/{source_id}/restore")
+def restore_knowledge(source_id: str, user=Depends(require_super_admin), db: Session = Depends(workflow_db)):
+    """Publish a withdrawn source again, as it was."""
+    source = _knowledge_or_404(db, source_id)
+    source.active = True
+    source.reviewed = True
+    audit(db, user, "KNOWLEDGE_RESTORED", source_id)
+    db.commit()
+    return {"id": source_id, "indexed": vector_store.reindex_one(db, source_id)}
 
 
 @router.get("/knowledge/sources")

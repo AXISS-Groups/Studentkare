@@ -911,7 +911,12 @@ def knowledge_freshness_check(db) -> dict:
     ).select_from(M.KnowledgeSource).where(
         M.KnowledgeSource.active.is_(True), M.KnowledgeSource.reviewed.is_(True),
     )).one()
-    return {"summary": {"sources": sources, "expired": expired, "expiring_soon": near}}
+    # Keep Ayush's index in line: expired sources leave it, anything approved but
+    # missing (or embedded by a model no longer active) is indexed. No commit here.
+    from services import vector_store
+    synced = vector_store.sync_index(db, commit=False)
+    return {"summary": {"sources": sources, "expired": expired, "expiring_soon": near,
+                        "index_updated": synced["indexed"], "index_removed": synced["removed"]}}
 
 
 def care_followup_check(db, *, commit: bool = True) -> dict:

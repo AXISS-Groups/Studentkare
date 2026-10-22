@@ -91,8 +91,8 @@ SCOPE_REFUSALS = {
 }
 
 NO_SOURCE_ANSWER = (
-    "I don't have an approved source that answers that, so I'd rather say so than "
-    "guess. Support can help, and a clinician can answer anything clinical."
+    "I couldn't find this in StudentKare's help yet, and I won't guess. Help can "
+    "answer questions about the app, and a doctor can answer anything about your health."
 )
 
 PERSONAL_RECORD_ANSWER = (
@@ -145,6 +145,10 @@ def compose_extractive(question: str, passages: list[dict]) -> str:
     """
     lead = passages[0]
     body = lead["content"].strip()
+    # The first chunk opens with the title (it helps retrieval); the quote names it already.
+    heading = f"{lead['title'].strip()}. "
+    if body.startswith(heading) and len(body) > len(heading):
+        body = body[len(heading):]
     if len(body) > 900:
         body = body[:900].rsplit(" ", 1)[0] + "…"
     answer = f"From {lead['title']}:\n\n{body}"

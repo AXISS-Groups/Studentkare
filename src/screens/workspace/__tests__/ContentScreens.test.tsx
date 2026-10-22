@@ -84,6 +84,14 @@ describe('Knowledge base', () => {
     { id: 's4', title: 'Draft note', category: 'general', version: 1, author: 'Clinical team', reviewed: false, expiresAt: null },
   ] };
   const index = { approvedSources: 2, indexedSources: 1, chunks: 48, embedder: 'hash-ngram', semantic: false, missing: ['s2'], mismatchedEmbedder: 0 };
+  const HEALTH = '/ops/agents/ayush/health';
+  const healthy = {
+    status: 'ok', published: 2, indexed: 2, missing: 0, stale: 0, chunks: 48, helpPack: { articles: 17, published: 17 },
+    retrieval: { mode: 'keyword', embedder: 'local-hashing-v1', requestedProvider: 'local', model: '', misconfigured: '', fallbackPassages: 0 },
+    answers: { mode: 'quotes', model: '', reachable: null, modelPulled: null, recent: { rephrased: 0, quoted: 4, fellBack: 0 } },
+    lastError: null,
+  };
+  beforeEach(() => { apiAnswers[HEALTH] = () => Promise.resolve(healthy); });
   const requestsTo = (path: string) => apiRequest.mock.calls.filter(([called]) => called === path);
   // jsdom has no modal dialogs: open and close the element the way a browser does, so its
   // contents are reachable by role.
@@ -92,13 +100,43 @@ describe('Knowledge base', () => {
     HTMLDialogElement.prototype.close = function close(this: HTMLDialogElement) { this.removeAttribute('open'); };
   };
 
+  it('shows Ayush health in plain words, and says so when Ayush cannot answer', async () => {
+    apiAnswers[SOURCES] = () => Promise.resolve(sources);
+    apiAnswers[INDEX] = () => Promise.resolve(index);
+    apiAnswers[HEALTH] = () => Promise.resolve({
+      status: 'down', published: 0, indexed: 0, missing: 0, stale: 0, chunks: 0, helpPack: { articles: 17, published: 0 },
+      retrieval: { mode: 'keyword', embedder: 'local-hashing-v1', requestedProvider: 'ollama', model: '', misconfigured: 'missing-url', fallbackPassages: 0 },
+      answers: { mode: 'rephrased', model: 'llama3.1:8b', reachable: false, modelPulled: null, recent: { rephrased: 0, quoted: 0, fellBack: 2 } },
+      lastError: { where: 'generation', error: 'ConnectError', at: now },
+    });
+    render(<KnowledgeView />);
+    const card = await screen.findByRole('region', { name: 'Ayush health' });
+    expect(await within(card).findByText('Not answering')).toBeInTheDocument();
+    expect(within(card).getByRole('alert')).toHaveTextContent('Ayush can’t answer anything yet');
+    expect(card).toHaveTextContent('EMBEDDING_PROVIDER is set to “ollama”');
+    expect(card).toHaveTextContent('Keyword matching (no semantic model on)');
+    expect(card).toHaveTextContent('Rephrased by the on-prem model · llama3.1:8b');
+    expect(card).toHaveTextContent('Not reachable · answers fall back to quotes');
+    expect(card).toHaveTextContent('ConnectError while rephrasing an answer');
+  });
+
+  it('shows an unreadable health report as an error in its own card', async () => {
+    apiAnswers[HEALTH] = () => Promise.resolve({});
+    apiAnswers[SOURCES] = () => Promise.resolve(sources);
+    apiAnswers[INDEX] = () => Promise.resolve(index);
+    render(<KnowledgeView />);
+    const card = await screen.findByRole('region', { name: 'Ayush health' });
+    expect(await within(card).findByRole('alert')).toHaveTextContent('Couldn’t check Ayush');
+    expect(await screen.findByText('48 chunks indexed')).toBeInTheDocument();
+  });
+
   it('lists sources with their real state and shows the indexed chunk count', async () => {
     apiAnswers[SOURCES] = () => Promise.resolve(sources);
     apiAnswers[INDEX] = () => Promise.resolve(index);
     render(<KnowledgeView />);
     expect(screen.getByRole('status', { name: 'Loading sources…' })).toBeInTheDocument();
     expect(await screen.findByText('48 chunks indexed')).toBeInTheDocument();
-    expect(apiRequest.mock.calls.map(([path]) => path)).toEqual([SOURCES, INDEX]);
+    expect(apiRequest.mock.calls.map(([path]) => path)).toEqual([SOURCES, INDEX, HEALTH]);
     const list = await screen.findByRole('region', { name: 'Sources Ayush may quote' });
     await within(list).findByText('Understanding your CBC report');
     expect(within(list).getByText('Understanding your CBC report').closest('li')).toHaveTextContent('Live');
@@ -124,7 +162,7 @@ describe('Knowledge base', () => {
     await waitFor(() => expect(requestsTo(INDEX)).toHaveLength(2));
     expect(requestsTo(SOURCES)).toHaveLength(2);
     const order = apiRequest.mock.calls.map(([path]) => path);
-    expect(order.slice(order.indexOf('/ops/knowledge/reindex') + 1)).toEqual([INDEX, SOURCES]);
+    expect(order.slice(order.indexOf('/ops/knowledge/reindex') + 1)).toEqual([INDEX, SOURCES, HEALTH]);
   });
 
   it('shows a failed rebuild in the index panel and keeps the index', async () => {
@@ -183,7 +221,7 @@ describe('Knowledge base', () => {
     expect(apiRequest).toHaveBeenCalledWith('/ops/knowledge', { method: 'POST', body: JSON.stringify({ title: 'Hand hygiene', category: 'general', content: 'Wash hands for twenty seconds.', author: 'Clinical team', expiresInDays: 30 }) });
     await waitFor(() => expect(requestsTo(INDEX)).toHaveLength(2));
     const order = apiRequest.mock.calls.map(([path]) => path);
-    expect(order.slice(order.indexOf('/ops/knowledge') + 1)).toEqual([SOURCES, INDEX]);
+    expect(order.slice(order.indexOf('/ops/knowledge') + 1)).toEqual([SOURCES, INDEX, HEALTH]);
   });
 
   it('keeps the publish form open with the error when publishing fails, and a new form starts clean', async () => {
