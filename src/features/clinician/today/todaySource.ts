@@ -28,8 +28,8 @@ async function totalOf(path: string): Promise<number | null> {
 
 /** Unacknowledged critical results this doctor may review (`GET /work/critical-results`). */
 export const criticalResultsCount: CountLoader = () => totalOf('/work/critical-results');
-/** Report reviews assigned to this doctor (`GET /work/report-reviews`). */
-export const reportsToSignCount: CountLoader = () => totalOf('/work/report-reviews?limit=1');
+/** Report reviews assigned to this doctor (`GET /preventive/work/report-reviews`). */
+export const reportsToSignCount: CountLoader = () => totalOf('/preventive/work/report-reviews?limit=1');
 
 const KIND_BY_STATUS: Record<Booking['status'], SlotKind> = {
   COMPLETED: 'done',
