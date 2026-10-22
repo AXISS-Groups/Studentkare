@@ -22,7 +22,7 @@ os.environ.pop("OLLAMA_URL", None)
 
 import pytest  # noqa: E402
 
-from core.rate_limiter import global_api_limiter  # noqa: E402
+from core.rate_limiter import account_api_limiter, global_api_limiter  # noqa: E402
 
 
 @pytest.fixture(autouse=True)
@@ -30,14 +30,17 @@ def _reset_global_rate_limiter():
     """Every test gets a fresh IP budget.
 
     TestClient reuses peer IP ``testclient`` for the whole process; without a
-    reset, earlier tests exhaust RATE_LIMIT_API_PER_MINUTE and later tests see 429.
-    Also restores max_requests in case a unit test mutated the shared instance.
+    reset, earlier tests exhaust the per-IP ceiling and later tests see 429.
+    Also restores max_requests in case a unit test mutated the shared instances.
     """
-    original_max = global_api_limiter.max_requests
-    global_api_limiter.reset()
+    limiters = (global_api_limiter, account_api_limiter)
+    originals = [limiter.max_requests for limiter in limiters]
+    for limiter in limiters:
+        limiter.reset()
     yield
-    global_api_limiter.reset()
-    global_api_limiter.max_requests = original_max
+    for limiter, original in zip(limiters, originals):
+        limiter.reset()
+        limiter.max_requests = original
 
 
 @pytest.fixture

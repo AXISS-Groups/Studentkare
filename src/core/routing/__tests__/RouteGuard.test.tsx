@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import type { AccountRole } from '@/data/types/workflowTypes';
 
-const auth: { status: string; user: { role: AccountRole } | null; error: string; refresh: () => void } = { status: 'anonymous', user: null, error: '', refresh: vi.fn() };
+const auth: { status: string; user: { role: AccountRole } | null; error: string; errorStatus: number; refresh: () => void } = { status: 'anonymous', user: null, error: '', errorStatus: 0, refresh: vi.fn() };
 let pathname = '/admin/accounts';
 
 vi.mock('@/data/contexts/AuthContext', () => ({ useAuth: () => auth }));
@@ -23,6 +23,8 @@ const superAdminOnly = (role: AccountRole | null) => role === 'SUPER_ADMIN';
 beforeEach(() => {
   auth.status = 'anonymous';
   auth.user = null;
+  auth.error = '';
+  auth.errorStatus = 0;
   pathname = '/admin/accounts';
 });
 
@@ -43,6 +45,30 @@ describe('authentication: is this user signed in?', () => {
   it('lets public pages through without a session', () => {
     render(<RouteGuard public><p>Login</p></RouteGuard>);
     expect(screen.getByText('Login')).toBeInTheDocument();
+  });
+});
+
+describe('a session check that failed', () => {
+  it('says the session could not be checked, with the reason and a retry', () => {
+    auth.status = 'error';
+    auth.error = 'Cannot connect to the care service.';
+    render(<RouteGuard access={superAdminOnly}><p>Accounts</p></RouteGuard>);
+    expect(screen.getByRole('alert')).toHaveTextContent('Your session could not be checked.');
+    expect(screen.getByText('Cannot connect to the care service.')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Retry session check' })).toBeInTheDocument();
+    expect(screen.queryByText('Accounts')).toBeNull();
+  });
+
+  it('asks for a moment, not a broken session, when the server rate-limited the check (429)', () => {
+    auth.status = 'error';
+    auth.error = 'Too many requests. Please try again shortly.';
+    auth.errorStatus = 429;
+    render(<RouteGuard access={superAdminOnly}><p>Accounts</p></RouteGuard>);
+    expect(screen.getByRole('alert')).toHaveTextContent('Too many requests — try again in a moment');
+    expect(screen.queryByText('Your session could not be checked.')).toBeNull();
+    screen.getByRole('button', { name: 'Retry session check' }).click();
+    expect(auth.refresh).toHaveBeenCalled();
+    expect(screen.queryByText('Accounts')).toBeNull();
   });
 });
 

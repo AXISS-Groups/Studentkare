@@ -13,9 +13,10 @@ if os.environ.get("WORKFLOW_E2E") != "1" or not os.environ.get("WORKFLOW_TEST_DA
 os.environ["APP_ENV"] = "testing"
 os.environ["DATABASE_URL"] = f"sqlite:///{os.environ['WORKFLOW_TEST_DATABASE']}"
 os.environ["ALLOWED_ORIGINS"] = "http://127.0.0.1:3001"
-# One browser drives every role from one loopback IP; the per-IP budget is
+# One browser drives every role from one loopback IP; the API budgets are
 # sized for real traffic, not a scripted journey.
-os.environ["RATE_LIMIT_API_PER_MINUTE"] = "1000"
+os.environ["RATE_LIMIT_API_PER_IP_PER_MINUTE"] = "100000"
+os.environ["RATE_LIMIT_API_PER_ACCOUNT_PER_MINUTE"] = "100000"
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import uvicorn

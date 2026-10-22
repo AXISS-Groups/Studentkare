@@ -168,6 +168,7 @@ ORDERED_PAIRS: tuple[tuple[str, str], ...] = (
     ("medicine_info.teen_from_years", "medicine_info.adult_from_years"),
     ("medicine_info.adult_from_years", "medicine_info.older_adult_from_years"),
     ("medicine_info.child_from_years", "medicine_info.ask_doctor_below_years"),
+    ("platform.api_rate_per_account_per_minute", "platform.api_rate_per_ip_per_minute"),
 )
 
 
@@ -407,6 +408,22 @@ declare("privacy.deletion_grace_days", INT, 7, area="privacy", unit="days", mini
 # never used: the student's day then falls back to this declared default.
 declare("platform.default_timezone", STR, "Asia/Kolkata", area="platform", unit="IANA timezone",
         description="Timezone for a student's calendar day when they have not set a valid one.")
+# General API rate limits (core/rate_limiter.py, founder decision 2026-10-22). A
+# signed-in request counts against its session's budget and against its network
+# address's ceiling; a request without a session against the ceiling only. One
+# student page makes 10-20 calls, so 300 a minute is about 15-30 page loads a
+# minute for one person. A campus puts hundreds of students behind one public
+# address, so the ceiling is 10x one account (about 70-100 students actively
+# browsing at once) and only stops a single source flooding. Sign-in, codes,
+# passcode and PIN keep their own strict limits (auth.* and workflow_auth.limit).
+# Not public. RATE_LIMIT_API_PER_ACCOUNT_PER_MINUTE / RATE_LIMIT_API_PER_IP_PER_MINUTE
+# in the environment pin a value for one deployment (load tests).
+declare("platform.api_rate_per_account_per_minute", INT, 300, area="platform", unit="requests per minute",
+        minimum=60, maximum=6000,
+        description="API requests one signed-in session may make in a minute before it is told to wait (429).")
+declare("platform.api_rate_per_ip_per_minute", INT, 3000, area="platform", unit="requests per minute",
+        minimum=300, maximum=100000,
+        description="API requests one network address may make in a minute, all accounts behind it together.")
 
 # --- sign-in ---------------------------------------------------------------
 # A screen pace, not a security limit: the server's own send limit (3 codes per

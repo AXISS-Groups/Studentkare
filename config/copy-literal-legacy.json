@@ -58,7 +58,6 @@
   "src/components/svg/ConnectedHardwareGraphic.tsx",
   "src/components/svg/StudentQualificationGraphic.tsx",
   "src/components/vendor/ExpressOtpHandoverDesk.tsx",
-  "src/core/routing/Router.tsx",
   "src/design-system/Inputs.tsx",
   "src/design-system/Table.tsx",
   "src/design-system/primitives.tsx",
