@@ -2054,7 +2054,9 @@
       "src/features/newsroom/data/NewsroomRepository.ts",
       "src/features/newsroom/model/templates.ts",
       "src/features/newsroom/screens/NewsroomScreens.tsx",
-      "src/design-system/public-site/publicSiteNav.ts"
+      "src/design-system/public-site/publicSiteNav.ts",
+      "src/features/newsroom/views/ShareBar.tsx",
+      "src/features/newsroom/data/ContentRepository.ts"
     ],
     "WebPost": [
       "src/features/newsroom/views/PostPage.tsx",
@@ -2065,7 +2067,11 @@
       "src/features/newsroom/model/share.ts",
       "src/features/newsroom/model/templates.ts",
       "src/features/newsroom/data/NewsroomRepository.ts",
-      "src/features/newsroom/screens/NewsroomScreens.tsx"
+      "src/features/newsroom/screens/NewsroomScreens.tsx",
+      "src/features/newsroom/views/ShareBar.tsx",
+      "src/features/newsroom/model/nativeShare.ts",
+      "src/features/newsroom/model/nativeShare.native.ts",
+      "src/features/newsroom/data/ContentRepository.ts"
     ],
     "AdminPosts": [
       "src/features/newsroom/admin/PostsAdminView.tsx",
@@ -2080,7 +2086,12 @@
       "src/screens/workspace/admin/SuperAdminScreens.tsx",
       "src/screens/workspace/admin/superAdminNavigation.ts",
       "src/design-system/clinician-shell/clinicianNav.ts",
-      "src/features/health/screens/WorkspaceRouteScreen.tsx"
+      "src/features/health/screens/WorkspaceRouteScreen.tsx",
+      "src/features/newsroom/admin/ContentTabs.tsx",
+      "src/features/newsroom/viewmodel/ContentAdminViewModel.ts",
+      "src/features/newsroom/data/ContentRepository.ts",
+      "src/features/newsroom/model/composer.ts",
+      "src/features/newsroom/model/share.ts"
     ],
     "M2WhatsNew": [
       "src/features/newsroom/views/M2WhatsNewView.tsx",
@@ -2103,6 +2114,18 @@
       "src/features/camp/host/hostApi.ts",
       "src/features/camp/host/campCsv.ts",
       "src/screens/vendor/vendorNavigation.ts"
+    ],
+    "WebSeries": [
+      "src/features/newsroom/views/SeriesPages.tsx",
+      "src/features/newsroom/views/PostCover.tsx",
+      "src/features/newsroom/views/PostCard.tsx",
+      "src/features/newsroom/views/ShareBar.tsx",
+      "src/features/newsroom/views/NewsroomListPage.tsx",
+      "src/features/newsroom/views/newsroom.css",
+      "src/features/newsroom/data/ContentRepository.ts",
+      "src/features/newsroom/model/templates.ts",
+      "src/features/newsroom/screens/NewsroomScreens.tsx",
+      "src/features/care/module.ts"
     ]
   },
   "inProgress": {
