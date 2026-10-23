@@ -102,7 +102,8 @@
     "WebPass",
     "WebVerify",
     "WebPost",
-    "AdminPosts"
+    "AdminPosts",
+    "M2Reorder"
    ],
    "elements": [
     [
@@ -206,7 +207,8 @@
     "WebVerify",
     "WebVerifyGate",
     "WebPost",
-    "AdminPosts"
+    "AdminPosts",
+    "M2Reorder"
    ],
    "elements": [
     [
@@ -1082,7 +1084,8 @@
     "WebScanVerify",
     "WebSecurity",
     "WebVault",
-    "WebVerify"
+    "WebVerify",
+    "M2Refills"
    ],
    "elements": [
     [
@@ -1186,7 +1189,9 @@
     "VitalTrends",
     "WebFindCare",
     "WebPost",
-    "AdminPosts"
+    "AdminPosts",
+    "M2Refills",
+    "M2Reorder"
    ],
    "elements": [
     [
@@ -1241,7 +1246,8 @@
     "M2Orders",
     "M2Trends",
     "M2Vaccines",
-    "SuperAdminConsole"
+    "SuperAdminConsole",
+    "M2Refills"
    ],
    "elements": [
     [
@@ -1912,7 +1918,9 @@
     "WebRequests",
     "WebSecurity",
     "WebVault",
-    "WebVerify"
+    "WebVerify",
+    "M2Refills",
+    "M2Reorder"
    ],
    "elements": [
     [
@@ -2125,7 +2133,8 @@
     "WebRequests",
     "WebSecurity",
     "WebVault",
-    "WebVerify"
+    "WebVerify",
+    "M2Reorder"
    ],
    "elements": [
     [
@@ -2171,7 +2180,8 @@
     "WebSecurity",
     "WebShop",
     "WebVault",
-    "WebVerify"
+    "WebVerify",
+    "M2Reorder"
    ],
    "elements": [
     [
@@ -3625,7 +3635,8 @@
     "CampusWellness",
     "M2Camps",
     "M2MedicineInfo",
-    "AdminPosts"
+    "AdminPosts",
+    "M2Reorder"
    ],
    "elements": [
     [
@@ -3763,7 +3774,10 @@
     "ReportReviews",
     "WebFindCare",
     "WebNewsroom",
-    "WebPost"
+    "WebPost",
+    "AdminPosts",
+    "M2Refills",
+    "M2Reorder"
    ],
    "elements": [
     [
@@ -3896,7 +3910,8 @@
     "WebSecurity",
     "WebVault",
     "WebVerify",
-    "AdminPosts"
+    "AdminPosts",
+    "M2Refills"
    ],
    "elements": [
     [
@@ -4041,7 +4056,8 @@
     "WebRequests",
     "WebSecurity",
     "WebVault",
-    "WebVerify"
+    "WebVerify",
+    "M2Reorder"
    ],
    "elements": [
     [
@@ -4699,7 +4715,8 @@
     "WebReportInsights",
     "WebSignIn",
     "WebNewsroom",
-    "M2WhatsNew"
+    "M2WhatsNew",
+    "M2Refills"
    ],
    "elements": [
     [
@@ -5042,7 +5059,8 @@
     "M2Home",
     "M2Profile",
     "Prescribe",
-    "ReportReviews"
+    "ReportReviews",
+    "M2Reorder"
    ],
    "elements": [
     [
@@ -5082,7 +5100,8 @@
     "ClinicianToday",
     "EncounterNote",
     "Prescribe",
-    "ReportReviews"
+    "ReportReviews",
+    "AdminPosts"
    ],
    "elements": [
     [
@@ -5199,7 +5218,8 @@
     "M2FacilityDetail",
     "Prescribe",
     "ReportReviews",
-    "AdminPosts"
+    "AdminPosts",
+    "WebPost"
    ],
    "elements": [
     [
@@ -5263,7 +5283,8 @@
     "WebReorder",
     "WebReportInsights",
     "WebWellness",
-    "WebPost"
+    "WebPost",
+    "M2Reorder"
    ],
    "elements": [
     [
@@ -5471,7 +5492,8 @@
     "M2Steps",
     "WebFindCare",
     "WebPost",
-    "AdminPosts"
+    "AdminPosts",
+    "M2Refills"
    ],
    "elements": [
     [
@@ -5516,7 +5538,8 @@
     "Teleconsult",
     "WebDashboard",
     "WebVault",
-    "AdminPosts"
+    "AdminPosts",
+    "M2Refills"
    ],
    "elements": [
     [
@@ -6640,7 +6663,9 @@
     "M2MedicineInfo",
     "WebFindCare",
     "WebHome",
-    "AdminPosts"
+    "AdminPosts",
+    "M2Refills",
+    "M2Reorder"
    ],
    "elements": [
     [
@@ -6976,7 +7001,8 @@
    "uses": 2,
    "screens": [
     "IconSystem",
-    "M2Profile"
+    "M2Profile",
+    "AdminPosts"
    ],
    "elements": [
     [
@@ -7814,7 +7840,8 @@
    "uses": 2,
    "screens": [
     "Landing",
-    "WebPartnerships"
+    "WebPartnerships",
+    "AdminPosts"
    ],
    "elements": [
     [
@@ -8102,7 +8129,8 @@
    "uses": 2,
    "screens": [
     "EmergencyCard",
-    "StateScreens"
+    "StateScreens",
+    "AdminPosts"
    ],
    "elements": [
     [
@@ -8607,7 +8635,8 @@
     "M2Camps",
     "WebNewsroom",
     "WebPost",
-    "AdminPosts"
+    "AdminPosts",
+    "M2Refills"
    ],
    "elements": [
     [
@@ -9287,7 +9316,10 @@
     "M2Home",
     "M2Insurance",
     "SuperAdminConsole",
-    "WebFindCare"
+    "WebFindCare",
+    "AdminPosts",
+    "M2Refills",
+    "M2Reorder"
    ],
    "elements": [
     [
@@ -9479,7 +9511,8 @@
    "source": "canvas",
    "uses": 1,
    "screens": [
-    "YourCare"
+    "YourCare",
+    "AdminPosts"
    ],
    "elements": [
     [
@@ -9655,7 +9688,9 @@
     "M2Medicines",
     "M2Steps",
     "OtpVerify",
-    "WebNewsroom"
+    "WebNewsroom",
+    "AdminPosts",
+    "M2Reorder"
    ],
    "elements": [
     [
@@ -10042,7 +10077,8 @@
    "screens": [
     "AdminCareDirectory",
     "HelpCentre",
-    "AdminPosts"
+    "AdminPosts",
+    "M2Refills"
    ],
    "elements": [
     [
@@ -10253,7 +10289,9 @@
    "uses": 1,
    "screens": [
     "Landing",
-    "M2Home"
+    "M2Home",
+    "M2Refills",
+    "M2Reorder"
    ],
    "elements": [
     [
@@ -10915,7 +10953,8 @@
     "M2Home",
     "M2Labs",
     "M2Medicines",
-    "M2ReportUpload"
+    "M2ReportUpload",
+    "M2Reorder"
    ],
    "elements": [
     [
@@ -11505,7 +11544,9 @@
    "uses": 2,
    "screens": [
     "M2Reminders",
-    "M2Water"
+    "M2Water",
+    "M2Refills",
+    "M2Reorder"
    ],
    "elements": [
     [
@@ -11538,7 +11579,8 @@
     "CreateAccount",
     "SetPasscode",
     "SignIn",
-    "WebSignIn"
+    "WebSignIn",
+    "AdminPosts"
    ],
    "elements": [
     [
@@ -11565,7 +11607,8 @@
     "CreateAccount",
     "SetPasscode",
     "SignIn",
-    "WebSignIn"
+    "WebSignIn",
+    "AdminPosts"
    ],
    "elements": [
     [
@@ -21457,6 +21500,7 @@
     "alert-triangle",
     "arrow-left",
     "arrow-right",
+    "arrow-up-right",
     "brand-linkedin",
     "calendar",
     "check",
@@ -21507,6 +21551,7 @@
    "page": "New · Newsroom: News and Blog (2026-10-23, no canvas board)",
    "size": "1440x1600",
    "icons": [
+    "activity",
     "alert-triangle",
     "align-left",
     "align-left-2",
@@ -21519,26 +21564,35 @@
     "check-circle",
     "chevron-down",
     "clipboard",
+    "clock",
     "eye",
     "eye-off",
     "file-text",
     "graduation-cap",
     "heart-pulse",
+    "inbox",
     "info",
     "lock",
     "megaphone",
     "message-square-text",
     "mic",
+    "pause",
     "pencil",
+    "play",
     "plus",
+    "refresh",
     "rotate-ccw",
     "rows-split",
     "search",
+    "settings",
+    "shield-alert",
     "shield-check",
     "sparkles",
     "stethoscope",
     "trash",
-    "upload"
+    "upload",
+    "wifi-off",
+    "zap"
    ],
    "icons3d": [
     "bell--p2",
@@ -21622,6 +21676,64 @@
    "icons3d": [
     "chart-alt--p4"
    ],
+   "glyphs": [],
+   "illustrations": [],
+   "charts": [],
+   "brand": [],
+   "assets": [],
+   "textGlyphs": []
+  },
+  "M2Refills": {
+   "page": "New · Refill reminders and one-tap reorder (2026-10-23, no canvas board)",
+   "size": "390x1600",
+   "icons": [
+    "arrow-left",
+    "bell",
+    "bell-off",
+    "box",
+    "calendar",
+    "chevron-right",
+    "clock",
+    "info",
+    "pencil",
+    "pill-3",
+    "plus",
+    "repeat",
+    "shield-alert",
+    "stethoscope",
+    "trash"
+   ],
+   "icons3d": [],
+   "glyphs": [],
+   "illustrations": [],
+   "charts": [],
+   "brand": [],
+   "assets": [],
+   "textGlyphs": []
+  },
+  "M2Reorder": {
+   "page": "New · Refill reminders and one-tap reorder (2026-10-23, no canvas board)",
+   "size": "390x1500",
+   "icons": [
+    "alert-triangle",
+    "arrow-left",
+    "bell",
+    "bell-off",
+    "check",
+    "clock",
+    "credit-card",
+    "doc",
+    "doc-upload",
+    "lock",
+    "map-pin",
+    "message-circle-2",
+    "pill-3",
+    "refresh",
+    "shield-alert",
+    "shopping-bag",
+    "stethoscope"
+   ],
+   "icons3d": [],
    "glyphs": [],
    "illustrations": [],
    "charts": [],

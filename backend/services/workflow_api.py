@@ -906,6 +906,9 @@ class OrderInput(StrictModel):
     items: list[CartLineInput] = Field(min_length=1, max_length=30)
     delivery: DeliveryInput
     requestedSlot: str = Field(default="", max_length=40)
+    # The total the student was shown (a reorder quote). When sent, an order whose
+    # live total differs is refused with PRICE_CHANGED: a stale price is never charged.
+    expectedTotalPaise: int | None = Field(default=None, ge=0)
 
     @model_validator(mode="after")
     def unique_items(self):
@@ -946,8 +949,12 @@ def place_order(body: OrderInput, idempotency_key: str = Header(..., min_length=
             except ValueError:
                 raise HTTPException(422, "Choose a future date and time for the service request.")
         items.append((item, line.quantity))
+    live_total = sum(item.price_paise * quantity for item, quantity in items)
+    if body.expectedTotalPaise is not None and body.expectedTotalPaise != live_total:
+        raise HTTPException(409, {"code": "PRICE_CHANGED", "message": "The price changed since you looked. Check the new total.",
+                                  "values": {"totalPaise": live_total}})
     order = M.Order(id=new_id(), account_id=user["id"], idempotency_key=idempotency_key, request_hash=request_hash,
-                    total_paise=sum(item.price_paise * quantity for item, quantity in items), delivery=body.delivery.model_dump(), requested_slot=body.requestedSlot, created_at=time.time(),
+                    total_paise=live_total, delivery=body.delivery.model_dump(), requested_slot=body.requestedSlot, created_at=time.time(),
                     # Stock is held until then for payment; 0 when no provider is connected.
                     payment_due_at=payments.payment_due_at_for_new_order(db))
     try:
@@ -2967,10 +2974,11 @@ def rule_l_firewall_status(user=Depends(require_super_admin), db: Session = Depe
     status = rule_l_status(connection)
     usable = commerce_role_usable(connection)
     from services.lab_booking import COMMERCE_PATHS as LAB_BOOKING_COMMERCE_PATHS
+    from services.reorder import REORDER_COMMERCE_PATHS
     status["commercePaths"] = {
         "runAs": COMMERCE_ROLE if usable else "app role (sk_commerce not in force)",
         "failClosed": grants_required(),
-        "endpoints": list(RULE_L_COMMERCE_PATHS) + list(medicine_master.MEDICINE_COMMERCE_PATHS) + list(medicine_info.MEDICINE_INFO_COMMERCE_PATHS) + list(LAB_BOOKING_COMMERCE_PATHS),
+        "endpoints": list(RULE_L_COMMERCE_PATHS) + list(medicine_master.MEDICINE_COMMERCE_PATHS) + list(medicine_info.MEDICINE_INFO_COMMERCE_PATHS) + list(LAB_BOOKING_COMMERCE_PATHS) + list(REORDER_COMMERCE_PATHS),
     }
     return status
 

@@ -39,6 +39,7 @@ const HOME_STORE_ROUTES: ReadonlySet<string> = new Set([
 const HEALTH_ROUTES: ReadonlySet<string> = new Set([
   // keep-sorted start
   'MedicineReminders',
+  'Refills',
   'ReportUpload',
   'Steps',
   'Trends',

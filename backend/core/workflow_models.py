@@ -668,6 +668,26 @@ class OrderLine(Base):
     status: Mapped[str] = mapped_column(String(30), default="REQUESTED")
 
 
+class StockAlert(Base):
+    """A student asking to be told when one catalogue item is back in stock (commerce plane).
+
+    Holds an account id and an item id only: no medicine plan, no refill, no
+    reason. It is created from the shop side (a product or a reorder line that is
+    out of stock), and a back-in-stock notice names no item (services/reorder.py).
+    """
+    __tablename__ = "care_stock_alerts"
+    __table_args__ = (
+        UniqueConstraint("account_id", "item_id"),
+        CheckConstraint("status IN ('WAITING', 'NOTIFIED', 'CANCELLED')", name="ck_care_stock_alerts_status"),
+    )
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    account_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"), index=True)
+    item_id: Mapped[str] = mapped_column(ForeignKey("care_catalog.id"), index=True)
+    status: Mapped[str] = mapped_column(String(12), default="WAITING", index=True)
+    created_at: Mapped[float] = mapped_column(Float)
+    notified_at: Mapped[float] = mapped_column(Float, default=0.0)
+
+
 class Policy(Base):
     __tablename__ = "care_policies"
     id: Mapped[str] = mapped_column(String, primary_key=True)
@@ -1071,6 +1091,53 @@ class RefillRequest(Base):
     decision_note: Mapped[str] = mapped_column(String(500), default="")
     linked_order_id: Mapped[str | None] = mapped_column(String, nullable=True)
     created_at: Mapped[float] = mapped_column(Float, index=True)
+    updated_at: Mapped[float] = mapped_column(Float, default=0.0)
+
+
+class RefillTracker(Base):
+    """A medicine the student counts down to a refill reminder (clinical plane).
+
+    Everything here is the student's own entry: pack size, packs, units per dose
+    and doses a day are counts they typed, never advice. The run-out date is
+    units on hand divided by units a day (services/refill_tracker.py), cached in
+    ``runs_out_on`` / ``remind_at`` on every write so the scheduler can find due
+    reminders with one indexed query.
+
+    ``source`` ORDER points at a past shop order line (``order_id``, ``item_id``:
+    plain ids, no foreign key into the commerce plane); PLAN at a medication plan.
+    Commerce code never reads this table (core/rule_l.py): the one-tap reorder
+    asks the commerce side for the order's current prices with the order id alone.
+    """
+    __tablename__ = "care_refill_trackers"
+    __table_args__ = (
+        CheckConstraint("source IN ('ORDER', 'PLAN')", name="ck_care_refill_trackers_source"),
+        CheckConstraint("pack_size > 0 AND packs > 0 AND units_per_dose > 0 AND doses_per_day > 0",
+                        name="ck_care_refill_trackers_counts"),
+        CheckConstraint("units_on_hand >= 0", name="ck_care_refill_trackers_on_hand"),
+    )
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    account_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"), index=True)
+    source: Mapped[str] = mapped_column(String(8))
+    plan_id: Mapped[str | None] = mapped_column(ForeignKey("care_medication_plans.id"), nullable=True, index=True)
+    order_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    item_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    label: Mapped[str] = mapped_column(String(160))
+    pack_size: Mapped[int] = mapped_column(Integer)
+    packs: Mapped[int] = mapped_column(Integer, default=1)
+    units_per_dose: Mapped[int] = mapped_column(Integer, default=1)
+    doses_per_day: Mapped[int] = mapped_column(Integer, default=1)
+    # Units the student had on ``anchor_on`` (their local date): a new pack, or
+    # what they said they still have ("I still have some").
+    units_on_hand: Mapped[int] = mapped_column(Integer)
+    anchor_on: Mapped[str] = mapped_column(String(10))
+    remind_days_before: Mapped[int] = mapped_column(Integer)
+    enabled: Mapped[bool] = mapped_column(Boolean, default=True)
+    snoozed_until: Mapped[float] = mapped_column(Float, default=0.0)
+    runs_out_on: Mapped[str] = mapped_column(String(10), default="")
+    remind_at: Mapped[float] = mapped_column(Float, default=0.0, index=True)
+    # The runs_out_on a reminder was last queued for: one reminder per run-out date.
+    reminded_for: Mapped[str] = mapped_column(String(10), default="")
+    created_at: Mapped[float] = mapped_column(Float)
     updated_at: Mapped[float] = mapped_column(Float, default=0.0)
 
 
@@ -1963,10 +2030,61 @@ class Post(Base):
     reviewed_at: Mapped[float] = mapped_column(Float, default=0.0)
     reviewed_hash: Mapped[str] = mapped_column(String(64), default="")
     sample: Mapped[bool] = mapped_column(Boolean, default=False)
+    # MANUAL (typed by the team) or AUTO (the content autopilot, services/newsroom_autopilot.py).
+    # An AUTO news post names the outside item it summarises; the page shows "Source:" with its link.
+    origin: Mapped[str] = mapped_column(String(8), default="MANUAL", index=True)
+    source_name: Mapped[str] = mapped_column(String(120), default="")
+    source_url: Mapped[str] = mapped_column(String(1000), default="")
+    source_published_at: Mapped[float] = mapped_column(Float, default=0.0)
     created_by: Mapped[str] = mapped_column(String, default="")
     created_at: Mapped[float] = mapped_column(Float, default=0.0)
     updated_by: Mapped[str] = mapped_column(String, default="")
     updated_at: Mapped[float] = mapped_column(Float, default=0.0)
+
+
+class AutopilotItem(Base):
+    """One thing the content autopilot saw or drafted, kept once (dedupe by ``dedupe_key``).
+
+    Platform plane. A NEWS item is an entry of an allow-listed official feed: its
+    title, link and the source's own short text (public already), never anything
+    about a person. A BLOG item is one weekly slot of the topic plan. ``state``:
+    SEEN (a candidate), SKIPPED (refused, ``reason`` says why), POSTED (published),
+    HELD (drafted, waiting for a person: an editor, or a clinician for a health
+    tip), FAILED.
+    """
+    __tablename__ = "care_autopilot_items"
+    __table_args__ = (
+        CheckConstraint("lane IN ('NEWS', 'BLOG')", name="ck_care_autopilot_items_lane"),
+        CheckConstraint("state IN ('SEEN', 'SKIPPED', 'POSTED', 'HELD', 'FAILED')", name="ck_care_autopilot_items_state"),
+    )
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    lane: Mapped[str] = mapped_column(String(8), index=True)
+    dedupe_key: Mapped[str] = mapped_column(String(64), unique=True, index=True)   # sha256 of the normalised URL or slot
+    source_id: Mapped[str] = mapped_column(String(40), default="", index=True)
+    source_url: Mapped[str] = mapped_column(String(1000), default="")
+    title: Mapped[str] = mapped_column(String(300), default="")
+    excerpt: Mapped[str] = mapped_column(String(2000), default="")    # the source's own summary, tags stripped
+    published_at: Mapped[float] = mapped_column(Float, default=0.0)   # the source's date (0 when it gives none)
+    relevance: Mapped[int] = mapped_column(Integer, default=0)
+    state: Mapped[str] = mapped_column(String(8), default="SEEN", index=True)
+    reason: Mapped[str] = mapped_column(String(200), default="")
+    topic: Mapped[str] = mapped_column(String(60), default="")
+    slot_at: Mapped[float] = mapped_column(Float, default=0.0)        # BLOG: when the post is due
+    post_id: Mapped[str] = mapped_column(String, default="", index=True)
+    generator: Mapped[str] = mapped_column(String(40), default="")   # source | rephrased | fallback:<why> | extractive
+    created_at: Mapped[float] = mapped_column(Float, default=0.0, index=True)
+    updated_at: Mapped[float] = mapped_column(Float, default=0.0)
+
+
+class AutopilotSource(Base):
+    """The health of one allow-listed feed: when it was last fetched, last worked, and its last error class."""
+    __tablename__ = "care_autopilot_sources"
+    source_id: Mapped[str] = mapped_column(String(40), primary_key=True)
+    last_fetch_at: Mapped[float] = mapped_column(Float, default=0.0)
+    last_ok_at: Mapped[float] = mapped_column(Float, default=0.0)
+    last_error: Mapped[str] = mapped_column(String(200), default="")
+    last_items: Mapped[int] = mapped_column(Integer, default=0)
+    failures: Mapped[int] = mapped_column(Integer, default=0)       # consecutive
 
 
 class PostEvent(Base):

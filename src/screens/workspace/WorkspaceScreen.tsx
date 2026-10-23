@@ -80,6 +80,7 @@ import '@/design-system/design-system.css';
 const M2TrendsRoute = lazy(() => import('@/features/labResults/views/M2TrendsRoute').then(module => ({ default: module.M2TrendsRoute })));
 const M2ReportUploadRoute = lazy(() => import('@/features/labResults/views/M2ReportUploadRoute').then(module => ({ default: module.M2ReportUploadRoute })));
 const M2RemindersRoute = lazy(() => import('@/features/reminders/views/M2RemindersRoute').then(module => ({ default: module.M2RemindersRoute })));
+const M2RefillsRoute = lazy(() => import('@/features/refills/views/M2RefillsRoute').then(module => ({ default: module.M2RefillsRoute })));
 const M2WaterRoute = lazy(() => import('@/features/reminders/views/M2WaterRoute').then(module => ({ default: module.M2WaterRoute })));
 const M2CampsRoute = lazy(() => import('@/features/camp/views/M2CampsRoute').then(module => ({ default: module.M2CampsRoute })));
 const M2StepsRoute = lazy(() => import('@/features/steps/views/M2StepsRoute').then(module => ({ default: module.M2StepsRoute })));

@@ -6,6 +6,7 @@ import { adminTe } from './areas/admin';
 import { assistTe } from './areas/assist';
 import { authChannelsTe } from './areas/authChannels';
 import { authPasscodeTe } from './areas/authPasscode';
+import { autopilotTe } from './areas/autopilot';
 import { campsTe } from './areas/camps';
 import { campusBoardsTe } from './areas/campusBoards';
 import { campusConsoleTe } from './areas/campusConsole';
@@ -38,6 +39,7 @@ import { payTe } from './areas/pay';
 import { phoneboardsTe } from './areas/phoneboards';
 import { phonestoreTe } from './areas/phonestore';
 import { privacyTe } from './areas/privacy';
+import { refillsTe } from './areas/refills';
 import { rewardsTe } from './areas/rewards';
 import { safetyTe } from './areas/safety';
 import { shopwebTe } from './areas/shopweb';
@@ -66,6 +68,7 @@ export const areasTe = {
   ...assistTe,
   ...authChannelsTe,
   ...authPasscodeTe,
+  ...autopilotTe,
   ...campsTe,
   ...campusBoardsTe,
   ...campusConsoleTe,
@@ -98,6 +101,7 @@ export const areasTe = {
   ...phoneboardsTe,
   ...phonestoreTe,
   ...privacyTe,
+  ...refillsTe,
   ...rewardsTe,
   ...safetyTe,
   ...shopwebTe,

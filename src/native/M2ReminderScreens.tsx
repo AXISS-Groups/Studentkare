@@ -74,6 +74,7 @@ export const RemindersScreen = observer(function RemindersScreen(): React.ReactE
         water: () => navigate('Water'),
         uploadPrescription: () => navigate('CaptureRecord'),
         openSettings: () => void Linking.openSettings(),
+        refills: () => navigate('Refills'),
       }} />
     </Frame>
   );

@@ -6,6 +6,7 @@ import { adminHi } from './areas/admin';
 import { assistHi } from './areas/assist';
 import { authChannelsHi } from './areas/authChannels';
 import { authPasscodeHi } from './areas/authPasscode';
+import { autopilotHi } from './areas/autopilot';
 import { campsHi } from './areas/camps';
 import { campusBoardsHi } from './areas/campusBoards';
 import { campusConsoleHi } from './areas/campusConsole';
@@ -38,6 +39,7 @@ import { payHi } from './areas/pay';
 import { phoneboardsHi } from './areas/phoneboards';
 import { phonestoreHi } from './areas/phonestore';
 import { privacyHi } from './areas/privacy';
+import { refillsHi } from './areas/refills';
 import { rewardsHi } from './areas/rewards';
 import { safetyHi } from './areas/safety';
 import { shopwebHi } from './areas/shopweb';
@@ -66,6 +68,7 @@ export const areasHi = {
   ...assistHi,
   ...authChannelsHi,
   ...authPasscodeHi,
+  ...autopilotHi,
   ...campsHi,
   ...campusBoardsHi,
   ...campusConsoleHi,
@@ -98,6 +101,7 @@ export const areasHi = {
   ...phoneboardsHi,
   ...phonestoreHi,
   ...privacyHi,
+  ...refillsHi,
   ...rewardsHi,
   ...safetyHi,
   ...shopwebHi,

@@ -6,6 +6,7 @@ import { adminGovEn } from './areas/adminGov';
 import { assistEn } from './areas/assist';
 import { authChannelsEn } from './areas/authChannels';
 import { authPasscodeEn } from './areas/authPasscode';
+import { autopilotEn } from './areas/autopilot';
 import { campsEn } from './areas/camps';
 import { campusBoardsEn } from './areas/campusBoards';
 import { campusConsoleEn } from './areas/campusConsole';
@@ -38,6 +39,7 @@ import { payEn } from './areas/pay';
 import { phoneboardsEn } from './areas/phoneboards';
 import { phonestoreEn } from './areas/phonestore';
 import { privacyEn } from './areas/privacy';
+import { refillsEn } from './areas/refills';
 import { rewardsEn } from './areas/rewards';
 import { safetyEn } from './areas/safety';
 import { shopwebEn } from './areas/shopweb';
@@ -66,6 +68,7 @@ export const areasEn = {
   ...assistEn,
   ...authChannelsEn,
   ...authPasscodeEn,
+  ...autopilotEn,
   ...campsEn,
   ...campusBoardsEn,
   ...campusConsoleEn,
@@ -98,6 +101,7 @@ export const areasEn = {
   ...phoneboardsEn,
   ...phonestoreEn,
   ...privacyEn,
+  ...refillsEn,
   ...rewardsEn,
   ...safetyEn,
   ...shopwebEn,

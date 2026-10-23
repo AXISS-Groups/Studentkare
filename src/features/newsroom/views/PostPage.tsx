@@ -144,6 +144,20 @@ export function PostArticle({ post, onOpen }: { post: PostDetail; onOpen: (path:
               </p>
             </aside>
           ) : null}
+          {post.source ? (
+            <aside className="sk-news-post__source" aria-label={t('autopilot.post.sourceAria')} data-testid="news-source">
+              <p className="sk-news-post__source-line"><Icon name="sparkles" size={16} />{t('autopilot.post.summaryBy', { source: post.source.name })}</p>
+              <p className="sk-news-post__source-line">
+                <Icon name="arrow-up-right" size={16} />
+                <span>
+                  {t('autopilot.post.source')}{' '}
+                  <a href={post.source.url} target="_blank" rel="noopener noreferrer nofollow" aria-label={`${post.source.name} ${t('autopilot.post.opensElsewhere')}`}>{post.source.name}</a>
+                  {post.source.publishedAt ? ` · ${t('autopilot.post.sourceDate', { date: formatDate(post.source.publishedAt, lang) })}` : ''}
+                </span>
+              </p>
+              <p className="sk-news-post__source-note">{t('autopilot.post.notAdvice')}</p>
+            </aside>
+          ) : null}
           {post.tags.length ? (
             <ul className="sk-news-tags" aria-label={t('news.tagsAria')}>
               {post.tags.map((tag) => <li key={tag} className="sk-news-tag">{tag}</li>)}

@@ -176,6 +176,15 @@
 }
 .sk-news .sk-news-post__note p { margin: 0; font-size: 14px; line-height: 1.55; font-weight: 600; color: var(--sk-color-text-2); }
 .sk-news .sk-news-post__note a { color: var(--sk-color-action); font-weight: 800; }
+/* An auto post's source: who wrote the original, its link and date, and "not medical advice". */
+.sk-news .sk-news-post__source {
+  display: flex; flex-direction: column; gap: var(--sk-space-6); padding: var(--sk-space-14) var(--sk-space-16);
+  border-radius: var(--sk-radius-md); border: 1px solid var(--sk-color-rule); background: var(--sk-color-surface);
+}
+.sk-news .sk-news-post__source-line { margin: 0; display: flex; align-items: flex-start; gap: var(--sk-space-8); font-size: 14px; line-height: 1.55; font-weight: 600; color: var(--sk-color-text-2); }
+.sk-news .sk-news-post__source-line svg { flex: none; margin-top: 2px; color: var(--sk-color-action); }
+.sk-news .sk-news-post__source a { color: var(--sk-color-action); font-weight: 800; }
+.sk-news .sk-news-post__source-note { margin: 0; font-size: 13px; line-height: 1.5; color: var(--sk-color-text-3); }
 .sk-news .sk-news-post__updated { margin: 0; font-size: 13px; color: var(--sk-color-text-3); }
 .sk-news-tags { display: flex; flex-wrap: wrap; gap: var(--sk-space-6); margin: 0; padding: 0; list-style: none; }
 .sk-news-tag { padding: var(--sk-space-4) var(--sk-space-10); border-radius: var(--sk-radius-full); background: var(--sk-color-surface-2); font-size: 12.5px; font-weight: 700; color: var(--sk-color-text-2); }

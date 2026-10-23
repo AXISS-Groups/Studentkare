@@ -41,7 +41,13 @@ export interface PostTeaser {
   sample: boolean;
   path: string;
   ogImage: string;
+  /** Drafted by the content autopilot (tagged Auto), not typed by the team. */
+  auto: boolean;
+  /** The outside item an auto news post summarises: its publisher, link and date. */
+  source: PostSource | null;
 }
+
+export interface PostSource { name: string; url: string; publishedAt: string | null }
 
 export interface PostDetail extends PostTeaser {
   body: PostBlock[];
@@ -101,6 +107,8 @@ export interface AdminPost extends Omit<PostInput, 'body'> {
   readingMinutes: number;
   createdAt: number;
   updatedAt: number;
+  auto: boolean;
+  source: PostSource | null;
 }
 
 export interface HistoryEntry {

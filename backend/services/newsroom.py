@@ -15,7 +15,11 @@ never from the author. The rules every response keeps:
   says who reviewed it and when.
 * **Other templates** are published by an editor; the super admin is the editor
   (there is no separate editor role).
-* **Never written by AI.** Nothing here calls a model. Text is typed by the team.
+* **Typed by the team, or tagged Auto.** Nothing in this module calls a model.
+  Posts the content autopilot drafts (services/newsroom_autopilot.py) are
+  ``origin=AUTO``: shown with an Auto tag, their source named and linked, written
+  only from that source (or from approved knowledge), and a health tip still
+  needs a clinician's approval like any other.
 * **Never about a student.** Posts are editorial text on the platform plane;
   nothing about any person's health is read into or out of this module (Rule L).
 * **Images** placed in a post are checked by their bytes and virus-scanned
@@ -135,10 +139,31 @@ def require_post_reader(user: dict = Depends(authenticated_user)) -> dict:
 
 # --- content ----------------------------------------------------------------------
 
+AUTO = "AUTO"
+
+
+def is_auto(row: M.Post) -> bool:
+    return row.origin == AUTO
+
+
+def source_of(row: M.Post) -> dict | None:
+    """The outside item an auto post summarises (publisher, link, its date), or None."""
+    if not row.source_url:
+        return None
+    return {"name": row.source_name, "url": row.source_url, "publishedAt": _iso(row.source_published_at)}
+
+
 def content_of(row: M.Post) -> dict:
-    """Everything a reader sees in the post itself; its hash is what a reviewer approves."""
-    return {"template": row.template, "title": row.title, "summary": row.summary, "body": row.body or [],
-            "tags": row.tags or [], "coverAlt": row.cover_alt, "coverArt": row.cover_art}
+    """Everything a reader sees in the post itself; its hash is what a reviewer approves.
+
+    The source line is part of it only when there is one, so the hash of every
+    post without a source (and every approval of one) is unchanged.
+    """
+    content = {"template": row.template, "title": row.title, "summary": row.summary, "body": row.body or [],
+               "tags": row.tags or [], "coverAlt": row.cover_alt, "coverArt": row.cover_art}
+    if row.source_url:
+        content["source"] = {"name": row.source_name, "url": row.source_url, "at": row.source_published_at}
+    return content
 
 
 def content_hash(row: M.Post) -> str:
@@ -270,11 +295,17 @@ def teaser(row: M.Post, db: Session, names: dict[str, str]) -> dict:
     return {
         "id": row.id, "slug": row.slug, "section": SECTION_PATHS[row.section], "template": row.template,
         "title": row.title, "summary": row.summary, "tags": list(row.tags or []), "coverAlt": row.cover_alt,
-        "coverArt": row.cover_art or None, "author": {"name": names.get(row.author_id, "")},
+        "coverArt": row.cover_art or None, "author": {"name": author_name(row, names)},
         "publishedAt": _iso(row.publish_at), "updatedAt": _iso(row.updated_at), "featured": bool(row.featured),
         "readingMinutes": reading_minutes(row, db), "reviewed": reviewed, "sample": bool(row.sample),
         "path": post_path(row), "ogImage": f"/api/posts/{SECTION_PATHS[row.section]}/{row.slug}/og.png",
+        "auto": is_auto(row), "source": source_of(row),
     }
+
+
+def author_name(row: M.Post, names: dict[str, str]) -> str:
+    """The team member who wrote it; an auto post without one is by the brand."""
+    return names.get(row.author_id, "") or (brand_name() if is_auto(row) else "")
 
 
 def _public_body(row: M.Post) -> list[dict]:
@@ -375,7 +406,7 @@ def atom_feed(section: SectionPath, db: Session = Depends(workflow_db)) -> Respo
         f"<entry><title>{escape(r.title)}</title><link href=\"{site}{post_path(r)}\"/>"
         f"<id>{site}{post_path(r)}</id><published>{_iso(r.publish_at)}</published>"
         f"<updated>{_iso(r.updated_at or r.publish_at)}</updated>"
-        f"<author><name>{escape(names.get(r.author_id, '') or brand_name())}</name></author>"
+        f"<author><name>{escape(author_name(r, names) or brand_name())}</name></author>"
         f"<category term=\"{escape(r.template)}\" label=\"{escape(TEMPLATES[r.template]['label'])}\"/>"
         f"<summary>{escape(r.summary)}</summary></entry>" for r in rows)
     xml = (f"<?xml version=\"1.0\" encoding=\"utf-8\"?><feed xmlns=\"http://www.w3.org/2005/Atom\">"
@@ -523,7 +554,7 @@ def blocked_by(row: M.Post) -> str | None:
         return "Add a title and a summary."
     if not row.cover_alt.strip():
         return "Describe the cover for screen readers (cover alt text)."
-    if not row.author_id:
+    if not row.author_id and not is_auto(row):
         return "Choose the author."
     if not row.body:
         return "Add at least one block to the body."
@@ -544,11 +575,11 @@ def admin_payload(row: M.Post, db: Session, viewer: dict) -> dict:
         "title": row.title, "summary": row.summary, "body": _admin_body(row), "tags": list(row.tags or []),
         "coverAlt": row.cover_alt, "coverArt": row.cover_art, "seoTitle": row.seo_title,
         "seoDescription": row.seo_description, "featured": bool(row.featured), "authorId": row.author_id,
-        "authorName": names.get(row.author_id, ""), "status": row.status, "publishAt": row.publish_at or None,
+        "authorName": author_name(row, names), "status": row.status, "publishAt": row.publish_at or None,
         "live": is_public(row, now), "needsReview": needs_review(row), "review": review,
         "contentHash": content_hash(row), "blockedBy": blocked_by(row), "sample": bool(row.sample),
         "path": post_path(row), "readingMinutes": reading_minutes(row, db),
-        "createdAt": row.created_at, "updatedAt": row.updated_at,
+        "createdAt": row.created_at, "updatedAt": row.updated_at, "auto": is_auto(row), "source": source_of(row),
     }
 
 

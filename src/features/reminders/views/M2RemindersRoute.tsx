@@ -30,6 +30,7 @@ export function M2RemindersRoute({ wide = false }: { wide?: boolean } = {}): Rea
       water: () => navigate('health/water'),
       uploadPrescription: () => navigate('prescriptions'),
       addMedicine: () => navigate('medications'),
+      refills: () => navigate('health/refills'),
     }} />
   );
 }
