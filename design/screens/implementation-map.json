@@ -302,7 +302,8 @@
       "src/screens/workspace/PhoneBoards.tsx"
     ],
     "PlanBilling": [
-      "src/features/billing/views/PlanBillingBoard.tsx"
+      "src/features/billing/views/PlanBillingBoard.tsx",
+      "src/screens/workspace/PhoneBoards.tsx"
     ],
     "ClaimsHub": [
       "src/features/claims/views/ClaimsHubBoard.tsx",

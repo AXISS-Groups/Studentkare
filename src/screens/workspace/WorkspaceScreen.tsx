@@ -69,7 +69,7 @@ import { useEffectivePartnerKind } from '../vendor/partnerPreview';
 import type { AccountRole } from '../../data/types/workflowTypes';
 import { usePhoneFrame } from '@/design-system/navigation/usePhoneFrame';
 import { StudentPhoneFrame } from './StudentPhoneFrame';
-import { AccountDetailsPage, DataExportPage, InsurancePage, NotificationsPage, phoneBoardFor, safetyBoardFor, YourCareWebPage } from './PhoneBoards';
+import { AccountDetailsPage, AppointmentsPage, DataExportPage, HelpCentrePage, InsurancePage, NotificationsPage, PlanBillingPage, phoneBoardFor, safetyBoardFor, YourCareWebPage } from './PhoneBoards';
 import { MoreHubBoard } from '@/features/account/views/MoreHubBoard';
 import { SearchPage, studentPhoneBoard } from '@/features/phoneKit/studentPhoneBoards';
 import { EmergencyHelplinesDialog } from '../../components/interface/InterfaceBar';
@@ -381,6 +381,10 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
       case 'health/water': return <M2WaterRoute wide />;
       case 'health/refills': return <M2RefillsRoute wide />;
       case 'health/steps': return <M2StepsRoute wide />;
+      // Parity phase 2c: the phone boards in the page column, instead of the older panels.
+      case 'appointments': return <AppointmentsPage />;
+      case 'billing': return <PlanBillingPage />;
+      case 'support': return <HelpCentrePage />;
       default: return null;
     }
   };
