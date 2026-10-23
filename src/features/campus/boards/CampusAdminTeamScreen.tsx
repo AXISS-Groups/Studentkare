@@ -15,7 +15,7 @@ import type { RoutePath } from '@/lib/utils/workflowRouting';
 import { HTTP_FORBIDDEN, NotConnected, Unavailable, useBoardLoad, useBoardRef } from './boardKit';
 import './campus-boards.css';
 
-/** A campus-scoped staff account, from GET /ops/accounts (super admin only). */
+/** A campus-scoped staff account, from GET /ops/campus/team (scoped to the caller's campus). */
 export interface CampusStaff {
   id: string;
   fullName: string;
@@ -28,15 +28,15 @@ export interface CampusStaff {
 
 export interface TeamSource { load(): Promise<CampusStaff[]> }
 
-interface AccountsPage { items: Array<Omit<CampusStaff, 'campus' | 'role'> & { role: string; campus?: string }> }
-const PAGE = 200;
-const STAFF_ROLES = ['CAMPUS_ADMIN', 'COUNSELLOR'] as const;
+/** The campus team endpoint (GET /ops/campus/team): the board used to call the super-admin /ops/accounts and got a 403. */
+export const CAMPUS_TEAM_PATH = '/ops/campus/team';
+interface TeamPage { items: Array<Omit<CampusStaff, 'role'> & { role: string }> }
 
 export const liveTeamSource: TeamSource = {
   async load() {
-    const pages = await Promise.all(STAFF_ROLES.map((role) => apiRequest<AccountsPage>(`/ops/accounts?role=${role}&limit=${PAGE}`)));
-    return pages.flatMap((page) => page.items)
-      .filter((item): item is AccountsPage['items'][number] & { role: CampusStaff['role'] } => item.role === 'CAMPUS_ADMIN' || item.role === 'COUNSELLOR')
+    const page = await apiRequest<TeamPage>(CAMPUS_TEAM_PATH);
+    return page.items
+      .filter((item): item is TeamPage['items'][number] & { role: CampusStaff['role'] } => item.role === 'CAMPUS_ADMIN' || item.role === 'COUNSELLOR')
       .map((item) => ({ id: item.id, fullName: item.fullName, identifier: item.identifier, role: item.role, active: item.active, twoFactorEnabled: item.twoFactorEnabled, campus: item.campus ?? '' }));
   },
 };
@@ -61,8 +61,9 @@ const MATRIX_ROLES: ReadonlyArray<{ role: AccountRole; label: MessageKey }> = [
 
 /**
  * Admin team (design page 4, CampusAdminTeam; Tier 3). The staff list is the
- * super admin's account list filtered to campus roles; a campus admin has no
- * endpoint for it, and the board says so. The role matrix is read from the
+ * campus admins and counsellors of the caller's own campus (GET /ops/campus/team;
+ * a super admin sees every campus). A 403 now means the admin has no campus
+ * assigned, and the board says so. The role matrix is read from the
  * app's route gate, so it can't drift from what each role can really open.
  * Hostel admin and medical officer roles do not exist yet and are not drawn.
  */

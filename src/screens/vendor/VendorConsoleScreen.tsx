@@ -3,7 +3,6 @@ import { Icon } from '@/design-system/icons';
 import { ConsolePageHeader } from '@/design-system/console/ConsoleTablePage';
 import { DataTable } from '@/design-system/data/DataTable';
 import type { DataTableColumn, DataTableRow } from '@/design-system/data/DataTable';
-import type { SkTone } from '@/design-system/primitives';
 import { useAuth } from '@/data/contexts/AuthContext';
 import { money } from '@/data/types/workflowTypes';
 import { navigate, RoutePath } from '@/lib/utils/workflowRouting';
@@ -11,7 +10,8 @@ import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
 import { useEffectivePartnerKind } from './partnerPreview';
 import { countRequests, countRxReviews, loadRequests } from '@/features/partner/partnerApi';
-import type { Page, PartnerRequest, RequestStatus } from '@/features/partner/partnerApi';
+import type { Page, PartnerRequest } from '@/features/partner/partnerApi';
+import { isClosedLine, lineState } from '@/features/partner/lineState';
 import { initialsOf, PartnerEmpty, PartnerError, PartnerLoading, PartnerNote, PartnerPage, shortRef, usePartnerLoad } from '@/features/partner/PartnerPage';
 import './vendor-console.css';
 
@@ -51,17 +51,6 @@ export const liveConsoleSource: ConsoleSource = async (filter, offset, pharmacy,
   return { page, totals: { ALL: all, REQUESTED: requested, ACCEPTED: accepted, DISPATCHED: dispatched, AWAITING_PAYMENT: unpaid }, rxWaiting };
 };
 
-const STATE: Record<RequestStatus, { key: MessageKey; tone: SkTone }> = {
-  REQUESTED: { key: 'pc.state.new', tone: 'attention' },
-  ACCEPTED: { key: 'pc.state.accepted', tone: 'action' },
-  DISPATCHED: { key: 'pc.state.out', tone: 'positive' },
-  COMPLETED: { key: 'pc.state.delivered', tone: 'neutral' },
-  DECLINED: { key: 'pc.state.declined', tone: 'neutral' },
-};
-/** Placed but not paid: the partner can't act on it yet (the server refuses). */
-const AWAITING_PAYMENT_STATE = { key: 'pc.state.awaitingPayment', tone: 'neutral' } as const;
-const stateOf = (line: PartnerRequest) => (line.awaitingPayment ? AWAITING_PAYMENT_STATE : STATE[line.status]);
-
 export interface VendorConsoleScreenProps {
   source?: ConsoleSource;
   onNavigate?: (route: string) => void;
@@ -97,13 +86,13 @@ export function VendorConsoleScreen({ source = liveConsoleSource, onNavigate }: 
   ];
   const rows: DataTableRow[] = data.page.items.map((line) => ({
     id: line.id,
-    muted: line.status === 'COMPLETED' || line.status === 'DECLINED',
+    muted: isClosedLine(line),
     cells: [
       { text: shortRef(line.orderId), sub: initialsOf(line.customer), weight: 'strong', mono: true },
       { text: line.name, sub: t('pc.console.itemsMeta', { qty: line.quantity, amount: money(line.pricePaise * line.quantity) }), weight: 'regular' },
       { text: dropPoint(line, t), weight: 'regular' },
       { text: line.requestedSlot || t('pc.console.noSlot'), weight: line.requestedSlot ? 'regular' : 'muted' },
-      { pill: { label: t(stateOf(line).key), tone: stateOf(line).tone } },
+      { pill: { label: t(lineState(line).key), tone: lineState(line).tone } },
     ],
   }));
   const pages = Math.max(1, Math.ceil(data.page.total / PAGE_SIZE));

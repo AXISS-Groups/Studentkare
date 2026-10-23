@@ -386,6 +386,8 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
       case 'health/trends': return <M2TrendsRoute />;
       case 'health/report-upload': return <M2ReportUploadRoute />;
       case 'health/medicines': return <M2RemindersRoute wide={!phoneFrame} />;
+      // Restored: the #236 merge dropped this case (#235), leaving Refills unreachable on the web.
+      case 'health/refills': return <M2RefillsRoute />;
       case 'health/water': return <M2WaterRoute wide={!phoneFrame} />;
       // Steps: the same board in the page column (a browser counts no steps; typed entry only).
       case 'health/steps': return <M2StepsRoute />;

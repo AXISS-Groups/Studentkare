@@ -12,8 +12,8 @@ import { apiRequest } from '@/data/services/http';
  * what the endpoints below already return.
  */
 
-/** Order-line states (workflow_api.update_request transitions). */
-export type RequestStatus = 'REQUESTED' | 'ACCEPTED' | 'DECLINED' | 'DISPATCHED' | 'COMPLETED';
+/** Order-line states (workflow_api.update_request transitions; CANCELLED is set by the student, POST /orders/{id}/cancel). */
+export type RequestStatus = 'REQUESTED' | 'ACCEPTED' | 'DECLINED' | 'DISPATCHED' | 'COMPLETED' | 'CANCELLED';
 
 export interface PartnerDelivery {
   mode?: 'delivery' | 'pickup';
@@ -69,7 +69,7 @@ export async function countRequests(status: QueueFilter, signal?: AbortSignal): 
   return page.total;
 }
 
-export function updateRequest(lineId: string, status: Exclude<RequestStatus, 'REQUESTED'>): Promise<PartnerRequest> {
+export function updateRequest(lineId: string, status: Exclude<RequestStatus, 'REQUESTED' | 'CANCELLED'>): Promise<PartnerRequest> {
   return apiRequest<PartnerRequest>(`/work/requests/${encodeURIComponent(lineId)}`, { method: 'PATCH', body: JSON.stringify({ status }) });
 }
 
