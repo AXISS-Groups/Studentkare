@@ -1,6 +1,7 @@
 import React from 'react';
 import { Linking, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { Icon } from '@/design-system/icons';
+import { AnimatedIcon, Icon } from '@/design-system/icons';
+import type { SkAnimatedName } from '@/design-system/icons';
 import { Rise } from '@/design-system';
 import { cardLabel,
   Gradient, HeroCarousel, LiftCard, M2Heading, M2SearchField, M2SectionHead, M2_NAV_CLEARANCE, NAVY_STOPS, ProgressRing, RoundButton, SERVICE_HUES,
@@ -93,7 +94,7 @@ export function initials(name: string): string {
   return `${first}${last}`.toUpperCase();
 }
 
-const SERVICES: readonly { key: ServiceKey; label: MessageKey; icon: ServiceTile['icon']; hue: ServiceTile['hue'] }[] = [
+const SERVICES: readonly { key: ServiceKey; label: MessageKey; icon: ServiceTile['icon']; hue: ServiceTile['hue']; anim?: SkAnimatedName }[] = [
   { key: 'you', label: 'm2.svc.you', icon: 'star', hue: 'indigo' },
   { key: 'medicines', label: 'm2.svc.medicines', icon: 'pill-3', hue: 'teal' },
   { key: 'labs', label: 'm2.svc.labs', icon: 'lab', hue: 'violet' },
@@ -102,13 +103,19 @@ const SERVICES: readonly { key: ServiceKey; label: MessageKey; icon: ServiceTile
   { key: 'nearMe', label: 'fc.svc.nearMe', icon: 'map-pin-2', hue: 'orange' },
   { key: 'vaccines', label: 'm2.svc.vaccines', icon: 'syringe', hue: 'amber' },
   { key: 'insurance', label: 'm2.svc.insurance', icon: 'shield', hue: 'green' },
-  { key: 'campus', label: 'm2.svc.campus', icon: 'home-2', hue: 'sky' },
+  // The campus tile's house is the animated set's anim-home (the pill nav's Home): it plays once as the rail comes into view.
+  { key: 'campus', label: 'm2.svc.campus', icon: 'home-2', hue: 'sky', anim: 'anim-home' },
 ];
+
+/** The same drawings from the animated set: a document for the report, the refresh arrows for buy again. */
+const TODAY_ANIM: Readonly<Record<'doc' | 'refresh', SkAnimatedName>> = { doc: 'anim-file-text', refresh: 'anim-refresh' };
 
 function TodayTile({ icon, hue, title, onPress, testID }: { icon: 'doc' | 'refresh'; hue: 'orange' | 'green'; title: string; onPress: () => void; testID: string }) {
   return (
     <LiftCard label={title} onPress={onPress} testID={testID} style={styles.todayTile}>
-      <SoftIcon icon={icon} hue={hue} tile={38} iconSize={20} />
+      {/* A raised 3D tile that draws its icon once as it comes into view (anim-refresh is a loader loop: once here). The still soft tile is the poster. */}
+      <AnimatedIcon name={TODAY_ANIM[icon]} variant="3d" hue={hue} size="mark" play="mount"
+        poster={<SoftIcon icon={icon} hue={hue} tile={38} iconSize={20} />} testID={`${testID}-anim`} />
       <Text style={m2Text.cardTitle}>{title}</Text>
     </LiftCard>
   );
@@ -207,7 +214,7 @@ export function M2HomeView({ name, campus, verified, data, links, cart, recent, 
   ];
   const tiles: ServiceTile[] = SERVICES.flatMap((s) => {
     const open = s.key === 'you' ? () => undefined : links.services[s.key];
-    return open ? [{ key: s.key, label: t(s.label), icon: s.icon, hue: s.hue, onPress: open }] : [];
+    return open ? [{ key: s.key, label: t(s.label), icon: s.icon, hue: s.hue, anim: s.anim, onPress: open }] : [];
   });
   const buyAgain = data.buyAgainCount === null || data.buyAgainCount === 0 ? t('m2.home.buyAgain')
     : t(data.buyAgainCount === 1 ? 'm2.home.buyAgainOne' : 'm2.home.buyAgainCount', { count: data.buyAgainCount });

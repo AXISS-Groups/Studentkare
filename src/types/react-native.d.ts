@@ -47,6 +47,10 @@ declare module 'react-native' {
     get: (dim: 'window' | 'screen') => { width: number; height: number; scale: number; fontScale: number };
     addEventListener: (type: string, handler: Function) => { remove: () => void };
   };
+  // The window size, kept current (react-native-web implements it); the M2 layout's first guess.
+  export function useWindowDimensions(): { width: number; height: number; scale: number; fontScale: number };
+  // What a View's onLayout receives (its measured box).
+  export interface LayoutChangeEvent { nativeEvent: { layout: { x: number; y: number; width: number; height: number } } }
 
   // Narrow declarations for the APIs src/design-system uses (motion, press state).
   export type EasingFunction = (value: number) => number;

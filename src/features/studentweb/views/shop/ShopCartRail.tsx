@@ -1,10 +1,52 @@
 import React from 'react';
 import { useT } from '@/i18n';
 import { Icon } from '@/design-system/icons';
+import { SoftIcon } from '@/design-system/m2';
 import { useLiveCart } from '@/data/contexts/LiveCartContext';
 import { money } from '@/data/types/workflowTypes';
+import type { LiveCatalogItem } from '@/data/types/workflowTypes';
+import type { CartLine } from '@/features/shopPhone/viewmodel/PhoneShopViewModel';
 import { navigate } from '@/lib/utils/workflowRouting';
-import { CartLines, cartPaise, cartUnits } from './m2WebParts';
+import { maxQuantity } from '../../data/studentWebData';
+import { cartPaise, cartUnits, itemArt } from './shopShared';
+
+/** The quantity stepper used in every cart (− count +), capped as the cart caps it. */
+export function QtyStepper({ line, onSet, onAdd }: { line: CartLine; onSet: (quantity: number) => void; onAdd: () => void }) {
+  const t = useT();
+  return (
+    <span className="sk-m2w-qty" role="group" aria-label={t('sw.product.quantity')}>
+      <button type="button" aria-label={t('cart.decrease', { name: line.item.name })} onClick={() => onSet(line.quantity - 1)}><Icon name="minus" size={14} strokeWidth={2.6} /></button>
+      <output>{line.quantity}</output>
+      <button type="button" aria-label={t('cart.increase', { name: line.item.name })} disabled={line.quantity >= maxQuantity(line.item)} onClick={onAdd}><Icon name="plus" size={14} strokeWidth={2.6} /></button>
+    </span>
+  );
+}
+
+/** The cart's lines: the listing's soft tile (the shared Mobile 2.0 one), name, pack, stepper (products), price and remove. */
+export function CartLines({ lines, onSet, onAdd }: { lines: readonly CartLine[]; onSet: (id: string, quantity: number) => void; onAdd: (item: LiveCatalogItem) => void }) {
+  const t = useT();
+  return (
+    <ul className="sk-m2w-lines">
+      {lines.map((line) => {
+        const art = itemArt(line.item);
+        return (
+          <li key={line.item.id}>
+            <SoftIcon icon={art.icon} hue={art.hue} tile={40} iconSize={20} />
+            <span className="sk-m2w-lines__text">
+              <strong>{line.item.name}</strong>
+              <small>{line.item.pack}</small>
+              {line.item.kind === 'product' ? <QtyStepper line={line} onSet={(q) => onSet(line.item.id, q)} onAdd={() => onAdd(line.item)} /> : null}
+            </span>
+            <span className="sk-m2w-lines__price">
+              <strong>{money(line.item.pricePaise * line.quantity)}</strong>
+              <button type="button" className="sk-m2w-iconbtn" aria-label={t('cart.remove', { name: line.item.name })} onClick={() => onSet(line.item.id, 0)}><Icon name="trash" size={16} /></button>
+            </span>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
 
 /** Where the cart summary sits, so "View cart" can bring it into view. */
 export const CART_RAIL_ID = 'sk-m2w-cart';
