@@ -10,7 +10,7 @@
   separate offers opt-in, off by default.
 
 Revision ID: c4f8a2d6e913
-Revises: e5c1a9d3f7b2
+Revises: e7c3a9f1b204
 Create Date: 2026-10-23
 """
 import sqlalchemy as sa
@@ -18,7 +18,7 @@ import sqlalchemy as sa
 from alembic import op
 
 revision = "c4f8a2d6e913"
-down_revision = "e5c1a9d3f7b2"
+down_revision = "e7c3a9f1b204"
 branch_labels = None
 depends_on = None
 
