@@ -43,6 +43,7 @@ export const Chips: Story = {
       <Chip label="Off" selected={false} onPress={noop} />
       <Chip label="On" selected onPress={noop} />
       <Chip label="Disabled" selected={false} onPress={noop} disabled />
+      <Chip label="App" spokenLabel="App for Orders" selected onPress={noop} />
     </View>
   ),
 };

@@ -50,17 +50,19 @@ export interface ChipProps {
   onPress: () => void;
   disabled?: boolean;
   testID?: string;
+  /** What a screen reader says when the short label needs context ("App for Orders"). Defaults to the label. */
+  spokenLabel?: string;
 }
 
 /** Chip (DESIGN.md §4: off, on, disabled, focus): a filter or choice token, 44 px tall. */
-export function Chip({ label, selected, onPress, disabled = false, testID }: ChipProps) {
+export function Chip({ label, selected, onPress, disabled = false, testID, spokenLabel }: ChipProps) {
   return (
     <Pressable
       testID={testID}
       role="button"
       aria-pressed={selected}
       accessibilityRole="button"
-      accessibilityLabel={label}
+      accessibilityLabel={spokenLabel ?? label}
       accessibilityState={{ selected, disabled }}
       disabled={disabled}
       onPress={onPress}

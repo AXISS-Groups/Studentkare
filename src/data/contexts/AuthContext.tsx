@@ -2,6 +2,7 @@ import React, { createContext, ReactNode, useCallback, useContext, useEffect, us
 import { ACCOUNT_ROLES, Account, SessionResponse } from '../types/workflowTypes';
 import { ApiError, apiRequest, setCsrfToken } from '../services/http';
 import { navigate } from '../../lib/utils/workflowRouting';
+import { stopWebPushOnSignOut } from '../../lib/webPush';
 import type { RoutePath } from '../../lib/utils/workflowRouting';
 
 /** Opt-in at sign-out: the server remembers this device and the page the student was on. */
@@ -54,6 +55,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [acceptSession]);
 
   const logout = async (choice?: SignOutChoice) => {
+    // This browser's pushes stop with the session (the server revokes them too).
+    await stopWebPushOnSignOut();
     await apiRequest('/auth/logout', { method: 'POST', body: choice?.remember ? JSON.stringify(choice) : undefined });
     // The signed-out screen confirms the session ended and keeps emergency
     // help one tap away. Dropping the student on the shop said neither.

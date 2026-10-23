@@ -105,6 +105,12 @@ export interface PublicSettings {
   "public_site.x_url": string;
   /** The YouTube channel linked from the public site footer. Empty hides the link. (https URL) */
   "public_site.youtube_url": string;
+  /** Longest body of a super-admin announcement push. (characters) */
+  "push.announcement_body_max": number;
+  /** How far ahead an announcement can be scheduled. (days) */
+  "push.announcement_schedule_max_days": number;
+  /** Longest title of a super-admin announcement push. (characters) */
+  "push.announcement_title_max": number;
   /** Largest pack size (tablets, capsules, doses) a student can enter. (units per pack) */
   "refill.pack_units_max": number;
   /** Most packs one refill can count. (packs) */
@@ -263,6 +269,9 @@ export const publicSettingDefaults: Readonly<PublicSettings> = {
   "public_site.play_store_url": "",
   "public_site.x_url": "",
   "public_site.youtube_url": "",
+  "push.announcement_body_max": 160,
+  "push.announcement_schedule_max_days": 30,
+  "push.announcement_title_max": 60,
   "refill.pack_units_max": 1000,
   "refill.packs_max": 20,
   "refill.remind_days_before_default": 3,
@@ -363,6 +372,9 @@ export const publicSettingSpecs: Readonly<Record<PublicSettingKey, PublicSetting
   "public_site.play_store_url": { type: "str", min: null, max: null, allowed: [], unit: "https URL" },
   "public_site.x_url": { type: "str", min: null, max: null, allowed: [], unit: "https URL" },
   "public_site.youtube_url": { type: "str", min: null, max: null, allowed: [], unit: "https URL" },
+  "push.announcement_body_max": { type: "int", min: 20, max: 400, allowed: [], unit: "characters" },
+  "push.announcement_schedule_max_days": { type: "int", min: 1, max: 180, allowed: [], unit: "days" },
+  "push.announcement_title_max": { type: "int", min: 10, max: 120, allowed: [], unit: "characters" },
   "refill.pack_units_max": { type: "int", min: 1, max: 100000, allowed: [], unit: "units per pack" },
   "refill.packs_max": { type: "int", min: 1, max: 100, allowed: [], unit: "packs" },
   "refill.remind_days_before_default": { type: "int", min: 1, max: 30, allowed: [], unit: "days" },

@@ -24,6 +24,7 @@ from sqlalchemy import delete, func, or_, select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from core import push_copy
 from core import workflow_models as M
 from core.rule_l import COMMERCE_ROLE, commerce_role_usable, rule_l_status
 from core.settings_registry import setting
@@ -37,6 +38,7 @@ from services import (
     medicine_master,
     ops_feed,
     payments,
+    push_dispatch,
     rewards,
     student_time,
     upload_files,
@@ -2583,17 +2585,26 @@ def leave_programme(programme_id: str, user=Depends(authenticated_user),
 @router.get("/notifications/preferences")
 def get_notification_preferences(user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
     prefs = db.get(M.NotificationPreference, user["id"])
+    account = db.get(M.Account, user["id"])
+    sign_in = (account.channel or "").upper() if account else ""
+    # Per-category channels (core/push_copy.CATEGORIES) and the separate offers
+    # opt-in, which is off until the student turns it on.
+    matrix = {"channels": push_dispatch.channel_matrix(prefs, sign_in),
+              "categories": [{"key": c.key, "channels": list(c.channels), "locked": c.locked}
+                             for c in push_copy.CATEGORIES.values()],
+              "marketingOptIn": bool(prefs.marketing_opt_in) if prefs else False}
     if not prefs:
         # The two consents default off, so an account that has never opened
         # settings is treated as not having granted them.
         return {"emailEnabled": True, "pushEnabled": True, "remindersEnabled": True,
                 "pickupLocationEnabled": False, "ayushHistoryEnabled": False,
-                "timezone": setting(student_time.DEFAULT_TIMEZONE_KEY, db), "quietStart": "22:00", "quietEnd": "08:00"}
+                "timezone": setting(student_time.DEFAULT_TIMEZONE_KEY, db), "quietStart": "22:00", "quietEnd": "08:00",
+                **matrix}
     return {"emailEnabled": prefs.email_enabled, "pushEnabled": prefs.push_enabled, "remindersEnabled": prefs.reminders_enabled,
             "pickupLocationEnabled": prefs.pickup_location_enabled, "ayushHistoryEnabled": prefs.ayush_history_enabled,
             # "" means never chosen: the student follows the platform default.
             "timezone": prefs.timezone or setting(student_time.DEFAULT_TIMEZONE_KEY, db),
-            "quietStart": prefs.quiet_start, "quietEnd": prefs.quiet_end}
+            "quietStart": prefs.quiet_start, "quietEnd": prefs.quiet_end, **matrix}
 
 
 class NotificationPrefInput(StrictModel):
@@ -2610,6 +2621,14 @@ class NotificationPrefInput(StrictModel):
     # refused rather than truncated into a time it would misread.
     quietStart: str = Field(default="22:00", pattern=r"^([01]\d|2[0-3]):[0-5]\d$")
     quietEnd: str = Field(default="08:00", pattern=r"^([01]\d|2[0-3]):[0-5]\d$")
+    # None keeps what is stored. A category left out keeps its stored (or
+    # default) channels; a channel the category does not offer is refused.
+    channels: dict[str, list[Literal["PUSH", "WHATSAPP", "EMAIL"]]] | None = None
+    # Partner offers by push. None keeps the stored choice (off by default).
+    marketingOptIn: bool | None = None
+    # Read-only (what GET describes); accepted so a client may send back what
+    # it read, and ignored.
+    categories: list[dict] | None = Field(default=None, max_length=20)
 
 
 @router.put("/notifications/preferences")
@@ -2632,6 +2651,24 @@ def set_notification_preferences(body: NotificationPrefInput, user=Depends(authe
         prefs.timezone = ""
     prefs.quiet_start = body.quietStart[:5]
     prefs.quiet_end = body.quietEnd[:5]
+    if body.channels is not None:
+        stored = dict(prefs.channels or {})
+        for key, picked in body.channels.items():
+            definition = push_copy.CATEGORIES.get(key)
+            if definition is None or any(c not in definition.channels for c in picked):
+                raise HTTPException(422, {"code": "BAD_CHANNELS", "message": "That channel can't be chosen for this kind of message."})
+            if definition.locked:
+                # Safety is always on everywhere: sending back what GET said is fine; changing it is not.
+                if set(picked) != set(definition.channels):
+                    raise HTTPException(422, {"code": "SAFETY_LOCKED", "message": "Safety messages can't be turned off."})
+                continue
+            stored[key] = sorted(set(picked))
+        prefs.channels = stored
+    if body.marketingOptIn is not None and body.marketingOptIn != bool(prefs.marketing_opt_in):
+        # Rule L: offers are a separate, audited opt-in, never based on health.
+        prefs.marketing_opt_in = body.marketingOptIn
+        prefs.marketing_opt_in_at = time.time()
+        audit(db, user, "MARKETING_PUSH_OPT_IN" if body.marketingOptIn else "MARKETING_PUSH_OPT_OUT", user["id"])
     if not body.ayushHistoryEnabled:
         # History off means the words are not kept — including those already kept.
         consent_ledger.clear_ayush_words(db, user["id"])

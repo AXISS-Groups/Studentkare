@@ -74,6 +74,8 @@ export const SUPER_ADMIN_NAVIGATION: SuperAdminNavGroup[] = [
       { label: 'Message templates', labelKey: 'console.admin.nav.templates', icon: 'message-circle', route: 'admin/templates' },
       // Not on the design canvas: added for the notification outbox.
       { label: 'Message outbox', labelKey: 'console.admin.nav.outbox', icon: 'inbox', route: 'admin/outbox' },
+      // Not on the design canvas: push announcements to a campus (non-health text, counts only).
+      { label: 'Announcements', labelKey: 'push.adm.title', icon: 'megaphone', route: 'admin/announcements' },
       { label: 'Knowledge base', labelKey: 'console.admin.nav.knowledge', icon: 'file', route: 'admin/knowledge' },
       // Not on the design canvas: News and Blog posts in the SK templates (health tips need a clinician's review).
       { label: 'Posts', labelKey: 'news.adm.title', icon: 'megaphone', route: 'admin/posts' },

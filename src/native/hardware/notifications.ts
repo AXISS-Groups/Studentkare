@@ -9,8 +9,9 @@ import type { WaterReminderPlan, WaterReminderScheduler } from '@/features/remin
  * notification permissions declared in app.json. RECEIVE_BOOT_COMPLETED lets
  * Android keep daily reminders after a restart.
  *
- * There is no push: the server has no device-token endpoint, so this app used
- * to ask for permission at launch, before sign-in, for a token it threw away.
+ * Permission is asked when a reminder is turned on, never at launch. When the
+ * student allows it, `onGranted` registers the phone for server pushes too
+ * (./push.ts): that first reminder is the meaningful moment.
  */
 
 Notifications.setNotificationHandler({
@@ -33,7 +34,7 @@ const isSlot = (value: unknown): value is ReminderSlot =>
  * `text` is read at scheduling time, in the student's language. It must not
  * name the medicine: a reminder shows on the lock screen.
  */
-export function createReminderScheduler(text: () => ReminderText): ReminderScheduler {
+export function createReminderScheduler(text: () => ReminderText, onGranted?: () => void): ReminderScheduler {
   return {
     async scheduled() {
       if (Platform.OS === 'web') return {};
@@ -56,6 +57,7 @@ export function createReminderScheduler(text: () => ReminderText): ReminderSched
     async request() {
       if (Platform.OS === 'web') return false;
       const answer = await Notifications.requestPermissionsAsync();
+      if (answer.granted) onGranted?.();
       return answer.granted;
     },
 
@@ -94,7 +96,7 @@ function isWaterPlan(value: unknown): value is WaterReminderPlan {
  * and hours give. `text` is read at scheduling time, in the student's
  * language, and says only that it is time for water (no amount or goal).
  */
-export function createWaterReminderScheduler(text: () => ReminderText): WaterReminderScheduler {
+export function createWaterReminderScheduler(text: () => ReminderText, onGranted?: () => void): WaterReminderScheduler {
   const ours = async () =>
     (await Notifications.getAllScheduledNotificationsAsync()).filter((request) => request.identifier.startsWith(WATER_PREFIX));
   const clear = async () => {
@@ -117,6 +119,7 @@ export function createWaterReminderScheduler(text: () => ReminderText): WaterRem
     async request() {
       if (Platform.OS === 'web') return false;
       const answer = await Notifications.requestPermissionsAsync();
+      if (answer.granted) onGranted?.();
       return answer.granted;
     },
 

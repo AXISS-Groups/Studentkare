@@ -12,6 +12,7 @@ export const routePaths = [
   'admin/accounts',
   'admin/activity',
   'admin/ai-governance',
+  'admin/announcements',
   'admin/api-keys',
   'admin/audit',
   'admin/billing',

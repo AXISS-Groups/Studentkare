@@ -211,9 +211,9 @@ describe('WebNotifications', () => {
   it('changes a channel and saves it; safety stays always on', async () => {
     const prefs = { pushEnabled: true, emailEnabled: false, remindersEnabled: true, pickupLocationEnabled: false, ayushHistoryEnabled: false, timezone: 'Asia/Kolkata', quietStart: '23:00', quietEnd: '07:00' };
     serve({ '/notifications/preferences': (_path: string, init?: RequestInit) => (init?.method === 'PUT' ? JSON.parse(String(init.body)) : prefs) });
-    render(<WebNotificationsRoute />);
+    render(<WebNotificationsRoute device={null} />);
     await settle();
-    expect(screen.getAllByText('Always on').length).toBe(2);
+    expect(screen.getAllByText('Always on').length).toBe(1);
     const email = screen.getByRole('switch', { name: 'Email' });
     expect(email).toHaveAttribute('aria-checked', 'false');
     fireEvent.click(email);
@@ -222,6 +222,28 @@ describe('WebNotifications', () => {
     await settle();
     const put = api.mock.calls.find(([, init]) => init?.method === 'PUT');
     expect(put && JSON.parse(String(put[1]?.body))).toMatchObject({ emailEnabled: true, pickupLocationEnabled: false });
+  });
+
+  it('draws each category with its channels, keeps safety on, and starts offers off', async () => {
+    const prefs = {
+      pushEnabled: true, emailEnabled: true, remindersEnabled: true, pickupLocationEnabled: false, ayushHistoryEnabled: false,
+      timezone: 'Asia/Kolkata', quietStart: '23:00', quietEnd: '07:00', marketingOptIn: false,
+      channels: { SAFETY: ['PUSH', 'WHATSAPP', 'EMAIL'], ORDERS: ['PUSH'] },
+      categories: [{ key: 'SAFETY', channels: ['PUSH', 'WHATSAPP', 'EMAIL'], locked: true }, { key: 'ORDERS', channels: ['PUSH'], locked: false }],
+    };
+    serve({ '/notifications/preferences': (_path: string, init?: RequestInit) => (init?.method === 'PUT' ? { success: true } : prefs) });
+    render(<WebNotificationsRoute device={null} />);
+    await settle();
+    expect(screen.getByRole('button', { name: 'App for Safety & account' })).toHaveAttribute('aria-pressed', 'true');
+    const orders = screen.getByRole('button', { name: 'App for Orders' });
+    fireEvent.click(orders);
+    expect(orders).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getByRole('img', { name: /Lock screen preview for Orders: Student Kare, You have an order update/ })).toBeInTheDocument();
+    expect(screen.getByRole('switch', { name: 'Partner offers' })).toHaveAttribute('aria-checked', 'false');
+    fireEvent.click(screen.getByRole('button', { name: 'Save changes' }));
+    await settle();
+    const put = api.mock.calls.find(([, init]) => init?.method === 'PUT');
+    expect(put && JSON.parse(String(put[1]?.body))).toMatchObject({ channels: { ORDERS: [] }, marketingOptIn: false });
   });
 });
 

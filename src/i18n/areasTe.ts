@@ -39,6 +39,7 @@ import { payTe } from './areas/pay';
 import { phoneboardsTe } from './areas/phoneboards';
 import { phonestoreTe } from './areas/phonestore';
 import { privacyTe } from './areas/privacy';
+import { pushTe } from './areas/push';
 import { refillsTe } from './areas/refills';
 import { rewardsTe } from './areas/rewards';
 import { safetyTe } from './areas/safety';
@@ -101,6 +102,7 @@ export const areasTe = {
   ...phoneboardsTe,
   ...phonestoreTe,
   ...privacyTe,
+  ...pushTe,
   ...refillsTe,
   ...rewardsTe,
   ...safetyTe,

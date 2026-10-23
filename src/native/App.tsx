@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Linking } from 'react-native';
-import { LanguageProvider, useT } from '@/i18n';
+import * as Notifications from 'expo-notifications';
+import { LanguageProvider, useLanguage, useT } from '@/i18n';
 import { color } from '@/design-system/theme';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
@@ -74,7 +75,8 @@ import {
 } from './M2HealthScreens';
 import { NativeSessionProvider, useNativeSession } from './session';
 import type { NativeSessionStatus } from './session';
-import { createLinking } from './linking';
+import { createLinking, pushLink } from './linking';
+import { createPushController, pathFromResponse, refreshPushRegistration } from './hardware/push';
 import { StudentHomeScreen } from './StudentHomeScreen';
 import { StudentShell } from './StudentTabBar';
 import { SessionCheckingScreen } from './SessionCheckingScreen';
@@ -396,7 +398,12 @@ function LeaveCampusScreen() {
 
 function NotificationSettingsScreen() {
   const navigation = useNavigation();
-  return <BoardFrame><NotificationSettingsRoute links={{ back: () => navigation.goBack() }} /></BoardFrame>;
+  const t = useT();
+  const { lang } = useLanguage();
+  const langRef = useRef(lang);
+  langRef.current = lang;
+  const [device] = useState(() => createPushController(t, () => langRef.current));
+  return <BoardFrame><NotificationSettingsRoute device={device} links={{ back: () => navigation.goBack() }} /></BoardFrame>;
 }
 
 /**
@@ -540,9 +547,35 @@ function LinkedNavigation({ children }: { children: React.ReactNode }) {
   const [linking] = useState(() => createLinking(
     () => statusRef.current,
     () => settled.current?.promise ?? Promise.resolve(),
-    () => Linking.getInitialURL(),
+    // A push tapped while the app was closed opens its screen; else the launch link.
+    async () => {
+      const path = pathFromResponse(await Notifications.getLastNotificationResponseAsync());
+      return path ? pushLink(path) : Linking.getInitialURL();
+    },
+    (listener) => {
+      const links = Linking.addEventListener('url', ({ url }) => listener(url));
+      const taps = Notifications.addNotificationResponseReceivedListener((response) => {
+        const path = pathFromResponse(response);
+        if (path) listener(pushLink(path));
+      });
+      return () => { links.remove(); taps.remove(); };
+    },
   ));
   return <NavigationProvider linking={linking} fallback={<SessionCheckingScreen />}>{children}</NavigationProvider>;
+}
+
+/**
+ * Signed in on a phone that already allows notifications (no prompt): register
+ * it for server pushes again, in the app's language.
+ */
+function PushRegistration(): null {
+  const { status } = useNativeSession();
+  const t = useT();
+  const { lang } = useLanguage();
+  useEffect(() => {
+    if (status === 'signedIn') void refreshPushRegistration(t, lang);
+  }, [status, t, lang]);
+  return null;
 }
 
 /**
@@ -556,6 +589,7 @@ export default function NativeApp() {
         <AppStoresProvider>
           <NativeSessionProvider>
             <SignedOutNotice />
+            <PushRegistration />
             <LinkedNavigation>
               <RootNavigator />
             </LinkedNavigation>

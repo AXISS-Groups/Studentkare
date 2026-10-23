@@ -883,6 +883,12 @@ class Logout(StrictModel):
 
 @router.post("/logout")
 def logout(request: Request, response: Response, body: Logout | None = None, user=Depends(two_factor_setup_user), db: DBSession = Depends(workflow_db)):
+    # Phones and browsers this sign-in registered for push stop getting them,
+    # even if the app could not say so itself (refreshes keep signed_in_at).
+    _, session = resolve_session(request, db)
+    if session is not None:
+        from services.push_dispatch import revoke_sign_in
+        revoke_sign_in(db, user["id"], float(session.signed_in_at or 0.0))
     db.execute(delete(M.Session).where(M.Session.token_hash == digest(request.cookies.get(SESSION_COOKIE, ""))))
     # Every sign-out is a fresh choice: an earlier "remember me" never outlives a later "no".
     forget_device(request, response, db)
