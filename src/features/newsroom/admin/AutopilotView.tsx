@@ -147,8 +147,10 @@ function Lanes({ vm, status }: { vm: AutopilotViewModel; status: AutopilotStatus
         <Switch t={t} on={status.news.enabled} onToggle={propose('autopilot.news_enabled', !status.news.enabled, 'bool')} testId="autopilot-news-toggle" />
         <p className="sk-gov-text"><Icon name="clock" size={16} /> {t('autopilot.news.body', { n: status.news.perDay, start: status.news.windowStart, end: status.news.windowEnd, zone })}</p>
         <dl className="sk-gov-lines">
-          <Line t={t} label={t('autopilot.autoPublish')} words value={t(status.news.autoPublish ? 'autopilot.news.autoOn' : 'autopilot.news.autoOff')}
-            onEdit={propose('autopilot.news_auto_publish', !status.news.autoPublish, 'bool')} />
+          <div>
+            <dt>{t('autopilot.autoPublish')}<span className="sk-gov-fine"> · {t(status.news.autoPublish ? 'autopilot.news.autoOn' : 'autopilot.news.autoOff')}</span></dt>
+            <dd><Switch t={t} on={status.news.autoPublish} onToggle={propose('autopilot.news_auto_publish', !status.news.autoPublish, 'bool')} testId="autopilot-news-autopublish" /></dd>
+          </div>
           <Line t={t} label={t('autopilot.key.autopilot.news_per_day')} value={String(status.news.perDay)} onEdit={propose('autopilot.news_per_day', status.news.perDay, 'int')} />
           <Line t={t} label={t('autopilot.key.autopilot.news_window_start_hour')} value={`${status.news.windowStart}:00`} onEdit={propose('autopilot.news_window_start_hour', status.news.windowStart, 'int')} />
           <Line t={t} label={t('autopilot.key.autopilot.news_window_end_hour')} value={`${status.news.windowEnd}:00`} onEdit={propose('autopilot.news_window_end_hour', status.news.windowEnd, 'int')} />
@@ -160,8 +162,10 @@ function Lanes({ vm, status }: { vm: AutopilotViewModel; status: AutopilotStatus
         <p className="sk-gov-text"><Icon name="clock" size={16} /> {t('autopilot.blog.body', { n: status.blog.perWeek, days: status.blog.days.join(', '), hour: status.blog.hour, zone })}</p>
         <BoardNote icon="stethoscope" tone="attention">{t('autopilot.blog.tipRule')}</BoardNote>
         <dl className="sk-gov-lines">
-          <Line t={t} label={t('autopilot.autoPublish')} words value={t(status.blog.autoPublish ? 'autopilot.blog.autoOn' : 'autopilot.blog.autoOff')}
-            onEdit={propose('autopilot.blog_auto_publish', !status.blog.autoPublish, 'bool')} />
+          <div>
+            <dt>{t('autopilot.autoPublish')}<span className="sk-gov-fine"> · {t(status.blog.autoPublish ? 'autopilot.blog.autoOn' : 'autopilot.blog.autoOff')}</span></dt>
+            <dd><Switch t={t} on={status.blog.autoPublish} onToggle={propose('autopilot.blog_auto_publish', !status.blog.autoPublish, 'bool')} testId="autopilot-blog-autopublish" /></dd>
+          </div>
           <Line t={t} label={t('autopilot.key.autopilot.blog_posts_per_week')} value={String(status.blog.perWeek)} onEdit={propose('autopilot.blog_posts_per_week', status.blog.perWeek, 'int')} />
           <Line t={t} label={t('autopilot.key.autopilot.blog_days')} value={status.blog.days.join(',')} onEdit={propose('autopilot.blog_days', status.blog.days.join(','), 'text')} />
           <Line t={t} label={t('autopilot.key.autopilot.blog_hour')} value={`${status.blog.hour}:00`} onEdit={propose('autopilot.blog_hour', status.blog.hour, 'int')} />

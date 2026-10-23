@@ -49,6 +49,7 @@ TABLE_PLANES: dict[str, str] = {
     "care_medication_plans": CLINICAL,
     "care_medication_doses": CLINICAL,
     "care_refill_requests": CLINICAL,
+    "care_refill_trackers": CLINICAL,             # the student's pack size, dose count and run-out date for a medicine
     "care_appointments": CLINICAL,
     "care_consultation_sessions": CLINICAL,
     "care_encounter_notes": CLINICAL,
@@ -95,6 +96,7 @@ TABLE_PLANES: dict[str, str] = {
     "care_payment_intents": COMMERCE,             # payable kind + id + amount, no item names
     "care_dispense_quotes": COMMERCE,             # a dispense's quote totals by id; item prices stay clinical
     "care_refunds": COMMERCE,
+    "care_stock_alerts": COMMERCE,                # "tell me when this item is back": account id + item id only
     "care_lab_order_charges": COMMERCE,           # a self-booked test's price + paid state; lab order id only
     "care_mock_gateway_payments": COMMERCE,       # the test-only mock gateway's ledger
     "care_return_requests": COMMERCE,

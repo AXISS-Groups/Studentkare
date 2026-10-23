@@ -29,6 +29,8 @@ export interface M2RemindersLinks {
   /** The existing add-a-medicine form (web only; the app has none). */
   addMedicine?: () => void;
   openSettings?: () => void;
+  /** Refills (refill reminders and reorder), when the host offers it. */
+  refills?: () => void;
 }
 
 export const M2RemindersView = observer(function M2RemindersView({ vm, reminders, online, links }: {
@@ -128,6 +130,19 @@ export const M2RemindersView = observer(function M2RemindersView({ vm, reminders
           <Icon name="chevron-right" size={16} color={color.text3} strokeWidth={2.4} />
         </Pressable>
       </Rise>
+      {links.refills ? (
+        <Rise index={3} style={styles.gutter}>
+          <Pressable role="link" accessibilityRole="link" {...cardLabel(t('refill.link.fromMeds'))} onPress={links.refills}
+            testID="m2-rem-refills" style={({ focused }: PressState) => [styles.link, focused ? focusRing : null]}>
+            <View style={[styles.linkTile, styles.refillTile]}><Icon name="repeat" size={18} color={color.serviceTealInk} strokeWidth={2.1} /></View>
+            <View style={styles.grow}>
+              <Text style={m2Text.cardTitle}>{t('refill.link.fromMeds')}</Text>
+              <Text style={m2Text.meta}>{t('refill.link.fromMedsNote')}</Text>
+            </View>
+            <Icon name="chevron-right" size={16} color={color.text3} strokeWidth={2.4} />
+          </Pressable>
+        </Rise>
+      ) : null}
       <View {...webAttrs({ 'aria-hidden': 'true' })} style={styles.spacer} />
     </ScrollView>
   );
@@ -158,5 +173,6 @@ const styles = StyleSheet.create({
     backgroundColor: color.surface,
   },
   linkTile: { width: 36, height: 36, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: color.serviceSkySoft },
+  refillTile: { backgroundColor: color.serviceTealSoft },
   spacer: { height: space.s8 },
 });

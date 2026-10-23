@@ -30,6 +30,7 @@ export function M2RemindersRoute(): React.ReactElement {
       water: () => navigate('health/water'),
       uploadPrescription: () => navigate('prescriptions'),
       addMedicine: () => navigate('medications'),
+      refills: () => navigate('health/refills'),
     }} />
   );
 }

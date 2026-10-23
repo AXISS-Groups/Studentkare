@@ -1,6 +1,6 @@
 # Student Kare — every screen
 
-268 screens: 252 on 10 canvas pages, plus new screens with no board yet (M2Reminders, M2Water and M2Steps; the 4 Find care screens; SetPasscode; the 2 medicine information screens; the 4 newsroom screens; M2Camps and PartnerCamps), designed in code in the Mobile 2.0 language. Each row links to a brief that lists every icon, picture, link and state the screen needs.
+270 screens: 252 on 10 canvas pages, plus new screens with no board yet (M2Reminders, M2Water and M2Steps; M2Refills and M2Reorder; the 4 Find care screens; SetPasscode; the 2 medicine information screens; the 4 newsroom screens; M2Camps and PartnerCamps), designed in code in the Mobile 2.0 language. Each row links to a brief that lists every icon, picture, link and state the screen needs.
 
 | # | Screen | What it is | Platform | Tier | Tickets | Icons | 3D | Glyphs | Pictures |
 |---|---|---|---|---|---|---|---|---|---|
@@ -287,3 +287,6 @@
 | | **New · Health camp booking (2026-10-23, no canvas board)** | | | | | | | | |
 | 267 | [M2Camps](briefs/M2Camps.md) | Health camps: book a slot, waitlist, change or cancel, booking reference, camp day | Phone 390x1600 | 2 | Health camps | 8 | 0 | 0 | 0 |
 | 268 | [PartnerCamps](briefs/PartnerCamps.md) | Partner console Health camps: propose a camp, counts per slot, CSV (shares the CampusCamps board) | Web 1440x1024 | 3 | Health camps | 7 | 1 | 0 | 0 |
+| | **New · Refill reminders and one-tap reorder (2026-10-23, no canvas board)** | | | | | | | | |
+| 269 | [M2Refills](briefs/M2Refills.md) | Refills: run-out dates from the student's own counts, reminders, snooze, "I still have some" | Phone 390x1600 | 2 | refill-reorder | 15 | 0 | 0 | 0 |
+| 270 | [M2Reorder](briefs/M2Reorder.md) | One-tap reorder: today's price and stock, prescription gate, back-in-stock, pay | Phone 390x1500 | 2 | refill-reorder | 17 | 0 | 0 | 0 |

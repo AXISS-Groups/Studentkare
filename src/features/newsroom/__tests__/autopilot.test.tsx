@@ -110,6 +110,20 @@ describe('Super admin, Posts, Autopilot', () => {
     await waitFor(() => expect(screen.queryByTestId('autopilot-change')).toBeNull());
   });
 
+  it('turns instant news on with one switch (and a reason)', async () => {
+    api.routes['/ops/posts/authors'] = { items: [] };
+    api.routes['/ops/posts'] = { items: [], total: 0 };
+    api.routes['/ops/autopilot'] = status({ news: { ...status().news, autoPublish: false } });
+    at('/admin/posts', <PostsAdminView console="admin" />);
+    fireEvent.click(await screen.findByTestId('posts-tab-autopilot'));
+    api.routes['/ops/settings/autopilot.news_auto_publish'] = {};
+    fireEvent.click(await screen.findByTestId('autopilot-news-autopublish'));
+    fireEvent.change(screen.getByTestId('autopilot-change-reason'), { target: { value: 'Instant news' } });
+    await act(async () => { fireEvent.click(screen.getByTestId('autopilot-change-save')); });
+    const call = api.calls.find((c) => c.path === '/ops/settings/autopilot.news_auto_publish');
+    expect(JSON.parse(String(call?.init?.body))).toEqual({ value: true, reason: 'Instant news' });
+  });
+
   it('stops everything with the kill switch, and can take auto posts down', async () => {
     await openTab();
     api.routes['/ops/autopilot/kill-switch'] = { ...status({ killSwitch: true }), takenDown: 1 };

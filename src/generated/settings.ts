@@ -105,6 +105,20 @@ export interface PublicSettings {
   "public_site.x_url": string;
   /** The YouTube channel linked from the public site footer. Empty hides the link. (https URL) */
   "public_site.youtube_url": string;
+  /** Largest pack size (tablets, capsules, doses) a student can enter. (units per pack) */
+  "refill.pack_units_max": number;
+  /** Most packs one refill can count. (packs) */
+  "refill.packs_max": number;
+  /** How many days before a medicine runs out the refill reminder goes out, unless the student picks another. (days) */
+  "refill.remind_days_before_default": number;
+  /** Most days before running out a student may ask to be reminded. (days) */
+  "refill.remind_days_before_max": number;
+  /** Local time of day a refill reminder is due (quiet hours still apply). (minutes after midnight) */
+  "refill.remind_minute_local": number;
+  /** How long Snooze holds a refill reminder back. (days) */
+  "refill.snooze_days": number;
+  /** Most units a student can enter for one dose (a count, never advice). (units per dose) */
+  "refill.units_per_dose_max": number;
   /** How long after sign-up a referral code can still be claimed. (hours) */
   "rewards.referral_claim_window_hours": number;
   /** Points credited to the referrer when a friend who joined with their code is verified as a student. (points) */
@@ -249,6 +263,13 @@ export const publicSettingDefaults: Readonly<PublicSettings> = {
   "public_site.play_store_url": "",
   "public_site.x_url": "",
   "public_site.youtube_url": "",
+  "refill.pack_units_max": 1000,
+  "refill.packs_max": 20,
+  "refill.remind_days_before_default": 3,
+  "refill.remind_days_before_max": 14,
+  "refill.remind_minute_local": 600,
+  "refill.snooze_days": 1,
+  "refill.units_per_dose_max": 20,
   "rewards.referral_claim_window_hours": 24,
   "rewards.referral_points": 50,
   "shop.cart_line_max": 10,
@@ -342,6 +363,13 @@ export const publicSettingSpecs: Readonly<Record<PublicSettingKey, PublicSetting
   "public_site.play_store_url": { type: "str", min: null, max: null, allowed: [], unit: "https URL" },
   "public_site.x_url": { type: "str", min: null, max: null, allowed: [], unit: "https URL" },
   "public_site.youtube_url": { type: "str", min: null, max: null, allowed: [], unit: "https URL" },
+  "refill.pack_units_max": { type: "int", min: 1, max: 100000, allowed: [], unit: "units per pack" },
+  "refill.packs_max": { type: "int", min: 1, max: 100, allowed: [], unit: "packs" },
+  "refill.remind_days_before_default": { type: "int", min: 1, max: 30, allowed: [], unit: "days" },
+  "refill.remind_days_before_max": { type: "int", min: 1, max: 60, allowed: [], unit: "days" },
+  "refill.remind_minute_local": { type: "int", min: 0, max: 1439, allowed: [], unit: "minutes after midnight" },
+  "refill.snooze_days": { type: "int", min: 1, max: 14, allowed: [], unit: "days" },
+  "refill.units_per_dose_max": { type: "int", min: 1, max: 100, allowed: [], unit: "units per dose" },
   "rewards.referral_claim_window_hours": { type: "int", min: 1, max: 720, allowed: [], unit: "hours" },
   "rewards.referral_points": { type: "int", min: 0, max: 10000, allowed: [], unit: "points" },
   "shop.cart_line_max": { type: "int", min: 1, max: 10, allowed: [], unit: "units" },

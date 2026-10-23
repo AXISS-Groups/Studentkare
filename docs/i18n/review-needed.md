@@ -341,3 +341,155 @@ pass. `camps.host.*` is console copy for campus administrators and partners. "CS
 | `camps.csv.start` | Slot start | స్లాట్ ప్రారంభం | स्लॉट शुरू |
 | `camps.csv.end` | Slot end | స్లాట్ ముగింపు | स्लॉट खत्म |
 | `partner.vcon.nav.camps` | Health camps | ఆరోగ్య శిబిరాలు | हेल्थ कैंप |
+
+## refills — refill reminders and one-tap reorder (feat/refill-reorder, `src/i18n/areas/refills.ts`)
+
+Notes for the reviewer: "pack" is the strip, bottle or box a medicine comes in; "each time" and "times a day"
+are the student's own counts, never advice, so keep them neutral (no "should", "must", "take"). "Snooze"
+holds a reminder back for a day or so. "MRP" and "UPI" stay in English. `care.inbox.event.STOCK_BACK` is the
+inbox label for a back-in-stock notice.
+
+| Key | English | te (current) | hi (current) |
+|---|---|---|---|
+| `refill.eyebrow` | My health | నా ఆరోగ్యం | मेरी सेहत |
+| `refill.title` | Refills | రీఫిల్స్ | रीफ़िल |
+| `refill.back` | Back to Medicines today | ఈరోజు మందులకు వెనక్కి | आज की दवाओं पर वापस |
+| `refill.heroEyebrow` | Refill reminders | రీఫిల్ రిమైండర్లు | रीफ़िल रिमाइंडर |
+| `refill.heroLine.none` | Know before a medicine runs out | మందు అయిపోయే ముందే తెలుసుకోండి | दवा ख़त्म होने से पहले जानें |
+| `refill.heroLine.one` | 1 medicine runs out soon | 1 మందు త్వరలో అయిపోతుంది | 1 दवा जल्द ख़त्म होगी |
+| `refill.heroLine.many` | {count} medicines run out soon | {count} మందులు త్వరలో అయిపోతాయి | {count} दवाएँ जल्द ख़त्म होंगी |
+| `refill.heroLine.fine` | Nothing runs out soon | త్వరలో ఏదీ అయిపోదు | जल्द कुछ ख़त्म नहीं हो रहा |
+| `refill.heroNote` | Counted from the pack size and schedule you enter. It is a count, never dosing advice. | మీరు ఇచ్చిన ప్యాక్ సైజ్, షెడ్యూల్ నుండి లెక్కిస్తాం. ఇది లెక్క మాత్రమే, డోస్ సలహా కాదు. | आपके डाले पैक साइज़ और शेड्यूल से गिना जाता है। यह सिर्फ़ गिनती है, डोज़ की सलाह नहीं। |
+| `refill.loading` | Loading your refills | మీ రీఫిల్స్ లోడ్ అవుతున్నాయి | आपके रीफ़िल लोड हो रहे हैं |
+| `refill.failedTitle` | Your refills didn’t load | మీ రీఫిల్స్ లోడ్ కాలేదు | आपके रीफ़िल लोड नहीं हुए |
+| `refill.failedBody` | This is on our side, not yours. Try again. | ఇది మా వైపు సమస్య, మీది కాదు. మళ్లీ ప్రయత్నించండి. | यह हमारी तरफ़ की दिक़्क़त है, आपकी नहीं। फिर से कोशिश करें। |
+| `refill.offline` | Changing refills needs a connection. Nothing is kept on this device, so try again when you’re back online. | రీఫిల్స్ మార్చడానికి కనెక్షన్ కావాలి. ఈ డివైస్‌లో ఏదీ ఉంచము, కనెక్షన్ వచ్చాక మళ్లీ ప్రయత్నించండి. | रीफ़िल बदलने के लिए कनेक्शन चाहिए। इस डिवाइस पर कुछ नहीं रखा जाता, इसलिए ऑनलाइन होने पर फिर कोशिश करें। |
+| `refill.emptyTitle` | No refills tracked yet | ఇంకా ఏ రీఫిల్ ట్రాక్ చేయలేదు | अभी कोई रीफ़िल ट्रैक नहीं |
+| `refill.emptyBody` | Pick a medicine from a past order or from Medicines today, enter its pack and how often you take it, and we’ll remind you before it runs out. | పాత ఆర్డర్ నుండి లేదా ఈరోజు మందుల నుండి ఒక మందు ఎంచుకోండి, దాని ప్యాక్, ఎంత తరచుగా వేసుకుంటారో ఇవ్వండి. అది అయిపోయే ముందు గుర్తు చేస్తాం. | किसी पुराने ऑर्डर से या आज की दवाओं से एक दवा चुनें, उसका पैक और आप कितनी बार लेते हैं डालें, और ख़त्म होने से पहले हम याद दिलाएँगे। |
+| `refill.add` | Track a refill | రీఫిల్ ట్రాక్ చేయండి | रीफ़िल ट्रैक करें |
+| `refill.lockNote` | Outside the app a reminder only says “You have a medicine reminder”, never the medicine, and it waits for your quiet hours. | యాప్ బయట రిమైండర్ “మీకు మందు రిమైండర్ ఉంది” అని మాత్రమే చెబుతుంది, మందు పేరు చెప్పదు, మీ నిశ్శబ్ద గంటలు అయ్యే వరకు ఆగుతుంది. | ऐप के बाहर रिमाइंडर सिर्फ़ “आपका एक दवा रिमाइंडर है” कहता है, दवा का नाम नहीं, और आपके शांत घंटों का इंतज़ार करता है। |
+| `refill.row.left` | About {units} left | సుమారు {units} మిగిలాయి | लगभग {units} बचे हैं |
+| `refill.row.runsOut` | Runs out {date} | {date}న అయిపోతుంది | {date} को ख़त्म होगी |
+| `refill.row.runOut` | May have run out ({date}) | అయిపోయి ఉండవచ్చు ({date}) | शायद ख़त्म हो गई है ({date}) |
+| `refill.row.daysLeft` | {count} days left | {count} రోజులు మిగిలాయి | {count} दिन बचे हैं |
+| `refill.row.dayLeft` | 1 day left | 1 రోజు మిగిలింది | 1 दिन बचा है |
+| `refill.row.schedule` | {perDose} each time · {perDay} a day · pack of {pack} | ప్రతిసారి {perDose} · రోజుకు {perDay} సార్లు · {pack} ప్యాక్ | हर बार {perDose} · दिन में {perDay} बार · {pack} का पैक |
+| `refill.row.remind` | Reminder on {date} ({count} days before) | {date}న రిమైండర్ ({count} రోజుల ముందు) | {date} को रिमाइंडर ({count} दिन पहले) |
+| `refill.row.snoozed` | Snoozed until {date} | {date} వరకు స్నూజ్ | {date} तक स्नूज़ |
+| `refill.row.off` | Reminder off | రిమైండర్ ఆఫ్ | रिमाइंडर बंद |
+| `refill.row.sourceOrder` | From your order | మీ ఆర్డర్ నుండి | आपके ऑर्डर से |
+| `refill.row.sourcePlan` | From Medicines today | ఈరోజు మందుల నుండి | आज की दवाओं से |
+| `refill.row.toggle` | Remind me | నాకు గుర్తు చేయండి | मुझे याद दिलाएँ |
+| `refill.row.toggleSpoken` | Remind me before {name} runs out | {name} అయిపోయే ముందు నాకు గుర్తు చేయండి | {name} ख़त्म होने से पहले मुझे याद दिलाएँ |
+| `refill.row.reorder` | Reorder | మళ్లీ ఆర్డర్ | फिर से ऑर्डर |
+| `refill.row.reorderSpoken` | Reorder {name} | {name} మళ్లీ ఆర్డర్ చేయండి | {name} फिर से ऑर्डर करें |
+| `refill.row.request` | Ask a pharmacy | ఫార్మసీని అడగండి | फ़ार्मेसी से पूछें |
+| `refill.row.requestSpoken` | Ask a pharmacy to refill {name} | {name} రీఫిల్ కోసం ఫార్మసీని అడగండి | {name} रीफ़िल के लिए फ़ार्मेसी से पूछें |
+| `refill.row.snooze` | Snooze | స్నూజ్ | स्नूज़ |
+| `refill.row.snoozeSpoken` | Snooze the reminder for {name} | {name} రిమైండర్‌ను స్నూజ్ చేయండి | {name} का रिमाइंडर स्नूज़ करें |
+| `refill.row.stillHave` | I still have some | ఇంకా కొన్ని ఉన్నాయి | अभी कुछ बची हैं |
+| `refill.row.stillHaveSpoken` | Tell us how many {name} you still have | మీ దగ్గర ఇంకా ఎన్ని {name} ఉన్నాయో చెప్పండి | बताएँ आपके पास अभी कितनी {name} बची हैं |
+| `refill.row.newPack` | I got a new pack | కొత్త ప్యాక్ వచ్చింది | नया पैक मिल गया |
+| `refill.row.newPackSpoken` | Count a new pack of {name} | {name} కొత్త ప్యాక్‌ను లెక్కించండి | {name} का नया पैक गिनें |
+| `refill.row.remove` | Stop tracking | ట్రాకింగ్ ఆపండి | ट्रैक करना बंद करें |
+| `refill.row.removeSpoken` | Stop tracking {name} | {name} ట్రాకింగ్ ఆపండి | {name} ट्रैक करना बंद करें |
+| `refill.setup.title` | Track a refill | రీఫిల్ ట్రాక్ చేయండి | रीफ़िल ट्रैक करें |
+| `refill.setup.pick` | Which medicine? | ఏ మందు? | कौन-सी दवा? |
+| `refill.setup.fromOrders` | From past orders | పాత ఆర్డర్ల నుండి | पुराने ऑर्डर से |
+| `refill.setup.fromPlans` | From Medicines today | ఈరోజు మందుల నుండి | आज की दवाओं से |
+| `refill.setup.ordered` | Ordered {date} | {date}న ఆర్డర్ చేశారు | {date} को ऑर्डर किया |
+| `refill.setup.planned` | In Medicines today | ఈరోజు మందుల్లో ఉంది | आज की दवाओं में है |
+| `refill.setup.loading` | Loading your medicines and orders | మీ మందులు, ఆర్డర్లు లోడ్ అవుతున్నాయి | आपकी दवाएँ और ऑर्डर लोड हो रहे हैं |
+| `refill.setup.loadFailed` | Your medicines and orders didn’t load. Try again. | మీ మందులు, ఆర్డర్లు లోడ్ కాలేదు. మళ్లీ ప్రయత్నించండి. | आपकी दवाएँ और ऑर्डर लोड नहीं हुए। फिर से कोशिश करें। |
+| `refill.setup.nothing` | Nothing to pick yet. Medicines you order, or add to Medicines today, show here. | ఎంచుకోడానికి ఇంకా ఏమీ లేదు. మీరు ఆర్డర్ చేసిన లేదా ఈరోజు మందుల్లో చేర్చిన మందులు ఇక్కడ కనిపిస్తాయి. | अभी चुनने को कुछ नहीं। जो दवाएँ आप ऑर्डर करते हैं या आज की दवाओं में जोड़ते हैं, वे यहाँ दिखेंगी। |
+| `refill.setup.countNote` | Enter what your pack and prescription say. We only count; we never suggest a dose. | మీ ప్యాక్, ప్రిస్క్రిప్షన్‌లో ఉన్నది ఇవ్వండి. మేము లెక్కిస్తాం మాత్రమే; డోస్ ఎప్పుడూ సూచించము. | जो आपके पैक और प्रिस्क्रिप्शन पर लिखा है वही डालें। हम सिर्फ़ गिनते हैं; डोज़ कभी नहीं सुझाते। |
+| `refill.setup.packSize` | Tablets or doses in one pack | ఒక ప్యాక్‌లో టాబ్లెట్లు లేదా డోసులు | एक पैक में टैबलेट या डोज़ |
+| `refill.setup.packs` | Packs you have | మీ దగ్గర ఉన్న ప్యాక్‌లు | आपके पास पैक |
+| `refill.setup.perDose` | How many you take each time | ప్రతిసారి ఎన్ని వేసుకుంటారు | हर बार कितनी लेते हैं |
+| `refill.setup.perDay` | Times a day | రోజుకు ఎన్ని సార్లు | दिन में कितनी बार |
+| `refill.setup.started` | Count from | ఎప్పటి నుండి లెక్కించాలి | कब से गिनें |
+| `refill.setup.today` | Today | ఈరోజు | आज |
+| `refill.setup.orderDay` | The order date | ఆర్డర్ తేదీ | ऑर्डर की तारीख़ |
+| `refill.setup.daysBefore` | Remind me this many days before | ఇన్ని రోజుల ముందు గుర్తు చేయండి | इतने दिन पहले याद दिलाएँ |
+| `refill.setup.range` | A whole number from {min} to {max}. | {min} నుండి {max} వరకు పూర్ణ సంఖ్య. | {min} से {max} तक पूरी संख्या। |
+| `refill.setup.save` | Start tracking | ట్రాకింగ్ మొదలుపెట్టండి | ट्रैक करना शुरू करें |
+| `refill.setup.another` | Pick another medicine | వేరే మందు ఎంచుకోండి | दूसरी दवा चुनें |
+| `refill.adjust.title` | How many do you have now? | ఇప్పుడు మీ దగ్గర ఎన్ని ఉన్నాయి? | अभी आपके पास कितनी हैं? |
+| `refill.adjust.label` | Tablets or doses in hand | చేతిలో ఉన్న టాబ్లెట్లు లేదా డోసులు | हाथ में टैबलेट या डोज़ |
+| `refill.adjust.save` | Update the count | లెక్క మార్చండి | गिनती बदलें |
+| `refill.restock.title` | Count a new pack | కొత్త ప్యాక్ లెక్కించండి | नया पैक गिनें |
+| `refill.restock.label` | Packs you got | వచ్చిన ప్యాక్‌లు | मिले हुए पैक |
+| `refill.restock.save` | Add to the count | లెక్కకు కలపండి | गिनती में जोड़ें |
+| `refill.remove.title` | Stop tracking {name}? | {name} ట్రాకింగ్ ఆపాలా? | {name} ट्रैक करना बंद करें? |
+| `refill.remove.body` | Its reminder stops. Your medicines and orders are not changed. | దాని రిమైండర్ ఆగిపోతుంది. మీ మందులు, ఆర్డర్లు మారవు. | इसका रिमाइंडर रुक जाएगा। आपकी दवाएँ और ऑर्डर नहीं बदलेंगे। |
+| `refill.status.saved` | Saved. | సేవ్ అయింది. | सेव हो गया। |
+| `refill.status.snoozed` | Snoozed. | స్నూజ్ చేశాం. | स्नूज़ किया। |
+| `refill.status.removed` | Stopped tracking. | ట్రాకింగ్ ఆపాం. | ट्रैक करना बंद किया। |
+| `refill.status.failed` | That didn’t save. Try again. | అది సేవ్ కాలేదు. మళ్లీ ప్రయత్నించండి. | यह सेव नहीं हुआ। फिर से कोशिश करें। |
+| `refill.msg.PACK_SIZE_OUT_OF_RANGE` | Enter a pack size from {min} to {max}. | {min} నుండి {max} వరకు ప్యాక్ సైజ్ ఇవ్వండి. | {min} से {max} तक का पैक साइज़ डालें। |
+| `refill.msg.PACKS_OUT_OF_RANGE` | Enter from {min} to {max} packs. | {min} నుండి {max} ప్యాక్‌లు ఇవ్వండి. | {min} से {max} पैक डालें। |
+| `refill.msg.UNITS_PER_DOSE_OUT_OF_RANGE` | Enter from {min} to {max} each time. | ప్రతిసారి {min} నుండి {max} వరకు ఇవ్వండి. | हर बार {min} से {max} तक डालें। |
+| `refill.msg.DOSES_PER_DAY_OUT_OF_RANGE` | Enter from {min} to {max} times a day. | రోజుకు {min} నుండి {max} సార్లు ఇవ్వండి. | दिन में {min} से {max} बार डालें। |
+| `refill.msg.REMIND_DAYS_OUT_OF_RANGE` | Pick from {min} to {max} days before. | {min} నుండి {max} రోజుల ముందు ఎంచుకోండి. | {min} से {max} दिन पहले चुनें। |
+| `refill.msg.SNOOZE_OUT_OF_RANGE` | Snooze for {min} to {max} days. | {min} నుండి {max} రోజులు స్నూజ్ చేయండి. | {min} से {max} दिन के लिए स्नूज़ करें। |
+| `refill.msg.START_DATE_OUT_OF_RANGE` | Pick a date in the last {days} days, not in the future. | గత {days} రోజుల్లోని తేదీ ఎంచుకోండి, భవిష్యత్తు తేదీ కాదు. | पिछले {days} दिनों की तारीख़ चुनें, आगे की नहीं। |
+| `refill.msg.UNITS_LEFT_OUT_OF_RANGE` | Enter from {min} to {max}. | {min} నుండి {max} వరకు ఇవ్వండి. | {min} से {max} तक डालें। |
+| `refill.msg.ALREADY_TRACKED` | You already track a refill for this medicine. | ఈ మందు రీఫిల్‌ను మీరు ఇప్పటికే ట్రాక్ చేస్తున్నారు. | इस दवा का रीफ़िल आप पहले से ट्रैक कर रहे हैं। |
+| `refill.msg.TOO_MANY_REFILLS` | You can track up to {max} medicines. | మీరు గరిష్టంగా {max} మందులు ట్రాక్ చేయవచ్చు. | आप ज़्यादा से ज़्यादा {max} दवाएँ ट्रैक कर सकते हैं। |
+| `refill.msg.ORDER_NOT_FOUND` | That order isn’t on your account. | ఆ ఆర్డర్ మీ ఖాతాలో లేదు. | वह ऑर्डर आपके खाते में नहीं है। |
+| `refill.msg.ORDER_LINE_NOT_REFILLABLE` | Only a product you were sold can be refilled. | మీకు అమ్మిన ప్రొడక్ట్‌ను మాత్రమే రీఫిల్ చేయవచ్చు. | सिर्फ़ वही प्रोडक्ट रीफ़िल हो सकता है जो आपको बेचा गया था। |
+| `refill.msg.PLAN_NOT_FOUND` | That medicine isn’t in Medicines today any more. | ఆ మందు ఇప్పుడు ఈరోజు మందుల్లో లేదు. | वह दवा अब आज की दवाओं में नहीं है। |
+| `refill.msg.REFILL_NOT_FOUND` | That refill isn’t on your list any more. | ఆ రీఫిల్ ఇప్పుడు మీ జాబితాలో లేదు. | वह रीफ़िल अब आपकी सूची में नहीं है। |
+| `refill.link.fromMeds` | Refill reminders | రీఫిల్ రిమైండర్లు | रीफ़िल रिमाइंडर |
+| `refill.link.fromMedsNote` | Know before a medicine runs out | మందు అయిపోయే ముందే తెలుసుకోండి | दवा ख़त्म होने से पहले जानें |
+| `refill.link.fromOrder` | Remind me to refill | రీఫిల్ కోసం గుర్తు చేయండి | रीफ़िल की याद दिलाएँ |
+| `refill.link.fromOrderSpoken` | Remind me to refill from order {ref} | ఆర్డర్ {ref} నుండి రీఫిల్ కోసం గుర్తు చేయండి | ऑर्डर {ref} से रीफ़िल की याद दिलाएँ |
+| `refill.inbox.open` | Open refills | రీఫిల్స్ తెరవండి | रीफ़िल खोलें |
+| `refill.inbox.stockBack` | An item you asked about is back in stock. | మీరు అడిగిన వస్తువు మళ్లీ స్టాక్‌లో ఉంది. | जिस चीज़ के बारे में आपने पूछा था वह फिर से स्टॉक में है। |
+| `care.inbox.event.STOCK_BACK` | Back in stock | మళ్లీ స్టాక్‌లో | फिर से स्टॉक में |
+| `reorder.eyebrow` | Refills | రీఫిల్స్ | रीफ़िल |
+| `reorder.title` | Reorder | మళ్లీ ఆర్డర్ | फिर से ऑर्डर |
+| `reorder.back` | Back to refills | రీఫిల్స్‌కు వెనక్కి | रीफ़िल पर वापस |
+| `reorder.loading` | Checking today’s price and stock | ఈరోజు ధర, స్టాక్ చూస్తున్నాం | आज की कीमत और स्टॉक देख रहे हैं |
+| `reorder.failedTitle` | We couldn’t check today’s price | ఈరోజు ధర చూడలేకపోయాం | आज की कीमत नहीं देख पाए |
+| `reorder.priceNote` | Today’s price and stock, checked at {time}. You pay this, not what you paid last time. | ఈరోజు ధర, స్టాక్ — {time}కి చూశాం. మీరు చెల్లించేది ఇదే, గతసారి చెల్లించింది కాదు. | आज की कीमत और स्टॉक, {time} पर देखे गए। आप यही चुकाएँगे, पिछली बार वाली कीमत नहीं। |
+| `reorder.qty` | Qty {count} | పరిమాణం {count} | मात्रा {count} |
+| `reorder.each` | {price} each | ఒక్కొక్కటి {price} | {price} प्रति |
+| `reorder.mrp` | MRP {price} | MRP {price} | MRP {price} |
+| `reorder.state.OK` | In stock | స్టాక్‌లో ఉంది | स्टॉक में है |
+| `reorder.state.LOW_STOCK` | Only {count} in stock | స్టాక్‌లో {count} మాత్రమే | स्टॉक में सिर्फ़ {count} |
+| `reorder.state.OUT_OF_STOCK` | Out of stock | స్టాక్‌లో లేదు | स्टॉक में नहीं |
+| `reorder.state.PRESCRIPTION` | Needs a prescription | ప్రిస్క్రిప్షన్ కావాలి | प्रिस्क्रिप्शन चाहिए |
+| `reorder.state.UNAVAILABLE` | No longer sold here | ఇక్కడ ఇక అమ్మడం లేదు | अब यहाँ नहीं बिकती |
+| `reorder.oos.body` | We never swap a medicine for another one. Ask to be told when it’s back, or ask a pharmacist. | ఒక మందుకు బదులు మరో మందు మేము ఎప్పుడూ మార్చము. అది వచ్చినప్పుడు చెప్పమని అడగండి, లేదా ఫార్మసిస్ట్‌ను అడగండి. | हम कभी एक दवा की जगह दूसरी नहीं देते। वापस आने पर बताने को कहें, या फ़ार्मासिस्ट से पूछें। |
+| `reorder.oos.notify` | Tell me when it’s back | వచ్చినప్పుడు చెప్పండి | वापस आने पर बताएँ |
+| `reorder.oos.watching` | We’ll tell you when it’s back. | వచ్చినప్పుడు మీకు చెబుతాం. | वापस आने पर हम आपको बताएँगे। |
+| `reorder.oos.stop` | Stop telling me | చెప్పడం ఆపండి | बताना बंद करें |
+| `reorder.oos.pharmacist` | Ask a pharmacist | ఫార్మసిస్ట్‌ను అడగండి | फ़ार्मासिस्ट से पूछें |
+| `reorder.low.body` | Fewer are in stock than you ordered last time. Ask a pharmacist, or ask to be told when more are in. | గతసారి మీరు ఆర్డర్ చేసినన్ని స్టాక్‌లో లేవు. ఫార్మసిస్ట్‌ను అడగండి, లేదా మరిన్ని వచ్చినప్పుడు చెప్పమని అడగండి. | पिछली बार जितना ऑर्डर किया था उससे कम स्टॉक में है। फ़ार्मासिस्ट से पूछें, या और आने पर बताने को कहें। |
+| `reorder.rx.checking` | Checking your prescriptions… | మీ ప్రిస్క్రిప్షన్లు చూస్తున్నాం… | आपके प्रिस्क्रिप्शन देख रहे हैं… |
+| `reorder.rx.valid` | You have a prescription in date until {date}. Send it to a pharmacist, who checks it before this medicine is sold. | {date} వరకు చెల్లుబాటు అయ్యే ప్రిస్క్రిప్షన్ మీ దగ్గర ఉంది. దాన్ని ఫార్మసిస్ట్‌కు పంపండి; ఈ మందు అమ్మే ముందు వారు దాన్ని చెక్ చేస్తారు. | {date} तक मान्य प्रिस्क्रिप्शन आपके पास है। इसे फ़ार्मासिस्ट को भेजें, जो यह दवा बेचने से पहले इसे जाँचेंगे। |
+| `reorder.rx.send` | Send my prescription | నా ప్రిస్క్రిప్షన్ పంపండి | मेरा प्रिस्क्रिप्शन भेजें |
+| `reorder.rx.none` | This medicine needs a prescription that is still in date, and there isn’t one in your records. | ఈ మందుకు చెల్లుబాటు అయ్యే ప్రిస్క్రిప్షన్ కావాలి, మీ రికార్డుల్లో అలాంటిది లేదు. | इस दवा के लिए मान्य प्रिस्क्रिप्शन चाहिए, और आपके रिकॉर्ड में ऐसा कोई नहीं है। |
+| `reorder.rx.upload` | Upload a prescription | ప్రిస్క్రిప్షన్ అప్‌లోడ్ చేయండి | प्रिस्क्रिप्शन अपलोड करें |
+| `reorder.rx.consult` | Book a consult | కన్సల్ట్ బుక్ చేయండి | कंसल्ट बुक करें |
+| `reorder.rx.failed` | We couldn’t check your prescriptions, so nothing that needs one can be ordered now. Try again. | మీ ప్రిస్క్రిప్షన్లు చూడలేకపోయాం, కాబట్టి ప్రిస్క్రిప్షన్ కావలసినవి ఇప్పుడు ఆర్డర్ చేయలేరు. మళ్లీ ప్రయత్నించండి. | हम आपके प्रिस्क्रिप्शन नहीं देख पाए, इसलिए जिसे प्रिस्क्रिप्शन चाहिए वह अभी ऑर्डर नहीं हो सकता। फिर से कोशिश करें। |
+| `reorder.deliverTo` | Deliver to | డెలివరీ చిరునామా | डिलीवरी पता |
+| `reorder.pickupAt` | Pick up | పికప్ | पिकअप |
+| `reorder.address` | {address}, {city} {pincode} | {address}, {city} {pincode} | {address}, {city} {pincode} |
+| `reorder.pickupPlace` | {city} {pincode} | {city} {pincode} | {city} {pincode} |
+| `reorder.payWith` | Pay with | చెల్లింపు విధానం | भुगतान का तरीका |
+| `reorder.method.upi` | UPI | UPI | UPI |
+| `reorder.method.card` | Card | కార్డ్ | कार्ड |
+| `reorder.method.netbanking` | Net banking | నెట్ బ్యాంకింగ్ | नेट बैंकिंग |
+| `reorder.methodLast` | Your last choice on this device. You can change it on the next step. | ఈ డివైస్‌లో మీ చివరి ఎంపిక. తర్వాతి దశలో మార్చవచ్చు. | इस डिवाइस पर आपकी पिछली पसंद। अगले कदम पर बदल सकते हैं। |
+| `reorder.methodNone` | You choose on the next step. | తర్వాతి దశలో ఎంచుకుంటారు. | अगले कदम पर चुनें। |
+| `reorder.total` | Total | మొత్తం | कुल |
+| `reorder.pay` | Pay {total} | {total} చెల్లించండి | {total} चुकाएँ |
+| `reorder.paySpoken` | Place the order and pay {total} | ఆర్డర్ చేసి {total} చెల్లించండి | ऑर्डर करें और {total} चुकाएँ |
+| `reorder.notReady` | Nothing here can be paid for right now. | ప్రస్తుతం ఇక్కడ దేనికీ చెల్లించలేరు. | अभी यहाँ किसी चीज़ का भुगतान नहीं हो सकता। |
+| `reorder.partReady` | Only the items in stock are in this total. | స్టాక్‌లో ఉన్నవి మాత్రమే ఈ మొత్తంలో ఉన్నాయి. | इस कुल में सिर्फ़ स्टॉक वाली चीज़ें हैं। |
+| `reorder.priceChanged` | The price changed while you were here. Check the new total, then pay. | మీరు ఇక్కడ ఉండగా ధర మారింది. కొత్త మొత్తం చూసి, తర్వాత చెల్లించండి. | आपके यहाँ रहते कीमत बदल गई। नया कुल देखें, फिर भुगतान करें। |
+| `reorder.placeFailed` | The order wasn’t placed. Nothing was charged. Try again. | ఆర్డర్ కాలేదు. ఏమీ ఛార్జ్ కాలేదు. మళ్లీ ప్రయత్నించండి. | ऑर्डर नहीं हुआ। कोई पैसा नहीं कटा। फिर से कोशिश करें। |
+| `reorder.newPackNote` | When it arrives, tap “I got a new pack” on Refills to count it. | అది వచ్చాక, రీఫిల్స్‌లో “కొత్త ప్యాక్ వచ్చింది” నొక్కి లెక్కించండి. | आने पर, रीफ़िल में “नया पैक मिल गया” दबाकर गिनें। |
+| `reorder.planNote` | This medicine came from Medicines today, not a shop order, so a pharmacy refills it. | ఈ మందు షాప్ ఆర్డర్ నుండి కాదు, ఈరోజు మందుల నుండి వచ్చింది, కాబట్టి ఫార్మసీ రీఫిల్ చేస్తుంది. | यह दवा शॉप ऑर्डर से नहीं, आज की दवाओं से आई है, इसलिए फ़ार्मेसी इसे रीफ़िल करती है। |
