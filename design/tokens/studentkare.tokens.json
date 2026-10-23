@@ -409,7 +409,14 @@
     "phone-frame-max":{ "$value": "430px", "$description": "Widest web viewport that draws the phone boards' frame (phone header and student tab bar) instead of the desktop web shell" },
     "panel-max":      { "$value": "640px", "$description": "Widest a single-column account or settings panel grows on the web" },
     "web-content-max":{ "$value": "1440px" },
-    "web-sidebar":    { "$value": "260px" }
+    "web-sidebar":    { "$value": "260px" },
+    "anim-inline":    { "$value": "16px", "$description": "Animated icon inside a button, toast tile or chip (AnimatedIcon size=\"inline\")" },
+    "anim-icon":      { "$value": "24px", "$description": "Animated icon on the 24 px grid: nav, rows (AnimatedIcon size=\"icon\")" },
+    "anim-mark":      { "$value": "48px", "$description": "Animated state mark and loader (AnimatedIcon size=\"mark\")" },
+    "anim-tile":      { "$value": "72px", "$description": "Animated 3D tile, same as the <Icon3d> default (AnimatedIcon size=\"tile\")" },
+    "anim-scene-sm":  { "$value": "160px", "$description": "Animated illustration in a card or empty state (AnimatedIllustration size=\"sm\"; the width, height follows the art)" },
+    "anim-scene":     { "$value": "240px", "$description": "Animated illustration as a section's art (AnimatedIllustration size=\"md\")" },
+    "anim-scene-lg":  { "$value": "320px", "$description": "Animated illustration as a hero (AnimatedIllustration size=\"lg\")" }
   },
   "shadow": {
     "$type": "shadow",

@@ -21978,5 +21978,869 @@
   "08-super-admin": "7 · Super admin",
   "09-design-system-flow-map": "8 · Design system & flow map",
   "10-mobile-2": "9 · Mobile 2.0 (approved 2026-10-21)"
- }
+ },
+ "animated": [
+  {
+   "name": "anim-check-circle",
+   "kind": "icon",
+   "file": "src/assets/lottie/anim-check-circle.json",
+   "source": {
+    "pack": "Google Material: 200 Animated Icons (UI Action Category)",
+    "author": "Sadjad",
+    "file": "Check_Circle_lottie.json",
+    "licence": "docs/licences/animation-packs.md#sadjad"
+   },
+   "width": 128,
+   "height": 128,
+   "frames": 69,
+   "fps": 30,
+   "loop": false,
+   "rest": 1,
+   "danger": false,
+   "roles": [
+    "@ink"
+   ],
+   "bytes": 5528,
+   "originalBytes": 6634,
+   "screens": [],
+   "uses": "StateScreen success mark (OrderHistory, SearchEntry, LabPackages)"
+  },
+  {
+   "name": "anim-check",
+   "kind": "icon",
+   "file": "src/assets/lottie/anim-check.json",
+   "source": {
+    "pack": "User Interface Animated Icons (200)",
+    "author": "Sadjad",
+    "file": "check/check_lottie.json",
+    "licence": "docs/licences/animation-packs.md#sadjad"
+   },
+   "width": 250,
+   "height": 250,
+   "frames": 43,
+   "fps": 30,
+   "loop": false,
+   "rest": 1,
+   "danger": false,
+   "roles": [
+    "@ink"
+   ],
+   "bytes": 3523,
+   "originalBytes": 4293,
+   "screens": [
+    "Feedback"
+   ],
+   "uses": "Toast success tick"
+  },
+  {
+   "name": "anim-x",
+   "kind": "icon",
+   "file": "src/assets/lottie/anim-x.json",
+   "source": {
+    "pack": "User Interface Animated Icons (200)",
+    "author": "Sadjad",
+    "file": "x/x_lottie.json",
+    "licence": "docs/licences/animation-packs.md#sadjad"
+   },
+   "width": 250,
+   "height": 250,
+   "frames": 42,
+   "fps": 30,
+   "loop": false,
+   "rest": 1,
+   "danger": true,
+   "roles": [
+    "@ink"
+   ],
+   "bytes": 2844,
+   "originalBytes": 3413,
+   "screens": [
+    "Feedback"
+   ],
+   "uses": "Toast error cross"
+  },
+  {
+   "name": "anim-x-circle",
+   "kind": "icon",
+   "file": "src/assets/lottie/anim-x-circle.json",
+   "source": {
+    "pack": "Google Material: 200 Animated Icons (UI Action Category)",
+    "author": "Sadjad",
+    "file": "Cancel_lottie.json",
+    "licence": "docs/licences/animation-packs.md#sadjad"
+   },
+   "width": 128,
+   "height": 128,
+   "frames": 67,
+   "fps": 30,
+   "loop": false,
+   "rest": 1,
+   "danger": true,
+   "roles": [
+    "@ink"
+   ],
+   "bytes": 4736,
+   "originalBytes": 5702,
+   "screens": [],
+   "uses": "StateScreen failure mark"
+  },
+  {
+   "name": "anim-alert-triangle",
+   "kind": "icon",
+   "file": "src/assets/lottie/anim-alert-triangle.json",
+   "source": {
+    "pack": "User Interface Animated Icons (200)",
+    "author": "Sadjad",
+    "file": "alert-triangle/Alt_lottie.json",
+    "licence": "docs/licences/animation-packs.md#sadjad"
+   },
+   "width": 250,
+   "height": 250,
+   "frames": 60,
+   "fps": 30,
+   "loop": false,
+   "rest": 1,
+   "danger": false,
+   "roles": [
+    "@ink"
+   ],
+   "bytes": 7853,
+   "originalBytes": 9156,
+   "screens": [
+    "Feedback"
+   ],
+   "uses": "Toast attention"
+  },
+  {
+   "name": "anim-alert-circle",
+   "kind": "icon",
+   "file": "src/assets/lottie/anim-alert-circle.json",
+   "source": {
+    "pack": "User Interface Animated Icons (200)",
+    "author": "Sadjad",
+    "file": "alert-circle/Alc_lottie.json",
+    "licence": "docs/licences/animation-packs.md#sadjad"
+   },
+   "width": 250,
+   "height": 250,
+   "frames": 54,
+   "fps": 30,
+   "loop": false,
+   "rest": 1,
+   "danger": true,
+   "roles": [
+    "@ink"
+   ],
+   "bytes": 4760,
+   "originalBytes": 5637,
+   "screens": [],
+   "uses": "Console DataState error (WorkflowUI), ErrorStateView badge"
+  },
+  {
+   "name": "anim-file",
+   "kind": "icon",
+   "file": "src/assets/lottie/anim-file.json",
+   "source": {
+    "pack": "User Interface Animated Icons (200)",
+    "author": "Sadjad",
+    "file": "file/file_lottie.json",
+    "licence": "docs/licences/animation-packs.md#sadjad"
+   },
+   "width": 250,
+   "height": 250,
+   "frames": 34,
+   "fps": 30,
+   "loop": false,
+   "rest": 1,
+   "danger": false,
+   "roles": [
+    "@ink"
+   ],
+   "bytes": 8424,
+   "originalBytes": 9652,
+   "screens": [],
+   "uses": "StateScreen empty mark"
+  },
+  {
+   "name": "anim-wifi-off",
+   "kind": "icon",
+   "file": "src/assets/lottie/anim-wifi-off.json",
+   "source": {
+    "pack": "User Interface Animated Icons (200)",
+    "author": "Sadjad",
+    "file": "wifi-off/wifi-off_lottie.json",
+    "licence": "docs/licences/animation-packs.md#sadjad"
+   },
+   "width": 250,
+   "height": 250,
+   "frames": 59,
+   "fps": 30,
+   "loop": false,
+   "rest": 1,
+   "danger": false,
+   "roles": [
+    "@bg",
+    "@ink"
+   ],
+   "bytes": 9091,
+   "originalBytes": 10686,
+   "screens": [],
+   "uses": "StateScreen offline mark (OfflineBoard)"
+  },
+  {
+   "name": "anim-refresh",
+   "kind": "icon",
+   "file": "src/assets/lottie/anim-refresh.json",
+   "source": {
+    "pack": "Google Material: 200 Animated Icons (UI Action Category)",
+    "author": "Sadjad",
+    "file": "Refresh_lottie.json",
+    "licence": "docs/licences/animation-packs.md#sadjad"
+   },
+   "width": 128,
+   "height": 128,
+   "frames": 71,
+   "fps": 30,
+   "loop": true,
+   "rest": 1,
+   "danger": false,
+   "roles": [
+    "@ink"
+   ],
+   "bytes": 6725,
+   "originalBytes": 7909,
+   "screens": [],
+   "uses": "Loader: CareLoader (console DataState), appointments loading, native boot and landing loaders"
+  },
+  {
+   "name": "anim-rotate-cw",
+   "kind": "icon",
+   "file": "src/assets/lottie/anim-rotate-cw.json",
+   "source": {
+    "pack": "User Interface Animated Icons (200)",
+    "author": "Sadjad",
+    "file": "rotate-cw/rotate-cw_lottie.json",
+    "licence": "docs/licences/animation-packs.md#sadjad"
+   },
+   "width": 250,
+   "height": 250,
+   "frames": 45,
+   "fps": 30,
+   "loop": true,
+   "rest": 1,
+   "danger": false,
+   "roles": [
+    "@ink"
+   ],
+   "bytes": 4727,
+   "originalBytes": 5760,
+   "screens": [],
+   "uses": "Busy spinner in Button, SkButton and SubmitButton"
+  },
+  {
+   "name": "anim-folder",
+   "kind": "icon",
+   "file": "src/assets/lottie/anim-folder.json",
+   "source": {
+    "pack": "User Interface Animated Icons (200)",
+    "author": "Sadjad",
+    "file": "folder/folder_lottie.json",
+    "licence": "docs/licences/animation-packs.md#sadjad"
+   },
+   "width": 250,
+   "height": 250,
+   "frames": 46,
+   "fps": 30,
+   "loop": false,
+   "rest": 1,
+   "danger": false,
+   "roles": [
+    "@ink"
+   ],
+   "bytes": 4591,
+   "originalBytes": 5219,
+   "screens": [],
+   "uses": "Console EmptyState default (WorkflowUI)"
+  },
+  {
+   "name": "anim-package",
+   "kind": "icon",
+   "file": "src/assets/lottie/anim-package.json",
+   "source": {
+    "pack": "User Interface Animated Icons (200)",
+    "author": "Sadjad",
+    "file": "package/package_lottie.json",
+    "licence": "docs/licences/animation-packs.md#sadjad"
+   },
+   "width": 250,
+   "height": 250,
+   "frames": 57,
+   "fps": 30,
+   "loop": false,
+   "rest": 1,
+   "danger": false,
+   "roles": [
+    "@ink"
+   ],
+   "bytes": 6966,
+   "originalBytes": 8402,
+   "screens": [
+    "M2Orders"
+   ],
+   "uses": "M2Orders empty tab, member orders empty, pill nav Orders"
+  },
+  {
+   "name": "anim-shopping-cart",
+   "kind": "icon",
+   "file": "src/assets/lottie/anim-shopping-cart.json",
+   "source": {
+    "pack": "User Interface Animated Icons (200)",
+    "author": "Sadjad",
+    "file": "shopping-cart/shopping-cart_lottie.json",
+    "licence": "docs/licences/animation-packs.md#sadjad"
+   },
+   "width": 250,
+   "height": 250,
+   "frames": 54,
+   "fps": 30,
+   "loop": false,
+   "rest": 1,
+   "danger": false,
+   "roles": [
+    "@ink"
+   ],
+   "bytes": 9940,
+   "originalBytes": 12340,
+   "screens": [
+    "M2Orders",
+    "Cart"
+   ],
+   "uses": "M2Orders first order (3D), cart empty"
+  },
+  {
+   "name": "anim-file-text",
+   "kind": "icon",
+   "file": "src/assets/lottie/anim-file-text.json",
+   "source": {
+    "pack": "User Interface Animated Icons (200)",
+    "author": "Sadjad",
+    "file": "file-text/file-text_lottie.json",
+    "licence": "docs/licences/animation-packs.md#sadjad"
+   },
+   "width": 250,
+   "height": 250,
+   "frames": 34,
+   "fps": 30,
+   "loop": false,
+   "rest": 1,
+   "danger": false,
+   "roles": [
+    "@ink"
+   ],
+   "bytes": 10496,
+   "originalBytes": 11970,
+   "screens": [],
+   "uses": "Member records empty (web)"
+  },
+  {
+   "name": "anim-clock",
+   "kind": "icon",
+   "file": "src/assets/lottie/anim-clock.json",
+   "source": {
+    "pack": "User Interface Animated Icons (200)",
+    "author": "Sadjad",
+    "file": "clock/clock_lottie.json",
+    "licence": "docs/licences/animation-packs.md#sadjad"
+   },
+   "width": 250,
+   "height": 250,
+   "frames": 35,
+   "fps": 30,
+   "loop": false,
+   "rest": 1,
+   "danger": false,
+   "roles": [
+    "@ink"
+   ],
+   "bytes": 3095,
+   "originalBytes": 3812,
+   "screens": [],
+   "uses": "Medicines panel empty (web)"
+  },
+  {
+   "name": "anim-calendar",
+   "kind": "icon",
+   "file": "src/assets/lottie/anim-calendar.json",
+   "source": {
+    "pack": "User Interface Animated Icons (200)",
+    "author": "Sadjad",
+    "file": "calendar/calendar_lottie.json",
+    "licence": "docs/licences/animation-packs.md#sadjad"
+   },
+   "width": 250,
+   "height": 250,
+   "frames": 41,
+   "fps": 30,
+   "loop": false,
+   "rest": 1,
+   "danger": false,
+   "roles": [
+    "@ink"
+   ],
+   "bytes": 6765,
+   "originalBytes": 8149,
+   "screens": [],
+   "uses": "Appointments empty (web panel, native booking)"
+  },
+  {
+   "name": "anim-bell-off",
+   "kind": "icon",
+   "file": "src/assets/lottie/anim-bell-off.json",
+   "source": {
+    "pack": "User Interface Animated Icons (200)",
+    "author": "Sadjad",
+    "file": "bell-off/belloff_lottie.json",
+    "licence": "docs/licences/animation-packs.md#sadjad"
+   },
+   "width": 250,
+   "height": 250,
+   "frames": 44,
+   "fps": 30,
+   "loop": false,
+   "rest": 1,
+   "danger": false,
+   "roles": [
+    "@ink"
+   ],
+   "bytes": 10002,
+   "originalBytes": 11654,
+   "screens": [
+    "Notifications"
+   ],
+   "uses": "Notifications empty (native view, web inbox panel)"
+  },
+  {
+   "name": "anim-search-off",
+   "kind": "icon",
+   "file": "src/assets/lottie/anim-search-off.json",
+   "source": {
+    "pack": "Google Material: 200 Animated Icons (UI Action Category)",
+    "author": "Sadjad",
+    "file": "Search_Off_lottie.json",
+    "licence": "docs/licences/animation-packs.md#sadjad"
+   },
+   "width": 128,
+   "height": 128,
+   "frames": 59,
+   "fps": 30,
+   "loop": false,
+   "rest": 1,
+   "danger": false,
+   "roles": [
+    "@ink"
+   ],
+   "bytes": 7693,
+   "originalBytes": 9490,
+   "screens": [],
+   "uses": "Shop search with no results"
+  },
+  {
+   "name": "anim-book-open",
+   "kind": "icon",
+   "file": "src/assets/lottie/anim-book-open.json",
+   "source": {
+    "pack": "User Interface Animated Icons (200)",
+    "author": "Sadjad",
+    "file": "book-open/bookopen_lottie.json",
+    "licence": "docs/licences/animation-packs.md#sadjad"
+   },
+   "width": 250,
+   "height": 250,
+   "frames": 39,
+   "fps": 30,
+   "loop": false,
+   "rest": 1,
+   "danger": false,
+   "roles": [
+    "@ink"
+   ],
+   "bytes": 4259,
+   "originalBytes": 4853,
+   "screens": [
+    "WebNewsroom"
+   ],
+   "uses": "Blog empty"
+  },
+  {
+   "name": "anim-message",
+   "kind": "icon",
+   "file": "src/assets/lottie/anim-message.json",
+   "source": {
+    "pack": "User Interface Animated Icons (200)",
+    "author": "Sadjad",
+    "file": "message/message_lottie.json",
+    "licence": "docs/licences/animation-packs.md#sadjad"
+   },
+   "width": 250,
+   "height": 250,
+   "frames": 67,
+   "fps": 30,
+   "loop": false,
+   "rest": 1,
+   "danger": false,
+   "roles": [
+    "@ink"
+   ],
+   "bytes": 6405,
+   "originalBytes": 7448,
+   "screens": [],
+   "uses": "Member support tickets empty (web)"
+  },
+  {
+   "name": "anim-inbox",
+   "kind": "icon",
+   "file": "src/assets/lottie/anim-inbox.json",
+   "source": {
+    "pack": "User Interface Animated Icons (200)",
+    "author": "Sadjad",
+    "file": "inbox/inbox_lottie.json",
+    "licence": "docs/licences/animation-packs.md#sadjad"
+   },
+   "width": 250,
+   "height": 250,
+   "frames": 62,
+   "fps": 30,
+   "loop": false,
+   "rest": 1,
+   "danger": false,
+   "roles": [
+    "@ink"
+   ],
+   "bytes": 13327,
+   "originalBytes": 15040,
+   "screens": [],
+   "uses": "Doctor clinical inbox empty"
+  },
+  {
+   "name": "anim-home",
+   "kind": "icon",
+   "file": "src/assets/lottie/anim-home.json",
+   "source": {
+    "pack": "User Interface Animated Icons (200)",
+    "author": "Sadjad",
+    "file": "home/home_lottie.json",
+    "licence": "docs/licences/animation-packs.md#sadjad"
+   },
+   "width": 250,
+   "height": 250,
+   "frames": 41,
+   "fps": 30,
+   "loop": false,
+   "rest": 1,
+   "danger": false,
+   "roles": [
+    "@ink"
+   ],
+   "bytes": 5906,
+   "originalBytes": 6719,
+   "screens": [
+    "M2Home",
+    "M2Medicines",
+    "M2Product",
+    "M2Labs",
+    "M2Consults",
+    "M2Vaccines",
+    "M2Insurance",
+    "M2Orders",
+    "M2Insights",
+    "M2Reminders",
+    "M2Water",
+    "M2Trends",
+    "M2ReportUpload",
+    "M2AskAyush",
+    "M2Profile",
+    "M2Steps"
+   ],
+   "uses": "Pill nav: Home becomes current"
+  },
+  {
+   "name": "anim-heart",
+   "kind": "icon",
+   "file": "src/assets/lottie/anim-heart.json",
+   "source": {
+    "pack": "User Interface Animated Icons (200)",
+    "author": "Sadjad",
+    "file": "heart/heart_lottie.json",
+    "licence": "docs/licences/animation-packs.md#sadjad"
+   },
+   "width": 250,
+   "height": 250,
+   "frames": 44,
+   "fps": 30,
+   "loop": false,
+   "rest": 1,
+   "danger": false,
+   "roles": [
+    "@ink"
+   ],
+   "bytes": 3437,
+   "originalBytes": 4148,
+   "screens": [
+    "M2Home",
+    "M2Medicines",
+    "M2Product",
+    "M2Labs",
+    "M2Consults",
+    "M2Vaccines",
+    "M2Insurance",
+    "M2Orders",
+    "M2Insights",
+    "M2Reminders",
+    "M2Water",
+    "M2Trends",
+    "M2ReportUpload",
+    "M2AskAyush",
+    "M2Profile",
+    "M2Steps"
+   ],
+   "uses": "Pill nav: My health becomes current"
+  },
+  {
+   "name": "anim-user",
+   "kind": "icon",
+   "file": "src/assets/lottie/anim-user.json",
+   "source": {
+    "pack": "User Interface Animated Icons (200)",
+    "author": "Sadjad",
+    "file": "user/user_lottie.json",
+    "licence": "docs/licences/animation-packs.md#sadjad"
+   },
+   "width": 250,
+   "height": 250,
+   "frames": 57,
+   "fps": 30,
+   "loop": false,
+   "rest": 1,
+   "danger": false,
+   "roles": [
+    "@ink"
+   ],
+   "bytes": 2365,
+   "originalBytes": 2898,
+   "screens": [
+    "M2Home",
+    "M2Medicines",
+    "M2Product",
+    "M2Labs",
+    "M2Consults",
+    "M2Vaccines",
+    "M2Insurance",
+    "M2Orders",
+    "M2Insights",
+    "M2Reminders",
+    "M2Water",
+    "M2Trends",
+    "M2ReportUpload",
+    "M2AskAyush",
+    "M2Profile",
+    "M2Steps"
+   ],
+   "uses": "Pill nav: Profile becomes current"
+  },
+  {
+   "name": "scene-doctor-consult",
+   "kind": "illustration",
+   "file": "src/assets/lottie/scene-doctor-consult.json",
+   "source": {
+    "pack": "Medical Characters Animated Illustration Pack",
+    "author": "Shakuro",
+    "file": "A doctor consulting a patient/A doctor consulting a patient.json",
+    "licence": "docs/licences/animation-packs.md#shakuro"
+   },
+   "width": 970,
+   "height": 797,
+   "frames": 300,
+   "fps": 60,
+   "loop": true,
+   "rest": 0,
+   "danger": false,
+   "roles": [
+    "illustrationGold",
+    "illustrationHighlight",
+    "illustrationIndigo",
+    "illustrationIndigoSoft",
+    "illustrationInk",
+    "illustrationPeachDeep",
+    "illustrationPeachSoft",
+    "illustrationSkyDeep"
+   ],
+   "bytes": 123070,
+   "originalBytes": 154064,
+   "screens": [
+    "ClinicianConsultRoom"
+   ],
+   "uses": "Consult call waiting room (before video arrives)",
+   "alt": "A doctor and a student talking across a desk"
+  },
+  {
+   "name": "scene-medical-workers",
+   "kind": "illustration",
+   "file": "src/assets/lottie/scene-medical-workers.json",
+   "source": {
+    "pack": "Medical Characters Animated Illustration Pack",
+    "author": "Shakuro",
+    "file": "Medical workers/Medical workers.json",
+    "licence": "docs/licences/animation-packs.md#shakuro"
+   },
+   "width": 730,
+   "height": 1021,
+   "frames": 300,
+   "fps": 60,
+   "loop": true,
+   "rest": 0,
+   "danger": false,
+   "roles": [
+    "illustrationGold",
+    "illustrationHighlight",
+    "illustrationIndigo",
+    "illustrationIndigoSoft",
+    "illustrationInk",
+    "illustrationPeachDeep",
+    "illustrationPeachSoft"
+   ],
+   "bytes": 89084,
+   "originalBytes": 111553,
+   "screens": [
+    "M2Consults"
+   ],
+   "uses": "M2Consults: no doctors listed yet",
+   "alt": "Two clinicians standing together"
+  },
+  {
+   "name": "scene-lab-workers",
+   "kind": "illustration",
+   "file": "src/assets/lottie/scene-lab-workers.json",
+   "source": {
+    "pack": "Medical Characters Animated Illustration Pack",
+    "author": "Shakuro",
+    "file": "Medical lab workers/Medical lab workers.json",
+    "licence": "docs/licences/animation-packs.md#shakuro"
+   },
+   "width": 917,
+   "height": 1023,
+   "frames": 300,
+   "fps": 60,
+   "loop": true,
+   "rest": 0,
+   "danger": false,
+   "roles": [
+    "illustrationGold",
+    "illustrationHighlight",
+    "illustrationIndigo",
+    "illustrationIndigoSoft",
+    "illustrationInk",
+    "illustrationPeach",
+    "illustrationPeachDeep",
+    "illustrationPeachSoft",
+    "illustrationSkyDeep"
+   ],
+   "bytes": 129674,
+   "originalBytes": 161882,
+   "screens": [
+    "M2Labs"
+   ],
+   "uses": "M2Labs: no packages listed yet",
+   "alt": "Two lab workers with a microscope and test tubes"
+  },
+  {
+   "name": "loop-chart-bars",
+   "kind": "chart",
+   "file": "src/assets/lottie/loop-chart-bars.json",
+   "source": {
+    "pack": "Animated Charts (perfect loop)",
+    "author": "Animated Charts pack (UI8 listing)",
+    "file": "chart_6_loop.json",
+    "licence": "docs/licences/animation-packs.md#charts"
+   },
+   "width": 278,
+   "height": 400,
+   "frames": 181,
+   "fps": 60,
+   "loop": true,
+   "rest": 1,
+   "danger": false,
+   "roles": [
+    "illustrationGold",
+    "illustrationGoldDeep",
+    "illustrationGoldSoft",
+    "illustrationIndigo",
+    "illustrationIndigoDeep",
+    "illustrationMint",
+    "illustrationMintDeep",
+    "illustrationPeach",
+    "illustrationPeachDeep",
+    "illustrationPeachSoft"
+   ],
+   "bytes": 16787,
+   "originalBytes": 38928,
+   "screens": [],
+   "uses": "Clinician earnings empty (decoration, never data)"
+  },
+  {
+   "name": "loop-chart-line",
+   "kind": "chart",
+   "file": "src/assets/lottie/loop-chart-line.json",
+   "source": {
+    "pack": "Animated Charts (perfect loop)",
+    "author": "Animated Charts pack (UI8 listing)",
+    "file": "chart_15_loop.json",
+    "licence": "docs/licences/animation-packs.md#charts"
+   },
+   "width": 386,
+   "height": 313,
+   "frames": 91,
+   "fps": 60,
+   "loop": true,
+   "rest": 1,
+   "danger": false,
+   "roles": [
+    "illustrationIndigo",
+    "illustrationIndigoDeep"
+   ],
+   "bytes": 17913,
+   "originalBytes": 20421,
+   "screens": [],
+   "uses": "Telemetry: no AI evaluations yet (decoration, never data)"
+  },
+  {
+   "name": "loop-chart-rings",
+   "kind": "chart",
+   "file": "src/assets/lottie/loop-chart-rings.json",
+   "source": {
+    "pack": "Animated Charts (perfect loop)",
+    "author": "Animated Charts pack (UI8 listing)",
+    "file": "chart_13_loop.json",
+    "licence": "docs/licences/animation-packs.md#charts"
+   },
+   "width": 383,
+   "height": 395,
+   "frames": 181,
+   "fps": 60,
+   "loop": true,
+   "rest": 1,
+   "danger": false,
+   "roles": [
+    "illustrationIndigo",
+    "illustrationIndigoDeep",
+    "illustrationIndigoSoft",
+    "illustrationInkLight",
+    "illustrationMint",
+    "illustrationMintDeep"
+   ],
+   "bytes": 5817,
+   "originalBytes": 6478,
+   "screens": [],
+   "uses": "Telemetry: no health checks yet (decoration, never data)"
+  }
+ ]
 }

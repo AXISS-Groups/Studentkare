@@ -370,7 +370,14 @@ export const skTokens = {
     "phoneFrameMax": 430,
     "panelMax": 640,
     "webContentMax": 1440,
-    "webSidebar": 260
+    "webSidebar": 260,
+    "animInline": 16,
+    "animIcon": 24,
+    "animMark": 48,
+    "animTile": 72,
+    "animSceneSm": 160,
+    "animScene": 240,
+    "animSceneLg": 320
   },
   "shadow": {
     "hairline": "0px 1px 4px 0px #13192E14",
