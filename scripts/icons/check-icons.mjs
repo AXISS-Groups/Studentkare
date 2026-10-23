@@ -19,6 +19,10 @@
 // A required icon counts as used when its name appears as a string literal ('name', "name" or `name`)
 // in the screen's files — e.g. <Icon name="bell" />. Exact-drawing variants can be consolidated in
 // design/icons/aliases.json ({ "lock-3": "lock" }): either name then satisfies the check.
+//
+// Animations (<AnimatedIcon name="anim-…">, <AnimatedIllustration name="scene-…">) are checked the same way:
+// a screen may name only animations in the manifest's `animated` list, and a screen listed under an
+// animation's `screens` must use it (missing animated: …).
 import { readFileSync, existsSync, writeFileSync } from 'node:fs';
 import { join, basename } from 'node:path';
 
@@ -38,6 +42,9 @@ const aliasPath = join(D, 'icons', 'aliases.json');
 const aliases = existsSync(aliasPath) ? JSON.parse(readFileSync(aliasPath, 'utf8')) : {};
 const alts = (n) => [n, aliases[n]].filter(Boolean);
 const BANNED_TEXT = Object.entries(m.textGlyphs).filter(([, v]) => v.useIcon).map(([g]) => g);
+// Animated set (design/icons/animated): names a screen may use, and the screens each must appear in.
+const ANIMATED = new Map((m.animated || []).map((a) => [a.name, a]));
+const ANIMATED_NAME = /(['"`])((?:anim|scene|loop-chart)-[a-z0-9-]+)\1/g;
 
 function checkScreen(screen, files) {
   const need = m.screens[screen];
@@ -54,11 +61,14 @@ function checkScreen(screen, files) {
     illustrations: need.illustrations.filter((n) => !has(n) && !hasFile(n)),
     assets: need.assets.filter((n) => !hasFile(n)),
     textGlyphIcons: (need.textGlyphs || []).map((g) => m.textGlyphs[g]?.useIcon).filter(Boolean).filter((n) => !has(n)),
+    animated: [...ANIMATED.values()].filter((a) => a.screens.includes(screen)).map((a) => a.name).filter((n) => !has(n)),
   };
   const problems = [];
   if (missingFiles.length) problems.push(`files not found: ${missingFiles.join(', ')}`);
   if (/<svg[\s>]/.test(code)) problems.push('raw <svg> in screen code — use <Icon>, <Icon3d>, <Glyph> or an illustration component');
   if (/from ['"]lucide-react['"]/.test(code)) problems.push('lucide-react imported — use the design-system <Icon> so drawings match the canvas');
+  const unknownAnimated = [...new Set([...code.matchAll(ANIMATED_NAME)].map((x) => x[2]))].filter((n) => !ANIMATED.has(n));
+  if (unknownAnimated.length) problems.push(`animations not in the manifest: ${unknownAnimated.join(', ')} — add them through design/icons/animated/lottie.config.json`);
   const textHits = BANNED_TEXT.filter((g) => code.includes(g));
   if (textHits.length) problems.push(`text symbols used as icons: ${textHits.join(' ')} — draw them with <Icon> (see skTextGlyphIcons)`);
   const total = Object.values(missing).reduce((a, b) => a + b.length, 0);
@@ -69,6 +79,10 @@ function checkScreen(screen, files) {
 // canvas screens built under `screens` (files listed). Returns one message per problem.
 function supersededProblems() {
   const out = [];
+  for (const a of ANIMATED.values()) {
+    if (!existsSync(join(root, a.file))) out.push(`animated ${a.name}: ${a.file} is missing (scripts/icons/build-lottie.mjs)`);
+    for (const s of a.screens) if (!m.screens[s]) out.push(`animated ${a.name}: screen ${s} is not a canvas screen`);
+  }
   for (const [screen, entry] of Object.entries(superseded)) {
     const by = Array.isArray(entry?.by) ? entry.by : [];
     if (!m.screens[screen]) out.push(`superseded ${screen}: not a canvas screen (names are in design/screens/INDEX.md)`);

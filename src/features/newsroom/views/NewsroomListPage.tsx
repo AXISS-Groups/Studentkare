@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { useNavigate, useSearchParams } from '@/core/navigation';
 import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
-import { Icon } from '@/design-system/icons';
+import { AnimatedIcon, Icon } from '@/design-system/icons';
 import { PublicSiteHeader, PublicSitePage } from '@/design-system/public-site';
 import { NewsroomListViewModel, readListState, writeListState } from '../viewmodel/NewsroomListViewModel';
 import type { ListState } from '../viewmodel/NewsroomListViewModel';
@@ -138,7 +138,9 @@ export const NewsroomListPage = observer(function NewsroomListPage({ section }: 
 
         {vm.phase === 'ready' && !vm.featured && !vm.items.length ? (
           <div className="sk-news-state" role="status" data-testid="news-empty">
-            <Icon name={section === 'blog' ? 'book' : 'megaphone'} size={28} />
+            {section === 'blog'
+              ? <AnimatedIcon name="anim-book-open" size="mark" color="currentColor" poster={<Icon name="book" size={28} />} />
+              : <Icon name="megaphone" size={28} />}
             <h2>{vm.filtered ? t('news.emptyFiltered') : t('news.empty')}</h2>
             <p>{vm.filtered ? t('news.emptyFilteredBody') : t('news.emptyBody')}</p>
             {vm.filtered ? <button type="button" className="sk-news-btn" onClick={() => { setQuery(''); apply({ category: null, q: '' }); }}>{t('news.clear')}</button> : null}

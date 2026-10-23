@@ -95,7 +95,7 @@ export function MedicationPanel() {
             <button type="button" className="health-button" disabled={mutation.busy} onClick={() => refill(plan)}><RotateCcw size={16} aria-hidden="true" />{t('care.meds.refill')}</button>
           </div>
         </article>)}
-      </div> : <EmptyState title={t('care.meds.emptyTitle')} description={t('care.meds.emptyBody')} action={t('care.meds.add')} onAction={() => setAdding(true)} />}
+      </div> : <EmptyState title={t('care.meds.emptyTitle')} description={t('care.meds.emptyBody')} action={t('care.meds.add')} onAction={() => setAdding(true)} animation="anim-clock" />}
       <div className="wf-notice" style={{ marginTop: 18 }}><ShieldCheck size={18} aria-hidden="true" />{t('care.meds.completion')}</div>
     </DataState>
 

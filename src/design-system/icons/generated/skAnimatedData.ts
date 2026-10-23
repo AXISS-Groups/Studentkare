@@ -16,12 +16,9 @@ export interface SkAnimatedDef {
   readonly load: () => Promise<unknown>;
 }
 
-/** 30 animations. */
+/** 27 animations. */
 export const skAnimated = {
-  "anim-check-circle": { kind: "icon", width: 128, height: 128, loop: false, rest: 1, danger: false, load: () => import("../../../assets/lottie/anim-check-circle.json").then((mod) => mod.default) },
   "anim-check": { kind: "icon", width: 250, height: 250, loop: false, rest: 1, danger: false, load: () => import("../../../assets/lottie/anim-check.json").then((mod) => mod.default) },
-  "anim-x": { kind: "icon", width: 250, height: 250, loop: false, rest: 1, danger: true, load: () => import("../../../assets/lottie/anim-x.json").then((mod) => mod.default) },
-  "anim-x-circle": { kind: "icon", width: 128, height: 128, loop: false, rest: 1, danger: true, load: () => import("../../../assets/lottie/anim-x-circle.json").then((mod) => mod.default) },
   "anim-alert-triangle": { kind: "icon", width: 250, height: 250, loop: false, rest: 1, danger: false, load: () => import("../../../assets/lottie/anim-alert-triangle.json").then((mod) => mod.default) },
   "anim-alert-circle": { kind: "icon", width: 250, height: 250, loop: false, rest: 1, danger: true, load: () => import("../../../assets/lottie/anim-alert-circle.json").then((mod) => mod.default) },
   "anim-file": { kind: "icon", width: 250, height: 250, loop: false, rest: 1, danger: false, load: () => import("../../../assets/lottie/anim-file.json").then((mod) => mod.default) },

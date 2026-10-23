@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import type { Track } from 'livekit-client';
-import { Icon } from '@/design-system/icons';
+import { AnimatedIllustration, Icon } from '@/design-system/icons';
 import { useT, type MessageKey } from '@/i18n';
 import { isLive, useConsultCall, type CallPhase } from './useConsultCall';
 import './consultCall.css';
@@ -61,7 +61,9 @@ export function ConsultCallPanel({ appointmentId, party, beforeJoin, unavailable
     {live && <div className="sk-call-stage">
       {call.remoteVideo
         ? <VideoView track={call.remoteVideo} className="sk-call-remote" label={t('care.call.remoteVideo', { party })} />
-        : <div className="sk-call-placeholder"><Icon name="user" size={40} /><span>{phase === 'connected' ? t('care.call.voiceOnly', { party }) : t('care.call.waitingVideo', { party })}</span></div>}
+        : <div className="sk-call-placeholder">{phase === 'connected'
+          ? <Icon name="user" size={40} />
+          : <span className="sk-call-scene"><AnimatedIllustration name="scene-doctor-consult" size="sm" poster={<Icon name="user" size={40} />} /></span>}<span>{phase === 'connected' ? t('care.call.voiceOnly', { party }) : t('care.call.waitingVideo', { party })}</span></div>}
       <VideoView track={call.cameraOn ? call.localVideo : null} className="sk-call-local" label={t('care.call.localVideo')} />
     </div>}
     <div ref={call.audioSink} className="sk-call-audio" aria-hidden="true" />

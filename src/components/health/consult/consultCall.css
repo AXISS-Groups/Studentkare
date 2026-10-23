@@ -13,6 +13,10 @@
   position: absolute; inset: 0; display: grid; place-items: center; gap: var(--sk-space-8);
   color: var(--sk-color-on-hero-2); text-align: center; padding: var(--sk-space-16);
 }
+.sk-call-scene {
+  display: inline-flex; padding: var(--sk-space-10) var(--sk-space-16);
+  border-radius: var(--sk-radius-lg); background: var(--sk-color-illustration-ink-light);
+}
 .sk-call-local {
   position: absolute; right: var(--sk-space-12); bottom: var(--sk-space-12);
   width: 28%; aspect-ratio: 3 / 4; object-fit: cover;

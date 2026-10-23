@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { Animated, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { observer } from 'mobx-react-lite';
-import { Icon3d } from '@/design-system/icons';
+import { AnimatedIcon, Icon3d } from '@/design-system/icons';
 import { Button, ErrorState, Note, Rise, Skeleton, useOnline } from '@/design-system';
 import {
   M2Card, M2Header, M2Heading, M2_NAV_CLEARANCE, SosButton, m2Text, useAmbientMotion, useLift, useLoop, useOwnPhoneChrome, webAttrs,
@@ -294,7 +294,7 @@ export const M2OrdersView = observer(function M2OrdersView({ vm, links, focusId 
         ) : null}
         {online && firstTime ? (
           <M2Card style={styles.empty} testID="m2-ord-first">
-            <Icon3d name="cart-alt--p3" size={72} />
+            <AnimatedIcon name="anim-shopping-cart" variant="3d" hue="orange" poster={<Icon3d name="cart-alt--p3" size={72} />} />
             <M2Heading style={m2Text.section}>{t('phone.orders.firstTitle')}</M2Heading>
             <Text style={[m2Text.body, styles.centre]}>{t('phone.orders.firstBody')}</Text>
             <Button label={t('phone.orders.browseShop')} onPress={links.shop} testID="m2-ord-browse" />
@@ -302,6 +302,7 @@ export const M2OrdersView = observer(function M2OrdersView({ vm, links, focusId 
         ) : null}
         {online && vm.phase === 'ready' && !firstTime && shown.length === 0 ? (
           <M2Card style={styles.empty} testID={`m2-ord-empty-${tab}`}>
+            <AnimatedIcon name="anim-package" variant="3d" hue="indigo" />
             <M2Heading style={m2Text.section}>{t(tab === 'active' ? 'm2.ord.emptyActive' : 'm2.ord.emptyPast')}</M2Heading>
             <Text style={[m2Text.body, styles.centre]}>{t(tab === 'active' ? 'm2.ord.emptyActiveBody' : 'm2.ord.emptyPastBody')}</Text>
             {tab === 'active' ? <Button label={t('m2.ord.seePast')} variant="secondary" onPress={() => pick('past')} testID="m2-ord-see-past" /> : null}

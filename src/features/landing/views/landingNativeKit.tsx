@@ -1,5 +1,6 @@
 import React from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { AnimatedIcon } from '@/design-system/icons';
 import { observer } from 'mobx-react-lite';
 import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
@@ -171,7 +172,8 @@ export const CatalogSection = observer(({ viewModel, title, emptyText, onShop }:
       return (
         <View style={styles.section} accessibilityLabel={t('landing.kit.loadingPrices')} accessibilityLiveRegion="polite">
           <Text style={styles.heading} accessibilityRole="header">{title}</Text>
-          <ActivityIndicator color={color.action} accessibilityLabel={t('common.loading')} />
+          <AnimatedIcon name="anim-refresh" size="mark" color={color.action} label={t('common.loading')}
+            poster={<ActivityIndicator color={color.action} accessibilityLabel={t('common.loading')} />} />
           {[0, 1, 2].map(key => <View key={key} style={styles.skeleton} />)}
         </View>
       );

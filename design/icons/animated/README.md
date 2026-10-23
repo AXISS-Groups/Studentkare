@@ -39,10 +39,7 @@ Sizes come from the `size.anim-*` tokens.
 <!-- build-lottie:table:start -->
 | Asset | Kind | Source pack → file | Screens (check-icons) | Also used | KB (original → shipped) |
 |---|---|---|---|---|---|
-| `anim-check-circle` | icon | Google Material: 200 Animated Icons (UI Action Category) → `Check_Circle_lottie.json` | — | StateScreen success mark (OrderHistory, SearchEntry, LabPackages) | 6.5 → 5.4 |
-| `anim-check` | icon | User Interface Animated Icons (200) → `check/check_lottie.json` | Feedback | Toast success tick | 4.2 → 3.4 |
-| `anim-x` | icon, may be red | User Interface Animated Icons (200) → `x/x_lottie.json` | Feedback | Toast error cross | 3.3 → 2.8 |
-| `anim-x-circle` | icon, may be red | Google Material: 200 Animated Icons (UI Action Category) → `Cancel_lottie.json` | — | StateScreen failure mark | 5.6 → 4.6 |
+| `anim-check` | icon | User Interface Animated Icons (200) → `check/check_lottie.json` | Feedback | StateScreen success mark (OrderHistory, SearchEntry, LabPackages); Toast success tick | 4.2 → 3.4 |
 | `anim-alert-triangle` | icon | User Interface Animated Icons (200) → `alert-triangle/Alt_lottie.json` | Feedback | Toast attention | 8.9 → 7.7 |
 | `anim-alert-circle` | icon, may be red | User Interface Animated Icons (200) → `alert-circle/Alc_lottie.json` | — | Console DataState error (WorkflowUI), ErrorStateView badge | 5.5 → 4.6 |
 | `anim-file` | icon | User Interface Animated Icons (200) → `file/file_lottie.json` | — | StateScreen empty mark | 9.4 → 8.2 |
@@ -70,5 +67,5 @@ Sizes come from the `size.anim-*` tokens.
 | `loop-chart-line` | chart, loop | Animated Charts (perfect loop) → `chart_15_loop.json` | — | Telemetry: no AI evaluations yet (decoration, never data) | 19.9 → 17.5 |
 | `loop-chart-rings` | chart, loop | Animated Charts (perfect loop) → `chart_13_loop.json` | — | Telemetry: no health checks yet (decoration, never data) | 6.3 → 5.7 |
 
-30 animations, 523.2 KB of JSON in all.
+27 animations, 510.4 KB of JSON in all.
 <!-- build-lottie:table:end -->

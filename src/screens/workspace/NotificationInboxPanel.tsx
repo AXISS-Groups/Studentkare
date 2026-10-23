@@ -102,7 +102,7 @@ export function NotificationInboxPanel() {
             </article>;
           })}
         </div>
-      </> : <EmptyState title={t('notif.emptyTitle')} description={t('care.inbox.emptyBody')} />}
+      </> : <EmptyState title={t('notif.emptyTitle')} description={t('care.inbox.emptyBody')} animation="anim-bell-off" />}
     </DataState>
   </>;
 }

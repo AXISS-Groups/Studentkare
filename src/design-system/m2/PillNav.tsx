@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Animated, Keyboard, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
-import { Icon } from '../icons';
-import type { SkIconName } from '../icons';
+import { AnimatedIcon, Icon } from '../icons';
+import type { SkAnimatedName, SkIconName } from '../icons';
 import { color, focusRing, font, fontWeight, motion, radius, shadow, shadowStyle, size, space } from '../theme';
 import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
@@ -30,15 +30,17 @@ export interface PillNavDestination {
   icon: SkIconName;
   /** The drawing in the white pill when this is the current destination, where the boards draw another (My health: plain heart). */
   currentIcon?: SkIconName;
+  /** The same drawing, animated: it draws itself once when this destination becomes current (still under reduced motion). */
+  currentAnim?: SkAnimatedName;
 }
 
 /** In the boards' order, with the icons from their briefs (`ayush-spark` in the orb). */
 export const PILL_NAV: readonly PillNavDestination[] = [
-  { key: 'home', label: 'm2.nav.home', icon: 'home' },
-  { key: 'orders', label: 'm2.nav.orders', icon: 'box' },
+  { key: 'home', label: 'm2.nav.home', icon: 'home', currentAnim: 'anim-home' },
+  { key: 'orders', label: 'm2.nav.orders', icon: 'box', currentAnim: 'anim-package' },
   { key: 'ayush', label: 'm2.nav.ayush', icon: 'ayush-spark' },
-  { key: 'health', label: 'm2.nav.health', icon: 'heart-3' },
-  { key: 'profile', label: 'm2.nav.profile', icon: 'user-5' },
+  { key: 'health', label: 'm2.nav.health', icon: 'heart-3', currentAnim: 'anim-heart' },
+  { key: 'profile', label: 'm2.nav.profile', icon: 'user-5', currentAnim: 'anim-user' },
 ];
 
 export interface PillNavProps {
@@ -112,7 +114,12 @@ export function PillNav({ current, onSelect, bottomInset = 0, testID = 'pill-nav
                 onPress={() => onSelect(item.key)}
                 style={({ focused }: PressState) => [styles.item, isCurrent ? styles.current : null, focused ? focusRing : null]}
               >
-                <Icon name={isCurrent ? item.currentIcon ?? item.icon : item.icon} size={isCurrent ? 19 : 22} strokeWidth={isCurrent ? 2.3 : 2} color={isCurrent ? color.onHeroCurrent : color.navText} />
+                {isCurrent && item.currentAnim ? (
+                  <AnimatedIcon key={item.key} name={item.currentAnim} size="icon" color={color.onHeroCurrent} background={color.heroCurrent}
+                    poster={<Icon name={item.currentIcon ?? item.icon} size={19} strokeWidth={2.3} color={color.onHeroCurrent} />} />
+                ) : (
+                  <Icon name={isCurrent ? item.currentIcon ?? item.icon : item.icon} size={isCurrent ? 19 : 22} strokeWidth={isCurrent ? 2.3 : 2} color={isCurrent ? color.onHeroCurrent : color.navText} />
+                )}
                 {isCurrent ? <Text numberOfLines={1} style={styles.currentLabel}>{label}</Text> : null}
               </Pressable>
             );

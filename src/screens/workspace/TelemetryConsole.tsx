@@ -80,7 +80,7 @@ export function TelemetryConsole() {
     <section className="wf-card wf-section-gap">
       <div className="wf-panel-heading"><div><span className="care-eyebrow">{t('admin.telemetry.servicesEyebrow')}</span><h3>{t('admin.telemetry.checks')}</h3></div></div>
       <DataState {...health} retry={health.reload}>
-        {health.data?.summary.checks.length ? <div className="wf-record-grid">{health.data.summary.checks.map(check => <article className="wf-card" key={check.name}><span className="wf-record-icon"><ShieldCheck size={22} aria-hidden="true" /></span><h3>{check.name.replace(/_/g, ' ')}</h3><p>{check.detail}</p><span className={`wf-status ${check.status === 'online' ? 'status-accepted' : check.status === 'degraded' ? 'status-requested' : 'status-declined'}`}>{check.status}</span></article>)}</div> : <EmptyState title={t('admin.telemetry.noChecks')} description={t('admin.telemetry.noChecksBody')} />}
+        {health.data?.summary.checks.length ? <div className="wf-record-grid">{health.data.summary.checks.map(check => <article className="wf-card" key={check.name}><span className="wf-record-icon"><ShieldCheck size={22} aria-hidden="true" /></span><h3>{check.name.replace(/_/g, ' ')}</h3><p>{check.detail}</p><span className={`wf-status ${check.status === 'online' ? 'status-accepted' : check.status === 'degraded' ? 'status-requested' : 'status-declined'}`}>{check.status}</span></article>)}</div> : <EmptyState title={t('admin.telemetry.noChecks')} description={t('admin.telemetry.noChecksBody')} animation="loop-chart-rings" />}
       </DataState>
     </section>
 
@@ -90,7 +90,7 @@ export function TelemetryConsole() {
         {metrics ? <div className="wf-metric-grid">{EVAL_METRICS.map(({ key, label }) => {
           const value = metrics[key];
           return <article className="wf-metric-card" key={key}><span className="wf-metric-icon"><Activity size={18} aria-hidden="true" /></span><span>{t(label)}</span><strong>{typeof value === 'number' ? <>{Math.round(value * 100)}<small>%</small></> : '—'}</strong><small>{typeof metrics.avg_latency_ms === 'number' ? t('admin.telemetry.latency', { ms: metrics.avg_latency_ms }) : t('admin.stat.unreported')}</small></article>;
-        })}</div> : <EmptyState title={t('admin.telemetry.noEval')} description={t('admin.telemetry.noEvalBody')} />}
+        })}</div> : <EmptyState title={t('admin.telemetry.noEval')} description={t('admin.telemetry.noEvalBody')} animation="loop-chart-line" />}
       </DataState>
     </section>
   </>;

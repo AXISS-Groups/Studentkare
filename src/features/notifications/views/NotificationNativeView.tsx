@@ -71,7 +71,7 @@ export const NotificationNativeView = observer(function NotificationNativeView({
       ) : null}
       {vm.error && !nothingYet ? <Note tone="danger">{say(t, vm.error)}</Note> : null}
 
-      {!vm.loading && !vm.error && nothingYet ? <EmptyState title={t('notif.emptyTitle')} body={t('notif.emptyBody')} /> : null}
+      {!vm.loading && !vm.error && nothingYet ? <EmptyState title={t('notif.emptyTitle')} body={t('notif.emptyBody')} animation="anim-bell-off" /> : null}
 
       {!nothingYet ? (
         <>

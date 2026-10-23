@@ -1,14 +1,14 @@
 import React, { useEffect, useRef } from 'react';
 import { Animated, Easing, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useT } from '@/i18n';
-import { Icon } from './icons';
-import type { SkIconName } from './icons';
+import { AnimatedIcon, Icon } from './icons';
+import type { SkAnimatedName, SkIconName } from './icons';
 import { color, focusRing, font, fontWeight, motion, radius, shadow, shadowStyle, size, space } from './theme';
 import { Rise, useReducedMotion } from './motion';
 
 export type ToastTone = 'neutral' | 'success' | 'error' | 'attention' | 'info';
 
-interface ToneStyle { icon: SkIconName | null; tile: string; ink: string; bar: string; holds: boolean }
+interface ToneStyle { icon: SkIconName | null; anim?: SkAnimatedName; tile: string; ink: string; bar: string; holds: boolean }
 
 /**
  * Board Feedback: success ticks, an error crosses, a warning holds, info
@@ -17,9 +17,9 @@ interface ToneStyle { icon: SkIconName | null; tile: string; ink: string; bar: s
  */
 const tones: Record<ToastTone, ToneStyle> = {
   neutral: { icon: null, tile: color.surface3, ink: color.action, bar: color.action, holds: false },
-  success: { icon: 'check', tile: color.positiveBg, ink: color.positive, bar: color.positive, holds: false },
+  success: { icon: 'check', anim: 'anim-check', tile: color.positiveBg, ink: color.positive, bar: color.positive, holds: false },
   error: { icon: 'x', tile: color.dangerBg, ink: color.danger, bar: color.dangerFill, holds: true },
-  attention: { icon: 'alert-triangle-4', tile: color.attentionBg, ink: color.attention, bar: color.attention, holds: true },
+  attention: { icon: 'alert-triangle-4', anim: 'anim-alert-triangle', tile: color.attentionBg, ink: color.attention, bar: color.attention, holds: true },
   info: { icon: 'info-4', tile: color.surface3, ink: color.action, bar: color.action, holds: false },
 };
 
@@ -82,7 +82,10 @@ export function Toast({ message, title, tone = 'neutral', action, onDone, onDism
       <View style={styles.row}>
         {c.icon ? (
           <View style={[styles.tile, { backgroundColor: c.tile }]}>
-            <Icon name={c.icon} size={16} strokeWidth={2.6} color={c.ink} />
+            {c.anim ? (
+              <AnimatedIcon name={c.anim} size="inline" color={c.ink} background={c.tile}
+                poster={<Icon name={c.icon} size={16} strokeWidth={2.6} color={c.ink} />} />
+            ) : <Icon name={c.icon} size={16} strokeWidth={2.6} color={c.ink} />}
           </View>
         ) : null}
         <View style={styles.text}>

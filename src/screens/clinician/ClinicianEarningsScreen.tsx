@@ -68,6 +68,7 @@ function EarningsBody({ data }: { data: Earnings }): React.ReactElement {
       <EmptyState
         title={t('partner.clin.earnings.emptyTitle')}
         description={t('partner.clin.earnings.emptyBody')}
+        animation="loop-chart-bars"
       />
     );
   }

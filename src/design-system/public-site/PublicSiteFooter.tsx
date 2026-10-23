@@ -4,7 +4,7 @@ import { getSetting, loadPublicConfig } from '@/data/services/config';
 import { EMERGENCY_NUMBER, TELE_MANAS_PRIMARY } from '@/ai/core/crisisGate';
 import { BrandLogo, Icon } from '../icons';
 import { PublicWordmark } from './PublicSiteHeader';
-import { FOOTER_COLUMNS, FOOTER_SOCIAL, FOOTER_STORES, PUBLIC_ROUTES, publishedUrl } from './publicSiteNav';
+import { ART_CREDIT, FOOTER_COLUMNS, FOOTER_SOCIAL, FOOTER_STORES, PUBLIC_ROUTES, publishedUrl } from './publicSiteNav';
 import './public-site.css';
 
 export interface PublicSiteFooterProps {
@@ -115,6 +115,9 @@ export function PublicSiteFooter({ band, note }: PublicSiteFooterProps): React.R
         <span className="sk-psite-footer__copyright">
           {t('landing.site.footer.copyright', { year: String(new Date().getFullYear()) })}
         </span>
+        <a className="sk-psite-footer__credit" href={ART_CREDIT.href} target="_blank" rel="noopener noreferrer">
+          {t(ART_CREDIT.label)}
+        </a>
         <span className="sk-psite-spacer" />
         <a className="sk-psite-footer__crisis" href={PUBLIC_ROUTES.crisis}>
           {t('landing.site.footer.crisisLead')} <strong>{EMERGENCY_NUMBER}</strong> · {t('landing.site.footer.teleManas')}{' '}

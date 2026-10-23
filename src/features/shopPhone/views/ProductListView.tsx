@@ -90,7 +90,7 @@ export const ProductListView = observer(function ProductListView({ vm, cart, lin
           <ErrorState title={t('phone.shop.failedTitle')} body={t('phone.shop.failedBody')} retryLabel={t('common.tryAgain')} onRetry={() => void vm.loadList()} />
         ) : null}
         {vm.listPhase === 'ready' && vm.listItems.length === 0 ? (
-          <EmptyState title={t('phone.list.emptyTitle')} body={t('phone.list.emptyBody')} action={{ label: t('phone.list.backToShop'), onPress: vm.home }} />
+          <EmptyState title={t('phone.list.emptyTitle')} body={t('phone.list.emptyBody')} action={{ label: t('phone.list.backToShop'), onPress: vm.home }} animation="anim-search-off" />
         ) : null}
         <View style={styles.grid}>
           {vm.sortedList.map((item, i) => (

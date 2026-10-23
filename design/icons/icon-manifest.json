@@ -21981,31 +21981,6 @@
  },
  "animated": [
   {
-   "name": "anim-check-circle",
-   "kind": "icon",
-   "file": "src/assets/lottie/anim-check-circle.json",
-   "source": {
-    "pack": "Google Material: 200 Animated Icons (UI Action Category)",
-    "author": "Sadjad",
-    "file": "Check_Circle_lottie.json",
-    "licence": "docs/licences/animation-packs.md#sadjad"
-   },
-   "width": 128,
-   "height": 128,
-   "frames": 69,
-   "fps": 30,
-   "loop": false,
-   "rest": 1,
-   "danger": false,
-   "roles": [
-    "@ink"
-   ],
-   "bytes": 5528,
-   "originalBytes": 6634,
-   "screens": [],
-   "uses": "StateScreen success mark (OrderHistory, SearchEntry, LabPackages)"
-  },
-  {
    "name": "anim-check",
    "kind": "icon",
    "file": "src/assets/lottie/anim-check.json",
@@ -22030,59 +22005,7 @@
    "screens": [
     "Feedback"
    ],
-   "uses": "Toast success tick"
-  },
-  {
-   "name": "anim-x",
-   "kind": "icon",
-   "file": "src/assets/lottie/anim-x.json",
-   "source": {
-    "pack": "User Interface Animated Icons (200)",
-    "author": "Sadjad",
-    "file": "x/x_lottie.json",
-    "licence": "docs/licences/animation-packs.md#sadjad"
-   },
-   "width": 250,
-   "height": 250,
-   "frames": 42,
-   "fps": 30,
-   "loop": false,
-   "rest": 1,
-   "danger": true,
-   "roles": [
-    "@ink"
-   ],
-   "bytes": 2844,
-   "originalBytes": 3413,
-   "screens": [
-    "Feedback"
-   ],
-   "uses": "Toast error cross"
-  },
-  {
-   "name": "anim-x-circle",
-   "kind": "icon",
-   "file": "src/assets/lottie/anim-x-circle.json",
-   "source": {
-    "pack": "Google Material: 200 Animated Icons (UI Action Category)",
-    "author": "Sadjad",
-    "file": "Cancel_lottie.json",
-    "licence": "docs/licences/animation-packs.md#sadjad"
-   },
-   "width": 128,
-   "height": 128,
-   "frames": 67,
-   "fps": 30,
-   "loop": false,
-   "rest": 1,
-   "danger": true,
-   "roles": [
-    "@ink"
-   ],
-   "bytes": 4736,
-   "originalBytes": 5702,
-   "screens": [],
-   "uses": "StateScreen failure mark"
+   "uses": "StateScreen success mark (OrderHistory, SearchEntry, LabPackages); Toast success tick"
   },
   {
    "name": "anim-alert-triangle",

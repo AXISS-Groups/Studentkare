@@ -2,6 +2,7 @@ import React from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { color, focusRing, font, fontWeight, motion, radius, size, space, webOnly } from './theme';
 import { useReducedMotion } from './motion';
+import { AnimatedIcon } from './icons';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'dangerOutline';
 
@@ -79,7 +80,8 @@ export function Button({
     >
       <View style={styles.row}>
         {busy ? (
-          <ActivityIndicator size="small" color={fg} accessibilityElementsHidden importantForAccessibility="no" aria-hidden />
+          <AnimatedIcon name="anim-rotate-cw" size="inline" color={fg} background={tone.bg}
+            poster={<ActivityIndicator size="small" color={fg} accessibilityElementsHidden importantForAccessibility="no" aria-hidden />} />
         ) : icon ? (
           <View importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
             {icon}
