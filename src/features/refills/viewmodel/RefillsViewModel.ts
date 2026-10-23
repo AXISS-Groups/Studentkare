@@ -83,11 +83,15 @@ export class RefillsViewModel implements ViewModel {
   sheetValue = '';
   sheetError: Said | null = null;
 
-  constructor(private readonly api: RefillsApi = refillsApi) {
+  /**
+   * `onReminderSet` runs after a refill reminder is saved: on the phone it is
+   * the moment to ask for notifications (src/native/M2RefillScreens.tsx).
+   */
+  constructor(private readonly api: RefillsApi = refillsApi, private readonly onReminderSet?: () => void) {
     this.list = new Resource(() => api.list());
     this.plans = new Resource(() => api.plans());
     this.ordered = new Resource(() => api.orderedItems());
-    makeAutoObservable<RefillsViewModel, 'api'>(this, { api: false, list: false, plans: false, ordered: false }, { autoBind: true });
+    makeAutoObservable<RefillsViewModel, 'api' | 'onReminderSet'>(this, { api: false, onReminderSet: false, list: false, plans: false, ordered: false }, { autoBind: true });
   }
 
   static emptyFields(): SetupFields {
@@ -207,6 +211,7 @@ export class RefillsViewModel implements ViewModel {
         this.setupOpen = false;
         this.status = { key: 'refill.status.saved' };
       });
+      this.onReminderSet?.();
     } catch (error) {
       runInAction(() => { this.setupError = refillSaid(error, 'refill.status.failed'); });
     } finally {

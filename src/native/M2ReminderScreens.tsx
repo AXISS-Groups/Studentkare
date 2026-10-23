@@ -6,7 +6,7 @@ import { observer } from 'mobx-react-lite';
 import { useOnline } from '@/design-system';
 import { M2ActiveProvider } from '@/design-system/m2';
 import { color } from '@/design-system/theme';
-import { useT } from '@/i18n';
+import { useLanguage, useT } from '@/i18n';
 import { MedsTodayViewModel } from '@/features/reminders/viewmodel/MedsTodayViewModel';
 import { MedicineRemindersViewModel } from '@/features/reminders/viewmodel/MedicineRemindersViewModel';
 import { WaterViewModel } from '@/features/reminders/viewmodel/WaterViewModel';
@@ -15,6 +15,7 @@ import { M2RemindersView } from '@/features/reminders/views/M2RemindersView';
 import { M2WaterView } from '@/features/reminders/views/M2WaterView';
 import { useUndoClock } from '@/features/reminders/views/useUndoClock';
 import { createReminderScheduler, createWaterReminderScheduler } from './hardware/notifications';
+import { pushPermissionGranted } from './hardware/push';
 import { useNavigate } from './navigation';
 
 /**
@@ -48,17 +49,26 @@ function useWords(): React.MutableRefObject<ReturnType<typeof useT>> {
   return words;
 }
 
+/** The app language, read when the phone registers for push (the server writes pushes in it). */
+function useLangRef(): React.MutableRefObject<string> {
+  const { lang } = useLanguage();
+  const ref = useRef<string>(lang);
+  ref.current = lang;
+  return ref;
+}
+
 export const RemindersScreen = observer(function RemindersScreen(): React.ReactElement {
   const navigate = useNavigate();
   const back = useBack();
   const online = useOnline();
   const words = useWords();
+  const lang = useLangRef();
   const [vm] = useState(() => new MedsTodayViewModel());
   const [reminders] = useState(() => new MedicineRemindersViewModel(createReminderScheduler(() => ({
     title: words.current('reminders.notifyTitle'),
     body: words.current('reminders.notifyBody'),
     channelName: words.current('reminders.channel'),
-  }))));
+  }), () => void pushPermissionGranted(words.current, lang.current))));
   useEffect(() => { vm.setOnline(online); }, [vm, online]);
   useEffect(() => {
     vm.load();
@@ -85,12 +95,13 @@ export const WaterScreen = observer(function WaterScreen(): React.ReactElement {
   const back = useBack();
   const online = useOnline();
   const words = useWords();
+  const lang = useLangRef();
   const [vm] = useState(() => new WaterViewModel());
   const [reminders] = useState(() => new WaterRemindersViewModel(createWaterReminderScheduler(() => ({
     title: words.current('m2r.wrem.notifyTitle'),
     body: words.current('m2r.wrem.notifyBody'),
     channelName: words.current('m2r.wrem.channel'),
-  }))));
+  }), () => void pushPermissionGranted(words.current, lang.current))));
   useEffect(() => { vm.setOnline(online); }, [vm, online]);
   useEffect(() => {
     vm.load();

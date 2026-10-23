@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useIsFocused, useNavigation, useRoute } from '@react-navigation/native';
@@ -11,6 +11,8 @@ import { RefillsViewModel } from '@/features/refills/viewmodel/RefillsViewModel'
 import { ReorderViewModel } from '@/features/refills/viewmodel/ReorderViewModel';
 import { M2RefillsView } from '@/features/refills/views/M2RefillsView';
 import { M2ReorderView } from '@/features/refills/views/M2ReorderView';
+import { useLanguage, useT } from '@/i18n';
+import { createPushController } from './hardware/push';
 import { useNavigate } from './navigation';
 
 /**
@@ -33,7 +35,14 @@ export const RefillsScreen = observer(function RefillsScreen(): React.ReactEleme
   const focus = text(params?.id);
   const fromOrder = text(params?.orderId);
   const fromItem = text(params?.itemId);
-  const [vm] = useState(() => new RefillsViewModel());
+  const t = useT();
+  const { lang } = useLanguage();
+  const words = useRef({ t, lang });
+  words.current = { t, lang };
+  // A refill reminder is the moment notifications make sense: ask then, never at launch.
+  const [vm] = useState(() => new RefillsViewModel(undefined, () => {
+    void createPushController(words.current.t, () => words.current.lang).enable().catch(() => undefined);
+  }));
   const [reorder, setReorder] = useState<ReorderViewModel | null>(null);
 
   useEffect(() => { vm.setOnline(online); reorder?.setOnline(online); }, [vm, reorder, online]);

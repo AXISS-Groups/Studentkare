@@ -68,6 +68,13 @@ export function resolveDeepLink(path: string, status: NativeSessionStatus): Deep
       const orderId = second === undefined ? undefined : safeDecode(second);
       return orderId ? { name: 'Orders', params: { orderId } } : { name: 'Orders' };
     }
+    // Where a tapped push opens (backend/core/push_copy.CATEGORIES path). All signed in.
+    case 'notifications':
+      return signedIn ? { name: 'Notifications' } : { name: 'SignIn' };
+    case 'medications':
+      return signedIn ? { name: 'MedicineReminders' } : { name: 'SignIn' };
+    case 'health-camp':
+      return signedIn ? { name: 'Camps' } : { name: 'SignIn' };
     case 'consult':
     case 'consults':
       return signedIn ? { name: 'Consults' } : { name: 'Consult' };
@@ -100,6 +107,13 @@ export function deepLinkState(path: string, status: NativeSessionStatus): RootSt
 }
 
 /**
+ * A tapped push as a link: its path (a site path such as `/orders`) on the app scheme.
+ */
+export function pushLink(path: string): string {
+  return `studentkare:/${path.startsWith('/') ? path : `/${path}`}`;
+}
+
+/**
  * Linking options for the NavigationContainer. The first URL is held until the
  * session check settles (the stack does not exist before that); later links
  * use whatever the session is when they arrive.
@@ -108,9 +122,12 @@ export function createLinking(
   readStatus: () => NativeSessionStatus,
   sessionSettled: () => Promise<void>,
   initialUrl: () => Promise<string | null>,
+  subscribe?: LinkingOptions<RootStackParamList>['subscribe'],
 ): LinkingOptions<RootStackParamList> {
   return {
     prefixes: LINK_PREFIXES,
+    // Links and tapped pushes (src/native/App.tsx); without it, links only.
+    ...(subscribe ? { subscribe } : {}),
     async getInitialURL() {
       const url = await initialUrl();
       await sessionSettled();

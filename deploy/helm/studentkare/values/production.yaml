@@ -127,6 +127,10 @@ backend:
     SLACK_DEFAULT_CHANNEL: ""
     SLACK_OPS_CHANNEL: ""
     SLACK_BOOKING_CHANNEL: ""
+    # Web Push (services/push_providers.py): the VAPID public key (also served to browsers)
+    # and the contact the push services see (mailto: or https://).
+    VAPID_PUBLIC_KEY: ""
+    VAPID_SUBJECT: ""
     FIREBASE_ENABLED: ""
     FIREBASE_API_KEY: ""         # Firebase web config key (public by design)
     FIREBASE_AUTH_DOMAIN: ""
@@ -182,6 +186,8 @@ backend:
     POSTAL_SERVER_API_KEY: ""
     OPENWA_API_KEY: ""
     SLACK_BOT_TOKEN: ""
+    EXPO_ACCESS_TOKEN: ""             # Expo access token (enhanced push security on); empty = no phone push
+    VAPID_PRIVATE_KEY: ""             # npx web-push generate-vapid-keys; empty = no browser push
     FIREBASE_SERVER_KEY: ""
     FIREBASE_SERVICE_ACCOUNT_JSON: ""
     POSTHOG_API_KEY: ""

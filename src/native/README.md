@@ -196,9 +196,23 @@ is no blog link. The web must serve `/.well-known/apple-app-site-association` an
 
 The phone asks only for what a screen uses: camera ("Take a photo"), approximate location while in
 use (Find care; Android blocks `ACCESS_FINE_LOCATION`, iOS defaults to reduced accuracy), motion,
-Apple Health / Health Connect read (Steps), notifications (local reminders). There is no microphone:
+Apple Health / Health Connect read (Steps), notifications (local reminders and server pushes: asked
+when the student turns on their first reminder or refill reminder, or taps Turn on in Notification
+settings; never at launch). There is no microphone:
 `RECORD_AUDIO`/`MODIFY_AUDIO_SETTINGS` are blocked and `NSMicrophoneUsageDescription` is gone until
 phone video consults ship. `src/native/__tests__/osPermissions.test.ts` holds this in place.
+
+## Push notifications
+
+Server pushes come through the Expo push service (`src/native/hardware/push.ts`; backend
+`services/push_dispatch.py`). Setup (Expo access token, APNs key and FCM v1 service account in EAS,
+VAPID keys for the web) is in `docs/push-notifications.md`. The phone registers its Expo push token
+once permission is given and `EAS_PROJECT_ID` is set; signing out revokes it. Android channels:
+safety, reminders, orders, camps, announcements (named in the app language, accent from the
+`brand-navy` token via `app.config.ts`); iOS categories hide the text behind "Student Kare
+notification" when previews are off. A tap opens the push's path through `linking.ts`
+(`/notifications`, `/orders`, `/medications`, `/health-camp`; Sign in when signed out). Push text is
+always the server's fixed generic line: never a medicine, test, result or condition.
 
 ## Crash reporting
 

@@ -90,12 +90,7 @@
           "isAndroidForegroundServiceEnabled": false
         }
       ],
-      [
-        "expo-notifications",
-        {
-          "color": "#3525CD"
-        }
-      ],
+      "expo-notifications",
       [
         "expo-sensors",
         {

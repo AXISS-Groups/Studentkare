@@ -9,6 +9,7 @@
 // come from the environment (EAS secrets / CI), and are simply left out when unset.
 import type { ConfigContext, ExpoConfig } from 'expo/config';
 import pkg from './package.json';
+import tokens from './design/tokens/studentkare.tokens.json';
 
 const VERSION_PART_LIMIT = 100;
 const MINOR_FACTOR = VERSION_PART_LIMIT;
@@ -32,6 +33,23 @@ export function nativeBuildNumber(version: string): number {
     throw new Error(`package.json version "${version}" must be MAJOR.MINOR.PATCH with each part below ${VERSION_PART_LIMIT}`);
   }
   return major * MAJOR_FACTOR + minor * MINOR_FACTOR + patch;
+}
+
+/**
+ * The accent of the Android notification icon: the brand navy token (never a
+ * hex here). The icon itself is the app icon until a white silhouette
+ * (notification-icon.png, 96×96) is added to assets/brand.
+ */
+export const NOTIFICATION_COLOUR: string = tokens.color.light['brand-navy'].$value;
+
+type PluginEntry = string | [] | [string] | [string, unknown];
+
+/** expo-notifications with the token colour; every other plugin unchanged. */
+export function withNotificationColour(plugins: PluginEntry[]): PluginEntry[] {
+  return plugins.map((plugin) => {
+    const name = Array.isArray(plugin) ? plugin[0] : plugin;
+    return name === 'expo-notifications' ? ['expo-notifications', { color: NOTIFICATION_COLOUR }] : plugin;
+  });
 }
 
 function optionalEnv(name: string): string | undefined {
@@ -78,7 +96,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
         },
       ],
     },
-    plugins: [...(config.plugins ?? []), ...sentryPlugin],
+    plugins: [...withNotificationColour(config.plugins ?? []), ...sentryPlugin],
     extra: {
       ...config.extra,
       ...(projectId ? { eas: { projectId } } : {}),

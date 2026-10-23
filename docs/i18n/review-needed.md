@@ -493,3 +493,128 @@ inbox label for a back-in-stock notice.
 | `reorder.placeFailed` | The order wasn’t placed. Nothing was charged. Try again. | ఆర్డర్ కాలేదు. ఏమీ ఛార్జ్ కాలేదు. మళ్లీ ప్రయత్నించండి. | ऑर्डर नहीं हुआ। कोई पैसा नहीं कटा। फिर से कोशिश करें। |
 | `reorder.newPackNote` | When it arrives, tap “I got a new pack” on Refills to count it. | అది వచ్చాక, రీఫిల్స్‌లో “కొత్త ప్యాక్ వచ్చింది” నొక్కి లెక్కించండి. | आने पर, रीफ़िल में “नया पैक मिल गया” दबाकर गिनें। |
 | `reorder.planNote` | This medicine came from Medicines today, not a shop order, so a pharmacy refills it. | ఈ మందు షాప్ ఆర్డర్ నుండి కాదు, ఈరోజు మందుల నుండి వచ్చింది, కాబట్టి ఫార్మసీ రీఫిల్ చేస్తుంది. | यह दवा शॉप ऑर्डर से नहीं, आज की दवाओं से आई है, इसलिए फ़ार्मेसी इसे रीफ़िल करती है। |
+
+## push — push notifications, channels per category, announcements (feat/push-notifications, `src/i18n/areas/push.ts`)
+
+Notes for the reviewer: `push.lock.*` are also the lines the server sends to a lock screen (`backend/core/push_copy.py` LOCK_SCREEN, te/hi there too): change both together. They must stay generic: never a medicine, test, condition, result or camp service. The Hindi and Telugu health words in `HEALTH_TERMS` (same file) are drafts too.
+
+| Key | English | తెలుగు | हिंदी |
+|---|---|---|---|
+| `push.cat.SAFETY` | Safety & account | భద్రత & ఖాతా | सुरक्षा और खाता |
+| `push.cat.SAFETY.desc` | SOS updates, new sign-ins, “This wasn’t me” and account deletion. | SOS అప్‌డేట్‌లు, కొత్త సైన్-ఇన్‌లు, “ఇది నేను కాదు”, ఖాతా తొలగింపు. | SOS अपडेट, नए साइन-इन, “यह मैं नहीं था” और खाता हटाना। |
+| `push.cat.CARE` | Results & doctors | ఫలితాలు & డాక్టర్లు | नतीजे और डॉक्टर |
+| `push.cat.CARE.desc` | Report ready, doctor messages and consult reminders. | రిపోర్ట్ సిద్ధం, డాక్టర్ సందేశాలు, కన్సల్ట్ రిమైండర్‌లు. | रिपोर्ट तैयार, डॉक्टर के संदेश और कंसल्ट रिमाइंडर। |
+| `push.cat.REMINDERS` | Medicine reminders | మందుల రిమైండర్‌లు | दवा के रिमाइंडर |
+| `push.cat.REMINDERS.desc` | Doses and refills you set up. | మీరు సెట్ చేసిన డోస్‌లు, రీఫిల్స్. | आपकी सेट की गई खुराकें और रीफ़िल। |
+| `push.cat.ORDERS` | Orders | ఆర్డర్లు | ऑर्डर |
+| `push.cat.ORDERS.desc` | Order status, handovers, refunds and items back in stock. | ఆర్డర్ స్థితి, హ్యాండోవర్‌లు, రీఫండ్‌లు, మళ్లీ స్టాక్‌లోకి వచ్చినవి. | ऑर्डर की स्थिति, हैंडओवर, रिफ़ंड और वापस स्टॉक में आई चीज़ें। |
+| `push.cat.CAMPS` | Health camps | హెల్త్ క్యాంప్‌లు | हेल्थ कैंप |
+| `push.cat.CAMPS.desc` | Bookings, waitlist places and camp reminders. | బుకింగ్‌లు, వెయిట్‌లిస్ట్ స్థానాలు, క్యాంప్ రిమైండర్‌లు. | बुकिंग, वेटलिस्ट जगहें और कैंप रिमाइंडर। |
+| `push.cat.ACCOUNT` | Verification | ధృవీకరణ | सत्यापन |
+| `push.cat.ACCOUNT.desc` | College ID checks and leaving your campus. | కాలేజ్ ID తనిఖీలు, మీ క్యాంపస్ వదిలి వెళ్లడం. | कॉलेज ID जाँच और अपना कैंपस छोड़ना। |
+| `push.cat.ANNOUNCEMENTS` | Campus announcements | క్యాంపస్ ప్రకటనలు | कैंपस घोषणाएँ |
+| `push.cat.ANNOUNCEMENTS.desc` | Notices from Student Kare for your campus. Never about anyone’s health. | మీ క్యాంపస్ కోసం Student Kare నుండి నోటీసులు. ఎవరి ఆరోగ్యం గురించీ కాదు. | आपके कैंपस के लिए Student Kare की सूचनाएँ। कभी किसी की सेहत के बारे में नहीं। |
+| `push.ch.PUSH` | App | యాప్ | ऐप |
+| `push.ch.EMAIL` | Email | ఈమెయిల్ | ईमेल |
+| `push.chipSpoken` | {channel} for {category} | {category} కోసం {channel} | {category} के लिए {channel} |
+| `push.alwaysOn` | Always on | ఎల్లప్పుడూ ఆన్ | हमेशा चालू |
+| `push.off` | Off | ఆఫ్ | बंद |
+| `push.safetyLocked` | Safety messages can’t be turned off. | భద్రతా సందేశాలను ఆఫ్ చేయలేరు. | सुरक्षा संदेश बंद नहीं किए जा सकते। |
+| `push.inAppNote` | Everything also stays in your in-app notifications, where the details are. | అన్నీ మీ యాప్ నోటిఫికేషన్‌లలో కూడా ఉంటాయి, వివరాలు అక్కడే ఉంటాయి. | सब कुछ आपकी ऐप सूचनाओं में भी रहता है, विवरण वहीं हैं। |
+| `push.externalNote` | WhatsApp and email carry reminders only; other updates are in the app. | WhatsApp, ఈమెయిల్ రిమైండర్‌లు మాత్రమే పంపుతాయి; మిగతా అప్‌డేట్‌లు యాప్‌లో ఉంటాయి. | WhatsApp और ईमेल पर सिर्फ़ रिमाइंडर जाते हैं; बाकी अपडेट ऐप में हैं। |
+| `push.preview.cap` | Lock screen preview · tap a category | లాక్ స్క్రీన్ ప్రివ్యూ · ఒక వర్గాన్ని నొక్కండి | लॉक स्क्रीन प्रीव्यू · कोई श्रेणी दबाएँ |
+| `push.preview.spoken` | Lock screen preview for {category}: {title}, {text} | {category} కోసం లాక్ స్క్రీన్ ప్రివ్యూ: {title}, {text} | {category} के लिए लॉक स्क्रीन प्रीव्यू: {title}, {text} |
+| `push.preview.held` | Held until {time} (quiet hours) | {time} వరకు ఆపి ఉంచబడింది (నిశ్శబ్ద సమయం) | {time} तक रोका गया (शांत समय) |
+| `push.preview.now` | now | ఇప్పుడు | अभी |
+| `push.hide.title` | Hide health details on the lock screen | లాక్ స్క్రీన్‌పై ఆరోగ్య వివరాలు దాచండి | लॉक स्क्रीन पर सेहत की जानकारी छिपाएँ |
+| `push.hide.body` | Messages say “new update” — never a result, medicine or diagnosis — until you open the app. | మీరు యాప్ తెరిచే వరకు సందేశాలు “కొత్త అప్‌డేట్” అని మాత్రమే చెబుతాయి — ఫలితం, మందు, నిర్ధారణ ఎప్పుడూ కాదు. | जब तक आप ऐप न खोलें, संदेश सिर्फ़ “नया अपडेट” कहते हैं — कभी नतीजा, दवा या निदान नहीं। |
+| `push.lock.SAFETY` | You have an important update in Student Kare. Open the app now. | Student Kare లో మీకు ముఖ్యమైన అప్‌డేట్ ఉంది. ఇప్పుడే యాప్ తెరవండి. | Student Kare में आपके लिए एक ज़रूरी अपडेट है। अभी ऐप खोलें। |
+| `push.lock.CARE` | You have a new update in Student Kare. Open the app to see it. | Student Kare లో మీకు కొత్త అప్‌డేట్ ఉంది. చూడటానికి యాప్ తెరవండి. | Student Kare में आपके लिए एक नया अपडेट है। देखने के लिए ऐप खोलें। |
+| `push.lock.REMINDERS` | You have a reminder in Student Kare. | Student Kare లో మీకు ఒక రిమైండర్ ఉంది. | Student Kare में आपके लिए एक रिमाइंडर है। |
+| `push.lock.ORDERS` | You have an order update in Student Kare. | Student Kare లో మీ ఆర్డర్ అప్‌డేట్ ఉంది. | Student Kare में आपके ऑर्डर का अपडेट है। |
+| `push.lock.CAMPS` | You have an update about a booking in Student Kare. | Student Kare లో మీ బుకింగ్ గురించి అప్‌డేట్ ఉంది. | Student Kare में आपकी बुकिंग का अपडेट है। |
+| `push.lock.ACCOUNT` | You have an account update in Student Kare. | Student Kare లో మీ ఖాతా అప్‌డేట్ ఉంది. | Student Kare में आपके खाते का अपडेट है। |
+| `push.lock.ANNOUNCEMENTS` | The announcement’s own title and text, checked to say nothing about health. | ప్రకటన యొక్క స్వంత శీర్షిక, వచనం — ఆరోగ్యం గురించి ఏమీ లేదని తనిఖీ చేసినవి. | घोषणा का अपना शीर्षक और पाठ, जाँचा हुआ कि उसमें सेहत की कोई बात नहीं। |
+| `push.device.phone` | Notifications on this phone | ఈ ఫోన్‌లో నోటిఫికేషన్‌లు | इस फ़ोन पर सूचनाएँ |
+| `push.device.browser` | Notifications in this browser | ఈ బ్రౌజర్‌లో నోటిఫికేషన్‌లు | इस ब्राउज़र में सूचनाएँ |
+| `push.device.on` | On. Pushes for the categories above reach this device. | ఆన్. పై వర్గాల పుష్‌లు ఈ డివైస్‌కు వస్తాయి. | चालू। ऊपर की श्रेणियों के पुश इस डिवाइस पर आते हैं। |
+| `push.device.off` | Off. Turn them on to get pushes here. | ఆఫ్. ఇక్కడ పుష్‌లు పొందడానికి ఆన్ చేయండి. | बंद। यहाँ पुश पाने के लिए चालू करें। |
+| `push.device.denied` | Blocked in your device settings. Allow notifications for Student Kare there, then come back. | మీ డివైస్ సెట్టింగ్‌లలో బ్లాక్ చేయబడింది. అక్కడ Student Kare కు నోటిఫికేషన్‌లు అనుమతించి, తిరిగి రండి. | आपकी डिवाइस सेटिंग में रोका गया है। वहाँ Student Kare के लिए सूचनाएँ चालू करें, फिर लौटें। |
+| `push.device.unsupported` | This browser can’t receive notifications. Your in-app notifications still work. | ఈ బ్రౌజర్ నోటిఫికేషన్‌లు అందుకోలేదు. మీ యాప్ నోటిఫికేషన్‌లు పని చేస్తాయి. | यह ब्राउज़र सूचनाएँ नहीं ले सकता। आपकी ऐप सूचनाएँ फिर भी काम करती हैं। |
+| `push.device.unavailable` | Push isn’t set up on our side yet. Your in-app notifications, WhatsApp and email still work. | మా వైపు పుష్ ఇంకా సెట్ కాలేదు. యాప్ నోటిఫికేషన్‌లు, WhatsApp, ఈమెయిల్ పని చేస్తాయి. | हमारी तरफ़ पुश अभी सेट नहीं है। ऐप सूचनाएँ, WhatsApp और ईमेल काम करते हैं। |
+| `push.device.turnOn` | Turn on | ఆన్ చేయండి | चालू करें |
+| `push.device.turnOff` | Turn off | ఆఫ్ చేయండి | बंद करें |
+| `push.device.working` | One moment… | ఒక్క క్షణం… | एक पल… |
+| `push.device.failed` | That didn’t work. Nothing changed — try again. | అది పని చేయలేదు. ఏమీ మారలేదు — మళ్లీ ప్రయత్నించండి. | यह नहीं हुआ। कुछ नहीं बदला — फिर कोशिश करें। |
+| `push.offers.title` | Partner offers | భాగస్వామి ఆఫర్‌లు | पार्टनर ऑफ़र |
+| `push.offers.body` | Discounts from listed partners, by push. Never based on your health. Off until you turn it on. | జాబితాలోని భాగస్వాముల తగ్గింపులు, పుష్ ద్వారా. మీ ఆరోగ్యం ఆధారంగా ఎప్పుడూ కాదు. మీరు ఆన్ చేసే వరకు ఆఫ్. | सूचीबद्ध पार्टनर की छूट, पुश से। कभी आपकी सेहत के आधार पर नहीं। जब तक आप चालू न करें, बंद। |
+| `push.android.safety` | Safety and account | భద్రత మరియు ఖాతా | सुरक्षा और खाता |
+| `push.android.reminders` | Reminders and updates | రిమైండర్‌లు, అప్‌డేట్‌లు | रिमाइंडर और अपडेट |
+| `push.android.orders` | Orders | ఆర్డర్లు | ऑर्डर |
+| `push.android.camps` | Health camps | హెల్త్ క్యాంప్‌లు | हेल्थ कैंप |
+| `push.android.announcements` | Announcements | ప్రకటనలు | घोषणाएँ |
+| `push.ios.open` | Open | తెరవండి | खोलें |
+| `push.ios.hidden` | Student Kare notification | Student Kare నోటిఫికేషన్ | Student Kare सूचना |
+| `push.adm.title` | Announcements | ప్రకటనలు | घोषणाएँ |
+| `push.adm.description` | Push a notice to students of one campus or every campus, now or later. Never about anyone’s health; counts only. | ఒక క్యాంపస్ లేదా అన్ని క్యాంపస్‌ల విద్యార్థులకు ఇప్పుడు లేదా తర్వాత నోటీసు పుష్ చేయండి. ఎవరి ఆరోగ్యం గురించీ కాదు; లెక్కలు మాత్రమే. | एक कैंपस या हर कैंपस के छात्रों को अभी या बाद में सूचना पुश करें। कभी किसी की सेहत के बारे में नहीं; सिर्फ़ गिनती। |
+| `push.adm.compose` | New announcement | కొత్త ప్రకటన | नई घोषणा |
+| `push.adm.kind` | Kind | రకం | प्रकार |
+| `push.adm.kind.ANNOUNCEMENT` | Campus announcement | క్యాంపస్ ప్రకటన | कैंपस घोषणा |
+| `push.adm.kind.OFFER` | Partner offer (only students who opted in) | భాగస్వామి ఆఫర్ (ఆప్ట్-ఇన్ చేసిన విద్యార్థులకే) | पार्टनर ऑफ़र (सिर्फ़ ऑप्ट-इन करने वाले छात्र) |
+| `push.adm.campus` | Who | ఎవరికి | किसे |
+| `push.adm.campusAll` | Every campus | అన్ని క్యాంపస్‌లు | हर कैंपस |
+| `push.adm.campusOption` | {campus} · {count} verified students | {campus} · {count} ధృవీకరించిన విద్యార్థులు | {campus} · {count} सत्यापित छात्र |
+| `push.adm.titleLabel` | Title | శీర్షిక | शीर्षक |
+| `push.adm.bodyLabel` | Message | సందేశం | संदेश |
+| `push.adm.chars` | {count} of {max} characters | {max} లో {count} అక్షరాలు | {max} में से {count} अक्षर |
+| `push.adm.when` | When | ఎప్పుడు | कब |
+| `push.adm.now` | Send now | ఇప్పుడే పంపండి | अभी भेजें |
+| `push.adm.later` | Schedule | షెడ్యూల్ | शेड्यूल |
+| `push.adm.at` | Date and time | తేదీ, సమయం | तारीख और समय |
+| `push.adm.preview` | Preview | ప్రివ్యూ | प्रीव्यू |
+| `push.adm.previewing` | Checking… | తనిఖీ చేస్తున్నాం… | जाँच रहे हैं… |
+| `push.adm.reach` | Would reach {students} students on {devices} devices now. | ఇప్పుడు {devices} డివైస్‌లలో {students} విద్యార్థులకు చేరుతుంది. | अभी {devices} डिवाइस पर {students} छात्रों तक पहुँचेगा। |
+| `push.adm.reachNote` | Counts only. Students who turned announcements off, or have no device, are not counted. | లెక్కలు మాత్రమే. ప్రకటనలు ఆఫ్ చేసినవారు, డివైస్ లేనివారు లెక్కించబడరు. | सिर्फ़ गिनती। जिन्होंने घोषणाएँ बंद कीं या जिनके पास डिवाइस नहीं, वे नहीं गिने गए। |
+| `push.adm.lockCap` | How it shows on a lock screen | లాక్ స్క్రీన్‌పై ఎలా కనిపిస్తుంది | लॉक स्क्रीन पर कैसा दिखेगा |
+| `push.adm.send` | Send | పంపండి | भेजें |
+| `push.adm.schedule` | Schedule | షెడ్యూల్ చేయండి | शेड्यूल करें |
+| `push.adm.confirmTitle` | Send this announcement? | ఈ ప్రకటన పంపాలా? | यह घोषणा भेजें? |
+| `push.adm.confirmBody` | It goes to {students} students on {devices} devices. Pushes can’t be taken back once sent. | ఇది {devices} డివైస్‌లలో {students} విద్యార్థులకు వెళ్తుంది. పంపిన తర్వాత వెనక్కి తీసుకోలేరు. | यह {devices} डिवाइस पर {students} छात्रों को जाएगी। भेजने के बाद पुश वापस नहीं लिए जा सकते। |
+| `push.adm.confirmScheduled` | It goes out at {time}, to whoever matches then. You can cancel it until then. | ఇది {time} కు, అప్పుడు సరిపోయే వారికి వెళ్తుంది. అప్పటి వరకు రద్దు చేయవచ్చు. | यह {time} पर, तब मेल खाने वालों को जाएगी। तब तक रद्द कर सकते हैं। |
+| `push.adm.created` | Saved. It goes out within a minute of its time. | సేవ్ అయింది. సమయం వచ్చిన నిమిషంలో వెళ్తుంది. | सेव हो गई। अपने समय के एक मिनट में जाती है। |
+| `push.adm.createFailed` | It wasn’t saved. Check the problems above, then try again. | సేవ్ కాలేదు. పై సమస్యలు చూసి, మళ్లీ ప్రయత్నించండి. | सेव नहीं हुई। ऊपर की समस्याएँ देखें, फिर कोशिश करें। |
+| `push.adm.needsPreview` | Preview it first: the check and the count run on the server. | ముందు ప్రివ్యూ చూడండి: తనిఖీ, లెక్క సర్వర్‌లో జరుగుతాయి. | पहले प्रीव्यू देखें: जाँच और गिनती सर्वर पर होती है। |
+| `push.adm.problem.TITLE_EMPTY` | Add a title. | శీర్షిక జోడించండి. | शीर्षक जोड़ें। |
+| `push.adm.problem.BODY_EMPTY` | Add a message. | సందేశం జోడించండి. | संदेश जोड़ें। |
+| `push.adm.problem.TITLE_TOO_LONG` | The title is too long. | శీర్షిక చాలా పొడవుగా ఉంది. | शीर्षक बहुत लंबा है। |
+| `push.adm.problem.BODY_TOO_LONG` | The message is too long. | సందేశం చాలా పొడవుగా ఉంది. | संदेश बहुत लंबा है। |
+| `push.adm.problem.HEALTH_TERM` | It mentions health (a condition, medicine, test, doctor or camp). Announcements can’t: health notices need a clinical review first. | ఇందులో ఆరోగ్యం ప్రస్తావన ఉంది (వ్యాధి, మందు, పరీక్ష, డాక్టర్ లేదా క్యాంప్). ప్రకటనల్లో ఉండకూడదు: ఆరోగ్య నోటీసులకు ముందు క్లినికల్ సమీక్ష కావాలి. | इसमें सेहत की बात है (बीमारी, दवा, जाँच, डॉक्टर या कैंप)। घोषणाओं में नहीं हो सकती: सेहत की सूचनाओं को पहले क्लिनिकल समीक्षा चाहिए। |
+| `push.adm.problem.ASKS_FOR_CODE` | It mentions a code, password or ID number. We never ask for those in a message. | ఇందులో కోడ్, పాస్‌వర్డ్ లేదా ID నంబర్ ప్రస్తావన ఉంది. సందేశంలో మేము వాటిని ఎప్పుడూ అడగము. | इसमें कोड, पासवर्ड या ID नंबर का ज़िक्र है। हम संदेश में ये कभी नहीं माँगते। |
+| `push.adm.problem.HAS_LINK` | It has a link. Pushes carry no links; students open the app instead. | ఇందులో లింక్ ఉంది. పుష్‌లలో లింక్‌లు ఉండవు; విద్యార్థులు యాప్ తెరుస్తారు. | इसमें लिंक है। पुश में लिंक नहीं होते; छात्र ऐप खोलते हैं। |
+| `push.adm.problem.SCHEDULE_TOO_FAR` | That is too far ahead. | అది చాలా దూరంలో ఉంది. | यह बहुत आगे है। |
+| `push.adm.problem.UNKNOWN_CAMPUS` | No verified student is at that campus. | ఆ క్యాంపస్‌లో ధృవీకరించిన విద్యార్థి ఎవరూ లేరు. | उस कैंपस में कोई सत्यापित छात्र नहीं है। |
+| `push.adm.providers` | Phones: {phone}. Browsers: {web}. | ఫోన్‌లు: {phone}. బ్రౌజర్‌లు: {web}. | फ़ोन: {phone}। ब्राउज़र: {web}। |
+| `push.adm.providerOn` | set up | సెట్ అయింది | सेट है |
+| `push.adm.providerOff` | not set up (no push is sent) | సెట్ కాలేదు (పుష్ పంపబడదు) | सेट नहीं (कोई पुश नहीं जाता) |
+| `push.adm.history` | Sent and scheduled | పంపినవి, షెడ్యూల్ చేసినవి | भेजी गई और शेड्यूल की गई |
+| `push.adm.loading` | Loading announcements | ప్రకటనలు లోడ్ అవుతున్నాయి | घोषणाएँ लोड हो रही हैं |
+| `push.adm.error` | Announcements didn’t load | ప్రకటనలు లోడ్ కాలేదు | घोषणाएँ लोड नहीं हुईं |
+| `push.adm.empty` | No announcements yet | ఇంకా ప్రకటనలు లేవు | अभी कोई घोषणा नहीं |
+| `push.adm.emptyBody` | Write one above. Nothing is sent until you confirm. | పైన ఒకటి రాయండి. మీరు నిర్ధారించే వరకు ఏదీ పంపబడదు. | ऊपर एक लिखें। जब तक आप पुष्टि न करें, कुछ नहीं भेजा जाता। |
+| `push.adm.caption` | Announcements, newest first, with delivery counts | ప్రకటనలు, కొత్తవి ముందు, డెలివరీ లెక్కలతో | घोषणाएँ, नई पहले, डिलीवरी गिनती के साथ |
+| `push.adm.col.status` | Status | స్థితి | स्थिति |
+| `push.adm.col.what` | Announcement | ప్రకటన | घोषणा |
+| `push.adm.col.who` | Who | ఎవరికి | किसे |
+| `push.adm.col.when` | When | ఎప్పుడు | कब |
+| `push.adm.col.counts` | Devices: sent · delivered · failed · waiting | డివైస్‌లు: పంపినవి · చేరినవి · విఫలం · వేచి ఉన్నవి | डिवाइस: भेजे · पहुँचे · विफल · बाकी |
+| `push.adm.col.action` | Action | చర్య | कार्रवाई |
+| `push.adm.status.SCHEDULED` | Scheduled | షెడ్యూల్ అయింది | शेड्यूल |
+| `push.adm.status.SENDING` | Sending | పంపుతోంది | भेज रहे हैं |
+| `push.adm.status.SENT` | Sent | పంపబడింది | भेजी गई |
+| `push.adm.status.CANCELLED` | Cancelled | రద్దు అయింది | रद्द |
+| `push.adm.cancel` | Cancel | రద్దు చేయండి | रद्द करें |
+| `push.adm.cancelSpoken` | Cancel “{title}” | “{title}” రద్దు చేయండి | “{title}” रद्द करें |
+| `push.adm.cancelTitle` | Cancel this announcement? | ఈ ప్రకటన రద్దు చేయాలా? | यह घोषणा रद्द करें? |
+| `push.adm.cancelBody` | It won’t be sent. This is recorded in the audit log. | ఇది పంపబడదు. ఇది ఆడిట్ లాగ్‌లో నమోదవుతుంది. | यह नहीं भेजी जाएगी। यह ऑडिट लॉग में दर्ज होता है। |
+| `push.adm.cancelFailed` | It couldn’t be cancelled. It may already be sending. | రద్దు చేయలేకపోయాం. ఇది ఇప్పటికే పంపుతూ ఉండవచ్చు. | रद्द नहीं हो सकी। हो सकता है यह भेजी जा रही हो। |
+| `push.adm.keep` | Keep it | ఉంచండి | रहने दें |

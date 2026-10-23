@@ -1,6 +1,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { apiRequest, onSessionExpired, setCsrfToken } from '@/data/services/http';
 import type { Account, AccountRole, SessionResponse } from '@/data/types/workflowTypes';
+import { stopPushOnSignOut } from './hardware/push';
 
 /**
  * The native app's session, as the server reports it.
@@ -79,6 +80,8 @@ export function NativeSessionProvider({ children }: { children: React.ReactNode 
   const refresh = useCallback(() => setVersion((v) => v + 1), []);
 
   const signOut = useCallback(async () => {
+    // This phone's pushes stop with the session (the server revokes them too).
+    await stopPushOnSignOut();
     try {
       await apiRequest('/auth/logout', { method: 'POST' });
     } finally {

@@ -376,7 +376,10 @@
       "src/features/account/viewmodel/DeleteAccountViewModel.ts"
     ],
     "NotificationSettings": [
-      "src/features/notifications/views/NotificationSettingsView.tsx"
+      "src/features/notifications/views/NotificationSettingsView.tsx",
+      "src/features/notifications/viewmodel/NotificationSettingsViewModel.ts",
+      "src/features/notifications/data/pushDevice.ts",
+      "src/native/hardware/push.ts"
     ],
     "ConsultSummary": [],
     "SosDebrief": [
@@ -724,7 +727,9 @@
       "src/features/notifications/viewmodel/NotificationSettingsViewModel.ts",
       "src/design-system/student-shell/StudentWebShell.tsx",
       "src/design-system/student-shell/studentNav.ts",
-      "src/design-system/overlays/ConfirmDialog.tsx"
+      "src/design-system/overlays/ConfirmDialog.tsx",
+      "src/lib/webPush.ts",
+      "src/features/notifications/data/pushDevice.ts"
     ],
     "WebRequests": [
       "src/features/studentweb/views/t1/WebRequestsView.tsx",

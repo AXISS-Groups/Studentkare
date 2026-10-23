@@ -51,3 +51,46 @@ self.addEventListener('fetch', (event) => {
     }))
   );
 });
+
+/* Push notifications (src/lib/webPush.ts; backend/services/push_dispatch.py).
+ *
+ * The payload is already the lock-screen text: a fixed "you have an update"
+ * line per category, never a medicine, test, result or condition, or a super
+ * admin's checked announcement. A tap opens the app at the payload's path, a
+ * path on this site only (never another origin), which then asks for sign-in
+ * if the browser is signed out.
+ */
+function safePath(value) {
+  return typeof value === 'string' && value.startsWith('/') && !value.startsWith('//') ? value : '/notifications';
+}
+
+self.addEventListener('push', (event) => {
+  let data = {};
+  try {
+    data = event.data ? event.data.json() : {};
+  } catch (error) {
+    data = {};
+  }
+  const title = typeof data.title === 'string' && data.title ? data.title : 'Student Kare';
+  const body = typeof data.body === 'string' ? data.body : '';
+  event.waitUntil(self.registration.showNotification(title, {
+    body,
+    tag: typeof data.tag === 'string' ? data.tag : undefined,
+    icon: '/icon-192.png',
+    badge: '/icon-192.png',
+    data: { path: safePath(data.path) },
+  }));
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const target = new URL(safePath(event.notification.data && event.notification.data.path), self.location.origin).href;
+  event.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windows) => {
+    for (const client of windows) {
+      if (new URL(client.url).origin === self.location.origin && 'focus' in client) {
+        return client.navigate(target).then((opened) => (opened || client).focus());
+      }
+    }
+    return self.clients.openWindow(target);
+  }));
+});

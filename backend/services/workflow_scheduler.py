@@ -49,6 +49,8 @@ PERIODIC_JOBS = {
     "content_autopilot": "Content autopilot: official health news and the weekly blog plan (off until turned on)",
     "refill_reminders": "Queue refill reminders for medicines due to run out (student's own counts)",
     "stock_alerts": "Tell students who asked that an item is back in stock",
+    "push_dispatch": "Send due push notifications (phones and browsers) and scheduled announcements",
+    "push_receipts": "Read phone push receipts; retire devices that are gone or unused",
 }
 
 # Per-job cadence overrides (seconds). Everything else uses DEFAULT_INTERVAL_SECONDS.
@@ -68,11 +70,14 @@ JOB_INTERVAL_OVERRIDES = {
     # Refill reminders are due at a set minute of the student's day; a quarter-hour
     # pass keeps them close to it. An idle pass is one indexed SELECT.
     "refill_reminders": 900,
+    # Push carries the SOS answers too, so it keeps the outbox's cadence.
+    "push_dispatch": 45,
+    "push_receipts": 900,
 }
 
 # Jobs that carry safety deliveries. They run first in every pass and again between
 # slower jobs when they fall due (WorkflowScheduler.run_due_jobs).
-URGENT_JOBS = frozenset({"reminder_reconcile"})
+URGENT_JOBS = frozenset({"reminder_reconcile", "push_dispatch"})
 
 # A run lease must outlive the slowest bounded pass (25 outbox events with
 # 10-15 s provider timeouts each); if its holder dies it expires and the job
@@ -316,6 +321,13 @@ class WorkflowScheduler:
         if key == "stock_alerts":
             from services.reorder import notify_back_in_stock
             return notify_back_in_stock(db)
+        if key == "push_dispatch":
+            from services.push_dispatch import dispatch, fan_out_due_announcements
+            announced = fan_out_due_announcements(db)
+            return {"summary": {**announced, **dispatch(db)}}
+        if key == "push_receipts":
+            from services.push_dispatch import check_receipts
+            return check_receipts(db)
         raise UnknownJobError("Unknown job.")
 
 
@@ -536,28 +548,6 @@ def reminder_message(event_type: str) -> str:
     return REMINDER_MESSAGES.get(event_type, REMINDER_MESSAGES["MEDICATION_REMINDER"])
 
 
-def reminder_route(db, event) -> tuple[str, str]:
-    """(channel, raw recipient) for a reminder: the student's own sign-in contact.
-
-    Reminder payloads carry ids (and, for a refill, the medicine name the in-app
-    inbox shows) but no contact, so the route comes from the account, never
-    from the payload. No account, an inactive account or an
-    unknown channel means no route: the reminder is not sent anywhere else.
-    """
-    from core import workflow_models as M
-
-    account_id = getattr(event, "account_id", "") or ""
-    if db is None or not account_id:
-        return "", ""
-    account = db.get(M.Account, account_id)
-    if account is None or not account.active:
-        return "", ""
-    channel = (account.channel or "").upper()
-    if channel not in ("EMAIL", "WHATSAPP"):
-        return "", ""
-    return channel, str(account.identifier or "")
-
-
 def _parse_slot_start(value: str, zone: ZoneInfo) -> float | None:
     """A slot's ISO start as epoch seconds. Naive times are the student's local time."""
     try:
@@ -616,8 +606,42 @@ def reminder_timing(db, event, at: float | None = None) -> tuple[str, str]:
     return "send", ""
 
 
+def reminder_route_for(db, event) -> tuple[str, str, str]:
+    """(channel, recipient, reason): the WhatsApp/email route the student chose for this reminder."""
+    from services.push_dispatch import external_route
+
+    if db is None:
+        return "", "", "reminder_no_recipient"
+    return external_route(db, event)
+
+
+def _would_push(db, event) -> bool:
+    from services.push_dispatch import would_push
+
+    try:
+        return would_push(db, event)
+    except Exception as exc:  # noqa: BLE001 — treated as "no push"; the external route still decides
+        logger.error("Could not check push devices for an outbox event (%s)", type(exc).__name__)
+        return False
+
+
+def _fan_out_push(db, event) -> int:
+    """Queue pushes for one outbox event. A Rule L violation is a bug and raises; anything else is logged."""
+    from core.rule_l import CommerceFirewallViolation
+    from services.push_dispatch import fan_out_event
+
+    try:
+        with db.begin_nested():   # a savepoint: a failure here undoes only the push rows
+            return fan_out_event(db, event)
+    except CommerceFirewallViolation:
+        raise
+    except Exception as exc:  # noqa: BLE001 — a push problem must not stop the outbox pass
+        logger.error("Could not queue a push for an outbox event (%s)", type(exc).__name__)
+        return 0
+
+
 def _deliver_reminder(db, event) -> dict:
-    """Send a reminder's fixed, non-clinical text to the student's own contact."""
+    """Send a reminder's fixed, non-clinical text to the student's chosen contact."""
     from core.email_templates import reminder_email
     from services.otp_delivery import (
         _openwa,
@@ -626,7 +650,7 @@ def _deliver_reminder(db, event) -> dict:
         send_notification_email,
     )
 
-    channel, recipient = reminder_route(db, event)
+    channel, recipient, _ = reminder_route_for(db, event)
     if not channel or not recipient:
         return {"status": "skipped", "reason": "reminder_no_recipient"}
     text = reminder_message(event.event_type or "")
@@ -664,7 +688,8 @@ def outbox_route(event, db=None) -> tuple[str, str]:
     if event_type == "BLOOD_SOS":
         return "WHATSAPP", str(payload.get("phone", "") or "")
     if event_type in REMINDER_EVENT_TYPES:
-        return reminder_route(db, event)
+        channel, recipient, _ = reminder_route_for(db, event)
+        return channel, recipient
     if event_type == "GENERIC_NOTIFICATION":
         return str(payload.get("channel", "WHATSAPP") or "WHATSAPP"), str(payload.get("to", "") or "")
     return ("IN_APP" if is_in_app_notice(event) else ""), ""
@@ -802,6 +827,9 @@ def _process_outbox(db, max_batch: int = MAX_BATCH_SIZE) -> dict:
         if is_in_app_notice(event):
             # Already in the student's inbox; nothing to send, so neither quiet
             # hours nor channel switches apply. Terminal, so it stops counting as backlog.
+            # A push, if the student wants one, is queued per device and waits
+            # for their quiet hours on its own (services/push_dispatch.py).
+            _fan_out_push(db, event)
             event.status = "SENT"
             event.sent_at = now()
             event.last_error = ""
@@ -810,14 +838,30 @@ def _process_outbox(db, max_batch: int = MAX_BATCH_SIZE) -> dict:
             continue
         until = 0.0
         is_reminder = (event.event_type or "") in REMINDER_EVENT_TYPES
+        pushed = 0
         if is_reminder:
-            channel, recipient = reminder_route(db, event)
-            if not channel or not recipient:
-                verdict, why = "fail", "reminder_no_recipient"
+            channel, recipient, route_why = reminder_route_for(db, event)
+            if not channel and not _would_push(db, event):
+                # Nowhere to send it at all: settle it now rather than wait for its time.
+                verdict, why = ("fail", route_why) if route_why == "reminder_no_recipient" else ("suppress", route_why)
             else:
                 verdict, why = reminder_timing(db, event)
             if verdict == "send":
                 verdict, why, until = _preference_verdict_for(db, event, channel)
+            if verdict == "send":
+                # The student's channels for this category: push to their devices,
+                # and WhatsApp/email only if they chose one with an address.
+                pushed = _fan_out_push(db, event)
+                if not channel:
+                    if pushed:
+                        event.status = "SENT"
+                        event.sent_at = now()
+                        event.next_attempt_at = 0.0
+                        event.last_error = ""
+                        delivered += 1
+                        db.commit()
+                        continue
+                    verdict, why = ("fail", route_why) if route_why == "reminder_no_recipient" else ("suppress", route_why)
         else:
             verdict, why, until = _preference_verdict_for(db, event)
         if verdict == "fail":

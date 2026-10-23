@@ -117,6 +117,11 @@ x-app-env: &app-env
   SLACK_DEFAULT_CHANNEL:
   SLACK_OPS_CHANNEL:
   SLACK_BOOKING_CHANNEL:
+  # Push notifications (services/push_providers.py): Expo for phones, Web Push (VAPID) for browsers.
+  EXPO_ACCESS_TOKEN:
+  VAPID_PUBLIC_KEY:
+  VAPID_PRIVATE_KEY:
+  VAPID_SUBJECT:
   FIREBASE_ENABLED:
   FIREBASE_API_KEY:
   FIREBASE_AUTH_DOMAIN:

@@ -881,6 +881,106 @@ class NotificationPreference(Base):
     # granted is not a consent, and DPDP asks for each purpose separately.
     pickup_location_enabled: Mapped[bool] = mapped_column(Boolean, default=False)
     ayush_history_enabled: Mapped[bool] = mapped_column(Boolean, default=False)
+    # Per category, the channels the student chose (core/push_copy.CATEGORIES):
+    # {"CARE": ["PUSH", "WHATSAPP"], ...}. A category missing here follows its
+    # default; an empty list means every optional channel is off for it.
+    channels: Mapped[dict] = mapped_column(JSON, default=dict, server_default="{}")
+    # Partner offers by push: a separate opt-in, off until the student turns it
+    # on (Rule L: never based on health; every change is audited).
+    marketing_opt_in: Mapped[bool] = mapped_column(Boolean, default=False, server_default=sa_false())
+    marketing_opt_in_at: Mapped[float] = mapped_column(Float, default=0.0, server_default="0")
+
+
+class PushDevice(Base):
+    """One phone or browser that may receive push notifications for an account.
+
+    ``kind`` EXPO holds an Expo push token; WEB holds a Web Push subscription
+    (the push service endpoint, on an allowlisted host, plus its keys). A token
+    belongs to one account at a time. ``sign_in_at`` ties the device to the
+    sign-in that registered it, so signing out of that sign-in revokes it.
+    Revoked rows are kept (``revoked_at``) so a receipt that arrives later can
+    still be matched. Identity plane: a device address, nothing about health.
+    """
+    __tablename__ = "care_push_devices"
+    __table_args__ = (
+        CheckConstraint("kind IN ('EXPO', 'WEB')", name="ck_care_push_devices_kind"),
+    )
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    account_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"), index=True)
+    kind: Mapped[str] = mapped_column(String(8))
+    token: Mapped[str] = mapped_column(String(1024), unique=True)
+    p256dh: Mapped[str] = mapped_column(String(128), default="")
+    auth: Mapped[str] = mapped_column(String(64), default="")
+    platform: Mapped[str] = mapped_column(String(12), default="")   # ios | android | web
+    locale: Mapped[str] = mapped_column(String(8), default="en")
+    sign_in_at: Mapped[float] = mapped_column(Float, default=0.0)
+    created_at: Mapped[float] = mapped_column(Float)
+    last_seen_at: Mapped[float] = mapped_column(Float, default=0.0)
+    revoked_at: Mapped[float] = mapped_column(Float, default=0.0, index=True)
+    revoke_reason: Mapped[str] = mapped_column(String(40), default="")
+
+
+class PushDelivery(Base):
+    """One push to one device for one notification or announcement.
+
+    Holds ids, a category and states only: the text is built when it is sent,
+    from the category and the device's language, and never names a medicine,
+    test, condition or camp service (core/push_copy.py). Unique per source and
+    device, so a retried fan-out never pushes twice. Clinical plane: which
+    account got a push about what kind of care is itself a health fact.
+    """
+    __tablename__ = "care_push_deliveries"
+    __table_args__ = (
+        UniqueConstraint("source", "source_id", "device_id", name="uq_care_push_deliveries_source_device"),
+        CheckConstraint("source IN ('OUTBOX', 'ANNOUNCEMENT')", name="ck_care_push_deliveries_source"),
+        Index("ix_care_push_deliveries_status_next", "status", "next_attempt_at"),
+        Index("ix_care_push_deliveries_account_sent", "account_id", "sent_at"),
+    )
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    source: Mapped[str] = mapped_column(String(12))
+    source_id: Mapped[str] = mapped_column(String, index=True)
+    device_id: Mapped[str] = mapped_column(ForeignKey("care_push_devices.id"), index=True)
+    account_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"))
+    category: Mapped[str] = mapped_column(String(16))
+    urgent: Mapped[bool] = mapped_column(Boolean, default=False)
+    # PENDING → SENDING → SENT (provider accepted) → DELIVERED (receipt ok);
+    # FAILED and SUPPRESSED are terminal.
+    status: Mapped[str] = mapped_column(String(12), default="PENDING")
+    attempts: Mapped[int] = mapped_column(Integer, default=0)
+    next_attempt_at: Mapped[float] = mapped_column(Float, default=0.0)
+    ticket_id: Mapped[str] = mapped_column(String(80), default="")
+    last_error: Mapped[str] = mapped_column(String(60), default="")   # a closed code, never provider text
+    created_at: Mapped[float] = mapped_column(Float)
+    sent_at: Mapped[float] = mapped_column(Float, default=0.0)
+    receipt_checked_at: Mapped[float] = mapped_column(Float, default=0.0)
+
+
+class Announcement(Base):
+    """A super admin's push to students: a campus or everyone, now or later.
+
+    ``kind`` ANNOUNCEMENT is campus information; OFFER is a partner offer and
+    reaches only students who opted in to offers. The text passed the
+    non-health check (core/push_copy.check_announcement) when it was saved.
+    Counts are read from care_push_deliveries; no recipient list is kept here.
+    """
+    __tablename__ = "care_announcements"
+    __table_args__ = (
+        CheckConstraint("kind IN ('ANNOUNCEMENT', 'OFFER')", name="ck_care_announcements_kind"),
+        CheckConstraint("status IN ('SCHEDULED', 'SENDING', 'SENT', 'CANCELLED')", name="ck_care_announcements_status"),
+    )
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    kind: Mapped[str] = mapped_column(String(16))
+    title: Mapped[str] = mapped_column(String(120))
+    body: Mapped[str] = mapped_column(String(400))
+    campus: Mapped[str] = mapped_column(String(160), default="")   # "" = every campus
+    status: Mapped[str] = mapped_column(String(12), default="SCHEDULED", index=True)
+    scheduled_at: Mapped[float] = mapped_column(Float, index=True)
+    created_by: Mapped[str] = mapped_column(String)
+    created_at: Mapped[float] = mapped_column(Float)
+    sent_at: Mapped[float] = mapped_column(Float, default=0.0)
+    recipients: Mapped[int] = mapped_column(Integer, default=0)
+    cancelled_by: Mapped[str] = mapped_column(String, default="")
+    cancelled_at: Mapped[float] = mapped_column(Float, default=0.0)
 
 
 APPEARANCES = ("SYSTEM", "DARK", "LIGHT")

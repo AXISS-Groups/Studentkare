@@ -80,6 +80,7 @@ TABLE_PLANES: dict[str, str] = {
     "care_agent_turns": CLINICAL,                 # questions asked of the care agent
     "care_support_requests": CLINICAL,            # free text, may describe symptoms
     "care_outbox_events": CLINICAL,               # notification payloads (results, reminders)
+    "care_push_deliveries": CLINICAL,             # which account was pushed about which kind of care (ids, states)
     "care_erasure_archives": CLINICAL,            # sealed copies of erased records
     "break_glass_sessions": CLINICAL,             # emergency access to a record
     # --- commerce: catalogue, cart/orders, billing, offers ---
@@ -126,6 +127,7 @@ TABLE_PLANES: dict[str, str] = {
     "care_campus_verifications": IDENTITY,
     "care_campus_departures": IDENTITY,
     "care_notification_preferences": IDENTITY,
+    "care_push_devices": IDENTITY,                # push tokens / Web Push subscriptions per account
     "care_deletion_requests": IDENTITY,
     "care_dpdp_erasure_requests": IDENTITY,
     "app_users": IDENTITY,
@@ -172,6 +174,7 @@ TABLE_PLANES: dict[str, str] = {
     "care_named_super_admins": PLATFORM,          # which super admins are named people; no grant to either role
     "care_campus_security_contacts": PLATFORM,
     "care_appearance_preferences": PLATFORM,      # System / Dark / Light per account; a display choice only
+    "care_announcements": PLATFORM,               # super-admin campus pushes: checked non-health text, counts only
     "care_setting_overrides": PLATFORM,           # business settings (core/settings_registry.py)
     "care_setting_override_history": PLATFORM,    # append-only: who changed a setting, when, why
 }
@@ -204,6 +207,34 @@ WELLNESS_STORES: dict[str, str] = {
 def wellness_plane(kind: str) -> str:
     """The plane a wellness log kind is stored in. KeyError for an unknown kind."""
     return TABLE_PLANES[WELLNESS_STORES[kind]]
+
+
+# --- Push notifications (services/push_dispatch.py) ---------------------------
+# A push about care is never marketing, and marketing never rides on a health
+# event. Every outbox event lives in care_outbox_events (CLINICAL), so nothing
+# the outbox raises may become a marketing push; only a super admin's checked,
+# non-health announcement (PLATFORM) may, and then only to students who opted in.
+MARKETING_PUSH_CATEGORIES = frozenset({"OFFERS"})
+MARKETING_SOURCE_PLANES = frozenset({PLATFORM, COMMERCE})
+
+
+class CommerceFirewallViolation(PermissionError):
+    """A health-plane event tried to become a marketing push (Rule L)."""
+
+
+def push_category_allowed(source_plane: str, category: str) -> bool:
+    """Whether an event from ``source_plane`` may be pushed under ``category``."""
+    if source_plane not in PLANES:
+        return False
+    if category in MARKETING_PUSH_CATEGORIES:
+        return source_plane in MARKETING_SOURCE_PLANES
+    return True
+
+
+def assert_push_allowed(source_plane: str, category: str) -> None:
+    """Raise rather than send: a refused push is a bug to fix, never a fallback."""
+    if not push_category_allowed(source_plane, category):
+        raise CommerceFirewallViolation(f"{source_plane} events may not be pushed as {category}")
 
 
 RW = ("SELECT", "INSERT", "UPDATE")

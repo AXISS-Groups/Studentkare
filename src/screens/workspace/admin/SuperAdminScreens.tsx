@@ -20,6 +20,7 @@ import { BillingLedgerView } from '../../../features/admin/views/BillingLedgerVi
 import { BreakGlassLogView } from '../../../features/admin/views/BreakGlassLogView';
 import { LabReviewerAssignmentView } from '../../../features/admin/views/LabReviewerAssignmentView';
 import { MessageOutboxView } from '../../../features/admin/views/MessageOutboxView';
+import { AnnouncementsView } from '../../../features/admin/views/AnnouncementsView';
 import { ClaimsAdjudicationView } from '../../../features/admin/views/ClaimsAdjudicationView';
 import { ORGANISATION_ROUTES, PARTNER_ROUTES, PartnersView, SentinelView, TenantsView, VerificationView } from '../../../features/admin/views/UnconnectedBoards';
 import { TokensView } from '../../../features/admin/views/TokensView';
@@ -92,6 +93,7 @@ export function superAdminScreen(route: RoutePath): ReactElement | null {
   if (route === 'admin/ai-governance') return <AiGovernanceView />;
   if (route === 'admin/lab-reviews') return <LabReviewerAssignmentView />;
   if (route === 'admin/outbox') return <MessageOutboxView />;
+  if (route === 'admin/announcements') return <AnnouncementsView />;
   if (route === 'admin/rule-l') return <RuleLView />;
   if (route === 'admin/consent-policy') return <ConsentPolicyView />;
   if (route === 'admin/legal-documents') return <LegalDocumentsView />;

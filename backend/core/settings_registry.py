@@ -430,6 +430,34 @@ declare("refill.packs_max", INT, 20, area="refill", unit="packs", minimum=1, max
 declare("refill.tracked_max", INT, 30, area="refill", unit="medicines", minimum=1, maximum=200,
         description="Most medicines one student can track for refills.")
 
+# --- push notifications (services/push_dispatch.py, services/push_api.py) ----
+# Safety pushes (SOS answers, account security) ignore the cap, coalescing and
+# quiet hours; everything else respects all three.
+declare("push.rate_cap_per_hour", INT, 6, area="push", unit="pushes per hour", minimum=1, maximum=60,
+        description="Most non-safety pushes one account gets in any hour; the rest wait for the next hour.")
+declare("push.coalesce_seconds", INT, 120, area="push", unit="seconds", minimum=0, maximum=3600,
+        description="A second push of the same category to the same account within this window is folded into the first.")
+declare("push.max_attempts", INT, 4, area="push", unit="attempts", minimum=1, maximum=10,
+        description="Sends tried for one push before it is marked failed.")
+declare("push.retry_base_seconds", INT, 60, area="push", unit="seconds", minimum=5, maximum=3600,
+        description="Wait before the first retry of a push; each later retry waits twice as long.")
+declare("push.receipt_delay_seconds", INT, 900, area="push", unit="seconds", minimum=60, maximum=86400,
+        description="How long after a phone push is accepted its delivery receipt is fetched from Expo.")
+declare("push.batch_max", INT, 500, area="push", unit="pushes per pass", minimum=10, maximum=5000,
+        description="Most pushes one dispatch pass sends.")
+declare("push.ttl_seconds", INT, 86400, area="push", unit="seconds", minimum=60, maximum=2419200,
+        description="How long the push service keeps an undelivered push for a phone that is off.")
+declare("push.devices_per_account_max", INT, 10, area="push", unit="devices", minimum=1, maximum=50,
+        description="Most phones and browsers one account can receive pushes on; registering another retires the oldest.")
+declare("push.inactive_device_days", INT, 120, area="push", unit="days", minimum=7, maximum=730,
+        description="A device not seen for this long stops receiving pushes until the app opens again.")
+declare("push.announcement_title_max", INT, 60, area="push", unit="characters", minimum=10, maximum=120, public=True,
+        description="Longest title of a super-admin announcement push.")
+declare("push.announcement_body_max", INT, 160, area="push", unit="characters", minimum=20, maximum=400, public=True,
+        description="Longest body of a super-admin announcement push.")
+declare("push.announcement_schedule_max_days", INT, 30, area="push", unit="days", minimum=1, maximum=180, public=True,
+        description="How far ahead an announcement can be scheduled.")
+
 # --- student web (signed in) ----------------------------------------------
 declare("studentweb.report_ready_days", INT, 14, area="studentweb", unit="days", minimum=1, maximum=90, public=True,
         description="How long a released lab report stays under Needs you on the student's Your Care page.")

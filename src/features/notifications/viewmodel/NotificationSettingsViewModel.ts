@@ -2,6 +2,17 @@ import { makeAutoObservable, runInAction } from 'mobx';
 import type { MessageKey } from '@/i18n';
 import { apiRequest } from '@/data/services/http';
 import type { ViewModel } from '@/core/store/ViewModel';
+import type { PushDeviceController, PushDeviceState } from '../data/pushDevice';
+
+export type PushChannel = 'PUSH' | 'WHATSAPP' | 'EMAIL';
+export type PushCategory = 'SAFETY' | 'CARE' | 'REMINDERS' | 'ORDERS' | 'CAMPS' | 'ACCOUNT' | 'ANNOUNCEMENTS';
+
+/** One kind of message and the channels it may use (backend/core/push_copy.CATEGORIES). */
+export interface CategoryDefinition {
+  key: PushCategory;
+  channels: PushChannel[];
+  locked: boolean;
+}
 
 /** The exact body of GET / PUT /notifications/preferences (backend/services/workflow_api.py). */
 export interface NotificationPreferences {
@@ -13,7 +24,15 @@ export interface NotificationPreferences {
   timezone: string;
   quietStart: string;
   quietEnd: string;
+  /** Per category, the channels chosen (absent from an older server: the grid is not drawn). */
+  channels?: Partial<Record<PushCategory, PushChannel[]>>;
+  /** Read-only: which categories exist and what each may use. */
+  categories?: CategoryDefinition[];
+  /** Partner offers by push; off until the student turns it on (Rule L). */
+  marketingOptIn?: boolean;
 }
+
+const sameValue = (a: unknown, b: unknown): boolean => JSON.stringify(a) === JSON.stringify(b);
 
 /** The switches this screen owns. The two consents belong to the Permissions screen. */
 export type SettingsSwitch = 'pushEnabled' | 'emailEnabled' | 'remindersEnabled';
@@ -43,11 +62,80 @@ export class NotificationSettingsViewModel implements ViewModel {
   /** A message key, or '' for none. */
   saveError: MessageKey | '' = '';
   savedAt: number | null = null;
+  /** The category the lock-screen preview shows. */
+  previewCategory: PushCategory = 'CARE';
+  /** This phone / browser; null until read (or when the platform has no controller). */
+  deviceState: PushDeviceState | null = null;
+  deviceBusy = false;
+  deviceError = false;
 
   private disposed = false;
 
-  constructor(private readonly request: typeof apiRequest = apiRequest) {
-    makeAutoObservable<NotificationSettingsViewModel, 'disposed' | 'request'>(this, { disposed: false, request: false }, { autoBind: true });
+  constructor(
+    private readonly request: typeof apiRequest = apiRequest,
+    private readonly device: PushDeviceController | null = null,
+  ) {
+    makeAutoObservable<NotificationSettingsViewModel, 'disposed' | 'request' | 'device'>(this, { disposed: false, request: false, device: false }, { autoBind: true });
+  }
+
+  get deviceKind(): 'phone' | 'browser' | null {
+    return this.device?.kind ?? null;
+  }
+
+  /** The categories the server describes, in its order; empty from an older server. */
+  get categories(): CategoryDefinition[] {
+    return this.loaded?.categories ?? [];
+  }
+
+  channelOn(category: PushCategory, channel: PushChannel): boolean {
+    const definition = this.categories.find((c) => c.key === category);
+    if (definition?.locked) return true;
+    return (this.draft?.channels?.[category] ?? []).includes(channel);
+  }
+
+  /** Turns one channel of one category on or off. Safety is locked: nothing happens. */
+  toggleChannel(category: PushCategory, channel: PushChannel): void {
+    const definition = this.categories.find((c) => c.key === category);
+    if (!this.draft || !definition || definition.locked || !definition.channels.includes(channel)) return;
+    const current = this.draft.channels?.[category] ?? [];
+    const next = current.includes(channel) ? current.filter((c) => c !== channel) : [...current, channel];
+    this.draft = { ...this.draft, channels: { ...this.draft.channels, [category]: definition.channels.filter((c) => next.includes(c)) } };
+    this.previewCategory = category;
+    this.savedAt = null;
+  }
+
+  setPreview(category: PushCategory): void {
+    this.previewCategory = category;
+  }
+
+  setMarketing(value: boolean): void {
+    if (!this.draft) return;
+    this.draft = { ...this.draft, marketingOptIn: value };
+    this.savedAt = null;
+  }
+
+  async loadDevice(): Promise<void> {
+    if (!this.device) return;
+    try {
+      const state = await this.device.state();
+      if (!this.disposed) runInAction(() => { this.deviceState = state; });
+    } catch {
+      if (!this.disposed) runInAction(() => { this.deviceState = 'unavailable'; });
+    }
+  }
+
+  async setDevice(on: boolean): Promise<void> {
+    if (!this.device || this.deviceBusy) return;
+    this.deviceBusy = true;
+    this.deviceError = false;
+    try {
+      const state = on ? await this.device.enable() : await this.device.disable();
+      if (!this.disposed) runInAction(() => { this.deviceState = state; });
+    } catch {
+      if (!this.disposed) runInAction(() => { this.deviceError = true; });
+    } finally {
+      if (!this.disposed) runInAction(() => { this.deviceBusy = false; });
+    }
   }
 
   async load(): Promise<void> {
@@ -97,7 +185,7 @@ export class NotificationSettingsViewModel implements ViewModel {
     if (!this.draft || !this.loaded) return false;
     const a = this.draft;
     const b = this.loaded;
-    return (Object.keys(a) as Array<keyof NotificationPreferences>).some((k) => a[k] !== b[k]);
+    return (Object.keys(a) as Array<keyof NotificationPreferences>).some((k) => !sameValue(a[k], b[k]));
   }
 
   get canSave(): boolean {
@@ -107,19 +195,27 @@ export class NotificationSettingsViewModel implements ViewModel {
   async save(): Promise<void> {
     if (!this.canSave || !this.draft || !this.loaded) return;
     // Consents are carried over from what was loaded, never from the draft.
+    // Locked categories (safety) are never sent: the server refuses a change to them.
+    const locked = new Set(this.categories.filter((c) => c.locked).map((c) => c.key));
+    const channels = this.draft.channels
+      ? Object.fromEntries(Object.entries(this.draft.channels).filter(([key]) => !locked.has(key as PushCategory)))
+      : undefined;
     const body: NotificationPreferences = {
       ...this.draft,
+      ...(channels ? { channels } : {}),
       pickupLocationEnabled: this.loaded.pickupLocationEnabled,
       ayushHistoryEnabled: this.loaded.ayushHistoryEnabled,
     };
+    delete body.categories;
     this.saving = true;
     this.saveError = '';
     try {
       await this.request('/notifications/preferences', { method: 'PUT', body: JSON.stringify(body) });
       if (this.disposed) return;
       runInAction(() => {
-        this.loaded = { ...body };
-        this.draft = { ...body };
+        const kept = { ...body, channels: this.draft?.channels, categories: this.loaded?.categories };
+        this.loaded = { ...kept };
+        this.draft = { ...kept };
         this.savedAt = Date.now();
       });
     } catch {

@@ -53,6 +53,7 @@ import { MyRequestsRoute, NewRequestRoute } from '@/features/requests/views/Requ
 import { attachReturnPhoto } from '@/features/requests/views/attachReturnPhoto.web';
 import { DeleteAccountRoute } from '@/features/account/views/DeleteAccountView';
 import { NotificationSettingsRoute } from '@/features/notifications/views/NotificationSettingsView';
+import { webPushController } from '@/lib/webPush';
 import { SignInSecurityRoute } from '@/features/account/views/SignInSecurityView';
 import { RewardsRoute } from '@/features/rewards/views/RewardsView';
 import { LeaveCampusRoute } from '@/features/campus/views/LeaveCampusView';
@@ -401,7 +402,7 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
       case 'medications': return <MedicationPanel />;
       case 'health-camp': return <M2CampsRoute />;
       case 'notifications': return <NotificationInboxPanel />;
-      case 'notification-settings': return <NotificationSettingsRoute />;
+      case 'notification-settings': return <NotificationSettingsRoute device={webPushController} />;
       case 'security': return <SignInSecurityRoute />;
       case 'verify': return <IdentityVerifyView />;
       case 'rewards': return <RewardsRoute />;
