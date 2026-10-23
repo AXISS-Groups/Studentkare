@@ -10,6 +10,7 @@ import { NavigationProvider, useNavigate } from './navigation';
 import PreventiveCareScreen from './PreventiveCareScreen';
 import { CampScreen } from './CampScreen';
 import { RecordCaptureScreen } from './RecordCaptureScreen';
+import { RefillsScreen } from './M2RefillScreens';
 import { RemindersScreen, WaterScreen } from './M2ReminderScreens';
 import { AppearanceScreen } from './AppearanceScreen';
 import { applyAppearanceAndRestart } from './applyAppearance';
@@ -130,6 +131,7 @@ export type RootStackParamList = {
   Profile: undefined;
   Programs: undefined;
   RefillRequest: undefined;
+  Refills: { id?: string; orderId?: string; itemId?: string } | undefined;
   ReportUpload: undefined;
   ReturnRequest: undefined;
   Rewards: undefined;
@@ -449,6 +451,8 @@ function RootNavigator() {
           <Stack.Screen name="CaptureRecord" component={CaptureRecordRoute} options={{ title: t('capture.title') }} />
           {/* Mobile 2.0 Medicines today and reminders (M2Reminders) and Water (M2Water): each draws its own header. */}
           <Stack.Screen name="MedicineReminders" component={RemindersScreen} options={{ title: t('m2r.meds.title'), headerShown: false }} />
+          {/* Refills (refill reminders + one-tap reorder): draws its own header. */}
+          <Stack.Screen name="Refills" component={RefillsScreen} options={{ title: t('refill.title'), headerShown: false }} />
           <Stack.Screen name="Water" component={WaterScreen} options={{ title: t('m2r.water.title'), headerShown: false }} />
           <Stack.Screen name="YourCare" component={YourCareRoute} options={{ title: t('tabbar.yourCare'), headerShown: false }} />
           <Stack.Screen name="More" component={MoreRoute} options={{ title: t('ws.tab.more') }} />

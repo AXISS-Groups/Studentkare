@@ -38,6 +38,7 @@ import { payEn } from './areas/pay';
 import { phoneboardsEn } from './areas/phoneboards';
 import { phonestoreEn } from './areas/phonestore';
 import { privacyEn } from './areas/privacy';
+import { refillsEn } from './areas/refills';
 import { rewardsEn } from './areas/rewards';
 import { safetyEn } from './areas/safety';
 import { shopwebEn } from './areas/shopweb';
@@ -98,6 +99,7 @@ export const areasEn = {
   ...phoneboardsEn,
   ...phonestoreEn,
   ...privacyEn,
+  ...refillsEn,
   ...rewardsEn,
   ...safetyEn,
   ...shopwebEn,

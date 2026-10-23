@@ -150,6 +150,8 @@ const workspacePaths: { path: string; access?: (role: AccountRole | null) => boo
   // Mobile 2.0 Medicines today and Water (reminders ticket): the student's own doses and water log.
   { path: '/health/medicines', access: hasRole('STUDENT') },
   { path: '/health/water', access: hasRole('STUDENT') },
+  // Refills (refill reminders + one-tap reorder): the student's own counts; reorder prices from the shop.
+  { path: '/health/refills', access: hasRole('STUDENT') },
   // Steps (Mobile 2.0, Tier 2): the student's own step totals; a browser counts none, typed entry only.
   { path: '/health/steps', access: hasRole('STUDENT') },
   // What's new (newsroom product update posts), opened from Profile.

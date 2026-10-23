@@ -161,6 +161,7 @@ ORDERED_PAIRS: tuple[tuple[str, str], ...] = (
     ("wellness.water_reminder_interval_minutes_default", "wellness.water_reminder_interval_minutes_max"),
     ("wellness.water_reminder_start_hour_default", "wellness.water_reminder_end_hour_default"),
     ("wellness.weight_kg_min", "wellness.weight_kg_max"),
+    ("refill.remind_days_before_default", "refill.remind_days_before_max"),
     ("wellness.height_cm_min", "wellness.height_cm_max"),
     ("wellness.bmi_cutoff_low", "wellness.bmi_cutoff_mid"),
     ("wellness.bmi_cutoff_mid", "wellness.bmi_cutoff_high"),
@@ -317,6 +318,27 @@ declare("meds.reminder_minute_evening", INT, 1200, area="meds", unit="minutes af
         maximum=1439, public=True, description="Time of the 'evening' medicine reminder slot on the phone.")
 declare("meds.reminder_minute_night", INT, 1320, area="meds", unit="minutes after midnight", minimum=0,
         maximum=1439, public=True, description="Time of the 'night' medicine reminder slot on the phone.")
+# Refill reminders (services/refill_tracker.py). The run-out date is counted
+# from the student's own pack size and dose schedule: pills on hand divided by
+# pills a day. Nothing here is dosing advice; these only bound what can be typed
+# and when the reminder goes out. Quiet hours are the student's own
+# (care_notification_preferences), applied by the outbox.
+declare("refill.remind_days_before_default", INT, 3, area="refill", unit="days", minimum=1, maximum=30, public=True,
+        description="How many days before a medicine runs out the refill reminder goes out, unless the student picks another.")
+declare("refill.remind_days_before_max", INT, 14, area="refill", unit="days", minimum=1, maximum=60, public=True,
+        description="Most days before running out a student may ask to be reminded.")
+declare("refill.remind_minute_local", INT, 600, area="refill", unit="minutes after midnight", minimum=0,
+        maximum=1439, public=True, description="Local time of day a refill reminder is due (quiet hours still apply).")
+declare("refill.snooze_days", INT, 1, area="refill", unit="days", minimum=1, maximum=14, public=True,
+        description="How long Snooze holds a refill reminder back.")
+declare("refill.pack_units_max", INT, 1000, area="refill", unit="units per pack", minimum=1, maximum=100000,
+        public=True, description="Largest pack size (tablets, capsules, doses) a student can enter.")
+declare("refill.units_per_dose_max", INT, 20, area="refill", unit="units per dose", minimum=1, maximum=100,
+        public=True, description="Most units a student can enter for one dose (a count, never advice).")
+declare("refill.packs_max", INT, 20, area="refill", unit="packs", minimum=1, maximum=100, public=True,
+        description="Most packs one refill can count.")
+declare("refill.tracked_max", INT, 30, area="refill", unit="medicines", minimum=1, maximum=200,
+        description="Most medicines one student can track for refills.")
 
 # --- student web (signed in) ----------------------------------------------
 declare("studentweb.report_ready_days", INT, 14, area="studentweb", unit="days", minimum=1, maximum=90, public=True,

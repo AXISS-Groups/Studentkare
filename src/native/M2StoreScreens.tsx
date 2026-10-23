@@ -148,6 +148,7 @@ export function OrdersScreen(): React.ReactElement {
         openEmergencyCard: () => navigate('Emergency'),
         openPass: () => navigate('DigitalId'),
         openCrisis: () => navigate('Emergency'),
+        refill: (order, item) => navigate('Refills', { orderId: order, itemId: item }),
       }} />
     </Frame>
   );

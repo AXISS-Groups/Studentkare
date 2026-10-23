@@ -3,6 +3,7 @@ import type { MessageKey } from '@/i18n';
 import { ApiError } from '@/data/services/http';
 import type { ViewModel } from '@/core/store/ViewModel';
 import { CheckoutDismissed, openRazorpay } from '@/data/services/razorpayCheckout';
+import { rememberPayMethod } from '../data/payMethodMemory';
 import { paymentRepository, type OpenPayment, type PaymentRepository, type PaymentStatus, type VerifyResult } from '../data/PaymentRepository';
 
 /** Methods the gateway takes. Kare points and cash on delivery are drawn but not offered (not built). */
@@ -167,7 +168,12 @@ export class PayStepViewModel implements ViewModel {
 
   private applyVerify(result: VerifyResult): void {
     runInAction(() => {
-      if (result.paymentStatus === 'PAID' || result.outcome === 'PAID' || result.outcome === 'DUPLICATE') { this.phase = 'paid'; return; }
+      if (result.paymentStatus === 'PAID' || result.outcome === 'PAID' || result.outcome === 'DUPLICATE') {
+        this.phase = 'paid';
+        // The kind of method only (a reorder starts from it); nothing about the order.
+        void rememberPayMethod(this.method);
+        return;
+      }
       if (result.outcome === 'LATE') { this.phase = 'late'; return; }
       if (result.outcome === 'FAILED') { this.phase = 'failed'; this.error = 'pay.failed.declined'; return; }
       this.phase = 'pending';
