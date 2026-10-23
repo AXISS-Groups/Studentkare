@@ -379,6 +379,8 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
       case 'medicine-info': return <MedicineInfoRoute wide />;
       case 'health/medicines': return <M2RemindersRoute wide />;
       case 'health/water': return <M2WaterRoute wide />;
+      case 'health/refills': return <M2RefillsRoute wide />;
+      case 'health/steps': return <M2StepsRoute wide />;
       default: return null;
     }
   };

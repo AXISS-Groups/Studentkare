@@ -6,9 +6,7 @@ import { navigate } from '@/lib/utils/workflowRouting';
 import { BrowserRouter } from '@/core/navigation';
 import { LiveCartProvider, useLiveCart } from '@/data/contexts/LiveCartContext';
 import type { LiveCatalogItem, LiveOrder } from '@/data/types/workflowTypes';
-import { axeViolations, describeViolations } from '@/test/axe';
 import { ThemeProvider } from '@/theme/tokens/theme';
-import { WebOrdersView } from '../WebOrdersView';
 import { WebOrdersHub } from '../WebOrdersHub';
 import { WebReorderView } from '../WebReorderView';
 import { WebAccountView } from '../WebAccountView';
@@ -62,23 +60,7 @@ const withCart = (ui: React.ReactElement) => <BrowserRouter><LiveCartProvider>{u
 beforeEach(() => { api.mockReset(); go.mockReset(); window.history.pushState({}, '', '/'); });
 afterEach(() => { vi.useRealTimers(); });
 
-describe('WebOrders — My orders', () => {
-  it('lists orders with status words, tracks the active one and cancels only an untouched order', async () => {
-    serve({ '/orders': (path: string, init?: RequestInit) => (init?.method === 'POST' ? {} : { items: [order('abcdef12xx', 'REQUESTED'), order('done000000', 'COMPLETED')], total: 2 }) });
-    render(<WebOrdersView />);
-    await settle();
-    const table = screen.getByRole('table', { name: 'Your orders, newest first' });
-    expect(within(table).getByText('SK-ABCDEF12')).toBeInTheDocument();
-    expect(within(table).getByText('Delivered')).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Requested' })).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Cancel order' }));
-    await settle();
-    expect(api).toHaveBeenCalledWith('/orders/abcdef12xx/cancel', { method: 'POST' });
-    await settle();
-    fireEvent.click(screen.getByRole('button', { name: 'Reorder SK-DONE0000' }));
-    expect(go).toHaveBeenCalledWith('buy-again');
-  });
-
+describe('Orders hub (founder decisions, 23 Oct 2026; parity phase 2)', () => {
   it('has My lab tests as its second tab (founder decision, 23 Oct 2026), and opens it from ?view=lab-tests', async () => {
     serve({ '/orders': { items: [], total: 0 }, '/lab-orders': { items: [] }, '/health/documents': { items: [] } });
     window.history.pushState({}, '', '/orders');
@@ -90,32 +72,7 @@ describe('WebOrders — My orders', () => {
     await settle();
     expect(window.location.search).toBe('?view=lab-tests');
     expect(screen.getByRole('heading', { level: 1, name: 'My lab tests' })).toBeInTheDocument();
-  });
-
-  it('has no cancel once the provider has accepted', async () => {
-    serve({ '/orders': { items: [order('acc0000000', 'ACCEPTED')], total: 1 } });
-    render(<WebOrdersView />);
-    await settle();
-    expect(screen.queryByRole('button', { name: 'Cancel order' })).toBeNull();
-  });
-
-  it('empty: no orders yet, with the shop as the next step', async () => {
-    serve({ '/orders': { items: [], total: 0 } });
-    render(<WebOrdersView />);
-    await settle();
-    expect(screen.getByText('No orders yet')).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Browse the shop' }));
-    expect(go).toHaveBeenCalledWith('shop');
-  });
-
-  it('has no accessibility violations', async () => {
-    serve({ '/orders': { items: [order('abcdef12xx', 'DISPATCHED')], total: 1 } });
-    const { container } = render(<WebOrdersView />);
-    await settle();
-    const violations = await axeViolations(container);
-    expect(violations, describeViolations(violations)).toEqual([]);
-  });
-});
+  });});
 
 describe('WebReorder — Buy again (the student page, not the partner /reorder)', () => {
   const orders = { items: [order('o1', 'COMPLETED', {}, { itemId: 'ok', name: 'ORS sachets' }), order('o2', 'COMPLETED', {}, { itemId: 'rx', name: 'Antibiotic' })] };

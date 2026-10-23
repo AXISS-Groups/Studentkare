@@ -35,35 +35,8 @@ export function orderStatus(order: Pick<LiveOrder, 'lines'>): RequestStatus {
 
 export const isActiveOrder = (order: Pick<LiveOrder, 'lines'>): boolean => ACTIVE.includes(orderStatus(order));
 
-export type OrderTab = 'all' | 'active' | 'lab' | 'past';
-export const ORDER_TABS: readonly OrderTab[] = ['all', 'active', 'lab', 'past'];
-
-export function filterOrders(orders: readonly LiveOrder[], tab: OrderTab): LiveOrder[] {
-  switch (tab) {
-    case 'active': return orders.filter(isActiveOrder);
-    case 'lab': return orders.filter((order) => order.lines.some((line) => line.kind === 'lab'));
-    case 'past': return orders.filter((order) => !isActiveOrder(order));
-    default: return [...orders];
-  }
-}
-
 /** The short reference the student sees ("SK-1A2B3C4D"), from the order id. */
 export const orderRef = (id: string): string => `SK-${id.slice(0, 8).toUpperCase()}`;
-
-/** Tracking steps for one order, in order; `done` up to where its lines have reached. */
-export type TrackStep = 'placed' | 'accepted' | 'dispatched' | 'completed';
-export const TRACK_STEPS: readonly TrackStep[] = ['placed', 'accepted', 'dispatched', 'completed'];
-
-/** How many tracking steps are done (1 = placed only). Closed orders (cancelled, declined) return 0. */
-export function trackProgress(order: Pick<LiveOrder, 'lines'>): number {
-  switch (orderStatus(order)) {
-    case 'REQUESTED': return 1;
-    case 'ACCEPTED': return 2;
-    case 'DISPATCHED': return 3;
-    case 'COMPLETED': return 4;
-    default: return 0;
-  }
-}
 
 export interface BuyAgainEntry {
   itemId: string;

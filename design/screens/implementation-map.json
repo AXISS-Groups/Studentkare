@@ -664,14 +664,6 @@
       "src/design-system/m2/ServiceRail.tsx",
       "src/features/shopPhone/viewmodel/PhoneShopViewModel.ts"
     ],
-    "WebOrders": [
-      "src/features/studentweb/views/WebOrdersView.tsx",
-      "src/features/studentweb/views/parts.tsx",
-      "src/features/studentweb/data/studentWebData.ts",
-      "src/design-system/student-shell/StudentWebShell.tsx",
-      "src/design-system/student-shell/studentNav.ts",
-      "src/design-system/overlays/ConfirmDialog.tsx"
-    ],
     "WebReorder": [
       "src/features/studentweb/views/WebReorderView.tsx",
       "src/features/studentweb/views/catalogArt.ts",
@@ -1784,7 +1776,8 @@
       "src/design-system/m2/servicePalette.ts",
       "src/design-system/m2/m2Motion.ts",
       "src/screens/workspace/StudentPhoneFrame.tsx",
-      "src/native/StudentTabBar.tsx"
+      "src/native/StudentTabBar.tsx",
+      "src/design-system/m2/m2Layout.tsx"
     ],
     "M2Insights": [
       "src/features/insights/views/M2InsightsView.tsx",
@@ -1974,7 +1967,8 @@
       "src/design-system/m2/servicePalette.ts",
       "src/design-system/m2/m2Motion.ts",
       "src/screens/workspace/StudentPhoneFrame.tsx",
-      "src/native/StudentTabBar.tsx"
+      "src/native/StudentTabBar.tsx",
+      "src/design-system/m2/m2Layout.tsx"
     ],
     "M2Refills": [
       "src/features/refills/views/M2RefillsView.tsx",
@@ -1989,7 +1983,8 @@
       "src/design-system/m2/Gradient.tsx",
       "src/design-system/m2/servicePalette.ts",
       "src/screens/workspace/StudentPhoneFrame.tsx",
-      "src/native/StudentTabBar.tsx"
+      "src/native/StudentTabBar.tsx",
+      "src/design-system/m2/m2Layout.tsx"
     ],
     "M2Reorder": [
       "src/features/refills/views/M2ReorderView.tsx",
@@ -2217,6 +2212,12 @@
         "M2Home"
       ],
       "source": "docs/ux/web-mobile-parity-2026-10-23.md#approved-decisions-23-oct-2026 (one home; desktop Home is Mobile 2.0 Home laid out wide, parity phase 2)"
+    },
+    "WebOrders": {
+      "by": [
+        "M2Orders"
+      ],
+      "source": "docs/ux/web-mobile-parity-2026-10-23.md#approved-decisions-23-oct-2026 (desktop Orders is Mobile 2.0 Orders laid out wide, parity phase 2)"
     }
   },
   "retiredIcons": {
