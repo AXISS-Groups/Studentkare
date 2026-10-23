@@ -1,6 +1,6 @@
 # Web ↔ mobile UI parity: audit and plan (2026-10-23)
 
-**Status:** audit only. No app code changed. Recommendations in the Duplications section are for Krishna to decide.
+**Status:** audit, then decided. Krishna Chintakayala (named reviewer) approved the decisions below on 23 Oct 2026. Phase 1 shipped in #240; the shell and duplicate changes ship in the PR that adds this section.
 
 **Ask (Krishna):** the web UI and the mobile UI don't match. Web should use the same cards, bento cards, icons (including the animated ones) and look as mobile, and the other way round. Every duplicated module or entry point should be listed so it can be moved or hidden.
 
@@ -149,7 +149,43 @@ Campus, doctor, partner and super-admin consoles use their own shells (`CampusSh
 - A **doctor's personal side** (`/health` as `NMC_DOCTOR`) still renders the oldest layout, `wf-workspace` + `MemberOverview`. It has **Shop ×3** (sidebar brand opens shop, a "Shop" button in the top bar, "Back to shop" in the sidebar) and **Plan / Profile / Digital ID ×2** (top quick-nav and sidebar).
 - Doctor and partner consoles show no SOS at either width (count 0). That's expected for staff consoles, but it should be a recorded decision.
 
-## Duplications (recommendations for Krishna; nothing has been changed)
+## Approved decisions (23 Oct 2026)
+
+Decided by Krishna Chintakayala (named reviewer) on the recommendations below. Where a decision differs from the recommendation, the decision wins.
+
+1. **Ayush.**
+   - On desktop, keep the floating bubble and the Shop card "Not sure what you need? Ask Ayush".
+   - Remove the top-nav "Ayush" link, the sidebar "Ayush AI" item and the Home Ayush card (`/home` is retired, see 2).
+   - On the phone, hide the More menu's Ayush item. The pill nav's orb stays.
+2. **One home.** Home is `/health`, as on the phone. The logo opens `/health`, and `/home` is retired for a signed-in student (it redirects to `/health`).
+3. **Each place once:**
+   - Orders: in the sidebar, not the top bar.
+   - Health vault: in the sidebar, not the top nav.
+   - Account: the avatar and the sidebar's account header, with no separate "Account" item.
+4. **One notifications inbox, through the bell.** The bell opens `/notifications`, the same inbox the phone uses. The sidebar's "Notifications" item is renamed "Notification settings".
+5. **Merges:**
+   - My lab tests is a tab of Orders above phone width. The phone keeps its page.
+   - Medications is Medicines today: `/medications` redirects there.
+6. **Footer.** No public site footer when signed in; one line of crisis help (112 · Tele-MANAS 14416) under every page.
+7. **One search box, in the top bar.** Results open in the shop. The signed-in shop has no second search box; a visitor's shop keeps its own.
+8. **Phone More menu folded into Profile → Settings.** No menu button in the phone header. More gets its own close control and no longer repeats Ayush or Orders.
+9. **Names match mobile.** "Your Care" becomes **Home** (`/health`), and **My health** (`/your-care`) gets its own sidebar item.
+10. **SOS in the header of every screen, phone and web.**
+    - `M2Header` carries SOS by default, and so does every board with its own header (Product, Consults, Camps, Medicine info, Care directory detail, Report upload, Trends, Steps, Vaccines).
+    - On the web desktop, the shell's top bar carries SOS on every page, so a board shown there draws no second one.
+
+**Icons these decisions took off screens.** These are recorded under `retiredIcons` in `design/screens/implementation-map.json`, with this section as their source, so the icon check does not ask for them back:
+- `map-pin`: Your Care, now Home with the `home` icon.
+- `flask`: My lab tests.
+- `sparkle`: Ayush AI.
+- `user`: Account.
+- `menu`: the phone header's menu button.
+
+`WebHome` is marked superseded by `WebDashboard`.
+
+**Deferred** (Tier 1 content, phase 3): folding Report insights into My health. Report insights keeps its sidebar item until then.
+
+## Duplications (recommendations for Krishna; decided above)
 
 "Same screen" means visible at once without scrolling the nav. The phone-web counts also apply to the Expo app unless noted.
 
