@@ -653,7 +653,7 @@ Notes for the reviewer: "Monday Motivation" is a series name and stays in Englis
 | `news.block.stat` | Big figure | పెద్ద సంఖ్య | बड़ा आँकड़ा |
 | `news.adm.eyebrow` | Newsroom | న్యూస్‌రూమ్ | न्यूज़रूम |
 | `news.adm.title` | Content | కంటెంట్ | कंटेंट |
-| `news.adm.subtitle` | Every post on the site, typed or Auto: News, Blog and series in the SK templates. Health posts go out only after a clinician approves them. | సైట్‌లోని ప్రతి పోస్ట్, టీమ్ రాసినది లేదా Auto: SK టెంప్లేట్‌లలో వార్తలు, బ్లాగ్, సిరీస్. ఆరోగ్య పోస్ట్‌లు డాక్టర్ ఆమోదించిన తర్వాతే ప్రచురితమవుతాయి. | साइट की हर पोस्ट, टीम की लिखी या Auto: SK टेम्पलेट में ख़बरें, ब्लॉग और सीरीज़। स्वास्थ्य पोस्ट डॉक्टर की मंज़ूरी के बाद ही प्रकाशित होती हैं। |
+| `news.adm.subtitle` | Every post on the site, typed or Auto: News, Blog and series in the SK templates. Health posts typed by the team go out after a clinician approves them; auto posts go out only when precise. | సైట్‌లోని ప్రతి పోస్ట్, టీమ్ రాసినది లేదా Auto: SK టెంప్లేట్‌లలో వార్తలు, బ్లాగ్, సిరీస్. టీమ్ రాసిన ఆరోగ్య పోస్ట్‌లు డాక్టర్ ఆమోదం తర్వాత; Auto పోస్ట్‌లు ఖచ్చితంగా ఉంటేనే ప్రచురితమవుతాయి. | साइट की हर पोस्ट, टीम की लिखी या Auto: SK टेम्पलेट में ख़बरें, ब्लॉग और सीरीज़। टीम की लिखी स्वास्थ्य पोस्ट डॉक्टर की मंज़ूरी के बाद; Auto पोस्ट सिर्फ़ सटीक होने पर प्रकाशित होती हैं। |
 
 ### Content module (`newsroomContent.ts`)
 

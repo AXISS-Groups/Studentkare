@@ -89,6 +89,7 @@ export class ContentAdminViewModel implements ViewModel {
   }
 
   async loadCategories(): Promise<void> {
+    this.disposed = false;   // a remount (React strict mode) disposes first, then loads again
     this.phase = 'loading';
     try {
       const res = await this.repo.adminCategories();
@@ -134,6 +135,7 @@ export class ContentAdminViewModel implements ViewModel {
   }
 
   async loadSeries(): Promise<void> {
+    this.disposed = false;   // a remount (React strict mode) disposes first, then loads again
     this.phase = 'loading';
     try {
       const [series, categories] = await Promise.all([this.repo.adminSeries(), this.repo.adminCategories()]);
@@ -195,6 +197,7 @@ export class ContentAdminViewModel implements ViewModel {
   }
 
   async loadShareKit(postId = this.kitPostId): Promise<void> {
+    this.disposed = false;   // a remount (React strict mode) disposes first, then loads again
     this.phase = 'loading';
     try {
       const posts = this.posts.length ? this.posts : (await this.posts$.adminList({})).items.filter((p) => p.status !== 'UNPUBLISHED');
@@ -224,6 +227,7 @@ export class ContentAdminViewModel implements ViewModel {
   }
 
   async loadStats(): Promise<void> {
+    this.disposed = false;   // a remount (React strict mode) disposes first, then loads again
     this.phase = 'loading';
     try {
       const res = await this.repo.stats();
