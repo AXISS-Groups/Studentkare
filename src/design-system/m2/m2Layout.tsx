@@ -94,3 +94,17 @@ export function M2Grid({ children, columns, gap, style, testID }: M2GridProps) {
     </View>
   );
 }
+
+/**
+ * A Mobile 2.0 board laid out wide in the desktop web shell's page column
+ * (parity phase 2): no own scroll (the page scrolls), no own gutter (the shell
+ * gives it), as wide as web content goes, and every piece inside laid out for
+ * the width it really has (`<M2Responsive>`).
+ */
+export function M2WideColumn({ children, testID }: { children: React.ReactNode; testID?: string }) {
+  return (
+    <View style={{ width: '100%' }} testID={testID}>
+      <M2Responsive style={{ width: '100%', maxWidth: size.webContentMax, alignSelf: 'center', gap: space.s24 }}>{children}</M2Responsive>
+    </View>
+  );
+}

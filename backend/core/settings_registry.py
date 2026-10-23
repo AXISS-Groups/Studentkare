@@ -217,6 +217,10 @@ declare("shop.cart_line_max", INT, 10, area="shop", unit="units", minimum=1, max
 # Mobile 2.0 "Call to order" / "Call to book" (M2Home, M2Medicines, M2Labs). No
 # order line exists yet, so the default is empty and the app says "not
 # available yet"; the client dials it only when it is a plain phone number.
+declare("shop.generics_highlight_enabled", BOOL, False, area="shop", public=True,
+        description="Whether Home and the shop carry the Generics highlight (same composition, a lower price, the "
+                    "pharmacist confirms the swap). Off until the generics programme is live, so no claim is shown that "
+                    "the platform cannot back.")
 declare("shop.order_line_phone", STR, "", area="shop", unit="phone number (digits, optional leading +)", public=True,
         description="The order line students call to order medicines or book a lab test. Empty shows the call "
                     "buttons as not available yet.")

@@ -4,8 +4,8 @@ import { AnimatedIllustration, Icon } from '@/design-system/icons';
 import type { SkIconName } from '@/design-system/icons';
 import { ErrorState, Rise, Skeleton, useReducedMotion } from '@/design-system';
 import {
-  cardLabel, Gradient, GradientHeroCard, LiftCard, M2Card, M2Header, M2SearchField, M2SectionHead, M2_NAV_CLEARANCE, NotYetTile, SERVICE_HUES, SoftIcon,
-  heroStops, m2Text, tileStops, useAmbientMotion, useLift, useLoop, useOwnPhoneChrome,
+  cardLabel, Gradient, GradientHeroCard, LiftCard, M2Card, M2Grid, M2Header, M2SearchField, M2SectionHead, M2_NAV_CLEARANCE, NotYetTile, SERVICE_HUES, SoftIcon,
+  heroStops, m2Text, tileStops, useAmbientMotion, useLift, useLoop, useOwnPhoneChrome, M2WideColumn,
 } from '@/design-system/m2';
 import type { PressState, ServiceHue } from '@/design-system/m2';
 import { color, focusRing, font, fontWeight, motion, radius, shadow, shadowStyle, size, space } from '@/design-system/theme';
@@ -40,6 +40,8 @@ export interface M2LabsLinks {
 }
 
 export interface M2LabsViewProps {
+  /** In the desktop web shell's page column: laid out wide (parity phase 2). */
+  wide?: boolean;
   links: M2LabsLinks;
   phase: LabsPhase;
   packages: readonly LabPackage[];
@@ -50,7 +52,7 @@ export interface M2LabsViewProps {
 
 const STEPS: readonly MessageKey[] = ['m2.labs.step1', 'm2.labs.step2', 'm2.labs.step3', 'm2.labs.step4'];
 
-function packageMeta(p: LabPackage, t: ReturnType<typeof useT>): string {
+export function packageMeta(p: LabPackage, t: ReturnType<typeof useT>): string {
   const tests = t(p.includes.length === 1 ? 'm2.labs.testsOne' : 'm2.labs.tests', { count: p.includes.length });
   const fasting = p.fastingHours > 0 ? t('m2.labs.fasting', { hours: p.fastingHours }) : t('m2.labs.noFasting');
   return `${tests} · ${fasting}`;
@@ -111,7 +113,7 @@ function Steps() {
   );
 }
 
-export function M2LabsView({ links, phase, packages, retry, block }: M2LabsViewProps): React.ReactElement {
+export function M2LabsView({ links, phase, packages, retry, block, wide = false }: M2LabsViewProps): React.ReactElement {
   const t = useT();
   useOwnPhoneChrome();
   const lift = useLift();
@@ -120,10 +122,10 @@ export function M2LabsView({ links, phase, packages, retry, block }: M2LabsViewP
   const featured = biggestPackage(packages);
   const shown = matchPackages(packages, query);
 
-  return (
-    <View style={styles.screen}>
-      <ScrollView style={styles.screen} contentContainerStyle={styles.content} testID="m2-labs">
-        <Gradient colors={[SERVICE_HUES.violet.soft, color.canvas]} radial={{ x: 0.5, y: 0.5 }} style={styles.glow} pointerEvents="none" />
+  // Wide, the shell's page column gives the gutter.
+  const gutter = wide ? undefined : styles.gutter;
+  const board = (
+      <>
         <Rise>
           <M2Header backLabel={t('m2.backHome')} onBack={links.back} title={t('m2.labs.title')}
             eyebrow={block ? t('m2.labs.collectedAt', { block }) : t('m2.labs.collectedHostel')}
@@ -135,11 +137,11 @@ export function M2LabsView({ links, phase, packages, retry, block }: M2LabsViewP
             )} />
         </Rise>
 
-        <Rise index={1} style={styles.gutter}>
+        <Rise index={1} style={gutter}>
           <M2SearchField placeholder={t('m2.labs.search')} label={t('m2.labs.searchLabel')} value={query} onChangeText={setQuery} testID="m2-labs-search" />
         </Rise>
 
-        <Rise index={2} style={[styles.gutter, styles.quickRow]}>
+        <Rise index={2} style={[gutter, styles.quickRow]}>
           {featured ? <QuickTile icon="person-badge" hue="violet" label={t('m2.labs.fullBody')} onPress={() => links.book(featured)} testID="m2-labs-full-body" /> : null}
           <QuickTile icon="doc-upload" hue="indigo" label={t('m2.labs.uploadRx')} onPress={links.rx} testID="m2-labs-rx" />
           {phone ? (
@@ -151,7 +153,7 @@ export function M2LabsView({ links, phase, packages, retry, block }: M2LabsViewP
         </Rise>
 
         {featured ? (
-          <Rise index={3} style={styles.gutter}>
+          <Rise index={3} style={gutter}>
             <GradientHeroCard
               testID="m2-labs-hero"
               stops={heroStops('violet')}
@@ -169,7 +171,7 @@ export function M2LabsView({ links, phase, packages, retry, block }: M2LabsViewP
           </Rise>
         ) : null}
 
-        <Rise index={4} style={styles.gutter}>
+        <Rise index={4} style={gutter}>
           <M2SectionHead title={t('m2.labs.packages')} />
           {phase === 'loading' ? <Skeleton label={t('m2.labs.loading')} lines={['100%', '100%', '100%']} /> : null}
           {phase === 'error' ? <ErrorState title={t('m2.labs.failedTitle')} body={t('m2.labs.failedBody')} retryLabel={t('common.tryAgain')} onRetry={retry} /> : null}
@@ -180,12 +182,12 @@ export function M2LabsView({ links, phase, packages, retry, block }: M2LabsViewP
             </View>
           ) : null}
           {phase === 'ready' && packages.length > 0 && shown.length === 0 ? <Text style={m2Text.body} testID="m2-labs-no-match">{t('m2.labs.noMatch', { query: query.trim() })}</Text> : null}
-          <View style={styles.list}>
+          <M2Grid columns={{ phone: 1, tablet: 2, desktop: 3 }} gap={space.s10} testID="m2-labs-list">
             {shown.map((p) => {
               const art = labArt(p.name);
               return (
                 <Pressable key={p.id} role="link" accessibilityRole="link" {...cardLabel(`${p.name}, ${packageMeta(p, t)}, ${money(p.pricePaise)}. ${t('m2.labs.book')}`)}
-                  onPress={() => links.book(p)} testID={`m2-labs-pkg-${p.id}`} style={(state: PressState) => [styles.row, lift(state)]}>
+                  onPress={() => links.book(p)} testID={`m2-labs-pkg-${p.id}`} style={(state: PressState) => [styles.row, wide ? styles.rowFill : null, lift(state)]}>
                   <SoftIcon icon={art.icon} hue={art.hue} tile={46} iconSize={22} />
                   <View style={styles.grow}>
                     <Text style={m2Text.cardTitle}>{p.name}</Text>
@@ -198,17 +200,17 @@ export function M2LabsView({ links, phase, packages, retry, block }: M2LabsViewP
                 </Pressable>
               );
             })}
-          </View>
+          </M2Grid>
         </Rise>
 
-        <Rise index={5} style={styles.gutter}><Steps /></Rise>
+        <Rise index={5} style={gutter}><Steps /></Rise>
 
-        <Rise index={6} style={styles.gutter}>
+        <Rise index={6} style={gutter}>
           <View style={styles.note}><Text style={m2Text.body}>{t('m2.labs.note')}</Text></View>
         </Rise>
 
         {phone ? (
-          <View style={[styles.gutter, styles.callRow]}>
+          <View style={[gutter, styles.callRow]}>
             <Pressable role="link" accessibilityRole="link" accessibilityLabel={t('m2.callBookSpoken', { number: phone })} aria-label={t('m2.callBookSpoken', { number: phone })}
               onPress={() => void Linking.openURL(`tel:${phone}`)} testID="m2-labs-call-fab" style={({ focused }: PressState) => [styles.call, focused ? focusRing : null]}>
               <Gradient colors={heroStops('violet')} style={styles.callIcon}><Icon name="phone" size={15} color={color.onHero} strokeWidth={2.4} /></Gradient>
@@ -216,6 +218,15 @@ export function M2LabsView({ links, phase, packages, retry, block }: M2LabsViewP
             </Pressable>
           </View>
         ) : null}
+      </>
+  );
+
+  if (wide) return <M2WideColumn testID="m2-labs">{board}</M2WideColumn>;
+  return (
+    <View style={styles.screen}>
+      <ScrollView style={styles.screen} contentContainerStyle={styles.content} testID="m2-labs">
+        <Gradient colors={[SERVICE_HUES.violet.soft, color.canvas]} radial={{ x: 0.5, y: 0.5 }} style={styles.glow} pointerEvents="none" />
+        {board}
       </ScrollView>
     </View>
   );
@@ -243,7 +254,7 @@ const styles = StyleSheet.create({
   bubble: { position: 'absolute', borderRadius: radius.full, backgroundColor: color.onHero },
   bubbleA: { left: 14, bottom: 10, width: 8, height: 8 },
   bubbleB: { left: 28, bottom: 6, width: 6, height: 6 },
-  list: { gap: space.s10 },
+  rowFill: { flexGrow: 1 },
   row: { borderRadius: 22, padding: space.s14, flexDirection: 'row', alignItems: 'center', gap: space.s12, backgroundColor: color.surface, ...shadowStyle(shadow.card) },
   rowEnd: { alignItems: 'flex-end', gap: space.s4 },
   rowBook: { fontFamily: font.family.sans, fontSize: font.size.caption, fontWeight: fontWeight(font.weight.heavy), color: color.action },

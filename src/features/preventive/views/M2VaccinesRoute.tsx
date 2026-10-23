@@ -11,7 +11,7 @@ const PreventiveCareScreen = lazy(() => import('../screens/PreventiveCareScreen'
  * phone width. "Search by pincode, report reviews and reminders" opens the
  * full preventive tools under the board, as the old board did.
  */
-export function M2VaccinesRoute(): React.ReactElement {
+export function M2VaccinesRoute({ wide = false }: { wide?: boolean } = {}): React.ReactElement {
   const [vm] = useState(() => new VaccinesViewModel());
   const [more, setMore] = useState(false);
   useEffect(() => {
@@ -23,7 +23,7 @@ export function M2VaccinesRoute(): React.ReactElement {
   }, [more]);
   return (
     <>
-      <M2VaccinesView vm={vm} links={{
+      <M2VaccinesView wide={wide} vm={vm} links={{
         back: () => navigate('health'),
         myHealth: () => navigate('your-care'),
         camp: () => navigate('health-camp'),

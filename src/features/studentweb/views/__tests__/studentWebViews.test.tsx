@@ -8,7 +8,6 @@ import { LiveCartProvider, useLiveCart } from '@/data/contexts/LiveCartContext';
 import type { LiveCatalogItem, LiveOrder } from '@/data/types/workflowTypes';
 import { axeViolations, describeViolations } from '@/test/axe';
 import { ThemeProvider } from '@/theme/tokens/theme';
-import { WebDashboardView } from '../WebDashboardView';
 import { WebOrdersView } from '../WebOrdersView';
 import { WebOrdersHub } from '../WebOrdersHub';
 import { WebReorderView } from '../WebReorderView';
@@ -62,60 +61,6 @@ const withCart = (ui: React.ReactElement) => <BrowserRouter><LiveCartProvider>{u
 
 beforeEach(() => { api.mockReset(); go.mockReset(); window.history.pushState({}, '', '/'); });
 afterEach(() => { vi.useRealTimers(); });
-
-const CLINICAL = /\/health\/readings|\/health\/metrics|\/records\/export|\/prescriptions|\/clinical/;
-
-describe('WebDashboard — Your Care', () => {
-  const dashboard = {
-    '/orders': { items: [order('unpaid1', 'REQUESTED', { paymentStatus: 'UNPAID' })] },
-    '/appointments': { items: [{ id: 'a1', slotStart: '2099-01-02T10:00:00Z', slotEnd: '', status: 'CONFIRMED' }] },
-    '/lab-orders': { items: [{ id: 'l1', status: 'IN_ANALYSIS', slotStart: null, collectionMode: 'HOME', createdAt: 0, updatedAt: 0, paymentStatus: 'PAID' }] },
-    '/records/shares': { items: [] },
-    '/health/documents': { items: [{}], total: 11 },
-  };
-
-  it('shows what needs doing from real records, never a score about the body', async () => {
-    serve(dashboard);
-    render(<WebDashboardView />);
-    await settle();
-    expect(screen.getByRole('heading', { level: 1, name: 'Home' })).toBeInTheDocument();
-    expect(screen.getByText('An order is waiting for payment')).toBeInTheDocument();
-    expect(screen.getByText(/No health score here/)).toBeInTheDocument();
-    expect(screen.getByText('11 documents')).toBeInTheDocument();
-    expect(screen.getByText('Doctor consult')).toBeInTheDocument();
-    expect(requested().some((path) => CLINICAL.test(path))).toBe(false);
-  });
-
-  it('opens Book something with real places to start', async () => {
-    serve(dashboard);
-    render(<WebDashboardView />);
-    await settle();
-    fireEvent.click(screen.getByRole('button', { name: 'Book something' }));
-    const dialog = screen.getByRole('dialog', { name: 'Book something' });
-    fireEvent.click(within(dialog).getByRole('button', { name: /Book a lab test/ }));
-    expect(go).toHaveBeenCalledWith('lab-tests');
-  });
-
-  it('first time: says nothing needs you yet and gives the next steps', async () => {
-    serve({ '/orders': { items: [] }, '/appointments': { items: [] }, '/lab-orders': { items: [] }, '/records/shares': { items: [] }, '/health/documents': { items: [], total: 0 } });
-    render(<WebDashboardView />);
-    await settle();
-    expect(screen.getByText('Nothing needs you yet')).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Set up your emergency card' }));
-    expect(go).toHaveBeenCalledWith('emergency-card');
-  });
-
-  it('error: calm copy and a retry that loads again', async () => {
-    serve({ ...dashboard, '/orders': new Error('down') });
-    render(<WebDashboardView />);
-    await settle();
-    expect(screen.getByRole('alert')).toHaveTextContent('This is on our side, not yours.');
-    const before = api.mock.calls.length;
-    fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
-    await settle();
-    expect(api.mock.calls.length).toBeGreaterThan(before);
-  });
-});
 
 describe('WebOrders — My orders', () => {
   it('lists orders with status words, tracks the active one and cancels only an untouched order', async () => {

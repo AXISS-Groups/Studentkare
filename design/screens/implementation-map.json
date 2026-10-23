@@ -540,14 +540,6 @@
     ],
     "WebGuardianConsent": [],
     "WebGuardianApprove": [],
-    "WebDashboard": [
-      "src/features/studentweb/views/WebDashboardView.tsx",
-      "src/features/studentweb/views/parts.tsx",
-      "src/features/studentweb/data/studentWebData.ts",
-      "src/design-system/student-shell/StudentWebShell.tsx",
-      "src/design-system/student-shell/studentNav.ts",
-      "src/design-system/overlays/ConfirmDialog.tsx"
-    ],
     "WebVault": [
       "src/features/studentweb/views/t1/WebVaultView.tsx",
       "src/design-system/student-shell/StudentWebShell.tsx",
@@ -1680,7 +1672,9 @@
       "src/screens/workspace/StudentPhoneFrame.tsx",
       "src/native/StudentTabBar.tsx",
       "src/features/newsroom/views/M2PostParts.tsx",
-      "src/features/newsroom/model/templates.ts"
+      "src/features/newsroom/model/templates.ts",
+      "src/design-system/m2/m2Layout.tsx",
+      "src/design-system/m2/M2Blocks.tsx"
     ],
     "M2Medicines": [
       "src/features/m2store/views/M2MedicinesView.tsx",
@@ -2214,9 +2208,15 @@
     },
     "WebHome": {
       "by": [
-        "WebDashboard"
+        "M2Home"
       ],
       "source": "docs/ux/web-mobile-parity-2026-10-23.md#approved-decisions-23-oct-2026 (one home: /home is retired for a signed-in student; Home is /health)"
+    },
+    "WebDashboard": {
+      "by": [
+        "M2Home"
+      ],
+      "source": "docs/ux/web-mobile-parity-2026-10-23.md#approved-decisions-23-oct-2026 (one home; desktop Home is Mobile 2.0 Home laid out wide, parity phase 2)"
     }
   },
   "retiredIcons": {
@@ -2232,15 +2232,6 @@
         "flask",
         "map-pin",
         "sparkle"
-      ],
-      "source": "docs/ux/web-mobile-parity-2026-10-23.md#approved-decisions-23-oct-2026"
-    },
-    "WebDashboard": {
-      "icons": [
-        "flask",
-        "map-pin",
-        "sparkle",
-        "user"
       ],
       "source": "docs/ux/web-mobile-parity-2026-10-23.md#approved-decisions-23-oct-2026"
     },
