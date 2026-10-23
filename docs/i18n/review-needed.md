@@ -880,4 +880,5 @@ Notes for the reviewer: "Monday Motivation" is a series name and stays in Englis
 | `cms.crisis.emergency` | Emergency 112 | అత్యవసరం 112 | आपातकाल 112 |
 | `cms.topics.aria` | Filter by category | విభాగం వారీగా ఫిల్టర్ చేయండి | श्रेणी से फ़िल्टर करें |
 | `cms.topics.all` | All topics | అన్ని అంశాలు | सभी विषय |
-
+| `cms.reason.CRISIS` | Crisis words: a person reads it first | సంక్షోభ పదాలు: ముందుగా ఒక వ్యక్తి చదవాలి | संकट वाले शब्द: पहले कोई व्यक्ति पढ़े |
+| `cms.lane.tipPrecise` | Health tips that pass the precision gate go out on their day; the rest wait for you in Content, Review. … | ఖచ్చితత్వ గేట్ దాటిన ఆరోగ్య చిట్కాలు … | सटीकता गेट पार करने वाले हेल्थ टिप … |

@@ -280,7 +280,8 @@ declare("newsroom.words_per_minute", INT, 200, area="newsroom", unit="words per 
 # new items from the allow-listed official feeds below, each naming and linking its
 # source. Blog: posts_per_week drafts on the configured days from the topic plan (built
 # only from approved knowledge sources) and a round-up of the week's What's new posts.
-# Health tips always wait for a clinician's approval, whatever auto_publish says.
+# Health content waits for a clinician only while content.health_requires_clinician is on (off by default,
+# Krishna 2026-10-23); otherwise only precise auto posts go out and the rest wait in Content, Review.
 # Times are in platform.default_timezone (IST).
 declare("autopilot.kill_switch", BOOL, False, area="autopilot",
         description="Emergency stop for the content autopilot: while true it fetches, drafts and publishes nothing.")
@@ -292,7 +293,8 @@ declare("autopilot.news_auto_publish", BOOL, True, area="autopilot",
         description="Publish autopilot news at once when it passes the precision gate (content.precision_threshold). "
                     "Imprecise news always waits in Content, Review. Off: every news draft waits for an editor.")
 declare("autopilot.blog_auto_publish", BOOL, False, area="autopilot",
-        description="Publish autopilot stories on their day. Health tips always wait for a clinician's approval.")
+        description="Publish autopilot stories and precise health tips on their day (a health tip waits for a clinician "
+                    "while content.health_requires_clinician is on).")
 declare("autopilot.use_model", BOOL, True, area="autopilot",
         description="Let the configured on-prem model write the headline and summary (checked against the source; "
                     "anything not grounded falls back to the source's own words).")
@@ -371,13 +373,16 @@ for _source, _url, _on in AUTOPILOT_SOURCES:
 
 # --- content module: categories, series, precision gate, share kit (services/newsroom_content.py,
 # newsroom_precision.py, newsroom_series.py) --------------------------------------------------------
-# Health-advice posts (an advice template in a clinical category, and every health tip) wait for a
-# clinician while health_requires_clinician is on, however precise they are. Off: an auto post that
-# passes the precision gate goes out; an imprecise one waits for the super admin. A health tip typed
-# by the team always needs a clinician (#229).
-declare("content.health_requires_clinician", BOOL, True, area="content",
+# Health-advice posts (an advice template in a clinical category, and every health tip). Decision,
+# Krishna as named reviewer, 2026-10-23 (docs/plans/newsroom-content-2026-10-23.md): health series posts
+# do not need a clinician, so the default is off: an auto post that passes the precision gate goes out,
+# an imprecise one waits for the super admin. This replaces #229's "every health tip needs a clinician"
+# for auto posts. On: they wait for a clinician however precise. A health post typed by the team is never
+# scored, so it still needs a clinician either way. Crisis words always send a post to review.
+declare("content.health_requires_clinician", BOOL, False, area="content",
         description="Health-advice auto posts (health series, health tips, explainers, myths, quick cards in a "
-                    "clinical category) wait for a clinician's approval even when they pass the precision gate.")
+                    "clinical category) wait for a clinician's approval even when they pass the precision gate. "
+                    "Off (Krishna, 2026-10-23): precise ones go out, imprecise ones wait in Content, Review.")
 declare("content.precision_threshold", INT, 100, area="content", unit="percent of sentences", minimum=50, maximum=100,
         description="Least share of an auto post's sentences that must be traceable to its source for it to be "
                     "approved without a person. Any failed source check (not allow-listed, too old, undated) is 0.")
@@ -397,6 +402,11 @@ declare("content.unverifiable_phrases", STR,
         area="content", unit="comma-separated words and phrases",
         description="Claims that need a source of their own: a sentence with one of these fails the gate unless "
                     "the source itself says it.")
+declare("content.crisis_phrases", STR,
+        "suicide,suicidal,self-harm,self harm,kill myself,end my life,overdose,want to die,hopeless,cutting",
+        area="content", unit="comma-separated words and phrases",
+        description="Crisis words: an auto post containing any of these never goes out on its own; it waits for a "
+                    "person in Content, Review, whatever its score.")
 declare("content.duplicate_similarity", INT, 60, area="content", unit="percent of title words", minimum=30,
         maximum=100, description="How alike two titles must be for the composer to warn of a duplicate topic.")
 declare("content.duplicate_window_days", INT, 60, area="content", unit="days", minimum=1, maximum=365,

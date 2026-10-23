@@ -86,6 +86,14 @@ def test_each_failure_is_named_per_sentence(sentence, reason):
     assert [f["text"] for f in failed] == [sentence] and reason in failed[0]["reasons"]
 
 
+def test_crisis_words_always_send_a_post_to_review_even_when_copied():
+    crisis = P.phrases(R.get_declaration("content.crisis_phrases").default)
+    text = "Tele-MANAS supports people thinking about suicide."
+    report = P.score([text], P.Source(text=text, allowed=True, kind=P.KNOWLEDGE), THU_10, threshold=100, min_support=70,
+                     max_age_hours=72, advice=ADVICE, unverifiable=UNVERIFIABLE, crisis=crisis)
+    assert not report.passed and P.CRISIS in report.sentences[0]["reasons"]
+
+
 def test_an_unverifiable_phrase_the_source_itself_uses_is_allowed():
     report = gate(["Studies show cooling centres help."], "Studies show cooling centres help in heatwaves.")
     assert report.passed
@@ -157,7 +165,7 @@ def test_the_health_series_cycles_its_rota_on_monday_wednesday_and_friday(harnes
 
 def test_health_episodes_wait_for_a_clinician_while_the_switch_is_on(harness, monkeypatch):
     client, factory, codes = harness
-    configure(factory, SERIES_ON)
+    configure(factory, {**SERIES_ON, "content.health_requires_clinician": True})
     knowledge(monkeypatch)
     run(factory, SUN_18)
     (episode,) = auto_posts(factory)
@@ -178,7 +186,7 @@ def test_health_episodes_wait_for_a_clinician_while_the_switch_is_on(harness, mo
 
 def test_with_the_switch_off_precise_episodes_go_out_and_imprecise_ones_wait_for_the_super_admin(harness, monkeypatch):
     client, factory, codes = harness
-    configure(factory, {**SERIES_ON, "content.health_requires_clinician": False})
+    configure(factory, SERIES_ON)                                  # the switch is off by default
     knowledge(monkeypatch)
     run(factory, SUN_18)
     (episode,) = auto_posts(factory)
@@ -246,7 +254,8 @@ def test_series_slots_follow_the_settings():
     assert R.get_declaration("series.motivation.days").default == "MON"
     for key in ("series.health.enabled", "series.motivation.enabled"):
         assert R.get_declaration(key).default is False
-    assert R.get_declaration("content.health_requires_clinician").default is True
+    # Krishna, 2026-10-23: health series posts do not need a clinician; the switch stays to turn it back on.
+    assert R.get_declaration("content.health_requires_clinician").default is False
 
 
 # --- categories and series --------------------------------------------------------------------------------------------

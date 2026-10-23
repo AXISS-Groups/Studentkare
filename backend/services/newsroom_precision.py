@@ -14,6 +14,8 @@ from, and the source itself is checked:
   for a person.
 * **No unverifiable claim.** "Studies show", "guaranteed", "the best" …
   (``content.unverifiable_phrases``) only when the source says it too.
+* **Crisis words** (``content.crisis_phrases``: suicide, self-harm, overdose …)
+  always fail the sentence, so such a post is read by a person first.
 * **The source.** Allow-listed and switched on, and for a feed item recent
   (``autopilot.news_max_age_hours``) and dated. Approved knowledge and the
   series library are allow-listed by being approved.
@@ -36,8 +38,8 @@ from services import vector_store
 
 FEED, KNOWLEDGE, LIBRARY = "feed", "knowledge", "library"
 # Sentence reasons, and the source's. The Review tab shows each in words (i18n content.reason.*).
-NOT_IN_SOURCE, NEW_NUMBER, NEW_NAME, ADVICE, UNVERIFIABLE = (
-    "NOT_IN_SOURCE", "NEW_NUMBER", "NEW_NAME", "ADVICE", "UNVERIFIABLE")
+NOT_IN_SOURCE, NEW_NUMBER, NEW_NAME, ADVICE, UNVERIFIABLE, CRISIS = (
+    "NOT_IN_SOURCE", "NEW_NUMBER", "NEW_NAME", "ADVICE", "UNVERIFIABLE", "CRISIS")
 SOURCE_NOT_ALLOWED, SOURCE_OLD, SOURCE_UNDATED, NOTHING_TO_CHECK = (
     "SOURCE_NOT_ALLOWED", "SOURCE_OLD", "SOURCE_UNDATED", "NOTHING_TO_CHECK")
 HOUR = 3600
@@ -103,7 +105,7 @@ def new_names(sentence: str, evidence: str) -> list[str]:
 
 
 def check_sentence(sentence: str, evidence: str, *, min_support: float, advice: list[str],
-                   unverifiable: list[str]) -> list[str]:
+                   unverifiable: list[str], crisis: tuple[str, ...] | list[str] = ()) -> list[str]:
     """Why a sentence fails (empty when it passes)."""
     reasons: list[str] = []
     folded, source = sentence.casefold(), evidence.casefold()
@@ -118,6 +120,8 @@ def check_sentence(sentence: str, evidence: str, *, min_support: float, advice: 
         reasons.append(ADVICE)
     if any(_contains(folded, p) and not _contains(source, p) for p in unverifiable):
         reasons.append(UNVERIFIABLE)
+    if any(_contains(folded, p) for p in crisis):
+        reasons.append(CRISIS)
     return reasons
 
 
@@ -134,11 +138,11 @@ def source_reasons(source: Source, now: float, max_age_hours: int) -> list[str]:
 
 
 def score(texts: list[str], source: Source, now: float, *, threshold: int, min_support: int, max_age_hours: int,
-          advice: list[str], unverifiable: list[str]) -> Report:
+          advice: list[str], unverifiable: list[str], crisis: tuple[str, ...] | list[str] = ()) -> Report:
     """The gate itself, with every knob passed in (tests call it directly)."""
     lines = split_sentences(texts)
     checked = [{"text": s, "reasons": check_sentence(s, source.text, min_support=min_support / PERCENT, advice=advice,
-                                                     unverifiable=unverifiable)} for s in lines]
+                                                     unverifiable=unverifiable, crisis=crisis)} for s in lines]
     for line in checked:
         line["ok"] = not line["reasons"]
     from_source = source_reasons(source, now, max_age_hours)
@@ -154,7 +158,8 @@ def gate(db: Session, texts: list[str], source: Source, now: float) -> Report:
                  min_support=int(setting("content.precision_sentence_min_support", db)),
                  max_age_hours=int(setting("autopilot.news_max_age_hours", db)),
                  advice=phrases(str(setting("content.advice_phrases", db))),
-                 unverifiable=phrases(str(setting("content.unverifiable_phrases", db))))
+                 unverifiable=phrases(str(setting("content.unverifiable_phrases", db))),
+                 crisis=phrases(str(setting("content.crisis_phrases", db))))
 
 
 def post_texts(title: str, summary: str, body: list[dict]) -> list[str]:

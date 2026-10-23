@@ -24,7 +24,7 @@ type Translate = ReturnType<typeof useT>;
 const REASON: Readonly<Record<string, MessageKey>> = {
   NOT_IN_SOURCE: 'cms.reason.NOT_IN_SOURCE', NEW_NUMBER: 'cms.reason.NEW_NUMBER', NEW_NAME: 'cms.reason.NEW_NAME',
   ADVICE: 'cms.reason.ADVICE', UNVERIFIABLE: 'cms.reason.UNVERIFIABLE', SOURCE_NOT_ALLOWED: 'cms.reason.SOURCE_NOT_ALLOWED',
-  SOURCE_OLD: 'cms.reason.SOURCE_OLD', SOURCE_UNDATED: 'cms.reason.SOURCE_UNDATED', NOTHING_TO_CHECK: 'cms.reason.NOTHING_TO_CHECK',
+  CRISIS: 'cms.reason.CRISIS', SOURCE_OLD: 'cms.reason.SOURCE_OLD', SOURCE_UNDATED: 'cms.reason.SOURCE_UNDATED', NOTHING_TO_CHECK: 'cms.reason.NOTHING_TO_CHECK',
 };
 const NOTICE: Readonly<Record<ContentNotice, MessageKey>> = {
   categorySaved: 'cms.notice.categorySaved', categoryArchived: 'cms.notice.categoryArchived', categoryRestored: 'cms.notice.categoryRestored',

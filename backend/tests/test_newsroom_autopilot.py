@@ -289,7 +289,8 @@ PASSAGES = [{"title": "Sleep in exam week", "content": "Sleep in exam week. Most
 
 def test_a_health_tip_is_drafted_scheduled_and_public_only_after_a_clinicians_approval(harness, monkeypatch):
     client, factory, codes = harness
-    configure(factory, {"autopilot.blog_enabled": True, "autopilot.blog_auto_publish": True})
+    configure(factory, {"autopilot.blog_enabled": True, "autopilot.blog_auto_publish": True,
+                        "content.health_requires_clinician": True})
     account(factory, "doc2", "NMC_DOCTOR", "Dr. Second")
     asked = []
     monkeypatch.setattr(A.vector_store, "search", lambda db, topic, limit: asked.append(topic) or PASSAGES)

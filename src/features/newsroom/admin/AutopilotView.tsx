@@ -172,7 +172,7 @@ function Lanes({ vm, status }: { vm: AutopilotViewModel; status: AutopilotStatus
       <GovCard title={t('autopilot.blog.title')} aside={<Icon name="calendar" size={18} />}>
         <Switch t={t} on={status.blog.enabled} onToggle={propose('autopilot.blog_enabled', !status.blog.enabled, 'bool')} testId="autopilot-blog-toggle" />
         <p className="sk-gov-text"><Icon name="clock" size={16} /> {t('autopilot.blog.body', { n: status.blog.perWeek, days: status.blog.days.join(', '), hour: status.blog.hour, zone })}</p>
-        <BoardNote icon="stethoscope" tone="attention">{t('autopilot.blog.tipRule')}</BoardNote>
+        <BoardNote icon="stethoscope" tone="attention">{t(status.precision?.healthRequiresClinician === false ? 'cms.lane.tipPrecise' : 'autopilot.blog.tipRule')}</BoardNote>
         <dl className="sk-gov-lines">
           <div>
             <dt>{t('autopilot.autoPublish')}<span className="sk-gov-fine"> · {t(status.blog.autoPublish ? 'autopilot.blog.autoOn' : 'autopilot.blog.autoOff')}</span></dt>
