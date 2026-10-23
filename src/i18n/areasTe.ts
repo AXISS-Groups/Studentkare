@@ -31,6 +31,7 @@ import { mobile2OrdersTe } from './areas/mobile2Orders';
 import { mobile2Te } from './areas/mobile2';
 import { mobile2WebTe } from './areas/mobile2Web';
 import { newsroomTe } from './areas/newsroom';
+import { newsroomContentTe } from './areas/newsroomContent';
 import { onboardTe } from './areas/onboard';
 import { partnerConsoleTe } from './areas/partnerConsole';
 import { partnerTe } from './areas/partner';
@@ -94,6 +95,7 @@ export const areasTe = {
   ...mobile2Te,
   ...mobile2WebTe,
   ...newsroomTe,
+  ...newsroomContentTe,
   ...onboardTe,
   ...partnerConsoleTe,
   ...partnerTe,

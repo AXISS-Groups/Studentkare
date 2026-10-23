@@ -31,7 +31,8 @@ const item = (over: Partial<AutopilotItem> = {}): AutopilotItem => ({
   id: 'i1', lane: 'NEWS', state: 'POSTED', reason: '', title: 'New guidance on student mental health', topic: '', sourceId: 'who_news',
   sourceName: 'World Health Organization', sourceUrl: 'https://www.who.int/news/item/x', sourcePublishedAt: AT - 3600, relevance: 6,
   generator: 'source', slotAt: null, createdAt: AT, updatedAt: AT,
-  post: { id: 'p1', status: 'PUBLISHED', live: true, path: '/news/new-guidance-abc123', template: 'CAMPUS_NEWS', needsReview: false, reviewCurrent: false, publishAt: AT, sample: false },
+  post: { id: 'p1', status: 'PUBLISHED', live: true, path: '/news/new-guidance-abc123', template: 'CAMPUS_NEWS', needsReview: false, reviewCurrent: false, publishAt: AT, sample: false, precision: 100, holdReason: '' },
+  categoryId: 'policy-news', seriesName: '', precision: 100,
   ...over,
 });
 
@@ -47,9 +48,12 @@ const status = (over: Partial<AutopilotStatus> = {}): AutopilotStatus => ({
   ],
   queue: [item({ id: 'i2', lane: 'BLOG', state: 'HELD', title: 'Sleep in exam week', topic: 'sleep', reason: 'Waiting for a clinician\'s approval',
     generator: 'extractive', slotAt: AT + 86400, sourceName: '', sourceUrl: '',
-    post: { id: 'p2', status: 'SCHEDULED', live: false, path: '/blog/sleep-abc', template: 'HEALTH_TIP', needsReview: true, reviewCurrent: false, publishAt: AT + 86400, sample: false } })],
+    post: { id: 'p2', status: 'SCHEDULED', live: false, path: '/blog/sleep-abc', template: 'HEALTH_TIP', needsReview: true, reviewCurrent: false, publishAt: AT + 86400, sample: false, precision: 100, holdReason: '' } })],
   log: [item(), item({ id: 'i3', state: 'SKIPPED', reason: 'Block word: patient', title: 'A patient story', post: null })],
   job: { lastRunAt: AT, lastStatus: 'SUCCESS', lastError: '', nextRunAt: AT + 900 },
+  fetchIntervalMinutes: 30, precision: { threshold: 100, healthRequiresClinician: true },
+  series: [{ key: 'health', enabled: false, name: 'Health series', slug: 'health-series', id: 's1', days: ['MON', 'WED', 'FRI'], hour: 17,
+    rota: ['mental-health', 'womens-health', 'common-health'], library: 0, episodes: 0, upcoming: [] }],
   ...over,
 });
 
@@ -80,9 +84,11 @@ describe('Super admin, Posts, Autopilot', () => {
     const { container } = await openTab();
     expect(screen.queryByTestId('post-new')).toBeNull();
     expect(screen.getByText(/Health tips always wait for a clinician's approval/)).toBeTruthy();
-    expect(screen.getByText('Working · 20 items')).toBeTruthy();
-    expect(screen.getByText('To verify: no feed yet')).toBeTruthy();
     expect(screen.getByText('Waiting for a clinician')).toBeTruthy();
+    // The health series and the precision gate, each a setting changed with a reason.
+    expect(within(screen.getByTestId('autopilot-series')).getByText('Health series')).toBeTruthy();
+    expect(screen.getByText(/Each episode waits for a clinician's approval, however precise/)).toBeTruthy();
+    expect(screen.getByTestId('autopilot-clinician-switch')).toBeTruthy();
     expect(screen.getByText('Live')).toBeTruthy();
     expect(screen.getByText(/Block word: patient/)).toBeTruthy();
     // A source with no feed address cannot be switched on.
@@ -92,6 +98,11 @@ describe('Super admin, Posts, Autopilot', () => {
     expect(screen.getByRole('button', { name: 'Unpublish: Sleep in exam week' })).toBeTruthy();
     const violations = await axeViolations(container);
     expect(violations, describeViolations(violations)).toEqual([]);
+    // The sources have their own tab in Content.
+    fireEvent.click(screen.getByTestId('posts-tab-sources'));
+    await screen.findByTestId('content-sources');
+    expect(screen.getByText('Working · 20 items')).toBeTruthy();
+    expect(screen.getByText('To verify: no feed yet')).toBeTruthy();
   });
 
   it('changes a setting only with a reason, through the settings registry', async () => {
@@ -167,6 +178,7 @@ describe('an auto post on the site', () => {
       reviewed: null, sample: false, path: '/news/new-guidance-abc123', ogImage: '/api/posts/news/new-guidance-abc123/og.png', auto: true,
       source: { name: 'World Health Organization', url: 'https://www.who.int/news/item/x', publishedAt: '2026-10-01T03:30:00Z' },
       body: [{ type: 'paragraph', text: 'WHO published guidance for universities.' }], seoTitle: 'New guidance', seoDescription: 'WHO guidance', related: [],
+      category: null, series: null, crisisLines: false, healthNote: false,
     };
     api.routes['/posts/news/new-guidance-abc123'] = post;
     const { container } = at('/news/new-guidance-abc123', <PostPage section="news" />, '/news/:slug');

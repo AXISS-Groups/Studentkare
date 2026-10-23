@@ -34,6 +34,17 @@ const KEY_LABEL: Readonly<Record<string, MessageKey>> = {
   'autopilot.blog_days': 'autopilot.key.autopilot.blog_days',
   'autopilot.blog_hour': 'autopilot.key.autopilot.blog_hour',
   'autopilot.blog_topics': 'autopilot.key.autopilot.blog_topics',
+  'autopilot.fetch_interval_minutes': 'cms.key.fetch_interval_minutes',
+  'content.health_requires_clinician': 'cms.key.health_requires_clinician',
+  'content.precision_threshold': 'cms.key.precision_threshold',
+  'series.auto_publish': 'cms.key.series_auto_publish',
+  'series.motivation.enabled': 'cms.key.motivation_enabled',
+  'series.motivation.days': 'cms.key.motivation_days',
+  'series.motivation.hour': 'cms.key.motivation_hour',
+  'series.health.enabled': 'cms.key.health_enabled',
+  'series.health.days': 'cms.key.health_days',
+  'series.health.hour': 'cms.key.health_hour',
+  'series.health.rota': 'cms.key.health_rota',
 };
 const SOURCE_KEY = /^autopilot\.source\.([a-z_]+)\.enabled$/;
 
@@ -52,6 +63,7 @@ function itemState(item: AutopilotItem): { label: MessageKey; tone: SkTone } {
   if (post.status === 'UNPUBLISHED') return { label: 'autopilot.state.UNPUBLISHED', tone: 'neutral' };
   if (post.live) return { label: 'autopilot.state.LIVE', tone: 'positive' };
   if (post.needsReview && !post.reviewCurrent) return { label: 'autopilot.state.CLINICIAN', tone: 'attention' };
+  if (post.holdReason === 'PRECISION') return { label: 'cms.state.IMPRECISE', tone: 'attention' };
   if (post.status === 'SCHEDULED') return { label: 'autopilot.state.SCHEDULED', tone: 'action' };
   return { label: 'autopilot.state.HELD', tone: 'attention' };
 }
@@ -180,6 +192,51 @@ function Lanes({ vm, status }: { vm: AutopilotViewModel; status: AutopilotStatus
   );
 }
 
+const SERIES_KEYS: Readonly<Record<'motivation' | 'health', { days: MessageKey; hour: MessageKey; name: MessageKey }>> = {
+  motivation: { days: 'cms.key.motivation_days', hour: 'cms.key.motivation_hour', name: 'cms.series.autoMotivation' },
+  health: { days: 'cms.key.health_days', hour: 'cms.key.health_hour', name: 'cms.series.autoHealth' },
+};
+
+/** Monday Motivation and the health series (settings series.*), and the gate every auto post passes. */
+function SeriesLanes({ vm, status }: { vm: AutopilotViewModel; status: AutopilotStatus }): React.ReactElement {
+  const t = useT();
+  const { lang } = useLanguage();
+  const zone = status.timezone;
+  const propose = (key: string, value: SettingValue, kind: PendingChange['kind']) => () => vm.propose(key, value, kind);
+  return (
+    <div className="sk-gov-grid sk-gov-grid--halves sk-autopilot-lanes" data-testid="autopilot-series">
+      {status.series.map((s) => (
+        <GovCard key={s.key} title={s.name || t(SERIES_KEYS[s.key].name)} aside={<Icon name={s.key === 'motivation' ? 'sun' : 'repeat'} size={18} />}>
+          <Switch t={t} on={s.enabled} onToggle={propose(`series.${s.key}.enabled`, !s.enabled, 'bool')} testId={`autopilot-series-${s.key}`} />
+          <p className="sk-gov-text"><Icon name="clock" size={16} /> {t('cms.lane.when', { days: s.days.join(', '), hour: s.hour, zone })}</p>
+          <dl className="sk-gov-lines">
+            <Line t={t} label={t(SERIES_KEYS[s.key].days)} value={s.days.join(',')} onEdit={propose(`series.${s.key}.days`, s.days.join(','), 'text')} />
+            <Line t={t} label={t(SERIES_KEYS[s.key].hour)} value={`${s.hour}:00`} onEdit={propose(`series.${s.key}.hour`, s.hour, 'int')} />
+            {s.key === 'health' ? <Line t={t} words label={t('cms.key.health_rota')} value={s.rota.join(', ')} onEdit={propose('series.health.rota', s.rota.join(','), 'text')} /> : null}
+          </dl>
+          {s.key === 'motivation'
+            ? <p className="sk-gov-fine"><Icon name="shield-check" size={14} /> {t('cms.lane.library', { n: s.library })}</p>
+            : <BoardNote icon="stethoscope" tone="attention">{t(status.precision.healthRequiresClinician ? 'cms.lane.healthClinician' : 'cms.lane.healthPrecise')}</BoardNote>}
+          <p className="sk-gov-fine">{t('cms.lane.episodes', { n: s.episodes })}</p>
+          {s.upcoming.length ? <p className="sk-gov-fine"><Icon name="calendar" size={14} /> {t('autopilot.blog.next', { list: s.upcoming.map((at) => formatDateTime(at, lang, zone)).join(' · ') })}</p> : null}
+        </GovCard>
+      ))}
+      <GovCard title={t('cms.precision.gate')} aside={<Icon name="shield-check" size={18} />}>
+        <p className="sk-gov-text">{t('cms.precision.gateBody')}</p>
+        <dl className="sk-gov-lines">
+          <Line t={t} label={t('cms.key.precision_threshold')} value={`${status.precision.threshold}%`} onEdit={propose('content.precision_threshold', status.precision.threshold, 'int')} />
+          <div>
+            <dt>{t('cms.key.health_requires_clinician')}</dt>
+            <dd><Switch t={t} on={status.precision.healthRequiresClinician} onToggle={propose('content.health_requires_clinician', !status.precision.healthRequiresClinician, 'bool')} testId="autopilot-clinician-switch" /></dd>
+          </div>
+          <Line t={t} label={t('cms.key.fetch_interval_minutes')} value={String(status.fetchIntervalMinutes)} onEdit={propose('autopilot.fetch_interval_minutes', status.fetchIntervalMinutes, 'int')} />
+        </dl>
+        <p className="sk-gov-fine"><Icon name="phone-call" size={14} /> {t('cms.precision.crisis')}</p>
+      </GovCard>
+    </div>
+  );
+}
+
 function sourceRows(t: Translate, vm: AutopilotViewModel, sources: readonly AutopilotSource[], lang: Parameters<typeof formatDateTime>[1], zone: string): DataTableRow[] {
   return sources.map((source) => {
     const health: { icon: SkIconName; text: string } = source.failures
@@ -244,7 +301,8 @@ function itemRows(t: Translate, vm: AutopilotViewModel, rows: readonly Autopilot
  * week's blog plan, every switch a setting changed with a reason. Health tips are
  * never published here: they wait for a clinician.
  */
-export const AutopilotView = observer(function AutopilotView() {
+/** `all` (default), `autopilot` (everything but the sources table) or `sources` (Content, Sources). */
+export const AutopilotView = observer(function AutopilotView({ part = 'all' }: { part?: 'all' | 'autopilot' | 'sources' }) {
   const t = useT();
   const { lang } = useLanguage();
   const [vm] = useState(() => new AutopilotViewModel());
@@ -257,6 +315,30 @@ export const AutopilotView = observer(function AutopilotView() {
   const model: MessageKey = status.model.aiKillSwitch ? 'autopilot.model.killed' : status.model.configured && status.model.use ? 'autopilot.model.on' : 'autopilot.model.off';
   const job = status.job?.lastRunAt ? t('autopilot.job', { at: formatDateTime(status.job.lastRunAt, lang, zone), status: status.job.lastStatus }) : t('autopilot.jobNever');
 
+  const sourcesTable = (
+    <>
+      <DataTable variant="plain" caption={t('autopilot.sources')} title={t('autopilot.sources')} actionsLabel={t('autopilot.col.actions')}
+        columns={[{ label: t('autopilot.col.source') }, { label: t('autopilot.verified'), width: '170px' }, { label: t('autopilot.col.reads'), width: '90px' },
+          { label: t('autopilot.col.health'), width: '200px' }, { label: t('autopilot.col.checked'), width: '140px', align: 'end' }]}
+        rows={sourceRows(t, vm, status.sources, lang, zone)} emptyMessage={{ title: t('autopilot.sources'), body: t('autopilot.sourcesNote') }} />
+      <p className="sk-gov-fine"><Icon name="lock" size={14} /> {t('autopilot.sourcesNote')}</p>
+    </>
+  );
+  if (part === 'sources') {
+    return (
+      <div className="sk-gov-stack sk-autopilot" data-testid="content-sources">
+        <div className="sk-gov-toolbar">
+          <p className="sk-gov-text">{t('cms.sources.intro', { n: status.fetchIntervalMinutes })}</p>
+          <span className="sk-psite-spacer" />
+          <SkButton variant="secondary" onClick={() => void vm.checkSources()} disabled={vm.busy} data-testid="autopilot-check"><Icon name="activity" size={16} />{t('autopilot.checkSources')}</SkButton>
+        </div>
+        {vm.error !== null ? <FormError message={vm.error || t('autopilot.failed')} /> : null}
+        {vm.pending ? <ChangeForm vm={vm} change={vm.pending} sources={status.sources} /> : null}
+        {sourcesTable}
+        <BoardToast message={vm.notice ? t(NOTICE[vm.notice]) : null} onDone={vm.clearNotice} />
+      </div>
+    );
+  }
   return (
     <div className="sk-gov-stack sk-autopilot" data-testid="autopilot">
       <div className="sk-gov-toolbar">
@@ -276,15 +358,12 @@ export const AutopilotView = observer(function AutopilotView() {
       {vm.stopping ? <StopForm vm={vm} /> : null}
       {vm.pending ? <ChangeForm vm={vm} change={vm.pending} sources={status.sources} /> : null}
       <Lanes vm={vm} status={status} />
+      {status.series ? <SeriesLanes vm={vm} status={status} /> : null}
       <GovCard title={t('autopilot.model.title')} aside={<Icon name="sparkles" size={18} />}>
         <p className="sk-gov-text">{t(model)}</p>
         <p className="sk-gov-fine"><Icon name="shield-check" size={14} /> {t('autopilot.model.rule')}</p>
       </GovCard>
-      <DataTable variant="plain" caption={t('autopilot.sources')} title={t('autopilot.sources')} actionsLabel={t('autopilot.col.actions')}
-        columns={[{ label: t('autopilot.col.source') }, { label: t('autopilot.verified'), width: '170px' }, { label: t('autopilot.col.reads'), width: '90px' },
-          { label: t('autopilot.col.health'), width: '200px' }, { label: t('autopilot.col.checked'), width: '140px', align: 'end' }]}
-        rows={sourceRows(t, vm, status.sources, lang, zone)} emptyMessage={{ title: t('autopilot.sources'), body: t('autopilot.sourcesNote') }} />
-      <p className="sk-gov-fine"><Icon name="lock" size={14} /> {t('autopilot.sourcesNote')}</p>
+      {part === 'all' ? sourcesTable : null}
       <p className="sk-gov-fine"><Icon name="inbox" size={14} /> {t('autopilot.queueEmptyBody')}</p>
       <DataTable variant="plain" caption={t('autopilot.queue')} title={t('autopilot.queue')} actionsLabel={t('autopilot.col.actions')}
         columns={[{ label: t('autopilot.col.item') }, { label: t('autopilot.col.lane'), width: '120px' }, { label: t('autopilot.col.state'), width: '190px' }, { label: t('autopilot.col.when'), width: '140px', align: 'end' }]}

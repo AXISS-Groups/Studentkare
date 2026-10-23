@@ -68,6 +68,20 @@ export function PostBody({ template, blocks, onOpen }: { template: PostTemplate;
                 </a>
               </p>
             );
+          case 'mythfact':
+            return (
+              <section key={key} className="sk-news-body__mythfact" aria-label={t('cms.block.mythfactAria')}>
+                <p className="sk-news-body__myth"><Icon name="x-square" size={20} /><span><strong>{t('cms.block.myth')}</strong> {block.myth}</span></p>
+                <p className="sk-news-body__fact"><Icon name="check-circle" size={20} /><span><strong>{t('cms.block.fact')}</strong> {block.fact}</span></p>
+              </section>
+            );
+          case 'stat':
+            return (
+              <p key={key} className="sk-news-body__stat">
+                <span className="sk-news-body__stat-value">{block.value}</span>
+                <span className="sk-news-body__stat-label">{block.label}</span>
+              </p>
+            );
           default:
             return null;
         }

@@ -45,6 +45,14 @@ export interface PublicSettings {
   "consult.media_join_after_minutes": number;
   /** How early before the slot starts a video consult can be joined. (minutes) */
   "consult.media_join_before_minutes": number;
+  /** utm_campaign on shared post links (a series adds its own slug). (utm_campaign value) */
+  "content.share_utm_campaign": string;
+  /** Add utm_source (the network), utm_medium and utm_campaign to shared post links. */
+  "content.share_utm_enabled": boolean;
+  /** utm_medium on shared post links. (utm_medium value) */
+  "content.share_utm_medium": string;
+  /** Count post views and shares (counts only: no reader, address or device is kept). */
+  "content.stats_enabled": boolean;
   /** How often the SOS screen re-reads an open alert from GET /api/emergency/sos/current. (seconds) */
   "emergency.sos_poll_seconds": number;
   /** How far back a typed report's collection date may be. (years) */
@@ -91,6 +99,8 @@ export interface PublicSettings {
   "newsroom.words_per_minute": number;
   /** Hours a pharmacy's price quote stays payable. 0 means quotes do not expire. (hours) */
   "pharmacy.quote_expiry_hours": number;
+  /** Timezone for a student's calendar day when they have not set a valid one, and for the newsroom's schedules (the composer's publish-later time, series and autopilot slots). (IANA timezone) */
+  "platform.default_timezone": string;
   /** Days between a student's account-deletion request and its erasure; they can cancel until then. (days) */
   "privacy.deletion_grace_days": number;
   /** The Apple App Store listing linked from the public site footer. Empty hides the link. (https URL) */
@@ -239,6 +249,10 @@ export const publicSettingDefaults: Readonly<PublicSettings> = {
   "care_directory.location_timeout_seconds": 15,
   "consult.media_join_after_minutes": 30,
   "consult.media_join_before_minutes": 15,
+  "content.share_utm_campaign": "newsroom",
+  "content.share_utm_enabled": true,
+  "content.share_utm_medium": "social",
+  "content.stats_enabled": true,
   "emergency.sos_poll_seconds": 15,
   "lab_results.collected_on_max_age_years": 30,
   "lab_results.max_rows_per_report": 60,
@@ -262,6 +276,7 @@ export const publicSettingDefaults: Readonly<PublicSettings> = {
   "newsroom.related_count": 3,
   "newsroom.words_per_minute": 200,
   "pharmacy.quote_expiry_hours": 0,
+  "platform.default_timezone": "Asia/Kolkata",
   "privacy.deletion_grace_days": 7,
   "public_site.app_store_url": "",
   "public_site.instagram_url": "",
@@ -342,6 +357,10 @@ export const publicSettingSpecs: Readonly<Record<PublicSettingKey, PublicSetting
   "care_directory.location_timeout_seconds": { type: "int", min: 3, max: 60, allowed: [], unit: "seconds" },
   "consult.media_join_after_minutes": { type: "int", min: 0, max: 240, allowed: [], unit: "minutes" },
   "consult.media_join_before_minutes": { type: "int", min: 0, max: 120, allowed: [], unit: "minutes" },
+  "content.share_utm_campaign": { type: "str", min: null, max: null, allowed: [], unit: "utm_campaign value" },
+  "content.share_utm_enabled": { type: "bool", min: null, max: null, allowed: [], unit: "" },
+  "content.share_utm_medium": { type: "str", min: null, max: null, allowed: [], unit: "utm_medium value" },
+  "content.stats_enabled": { type: "bool", min: null, max: null, allowed: [], unit: "" },
   "emergency.sos_poll_seconds": { type: "int", min: 5, max: 120, allowed: [], unit: "seconds" },
   "lab_results.collected_on_max_age_years": { type: "int", min: 1, max: 100, allowed: [], unit: "years" },
   "lab_results.max_rows_per_report": { type: "int", min: 1, max: 200, allowed: [], unit: "values" },
@@ -365,6 +384,7 @@ export const publicSettingSpecs: Readonly<Record<PublicSettingKey, PublicSetting
   "newsroom.related_count": { type: "int", min: 0, max: 6, allowed: [], unit: "posts" },
   "newsroom.words_per_minute": { type: "int", min: 100, max: 400, allowed: [], unit: "words per minute" },
   "pharmacy.quote_expiry_hours": { type: "int", min: 0, max: 720, allowed: [], unit: "hours" },
+  "platform.default_timezone": { type: "str", min: null, max: null, allowed: [], unit: "IANA timezone" },
   "privacy.deletion_grace_days": { type: "int", min: 1, max: 30, allowed: [], unit: "days" },
   "public_site.app_store_url": { type: "str", min: null, max: null, allowed: [], unit: "https URL" },
   "public_site.instagram_url": { type: "str", min: null, max: null, allowed: [], unit: "https URL" },

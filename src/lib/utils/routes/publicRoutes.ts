@@ -27,6 +27,7 @@ export const publicRoutes: RoutePath[] = [
   'partnerships/apply',
   'pricing',
   'privacy',
+  'series',
   'shop',
   'signup',
   'staff-sign-in',
