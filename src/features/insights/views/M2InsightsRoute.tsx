@@ -2,16 +2,19 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/data/contexts/AuthContext';
 import { navigate } from '@/lib/utils/workflowRouting';
 import { usePhoneHeaderSlot } from '@/design-system/navigation/BoardHeader';
+import { useMediaQuery } from '@/hooks/ui/useMediaQuery';
 import { InsightsViewModel } from '../viewmodel/InsightsViewModel';
 import { M2InsightsView } from './M2InsightsView';
 
 /**
  * Mobile 2.0 My health on the web: /your-care for a signed-in student at
- * phone width (the pill nav's My health). Trends and the report upload are
+ * phone width (the pill nav's My health) or desktop web (`wide`). Trends and the report upload are
  * /health/trends and /health/report-upload; no link carries a test, a value or
  * a medicine (Rule L, plan D-M2-9).
  */
-export function M2InsightsRoute(): React.ReactElement {
+export function M2InsightsRoute({ wide }: { wide?: boolean } = {}): React.ReactElement {
+  const isDesktop = useMediaQuery('(min-width: 1024px)');
+  const effectiveWide = wide !== undefined ? wide : isDesktop;
   const { user } = useAuth();
   const slot = usePhoneHeaderSlot();
   const [vm] = useState(() => new InsightsViewModel());
@@ -20,7 +23,7 @@ export function M2InsightsRoute(): React.ReactElement {
     return () => vm.dispose();
   }, [vm]);
   return (
-    <M2InsightsView vm={vm} name={user?.fullName ?? ''} links={{
+    <M2InsightsView vm={vm} name={user?.fullName ?? ''} wide={effectiveWide} links={{
       sos: () => (slot?.openSos ? slot.openSos() : navigate('sos')),
       trends: () => navigate('health/trends'),
       records: () => navigate('records'),

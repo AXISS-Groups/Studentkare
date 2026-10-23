@@ -115,7 +115,7 @@ function CountCard({ count, label, tone, pressed, onPress, testID }: { count: nu
   );
 }
 
-function SystemTile({ row, onPress }: { row: BodySystemRow; onPress: () => void }) {
+function SystemTile({ row, onPress, wide = false }: { row: BodySystemRow; onPress: () => void; wide?: boolean }) {
   const t = useT();
   const lift = useLift();
   const s = SYSTEM_STYLE[row.bodySystem];
@@ -130,7 +130,7 @@ function SystemTile({ row, onPress }: { row: BodySystemRow; onPress: () => void 
   ].slice(0, 8);
   return (
     <Pressable role="link" accessibilityRole="link" accessibilityLabel={`${t(s.label)}. ${summary}`} aria-label={`${t(s.label)}. ${summary}`} onPress={onPress}
-      testID={`m2-ins-system-${row.bodySystem}`} style={(state: PressState) => [styles.system, lift(state)]}>
+      testID={`m2-ins-system-${row.bodySystem}`} style={(state: PressState) => [styles.system, wide ? styles.systemWide : null, lift(state)]}>
       <TileIcon icon={s.icon} fill={s.fill} ink={s.ink} tile={38} />
       <Text style={m2Text.cardTitle}>{t(s.label)}</Text>
       <View style={styles.dots} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
@@ -184,11 +184,22 @@ function CareCard({ icon, fill, ink, title, lines, empty, action, testID }: {
   );
 }
 
-export const M2InsightsView = observer(function M2InsightsView({ vm, name, links, stepsOnPhone = false }: {
-  vm: InsightsViewModel; name: string; links: M2InsightsLinks;
+export interface M2InsightsViewProps {
+  vm: InsightsViewModel;
+  name: string;
+  links: M2InsightsLinks;
   /** True in the phone app, which can count steps itself; the web says to open the phone app. */
   stepsOnPhone?: boolean;
-}) {
+  wide?: boolean;
+}
+
+export const M2InsightsView = observer(function M2InsightsView({
+  vm,
+  name,
+  links,
+  stepsOnPhone = false,
+  wide = false,
+}: M2InsightsViewProps) {
   const t = useT();
   useOwnPhoneChrome();
   const online = useOnline();
@@ -206,9 +217,9 @@ export const M2InsightsView = observer(function M2InsightsView({ vm, name, links
   const stat = (ready: boolean, failed: boolean, value: string) => (ready ? value : failed ? '–' : '…');
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content} testID="m2-insights">
+    <ScrollView style={styles.screen} contentContainerStyle={[styles.content, wide ? styles.contentWide : null]} testID="m2-insights">
       <Rise>
-        <NavyHero>
+        <NavyHero style={wide ? styles.heroWide : null}>
           <View style={styles.head}>
             <View style={styles.avatar} accessibilityElementsHidden importantForAccessibility="no-hide-descendants"><Text style={styles.avatarText}>{initials(name)}</Text></View>
             <View style={styles.grow}>
@@ -218,7 +229,7 @@ export const M2InsightsView = observer(function M2InsightsView({ vm, name, links
             <SosButton label={t('m2.sos')} spoken={t('m2.sosSpoken')} onPress={links.sos} testID="m2-ins-sos" />
           </View>
           <Tabs links={links} />
-          <View style={styles.stats}>
+          <View style={[styles.stats, wide ? styles.statsWide : null]}>
             <View style={styles.statRow}>
               <HeroStat value={stat(vm.toDo !== null, vm.refills.phase === 'error' || vm.labOrders.phase === 'error', String(vm.toDo ?? ''))} label={t('m2.ins.toDo')} tone={color.onHeroAttention} testID="m2-ins-stat-todo" />
               <HeroStat value={stat(vm.appointments.ready, vm.appointments.phase === 'error', next ? `${dayLabel(next.slotStart, t)} ${clockLabel(next.slotStart)}` : t('m2.ins.none'))} label={t('m2.ins.nextConsult')} testID="m2-ins-stat-consult" />
@@ -233,7 +244,7 @@ export const M2InsightsView = observer(function M2InsightsView({ vm, name, links
       </Rise>
 
       {!online ? (
-        <View style={[styles.gutter, styles.offline]}>
+        <View style={[styles.gutter, wide ? styles.gutterWide : null, styles.offline]}>
           <OfflineBanner message={t('m2h.offline')} />
           <View style={styles.offlineLinks}>
             {links.emergencyCard ? <Text accessibilityRole="link" onPress={links.emergencyCard} style={[m2Text.link, styles.offlineLink]}>{t('pb.offline.emergencyCard')}</Text> : null}
@@ -242,12 +253,12 @@ export const M2InsightsView = observer(function M2InsightsView({ vm, name, links
         </View>
       ) : null}
 
-      <Rise index={1} style={[styles.gutter, styles.today]}>
+      <Rise index={1} style={[styles.gutter, wide ? styles.gutterWide : null, styles.today, wide ? styles.todayWide : null]}>
         <MedsTodayCard vm={vm.meds} onOpen={links.medicines} />
         <WaterCard vm={vm.water} onOpen={links.water} />
       </Rise>
 
-      <Rise index={1} style={styles.gutter}>
+      <Rise index={1} style={[styles.gutter, wide ? styles.gutterWide : null]}>
         <M2Card style={styles.report} testID="m2-ins-report">
           {values.phase === 'loading' ? <Skeleton label={t('m2.ins.valuesLoading')} lines={['40%', '80%', '100%', '100%']} /> : null}
           {values.phase === 'error' ? (
@@ -293,7 +304,7 @@ export const M2InsightsView = observer(function M2InsightsView({ vm, name, links
         </M2Card>
       </Rise>
 
-      <Rise index={2} style={styles.gutter}>
+      <Rise index={2} style={[styles.gutter, wide ? styles.gutterWide : null]}>
         {vm.reviews.phase === 'error' ? <CardError title={t('m2.ins.noteTitle')} onRetry={() => void vm.reviews.load()} testID="m2-ins-note-error" /> : null}
         {note ? (
           <Gradient colors={[color.positiveBg, color.surface]} angle={160} style={styles.note} testID="m2-ins-note">
@@ -335,7 +346,7 @@ export const M2InsightsView = observer(function M2InsightsView({ vm, name, links
         ) : null}
       </Rise>
 
-      <Rise index={3} style={styles.gutter}>
+      <Rise index={3} style={[styles.gutter, wide ? styles.gutterWide : null]}>
         <M2Heading style={[m2Text.section, styles.sectionTitle]}>{t('m2.ins.due')}</M2Heading>
         <View style={styles.pair}>
           {vm.refills.phase === 'error' ? <View style={styles.half}><CardError title={t('m2.ins.refills')} onRetry={() => void vm.refills.load()} testID="m2-ins-refills-error" /></View> : (
@@ -356,21 +367,21 @@ export const M2InsightsView = observer(function M2InsightsView({ vm, name, links
       </Rise>
 
       {links.steps ? (
-        <Rise index={4} style={styles.gutter}>
+        <Rise index={4} style={[styles.gutter, wide ? styles.gutterWide : null]}>
           <StepsCard week={vm.steps} onPhone={stepsOnPhone} onPress={links.steps} />
         </Rise>
       ) : null}
 
       {values.phase === 'ready' && values.bodySystems.length > 0 ? (
-        <Rise index={4} style={styles.gutter}>
+        <Rise index={4} style={[styles.gutter, wide ? styles.gutterWide : null]}>
           <M2Heading style={[m2Text.section, styles.sectionTitle]}>{t('m2.ins.systems')}</M2Heading>
-          <View style={styles.systems} testID="m2-ins-systems">
-            {values.bodySystems.map((row) => <SystemTile key={row.bodySystem} row={row} onPress={links.trends} />)}
+          <View style={[styles.systems, wide ? styles.systemsWide : null]} testID="m2-ins-systems">
+            {values.bodySystems.map((row) => <SystemTile key={row.bodySystem} row={row} onPress={links.trends} wide={wide} />)}
           </View>
         </Rise>
       ) : null}
 
-      <Rise index={5} style={styles.gutter}>
+      <Rise index={5} style={[styles.gutter, wide ? styles.gutterWide : null]}>
         <M2Card style={styles.vaccines} testID="m2-ins-vaccines">
           <TileIcon icon="syringe" fill={color.serviceAmberSoft} ink={color.serviceAmberInk} />
           <View style={styles.grow}>
@@ -386,7 +397,7 @@ export const M2InsightsView = observer(function M2InsightsView({ vm, name, links
         </M2Card>
       </Rise>
 
-      <Rise index={6} style={styles.gutter}>
+      <Rise index={6} style={[styles.gutter, wide ? styles.gutterWide : null]}>
         <M2Card style={styles.more} testID="m2-ins-more">
           {([
             { key: 'appointments', icon: 'calendar-2', label: 'm2.ins.appointments', onPress: links.appointments },
@@ -410,7 +421,9 @@ export const M2InsightsView = observer(function M2InsightsView({ vm, name, links
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.canvas },
   content: { paddingBottom: M2_NAV_CLEARANCE, gap: space.s16, width: '100%', maxWidth: size.phoneFrameMax, alignSelf: 'center', overflow: 'hidden' },
+  contentWide: { maxWidth: 1152, paddingHorizontal: space.s32, paddingBottom: space.s40 },
   gutter: { paddingHorizontal: space.gutterPhone },
+  gutterWide: { paddingHorizontal: 0 },
   grow: { flex: 1, minWidth: 0, gap: space.s2 },
   head: { flexDirection: 'row', alignItems: 'center', gap: space.s12 },
   avatar: { width: size.touchTarget, height: size.touchTarget, borderRadius: radius.full, alignItems: 'center', justifyContent: 'center', backgroundColor: color.onHeroVeil },
@@ -423,12 +436,15 @@ const styles = StyleSheet.create({
   tabText: { fontFamily: font.family.sans, fontSize: 12.5, fontWeight: fontWeight(font.weight.heavy), color: color.onHero },
   tabTextOn: { color: color.onHeroCurrent },
   stats: { marginTop: space.s16, gap: space.s10 },
-  statRow: { flexDirection: 'row', gap: space.s10 },
+  statsWide: { flexDirection: 'row', gap: space.s10 },
+  statRow: { flex: 1, flexDirection: 'row', gap: space.s10 },
   noScore: { marginTop: space.s12, fontFamily: font.family.sans, fontSize: 11.5, lineHeight: 16, fontWeight: fontWeight(font.weight.strong), color: color.onHero2 },
   offline: { gap: space.s8 },
   today: { gap: space.s12 },
+  todayWide: { flexDirection: 'row', gap: space.s16 },
   offlineLinks: { flexDirection: 'row', gap: space.s16, flexWrap: 'wrap' },
   offlineLink: { minHeight: size.touchTarget, paddingTop: space.s12 },
+  heroWide: { borderRadius: 32, marginTop: space.s16 },
   report: { borderRadius: 28, padding: space.s16 },
   reportState: { gap: space.s8 },
   inlineLink: { minHeight: size.touchTarget, paddingTop: space.s12 },
@@ -469,7 +485,25 @@ const styles = StyleSheet.create({
   careAction: { marginTop: 'auto', alignSelf: 'flex-start', minHeight: size.touchTarget, paddingHorizontal: space.s12, borderRadius: radius.full, justifyContent: 'center' },
   careActionText: { fontFamily: font.family.sans, fontSize: font.size.caption, fontWeight: fontWeight(font.weight.heavy) },
   systems: { flexDirection: 'row', flexWrap: 'wrap', gap: space.s12 },
+  systemsWide: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: space.s16,
+    ...webOnly({
+      display: 'grid',
+      gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+      gap: `${space.s16}px`,
+    }),
+  },
   system: { width: '47%', flexGrow: 1, borderRadius: 24, padding: space.s14, gap: space.s10, backgroundColor: color.surface, ...shadowStyle(shadow.card) },
+  systemWide: {
+    width: 'auto',
+    flexBasis: '30%',
+    flexGrow: 1,
+    ...webOnly({
+      width: '100%',
+    }),
+  },
   dots: { flexDirection: 'row', gap: space.s4, flexWrap: 'wrap' },
   dot: { width: 22, height: 6, borderRadius: radius.full },
   systemSummary: { fontFamily: font.family.sans, fontSize: 11.5, fontWeight: fontWeight(font.weight.strong), color: color.text2 },
