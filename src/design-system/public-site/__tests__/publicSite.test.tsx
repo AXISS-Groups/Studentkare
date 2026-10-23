@@ -7,6 +7,7 @@ import { join } from 'node:path';
 import { applyPublicConfig, resetPublicConfig } from '@/data/services/config';
 import { NewsletterBand, PublicSiteFooter, PublicSiteHeader, newsletterAddress, publishedUrl } from '..';
 import { CanvasImage, CanvasVideo } from '../../art';
+import { ART_CREDIT } from '../publicSiteNav';
 
 vi.mock('@/data/services/http', () => ({ apiRequest: vi.fn(() => Promise.reject(new Error('offline'))) }));
 
@@ -126,12 +127,20 @@ describe('public site links', () => {
     render(<><PublicSiteHeader current="discover" /><PublicSiteFooter /></>);
     const hrefs = Array.from(document.querySelectorAll('a[href]')).map((a) => a.getAttribute('href') ?? '');
     expect(hrefs.length).toBeGreaterThan(20);
-    for (const href of hrefs) expect(routes.has(href), href).toBe(true);
+    // The one link out is the licence credit for the medical illustrations (docs/licences/animation-packs.md).
+    for (const href of hrefs) if (href !== ART_CREDIT.href) expect(routes.has(href), href).toBe(true);
+  });
+
+  it('credit Shakuro for the medical illustrations, as their licence asks', () => {
+    render(<PublicSiteFooter />);
+    const credit = screen.getByRole('link', { name: 'Medical illustrations by Shakuro' });
+    expect(credit).toHaveAttribute('href', 'https://shakuro.com');
+    expect(credit).toHaveAttribute('rel', 'noopener noreferrer');
   });
 
   it('give every link a 44 px target class', () => {
     const css = readFileSync(join(process.cwd(), 'src/design-system/public-site/public-site.css'), 'utf-8');
-    for (const cls of ['sk-psite-nav__link', 'sk-psite-btn', 'sk-psite-iconbtn', 'sk-psite-cats__link', 'sk-psite-footer__link', 'sk-psite-footer__crisis', 'sk-psite-nl__tab', 'sk-psite-utility__link']) {
+    for (const cls of ['sk-psite-nav__link', 'sk-psite-btn', 'sk-psite-iconbtn', 'sk-psite-cats__link', 'sk-psite-footer__link', 'sk-psite-footer__crisis', 'sk-psite-footer__credit', 'sk-psite-nl__tab', 'sk-psite-utility__link']) {
       const rule = css.match(new RegExp(`\\.${cls} \\{[^}]*\\}`))?.[0] ?? '';
       expect(rule, cls).toMatch(/var\(--sk-size-touch-target\)/);
     }
