@@ -346,3 +346,32 @@ two UIs are not merged).
 - An authenticator, where the account has one, is still asked for after the passcode.
 - Offered after creating an account (Account ready → "Add a passcode") and in Profile → Sign-in &
   security; on sign-in as "Use my passcode" beside "Send a code".
+
+## Amendment 2026-10-23: consent withdrawal, published legal versions, named super admins (fix/consent-a11y)
+
+Asked for in the fix/consent-a11y ticket (security audit H2, H3), built within this plan's rules. The
+decisions below were taken while building and are listed for the named Tier 1 reviewer (Krishna
+Chintakayala) to confirm in the PR review; nothing here adds legal text.
+
+- **D3-4 (amends).** A withdraw endpoint now exists: `POST /api/privacy/consents/{purpose}` with a ledger
+  in `care_consent_records` (`services/consent_ledger.py`). The three sign-up purposes still can't be
+  withdrawn one at a time (the server answers `REQUIRED_FOR_SERVICE`); withdrawing them is deleting the
+  account, so the sign-up line "To withdraw, delete your account" stays true and is unchanged. Optional
+  consents are the switches that already exist elsewhere (Ayush history, pickup location, seasonal tips,
+  vaccine/check-up offers, blood donor contact); none was added to OnboardingConsent, which keeps its three
+  required ticks and no optional switches. The consent wording version is unchanged (no bump).
+- **D3-5 (amends).** The grievance officer is shown only from a published `GRIEVANCE_OFFICER` legal
+  document (Super admin → Legal documents). Until legal supplies the text and a super admin publishes it,
+  every surface says "not published yet". No name, email or reply time is written in code.
+- **OnboardingConsent: legal versions.** The screen reads the published privacy notice and terms versions
+  from `GET /auth/consent` and shows "Privacy notice, version …" (or "Privacy notice will be published
+  soon." when none is). Sign-up sends the versions it showed; the server refuses a stale one (the student
+  reloads) and records them on the consent row (`notice_version`, `terms_version`), "unpublished" when
+  none was. Sign-up is never blocked by a missing notice. An older client that sends no version is
+  recorded as "" (not shown), never as a version it didn't show.
+- **D3-9 / team accounts (amends).** Named super admins (`POST /api/ops/super-admins`, super admin only,
+  audited, ops feed critical). A named super admin must use an authenticator whatever the 2FA policy says,
+  and can't turn it off. Their first sign-in through the authenticator step is recorded. The guided
+  "Retire the shared super admin" disables `superadmin@` only from a named account, only after a named
+  super admin has signed in with TOTP, with a typed `RETIRE`; a retired shared account can't be rotated
+  back on. It was built, not run. Steps: `docs/guides/team-accounts.md`.

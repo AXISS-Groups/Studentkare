@@ -52,6 +52,7 @@ export const routeRoles: Readonly<Partial<Record<RoutePath, RouteRoles>>> = {
   'consent': STUDENT_ONLY,
   'console': PARTNER,
   'counsellor': COUNSELLOR_DESK, // crisis follow-up queue (names, contacts): counsellors, campus-scoped by the server
+  'data-rights': STUDENT_ONLY,
   'delete-account': STUDENT_ONLY,
   'dispense-register': PARTNER,
   'dispensing': PARTNER,
@@ -71,6 +72,7 @@ export const routeRoles: Readonly<Partial<Record<RoutePath, RouteRoles>>> = {
   'my-requests': STUDENT_ONLY,
   'partner-staff': PARTNER,
   'performance': PARTNER,
+  'privacy-consent': STUDENT_ONLY, // Profile → Privacy & consent: the student's own consent ledger
   'refill-request': STUDENT_ONLY,
   'reorder': PARTNER,
   'report-insights': STUDENT_ONLY,

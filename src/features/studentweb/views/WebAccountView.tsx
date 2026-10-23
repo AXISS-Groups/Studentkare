@@ -157,6 +157,7 @@ export function WebAccountView() {
       </section>
 
       <div className="sk-sw-card sk-sw-leave">
+        <LinkRow icon="lock-4" title={t('privacy.title')} meta={t('privacy.accountMeta')} onPress={go('privacy-consent')} />
         <LinkRow icon="graduation-cap" title={t('sw.account.leaveTitle')} meta={t('sw.account.leaveMeta')} onPress={go('leave-campus')} />
         <LinkRow icon="trash" tone="danger" title={t('sw.account.deleteTitle')} meta={t('sw.account.deleteMeta')} onPress={go('delete-account')} />
       </div>

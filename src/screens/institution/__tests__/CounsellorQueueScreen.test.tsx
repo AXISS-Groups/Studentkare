@@ -155,10 +155,10 @@ describe('CounsellorQueueScreen', () => {
     render(<CounsellorQueueScreen />);
     await flush();
     expect(screen.getByRole('status', { name: 'Loading counsellor queue' })).toBeInTheDocument();
-    const teleManas = screen.getByRole('link', { name: 'Call Tele-MANAS, the mental-health helpline, on 14416' });
+    const teleManas = screen.getByRole('link', { name: 'Tele-MANAS 14416', description: 'Call Tele-MANAS, the mental-health helpline, on 14416' });
     expect(teleManas).toHaveAttribute('href', 'tel:14416');
     expect(teleManas.tabIndex).toBe(0);
-    expect(screen.getByRole('link', { name: 'Call 112, India’s emergency number' })).toHaveAttribute('href', 'tel:112');
+    expect(screen.getByRole('link', { name: 'Call 112', description: 'Call 112, India’s emergency number' })).toHaveAttribute('href', 'tel:112');
     expect(document.body.textContent).toMatch(/doesn’t escalate on its own yet/);
     expect(document.body.textContent).not.toMatch(/escalates to the super admin safety centre|rings Tele-MANAS/);
     // No roster source: no invented on-call counsellor, and no invented median.

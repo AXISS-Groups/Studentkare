@@ -17,11 +17,29 @@ export interface SignupConsentPayload {
   version: string;
   purposes: SignupPurpose[];
   language: Lang;
+  /** The privacy notice and terms versions shown ("unpublished" when none was); sent only once known. */
+  noticeVersion?: string;
+  termsVersion?: string;
+}
+
+/** GET /auth/consent: the wording version, and the legal versions the screen links to. */
+export interface SignupConsentTerms {
+  version: string;
+  required: string[];
+  noticeVersion: string;
+  termsVersion: string;
 }
 
 /** Every item starts unticked. Nothing is agreed on the student's behalf. */
 export class SignupConsentState {
   agreed: Record<SignupPurpose, boolean> = { RECORDS_STORAGE: false, CAMPUS_ENROLMENT: false, ADULT_18_PLUS: false };
+  /**
+   * The published privacy notice and terms versions this screen shows, from
+   * GET /auth/consent ("unpublished" when none is). Null until loaded, or when it
+   * couldn't load: then nothing is claimed and the server records none.
+   */
+  noticeVersion: string | null = null;
+  termsVersion: string | null = null;
 
   constructor() {
     makeAutoObservable(this, {}, { autoBind: true });
@@ -31,13 +49,22 @@ export class SignupConsentState {
     this.agreed[purpose] = !this.agreed[purpose];
   }
 
+  setLegal(noticeVersion: string | null, termsVersion: string | null): void {
+    this.noticeVersion = noticeVersion;
+    this.termsVersion = termsVersion;
+  }
+
   get complete(): boolean {
     return SIGNUP_PURPOSES.every((purpose) => this.agreed[purpose]);
   }
 
   payload(language: Lang): SignupConsentPayload | null {
     if (!this.complete) return null;
-    return { version: SIGNUP_CONSENT_VERSION, purposes: [...SIGNUP_PURPOSES], language };
+    return {
+      version: SIGNUP_CONSENT_VERSION, purposes: [...SIGNUP_PURPOSES], language,
+      ...(this.noticeVersion !== null ? { noticeVersion: this.noticeVersion } : {}),
+      ...(this.termsVersion !== null ? { termsVersion: this.termsVersion } : {}),
+    };
   }
 
   reset(): void {

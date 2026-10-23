@@ -31,6 +31,7 @@ from core.settings_registry import setting
 from core.team_scope import RESERVED_CAMPUS_MESSAGE, is_reserved_campus, team_sandboxed
 from services import (
     clinical_profile,
+    consent_ledger,
     lab_results,
     livekit_media,
     medicine_info,
@@ -2861,6 +2862,9 @@ def set_notification_preferences(body: NotificationPrefInput, user=Depends(authe
     if not prefs:
         prefs = M.NotificationPreference(account_id=user["id"])
         db.add(prefs)
+    # The two consents also go in the consent ledger (services/consent_ledger.py),
+    # so Profile → Privacy & consent shows when each was given or withdrawn.
+    was = {"PICKUP_LOCATION": bool(prefs.pickup_location_enabled), "AYUSH_HISTORY": bool(prefs.ayush_history_enabled)}
     prefs.email_enabled = body.emailEnabled
     prefs.push_enabled = body.pushEnabled
     prefs.reminders_enabled = body.remindersEnabled
@@ -2874,14 +2878,11 @@ def set_notification_preferences(body: NotificationPrefInput, user=Depends(authe
     prefs.quiet_end = body.quietEnd[:5]
     if not body.ayushHistoryEnabled:
         # History off means the words are not kept — including those already kept.
-        # Outcome and timing stay for evaluation; the transcript goes.
-        cleared = db.execute(
-            update(M.AgentTurn)
-            .where(M.AgentTurn.account_id == user["id"], M.AgentTurn.question != "")
-            .values(question="", answer="")
-        ).rowcount
-        if cleared:
-            audit(db, user, "AYUSH_HISTORY_CLEARED", user["id"])
+        consent_ledger.clear_ayush_words(db, user["id"])
+    now_on = {"PICKUP_LOCATION": body.pickupLocationEnabled, "AYUSH_HISTORY": body.ayushHistoryEnabled}
+    for purpose, on in now_on.items():
+        if on != was[purpose]:
+            consent_ledger.record_change(db, user["id"], user["id"], purpose, on)
     db.commit()
     return {"success": True}
 
@@ -3000,9 +3001,13 @@ def register_blood_donor(body: BloodDonorInput, user=Depends(authenticated_user)
     if body.phone and _digits(body.phone)[-10:] != _digits(phone)[-10:]:
         raise HTTPException(409, {"code": PHONE_NOT_VERIFIED,
                                   "message": "Donors are reached only on their own verified WhatsApp number."})
+    was_listed = any(row.visible for row in db.scalars(select(M.BloodDonor).where(M.BloodDonor.account_id == user["id"])).all())
     res = blood_emergency_agent.register_donor(db, user["id"], BloodDonor(
         blood_group=body.bloodGroup, hostel_block=body.hostelBlock.strip(), visible=body.visible))
     audit(db, user, "BLOOD_DONOR_REGISTERED", res["id"])
+    # Being listed and messaged by a blood SOS is an optional consent (services/consent_ledger.py).
+    if body.visible != was_listed:
+        consent_ledger.record_change(db, user["id"], user["id"], "BLOOD_DONOR_CONTACT", body.visible)
     db.commit()
     return res
 

@@ -5,6 +5,7 @@ import { Icon } from '@/design-system/icons';
 import type { SkIconName } from '@/design-system/icons';
 import { Button, OfflineBanner, RadioGroup, Rise, Sheet, Skeleton, useOnline } from '@/design-system';
 import {
+  cardLabel,
   Gradient, LiftCard, M2Card, M2Heading, M2_NAV_CLEARANCE, ProgressRing, SosButton, heroStops, m2Text, useAmbientMotion, useLift, useLoop, useOwnPhoneChrome,
 } from '@/design-system/m2';
 import type { PressState, ServiceHue } from '@/design-system/m2';
@@ -82,10 +83,10 @@ function Row({ icon, fill, ink, title, meta, onPress, trailing, testID }: {
     </>
   );
   if (!onPress) {
-    return <View style={styles.row} testID={testID} accessible accessibilityLabel={`${title}, ${meta}`} aria-label={`${title}, ${meta}`}>{body}</View>;
+    return <View style={styles.row} testID={testID} accessible {...cardLabel(`${title}, ${meta}`)}>{body}</View>;
   }
   return (
-    <Pressable role="link" accessibilityRole="link" accessibilityLabel={`${title}, ${meta}`} aria-label={`${title}, ${meta}`} onPress={onPress} testID={testID}
+    <Pressable role="link" accessibilityRole="link" {...cardLabel(`${title}, ${meta}`)} onPress={onPress} testID={testID}
       style={({ focused }: PressState) => [styles.row, focused ? focusRing : null]}>
       {body}
     </Pressable>
@@ -140,8 +141,7 @@ export const M2ProfileView = observer(function M2ProfileView({ vm, links }: { vm
           {vm.profile.phase === 'loading' ? <View style={styles.idLoading}><Skeleton label={t('m2.prof.loading')} lines={['60%', '40%']} /></View> : null}
           {p ? (
             <Pressable role={links.account ? 'link' : undefined} accessibilityRole={links.account ? 'link' : undefined} disabled={!links.account} onPress={links.account}
-              accessibilityLabel={[p.fullName, place, done ? t('m2.prof.complete', { done: done.done, total: done.total }) : ''].filter(Boolean).join(', ')}
-              aria-label={[p.fullName, place, done ? t('m2.prof.complete', { done: done.done, total: done.total }) : ''].filter(Boolean).join(', ')}
+              {...cardLabel([p.fullName, place, done ? t('m2.prof.complete', { done: done.done, total: done.total }) : ''].filter(Boolean).join(', '))}
               testID="m2-prof-identity" style={({ focused }: PressState) => [styles.identity, focused ? focusRing : null]}>
               <View style={styles.ringBox}>
                 <ProgressRing value={done?.fraction ?? 0} centre="" size={92} tone={color.onHero} track={color.onHeroTrack} testID="chart-profile-complete-ring" />
@@ -155,7 +155,7 @@ export const M2ProfileView = observer(function M2ProfileView({ vm, links }: { vm
             </Pressable>
           ) : null}
           {vm.profile.phase === 'error' ? (
-            <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('m2.prof.failed')} aria-label={t('m2.prof.failed')} onPress={() => void vm.profile.load()}
+            <Pressable role="button" accessibilityRole="button" {...cardLabel(t('m2.prof.failed'))} onPress={() => void vm.profile.load()}
               testID="m2-prof-identity-retry" style={({ focused }: PressState) => [styles.heroRetry, focused ? focusRing : null]}>
               <Text style={styles.place}>{t('m2.prof.failed')}</Text>
               <Icon name="refresh" size={16} color={color.onHero} />
@@ -192,7 +192,7 @@ export const M2ProfileView = observer(function M2ProfileView({ vm, links }: { vm
       <Rise index={2} style={styles.gutter}>
         <M2Heading style={[m2Text.section, styles.sectionTitle]}>{t('m2.prof.onCampus')}</M2Heading>
         <View style={styles.campus}>
-          <Pressable role="link" accessibilityRole="link" accessibilityLabel={`${t('m2.prof.emergency')}. ${t('m2.prof.emergencyBody')}`} aria-label={`${t('m2.prof.emergency')}. ${t('m2.prof.emergencyBody')}`}
+          <Pressable role="link" accessibilityRole="link" {...cardLabel(`${t('m2.prof.emergency')}. ${t('m2.prof.emergencyBody')}`)}
             onPress={links.emergencyCard} testID="m2-prof-emergency" style={(state: PressState) => [styles.emergency, lift(state)]}>
             <Shine />
             <View style={styles.emergencyIcon}><Icon name="plus-square" size={22} color={color.onDangerFill} /></View>
@@ -229,7 +229,7 @@ export const M2ProfileView = observer(function M2ProfileView({ vm, links }: { vm
               const s = DOC_STYLE[d.key];
               const n = vm.documents.data ? countOf(vm.documents.data, d.category) : 0;
               return (
-                <Pressable key={d.key} role="link" accessibilityRole="link" accessibilityLabel={`${n} ${t(s.label)}`} aria-label={`${n} ${t(s.label)}`} onPress={links.documents}
+                <Pressable key={d.key} role="link" accessibilityRole="link" {...cardLabel(`${n} ${t(s.label)}`)} onPress={links.documents}
                   testID={`m2-prof-doc-${d.key}`} style={(state: PressState) => [styles.docPress, lift(state)]}>
                   <Gradient colors={heroStops(s.hue)} gloss style={styles.doc}>
                     <View style={styles.docIcon}><Icon name={s.icon} size={20} color={color.onHero} /></View>

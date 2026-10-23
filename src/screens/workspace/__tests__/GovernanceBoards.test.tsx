@@ -441,7 +441,7 @@ describe('Plans & pricing (AdminPlansPricing)', () => {
     let sent: unknown = null;
     apiAnswers['/ops/settings/billing.premium.from_monthly_inr'] = init => { sent = { method: init?.method, body: JSON.parse(String(init?.body)) }; return Promise.resolve(setting('billing.premium.from_monthly_inr', 549)); };
     show('admin/plans');
-    fireEvent.click(await screen.findByRole('button', { name: 'Edit the price of Premium' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Edit price of Premium' }));
     const dialog = await screen.findByRole('dialog');
     const save = within(dialog).getByRole('button', { name: 'Save price' });
     const amount = within(dialog).getByRole('spinbutton');
@@ -459,7 +459,7 @@ describe('Plans & pricing (AdminPlansPricing)', () => {
   it('keeps the drawer open and says what the server said when a change is refused', async () => {
     apiAnswers['/ops/settings/billing.premium.from_monthly_inr'] = () => Promise.reject(new Error('Value above the maximum.'));
     show('admin/plans');
-    fireEvent.click(await screen.findByRole('button', { name: 'Edit the price of Premium' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Edit price of Premium' }));
     const dialog = await screen.findByRole('dialog');
     fireEvent.change(within(dialog).getByRole('spinbutton'), { target: { value: '600' } });
     fireEvent.change(within(dialog).getByRole('textbox'), { target: { value: 'Test' } });

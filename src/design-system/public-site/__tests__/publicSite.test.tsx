@@ -53,7 +53,7 @@ describe('PublicSiteHeader', () => {
     render(<PublicSiteHeader current="discover" />);
     expect(screen.getByRole('link', { name: 'Cart' })).toHaveAttribute('href', '/checkout');
     expect(screen.getByRole('link', { name: 'Sign in' })).toHaveAttribute('href', '/login');
-    expect(screen.getByRole('link', { name: 'Student Kare home' })).toHaveAttribute('href', '/');
+    expect(screen.getByRole('link', { name: /Student Kare home/ })).toHaveAttribute('href', '/');
   });
 
   it('draws the canvas icons, and no text arrows', () => {

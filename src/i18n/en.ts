@@ -37,7 +37,7 @@ export const en = {
   'crisis.call112': 'Call 112',
   'crisis.call112Spoken': 'Call 112, emergency services',
   'crisis.callTeleManas': 'Call Tele-MANAS 14416',
-  'crisis.callTeleManasSpoken': 'Call Tele-MANAS on 14416, mental health support, 24 hours',
+  'crisis.callTeleManasSpoken': 'Call Tele-MANAS 14416, mental health support, 24 hours',
   'crisis.noAccount': 'Emergency? You don’t need an account to call.',
   'crisis.noVerify': 'Emergency? You don’t need to be verified to call.',
   'crisis.pageCannotSend': 'Emergency or crisis? Call now — this page cannot send help.',

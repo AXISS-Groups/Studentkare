@@ -4,6 +4,7 @@ import { LANGUAGE_NAMES, useLanguage, useT } from '@/i18n';
 import type { Lang, MessageKey } from '@/i18n';
 import { Icon } from '@/design-system/icons';
 import type { SignupConsentState, SignupPurpose } from '../viewmodel/signupConsent';
+import { legalLine, useSignupLegal } from '../viewmodel/useSignupLegal';
 import './onboarding-consent.css';
 
 /**
@@ -17,8 +18,12 @@ import './onboarding-consent.css';
  * - no optional switches: "Partner offers" breaks Rule L, and "campus totals"
  *   and "research" have no feature or server purpose to consent to (D3-4);
  * - no named grievance officer or reply time until legal names one (D3-5);
- * - "withdrawing is as easy as agreeing" is not promised: there is no withdraw
- *   endpoint, so the honest line (delete your account) stays (D3-4).
+ * - the three required items can only be withdrawn by deleting the account, so
+ *   that line stays; optional consents are given and withdrawn later in
+ *   Profile, Privacy & consent (D3-4, amended 2026-10-23).
+ * The privacy notice and terms versions shown come from GET /auth/consent and
+ * are recorded with the consent; when none is published it says so and the
+ * server records "unpublished" (audit H2).
  */
 const ITEMS: { purpose: SignupPurpose; title: MessageKey; body: MessageKey }[] = [
   { purpose: 'RECORDS_STORAGE', title: 'member.consent.store.title', body: 'member.consent.store.body' },
@@ -49,6 +54,7 @@ export interface SignupConsentProps {
 export const SignupConsent = observer(function SignupConsent({ consent, busy = false, onBack, progress }: SignupConsentProps) {
   const t = useT();
   const { lang, setLang } = useLanguage();
+  useSignupLegal(consent);
   return (
     <section className="sk-consent" aria-labelledby="signup-consent-title">
       <div className="sk-consent__bar">
@@ -120,6 +126,8 @@ export const SignupConsent = observer(function SignupConsent({ consent, busy = f
       <div className="sk-consent__note">
         <p>{t('member.consent.withdraw')}</p>
         <p><a href="/privacy" target="_blank" rel="noopener noreferrer">{t('member.consent.privacy')}</a></p>
+        {consent.noticeVersion ? <p data-testid="consent-notice-version">{legalLine(t, consent.noticeVersion, 'privacy.signup.notice', 'privacy.signup.noticeSoon')}</p> : null}
+        {consent.termsVersion ? <p data-testid="consent-terms-version">{legalLine(t, consent.termsVersion, 'privacy.signup.terms', 'privacy.signup.termsSoon')}</p> : null}
       </div>
 
       <div className="sk-consent__actions">

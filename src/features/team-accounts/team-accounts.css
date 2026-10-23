@@ -89,3 +89,17 @@
   font: inherit; font-size: var(--sk-text-body-sm); font-weight: 700; cursor: pointer;
 }
 .sk-team-accounts__copy:focus-visible { outline: 3px solid var(--sk-color-focus); outline-offset: 2px; }
+
+/* Named super admins and retiring the shared one (audit H3). */
+.sk-admin-page .sk-team-named__head { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: var(--sk-space-12); padding: var(--sk-space-16) var(--sk-space-16) 0; }
+.sk-admin-page .sk-team-named__title { margin: 0; font-size: var(--sk-text-title-sm); font-weight: 800; color: var(--sk-color-text); }
+.sk-admin-page .sk-team-named__body { margin: var(--sk-space-4) 0 0; font-size: var(--sk-text-body-sm); color: var(--sk-color-text-2); max-width: 68ch; }
+.sk-admin-page .sk-team-retire { display: flex; flex-direction: column; align-items: flex-start; gap: var(--sk-space-12); }
+.sk-admin-page .sk-team-retire__steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--sk-space-10); }
+.sk-admin-page .sk-team-retire__step { display: flex; align-items: flex-start; gap: var(--sk-space-10); font-size: var(--sk-text-body-sm); color: var(--sk-color-text); }
+.sk-admin-page .sk-team-retire__mark {
+  display: inline-flex; align-items: center; justify-content: center; flex: none;
+  width: var(--sk-space-24); height: var(--sk-space-24); border-radius: var(--sk-radius-full);
+  background: var(--sk-color-surface-3); color: var(--sk-color-text-2); font-size: var(--sk-text-caption); font-weight: 800;
+}
+.sk-admin-page .sk-team-retire__step[data-done='true'] .sk-team-retire__mark { background: var(--sk-color-positive-bg); color: var(--sk-color-positive); }

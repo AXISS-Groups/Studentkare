@@ -86,6 +86,8 @@ export const SUPER_ADMIN_NAVIGATION: SuperAdminNavGroup[] = [
     items: [
       { label: 'Rule L firewall', labelKey: 'console.admin.nav.ruleL', icon: 'rows-split', route: 'admin/rule-l' },
       { label: 'Consent policy', labelKey: 'console.admin.nav.consentPolicy', icon: 'book', route: 'admin/consent-policy' },
+      // Not on the design canvas: the privacy notice, terms and grievance officer, versioned (audit H2).
+      { label: 'Legal documents', labelKey: 'console.admin.nav.legalDocuments', icon: 'file-text', route: 'admin/legal-documents' },
       { label: 'Break-glass log', labelKey: 'console.admin.nav.breakGlassLog', icon: 'heart-plus', route: 'admin/break-glass-log' },
       { label: 'Check-in audit', labelKey: 'console.admin.nav.checkins', icon: 'heart-plus', route: 'admin/checkins', activeFor: ['admin/case'] },
       { label: 'Casualty handover', labelKey: 'console.admin.nav.handover', icon: 'arrows-left-right', route: 'admin/handover' },

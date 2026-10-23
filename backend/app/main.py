@@ -72,15 +72,18 @@ from services.billing import router as billing_router
 from services.campus_departure import router as campus_departure_router
 from services.care_directory import router as care_directory_router
 from services.clinical_api import router as clinical_router
+from services.consent_ledger import router as consent_ledger_router
 from services.db_sql import SessionLocal, create_all_tables, is_persistent
 from services.emergency_api import router as emergency_router
 from services.erasure import router as erasure_router
 from services.integrations import router as integrations_router
 from services.lab_booking import router as lab_booking_router
 from services.lab_results import router as lab_results_router
+from services.legal_documents import router as legal_documents_router
 from services.medicine_info import router as medicine_info_router
 from services.medicine_master import router as medicine_master_router
 from services.member_profile_api import router as member_profile_router
+from services.named_super_admins import router as named_super_admins_router
 from services.newsroom import router as newsroom_router
 from services.otp_delivery import available_channels, whatsapp_status
 from services.preventive_care import router as preventive_router
@@ -377,4 +380,7 @@ app.include_router(account_password_router)
 app.include_router(account_contacts_router)
 app.include_router(signup_contacts_router)
 app.include_router(student_invites_router)
+app.include_router(consent_ledger_router)
+app.include_router(legal_documents_router)
+app.include_router(named_super_admins_router)
 app.include_router(apilayer_router, dependencies=[Depends(require_super_admin)])

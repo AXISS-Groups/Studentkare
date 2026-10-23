@@ -1,0 +1,24 @@
+/* Super admin → Legal documents (audit H2). Tokens only. */
+.sk-admin-page .sk-legaldoc { display: flex; flex-direction: column; gap: var(--sk-space-12); }
+.sk-admin-page .sk-legaldoc__head { display: flex; align-items: center; flex-wrap: wrap; gap: var(--sk-space-12); padding: var(--sk-space-16) var(--sk-space-16) 0; }
+.sk-admin-page .sk-legaldoc__title { margin: 0; flex: 1; font-size: var(--sk-text-title-sm); font-weight: 800; color: var(--sk-color-text); }
+.sk-admin-page .sk-legaldoc__mono { font-family: var(--sk-font-mono); }
+.sk-admin-page .sk-legaldoc__actions { display: flex; flex-wrap: wrap; gap: var(--sk-space-8); }
+
+.sk-legaldoc-form { display: flex; flex-direction: column; gap: var(--sk-space-16); font-family: var(--sk-font-sans); color: var(--sk-color-text); }
+.sk-legaldoc-form__field { display: flex; flex-direction: column; gap: var(--sk-space-6); font-size: var(--sk-text-body-sm); font-weight: 700; }
+.sk-legaldoc-form__field small { font-weight: 500; color: var(--sk-color-text-2); }
+.sk-legaldoc-form__field input, .sk-legaldoc-form__field textarea {
+  box-sizing: border-box; width: 100%; min-height: var(--sk-size-touch-target); padding: var(--sk-space-10) var(--sk-space-12);
+  border: 1px solid var(--sk-color-rule); border-radius: var(--sk-radius-md); background: var(--sk-color-surface);
+  color: var(--sk-color-text); font: inherit; font-weight: 500;
+}
+.sk-legaldoc-form__field textarea { resize: vertical; line-height: 1.5; }
+.sk-legaldoc-form__field :is(input, textarea):focus-visible { outline: 3px solid var(--sk-color-focus); outline-offset: 2px; }
+.sk-legaldoc-form__error { margin: 0; color: var(--sk-color-danger); font-size: var(--sk-text-body-sm); font-weight: 700; }
+.sk-legaldoc-form__submit {
+  min-height: var(--sk-size-control); border: 0; border-radius: var(--sk-radius-full); padding: 0 var(--sk-space-24);
+  background: var(--sk-color-action); color: var(--sk-color-on-action); font: inherit; font-weight: 800; cursor: pointer;
+}
+.sk-legaldoc-form__submit:disabled { opacity: 0.55; cursor: not-allowed; }
+.sk-legaldoc-form__submit:focus-visible { outline: 3px solid var(--sk-color-focus); outline-offset: 3px; }

@@ -3,7 +3,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { observer } from 'mobx-react-lite';
 import { ErrorState, OfflineBanner, Rise, Skeleton } from '@/design-system';
 import { Icon } from '@/design-system/icons';
-import { Gradient, M2Card, M2Heading, M2_NAV_CLEARANCE, RoundButton, SoftIcon, SosButton, heroStops, m2Text, useOwnPhoneChrome, webAttrs } from '@/design-system/m2';
+import { cardLabel, Gradient, M2Card, M2Heading, M2_NAV_CLEARANCE, RoundButton, SoftIcon, SosButton, heroStops, m2Text, useOwnPhoneChrome, webAttrs } from '@/design-system/m2';
 import type { PressState } from '@/design-system/m2';
 import { color, focusRing, font, fontWeight, radius, size, space } from '@/design-system/theme';
 import { say, useT } from '@/i18n';
@@ -118,7 +118,7 @@ export const M2RemindersView = observer(function M2RemindersView({ vm, reminders
       {!online ? <View style={styles.gutter}><OfflineBanner message={t('m2r.meds.offlineAction')} /></View> : null}
       {body}
       <Rise index={2} style={styles.gutter}>
-        <Pressable role="link" accessibilityRole="link" accessibilityLabel={t('m2r.meds.waterLink')} aria-label={t('m2r.meds.waterLink')} onPress={links.water}
+        <Pressable role="link" accessibilityRole="link" {...cardLabel(t('m2r.meds.waterLink'))} onPress={links.water}
           testID="m2-rem-water" style={({ focused }: PressState) => [styles.link, focused ? focusRing : null]}>
           <View style={styles.linkTile}><Icon name="glass" size={18} color={color.serviceSkyInk} strokeWidth={2.1} /></View>
           <View style={styles.grow}>

@@ -9,7 +9,7 @@ export const studentwebT1En = {
   'swt.crisis.lead': 'In a crisis, call',
   'swt.crisis.call112': 'Call 112, emergency services',
   'swt.crisis.telemanas': 'Tele-MANAS',
-  'swt.crisis.callTelemanas': 'Call Tele-MANAS on 14416',
+  'swt.crisis.callTelemanas': 'Call Tele-MANAS 14416',
   'swt.crisis.free': 'free, any time',
 
   // WebVault

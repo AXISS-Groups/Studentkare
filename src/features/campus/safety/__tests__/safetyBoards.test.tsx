@@ -52,7 +52,7 @@ describe('Tier 1 table boards with no data source', () => {
 
   it('puts the 108 call first on the ambulance board, as a keyboard-reachable link', () => {
     render(<CampusAmbulanceScreen />);
-    const call = screen.getByRole('link', { name: 'Call 108, the ambulance service' });
+    const call = screen.getByRole('link', { name: 'Call 108 ambulance', description: 'Call 108, the ambulance service' });
     expect(call).toHaveAttribute('href', 'tel:108');
     expect(call.tabIndex).toBe(0);
   });
@@ -64,8 +64,8 @@ describe('EmergencyLines', () => {
     const group = screen.getByRole('group', { name: 'Emergency numbers' });
     const links = within(group).getAllByRole('link');
     expect(links.map((link) => link.getAttribute('href'))).toEqual(['tel:108', 'tel:112', 'tel:14416']);
-    expect(links[0]).toHaveAccessibleName('Call 108, the ambulance service');
-    expect(links[2]).toHaveAccessibleName('Call Tele-MANAS, the mental-health helpline, on 14416');
+    expect(links[0]).toHaveAccessibleDescription('Call 108, the ambulance service');
+    expect(links[2]).toHaveAccessibleDescription('Call Tele-MANAS, the mental-health helpline, on 14416');
     expect(links[0]).toHaveClass('cs-line--first');
     expect(group).toHaveTextContent('Life-threatening? Call 108 first.');
   });

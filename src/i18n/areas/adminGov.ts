@@ -189,7 +189,7 @@ export const adminGovEn = {
   'gov.plans.new': 'New plan',
   'gov.plans.newUnavailable': 'Not available yet: plans are fixed in the server’s catalogue, and there is no endpoint to add one.',
   'gov.plans.edit': 'Edit price',
-  'gov.plans.editPlan': 'Edit the price of {plan}',
+  'gov.plans.editPlan': 'Edit price of {plan}',
   'gov.plans.editShort': 'Edit',
   'gov.plans.editSetting': 'Edit {label}',
   'gov.plans.keyPlusMonthly': 'Student Plus, per month',

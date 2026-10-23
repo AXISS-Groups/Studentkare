@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useId } from 'react';
 import { Icon, Icon3d } from '@/design-system/icons';
 import type { SkIcon3dName, SkIconName } from '@/design-system/icons';
 import { SkButton } from '@/design-system/primitives';
@@ -6,6 +6,7 @@ import { useOnline } from '@/design-system/States';
 import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
 import './campus-safety.css';
+import '@/design-system/design-system.css';
 
 /**
  * Shared pieces for the WP-11 campus safety boards (design page 4, Tier 1).
@@ -38,20 +39,20 @@ export interface EmergencyLinesProps {
 /** 108 / 112 / Tele-MANAS as call links. The first number is drawn as the one to call first. */
 export function EmergencyLines({ numbers, lead, icon = 'phone', trailing, className }: EmergencyLinesProps): React.ReactElement {
   const t = useT();
+  const baseId = `cs-line-${useId().replace(/:/g, '')}`;
   return (
     <div className={['cs-lines', className ?? ''].filter(Boolean).join(' ')} role="group" aria-label={t('campusSafety.lines.label')}>
       {lead ? <p className="cs-lines__lead">{t(lead)}</p> : null}
       {numbers.map((number, index) => (
-        <a
-          key={number}
-          className={`cs-line${index === 0 ? ' cs-line--first' : ''}`}
-          href={`tel:${number}`}
-          aria-label={t(LINE_COPY[number].spoken)}
-        >
-          <Icon name={icon} size={16} strokeWidth={2.2} />
-          <span>{t(LINE_COPY[number].label)}</span>
-          {trailing ? <Icon name={trailing} size={16} strokeWidth={2.2} /> : null}
-        </a>
+        // Named by what it shows (label-in-name, WCAG 2.5.3); the spoken line describes it.
+        <React.Fragment key={number}>
+          <a className={`cs-line${index === 0 ? ' cs-line--first' : ''}`} href={`tel:${number}`} aria-describedby={`${baseId}-${number}`}>
+            <Icon name={icon} size={16} strokeWidth={2.2} />
+            <span>{t(LINE_COPY[number].label)}</span>
+            {trailing ? <Icon name={trailing} size={16} strokeWidth={2.2} /> : null}
+          </a>
+          <span id={`${baseId}-${number}`} className="sk-visually-hidden">{t(LINE_COPY[number].spoken)}</span>
+        </React.Fragment>
       ))}
     </div>
   );

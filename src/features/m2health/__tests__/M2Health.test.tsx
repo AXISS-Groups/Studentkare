@@ -118,7 +118,7 @@ describe('M2Profile', () => {
     await waitFor(() => expect(vm.plans.phase).toBe('error'));
     expect(screen.queryByTestId('m2-prof-plus')).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: en('m2.sosSpoken') }));
-    fireEvent.click(screen.getByRole('link', { name: `${en('m2.prof.emergency')}. ${en('m2.prof.emergencyBody')}` }));
+    fireEvent.click(screen.getByRole('link', { name: new RegExp(`^${en('m2.prof.emergency')}`) }));
     expect(links.sos).toHaveBeenCalledTimes(1);
     expect(links.emergencyCard).toHaveBeenCalledTimes(1);
   });
@@ -288,7 +288,7 @@ describe('safety elements on the health screens', () => {
     const second = wrap(<M2ProfileView vm={profile} links={links} />);
     await waitFor(() => expect(profile.profile.phase).toBe('error'));
     expect(screen.getByRole('button', { name: en('m2.sosSpoken') })).toHaveAttribute('tabindex', '0');
-    const card = screen.getByRole('link', { name: `${en('m2.prof.emergency')}. ${en('m2.prof.emergencyBody')}` });
+    const card = screen.getByRole('link', { name: new RegExp(`^${en('m2.prof.emergency')}`) });
     expect(card).toHaveAttribute('tabindex', '0');
     fireEvent.click(card);
     expect(links.emergencyCard).toHaveBeenCalled();

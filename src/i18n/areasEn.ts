@@ -36,6 +36,7 @@ import { partnerWorkEn } from './areas/partnerWork';
 import { payEn } from './areas/pay';
 import { phoneboardsEn } from './areas/phoneboards';
 import { phonestoreEn } from './areas/phonestore';
+import { privacyEn } from './areas/privacy';
 import { rewardsEn } from './areas/rewards';
 import { safetyEn } from './areas/safety';
 import { shopwebEn } from './areas/shopweb';
@@ -94,6 +95,7 @@ export const areasEn = {
   ...payEn,
   ...phoneboardsEn,
   ...phonestoreEn,
+  ...privacyEn,
   ...rewardsEn,
   ...safetyEn,
   ...shopwebEn,

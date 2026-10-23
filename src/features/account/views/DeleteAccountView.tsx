@@ -1,3 +1,4 @@
+import { cardLabel } from '@/design-system/m2';
 import React, { useEffect, useState } from 'react';
 import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
@@ -105,7 +106,7 @@ export const DeleteAccountView = observer(function DeleteAccountView({ viewModel
         <View style={styles.block} testID="delete-info">
           <Text style={boardText.body}>{t('sf.del.intro', { graceDays: deletionGraceDays(s) })}</Text>
           {links.exportData ? (
-            <Pressable testID="delete-export" accessibilityRole="link" accessibilityLabel={t('sf.del.exportTitle')} onPress={links.exportData}
+            <Pressable testID="delete-export" accessibilityRole="link" {...cardLabel(t('sf.del.exportTitle'))} onPress={links.exportData}
               style={({ focused }: PressState) => [styles.export, focused ? focusRing : null]}>
               <Icon name="download" size={size.navIcon} color={color.action} />
               <View style={styles.flex}>

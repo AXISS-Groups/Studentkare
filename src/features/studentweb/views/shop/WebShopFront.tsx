@@ -124,7 +124,7 @@ export function WebShopFront({ signedIn, onFilter }: { signedIn: boolean; onFilt
             <span><strong>{t('m2.med.refills')}</strong><small>{t('m2.med.refillsBody')}</small></span>
             <Icon name="chevron-right" size={18} color="var(--sk-color-text-3)" />
           </button>
-          <button type="button" className="sk-m2w-linkcard sk-m2w-lift" onClick={() => navigate('rewards')} aria-label={`${points.data ? t('phone.shop.points', { count: points.data.balance }) : t('phone.shop.pointsTitle')}. ${t('m2w.points.open')}`} data-testid="m2w-points">
+          <button type="button" className="sk-m2w-linkcard sk-m2w-lift" onClick={() => navigate('rewards')} data-testid="m2w-points">
             <SoftIcon icon="star" hue="amber" />
             <span>
               <strong>{points.data ? t('phone.shop.points', { count: points.data.balance }) : t('phone.shop.pointsTitle')}</strong>

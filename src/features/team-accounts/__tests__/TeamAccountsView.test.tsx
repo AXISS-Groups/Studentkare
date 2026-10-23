@@ -6,6 +6,15 @@ import { axeViolations, describeViolations } from '@/test/axe';
 import { TeamAccountsView } from '../TeamAccountsView';
 import type { TeamAccount, TeamAccountList, TeamAccountsRepository } from '../teamAccountsRepository';
 
+// The named super admins section has its own tests (NamedSuperAdminsSection.test.tsx): a quiet stub here.
+vi.mock('../teamAccountsRepository', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../teamAccountsRepository')>()),
+  namedSuperAdminsRepository: {
+    state: async () => ({ items: [], shared: null, readyToRetire: false, viewerIsNamed: false }),
+    create: vi.fn(), retireShared: vi.fn(),
+  },
+}));
+
 // Super admin → Team accounts: every state (loading, error, empty, data, switch
 // off), Rotate PIN showing the new PIN once, your own PIN needing the current
 // one, Set password (never shown back, your own needing the current PIN or
@@ -84,7 +93,7 @@ describe('Team accounts', { timeout: 20_000 }, () => {
   it('rotates a PIN after confirming and shows the new PIN once', async () => {
     const repository = repo();
     render(<TeamAccountsView repository={repository} />);
-    fireEvent.click(await screen.findByRole('button', { name: 'Rotate the PIN for StudentKare Team · Campus admin' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Rotate PIN for StudentKare Team · Campus admin' }));
     const dialog = await screen.findByRole('alertdialog');
     expect(within(dialog).getByText(/signed out/)).toBeInTheDocument();
     expect(within(dialog).queryByLabelText('Current PIN')).toBeNull();
@@ -104,7 +113,7 @@ describe('Team accounts', { timeout: 20_000 }, () => {
       rotate: vi.fn(async () => { throw new ApiError('Enter your current PIN to change it.', 403, { code: 'ROTATE_SELF_NEEDS_CURRENT_PIN' }); }),
     });
     render(<TeamAccountsView repository={repository} />);
-    fireEvent.click(await screen.findByRole('button', { name: 'Rotate the PIN for StudentKare Team · Super admin' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Rotate PIN for StudentKare Team · Super admin' }));
     const dialog = await screen.findByRole('alertdialog');
     const current = within(dialog).getByLabelText('Current PIN');
     fireEvent.click(within(dialog).getByRole('button', { name: 'Rotate PIN' }));
@@ -143,7 +152,7 @@ describe('Team accounts', { timeout: 20_000 }, () => {
     render(<TeamAccountsView repository={repository} />);
     await screen.findByText('StudentKare Team · Campus admin');
     expect(within(rowFor('StudentKare Team · Campus admin')).getByText('No password')).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Set the password for StudentKare Team · Campus admin' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Set password for StudentKare Team · Campus admin' }));
     const dialog = await screen.findByRole('alertdialog');
     expect(within(dialog).queryByLabelText('Current PIN or password')).toBeNull();
     expect(within(dialog).getByText(/At least 10 characters/)).toBeInTheDocument();
@@ -163,7 +172,7 @@ describe('Team accounts', { timeout: 20_000 }, () => {
       setPassword: vi.fn(async () => { throw new ApiError('That password is too easy to guess.', 422, { code: 'PASSWORD_WEAK' }); }),
     });
     render(<TeamAccountsView repository={repository} />);
-    fireEvent.click(await screen.findByRole('button', { name: 'Set the password for StudentKare Team · Campus admin' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Set password for StudentKare Team · Campus admin' }));
     const dialog = await screen.findByRole('alertdialog');
     const save = within(dialog).getByRole('button', { name: 'Set password' });
     fireEvent.change(within(dialog).getByLabelText('New password'), { target: { value: 'short' } });
@@ -186,7 +195,7 @@ describe('Team accounts', { timeout: 20_000 }, () => {
       setPassword: vi.fn(async () => { throw new ApiError('Enter your current PIN or password to change it.', 403, { code: 'PASSWORD_SELF_NEEDS_CURRENT' }); }),
     });
     render(<TeamAccountsView repository={repository} />);
-    fireEvent.click(await screen.findByRole('button', { name: 'Set the password for StudentKare Team · Super admin' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Set password for StudentKare Team · Super admin' }));
     const dialog = await screen.findByRole('alertdialog');
     const fill = (current: string) => {
       fireEvent.change(within(dialog).getByLabelText('Current PIN or password'), { target: { value: current } });

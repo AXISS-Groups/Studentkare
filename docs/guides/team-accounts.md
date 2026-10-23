@@ -111,7 +111,35 @@ PATCH /api/ops/settings/auth.staff_pin_login_enabled
 
 `{ "value": null, "reason": "…" }` clears the override back to the default.
 
-## Replacing them
+## Replacing the shared super admin (audit H3)
+
+The shared `superadmin@` account gives the whole platform to whoever holds its PIN, and the audit log can't
+say which person acted. Replace it with **named super admins**, one per person. Nothing below runs by
+itself; each step is done by a person, and every step is audited.
+
+1. **Create a named super admin for each person.** Super admin → Platform → **Team accounts** →
+   *Named super admins* → **Create named super admin**: their work email and full name
+   (`POST /api/ops/super-admins`). It is written to the audit log (`NAMED_SUPER_ADMIN_CREATED`) and
+   raised on the ops feed as critical.
+2. **Each person signs in and sets up an authenticator.** `/staff-sign-in` → **Emailed code** with their
+   own email. A named super admin must use an authenticator whatever the 2FA policy says
+   (`workflow_auth.two_factor_required`), so the first sign-in is held on *Sign-in & security* until they
+   add one. They can never switch it off; a lost phone is a reset by *another* super admin.
+3. **One of them signs out and signs in again, through the authenticator step.** That first sign-in
+   with the authenticator is recorded (`NAMED_SUPER_ADMIN_TOTP_SIGN_IN`), and the *Signed in with it*
+   column shows its time. Setting the authenticator up in step 2 does not count: it has to be a sign-in.
+4. **Retire the shared super admin, from that named account.** Team accounts → *Retire the shared super
+   admin* → type `RETIRE` → **Retire it** (`POST /api/ops/super-admins/retire-shared`). The button stays
+   off until step 3 is done, and the server refuses it from the shared account itself or from any super
+   admin who isn't a named one. It turns `superadmin@` off and signs it out everywhere, writes
+   `TEAM_SUPERADMIN_RETIRED`, and from then on its PIN can't be rotated back on, neither from the screen
+   nor with `python -m scripts.team_accounts rotate superadmin`.
+
+Check before step 4 that at least two named super admins exist and have both signed in with their
+authenticator: a named super admin can't reset their own authenticator, so a single one who loses their
+phone has nobody to reset it.
+
+## Replacing the other team accounts
 
 When individual logins exist: create each person's own staff account (Super admin → Accounts), then turn
 the switch off and disable every team account (`disable` for each, or from the screen).

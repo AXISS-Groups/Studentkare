@@ -285,3 +285,33 @@ Approved as a set; each item takes the conservative, honest option.
 - **D6-13** Consent inbox: active clinician shares from `GET /records/shares` with revoke; "Awaiting you" states nothing can ask yet; lab and family grants omitted; campus row is a fixed "enrolment only" fact. Why: no access-request API.
 - **Routes** New student routes `/ice-contacts`, `/consent`, `/care-circle`; `/crisis` added to route paths (public). The records hub's Access and Family tabs now show the ConsentInbox and FamilyCircle boards; the old AccessConsentInboxPanel and FamilyAccessShareScreen were removed (export and delete stay on Account and Data export).
 - **Native** Expo screens updated where they exist: SOS (Emergency) and DeleteAccount share the boards' source and now draw their own header. No Expo screen exists yet for EmergencyCard, IceContacts, CrisisSupport, MyPass, Legal, PlanBilling, FamilyCircle or ConsentInbox (native parity later).
+
+## Amendment 2026-10-23: legal documents, consents and data rights (fix/consent-a11y)
+
+Asked for in the fix/consent-a11y ticket (security audit H2), built within this plan's rules. Listed for
+the named Tier 1 reviewer (Krishna Chintakayala) to confirm in the PR review.
+
+- **D6-10 (amends).** The privacy notice, terms and grievance officer are admin-editable, versioned
+  documents (`care_legal_documents`, Super admin → Governance → **Legal documents**): a super admin pastes
+  legal's text into a draft and publishes it, live without a deploy. A published version is frozen and
+  the one it replaces is kept as "Replaced". Legal (phone board) and WebLegal show the published text
+  with its version and date, exactly as published (paragraphs split on blank lines, no formatting
+  added); until a kind is published each tab keeps the honest "not published yet" notice it had. The
+  "not an emergency service · call 112" line stays on every tab.
+- **Profile → Privacy & consent** (`/privacy-consent`, student only; Tier 1 consent). Lists the sign-up
+  consents (purpose, wording version, date, the notice/terms versions shown) and each optional consent with
+  a `role=switch` that gives or withdraws it in one tap, the date it was given or withdrawn, and the full
+  record. Withdrawing stamps `withdrawn_at`, is audited, and turns off the flag the processing reads in
+  the same transaction (Ayush history: the agent stops keeping words and the kept words are erased; blood
+  donor contact: out of every donor match and SOS; pickup location, seasonal tips, offers: stored only,
+  nothing reads them today, the copy says so). The required ones explain that withdrawing means deleting
+  the account and link to Download my data and Delete my account. Clinician shares stay on ConsentInbox
+  (linked). No canvas board exists for this page: it is built from the student web parts (DESIGN.md §5,
+  composed from components) and reflows into the phone frame.
+- **Your data rights** (`/data-rights`, student only): access (data export), correction (profile and
+  emergency card; records a doctor or lab created are corrected by them through Help), erasure (delete
+  account, grace days from `privacy.deletion_grace_days`), consent withdrawal, and grievance (the published
+  grievance officer document, or "not published yet" and Help).
+- Not built: a typed reason or OTP on withdrawal (not needed: withdrawal is as easy as giving), a consent
+  withdrawal for clinician shares here (ConsentInbox already revokes them), Expo screens for these pages
+  (native parity later; the Expo Profile still opens Delete account).

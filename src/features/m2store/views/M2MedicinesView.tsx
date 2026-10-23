@@ -3,6 +3,7 @@ import { Animated, Linking, Pressable, ScrollView, StyleSheet, Text, View } from
 import { Icon } from '@/design-system/icons';
 import { ErrorState, Rise, Skeleton } from '@/design-system';
 import {
+  cardLabel,
   Gradient, LiftCard, M2Card, M2Header, M2Heading, M2SearchField, M2SectionHead, M2_NAV_CLEARANCE, NAVY_STOPS, NotYetTile, RoundButton, SERVICE_HUES,
   SoftIcon, SoftTileGrid, floatTransform, heroStops, m2Text, useAmbientMotion, useLift, useLoop, useOwnPhoneChrome,
 } from '@/design-system/m2';
@@ -157,7 +158,7 @@ export function M2MedicinesView({ links, cartCount, shelf, points, labFromPaise 
       </Rise>
 
       <Rise index={3} style={[styles.gutter, styles.heroRow]}>
-        <Pressable role="link" accessibilityRole="link" accessibilityLabel={`${t('m2.med.genericsTitle')}. ${t('m2.med.genericsCta')}`} aria-label={`${t('m2.med.genericsTitle')}. ${t('m2.med.genericsCta')}`}
+        <Pressable role="link" accessibilityRole="link" {...cardLabel(`${t('m2.med.genericsTitle')}. ${t('m2.med.genericsCta')}`)}
           onPress={links.generics} testID="m2-med-generics" style={(state: PressState) => [styles.genericsPress, lift(state)]}>
           <Gradient colors={heroStops('green')} style={styles.generics}>
             <View pointerEvents="none" style={styles.genericsRing} />

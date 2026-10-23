@@ -93,7 +93,11 @@ describe('M2Home', () => {
     expect(links.services.nearMe).toHaveBeenCalled();
     // Medicines today: counts in words, no medicine named.
     const meds = screen.getByTestId('m2-home-meds');
-    expect(meds).toHaveAttribute('aria-label', 'Medicines today. 2 of 3 doses taken today. 1 dose left today');
+    // Named by its own text on the web (label in name); the hidden ring's count is said in words.
+    expect(meds).not.toHaveAttribute('aria-label');
+    expect(meds).toHaveTextContent('Medicines today');
+    expect(meds).toHaveTextContent('2 of 3 doses taken today');
+    expect(meds).toHaveTextContent('1 dose left today');
     expect(screen.getByRole('link', { name: 'Buy again · 3 items' })).toBeInTheDocument();
     // A LiftCard is named by its visible text on the web (label in name, live-run audit #10).
     const consult = screen.getByTestId('m2-home-consult');

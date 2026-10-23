@@ -29,7 +29,7 @@ export function M2ProfileRoute(): React.ReactElement {
       addDocument: () => navigate('health/report-upload'),
       plus: () => navigate('billing'),
       orders: () => navigate('orders'),
-      privacy: () => navigate('data-export'),
+      privacy: () => navigate('privacy-consent'),
       help: () => navigate('support'),
       whatsNew: () => navigate('whats-new'),
       signOut: () => (slot?.askSignOut ? slot.askSignOut() : void logout()),

@@ -124,6 +124,8 @@ const workspacePaths: { path: string; access?: (role: AccountRole | null) => boo
   { path: '/admin/claims', access: hasRole('SUPER_ADMIN') },
   { path: '/admin/outbox', access: hasRole('SUPER_ADMIN') },
   { path: '/admin/team-accounts', access: hasRole('SUPER_ADMIN') },
+  // Legal documents: the privacy notice, terms and grievance officer, versioned and published (audit H2).
+  { path: '/admin/legal-documents', access: hasRole('SUPER_ADMIN') },
   // Find care near you: the curated directory listings (super admin: every campus).
   { path: '/admin/care-directory', access: hasRole('SUPER_ADMIN') },
   // Medicine information review: super admins edit and import; pharmacists (partner console) approve.
@@ -181,6 +183,9 @@ const workspacePaths: { path: string; access?: (role: AccountRole | null) => boo
   // Tier 1 phone boards (WP-06): emergency contacts, the consent inbox and the care circle.
   { path: '/ice-contacts', access: hasRole('STUDENT') },
   { path: '/consent', access: hasRole('STUDENT') },
+  // Privacy & consent and data rights (audit H2): the student's own consent ledger and rights.
+  { path: '/privacy-consent', access: hasRole('STUDENT') },
+  { path: '/data-rights', access: hasRole('STUDENT') },
   { path: '/care-circle', access: hasRole('STUDENT') },
   { path: '/pass' },
   // Phone search (design page 2: SearchEntry … DoctorResults). The catalogue is public; the boards need a session for booking.

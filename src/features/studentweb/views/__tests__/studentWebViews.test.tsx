@@ -249,9 +249,9 @@ describe('WebShop, search and product', () => {
     render(withCart(<><WebShopView /><CartProbe onCart={(n) => { units = n; }} /></>));
     await settle();
     expect(screen.getByText(/no placement is for sale/)).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: /Add Vitamin D3/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Add, Vitamin D3/i }));
     expect(units).toBe(1);
-    expect(screen.getByRole('button', { name: /Add Rx tablet/i })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /Add, Rx tablet/i })).toBeDisabled();
   });
 
   it('shows search results with server counts, listed by name and never ranked by health', async () => {

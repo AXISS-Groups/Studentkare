@@ -32,6 +32,7 @@ from services.account_password import PasswordRefused, refusal, set_password  # 
 from services.db_sql import SessionLocal, create_all_tables  # noqa: E402
 from services.team_accounts import (  # noqa: E402
     CLI_ACTOR,
+    RetiredAccount,
     account_row,
     create_missing,
     disable,
@@ -77,7 +78,11 @@ def cmd_rotate(db, key: str) -> int:
     account = _resolve(db, key)
     if account is None:
         return 1
-    pin = rotate(db, account, CLI_ACTOR)
+    try:
+        pin = rotate(db, account, CLI_ACTOR)
+    except RetiredAccount:
+        print(f"{account.identifier} was retired for named super admins and stays off.", file=sys.stderr)
+        return 1
     print(f"{account.identifier:<32} {_kind(account.role, account.partner_kind):<20} new PIN {pin}")
     print("\nShown once and not stored. Its other sessions were signed out.")
     return 0

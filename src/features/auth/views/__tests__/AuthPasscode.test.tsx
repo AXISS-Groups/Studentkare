@@ -88,7 +88,7 @@ describe('the logo', () => {
   it.each(['web', 'phone'] as const)('goes to the public home page on sign-in (%s)', async (width) => {
     at(width);
     const { container } = renderSignIn();
-    const link = await screen.findByRole('link', { name: 'Student Kare home' });
+    const link = await screen.findByRole('link', { name: /Student Kare home/ });
     expect(link.getAttribute('href')).toBe('/');
     expect(link.querySelector('[data-icon="brand:studentkare-logo"]')).not.toBeNull();
     expect(container.querySelectorAll('[data-testid="auth-logo-home"]')).toHaveLength(1);
@@ -96,7 +96,7 @@ describe('the logo', () => {
 
   it('goes to the public home page on create account too', async () => {
     renderSignUp();
-    expect((await screen.findByRole('link', { name: 'Student Kare home' })).getAttribute('href')).toBe('/');
+    expect((await screen.findByRole('link', { name: /Student Kare home/ })).getAttribute('href')).toBe('/');
   });
 });
 
@@ -333,7 +333,7 @@ describe('axe', () => {
     at(width);
     remembered = device as Remembered;
     const { container } = renderSignIn();
-    await screen.findByRole('link', { name: 'Student Kare home' });
+    await screen.findByRole('link', { name: /Student Kare home/ });
     await waitFor(() => expect(apiRequest).toHaveBeenCalledWith('/auth/remembered', undefined));
     const violations = await axeViolations(container);
     expect(violations, describeViolations(violations)).toEqual([]);
