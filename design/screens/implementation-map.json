@@ -1784,6 +1784,7 @@
       "src/features/insights/views/M2InsightsView.tsx",
       "src/features/insights/views/M2InsightsRoute.tsx",
       "src/features/insights/viewmodel/InsightsViewModel.ts",
+      "src/features/insights/viewmodel/releasedReports.ts",
       "src/features/labResults/viewmodel/LabValuesViewModels.ts",
       "src/features/m2health/HealthParts.tsx",
       "src/features/m2health/resource.ts",
@@ -2222,7 +2223,7 @@
     }
   },
   "retiredIcons": {
-    "_readme": "Icons a recorded decision took off a screen; check-icons does not require them there. Each entry names the decision's source. Shell de-duplication (founder, 23 Oct 2026): the sidebar's Your Care (map-pin, now Home with the phone's home icon), My lab tests (flask, now a tab of Orders), Ayush AI (sparkle, Ayush is the floating bubble) and Account (user, the account is the avatar and the account header); the phone header's menu button (menu, More opens from Profile, Settings).",
+    "_readme": "Icons a recorded decision took off a screen; check-icons does not require them there. Each entry names the decision's source. Shell de-duplication (founder, 23 Oct 2026): the sidebar's Your Care (map-pin, now Home with the phone's home icon), My lab tests (flask, now a tab of Orders), Ayush AI (sparkle, Ayush is the floating bubble) and Account (user, the account is the avatar and the account header); the phone header's menu button (menu, More opens from Profile, Settings). Report insights left the sidebar (bar-chart): it is a card on My health and /report-insights its detail page (docs/plans/tier1-parity-2026-10-24.md §3, Q3; the deferral is recorded in the parity doc).",
     "SearchEntry": {
       "icons": [
         "menu"
@@ -2231,6 +2232,7 @@
     },
     "WebAccount": {
       "icons": [
+        "bar-chart",
         "flask",
         "map-pin",
         "sparkle"
@@ -2239,6 +2241,7 @@
     },
     "WebDeleteAccount": {
       "icons": [
+        "bar-chart",
         "flask",
         "map-pin",
         "sparkle",
@@ -2248,6 +2251,7 @@
     },
     "WebEmergencyCard": {
       "icons": [
+        "bar-chart",
         "flask",
         "map-pin",
         "sparkle",
@@ -2257,6 +2261,7 @@
     },
     "WebLeaveCampus": {
       "icons": [
+        "bar-chart",
         "flask",
         "map-pin",
         "sparkle",
@@ -2266,6 +2271,7 @@
     },
     "WebLostPhone": {
       "icons": [
+        "bar-chart",
         "flask",
         "map-pin",
         "sparkle",
@@ -2275,6 +2281,7 @@
     },
     "WebMyLabTests": {
       "icons": [
+        "bar-chart",
         "map-pin",
         "sparkle"
       ],
@@ -2282,6 +2289,7 @@
     },
     "WebNotifications": {
       "icons": [
+        "bar-chart",
         "flask",
         "map-pin",
         "sparkle",
@@ -2291,6 +2299,7 @@
     },
     "WebPass": {
       "icons": [
+        "bar-chart",
         "flask",
         "map-pin",
         "sparkle",
@@ -2300,6 +2309,7 @@
     },
     "WebReorder": {
       "icons": [
+        "bar-chart",
         "flask",
         "map-pin",
         "sparkle",
@@ -2309,6 +2319,7 @@
     },
     "WebRequests": {
       "icons": [
+        "bar-chart",
         "flask",
         "map-pin",
         "sparkle",
@@ -2318,6 +2329,7 @@
     },
     "WebSecurity": {
       "icons": [
+        "bar-chart",
         "flask",
         "map-pin",
         "sparkle"
@@ -2326,6 +2338,7 @@
     },
     "WebVault": {
       "icons": [
+        "bar-chart",
         "flask",
         "map-pin",
         "sparkle",
@@ -2335,6 +2348,7 @@
     },
     "WebVerify": {
       "icons": [
+        "bar-chart",
         "flask",
         "map-pin",
         "sparkle",

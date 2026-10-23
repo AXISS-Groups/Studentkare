@@ -5,8 +5,8 @@ import { Icon } from '@/design-system/icons';
 import type { SkIconName } from '@/design-system/icons';
 import { Banner, Button, ErrorState, OfflineBanner, Rise, Skeleton, TextField } from '@/design-system';
 import {
-  Gradient, LiftCard, M2Card, M2Heading, M2_NAV_CLEARANCE, RoundButton, heroStops, m2Text, tileStops, useOwnPhoneChrome, webAttrs,
-  M2HeaderSos,
+  Gradient, LiftCard, M2Card, M2Heading, M2_NAV_CLEARANCE, RoundButton, heroStops, m2Text, tileStops, useM2Layout, useOwnPhoneChrome, webAttrs,
+  M2HeaderSos, M2WideColumn,
 } from '@/design-system/m2';
 import type { PressState, ServiceHue } from '@/design-system/m2';
 import { color, focusRing, font, fontWeight, radius, shadow, shadowStyle, size, space } from '@/design-system/theme';
@@ -49,6 +49,12 @@ export interface M2ReportUploadViewProps {
   sources: ReportSources;
   online: boolean;
   links: M2ReportUploadLinks;
+  /**
+   * Laid out wide in the desktop web shell (Tier 1 parity plan 2026-10-24 §5): the stepper and the source rows (or the
+   * lab list) on the left, the current step's card on the right; on Check the form keeps a readable width. Same
+   * components and the same view-model, so a layout change never resets a half-filled form.
+   */
+  wide?: boolean;
 }
 
 const STEPS: readonly MessageKey[] = ['m2v.up.stepAdd', 'm2v.up.stepCheck', 'm2v.up.stepSaved'];
@@ -60,6 +66,11 @@ const PROBLEM_KEYS: Record<RowProblem, MessageKey> = {
   range: 'm2v.up.problem.range',
   tooLarge: 'm2v.up.problem.tooLarge',
 };
+
+/** The phone gutter on a phone; wider, the web shell's column already has its own. */
+function useGutter() {
+  return useM2Layout() === 'phone' ? styles.gutter : undefined;
+}
 
 function StepBar({ stage }: { stage: number }) {
   const t = useT();
@@ -119,22 +130,39 @@ function SourceRow({ icon, hue, title, sub, onPress, unavailable, testID }: {
   );
 }
 
-const AddStep = observer(function AddStep({ vm, sources, online }: { vm: ReportUploadViewModel; sources: ReportSources; online: boolean }) {
+function AddHero() {
   const t = useT();
+  const gutter = useGutter();
+  return (
+    <Rise index={1} style={gutter}>
+      <Gradient colors={heroStops('orange')} angle={150} style={styles.hero} testID="m2-upload-hero">
+        <View pointerEvents="none" style={styles.heroRing} />
+        <View style={styles.heroText}>
+          <M2Heading style={styles.heroTitle}>{t('m2v.up.heroTitle')}</M2Heading>
+          <Text style={styles.heroBody}>{t('m2v.up.heroBody')}</Text>
+        </View>
+        <ReportSheetArt />
+      </Gradient>
+    </Rise>
+  );
+}
+
+const AddStep = observer(function AddStep({ vm, sources, online }: { vm: ReportUploadViewModel; sources: ReportSources; online: boolean }) {
+  return (
+    <>
+      <AddHero />
+      <AddSources vm={vm} sources={sources} online={online} />
+    </>
+  );
+});
+
+const AddSources = observer(function AddSources({ vm, sources, online }: { vm: ReportUploadViewModel; sources: ReportSources; online: boolean }) {
+  const t = useT();
+  const gutter = useGutter();
   const offline = t('m2v.up.needsConnection');
   return (
     <>
-      <Rise index={1} style={styles.gutter}>
-        <Gradient colors={heroStops('orange')} angle={150} style={styles.hero} testID="m2-upload-hero">
-          <View pointerEvents="none" style={styles.heroRing} />
-          <View style={styles.heroText}>
-            <M2Heading style={styles.heroTitle}>{t('m2v.up.heroTitle')}</M2Heading>
-            <Text style={styles.heroBody}>{t('m2v.up.heroBody')}</Text>
-          </View>
-          <ReportSheetArt />
-        </Gradient>
-      </Rise>
-      <Rise index={2} style={[styles.gutter, styles.sources]}>
+      <Rise index={2} style={[gutter, styles.sources]}>
         <M2Heading style={m2Text.section}>{t('m2v.up.how')}</M2Heading>
         {vm.uploadFailed ? (
           <Banner tone="attention" title={t('m2v.up.uploadFailed')} announce testID="m2-upload-failed">
@@ -156,23 +184,24 @@ const AddStep = observer(function AddStep({ vm, sources, online }: { vm: ReportU
 
 const LabsStep = observer(function LabsStep({ vm }: { vm: ReportUploadViewModel }) {
   const t = useT();
+  const gutter = useGutter();
   const locale = dateLocale(useLanguage().lang);
   const back = (
     <Button label={t('m2v.up.otherWay')} variant="secondary" onPress={vm.backToAdd} testID="m2-upload-labs-back" />
   );
   if (vm.labsPhase === 'loading' || vm.labsPhase === 'idle') {
-    return <View style={styles.gutter}><Skeleton label={t('m2v.up.labsLoading')} lines={['100%', '100%']} /></View>;
+    return <View style={gutter}><Skeleton label={t('m2v.up.labsLoading')} lines={['100%', '100%']} /></View>;
   }
   if (vm.labsPhase === 'error') {
     return (
-      <View style={[styles.gutter, styles.stack]}>
+      <View style={[gutter, styles.stack]}>
         <ErrorState title={t('m2v.up.labsError')} body={t('m2v.up.labsErrorBody')} retryLabel={t('m2v.retry')} onRetry={() => void vm.showLabs()} />
         {back}
       </View>
     );
   }
   return (
-    <Rise index={1} style={[styles.gutter, styles.stack]} >
+    <Rise index={1} style={[gutter, styles.stack]} >
       <M2Heading style={m2Text.section}>{t('m2v.up.labsTitle')}</M2Heading>
       {vm.labs.length === 0 ? (
         <M2Card style={styles.pad} testID="m2-upload-labs-empty"><Text style={m2Text.body}>{t('m2v.up.labsEmpty')}</Text></M2Card>
@@ -276,10 +305,11 @@ const ValueRowCard = observer(function ValueRowCard({ check, row, index }: { che
 
 const CheckStep = observer(function CheckStep({ check }: { check: ReportCheckViewModel }) {
   const t = useT();
-  if (check.step === 'loading') return <View style={styles.gutter}><Skeleton label={t('m2v.up.checkLoading')} lines={['70%', '100%', '100%']} /></View>;
+  const gutter = useGutter();
+  if (check.step === 'loading') return <View style={gutter}><Skeleton label={t('m2v.up.checkLoading')} lines={['70%', '100%', '100%']} /></View>;
   if (check.step === 'error') {
     return (
-      <View style={styles.gutter}>
+      <View style={gutter}>
         <ErrorState title={t('m2v.up.checkError')} body={t('m2v.up.checkErrorBody')} retryLabel={t('m2v.retry')} onRetry={() => void check.load()} />
       </View>
     );
@@ -288,7 +318,7 @@ const CheckStep = observer(function CheckStep({ check }: { check: ReportCheckVie
   const saving = check.step === 'saving';
   const errorTitle = check.error === 'conflict' ? t('m2v.up.conflict') : check.error === 'validation' ? t('m2v.up.refused') : t('m2v.up.saveFailed');
   return (
-    <View style={[styles.gutter, styles.stack]}>
+    <View style={[gutter, styles.stack]}>
       <Rise index={1} style={styles.stackTight}>
         <M2Heading style={m2Text.section}>{t('m2v.up.checkTitle')}</M2Heading>
         <Text style={m2Text.body}>{t('m2v.up.checkBody')}</Text>
@@ -325,6 +355,7 @@ const CheckStep = observer(function CheckStep({ check }: { check: ReportCheckVie
 const SavedStep = observer(function SavedStep({ vm, check, links }: { vm: ReportUploadViewModel; check: ReportCheckViewModel; links: M2ReportUploadLinks }) {
   const t = useT();
   const locale = dateLocale(useLanguage().lang);
+  const gutter = useGutter();
   const result = check.result;
   if (!result) return null;
   const lab = check.labName.trim();
@@ -333,7 +364,7 @@ const SavedStep = observer(function SavedStep({ vm, check, links }: { vm: Report
   const outside = result.outsideRange === 0 ? t('m2v.up.outsideNone') : t(result.outsideRange === 1 ? 'm2v.up.outsideOne' : 'm2v.up.outsideMany', { count: result.outsideRange });
   const reviewLine = vm.reviewStatus === 'APPROVED' ? t('m2v.up.reviewDone') : vm.reviewStatus === 'ASSIGNED' ? t('m2v.up.reviewAssigned') : t('m2v.up.reviewAsked');
   return (
-    <Rise index={1} style={[styles.gutter, styles.stack]}>
+    <Rise index={1} style={[gutter, styles.stack]}>
       <M2Card style={[styles.pad, styles.saved]} testID="m2-upload-saved">
         <Gradient colors={heroStops('green')} angle={150} style={styles.tick}>
           <Icon name="check" size={34} color={color.onHero} strokeWidth={3} />
@@ -357,19 +388,49 @@ const SavedStep = observer(function SavedStep({ vm, check, links }: { vm: Report
   );
 });
 
-export const M2ReportUploadView = observer(function M2ReportUploadView({ vm, sources, online, links }: M2ReportUploadViewProps) {
+export const M2ReportUploadView = observer(function M2ReportUploadView({ vm, sources, online, links, wide = false }: M2ReportUploadViewProps) {
   const t = useT();
   useOwnPhoneChrome();
   const check = vm.check;
+  const uploading = (
+    <M2Card style={[styles.pad, styles.uploading]} testID="m2-upload-uploading">
+      <ActivityIndicator color={color.action} />
+      <Text role="status" accessibilityLiveRegion="polite" style={m2Text.body}>{t('m2v.up.uploading')}</Text>
+    </M2Card>
+  );
+  const header = (
+    <View style={[styles.header, wide ? styles.headerWide : null]}>
+      <RoundButton icon="arrow-left" label={t('m2v.up.back')} onPress={links.back} testID="m2-upload-back" />
+      <View style={styles.grow}>
+        <Text numberOfLines={1} style={styles.eyebrow}>{t('m2v.up.eyebrow')}</Text>
+        <M2Heading level={1} style={styles.title}>{t('m2v.up.title')}</M2Heading>
+      </View>
+      <M2HeaderSos />
+    </View>
+  );
+  if (wide) {
+    // Left: where the report comes from; right: the step being done.
+    const checking = vm.step === 'check' && check;
+    const side = (
+      <>
+        <StepBar stage={vm.stage} />
+        {!online ? <OfflineBanner message={t('m2v.up.offline')} /> : null}
+        {vm.step === 'labs' ? <LabsStep vm={vm} /> : checking ? null : <AddSources vm={vm} sources={sources} online={online} />}
+      </>
+    );
+    const main = vm.step === 'uploading' ? uploading
+      : checking ? <View style={styles.readable}>{check.step === 'saved' ? <SavedStep vm={vm} check={check} links={links} /> : <CheckStep check={check} />}</View>
+        : <AddHero />;
+    return (
+      <M2WideColumn testID="m2-report-upload">
+        {header}
+        <UploadSplit side={side} main={main} />
+      </M2WideColumn>
+    );
+  }
   let body: React.ReactNode;
   if (vm.step === 'uploading') {
-    body = (
-      <M2Card style={[styles.pad, styles.uploading]} testID="m2-upload-uploading">
-        <ActivityIndicator color={color.action} />
-        <Text role="status" accessibilityLiveRegion="polite" style={m2Text.body}>{t('m2v.up.uploading')}</Text>
-      </M2Card>
-    );
-    body = <View style={styles.gutter}>{body}</View>;
+    body = <View style={styles.gutter}>{uploading}</View>;
   } else if (vm.step === 'labs') {
     body = <LabsStep vm={vm} />;
   } else if (vm.step === 'check' && check) {
@@ -379,14 +440,7 @@ export const M2ReportUploadView = observer(function M2ReportUploadView({ vm, sou
   }
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled" testID="m2-report-upload">
-      <View style={styles.header}>
-        <RoundButton icon="arrow-left" label={t('m2v.up.back')} onPress={links.back} testID="m2-upload-back" />
-        <View style={styles.grow}>
-          <Text numberOfLines={1} style={styles.eyebrow}>{t('m2v.up.eyebrow')}</Text>
-          <M2Heading level={1} style={styles.title}>{t('m2v.up.title')}</M2Heading>
-        </View>
-        <M2HeaderSos />
-      </View>
+      {header}
       <View style={styles.gutter}><StepBar stage={vm.stage} /></View>
       {!online ? <View style={styles.gutter}><OfflineBanner message={t('m2v.up.offline')} /></View> : null}
       {body}
@@ -394,8 +448,25 @@ export const M2ReportUploadView = observer(function M2ReportUploadView({ vm, sou
   );
 });
 
+/** Desktop: the left column beside the step; narrower (a tablet column), one above the other. */
+function UploadSplit({ side, main }: { side: React.ReactNode; main: React.ReactNode }) {
+  const desktop = useM2Layout() === 'desktop';
+  return (
+    <View style={desktop ? styles.split : styles.stack} testID="m2-upload-split">
+      <View style={[styles.stack, desktop ? styles.splitSide : null]}>{side}</View>
+      <View style={[styles.stack, desktop ? styles.splitMain : null]}>{main}</View>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.canvas },
+  headerWide: { paddingHorizontal: 0 },
+  split: { flexDirection: 'row', alignItems: 'flex-start', gap: space.s24 },
+  splitSide: { width: size.phoneWidth },
+  splitMain: { flex: 1, minWidth: 0 },
+  // The values form at a readable width (≈ 640 px, plan §5), not stretched across a desktop.
+  readable: { width: '100%', maxWidth: size.panelMax },
   content: { paddingBottom: M2_NAV_CLEARANCE, gap: space.s16 },
   grow: { flex: 1, minWidth: 0 },
   gutter: { paddingHorizontal: space.gutterPhone },
