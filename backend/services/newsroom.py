@@ -40,8 +40,10 @@ import math
 import re
 import time
 import uuid
+from dataclasses import dataclass
 from datetime import UTC, datetime
 from email.utils import format_datetime
+from pathlib import Path
 from typing import Any, Literal
 from xml.sax.saxutils import escape
 
@@ -69,28 +71,60 @@ PATH_SECTIONS = {path: section for section, path in SECTION_PATHS.items()}
 SectionPath = Literal["blog", "news"]
 
 HEALTH_TIP = "HEALTH_TIP"
-Template = Literal["HEALTH_TIP", "CAMPUS_NEWS", "PRODUCT_UPDATE", "PRESS_RELEASE", "STORY"]
+Template = Literal["HEALTH_TIP", "CAMPUS_NEWS", "PRODUCT_UPDATE", "PRESS_RELEASE", "STORY", "MOTIVATION", "SERIES_EPISODE",
+                   "EVENT", "CAMPUS_SPOTLIGHT", "EXPLAINER", "MYTH_FACT", "QUICK_CARD"]
 
 # Body blocks, and which each template allows. The frontend's template table
 # (src/features/newsroom/model/templates.ts) mirrors this; tests compare the two.
-BLOCK_TYPES = ("heading", "paragraph", "list", "quote", "callout", "image", "facts", "cta")
+# ``review``: always needs a clinician (a health tip). ``advice``: may carry health
+# advice, so it needs a clinician when its category is clinical (see needs_review).
+# ``words``: the composer's length guide (fewest, most words), a guide only.
+BLOCK_TYPES = ("heading", "paragraph", "list", "quote", "callout", "image", "facts", "cta", "mythfact", "stat")
 TEMPLATES: dict[str, dict[str, Any]] = {
-    "HEALTH_TIP": {"section": BLOG, "label": "Health tip", "review": True,
+    "HEALTH_TIP": {"section": BLOG, "label": "Health tip", "review": True, "advice": True, "words": (150, 900),
                    "art": ("heart--p1", "wellness-alt--p5", "brain-alt--p3", "thermo-alt--p1"),
                    "blocks": ("heading", "paragraph", "list", "callout", "image", "facts", "cta")},
-    "STORY": {"section": BLOG, "label": "Story", "review": False,
+    "STORY": {"section": BLOG, "label": "Story", "review": False, "advice": False, "words": (200, 1500),
               "art": ("user--p4", "chat-alt--p4", "home-alt--p4"),
               "blocks": ("heading", "paragraph", "quote", "image", "callout", "cta")},
-    "CAMPUS_NEWS": {"section": NEWS, "label": "Campus news", "review": False,
+    "CAMPUS_NEWS": {"section": NEWS, "label": "Campus news", "review": False, "advice": False, "words": (80, 800),
                     "art": ("calendar-alt--p4", "home-alt--p4", "idcard-alt--p4"),
                     "blocks": ("heading", "paragraph", "list", "image", "facts", "quote", "cta")},
-    "PRODUCT_UPDATE": {"section": NEWS, "label": "What's new", "review": False,
+    "PRODUCT_UPDATE": {"section": NEWS, "label": "What's new", "review": False, "advice": False, "words": (60, 600),
                        "art": ("bell--p2", "settings-alt--p4", "vault-alt--p4"),
                        "blocks": ("heading", "paragraph", "list", "image", "callout", "cta")},
-    "PRESS_RELEASE": {"section": NEWS, "label": "Press release", "review": False,
+    "PRESS_RELEASE": {"section": NEWS, "label": "Press release", "review": False, "advice": False, "words": (150, 1000),
                       "art": ("doc--p4", "chat-alt--p4"),
                       "blocks": ("heading", "paragraph", "quote", "list", "facts", "image")},
+    "MOTIVATION": {"section": BLOG, "label": "Motivation", "review": False, "advice": False, "words": (10, 200),
+                   "art": ("wellness-alt--p5", "chat-alt--p4", "user--p4"),
+                   "blocks": ("quote", "paragraph", "callout", "cta")},
+    "SERIES_EPISODE": {"section": BLOG, "label": "Series episode", "review": False, "advice": True, "words": (120, 700),
+                       "art": ("brain-alt--p3", "wellness-alt--p5", "heart--p1", "thermo-alt--p1", "calendar-alt--p4"),
+                       "blocks": ("heading", "paragraph", "list", "callout", "facts", "quote", "cta")},
+    "EVENT": {"section": NEWS, "label": "Event", "review": False, "advice": False, "words": (60, 500),
+              "art": ("calendar-alt--p4", "home-alt--p4", "bell--p2"),
+              "blocks": ("heading", "paragraph", "facts", "list", "image", "callout", "cta")},
+    "CAMPUS_SPOTLIGHT": {"section": NEWS, "label": "Campus spotlight", "review": False, "advice": False, "words": (150, 900),
+                         "art": ("home-alt--p4", "idcard-alt--p4", "user--p4"),
+                         "blocks": ("heading", "paragraph", "quote", "image", "facts", "cta")},
+    "EXPLAINER": {"section": BLOG, "label": "Explainer", "review": False, "advice": True, "words": (250, 1200),
+                  "art": ("search--p4", "doc--p4", "lab-alt--p5"),
+                  "blocks": ("heading", "paragraph", "list", "facts", "callout", "image", "cta")},
+    "MYTH_FACT": {"section": BLOG, "label": "Myth vs fact", "review": False, "advice": True, "words": (80, 700),
+                  "art": ("chat-alt--p4", "shield--p5", "search--p4"),
+                  "blocks": ("heading", "paragraph", "mythfact", "callout", "cta")},
+    "QUICK_CARD": {"section": BLOG, "label": "Quick card", "review": False, "advice": True, "words": (20, 250),
+                   "art": ("chart-alt--p4", "lab-alt--p5", "bell--p2"),
+                   "blocks": ("heading", "stat", "facts", "paragraph", "callout", "cta")},
 }
+ADVICE_TEMPLATES = tuple(name for name, spec in TEMPLATES.items() if spec["advice"])
+STAT_VALUE_MAX = 12
+MYTHFACT_MAX = 6
+
+# The content module's definitions (default categories, built-in series, fixed copy).
+CONTENT_DEFS: dict = json.loads((Path(__file__).resolve().parents[1] / "content" / "newsroom" / "content.json")
+                                .read_text("utf-8"))
 
 # Where a call-to-action button may lead: app routes only, never an outside link.
 CTA_ROUTES = (
@@ -174,14 +208,54 @@ def review_current(row: M.Post) -> bool:
     return bool(row.reviewed_by) and bool(row.reviewed_hash) and row.reviewed_hash == content_hash(row)
 
 
-def needs_review(row: M.Post) -> bool:
-    return bool(TEMPLATES[row.template]["review"])
+@dataclass(frozen=True)
+class Policy:
+    """What the clinical gate needs to know, read once per request: the clinical categories and two settings."""
+    clinical: frozenset[str]
+    requires_clinician: bool
+    threshold: int
 
 
-def is_public(row: M.Post, now: float) -> bool:
-    """Published (or scheduled and due), and for a health tip, reviewed as it stands now."""
+def clinical_categories(db: Session) -> frozenset[str]:
+    """The clinical category ids. Before any category is stored, the shipped defaults (fail closed)."""
+    rows = db.execute(select(M.PostCategory.id, M.PostCategory.clinical)).all()
+    if not rows:
+        return frozenset(c["id"] for c in CONTENT_DEFS["categories"] if c["clinical"])
+    return frozenset(category_id for category_id, clinical in rows if clinical)
+
+
+def policy(db: Session) -> Policy:
+    return Policy(clinical_categories(db), setting("content.health_requires_clinician", db) is True,
+                  int(setting("content.precision_threshold", db)))
+
+
+def health_content(row: M.Post, pol: Policy) -> bool:
+    """A health tip, or an advice template (series episode, explainer, myth vs fact, quick card) in a clinical category."""
+    spec = TEMPLATES[row.template]
+    return bool(spec["review"]) or (bool(spec["advice"]) and row.category_id in pol.clinical)
+
+
+def precise(row: M.Post, pol: Policy) -> bool:
+    """An auto post the precision gate scored at or above the threshold, as it stands (an edit resets the score)."""
+    return is_auto(row) and row.precision >= pol.threshold and row.precision >= 0
+
+
+def needs_review(row: M.Post, pol: Policy) -> bool:
+    """Whether a clinician must approve exactly this version before it is public.
+
+    Health content always does, except an auto post that passed the precision gate
+    while ``content.health_requires_clinician`` is off. A post typed by the team
+    is never scored, so a team health tip always needs a clinician (#229).
+    """
+    if not health_content(row, pol):
+        return False
+    return not (not pol.requires_clinician and precise(row, pol))
+
+
+def is_public(row: M.Post, now: float, pol: Policy) -> bool:
+    """Published (or scheduled and due), and for health content, reviewed as it stands now."""
     if row.status == PUBLISHED or (row.status == SCHEDULED and row.publish_at <= now):
-        return review_current(row) if needs_review(row) else True
+        return review_current(row) if needs_review(row, pol) else True
     return False
 
 
@@ -237,6 +311,12 @@ def validate_block(template: str, block: Any, image_ids: set[str]) -> dict:
         return {"type": kind, "imageId": image_id,
                 "alt": _clean(block.get("alt"), low=3, high=200, what="An image's alt text"),
                 "caption": _clean(caption, low=0, high=200, what="A caption") if caption else ""}
+    if kind == "mythfact":
+        return {"type": kind, "myth": _clean(block.get("myth"), low=2, high=300, what="A myth"),
+                "fact": _clean(block.get("fact"), low=2, high=500, what="A fact")}
+    if kind == "stat":
+        return {"type": kind, "value": _clean(block.get("value"), low=1, high=STAT_VALUE_MAX, what="A figure"),
+                "label": _clean(block.get("label"), low=2, high=120, what="A figure's label")}
     if kind == "facts":
         title = block.get("title") or ""
         return {"type": kind, "title": _clean(title, low=0, high=80, what="A key-facts title") if title else "",
@@ -257,7 +337,8 @@ def validate_body(template: str, body: Any, image_ids: set[str]) -> list[dict]:
 
 def block_text(block: dict) -> str:
     parts = [block.get("text", ""), block.get("cite", ""), block.get("title", ""), block.get("label", ""),
-             block.get("caption", ""), *block.get("items", [])]
+             block.get("caption", ""), block.get("myth", ""), block.get("fact", ""), block.get("value", ""),
+             *block.get("items", [])]
     return " ".join(p for p in parts if p)
 
 
@@ -287,11 +368,51 @@ def _site() -> str:
     return f"https://{app_domain()}"
 
 
-def teaser(row: M.Post, db: Session, names: dict[str, str]) -> dict:
+@dataclass(frozen=True)
+class Refs:
+    """The categories and series a page of posts points at, read once."""
+    categories: dict[str, M.PostCategory]
+    series: dict[str, M.PostSeries]
+
+
+def load_refs(db: Session, rows: list[M.Post]) -> Refs:
+    ids = {r.series_id for r in rows if r.series_id}
+    series = {s.id: s for s in db.scalars(select(M.PostSeries).where(M.PostSeries.id.in_(ids)))} if ids else {}
+    return Refs({c.id: c for c in db.scalars(select(M.PostCategory))}, series)
+
+
+DEFAULT_CATEGORIES = {c["id"]: c for c in CONTENT_DEFS["categories"]}
+PROTECTED_CATEGORIES: dict[str, dict] = CONTENT_DEFS["protectedCategories"]
+
+
+def category_view(category_id: str, refs: Refs) -> dict | None:
+    """A post's category as a reader sees it. Before categories are stored, the shipped default."""
+    if not category_id:
+        return None
+    row = refs.categories.get(category_id)
+    if row is not None:
+        crisis = bool(row.crisis_lines) or bool(PROTECTED_CATEGORIES.get(row.id, {}).get("crisisLines"))
+        return {"id": row.id, "name": row.name, "hue": row.hue, "icon": row.icon, "crisisLines": crisis}
+    default = DEFAULT_CATEGORIES.get(category_id)
+    if default is None:
+        return None
+    return {"id": default["id"], "name": default["name"], "hue": default["hue"], "icon": default["icon"],
+            "crisisLines": bool(default["crisisLines"])}
+
+
+def series_view(row: M.Post, refs: Refs) -> dict | None:
+    series = refs.series.get(row.series_id) if row.series_id else None
+    if series is None:
+        return None
+    return {"slug": series.slug, "name": series.name, "hue": series.hue, "episode": row.episode}
+
+
+def teaser(row: M.Post, db: Session, names: dict[str, str], pol: Policy, refs: Refs) -> dict:
     """What a list, the Home card and What's new show. Nothing about any reader."""
     reviewed = None
-    if needs_review(row) and review_current(row):
+    if needs_review(row, pol) and review_current(row):
         reviewed = {"by": names.get(row.reviewed_by or "", ""), "on": _iso(row.reviewed_at)}
+    category = category_view(row.category_id, refs)
     return {
         "id": row.id, "slug": row.slug, "section": SECTION_PATHS[row.section], "template": row.template,
         "title": row.title, "summary": row.summary, "tags": list(row.tags or []), "coverAlt": row.cover_alt,
@@ -299,7 +420,8 @@ def teaser(row: M.Post, db: Session, names: dict[str, str]) -> dict:
         "publishedAt": _iso(row.publish_at), "updatedAt": _iso(row.updated_at), "featured": bool(row.featured),
         "readingMinutes": reading_minutes(row, db), "reviewed": reviewed, "sample": bool(row.sample),
         "path": post_path(row), "ogImage": f"/api/posts/{SECTION_PATHS[row.section]}/{row.slug}/og.png",
-        "auto": is_auto(row), "source": source_of(row),
+        "auto": is_auto(row), "source": source_of(row), "category": category, "series": series_view(row, refs),
+        "crisisLines": bool(category and category["crisisLines"]), "healthNote": health_content(row, pol),
     }
 
 
@@ -313,14 +435,20 @@ def _public_body(row: M.Post) -> list[dict]:
             for b in row.body or []]
 
 
-def _public_rows(db: Session, now: float, section: str | None = None, template: str | None = None) -> list[M.Post]:
+def _public_rows(db: Session, now: float, section: str | None = None, template: str | None = None,
+                 pol: Policy | None = None, *, category: str = "", series_id: str = "") -> list[M.Post]:
     statement = select(M.Post).where(M.Post.status.in_((PUBLISHED, SCHEDULED)), M.Post.publish_at <= now)
     if section:
         statement = statement.where(M.Post.section == section)
     if template:
         statement = statement.where(M.Post.template == template)
+    if category:
+        statement = statement.where(M.Post.category_id == category)
+    if series_id:
+        statement = statement.where(M.Post.series_id == series_id)
     rows = db.scalars(statement.order_by(M.Post.publish_at.desc(), M.Post.id).limit(SEARCH_SCAN_MAX)).all()
-    return [r for r in rows if is_public(r, now)]
+    pol = pol or policy(db)
+    return [r for r in rows if is_public(r, now, pol)]
 
 
 def _cache(response: Response, db: Session) -> None:
@@ -337,12 +465,18 @@ def _matches(row: M.Post, query: str) -> bool:
 @router.get("/posts")
 def list_posts(response: Response, section: SectionPath | None = None, template: Template | None = None,
                q: str = Query("", max_length=80), tag: str = Query("", max_length=TAG_MAX),
+               category: str = Query("", max_length=40), series: str = Query("", max_length=80),
                page: int = Query(1, ge=1, le=1000), page_size: int | None = Query(None, alias="pageSize", ge=1, le=30),
                db: Session = Depends(workflow_db)) -> dict:
     """Published posts, newest first, with the section's featured post on an unfiltered first page."""
     now = time.time()
-    rows = _public_rows(db, now, PATH_SECTIONS.get(section or ""), template)
-    filtered = bool(template or q.strip() or tag.strip())
+    pol = policy(db)
+    series_id = ""
+    if series:
+        found = db.scalar(select(M.PostSeries.id).where(M.PostSeries.slug == series))
+        series_id = found or "-"
+    rows = _public_rows(db, now, PATH_SECTIONS.get(section or ""), template, pol, category=category, series_id=series_id)
+    filtered = bool(template or q.strip() or tag.strip() or category or series)
     if q.strip():
         rows = [r for r in rows if _matches(r, q.strip())]
     if tag.strip():
@@ -355,14 +489,15 @@ def list_posts(response: Response, section: SectionPath | None = None, template:
     shown = listed[(page - 1) * size: page * size]
     names = _names(db, {r.author_id for r in shown} | {r.reviewed_by or "" for r in shown}
                    | ({featured.author_id, featured.reviewed_by or ""} if featured else set()))
+    refs = load_refs(db, [*shown, *([featured] if featured else [])])
     _cache(response, db)
-    return {"items": [teaser(r, db, names) for r in shown], "total": len(listed), "page": page, "pageSize": size,
-            "featured": teaser(featured, db, names) if featured else None}
+    return {"items": [teaser(r, db, names, pol, refs) for r in shown], "total": len(listed), "page": page,
+            "pageSize": size, "featured": teaser(featured, db, names, pol, refs) if featured else None}
 
 
 def _public_post(db: Session, section: str, slug: str) -> M.Post:
     row = db.scalar(select(M.Post).where(M.Post.slug == slug))
-    if row is None or SECTION_PATHS[row.section] != section or not is_public(row, time.time()):
+    if row is None or SECTION_PATHS[row.section] != section or not is_public(row, time.time(), policy(db)):
         raise HTTPException(404, "This post is not published.")
     return row
 
@@ -372,7 +507,7 @@ def public_image(image_id: str, db: Session = Depends(workflow_db)) -> Response:
     """An image, only while a public post shows it."""
     image = db.get(M.PostImage, image_id)
     post = db.get(M.Post, image.post_id) if image else None
-    shown = post is not None and is_public(post, time.time()) and any(
+    shown = post is not None and is_public(post, time.time(), policy(db)) and any(
         b.get("type") == "image" and b.get("imageId") == image_id for b in post.body or [])
     if image is None or not shown:
         raise HTTPException(404, "Image not found.")
@@ -385,7 +520,8 @@ def public_image(image_id: str, db: Session = Depends(workflow_db)) -> Response:
 def share_image(section: SectionPath, slug: str, db: Session = Depends(workflow_db)) -> Response:
     """The 1200x630 share image, drawn on our server from the post's cover (no outside service)."""
     row = _public_post(db, section, slug)
-    png = newsroom_cover.render_png(row.template, TEMPLATES[row.template]["label"], row.title, app_domain())
+    png = newsroom_cover.render_png(row.template, TEMPLATES[row.template]["label"], row.title, app_domain(),
+                                    hue=series_hue(db, row))
     return Response(png, media_type="image/png", headers={
         "Cache-Control": f"public, max-age={int(setting('newsroom.public_cache_seconds', db))}"})
 
@@ -453,14 +589,26 @@ def read_post(section: SectionPath, slug: str, response: Response, db: Session =
     """One published post, with related posts: the same template first, then the same section."""
     row = _public_post(db, section, slug)
     now = time.time()
+    pol = policy(db)
     count = int(setting("newsroom.related_count", db))
-    others = [r for r in _public_rows(db, now, row.section) if r.id != row.id]
-    related = sorted(others, key=lambda r: (r.template != row.template, -r.publish_at))[:count]
+    others = [r for r in _public_rows(db, now, row.section, pol=pol) if r.id != row.id]
+    related = sorted(others, key=lambda r: (r.series_id != row.series_id or not row.series_id,
+                                            r.template != row.template, -r.publish_at))[:count]
     names = _names(db, {row.author_id, row.reviewed_by or ""} | {r.author_id for r in related}
                    | {r.reviewed_by or "" for r in related})
+    refs = load_refs(db, [row, *related])
     _cache(response, db)
-    return {**teaser(row, db, names), "body": _public_body(row), "seoTitle": row.seo_title or row.title,
-            "seoDescription": row.seo_description or row.summary, "related": [teaser(r, db, names) for r in related]}
+    return {**teaser(row, db, names, pol, refs), "body": _public_body(row), "seoTitle": row.seo_title or row.title,
+            "seoDescription": row.seo_description or row.summary,
+            "related": [teaser(r, db, names, pol, refs) for r in related]}
+
+
+def series_hue(db: Session, row: M.Post) -> str | None:
+    """A series episode's cover takes its series' style; any other post its template's."""
+    if not row.series_id:
+        return None
+    series = db.get(M.PostSeries, row.series_id)
+    return series.hue if series else None
 
 
 # --- the editor (super admin) ---------------------------------------------------------------
@@ -478,6 +626,8 @@ class PostInput(StrictModel):
     seoDescription: str = Field(default="", max_length=160)
     featured: bool = False
     authorId: str = Field(default="", max_length=64)
+    categoryId: str = Field(default="", max_length=40)
+    seriesId: str = Field(default="", max_length=64)
 
     @field_validator("slug")
     @classmethod
@@ -520,10 +670,39 @@ def _check_author(db: Session, author_id: str) -> None:
         raise HTTPException(422, "Pick the author from the team list.")
 
 
+def _check_category(db: Session, category_id: str, current: str) -> None:
+    if not category_id or category_id == current:
+        return
+    category = db.get(M.PostCategory, category_id)
+    if category is None:
+        from services.newsroom_content import (
+            ensure_defaults,  # a fresh install: the shipped categories first
+        )
+        ensure_defaults(db)
+        category = db.get(M.PostCategory, category_id)
+    if category is None or category.archived:
+        raise HTTPException(422, "Pick a category from the list (archived ones can't take new posts).")
+
+
+def _attach_series(db: Session, row: M.Post, series_id: str) -> None:
+    """Join or leave a series. Joining gives the next episode number; the number stays once given."""
+    if series_id == (row.series_id or ""):
+        return
+    if not series_id:
+        row.series_id, row.episode = "", 0
+        return
+    series = db.get(M.PostSeries, series_id)
+    if series is None or series.archived:
+        raise HTTPException(422, "Pick a series from the list (archived ones can't take new episodes).")
+    series.episode_count = (series.episode_count or 0) + 1
+    row.series_id, row.episode = series.id, series.episode_count
+
+
 def _apply(db: Session, row: M.Post, body: PostInput) -> None:
     if body.coverArt and body.coverArt not in TEMPLATES[body.template]["art"]:
         raise HTTPException(422, "Pick the cover art from the template's own set.")
     _check_author(db, body.authorId)
+    _check_category(db, body.categoryId, row.category_id or "")
     try:
         blocks = validate_body(body.template, body.body, _image_ids(db, row.id))
     except ValueError as exc:
@@ -531,7 +710,8 @@ def _apply(db: Session, row: M.Post, body: PostInput) -> None:
     row.template, row.section, row.slug = body.template, TEMPLATES[body.template]["section"], body.slug
     row.title, row.summary, row.body, row.tags = body.title, body.summary, blocks, body.tags
     row.cover_alt, row.cover_art, row.seo_title, row.seo_description = body.coverAlt, body.coverArt, body.seoTitle, body.seoDescription
-    row.featured, row.author_id = body.featured, body.authorId
+    row.featured, row.author_id, row.category_id = body.featured, body.authorId, body.categoryId
+    _attach_series(db, row, body.seriesId)
 
 
 def _commit_slug(db: Session) -> None:
@@ -548,7 +728,7 @@ def _slug_free(db: Session, slug: str, own_id: str) -> None:
         raise HTTPException(409, "Another post already uses this web address (slug). Choose a different one.")
 
 
-def blocked_by(row: M.Post) -> str | None:
+def blocked_by(row: M.Post, pol: Policy) -> str | None:
     """Why a post can't be published as it stands, or None."""
     if not row.title.strip() or not row.summary.strip():
         return "Add a title and a summary."
@@ -558,14 +738,16 @@ def blocked_by(row: M.Post) -> str | None:
         return "Choose the author."
     if not row.body:
         return "Add at least one block to the body."
-    if needs_review(row) and not review_current(row):
-        return "A clinician must review this health tip as it stands before it is published."
+    if needs_review(row, pol) and not review_current(row):
+        return "A clinician must review this health post as it stands before it is published."
     return None
 
 
-def admin_payload(row: M.Post, db: Session, viewer: dict) -> dict:
+def admin_payload(row: M.Post, db: Session, viewer: dict, pol: Policy | None = None, refs: Refs | None = None) -> dict:
     names = _names(db, {row.author_id, row.reviewed_by or ""})
     now = time.time()
+    pol = pol or policy(db)
+    refs = refs or load_refs(db, [row])
     review = None
     if row.reviewed_by:
         review = {"by": names.get(row.reviewed_by, ""), "at": row.reviewed_at, "current": review_current(row),
@@ -576,10 +758,14 @@ def admin_payload(row: M.Post, db: Session, viewer: dict) -> dict:
         "coverAlt": row.cover_alt, "coverArt": row.cover_art, "seoTitle": row.seo_title,
         "seoDescription": row.seo_description, "featured": bool(row.featured), "authorId": row.author_id,
         "authorName": author_name(row, names), "status": row.status, "publishAt": row.publish_at or None,
-        "live": is_public(row, now), "needsReview": needs_review(row), "review": review,
-        "contentHash": content_hash(row), "blockedBy": blocked_by(row), "sample": bool(row.sample),
+        "live": is_public(row, now, pol), "needsReview": needs_review(row, pol), "review": review,
+        "contentHash": content_hash(row), "blockedBy": blocked_by(row, pol), "sample": bool(row.sample),
         "path": post_path(row), "readingMinutes": reading_minutes(row, db),
         "createdAt": row.created_at, "updatedAt": row.updated_at, "auto": is_auto(row), "source": source_of(row),
+        "categoryId": row.category_id or "", "seriesId": row.series_id or "", "episode": row.episode or 0,
+        "category": category_view(row.category_id, refs), "series": series_view(row, refs),
+        "precision": row.precision if row.precision is not None else -1, "precisionReport": row.precision_report or None,
+        "holdReason": row.hold_reason or "", "healthContent": health_content(row, pol),
     }
 
 
@@ -597,16 +783,35 @@ def _row_or_404(db: Session, post_id: str) -> M.Post:
 
 @router.get("/ops/posts")
 def admin_list(status: Status | None = None, template: Template | None = None, q: str = Query("", max_length=80),
+               category: str = Query("", max_length=40), series: str = Query("", max_length=64),
+               origin: Literal["AUTO", "MANUAL"] | None = None, source: str = Query("", max_length=120),
+               queue: Literal["review"] | None = None,
                user: dict = Depends(require_super_admin), db: Session = Depends(workflow_db)) -> dict:
+    """Every post, manual or auto, with the Content module's filters. ``queue=review``: auto drafts held for the
+    super admin (imprecise, or auto-publish off) and posts waiting for a clinician."""
     statement = select(M.Post)
     if status:
         statement = statement.where(M.Post.status == status)
     if template:
         statement = statement.where(M.Post.template == template)
-    rows = db.scalars(statement.order_by(M.Post.updated_at.desc(), M.Post.id).limit(SEARCH_SCAN_MAX)).all()
+    if category:
+        statement = statement.where(M.Post.category_id == category)
+    if series:
+        statement = statement.where(M.Post.series_id == series)
+    if origin:
+        statement = statement.where(M.Post.origin == origin) if origin == AUTO else statement.where(M.Post.origin != AUTO)
+    if source:
+        statement = statement.where(M.Post.source_name == source)
+    limit = int(setting("content.list_max", db))
+    rows = db.scalars(statement.order_by(M.Post.updated_at.desc(), M.Post.id).limit(limit)).all()
     if q.strip():
         rows = [r for r in rows if _matches(r, q.strip())]
-    return {"items": [admin_payload(r, db, user) for r in rows], "total": len(rows)}
+    pol = policy(db)
+    if queue == "review":
+        rows = [r for r in rows if r.status != UNPUBLISHED and (
+            (r.status == DRAFT and r.hold_reason) or (needs_review(r, pol) and not review_current(r)))]
+    refs = load_refs(db, list(rows))
+    return {"items": [admin_payload(r, db, user, pol, refs) for r in rows], "total": len(rows)}
 
 
 @router.get("/ops/posts/authors")
@@ -654,7 +859,9 @@ def update_post(post_id: str, body: PostInput, user: dict = Depends(require_supe
     _apply(db, row, body)
     row.updated_by, row.updated_at = user["id"], time.time()
     _event(db, user, row, "EDITED")
-    if needs_review(row) and row.reviewed_hash and content_hash(row) != before:
+    if content_hash(row) != before and row.precision >= 0:
+        row.precision = -1   # the gate scored the words it was given, not a person's edit of them
+    if needs_review(row, policy(db)) and row.reviewed_hash and content_hash(row) != before:
         _event(db, user, row, "REVIEW_VOIDED")
     _commit_slug(db)
     return {**admin_payload(row, db, user), "history": _history(db, row, user)}
@@ -669,7 +876,7 @@ def publish(post_id: str, body: PublishInput, user: dict = Depends(require_super
             db: Session = Depends(workflow_db)) -> dict:
     """Publish now, or schedule for ``publishAt`` (Unix seconds). Refused while anything is missing."""
     row = _row_or_404(db, post_id)
-    reason = blocked_by(row)
+    reason = blocked_by(row, policy(db))
     if reason:
         raise HTTPException(409, reason)
     now = time.time()
@@ -680,7 +887,7 @@ def publish(post_id: str, body: PublishInput, user: dict = Depends(require_super
         row.status, row.publish_at = PUBLISHED, now
         action = "PUBLISHED"
     row.first_published_at = row.first_published_at or row.publish_at
-    row.updated_by, row.updated_at = user["id"], now
+    row.updated_by, row.updated_at, row.hold_reason = user["id"], now, ""
     _event(db, user, row, action)
     db.commit()
     return {**admin_payload(row, db, user), "history": _history(db, row, user)}
@@ -737,7 +944,7 @@ def admin_image(image_id: str, user: dict = Depends(require_post_reader), db: Se
     """Preview for the editor, and for a clinician reviewing a health tip."""
     image = db.get(M.PostImage, image_id)
     post = db.get(M.Post, image.post_id) if image else None
-    if image is None or post is None or (user["role"] == REVIEWER_ROLE and not needs_review(post)):
+    if image is None or post is None or (user["role"] == REVIEWER_ROLE and not needs_review(post, policy(db))):
         raise HTTPException(404, "Image not found.")
     return Response(image.content, media_type=image.mime_type,
                     headers={"Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff"})
@@ -747,7 +954,7 @@ def admin_image(image_id: str, user: dict = Depends(require_post_reader), db: Se
 
 def _reviewable(db: Session, post_id: str) -> M.Post:
     row = db.get(M.Post, post_id)
-    if row is None or not needs_review(row):
+    if row is None or not needs_review(row, policy(db)):
         raise HTTPException(404, "Health tip not found.")
     return row
 
@@ -755,14 +962,18 @@ def _reviewable(db: Session, post_id: str) -> M.Post:
 @router.get("/work/post-reviews")
 def review_queue(state: Literal["TO_REVIEW", "REVIEWED", "ALL"] = "TO_REVIEW", user: dict = Depends(require_reviewer),
                  db: Session = Depends(workflow_db)) -> dict:
-    """Health tips waiting for a clinician, or changed since one approved them."""
-    rows = db.scalars(select(M.Post).where(M.Post.template == HEALTH_TIP, M.Post.status != UNPUBLISHED)
+    """Health posts (health tips, and advice posts in a clinical category) waiting for a clinician, or changed since
+    one approved them."""
+    pol = policy(db)
+    rows = db.scalars(select(M.Post).where(M.Post.template.in_(ADVICE_TEMPLATES), M.Post.status != UNPUBLISHED)
                       .order_by(M.Post.updated_at.desc(), M.Post.id).limit(SEARCH_SCAN_MAX)).all()
+    rows = [r for r in rows if needs_review(r, pol)]
     if state == "TO_REVIEW":
         rows = [r for r in rows if not review_current(r)]
     elif state == "REVIEWED":
         rows = [r for r in rows if review_current(r)]
-    return {"items": [admin_payload(r, db, user) for r in rows], "total": len(rows)}
+    refs = load_refs(db, list(rows))
+    return {"items": [admin_payload(r, db, user, pol, refs) for r in rows], "total": len(rows)}
 
 
 @router.get("/work/post-reviews/{post_id}")

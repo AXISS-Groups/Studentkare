@@ -1,18 +1,18 @@
-# AdminPosts — Super admin → Posts, and the clinician's Health tip reviews
+# AdminPosts — Super admin → Content (News, Blog, series, autopilot), and the clinician's health post reviews
 
 | | |
 |---|---|
 | Canvas page | New · Newsroom: News and Blog (2026-10-23, no canvas board). Console frame of canvas page 7 (and the clinician console, page 5) |
 | Platform / frame | Web · 1440 and 1024 |
 | Tier | 3 (editorial tools); the health tip review gate is enforced by the server |
-| Ticket(s) | Newsroom: News and Blog in SK templates (founder ticket, 2026-10-23); Content autopilot (founder ticket, 2026-10-23) |
-| Picture | none on the canvas: screenshots at `/home/claude/navy-shots/newsroom/` and `/home/claude/navy-shots/autopilot/` |
+| Ticket(s) | Newsroom: News and Blog in SK templates (founder ticket, 2026-10-23); Content autopilot (founder ticket, 2026-10-23); Content module, series, share kit, precision-gated aggregator (founder ticket, 2026-10-23, feat/newsroom-2) |
+| Picture | none on the canvas: screenshots at `/home/claude/navy-shots/newsroom2/` and earlier at `/home/claude/navy-shots/newsroom/` and `/home/claude/navy-shots/autopilot/` |
 | Design source | none; designed in code (`src/features/newsroom/admin/PostsAdminView.tsx`, `AutopilotView.tsx`) |
 
 ## Icons this screen must show (all of them)
 
-- **Line / solid icons (42):** `activity`, `alert-triangle`, `align-left`, `align-left-2`, `arrow-left`, `arrow-up`, `arrow-up-right`, `calendar`, `camera`, `check`, `check-circle`, `chevron-down`, `clipboard`, `clock`, `eye`, `eye-off`, `file-text`, `graduation-cap`, `heart-pulse`, `inbox`, `info`, `lock`, `megaphone`, `message-square-text`, `mic`, `pause`, `pencil`, `play`, `plus`, `refresh`, `rotate-ccw`, `rows-split`, `search`, `settings`, `shield-alert`, `shield-check`, `sparkles`, `stethoscope`, `trash`, `upload`, `wifi-off`, `zap`
-- **3D icon tiles (13):** `bell--p2`, `brain-alt--p3`, `calendar-alt--p4`, `chat-alt--p4`, `doc--p4`, `heart--p1`, `home-alt--p4`, `idcard-alt--p4`, `settings-alt--p4`, `thermo-alt--p1`, `user--p4`, `vault-alt--p4`, `wellness-alt--p5` (the cover art picker)
+- **Line / solid icons (62):** `activity`, `alert-circle`, `alert-triangle`, `align-left`, `align-left-2`, `arrow-left`, `arrow-up`, `arrow-up-right`, `bar-chart`, `book`, `brand-linkedin`, `calendar`, `camera`, `check`, `check-circle`, `chevron-down`, `clipboard`, `clock`, `copy`, `download`, `eye`, `eye-off`, `file-text`, `filter`, `graduation-cap`, `grid`, `heart-pulse`, `help-circle`, `inbox`, `info`, `lock`, `mail`, `megaphone`, `message-circle-2`, `message-square-text`, `mic`, `monitor`, `pause`, `pencil`, `phone`, `phone-call`, `play`, `plus`, `question-mark`, `refresh`, `repeat`, `rotate-ccw`, `rows-split`, `search`, `settings`, `share`, `shield-alert`, `shield-check`, `sparkles`, `star`, `stethoscope`, `sun`, `trash`, `upload`, `wifi-off`, `x-2`, `zap`
+- **3D icon tiles (17):** `bell--p2`, `brain-alt--p3`, `calendar-alt--p4`, `chart-alt--p4`, `chat-alt--p4`, `doc--p4`, `heart--p1`, `home-alt--p4`, `idcard-alt--p4`, `lab-alt--p5`, `search--p4`, `settings-alt--p4`, `shield--p5`, `thermo-alt--p1`, `user--p4`, `vault-alt--p4`, `wellness-alt--p5` (the cover art picker)
 - **Brand mark:** the SK shield on the template thumbnails and the preview cover
 
 ## Layout
@@ -48,6 +48,41 @@ Notes: kill switch on (`shield-alert`, amber); development build, everything is 
 6. **Queue** (`inbox`): drafts waiting for an editor (Publish `upload`) or a clinician (amber), and scheduled posts (Unpublish `eye-off`).
 7. **Log** (`file-text`): what was posted, skipped or failed and why, with how it was written; Unpublish (`eye-off`), Open (`arrow-up-right`).
 Every auto post is tagged Auto in the list (template · Auto) and its history shows "Drafted / Published / Scheduled by the autopilot".
+
+**Content module (2026-10-23, feat/newsroom-2).** The nav item is **Content**; tabs (`role=tab`) above the page:
+All posts `file-text` · Review `inbox` · Series `repeat` · Categories `filter` · Sources `activity` · Autopilot `zap` ·
+Share kit `share` · Analytics `bar-chart`.
+1. **All posts:** every post, typed or Auto. Filters: status tabs, type, category, series, source, Typed / Auto, search. Row actions:
+   Edit (`pencil`), Unpublish (`eye-off`, one click, live or scheduled only), Share kit (`share`). The row's second line names the
+   path, category, "Episode N of {series}" and the source.
+2. **Review:** auto drafts held for the super admin (not precise enough, or auto-publish off) and posts waiting for a clinician.
+   Each card: pill (Not precise enough / Waiting for a clinician / Waiting for you), the **precision report** (score vs threshold,
+   source checks, and every sentence with `check-circle` or amber `alert-triangle` and the reasons: not in the source, a new
+   number or date, a new name, medical advice, a claim the source does not make), Open and edit (`pencil`), Publish as it is
+   (`upload`, not for a post a clinician must approve), Unpublish (`eye-off`).
+3. **Series:** table (swatch, `repeat`, name, path, category, schedule: Monday Motivation / Health series / by hand, episodes,
+   status) with Edit / Archive / Bring back; the form: name, category, template, cover colour, summary, and for Monday Motivation
+   the **library** (`sun`): the team's own words, or a quote with who said it, an https public-domain source and the
+   public-domain box (the server refuses a quote without all three). `stethoscope` note: health episodes need a clinician.
+4. **Categories:** table (swatch, icon, name, id, rules: Clinician / Crisis lines, hashtags, posts, status) with Edit / Archive /
+   Bring back; the form: name, colour (service-palette hue), icon (a radio grid of the allow-listed manifest icons), hashtags,
+   aggregator keywords, series topics, "health advice" and "crisis lines" boxes. Mental health is protected (`lock`).
+5. **Sources:** the autopilot's sources table and Check sources (`activity`).
+6. **Autopilot:** as before, plus the series cards (`sun` Monday Motivation, `repeat` Health series: on/off, days, hour, rota,
+   library size, next slots) and the **Precision gate** card (`shield-check`: threshold, "Health posts need a clinician" switch,
+   feed interval; `phone-call` "Mental health posts always carry Tele-MANAS 14416 and 112").
+7. **Share kit:** pick a post; LinkedIn caption (`brand-linkedin`) with Copy (`copy`); share links (`brand-linkedin`,
+   `message-circle-2`, `x-2`, Facebook and Telegram by name, `mail`), `lock` "plain links with UTM tags"; share cards
+   (`download`): 1200×630 and 1080×1350 with Download links.
+8. **Analytics:** views, shares and shares by network per post (`lock` counts only, no reader kept).
+
+**Composer additions:** category and series pickers (`phone-call` crisis-lines note, `stethoscope` clinician note); **Writing
+help** card (`check-circle`): words vs the template's guide, accessibility checks (cover alt, image alt, headings, link labels,
+summary) each `check-circle` or `alert-triangle`, and an amber duplicate-topic note listing similar recent posts; the precision
+report on an auto post; "Publish later ({zone})" read in the platform's time zone (IST); preview as Desktop (`monitor`), Phone
+(`phone`) or LinkedIn card (`brand-linkedin`); Share kit button. Seven new templates in the picker (Motivation `sun`, Series
+episode `repeat`, Event `calendar`, Campus spotlight `star`, Explainer `book`, Myth vs fact `question-mark`, Quick card `grid`) and
+two new blocks (Myth and fact `help-circle`, Big figure `bar-chart`).
 
 ## Rules
 

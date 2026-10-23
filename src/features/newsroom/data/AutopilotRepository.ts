@@ -35,6 +35,24 @@ export interface AutopilotPost {
   reviewCurrent: boolean;
   publishAt: number | null;
   sample: boolean;
+  /** The precision gate's score (-1: not scored) and why it waits for the super admin ('' when it does not). */
+  precision: number;
+  holdReason: '' | 'PRECISION' | 'EDITOR';
+}
+
+/** A built-in series' schedule (settings series.<key>.*). */
+export interface AutopilotSeries {
+  key: 'motivation' | 'health';
+  enabled: boolean;
+  name: string;
+  slug: string;
+  id: string;
+  days: string[];
+  hour: number;
+  rota: string[];
+  library: number;
+  episodes: number;
+  upcoming: number[];
 }
 
 export interface AutopilotItem {
@@ -54,6 +72,9 @@ export interface AutopilotItem {
   createdAt: number;
   updatedAt: number;
   post: AutopilotPost | null;
+  categoryId: string;
+  seriesName: string;
+  precision: number;
 }
 
 export interface AutopilotStatus {
@@ -64,6 +85,9 @@ export interface AutopilotStatus {
   news: { enabled: boolean; autoPublish: boolean; perDay: number; today: number; windowStart: number; windowEnd: number; candidates: number };
   blog: { enabled: boolean; autoPublish: boolean; perWeek: number; days: string[]; hour: number; topics: string[]; upcoming: number[] };
   sources: AutopilotSource[];
+  fetchIntervalMinutes: number;
+  precision: { threshold: number; healthRequiresClinician: boolean };
+  series: AutopilotSeries[];
   queue: AutopilotItem[];
   log: AutopilotItem[];
   job: { lastRunAt: number | null; lastStatus: string; lastError: string; nextRunAt: number | null } | null;

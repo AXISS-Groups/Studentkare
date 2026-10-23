@@ -618,3 +618,268 @@ Notes for the reviewer: `push.lock.*` are also the lines the server sends to a l
 | `push.adm.cancelBody` | It won’t be sent. This is recorded in the audit log. | ఇది పంపబడదు. ఇది ఆడిట్ లాగ్‌లో నమోదవుతుంది. | यह नहीं भेजी जाएगी। यह ऑडिट लॉग में दर्ज होता है। |
 | `push.adm.cancelFailed` | It couldn’t be cancelled. It may already be sending. | రద్దు చేయలేకపోయాం. ఇది ఇప్పటికే పంపుతూ ఉండవచ్చు. | रद्द नहीं हो सकी। हो सकता है यह भेजी जा रही हो। |
 | `push.adm.keep` | Keep it | ఉంచండి | रहने दें |
+
+## newsroomContent — Content module, series, share kit, crisis lines (feat/newsroom-2, `src/i18n/areas/newsroomContent.ts`, and the new template keys in `src/i18n/areas/newsroom.ts`)
+
+Notes for the reviewer: "Monday Motivation" is a series name and stays in English. "Auto" (an autopilot post) stays as is.
+"precision" here means "traceable to the source", not accuracy in general. Keep Tele-MANAS, 14416 and 112 exactly.
+
+### New templates and blocks (`newsroom.ts`)
+
+| Key | English | te (current) | hi (current) |
+|---|---|---|---|
+| `news.tpl.MOTIVATION` | Motivation | మోటివేషన్ | मोटिवेशन |
+| `news.tpl.SERIES_EPISODE` | Series episode | సిరీస్ ఎపిసోడ్ | सीरीज़ एपिसोड |
+| `news.tpl.EVENT` | Event | ఈవెంట్ | इवेंट |
+| `news.tpl.CAMPUS_SPOTLIGHT` | Campus spotlight | క్యాంపస్ స్పాట్‌లైట్ | कैंपस स्पॉटलाइट |
+| `news.tpl.EXPLAINER` | Explainer | వివరణ | व्याख्या |
+| `news.tpl.MYTH_FACT` | Myth vs fact | అపోహ vs వాస్తవం | मिथक बनाम तथ्य |
+| `news.tpl.QUICK_CARD` | Quick card | క్విక్ కార్డ్ | क्विक कार्ड |
+| `news.tplPlural.MOTIVATION` | Motivation | మోటివేషన్ | मोटिवेशन |
+| `news.tplPlural.SERIES_EPISODE` | Series | సిరీస్ | सीरीज़ |
+| `news.tplPlural.EVENT` | Events | ఈవెంట్‌లు | इवेंट |
+| `news.tplPlural.CAMPUS_SPOTLIGHT` | Campus spotlights | క్యాంపస్ స్పాట్‌లైట్‌లు | कैंपस स्पॉटलाइट |
+| `news.tplPlural.EXPLAINER` | Explainers | వివరణలు | व्याख्याएँ |
+| `news.tplPlural.MYTH_FACT` | Myths vs facts | అపోహలు vs వాస్తవాలు | मिथक बनाम तथ्य |
+| `news.tplPlural.QUICK_CARD` | Quick cards | క్విక్ కార్డ్‌లు | क्विक कार्ड |
+| `news.tplAbout.MOTIVATION` | Orange cover. A short line or a clearly attributed public-domain quote. No advice. | నారింజ కవర్. ఒక చిన్న మాట లేదా స్పష్టంగా ఆపాదించిన పబ్లిక్-డొమైన్ కోట్. సలహా లేదు. | नारंगी कवर। एक छोटी बात या साफ़ तौर पर किसी के नाम का पब्लिक-डोमेन उद्धरण। कोई सलाह नहीं। |
+| `news.tplAbout.SERIES_EPISODE` | Teal cover (or its series' colour), numbered in its series. | టీల్ కవర్ (లేదా దాని సిరీస్ రంగు), సిరీస్‌లో నంబర్‌తో. | टील कवर (या उसकी सीरीज़ का रंग), सीरीज़ में नंबर के साथ। |
+| `news.tplAbout.EVENT` | Rose cover, with a key-facts box for when and where. | గులాబీ కవర్, ఎప్పుడు, ఎక్కడ కోసం ముఖ్య వివరాల బాక్స్‌తో. | गुलाबी कवर, कब और कहाँ के लिए मुख्य तथ्यों के बॉक्स के साथ। |
+| `news.tplAbout.CAMPUS_SPOTLIGHT` | Sky cover. A campus team, club or service, never a student's health. | ఆకాశ నీలం కవర్. క్యాంపస్ టీమ్, క్లబ్ లేదా సేవ, ఎప్పుడూ విద్యార్థి ఆరోగ్యం కాదు. | आसमानी कवर। कैंपस की टीम, क्लब या सेवा, कभी किसी छात्र का स्वास्थ्य नहीं। |
+| `news.tplAbout.EXPLAINER` | Blue cover, for how something works. | నీలం కవర్, ఏదైనా ఎలా పని చేస్తుందో చెప్పడానికి. | नीला कवर, कोई चीज़ कैसे काम करती है। |
+| `news.tplAbout.MYTH_FACT` | Violet cover, myth and fact side by side. | ఊదా కవర్, అపోహ, వాస్తవం పక్కపక్కనే. | बैंगनी कवर, मिथक और तथ्य साथ-साथ। |
+| `news.tplAbout.QUICK_CARD` | Navy cover, one big figure and a few facts. Only figures from a source. | నేవీ కవర్, ఒక పెద్ద సంఖ్య, కొన్ని వాస్తవాలు. మూలంలోని సంఖ్యలు మాత్రమే. | नेवी कवर, एक बड़ा आँकड़ा और कुछ तथ्य। सिर्फ़ स्रोत के आँकड़े। |
+| `news.block.mythfact` | Myth and fact | అపోహ, వాస్తవం | मिथक और तथ्य |
+| `news.block.stat` | Big figure | పెద్ద సంఖ్య | बड़ा आँकड़ा |
+| `news.adm.eyebrow` | Newsroom | న్యూస్‌రూమ్ | न्यूज़रूम |
+| `news.adm.title` | Content | కంటెంట్ | कंटेंट |
+| `news.adm.subtitle` | Every post on the site, typed or Auto: News, Blog and series in the SK templates. Health posts typed by the team go out after a clinician approves them; auto posts go out only when precise. | సైట్‌లోని ప్రతి పోస్ట్, టీమ్ రాసినది లేదా Auto: SK టెంప్లేట్‌లలో వార్తలు, బ్లాగ్, సిరీస్. టీమ్ రాసిన ఆరోగ్య పోస్ట్‌లు డాక్టర్ ఆమోదం తర్వాత; Auto పోస్ట్‌లు ఖచ్చితంగా ఉంటేనే ప్రచురితమవుతాయి. | साइट की हर पोस्ट, टीम की लिखी या Auto: SK टेम्पलेट में ख़बरें, ब्लॉग और सीरीज़। टीम की लिखी स्वास्थ्य पोस्ट डॉक्टर की मंज़ूरी के बाद; Auto पोस्ट सिर्फ़ सटीक होने पर प्रकाशित होती हैं। |
+
+### Content module (`newsroomContent.ts`)
+
+| Key | English | te (current) | hi (current) |
+|---|---|---|---|
+| `cms.tab.posts` | All posts | అన్ని పోస్ట్‌లు | सभी पोस्ट |
+| `cms.tab.review` | Review | సమీక్ష | समीक्षा |
+| `cms.tab.series` | Series | సిరీస్ | सीरीज़ |
+| `cms.tab.categories` | Categories | విభాగాలు | श्रेणियाँ |
+| `cms.tab.sources` | Sources | మూలాలు | स्रोत |
+| `cms.tab.share` | Share kit | షేర్ కిట్ | शेयर किट |
+| `cms.tab.analytics` | Analytics | గణాంకాలు | आँकड़े |
+| `cms.loading` | Loading… | లోడ్ అవుతోంది… | लोड हो रहा है… |
+| `cms.failed` | That didn't work. Try again. | అది పని చేయలేదు. మళ్లీ ప్రయత్నించండి. | यह नहीं हुआ। फिर से कोशिश करें। |
+| `cms.save` | Save | సేవ్ చేయండి | सेव करें |
+| `cms.cancel` | Cancel | రద్దు చేయండి | रद्द करें |
+| `cms.edit` | Edit | మార్చండి | बदलें |
+| `cms.editSpoken` | Edit {name} | {name} మార్చండి | {name} बदलें |
+| `cms.archive` | Archive | ఆర్కైవ్ చేయండి | आर्काइव करें |
+| `cms.archiveSpoken` | Archive {name} | {name} ఆర్కైవ్ చేయండి | {name} आर्काइव करें |
+| `cms.restore` | Bring back | తిరిగి తీసుకురండి | वापस लाएँ |
+| `cms.restoreSpoken` | Bring back {name} | {name} తిరిగి తీసుకురండి | {name} वापस लाएँ |
+| `cms.archived` | Archived | ఆర్కైవ్ అయింది | आर्काइव किया गया |
+| `cms.active` | Active | వాడుకలో ఉంది | चालू |
+| `cms.none` | None | ఏదీ లేదు | कोई नहीं |
+| `cms.unpublishSpoken` | Unpublish {title} | {title} ప్రచురణ ఆపండి | {title} का प्रकाशन हटाएँ |
+| `cms.shareSpoken` | Share kit for {title} | {title} కోసం షేర్ కిట్ | {title} के लिए शेयर किट |
+| `cms.scheduleAt` | Publish later ({zone}) | తర్వాత ప్రచురించండి ({zone}) | बाद में प्रकाशित करें ({zone}) |
+| `cms.origin.all` | Typed and Auto | టీమ్ రాసినవి, Auto | टीम के लिखे और Auto |
+| `cms.origin.AUTO` | Auto only | Auto మాత్రమే | सिर्फ़ Auto |
+| `cms.origin.MANUAL` | Typed by the team | టీమ్ రాసినవి | टीम के लिखे |
+| `cms.f.category` | Category | విభాగం | श्रेणी |
+| `cms.f.categoryHint` | Readers can filter by it; its hashtags go into the LinkedIn caption. | పాఠకులు దీనితో ఫిల్టర్ చేయగలరు; దీని హ్యాష్‌ట్యాగ్‌లు LinkedIn క్యాప్షన్‌లో వస్తాయి. | पाठक इससे फ़िल्टर कर सकते हैं; इसके हैशटैग LinkedIn कैप्शन में जाते हैं। |
+| `cms.f.series` | Series | సిరీస్ | सीरीज़ |
+| `cms.f.seriesHint` | Adding a post to a series gives it the next episode number. | పోస్ట్‌ను సిరీస్‌లో చేర్చితే దానికి తర్వాతి ఎపిసోడ్ నంబర్ వస్తుంది. | पोस्ट को सीरीज़ में जोड़ने पर उसे अगला एपिसोड नंबर मिलता है। |
+| `cms.f.source` | Source | మూలం | स्रोत |
+| `cms.f.origin` | Typed or Auto | టీమ్ రాసినది లేదా Auto | टीम का लिखा या Auto |
+| `cms.f.crisisNote` | Posts in this category always show Tele-MANAS 14416 and 112. | ఈ విభాగంలోని పోస్ట్‌లపై ఎప్పుడూ Tele-MANAS 14416, 112 కనిపిస్తాయి. | इस श्रेणी की पोस्ट पर हमेशा Tele-MANAS 14416 और 112 दिखते हैं। |
+| `cms.f.clinicalNote` | This is health content: a clinician must approve exactly this version before it goes out. | ఇది ఆరోగ్య కంటెంట్: ప్రచురించే ముందు డాక్టర్ ఈ వెర్షన్‌నే ఆమోదించాలి. | यह स्वास्थ्य सामग्री है: प्रकाशन से पहले डॉक्टर को यही संस्करण मंज़ूर करना होगा। |
+| `cms.help.title` | Writing help | రాయడంలో సహాయం | लिखने में मदद |
+| `cms.help.words` | {n} words (this template: {min}–{max}) | {n} పదాలు (ఈ టెంప్లేట్: {min}–{max}) | {n} शब्द (इस टेम्पलेट के लिए: {min}–{max}) |
+| `cms.help.short` | a little short | కొంచెం చిన్నది | थोड़ा छोटा |
+| `cms.help.long` | long for this template | ఈ టెంప్లేట్‌కు పెద్దది | इस टेम्पलेट के लिए लंबा |
+| `cms.help.checksAria` | Accessibility checks | యాక్సెసిబిలిటీ తనిఖీలు | एक्सेसिबिलिटी जाँच |
+| `cms.help.similar` | A recent post looks like the same topic: | ఇటీవలి పోస్ట్ ఇదే విషయంలా ఉంది: | हाल की एक पोस्ट इसी विषय की लगती है: |
+| `cms.check.coverAlt` | The cover is described for screen readers | స్క్రీన్ రీడర్‌ల కోసం కవర్ వివరణ ఉంది | स्क्रीन रीडर के लिए कवर का विवरण है |
+| `cms.check.imageAlt` | Every image has alt text | ప్రతి చిత్రానికి alt టెక్స్ట్ ఉంది | हर तस्वीर में alt टेक्स्ट है |
+| `cms.check.headings` | Headings have words and each one leads into text | హెడింగ్‌లలో పదాలు ఉన్నాయి, ప్రతి దాని తర్వాత టెక్స్ట్ ఉంది | हेडिंग में शब्द हैं और हर हेडिंग के बाद टेक्स्ट है |
+| `cms.check.links` | Buttons say where they go (not "click here") | బటన్‌లు ఎక్కడికి వెళ్తాయో చెబుతాయి ("ఇక్కడ క్లిక్ చేయండి" కాదు) | बटन बताते हैं कि वे कहाँ ले जाते हैं ("यहाँ क्लिक करें" नहीं) |
+| `cms.check.summary` | There is a summary (it is also the link preview) | సారాంశం ఉంది (ఇది లింక్ ప్రివ్యూ కూడా) | सारांश है (यही लिंक प्रीव्यू भी है) |
+| `cms.preview.aria` | Preview as | ఇలా ప్రివ్యూ చూడండి | ऐसे प्रीव्यू करें |
+| `cms.preview.desktop` | Desktop | డెస్క్‌టాప్ | डेस्कटॉप |
+| `cms.preview.phone` | Phone | ఫోన్ | फ़ोन |
+| `cms.preview.linkedin` | LinkedIn card | LinkedIn కార్డ్ | LinkedIn कार्ड |
+| `cms.preview.domain` | {domain} | {domain} | {domain} |
+| `cms.block.myth` | Myth | అపోహ | मिथक |
+| `cms.block.fact` | Fact | వాస్తవం | तथ्य |
+| `cms.block.mythfactAria` | Myth and fact | అపోహ, వాస్తవం | मिथक और तथ्य |
+| `cms.block.statValue` | Figure | సంఖ్య | आँकड़ा |
+| `cms.block.statValueHint` | Up to 12 characters, e.g. 7–9 h. Only figures from your source. | 12 అక్షరాల వరకు, ఉదా. 7–9 గం. మీ మూలంలోని సంఖ్యలు మాత్రమే. | 12 अक्षर तक, जैसे 7–9 घंटे। सिर्फ़ आपके स्रोत के आँकड़े। |
+| `cms.block.statLabel` | What it means | దాని అర్థం | इसका मतलब |
+| `cms.precision.title` | Precision check | ఖచ్చితత్వ తనిఖీ | सटीकता जाँच |
+| `cms.precision.score` | {n}% (needs {min}%) | {n}% (కావాల్సింది {min}%) | {n}% (चाहिए {min}%) |
+| `cms.precision.rule` | Every sentence must be traceable to its source: its numbers, dates and names too. No advice, no claim the source does not make. | ప్రతి వాక్యం దాని మూలంలో కనిపించాలి: సంఖ్యలు, తేదీలు, పేర్లు కూడా. సలహా లేదు, మూలం చెప్పని దావా లేదు. | हर वाक्य अपने स्रोत में मिलना चाहिए: उसके अंक, तारीख़ें और नाम भी। कोई सलाह नहीं, कोई ऐसा दावा नहीं जो स्रोत न करे। |
+| `cms.precision.gate` | Precision gate | ఖచ్చితత్వ గేట్ | सटीकता गेट |
+| `cms.precision.gateBody` | Auto posts at or above the threshold go out on their own. Below it they wait in Review with each failed sentence shown. | పరిమితి లేదా అంతకంటే ఎక్కువ ఉన్న Auto పోస్ట్‌లు తమంతట తాము ప్రచురితమవుతాయి. తక్కువైతే, విఫలమైన ప్రతి వాక్యంతో సమీక్షలో వేచి ఉంటాయి. | सीमा या उससे ऊपर की Auto पोस्ट अपने आप प्रकाशित होती हैं। नीचे की पोस्ट हर असफल वाक्य के साथ समीक्षा में रुकती हैं। |
+| `cms.precision.crisis` | Mental health posts always carry Tele-MANAS 14416 and 112, and never give dosing or a diagnosis. | మానసిక ఆరోగ్య పోస్ట్‌లపై ఎప్పుడూ Tele-MANAS 14416, 112 ఉంటాయి; మోతాదు లేదా నిర్ధారణ ఎప్పుడూ ఇవ్వవు. | मानसिक स्वास्थ्य की पोस्ट पर हमेशा Tele-MANAS 14416 और 112 होते हैं, और कभी खुराक या निदान नहीं। |
+| `cms.reason.NOT_IN_SOURCE` | Not in the source | మూలంలో లేదు | स्रोत में नहीं है |
+| `cms.reason.NEW_NUMBER` | A number or date the source does not have | మూలంలో లేని సంఖ్య లేదా తేదీ | ऐसा अंक या तारीख़ जो स्रोत में नहीं |
+| `cms.reason.NEW_NAME` | A name the source does not have | మూలంలో లేని పేరు | ऐसा नाम जो स्रोत में नहीं |
+| `cms.reason.ADVICE` | Medical advice (dose, diagnosis or treatment) | వైద్య సలహా (మోతాదు, నిర్ధారణ లేదా చికిత్స) | चिकित्सा सलाह (खुराक, निदान या इलाज) |
+| `cms.reason.UNVERIFIABLE` | A claim the source does not make | మూలం చెప్పని దావా | ऐसा दावा जो स्रोत नहीं करता |
+| `cms.reason.SOURCE_NOT_ALLOWED` | The source is not on the allow-list | మూలం అనుమతి జాబితాలో లేదు | स्रोत अनुमति-सूची में नहीं है |
+| `cms.reason.CRISIS` | Crisis words: a person reads it first | సంక్షోభ పదాలు: ముందుగా ఒక వ్యక్తి చదవాలి | संकट वाले शब्द: पहले कोई व्यक्ति पढ़े |
+| `cms.reason.SOURCE_OLD` | The source item is too old | మూల అంశం చాలా పాతది | स्रोत की ख़बर बहुत पुरानी है |
+| `cms.reason.SOURCE_UNDATED` | The source gives no date | మూలం తేదీ ఇవ్వలేదు | स्रोत में तारीख़ नहीं है |
+| `cms.reason.NOTHING_TO_CHECK` | Nothing to check | తనిఖీ చేయడానికి ఏమీ లేదు | जाँचने को कुछ नहीं |
+| `cms.review.intro` | Auto drafts waiting for you (not precise enough, or auto-publish is off) and posts waiting for a clinician. | మీ కోసం వేచి ఉన్న Auto డ్రాఫ్ట్‌లు (తగినంత ఖచ్చితం కాదు, లేదా ఆటో-ప్రచురణ ఆఫ్) మరియు డాక్టర్ కోసం వేచి ఉన్న పోస్ట్‌లు. | आपके लिए रुके Auto ड्राफ़्ट (पर्याप्त सटीक नहीं, या ऑटो-प्रकाशन बंद) और डॉक्टर के लिए रुकी पोस्ट। |
+| `cms.review.empty` | Nothing is waiting for review. | సమీక్ష కోసం ఏదీ వేచి లేదు. | समीक्षा के लिए कुछ नहीं रुका है। |
+| `cms.review.imprecise` | Not precise enough | తగినంత ఖచ్చితం కాదు | पर्याप्त सटीक नहीं |
+| `cms.review.clinician` | Waiting for a clinician | డాక్టర్ కోసం వేచి ఉంది | डॉक्टर का इंतज़ार |
+| `cms.review.editor` | Waiting for you | మీ కోసం వేచి ఉంది | आपका इंतज़ार |
+| `cms.review.clinicianNote` | Only a clinician can approve this one. It is in their review queue. | దీన్ని డాక్టర్ మాత్రమే ఆమోదించగలరు. ఇది వారి సమీక్ష క్యూలో ఉంది. | इसे सिर्फ़ डॉक्टर मंज़ूर कर सकते हैं। यह उनकी समीक्षा कतार में है। |
+| `cms.review.open` | Open and edit | తెరిచి మార్చండి | खोलें और बदलें |
+| `cms.review.publish` | Publish as it is | ఉన్నట్లే ప్రచురించండి | जैसा है वैसा प्रकाशित करें |
+| `cms.state.IMPRECISE` | Not precise enough | తగినంత ఖచ్చితం కాదు | पर्याप्त सटीक नहीं |
+| `cms.cat.intro` | Categories group posts for readers, colour their chips, give LinkedIn captions their hashtags and teach the aggregator where news belongs. | విభాగాలు పాఠకుల కోసం పోస్ట్‌లను సమూహపరుస్తాయి, చిప్‌లకు రంగు ఇస్తాయి, LinkedIn క్యాప్షన్‌లకు హ్యాష్‌ట్యాగ్‌లు ఇస్తాయి, వార్త ఎక్కడ చేరాలో అగ్రిగేటర్‌కు చెబుతాయి. | श्रेणियाँ पाठकों के लिए पोस्ट समूहित करती हैं, चिप को रंग देती हैं, LinkedIn कैप्शन को हैशटैग देती हैं और एग्रीगेटर को बताती हैं कि ख़बर कहाँ जाए। |
+| `cms.cat.new` | New category | కొత్త విభాగం | नई श्रेणी |
+| `cms.cat.edit` | Edit category | విభాగాన్ని మార్చండి | श्रेणी बदलें |
+| `cms.cat.name` | Name | పేరు | नाम |
+| `cms.cat.hue` | Colour | రంగు | रंग |
+| `cms.cat.icon` | Icon | ఐకాన్ | आइकन |
+| `cms.cat.hashtags` | Hashtags | హ్యాష్‌ట్యాగ్‌లు | हैशटैग |
+| `cms.cat.hashtagsHint` | Comma-separated, without #. The first ones go into LinkedIn captions. | కామాతో వేరు చేసి, # లేకుండా. మొదటివి LinkedIn క్యాప్షన్‌లో వస్తాయి. | कॉमा से अलग, # के बिना। पहले वाले LinkedIn कैप्शन में जाते हैं। |
+| `cms.cat.keywords` | Aggregator keywords | అగ్రిగేటర్ కీవర్డ్‌లు | एग्रीगेटर कीवर्ड |
+| `cms.cat.keywordsHint` | Comma-separated words or phrases. News that mentions them most lands in this category. | కామాతో వేరు చేసిన పదాలు. వీటిని ఎక్కువగా ప్రస్తావించే వార్త ఈ విభాగంలో చేరుతుంది. | कॉमा से अलग शब्द। जिस ख़बर में ये सबसे ज़्यादा हों, वह इस श्रेणी में जाती है। |
+| `cms.cat.topics` | Series topics | సిరీస్ అంశాలు | सीरीज़ विषय |
+| `cms.cat.topicsHint` | Comma-separated. The health series writes about these, in order, from approved sources only. | కామాతో వేరు చేసి. ఆరోగ్య సిరీస్ ఆమోదించిన మూలాల నుంచే, క్రమంలో, వీటి గురించి రాస్తుంది. | कॉमा से अलग। स्वास्थ्य सीरीज़ इन पर, क्रम से, सिर्फ़ मंज़ूर स्रोतों से लिखती है। |
+| `cms.cat.clinical` | Health advice: advice posts here need a clinician's approval | ఆరోగ్య సలహా: ఇక్కడి సలహా పోస్ట్‌లకు డాక్టర్ ఆమోదం కావాలి | स्वास्थ्य सलाह: यहाँ की सलाह वाली पोस्ट को डॉक्टर की मंज़ूरी चाहिए |
+| `cms.cat.crisis` | Show Tele-MANAS 14416 and 112 on every post | ప్రతి పోస్ట్‌పై Tele-MANAS 14416, 112 చూపించండి | हर पोस्ट पर Tele-MANAS 14416 और 112 दिखाएँ |
+| `cms.cat.protected` | Mental health always carries the crisis lines, needs a clinician and can't be archived. | మానసిక ఆరోగ్యంపై ఎప్పుడూ సంక్షోభ లైన్‌లు ఉంటాయి, డాక్టర్ ఆమోదం కావాలి, ఆర్కైవ్ చేయలేరు. | मानसिक स्वास्थ्य पर हमेशा संकट लाइनें होती हैं, डॉक्टर की मंज़ूरी चाहिए, और इसे आर्काइव नहीं किया जा सकता। |
+| `cms.cat.rules` | Rules | నియమాలు | नियम |
+| `cms.cat.clinicalShort` | Clinician | డాక్టర్ | डॉक्टर |
+| `cms.cat.crisisShort` | Crisis lines | సంక్షోభ లైన్‌లు | संकट लाइनें |
+| `cms.cat.posts` | Posts | పోస్ట్‌లు | पोस्ट |
+| `cms.cat.empty` | No categories yet | ఇంకా విభాగాలు లేవు | अभी कोई श्रेणी नहीं |
+| `cms.cat.what` | the categories | విభాగాలు | श्रेणियाँ |
+| `cms.hue.indigo` | Indigo | ఇండిగో | इंडिगो |
+| `cms.hue.violet` | Violet | ఊదా | बैंगनी |
+| `cms.hue.blue` | Blue | నీలం | नीला |
+| `cms.hue.sky` | Sky | ఆకాశ నీలం | आसमानी |
+| `cms.hue.teal` | Teal | టీల్ | टील |
+| `cms.hue.green` | Green | ఆకుపచ్చ | हरा |
+| `cms.hue.amber` | Amber | కాషాయం | एम्बर |
+| `cms.hue.orange` | Orange | నారింజ | नारंगी |
+| `cms.hue.rose` | Rose | గులాబీ | गुलाबी |
+| `cms.series.intro` | A series has its own page on the site and numbers its episodes. Monday Motivation and the health series are scheduled by the autopilot. | ప్రతి సిరీస్‌కు సైట్‌లో సొంత పేజీ ఉంటుంది, ఎపిసోడ్‌లకు నంబర్లు ఉంటాయి. Monday Motivation, ఆరోగ్య సిరీస్‌లను ఆటోపైలట్ షెడ్యూల్ చేస్తుంది. | हर सीरीज़ का साइट पर अपना पेज होता है और एपिसोड पर नंबर होते हैं। Monday Motivation और स्वास्थ्य सीरीज़ को ऑटोपायलट शेड्यूल करता है। |
+| `cms.series.healthRule` | Health series episodes wait for a clinician while "Health posts need a clinician" is on. | "ఆరోగ్య పోస్ట్‌లకు డాక్టర్ కావాలి" ఆన్‌లో ఉన్నంతవరకు ఆరోగ్య సిరీస్ ఎపిసోడ్‌లు డాక్టర్ కోసం వేచి ఉంటాయి. | "स्वास्थ्य पोस्ट को डॉक्टर चाहिए" चालू रहने तक स्वास्थ्य सीरीज़ के एपिसोड डॉक्टर का इंतज़ार करते हैं। |
+| `cms.series.new` | New series | కొత్త సిరీస్ | नई सीरीज़ |
+| `cms.series.edit` | Edit series | సిరీస్ మార్చండి | सीरीज़ बदलें |
+| `cms.series.name` | Name | పేరు | नाम |
+| `cms.series.category` | Category | విభాగం | श्रेणी |
+| `cms.series.template` | Template | టెంప్లేట్ | टेम्पलेट |
+| `cms.series.hue` | Cover colour | కవర్ రంగు | कवर का रंग |
+| `cms.series.summary` | What the series is | సిరీస్ ఏమిటి | सीरीज़ किस बारे में है |
+| `cms.series.schedule` | Schedule | షెడ్యూల్ | शेड्यूल |
+| `cms.series.scheduleInSettings` | Its days, hour and rota are in the Autopilot tab. | దీని రోజులు, సమయం, రోటా ఆటోపైలట్ ట్యాబ్‌లో ఉన్నాయి. | इसके दिन, समय और रोटा ऑटोपायलट टैब में हैं। |
+| `cms.series.manual` | Episodes added by hand | ఎపిసోడ్‌లు చేతితో చేర్చబడతాయి | एपिसोड हाथ से जोड़े जाते हैं |
+| `cms.series.autoMotivation` | Monday Motivation | Monday Motivation | Monday Motivation |
+| `cms.series.autoHealth` | Health series | ఆరోగ్య సిరీస్ | स्वास्थ्य सीरीज़ |
+| `cms.series.episodesShort` | Episodes | ఎపిసోడ్‌లు | एपिसोड |
+| `cms.series.what` | the series | సిరీస్ | सीरीज़ |
+| `cms.series.library` | Motivation library | మోటివేషన్ లైబ్రరీ | मोटिवेशन लाइब्रेरी |
+| `cms.series.libraryRule` | Only the team's own words, or a quote with who said it and a link to its public-domain source. The autopilot never writes or attributes a quote itself. | టీమ్ సొంత మాటలు, లేదా చెప్పినవారి పేరు మరియు పబ్లిక్-డొమైన్ మూలం లింక్‌తో ఉన్న కోట్ మాత్రమే. ఆటోపైలట్ ఎప్పుడూ తానే కోట్ రాయదు లేదా ఎవరికీ ఆపాదించదు. | सिर्फ़ टीम के अपने शब्द, या कहने वाले के नाम और पब्लिक-डोमेन स्रोत के लिंक के साथ उद्धरण। ऑटोपायलट कभी ख़ुद उद्धरण नहीं लिखता, न किसी के नाम करता है। |
+| `cms.series.lineKind` | Kind | రకం | प्रकार |
+| `cms.series.own` | The team's own words | టీమ్ సొంత మాటలు | टीम के अपने शब्द |
+| `cms.series.quote` | Quote | కోట్ | उद्धरण |
+| `cms.series.lineText` | Text | టెక్స్ట్ | टेक्स्ट |
+| `cms.series.cite` | Who said it | ఎవరు చెప్పారు | किसने कहा |
+| `cms.series.sourceUrl` | Source (https) | మూలం (https) | स्रोत (https) |
+| `cms.series.sourceUrlHint` | Where the quote is, in a public-domain text. | పబ్లిక్-డొమైన్ టెక్స్ట్‌లో కోట్ ఉన్న చోటు. | पब्लिक-डोमेन टेक्स्ट में उद्धरण कहाँ है। |
+| `cms.series.publicDomain` | The source is in the public domain and the quote is exact | మూలం పబ్లిక్ డొమైన్‌లో ఉంది, కోట్ యథాతథంగా ఉంది | स्रोत पब्लिक डोमेन में है और उद्धरण हूबहू है |
+| `cms.series.addLine` | Add a line | లైన్ చేర్చండి | लाइन जोड़ें |
+| `cms.series.removeLine` | Remove this line | ఈ లైన్ తీసివేయండి | यह लाइन हटाएँ |
+| `cms.series.label` | Series | సిరీస్ | सीरीज़ |
+| `cms.series.episode` | Episode {n} | ఎపిసోడ్ {n} | एपिसोड {n} |
+| `cms.series.episodeOf` | Episode {n} of {name} | {name} ఎపిసోడ్ {n} | {name} का एपिसोड {n} |
+| `cms.series.episodes` | {n} episodes | {n} ఎపిసోడ్‌లు | {n} एपिसोड |
+| `cms.series.episodesAria` | Episodes | ఎపిసోడ్‌లు | एपिसोड |
+| `cms.series.latest` | Latest episodes | తాజా ఎపిసోడ్‌లు | नए एपिसोड |
+| `cms.series.all` | Series | సిరీస్ | सीरीज़ |
+| `cms.series.allBody` | Posts that come back on their day: Monday Motivation, and mental, women's and common health on Monday, Wednesday and Friday. | తమ రోజున తిరిగి వచ్చే పోస్ట్‌లు: Monday Motivation, సోమ, బుధ, శుక్రవారాల్లో మానసిక, మహిళల, సాధారణ ఆరోగ్యం. | अपने दिन लौटने वाली पोस्ट: Monday Motivation, और सोम, बुध, शुक्र को मानसिक, महिला और सामान्य स्वास्थ्य। |
+| `cms.series.eyebrow` | StudentKare series | StudentKare సిరీస్ | StudentKare सीरीज़ |
+| `cms.series.loading` | Loading the series… | సిరీస్ లోడ్ అవుతోంది… | सीरीज़ लोड हो रही है… |
+| `cms.series.none` | No series yet | ఇంకా సిరీస్ లేవు | अभी कोई सीरीज़ नहीं |
+| `cms.series.noneBody` | When a series publishes its first episode, it appears here. | ఒక సిరీస్ తన మొదటి ఎపిసోడ్ ప్రచురించినప్పుడు ఇక్కడ కనిపిస్తుంది. | जब कोई सीरीज़ अपना पहला एपिसोड प्रकाशित करेगी, वह यहाँ दिखेगी। |
+| `cms.series.missing` | This series isn't published | ఈ సిరీస్ ప్రచురించబడలేదు | यह सीरीज़ प्रकाशित नहीं है |
+| `cms.series.missingBody` | It may have no episodes yet, or the address is wrong. | దీనికి ఇంకా ఎపిసోడ్‌లు లేకపోవచ్చు, లేదా అడ్రస్ తప్పు కావచ్చు. | शायद इसके अभी एपिसोड नहीं हैं, या पता ग़लत है। |
+| `cms.series.coverAlt` | Cover of the series {name} with the StudentKare shield | StudentKare షీల్డ్‌తో {name} సిరీస్ కవర్ | StudentKare शील्ड के साथ {name} सीरीज़ का कवर |
+| `cms.lane.when` | On {days} at {hour}:00 ({zone}), drafted a day ahead. | {days} రోజుల్లో {hour}:00కు ({zone}), ఒక రోజు ముందే డ్రాఫ్ట్ అవుతుంది. | {days} को {hour}:00 बजे ({zone}), एक दिन पहले ड्राफ़्ट। |
+| `cms.lane.library` | {n} lines in its library. An empty library drafts nothing. | లైబ్రరీలో {n} లైన్‌లు. లైబ్రరీ ఖాళీగా ఉంటే ఏదీ డ్రాఫ్ట్ కాదు. | लाइब्रेरी में {n} लाइनें। खाली लाइब्रेरी से कुछ ड्राफ़्ट नहीं होता। |
+| `cms.lane.healthClinician` | Each episode waits for a clinician's approval, however precise. | ఎంత ఖచ్చితంగా ఉన్నా, ప్రతి ఎపిసోడ్ డాక్టర్ ఆమోదం కోసం వేచి ఉంటుంది. | चाहे जितना सटीक हो, हर एपिसोड डॉक्टर की मंज़ूरी का इंतज़ार करता है। |
+| `cms.lane.healthPrecise` | Precise episodes go out on their own; imprecise ones wait for you in Review. | ఖచ్చితమైన ఎపిసోడ్‌లు తమంతట తాము ప్రచురితమవుతాయి; కానివి సమీక్షలో మీ కోసం వేచి ఉంటాయి. | सटीक एपिसोड अपने आप प्रकाशित होते हैं; बाकी समीक्षा में आपका इंतज़ार करते हैं। |
+| `cms.lane.episodes` | Episodes so far: {n} | ఇప్పటివరకు ఎపిసోడ్‌లు: {n} | अब तक एपिसोड: {n} |
+| `cms.lane.tipPrecise` | Health tips that pass the precision gate go out on their day; the rest wait for you in Content, Review. Turn on "Health posts need a clinician" to send every one to a clinician. | ఖచ్చితత్వ గేట్ దాటిన ఆరోగ్య చిట్కాలు తమ రోజున ప్రచురితమవుతాయి; మిగిలినవి కంటెంట్, సమీక్షలో మీ కోసం వేచి ఉంటాయి. ప్రతిదాన్నీ డాక్టర్‌కు పంపాలంటే "ఆరోగ్య పోస్ట్‌లకు డాక్టర్ కావాలి" ఆన్ చేయండి. | सटीकता गेट पार करने वाले हेल्थ टिप अपने दिन प्रकाशित होते हैं; बाकी कंटेंट, समीक्षा में आपका इंतज़ार करते हैं। हर टिप डॉक्टर को भेजने के लिए "स्वास्थ्य पोस्ट को डॉक्टर चाहिए" चालू करें। |
+| `cms.key.fetch_interval_minutes` | Read feeds every (minutes) | ఫీడ్‌లను చదవడం ప్రతి (నిమిషాలు) | फ़ीड पढ़ें हर (मिनट) |
+| `cms.key.health_requires_clinician` | Health posts need a clinician | ఆరోగ్య పోస్ట్‌లకు డాక్టర్ కావాలి | स्वास्थ्य पोस्ट को डॉक्टर चाहिए |
+| `cms.key.precision_threshold` | Precision threshold | ఖచ్చితత్వ పరిమితి | सटीकता सीमा |
+| `cms.key.series_auto_publish` | Series episodes go out on their own | సిరీస్ ఎపిసోడ్‌లు తమంతట తాము ప్రచురితమవుతాయి | सीरीज़ के एपिसोड अपने आप प्रकाशित हों |
+| `cms.key.motivation_enabled` | Monday Motivation | Monday Motivation | Monday Motivation |
+| `cms.key.motivation_days` | Motivation days | మోటివేషన్ రోజులు | मोटिवेशन के दिन |
+| `cms.key.motivation_hour` | Motivation hour | మోటివేషన్ సమయం | मोटिवेशन का समय |
+| `cms.key.health_enabled` | Health series | ఆరోగ్య సిరీస్ | स्वास्थ्य सीरीज़ |
+| `cms.key.health_days` | Health series days | ఆరోగ్య సిరీస్ రోజులు | स्वास्थ्य सीरीज़ के दिन |
+| `cms.key.health_hour` | Health series hour | ఆరోగ్య సిరీస్ సమయం | स्वास्थ्य सीरीज़ का समय |
+| `cms.key.health_rota` | Health series rota | ఆరోగ్య సిరీస్ రోటా | स्वास्थ्य सीरीज़ का रोटा |
+| `cms.sources.intro` | Only these official publishers. The aggregator reads them round the clock, every {n} minutes, and posts inside the news window. | ఈ అధికారిక ప్రచురణకర్తలు మాత్రమే. అగ్రిగేటర్ వీటిని రోజంతా, ప్రతి {n} నిమిషాలకు చదువుతుంది, వార్తల సమయంలోనే పోస్ట్ చేస్తుంది. | सिर्फ़ ये आधिकारिक प्रकाशक। एग्रीगेटर इन्हें चौबीसों घंटे, हर {n} मिनट पढ़ता है और ख़बरों के समय में पोस्ट करता है। |
+| `cms.kit.intro` | Everything to post it yourself on LinkedIn and elsewhere. Nothing is posted for you. | LinkedIn మరియు ఇతర చోట్ల మీరే పోస్ట్ చేయడానికి అన్నీ. మీ తరఫున ఏదీ పోస్ట్ కాదు. | LinkedIn और दूसरी जगहों पर ख़ुद पोस्ट करने के लिए सब कुछ। आपकी ओर से कुछ पोस्ट नहीं होता। |
+| `cms.kit.post` | Post | పోస్ట్ | पोस्ट |
+| `cms.kit.none` | There is no post to share yet. | షేర్ చేయడానికి ఇంకా పోస్ట్ లేదు. | शेयर करने को अभी कोई पोस्ट नहीं है। |
+| `cms.kit.notLive` | This post isn't on the site yet: its links open a page that isn't published. | ఈ పోస్ట్ ఇంకా సైట్‌లో లేదు: దీని లింక్‌లు ప్రచురించని పేజీని తెరుస్తాయి. | यह पोस्ट अभी साइट पर नहीं है: इसके लिंक अप्रकाशित पेज खोलेंगे। |
+| `cms.kit.caption` | LinkedIn caption | LinkedIn క్యాప్షన్ | LinkedIn कैप्शन |
+| `cms.kit.copyCaption` | Copy LinkedIn caption | LinkedIn క్యాప్షన్ కాపీ చేయండి | LinkedIn कैप्शन कॉपी करें |
+| `cms.kit.links` | Share links | షేర్ లింక్‌లు | शेयर लिंक |
+| `cms.kit.plainLinks` | Plain links with UTM tags. No tracking script. | UTM ట్యాగ్‌లతో సాధారణ లింక్‌లు. ట్రాకింగ్ స్క్రిప్ట్ లేదు. | UTM टैग वाले सादे लिंक। कोई ट्रैकिंग स्क्रिप्ट नहीं। |
+| `cms.kit.cards` | Share cards | షేర్ కార్డ్‌లు | शेयर कार्ड |
+| `cms.kit.landscapeAlt` | Share card, 1200 by 630 | షేర్ కార్డ్, 1200 x 630 | शेयर कार्ड, 1200 x 630 |
+| `cms.kit.portraitAlt` | Share card, 1080 by 1350 | షేర్ కార్డ్, 1080 x 1350 | शेयर कार्ड, 1080 x 1350 |
+| `cms.kit.downloadLandscape` | Download 1200×630 (link posts) | 1200×630 డౌన్‌లోడ్ చేయండి (లింక్ పోస్ట్‌లు) | 1200×630 डाउनलोड करें (लिंक पोस्ट) |
+| `cms.kit.downloadPortrait` | Download 1080×1350 (LinkedIn and Instagram images) | 1080×1350 డౌన్‌లోడ్ చేయండి (LinkedIn, Instagram చిత్రాలు) | 1080×1350 डाउनलोड करें (LinkedIn और Instagram तस्वीरें) |
+| `cms.kit.what` | the share kit | షేర్ కిట్ | शेयर किट |
+| `cms.stats.privacy` | Counts only: no reader, address or device is kept. | లెక్కలు మాత్రమే: పాఠకుడు, అడ్రస్ లేదా డివైస్ ఏదీ ఉంచబడదు. | सिर्फ़ गिनती: कोई पाठक, पता या डिवाइस नहीं रखा जाता। |
+| `cms.stats.off` | Counting is off (content.stats_enabled). | లెక్కింపు ఆఫ్‌లో ఉంది (content.stats_enabled). | गिनती बंद है (content.stats_enabled)। |
+| `cms.stats.views` | Views | వీక్షణలు | व्यू |
+| `cms.stats.shares` | Shares | షేర్‌లు | शेयर |
+| `cms.stats.byNetwork` | By network | నెట్‌వర్క్ వారీగా | नेटवर्क के हिसाब से |
+| `cms.stats.empty` | No views or shares yet | ఇంకా వీక్షణలు లేదా షేర్‌లు లేవు | अभी कोई व्यू या शेयर नहीं |
+| `cms.stats.emptyBody` | Counts appear once a published post is opened or shared. | ప్రచురించిన పోస్ట్ తెరిచినప్పుడు లేదా షేర్ చేసినప్పుడు లెక్కలు కనిపిస్తాయి. | प्रकाशित पोस्ट खुलने या शेयर होने पर गिनती दिखेगी। |
+| `cms.stats.what` | the counts | లెక్కలు | गिनती |
+| `cms.notice.categorySaved` | Category saved. | విభాగం సేవ్ అయింది. | श्रेणी सेव हुई। |
+| `cms.notice.categoryArchived` | Category archived. | విభాగం ఆర్కైవ్ అయింది. | श्रेणी आर्काइव हुई। |
+| `cms.notice.categoryRestored` | Category back in use. | విభాగం మళ్లీ వాడుకలో ఉంది. | श्रेणी फिर से चालू है। |
+| `cms.notice.seriesSaved` | Series saved. | సిరీస్ సేవ్ అయింది. | सीरीज़ सेव हुई। |
+| `cms.notice.seriesArchived` | Series archived. | సిరీస్ ఆర్కైవ్ అయింది. | सीरीज़ आर्काइव हुई। |
+| `cms.notice.seriesRestored` | Series back in use. | సిరీస్ మళ్లీ వాడుకలో ఉంది. | सीरीज़ फिर से चालू है। |
+| `cms.notice.captionCopied` | Caption copied. | క్యాప్షన్ కాపీ అయింది. | कैप्शन कॉपी हुआ। |
+| `cms.notice.copyFailed` | Couldn't copy. Select the caption and copy it. | కాపీ కాలేదు. క్యాప్షన్‌ను ఎంచుకుని కాపీ చేయండి. | कॉपी नहीं हुआ। कैप्शन चुनकर कॉपी करें। |
+| `cms.share.native` | Share with your phone's apps | మీ ఫోన్ యాప్‌లతో షేర్ చేయండి | अपने फ़ोन के ऐप से शेयर करें |
+| `cms.share.nativeShort` | Share… | షేర్… | शेयर… |
+| `cms.share.facebook` | Share on Facebook | Facebookలో షేర్ చేయండి | Facebook पर शेयर करें |
+| `cms.share.telegram` | Share on Telegram | Telegramలో షేర్ చేయండి | Telegram पर शेयर करें |
+| `cms.share.email` | Share by email | ఈమెయిల్‌తో షేర్ చేయండి | ईमेल से शेयर करें |
+| `cms.share.done` | Shared. | షేర్ అయింది. | शेयर हुआ। |
+| `cms.share.aria` | Share {title} | {title} షేర్ చేయండి | {title} शेयर करें |
+| `cms.share.name.linkedin` | LinkedIn | LinkedIn | LinkedIn |
+| `cms.share.name.whatsapp` | WhatsApp | WhatsApp | WhatsApp |
+| `cms.share.name.x` | X | X | X |
+| `cms.share.name.facebook` | Facebook | Facebook | Facebook |
+| `cms.share.name.telegram` | Telegram | Telegram | Telegram |
+| `cms.share.name.email` | Email | ఈమెయిల్ | ईमेल |
+| `cms.share.name.copy` | Copied link | కాపీ చేసిన లింక్ | कॉपी किया लिंक |
+| `cms.share.name.native` | Phone share | ఫోన్ షేర్ | फ़ोन शेयर |
+| `cms.crisis.aria` | Help now | ఇప్పుడే సహాయం | अभी मदद |
+| `cms.crisis.title` | If you are struggling, talk to someone now | మీకు కష్టంగా ఉంటే, ఇప్పుడే ఎవరితోనైనా మాట్లాడండి | अगर मुश्किल लग रहा है, तो अभी किसी से बात करें |
+| `cms.crisis.telemanas` | Tele-MANAS 14416 (free, 24×7) | Tele-MANAS 14416 (ఉచితం, 24×7) | Tele-MANAS 14416 (मुफ़्त, 24×7) |
+| `cms.crisis.emergency` | Emergency 112 | అత్యవసరం 112 | आपातकाल 112 |
+| `cms.topics.aria` | Filter by category | విభాగం వారీగా ఫిల్టర్ చేయండి | श्रेणी से फ़िल्टर करें |
+| `cms.topics.all` | All topics | అన్ని అంశాలు | सभी विषय |
+

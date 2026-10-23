@@ -80,7 +80,7 @@ describe('navigation structure', () => {
       'Organisations', 'Integrations', 'Code sentinel', 'Token sync',
       'Clinician verification', 'Partner applications', 'Catalogue ops', 'Care directory', 'Medicine info', 'Lab report reviewers',
       'Plans & pricing', 'Billing ledger',
-      'Message templates', 'Message outbox', 'Announcements', 'Knowledge base', 'Posts', 'Intake & OCR',
+      'Message templates', 'Message outbox', 'Announcements', 'Knowledge base', 'Content', 'Intake & OCR',
       'Rule L firewall', 'Consent policy', 'Legal documents', 'Break-glass log', 'Check-in audit', 'Casualty handover', 'Audit explorer', 'AI governance', 'Erasure queue',
     ]);
   });

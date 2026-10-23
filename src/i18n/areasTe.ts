@@ -30,6 +30,7 @@ import { mobile2HealthTe } from './areas/mobile2health';
 import { mobile2OrdersTe } from './areas/mobile2Orders';
 import { mobile2Te } from './areas/mobile2';
 import { mobile2WebTe } from './areas/mobile2Web';
+import { newsroomContentTe } from './areas/newsroomContent';
 import { newsroomTe } from './areas/newsroom';
 import { onboardTe } from './areas/onboard';
 import { partnerConsoleTe } from './areas/partnerConsole';
@@ -93,6 +94,7 @@ export const areasTe = {
   ...mobile2OrdersTe,
   ...mobile2Te,
   ...mobile2WebTe,
+  ...newsroomContentTe,
   ...newsroomTe,
   ...onboardTe,
   ...partnerConsoleTe,

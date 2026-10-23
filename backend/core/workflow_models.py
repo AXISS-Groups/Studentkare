@@ -2136,10 +2136,83 @@ class Post(Base):
     source_name: Mapped[str] = mapped_column(String(120), default="")
     source_url: Mapped[str] = mapped_column(String(1000), default="")
     source_published_at: Mapped[float] = mapped_column(Float, default=0.0)
+    # The content module (services/newsroom_content.py): a category and, for an episode, its series.
+    category_id: Mapped[str] = mapped_column(String(40), default="", index=True)
+    series_id: Mapped[str] = mapped_column(String, default="", index=True)
+    episode: Mapped[int] = mapped_column(Integer, default=0)
+    # The precision gate (services/newsroom_precision.py) on an auto post: its score in percent
+    # (-1: not scored, a post typed by the team) and the per-sentence report shown in Review.
+    precision: Mapped[int] = mapped_column(Integer, default=-1)
+    precision_report: Mapped[dict] = mapped_column(JSON, default=dict)
+    # Why an auto draft waits for the super admin ("" when it does not): PRECISION or EDITOR.
+    hold_reason: Mapped[str] = mapped_column(String(20), default="")
     created_by: Mapped[str] = mapped_column(String, default="")
     created_at: Mapped[float] = mapped_column(Float, default=0.0)
     updated_by: Mapped[str] = mapped_column(String, default="")
     updated_at: Mapped[float] = mapped_column(Float, default=0.0)
+
+
+class PostCategory(Base):
+    """A newsroom category (Mental health, Campus life, …), managed by the super admin.
+
+    Platform plane: editorial labels only. ``clinical`` marks health-advice
+    categories: an advice template (health tip, series episode, explainer, myth vs
+    fact, quick card) in one needs a clinician while ``content.health_requires_clinician``
+    is on. ``crisis_lines``: its posts always show Tele-MANAS 14416 and 112.
+    ``hue`` is a service-palette token family and ``icon`` a line icon from the
+    manifest. Categories are archived, never deleted (posts keep pointing at them).
+    """
+    __tablename__ = "care_post_categories"
+    id: Mapped[str] = mapped_column(String(40), primary_key=True)        # a slug, e.g. mental-health
+    name: Mapped[str] = mapped_column(String(60))
+    hue: Mapped[str] = mapped_column(String(12), default="indigo")
+    icon: Mapped[str] = mapped_column(String(40), default="file-text")
+    clinical: Mapped[bool] = mapped_column(Boolean, default=False)
+    crisis_lines: Mapped[bool] = mapped_column(Boolean, default=False)
+    hashtags: Mapped[list] = mapped_column(JSON, default=list)
+    keywords: Mapped[list] = mapped_column(JSON, default=list)            # the aggregator's classifier
+    topics: Mapped[list] = mapped_column(JSON, default=list)             # the series scheduler's topic plan
+    archived: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
+    sort: Mapped[int] = mapped_column(Integer, default=0)
+    created_at: Mapped[float] = mapped_column(Float, default=0.0)
+    updated_by: Mapped[str] = mapped_column(String, default="")
+    updated_at: Mapped[float] = mapped_column(Float, default=0.0)
+
+
+class PostSeries(Base):
+    """A series of posts (Monday Motivation, the health series), with its own page on the site.
+
+    Platform plane. ``autopilot_key`` links a built-in series to its schedule in
+    the settings registry (``series.<key>.*``: days, hour, rota); a series the
+    super admin creates has none and is numbered as episodes are added by hand.
+    ``library`` (Monday Motivation) holds the team's own lines and clearly
+    attributed public-domain quotes, each with its source; the scheduler never
+    writes a quote of its own.
+    """
+    __tablename__ = "care_post_series"
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    slug: Mapped[str] = mapped_column(String(80), unique=True, index=True)
+    name: Mapped[str] = mapped_column(String(80))
+    summary: Mapped[str] = mapped_column(String(300), default="")
+    category_id: Mapped[str] = mapped_column(String(40), default="")
+    template: Mapped[str] = mapped_column(String(20), default="SERIES_EPISODE")
+    hue: Mapped[str] = mapped_column(String(12), default="teal")         # the cover style
+    autopilot_key: Mapped[str] = mapped_column(String(20), default="", index=True)
+    episode_count: Mapped[int] = mapped_column(Integer, default=0)
+    library: Mapped[list] = mapped_column(JSON, default=list)
+    archived: Mapped[bool] = mapped_column(Boolean, default=False)
+    sample: Mapped[bool] = mapped_column(Boolean, default=False)
+    created_at: Mapped[float] = mapped_column(Float, default=0.0)
+    updated_by: Mapped[str] = mapped_column(String, default="")
+    updated_at: Mapped[float] = mapped_column(Float, default=0.0)
+
+
+class PostStat(Base):
+    """Views and shares of one post, as counts only: no reader, address, device or time of a visit."""
+    __tablename__ = "care_post_stats"
+    post_id: Mapped[str] = mapped_column(String, primary_key=True)
+    views: Mapped[int] = mapped_column(Integer, default=0)
+    shares: Mapped[dict] = mapped_column(JSON, default=dict)             # {channel: count}
 
 
 class AutopilotItem(Base):
@@ -2172,6 +2245,9 @@ class AutopilotItem(Base):
     slot_at: Mapped[float] = mapped_column(Float, default=0.0)        # BLOG: when the post is due
     post_id: Mapped[str] = mapped_column(String, default="", index=True)
     generator: Mapped[str] = mapped_column(String(40), default="")   # source | rephrased | fallback:<why> | extractive
+    category_id: Mapped[str] = mapped_column(String(40), default="")   # the aggregator's classification
+    series_id: Mapped[str] = mapped_column(String, default="", index=True)   # BLOG: a series slot
+    precision: Mapped[int] = mapped_column(Integer, default=-1)       # the drafted post's precision score
     created_at: Mapped[float] = mapped_column(Float, default=0.0, index=True)
     updated_at: Mapped[float] = mapped_column(Float, default=0.0)
 

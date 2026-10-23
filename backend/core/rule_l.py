@@ -162,6 +162,9 @@ TABLE_PLANES: dict[str, str] = {
     "care_post_images": PLATFORM,                 # images placed in posts, virus-scanned before storing
     "care_autopilot_items": PLATFORM,             # content autopilot: official feed items and blog slots, never a person
     "care_autopilot_sources": PLATFORM,           # content autopilot: per-feed fetch health (times, error class)
+    "care_post_categories": PLATFORM,             # newsroom categories: editorial labels, hue, icon, hashtags
+    "care_post_series": PLATFORM,                 # newsroom series (Monday Motivation, health series) and their pages
+    "care_post_stats": PLATFORM,                  # views and shares per post: counts only, never a reader
     "care_availability_slots": PLATFORM,
     "care_lab_test_reference": PLATFORM,          # test names and body-system groups; no person, no range
     "care_lab_collectors": PLATFORM,              # which staff account collects for which lab

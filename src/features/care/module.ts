@@ -17,6 +17,8 @@ export const careModule: FeatureModule = {
     { path: '/blog/:slug', public: true, load: () => import('@/features/newsroom/screens/NewsroomScreens').then((m) => ({ default: m.BlogPostScreen })) },
     { path: '/news', public: true, load: () => import('@/features/newsroom/screens/NewsroomScreens').then((m) => ({ default: m.NewsScreen })) },
     { path: '/news/:slug', public: true, load: () => import('@/features/newsroom/screens/NewsroomScreens').then((m) => ({ default: m.NewsPostScreen })) },
+    { path: '/series', public: true, load: () => import('@/features/newsroom/screens/NewsroomScreens').then((m) => ({ default: m.SeriesListScreen })) },
+    { path: '/series/:slug', public: true, load: () => import('@/features/newsroom/screens/NewsroomScreens').then((m) => ({ default: m.SeriesScreen })) },
     { path: '/checkout', load: () => import('./screens/CareScreen').then((m) => ({ default: m.CareScreen })) },
     { path: '/lifeshare', public: true, load: () => import('@/screens/emergency/LifeShareExchangeScreen').then((m) => ({ default: m.LifeShareExchangeScreen })) },
     { path: '/medical-incident', public: true, load: () => import('@/screens/medical/MedicalIncidentScreen').then((m) => ({ default: m.MedicalIncidentScreen })) },
