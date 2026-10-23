@@ -117,16 +117,23 @@ describe('student workspace at phone width', () => {
     expect(nav.calls).toEqual(['orders', 'your-care', 'ayush']);
   });
 
-  it('opens the More panel (MoreHub board) from More, with log out in reach', () => {
-    render(<WorkspaceScreen route="appointments" />);
-    const more = screen.getByRole('button', { name: 'Open menu' });
-    expect(more).toHaveAttribute('aria-expanded', 'false');
-    fireEvent.click(more);
-    expect(screen.getByRole('button', { name: 'Close menu' })).toHaveAttribute('aria-expanded', 'true');
+  it('opens the More panel from Profile, Settings (no menu button in the header), with log out in reach and its own close', async () => {
+    render(<WorkspaceScreen route="profile" />);
+    expect(screen.queryByRole('button', { name: 'Open menu' })).toBeNull();
+    fireEvent.click(await screen.findByTestId('m2-prof-settings'));
     expect(screen.getByTestId('more-hub')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: translate('en', 'shell.logout') })).toBeInTheDocument();
+    // Ayush (the pill nav's orb) and Orders (its own tab) are not repeated in More.
+    expect(screen.queryByTestId('more-hub-ayush')).toBeNull();
     fireEvent.click(screen.getByTestId('more-hub-requests'));
     expect(nav.calls).toEqual(['my-requests']);
+  });
+
+  it('closes the More panel from its own close button', async () => {
+    render(<WorkspaceScreen route="profile" />);
+    fireEvent.click(await screen.findByTestId('m2-prof-settings'));
+    fireEvent.click(screen.getByRole('button', { name: 'Close menu' }));
+    expect(screen.queryByTestId('more-hub')).toBeNull();
   });
 
   it('draws a board’s own header: its title, and its controls on the row under the header', () => {

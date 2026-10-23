@@ -68,7 +68,7 @@ describe('which shell a route gets', () => {
     expect(screen.getByRole('navigation', { name: 'Main' })).toBeInTheDocument();
     expect(screen.queryByRole('navigation', { name: 'Main menu' })).toBeNull();
     expect(screen.queryByRole('navigation', { name: 'Super admin navigation' })).toBeNull();
-    expect(screen.getByRole('button', { name: 'Your Care' })).toHaveAttribute('aria-current', 'page');
+    expect(screen.getByRole('button', { name: 'Home' })).toHaveAttribute('aria-current', 'page');
     expect(screen.getByText('VNR VJIET · Edu ID verified')).toBeInTheDocument();
   });
 

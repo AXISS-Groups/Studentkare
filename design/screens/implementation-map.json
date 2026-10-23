@@ -540,16 +540,6 @@
     ],
     "WebGuardianConsent": [],
     "WebGuardianApprove": [],
-    "WebHome": [
-      "src/features/studentweb/views/WebHomeView.tsx",
-      "src/features/studentweb/views/parts.tsx",
-      "src/design-system/student-shell/StudentWebShell.tsx",
-      "src/design-system/student-shell/studentNav.ts",
-      "src/design-system/overlays/ConfirmDialog.tsx",
-      "src/design-system/public-site/PublicSiteFooter.tsx",
-      "src/design-system/public-site/NewsletterBand.tsx",
-      "src/design-system/public-site/publicSiteNav.ts"
-    ],
     "WebDashboard": [
       "src/features/studentweb/views/WebDashboardView.tsx",
       "src/features/studentweb/views/parts.tsx",
@@ -2221,6 +2211,149 @@
       ],
       "source": "design/screens/mobile-2-supersedes.md §1 (M2Insights replaces MyReports, ReportInsights)",
       "redirects": {}
+    },
+    "WebHome": {
+      "by": [
+        "WebDashboard"
+      ],
+      "source": "docs/ux/web-mobile-parity-2026-10-23.md#approved-decisions-23-oct-2026 (one home: /home is retired for a signed-in student; Home is /health)"
+    }
+  },
+  "retiredIcons": {
+    "_readme": "Icons a recorded decision took off a screen; check-icons does not require them there. Each entry names the decision's source. Shell de-duplication (founder, 23 Oct 2026): the sidebar's Your Care (map-pin, now Home with the phone's home icon), My lab tests (flask, now a tab of Orders), Ayush AI (sparkle, Ayush is the floating bubble) and Account (user, the account is the avatar and the account header); the phone header's menu button (menu, More opens from Profile, Settings).",
+    "SearchEntry": {
+      "icons": [
+        "menu"
+      ],
+      "source": "docs/ux/web-mobile-parity-2026-10-23.md#approved-decisions-23-oct-2026"
+    },
+    "WebAccount": {
+      "icons": [
+        "flask",
+        "map-pin",
+        "sparkle"
+      ],
+      "source": "docs/ux/web-mobile-parity-2026-10-23.md#approved-decisions-23-oct-2026"
+    },
+    "WebDashboard": {
+      "icons": [
+        "flask",
+        "map-pin",
+        "sparkle",
+        "user"
+      ],
+      "source": "docs/ux/web-mobile-parity-2026-10-23.md#approved-decisions-23-oct-2026"
+    },
+    "WebDeleteAccount": {
+      "icons": [
+        "flask",
+        "map-pin",
+        "sparkle",
+        "user"
+      ],
+      "source": "docs/ux/web-mobile-parity-2026-10-23.md#approved-decisions-23-oct-2026"
+    },
+    "WebEmergencyCard": {
+      "icons": [
+        "flask",
+        "map-pin",
+        "sparkle",
+        "user"
+      ],
+      "source": "docs/ux/web-mobile-parity-2026-10-23.md#approved-decisions-23-oct-2026"
+    },
+    "WebLeaveCampus": {
+      "icons": [
+        "flask",
+        "map-pin",
+        "sparkle",
+        "user"
+      ],
+      "source": "docs/ux/web-mobile-parity-2026-10-23.md#approved-decisions-23-oct-2026"
+    },
+    "WebLostPhone": {
+      "icons": [
+        "flask",
+        "map-pin",
+        "sparkle",
+        "user"
+      ],
+      "source": "docs/ux/web-mobile-parity-2026-10-23.md#approved-decisions-23-oct-2026"
+    },
+    "WebMyLabTests": {
+      "icons": [
+        "map-pin",
+        "sparkle"
+      ],
+      "source": "docs/ux/web-mobile-parity-2026-10-23.md#approved-decisions-23-oct-2026"
+    },
+    "WebNotifications": {
+      "icons": [
+        "flask",
+        "map-pin",
+        "sparkle",
+        "user"
+      ],
+      "source": "docs/ux/web-mobile-parity-2026-10-23.md#approved-decisions-23-oct-2026"
+    },
+    "WebPass": {
+      "icons": [
+        "flask",
+        "map-pin",
+        "sparkle",
+        "user"
+      ],
+      "source": "docs/ux/web-mobile-parity-2026-10-23.md#approved-decisions-23-oct-2026"
+    },
+    "WebReorder": {
+      "icons": [
+        "flask",
+        "map-pin",
+        "sparkle",
+        "user"
+      ],
+      "source": "docs/ux/web-mobile-parity-2026-10-23.md#approved-decisions-23-oct-2026"
+    },
+    "WebRequests": {
+      "icons": [
+        "flask",
+        "map-pin",
+        "sparkle",
+        "user"
+      ],
+      "source": "docs/ux/web-mobile-parity-2026-10-23.md#approved-decisions-23-oct-2026"
+    },
+    "WebSecurity": {
+      "icons": [
+        "flask",
+        "map-pin",
+        "sparkle"
+      ],
+      "source": "docs/ux/web-mobile-parity-2026-10-23.md#approved-decisions-23-oct-2026"
+    },
+    "WebVault": {
+      "icons": [
+        "flask",
+        "map-pin",
+        "sparkle",
+        "user"
+      ],
+      "source": "docs/ux/web-mobile-parity-2026-10-23.md#approved-decisions-23-oct-2026"
+    },
+    "WebVerify": {
+      "icons": [
+        "flask",
+        "map-pin",
+        "sparkle",
+        "user"
+      ],
+      "source": "docs/ux/web-mobile-parity-2026-10-23.md#approved-decisions-23-oct-2026"
+    },
+    "YourCare": {
+      "icons": [
+        "menu"
+      ],
+      "source": "docs/ux/web-mobile-parity-2026-10-23.md#approved-decisions-23-oct-2026"
     }
   }
 }

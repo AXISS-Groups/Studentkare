@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useT } from '@/i18n';
 import { BrandLogo, Icon } from '../icons/Icon';
+import { EMERGENCY_NUMBER, TELE_MANAS_PRIMARY } from '@/ai/core/crisisGate';
 import { STUDENT_NAV, STUDENT_TOP_NAV, studentNavIdFor } from './studentNav';
 import type { StudentNavItem } from './studentNav';
 import type { RoutePath } from '@/lib/utils/workflowRouting';
@@ -27,8 +28,10 @@ export interface StudentWebShellProps {
    * so every student web page keeps help one tap away (DESIGN.md §2.4).
    */
   onSos: () => void;
-  /** Alerts: opens the notification centre. */
+  /** Alerts (the bell): opens the notifications inbox, the one inbox (as on the phone). */
   onAlerts: () => void;
+  /** The top bar's search: the one search box for the signed-in student (results open in the shop). */
+  onSearch: (query: string) => void;
   /** Unread alerts; no badge at zero. */
   alertCount?: number;
   /** Opens the one sign-out confirm dialog (the shell never signs out by itself). */
@@ -64,9 +67,11 @@ export function shortNameOf(fullName: string): string {
 
 /**
  * Signed-in student web frame (canvas page 3b, boards WebDashboard / WebVault):
- * a white top nav (brand, Shop · Lab tests · Doctors · Health vault · Ayush,
- * My orders, Alerts, SOS, cart, account), and the grouped sidebar (My care / Services /
- * Account) with the account header and Log out. The sidebar keeps the founder's
+ * a white top nav (brand, Shop · Lab tests · Doctors, the one search box,
+ * Alerts, SOS, cart, account), and the grouped sidebar (My care / Services /
+ * Account) with the account header and Log out. Each place appears once
+ * (founder decisions, 23 Oct 2026, docs/ux/web-mobile-parity-2026-10-23.md);
+ * Ayush is the floating bubble. The sidebar keeps the founder's
  * navy with the white pill for the current item (PR #152); the canvas draws it
  * light. At 1024 px and below the sidebar becomes a modal drawer.
  */
@@ -77,6 +82,7 @@ export function StudentWebShell({
   onNavigate,
   onSos,
   onAlerts,
+  onSearch,
   alertCount = 0,
   onSignOut,
   signingOut = false,
@@ -86,6 +92,7 @@ export function StudentWebShell({
 }: StudentWebShellProps): React.ReactElement {
   const t = useT();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [query, setQuery] = useState('');
   const menuButton = useRef<HTMLButtonElement>(null);
   const sidebar = useRef<HTMLElement>(null);
   const current = studentNavIdFor(route);
@@ -153,15 +160,28 @@ export function StudentWebShell({
         >
           <Icon name="menu" size={22} />
         </button>
-        <button type="button" className="sk-sshell__brand" aria-label={t('shell.brand.home')} onClick={() => go('home')}>
+        {/* One home (founder decision, 23 Oct 2026): the brand opens /health, as the phone's Home does. */}
+        <button type="button" className="sk-sshell__brand" aria-label={t('shell.brand.home')} onClick={() => go('health')}>
           <BrandLogo size={30} label="" />
           <span className="sk-sshell__wordmark" aria-hidden="true">{t('shell.brand.student')}<em>&nbsp;{t('shell.brand.kare')}</em></span>
         </button>
         <nav className="sk-sshell__topnav" aria-label={t('shell.top.aria')}>{topLinks('bar')}</nav>
+        <form
+          className="sk-sshell__search"
+          role="search"
+          aria-label={t('shell.search.label')}
+          onSubmit={(event) => { event.preventDefault(); const q = query.trim(); if (q) onSearch(q); }}
+        >
+          <Icon name="search" size={18} />
+          <input
+            type="search"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder={t('shell.search.placeholder')}
+            aria-label={t('shell.search.label')}
+          />
+        </form>
         <span className="sk-sshell__grow" />
-        <button type="button" className="sk-sshell__toplink sk-sshell__orders" aria-current={route === 'orders' ? 'page' : undefined} onClick={() => go('orders')}>
-          {t('shell.myOrders')}
-        </button>
         <button type="button" className="sk-sshell__icon-btn sk-sshell__alerts" aria-label={alertsLabel} onClick={onAlerts}>
           <Icon name="bell" size={19} />
           {alertCount > 0 ? <span className="sk-sshell__badge" aria-hidden="true">{alertCount}</span> : null}
@@ -195,13 +215,14 @@ export function StudentWebShell({
               <Icon name="x" size={20} />
             </button>
           </div>
-          <div className="sk-sshell__who">
+          {/* The account header opens the account (there is no separate "Account" item). */}
+          <button type="button" className="sk-sshell__who" aria-current={route === 'profile' ? 'page' : undefined} onClick={() => go('profile')}>
             <span className="sk-sshell__avatar" aria-hidden="true">{initials}</span>
             <span className="sk-sshell__who-text">
               <span className="sk-sshell__who-name">{shortNameOf(student.fullName)}</span>
               <span className="sk-sshell__who-meta">{status}</span>
             </span>
-          </div>
+          </button>
           <nav className="sk-sshell__nav" aria-label={t('shell.sidebar.aria')}>
             <div className="sk-sshell__group sk-sshell__drawer-only" role="group" aria-label={t('shell.top.aria')}>
               {topLinks('drawer')}
@@ -229,7 +250,15 @@ export function StudentWebShell({
             </button>
           </div>
         </aside>
-        <main className="sk-sshell__main" id="main">{children}</main>
+        <main className="sk-sshell__main" id="main">
+          {children}
+          {/* Signed in, the public site's footer is not drawn; one line keeps crisis help in reach on every page. */}
+          <footer className="sk-sshell__crisis" aria-label={t('shell.crisis.aria')}>
+            <a href="/crisis">
+              {t('landing.site.footer.crisisLead')} <strong>{EMERGENCY_NUMBER}</strong> · {t('landing.site.footer.teleManas')} <strong>{TELE_MANAS_PRIMARY}</strong>
+            </a>
+          </footer>
+        </main>
       </div>
     </div>
   );

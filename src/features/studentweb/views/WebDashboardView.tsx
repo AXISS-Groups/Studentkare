@@ -85,7 +85,7 @@ export function WebDashboardView() {
 
   const head = (
     <PageHead
-      title={t('sw.dash.title')}
+      title={t('m2.nav.home')}
       sub={sub}
       actions={(
         <button type="button" className="sk-sw-btn sk-sw-btn--primary sk-sw-btn--lg" aria-haspopup="dialog" onClick={() => setBooking(true)}>

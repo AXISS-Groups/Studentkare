@@ -5,7 +5,7 @@ import { Icon } from '@/design-system/icons';
 import type { SkIconName } from '@/design-system/icons';
 import { Button, ErrorState, Rise, Skeleton, useReducedMotion } from '@/design-system';
 import {
-  Gradient, M2Card, M2Header, M2Heading, M2_NAV_CLEARANCE, NAVY_STOPS, NotYetTile, SoftIcon, SosButton, heroStops, m2Text, useAmbientMotion, useLift, useLoop,
+  Gradient, M2Card, M2Header, M2Heading, M2_NAV_CLEARANCE, NAVY_STOPS, NotYetTile, SoftIcon, heroStops, m2Text, useAmbientMotion, useLift, useLoop,
   useOwnPhoneChrome,
 } from '@/design-system/m2';
 import type { PressState } from '@/design-system/m2';
@@ -177,7 +177,7 @@ export const M2InsuranceView = observer(function M2InsuranceView({ vm, links }: 
         {Platform.OS === 'web' ? <View pointerEvents="none" style={styles.glow} /> : null}
         <Rise>
           <M2Header backLabel={t('m2.backHome')} onBack={links.back} eyebrow={t('m2.ins.eyebrow')} title={t('m2.ins.title')} testID="m2-ins-header"
-            trailing={<SosButton label={t('m2.sos')} spoken={t('m2.sosSpoken')} onPress={links.sos} />} />
+            sos={{ label: t('m2.sos'), spoken: t('m2.sosSpoken'), onPress: links.sos }} />
         </Rise>
 
         <Rise index={1} style={styles.gutter}>

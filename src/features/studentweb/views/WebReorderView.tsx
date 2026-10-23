@@ -12,7 +12,7 @@ import { BUY_AGAIN_ORDER_LIMIT, SECOND_MS, buyAgainBlock, buyAgainEntries } from
 import type { BuyAgainBlock } from '../data/studentWebData';
 import { useCatalogIndex } from '../data/useCatalogIndex';
 import { reorderArt } from './catalogArt';
-import { EmptyPanel, ErrorPanel, LoadingRows, OfflinePanel, PageHead, StudentWebFooter, TrustBand } from './parts';
+import { EmptyPanel, ErrorPanel, LoadingRows, OfflinePanel, PageHead, TrustBand } from './parts';
 
 /** How long the "added" message stays (the toast duration of the design system is for RN; this is the web echo). */
 const NOTICE_MS = 3000;
@@ -116,7 +116,6 @@ export function WebReorderView() {
       />
       <hr className="sk-sw-rule" />
       <TrustBand />
-      <StudentWebFooter />
     </div>
   );
 }

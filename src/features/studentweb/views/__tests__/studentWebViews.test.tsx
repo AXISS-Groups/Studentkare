@@ -10,10 +10,10 @@ import { axeViolations, describeViolations } from '@/test/axe';
 import { ThemeProvider } from '@/theme/tokens/theme';
 import { WebDashboardView } from '../WebDashboardView';
 import { WebOrdersView } from '../WebOrdersView';
+import { WebOrdersHub } from '../WebOrdersHub';
 import { WebReorderView } from '../WebReorderView';
 import { WebAccountView } from '../WebAccountView';
 import { WebNotificationsRoute } from '../WebNotificationsView';
-import { WebHomeView } from '../WebHomeView';
 import { WebShopView } from '../shop/WebShopView';
 import { WebCheckoutView } from '../shop/WebCheckoutView';
 
@@ -78,7 +78,7 @@ describe('WebDashboard — Your Care', () => {
     serve(dashboard);
     render(<WebDashboardView />);
     await settle();
-    expect(screen.getByRole('heading', { level: 1, name: 'Your Care' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: 'Home' })).toBeInTheDocument();
     expect(screen.getByText('An order is waiting for payment')).toBeInTheDocument();
     expect(screen.getByText(/No health score here/)).toBeInTheDocument();
     expect(screen.getByText('11 documents')).toBeInTheDocument();
@@ -132,6 +132,19 @@ describe('WebOrders — My orders', () => {
     await settle();
     fireEvent.click(screen.getByRole('button', { name: 'Reorder SK-DONE0000' }));
     expect(go).toHaveBeenCalledWith('buy-again');
+  });
+
+  it('has My lab tests as its second tab (founder decision, 23 Oct 2026), and opens it from ?view=lab-tests', async () => {
+    serve({ '/orders': { items: [], total: 0 }, '/lab-orders': { items: [] }, '/health/documents': { items: [] } });
+    window.history.pushState({}, '', '/orders');
+    render(<BrowserRouter><WebOrdersHub /></BrowserRouter>);
+    await settle();
+    const tabs = screen.getByTestId('orders-hub-tabs');
+    expect(within(tabs).getByRole('button', { name: 'Orders' })).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(within(tabs).getByRole('button', { name: 'My lab tests' }));
+    await settle();
+    expect(window.location.search).toBe('?view=lab-tests');
+    expect(screen.getByRole('heading', { level: 1, name: 'My lab tests' })).toBeInTheDocument();
   });
 
   it('has no cancel once the provider has accepted', async () => {
@@ -244,16 +257,6 @@ describe('WebNotifications', () => {
     await settle();
     const put = api.mock.calls.find(([, init]) => init?.method === 'PUT');
     expect(put && JSON.parse(String(put[1]?.body))).toMatchObject({ channels: { ORDERS: [] }, marketingOptIn: false });
-  });
-});
-
-describe('WebHome', () => {
-  it('searches into the shop’s results and claims no accreditation', () => {
-    render(<BrowserRouter><WebHomeView /></BrowserRouter>);
-    fireEvent.change(screen.getByRole('searchbox', { name: 'Search medicines, lab tests and doctors' }), { target: { value: 'vitamin d' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Search' }));
-    expect(window.location.pathname + window.location.search).toBe('/shop?q=vitamin%20d');
-    expect(document.body.textContent).not.toMatch(/NABL|ABDM-linked|Live on 3 campuses/i);
   });
 });
 

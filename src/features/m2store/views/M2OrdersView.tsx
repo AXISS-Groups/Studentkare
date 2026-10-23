@@ -257,7 +257,7 @@ export const M2OrdersView = observer(function M2OrdersView({ vm, links, focusId 
     return (
       <ScrollView style={styles.screen} contentContainerStyle={styles.content} testID="m2-orders-one">
         <M2Header backLabel={t('phone.track.allOrders')} onBack={links.allOrders} eyebrow={t('m2.ord.eyebrow')} title={order ? t('m2.ord.ref', { ref: orderRef(order.id) }) : t('phone.orders.title')}
-          trailing={<SosButton label={t('m2.sos')} spoken={t('m2.sosSpoken')} onPress={links.sos} />} />
+          sos={{ label: t('m2.sos'), spoken: t('m2.sosSpoken'), onPress: links.sos }} />
         <View style={styles.gutter}>
           {!order && loading ? <Skeleton label={t('phone.orders.loading')} lines={['60%', '100%', '80%']} /> : null}
           {!order && !loading ? (

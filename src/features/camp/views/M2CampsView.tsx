@@ -5,6 +5,7 @@ import { Icon } from '@/design-system/icons';
 import { Button, ConfirmDialog, EmptyState, ErrorState, OfflineBanner, Rise, Skeleton, Toast, useOnline } from '@/design-system';
 import {
   Gradient, M2Card, M2Heading, M2_NAV_CLEARANCE, RoundButton, SERVICE_HUES, floatTransform, heroStops, m2Text, useAmbientMotion, useLoop, useOwnPhoneChrome,
+  M2HeaderSos,
 } from '@/design-system/m2';
 import type { PressState } from '@/design-system/m2';
 import { color, focusRing, font, fontWeight, motion, radius, size, space, webOnly } from '@/design-system/theme';
@@ -249,6 +250,7 @@ export const M2CampsView = observer(function M2CampsView({ vm, links }: { vm: Ca
             <View style={styles.heroHead}>
               <RoundButton icon="arrow-left" label={t('m2.backHome')} onPress={links.back} onHero testID="camps-back" />
               <Text style={styles.heroEyebrow}>{t('camps.eyebrow')}</Text>
+              <M2HeaderSos push />
             </View>
             <Art />
             <M2Heading level={1} style={styles.heroTitle}>{t('camps.title')}</M2Heading>

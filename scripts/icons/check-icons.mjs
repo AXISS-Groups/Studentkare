@@ -20,6 +20,11 @@
 // in the screen's files — e.g. <Icon name="bell" />. Exact-drawing variants can be consolidated in
 // design/icons/aliases.json ({ "lock-3": "lock" }): either name then satisfies the check.
 //
+// An icon a recorded decision took off a screen (the founder removing a duplicated entry point, say) is
+// listed under `retiredIcons` in the implementation map with the `source` of the decision: it is then not
+// required on that screen. Every mode fails if such an entry has no source, names an icon the screen's
+// brief does not have, or names an icon the screen still uses (a stale entry).
+//
 // Animations (<AnimatedIcon name="anim-…">, <AnimatedIllustration name="scene-…">) are checked the same way:
 // a screen may name only animations in the manifest's `animated` list, and a screen listed under an
 // animation's `screens` must use it (missing animated: …).
@@ -38,6 +43,7 @@ const mapPath = join(D, 'screens', 'implementation-map.json');
 const mapJson = existsSync(mapPath) ? JSON.parse(readFileSync(mapPath, 'utf8')) : {};
 const implMap = mapJson.screens || {};
 const superseded = Object.fromEntries(Object.entries(mapJson.superseded || {}).filter(([k]) => !k.startsWith('_')));
+const retiredIcons = Object.fromEntries(Object.entries(mapJson.retiredIcons || {}).filter(([k]) => !k.startsWith('_')));
 const aliasPath = join(D, 'icons', 'aliases.json');
 const aliases = existsSync(aliasPath) ? JSON.parse(readFileSync(aliasPath, 'utf8')) : {};
 const alts = (n) => [n, aliases[n]].filter(Boolean);
@@ -53,8 +59,9 @@ function checkScreen(screen, files) {
   const code = files.filter((f) => existsSync(join(root, f))).map((f) => readFileSync(join(root, f), 'utf8')).join('\n');
   const has = (name) => alts(name).some((n) => new RegExp(`(['"\`])${n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\1`).test(code));
   const hasFile = (name) => code.includes(name) || code.includes(name.replace(/\.[a-z0-9]+$/, ''));
+  const retired = new Set(retiredIcons[screen]?.icons || []);
   const missing = {
-    icons: need.icons.filter((n) => !has(n)),
+    icons: need.icons.filter((n) => !retired.has(n) && !has(n)),
     icons3d: need.icons3d.filter((n) => !has(n)),
     glyphs: need.glyphs.filter((n) => !has(n)),
     brand: need.brand.length && !/skBrandLogo|BrandLogo|studentkare-logo/.test(code) ? need.brand : [],
@@ -71,6 +78,14 @@ function checkScreen(screen, files) {
   if (unknownAnimated.length) problems.push(`animations not in the manifest: ${unknownAnimated.join(', ')} — add them through design/icons/animated/lottie.config.json`);
   const textHits = BANNED_TEXT.filter((g) => code.includes(g));
   if (textHits.length) problems.push(`text symbols used as icons: ${textHits.join(' ')} — draw them with <Icon> (see skTextGlyphIcons)`);
+  const entry = retiredIcons[screen];
+  if (entry) {
+    if (!entry.source) problems.push('retiredIcons: "source" must say where the decision is recorded');
+    for (const n of retired) {
+      if (!need.icons.includes(n)) problems.push(`retiredIcons: ${n} is not in this screen's brief`);
+      else if (has(n)) problems.push(`retiredIcons: ${n} is still used here; remove it from the list`);
+    }
+  }
   const total = Object.values(missing).reduce((a, b) => a + b.length, 0);
   return { screen, files, missing, total, problems, required: need };
 }

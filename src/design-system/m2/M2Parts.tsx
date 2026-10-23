@@ -10,6 +10,7 @@ import { SERVICE_HUES } from './servicePalette';
 import type { ServiceHue } from './servicePalette';
 import { isWide, m2Gutter, useM2Layout } from './m2Layout';
 import type { M2Layout } from './m2Layout';
+import { M2HeaderSos } from './m2Sos';
 
 /**
  * Small pieces every Mobile 2.0 board shares (canvas page 9): the round
@@ -135,13 +136,14 @@ export function SosButton({ label, spoken, onPress, testID = 'm2-sos' }: { label
  * A store board's header: the round back button, a small line over the title,
  * and its own controls. Wider than a phone it takes the web gutter and a
  * larger title. `onBack` is optional so a navigation root draws no back
- * button. `sos` puts the SOS pill at the end; it is off unless a board asks
- * (whether every board carries SOS is the founder's decision, parity audit
- * 2026-10-23).
+ * button. SOS is at the end of every header (founder decision, 23 Oct 2026):
+ * by default it opens the shell's SOS (`M2SosProvider`); `sos` gives it its own
+ * handler, and `sos={false}` leaves it out only where the board draws SOS
+ * somewhere else in the same header.
  */
 export function M2Header({ backLabel, onBack, eyebrow, title, trailing, sos, testID = 'm2-header' }: {
   backLabel?: string; onBack?: () => void; eyebrow?: string; title: string; trailing?: React.ReactNode;
-  sos?: { label: string; spoken: string; onPress: () => void };
+  sos?: { label: string; spoken: string; onPress: () => void } | false;
   testID?: string;
 }) {
   const layout = useM2Layout();
@@ -153,7 +155,7 @@ export function M2Header({ backLabel, onBack, eyebrow, title, trailing, sos, tes
         <M2Heading level={1} style={[styles.headerTitle, layout === 'desktop' ? styles.headerTitleDesktop : null]}>{title}</M2Heading>
       </View>
       {trailing}
-      {sos ? <SosButton label={sos.label} spoken={sos.spoken} onPress={sos.onPress} testID={`${testID}-sos`} /> : null}
+      {sos === false ? null : sos ? <SosButton label={sos.label} spoken={sos.spoken} onPress={sos.onPress} testID={`${testID}-sos`} /> : <M2HeaderSos testID={`${testID}-sos`} />}
     </View>
   );
 }

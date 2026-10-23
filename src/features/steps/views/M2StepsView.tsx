@@ -7,6 +7,7 @@ import { Button, OfflineBanner, Rise, Sheet, Skeleton, TextField, useOnline } fr
 import {
   Gradient, M2Card, M2Heading, M2_NAV_CLEARANCE, RoundButton, SERVICE_HUES, floatTransform, heroStops, m2Text,
   useAmbientMotion, useLoop, useOwnPhoneChrome,
+  M2HeaderSos,
 } from '@/design-system/m2';
 import type { PressState } from '@/design-system/m2';
 import { color, focusRing, font, fontWeight, motion, radius, size, space } from '@/design-system/theme';
@@ -107,6 +108,7 @@ const Hero = observer(function Hero({ vm, links }: { vm: StepsViewModel; links: 
           <Text style={styles.eyebrow}>{t('steps.eyebrow')}</Text>
           <M2Heading level={1} style={styles.title}>{t('steps.title')}</M2Heading>
         </View>
+        <M2HeaderSos />
       </View>
       <View style={styles.today} aria-live="polite" testID="m2-steps-today">
         <Text style={styles.todayLabel}>{t('steps.todayLabel')}</Text>

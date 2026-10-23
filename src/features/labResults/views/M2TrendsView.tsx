@@ -6,6 +6,7 @@ import { ErrorState, OfflineBanner, Rise, Skeleton } from '@/design-system';
 import { TestTrendChart } from '@/design-system/charts';
 import {
   M2Card, M2Heading, M2_NAV_CLEARANCE, RoundButton, SoftIcon, m2Text, useOwnPhoneChrome, webAttrs,
+  M2HeaderSos,
 } from '@/design-system/m2';
 import type { PressState } from '@/design-system/m2';
 import { color, focusRing, font, fontWeight, radius, shadow, shadowStyle, size, space } from '@/design-system/theme';
@@ -204,6 +205,7 @@ export const M2TrendsView = observer(function M2TrendsView({ vm, reviews, online
           <Icon name="bookmark" size={size.navIcon} color={vm.selectedPinned ? color.onAction : color.text} strokeWidth={2.3} />
         </Pressable>
       ) : null}
+      <M2HeaderSos />
     </View>
   );
 
