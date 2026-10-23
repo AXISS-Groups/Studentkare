@@ -222,7 +222,10 @@
     ],
     "EmergencyCard": [
       "src/features/emergency/views/EmergencyCardBoard.tsx",
-      "src/features/emergency/viewmodel/EmergencyCardViewModel.ts"
+      "src/features/emergency/viewmodel/EmergencyCardViewModel.ts",
+      "src/features/emergency/views/WalletPassPanel.tsx",
+      "src/features/emergency/views/openWallet.ts",
+      "src/features/emergency/viewmodel/WalletPassViewModel.ts"
     ],
     "CrisisSupport": [
       "src/features/crisis/views/CrisisSupportBoard.tsx"
@@ -578,6 +581,8 @@
     "WebEmergencyCard": [
       "src/features/studentweb/views/t1/WebEmergencyCardView.tsx",
       "src/features/emergency/viewmodel/EmergencyCardViewModel.ts",
+      "src/features/emergency/views/WalletPassPanel.tsx",
+      "src/features/emergency/viewmodel/WalletPassViewModel.ts",
       "src/design-system/student-shell/StudentWebShell.tsx",
       "src/design-system/student-shell/studentNav.ts",
       "src/design-system/overlays/ConfirmDialog.tsx",

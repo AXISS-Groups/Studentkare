@@ -121,8 +121,10 @@ export function PrivacyConsentView({ repository = privacyRepository }: { reposit
                             <span id={stateId} className="sk-privacy__state">{working ? t('privacy.optional.saving') : item.on ? t('privacy.optional.on') : t('privacy.optional.off')}</span>
                           </button>
                         ) : (
-                          <button type="button" className="sk-sw-btn sk-sw-btn--ghost" onClick={() => navigate('lifeshare')}>
-                            {t('privacy.optional.donorFirst')}
+                          // Given on its own screen first: the donor page, or the emergency card's wallet field picker.
+                          <button type="button" className="sk-sw-btn sk-sw-btn--ghost"
+                            onClick={() => navigate(item.purpose === 'WALLET_GOOGLE' ? 'emergency-card' : 'lifeshare')}>
+                            {t(item.purpose === 'WALLET_GOOGLE' ? 'privacy.optional.walletFromCard' : 'privacy.optional.donorFirst')}
                           </button>
                         )}
                       </li>

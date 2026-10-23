@@ -11,6 +11,7 @@ import type { MessageKey } from '@/i18n';
 import { initialsOf } from '@/features/account/views/StudentProfileBoard';
 import { BLOOD_GROUPS, EmergencyCardViewModel, RELATIONS, splitList } from '../viewmodel/EmergencyCardViewModel';
 import type { BloodGroup } from '../viewmodel/EmergencyCardViewModel';
+import { WalletPassSection } from './WalletPassPanel';
 
 export interface EmergencyCardLinks {
   /** Expo: the stack's back. In the web frame back is the browser's. */
@@ -71,7 +72,9 @@ export function Call112Button({ testID = 'card-call-112' }: { testID?: string })
  * Not drawn, on purpose (decision D6-2): the board's "OFFLINE · stored on this
  * phone, works without unlocking" promise. Keeping blood group and allergies
  * on the device needs a guardrail-9 exception nobody has signed, so the card
- * loads from the server and says so. Also not drawn: the ABHA number and
+ * loads from the server and says so. The student may instead put a copy in the
+ * phone's own wallet (WalletPassSection; plan tier1-emergency-card-wallet-2026-10-24),
+ * which the app does not store either. Also not drawn: the ABHA number and
  * "current medicines" (no such profile fields) and "No known allergies" (the
  * server cannot tell it from "not recorded"). Call 112 works with no data.
  */
@@ -198,6 +201,7 @@ export const EmergencyCardBoard = observer(function EmergencyCardBoard({ vm, lin
         {links.nearestHospitals ? (
           <TextLink label={t('fc.nearestHospitals')} onPress={links.nearestHospitals} accessibilityLabel={t('fc.nearestHospitalsSpoken')} testID="card-find-care" />
         ) : null}
+        {s ? <WalletPassSection refreshKey={s} /> : null}
         <Text style={styles.footnote}>{t('sf.card.footnote')}</Text>
       </View>
 

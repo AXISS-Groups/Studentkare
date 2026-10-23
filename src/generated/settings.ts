@@ -55,6 +55,10 @@ export interface PublicSettings {
   "content.stats_enabled": boolean;
   /** How often the SOS screen re-reads an open alert from GET /api/emergency/sos/current. (seconds) */
   "emergency.sos_poll_seconds": number;
+  /** Offer 'Add to Apple Wallet' on the emergency card (needs the Apple Wallet credentials). */
+  "emergency_card.wallet_apple_enabled": boolean;
+  /** Offer 'Add to Google Wallet' on the emergency card (needs the Google Wallet issuer account). */
+  "emergency_card.wallet_google_enabled": boolean;
   /** How far back a typed report's collection date may be. (years) */
   "lab_results.collected_on_max_age_years": number;
   /** Most values one lab report (document) may hold, drafts and confirmed together. (values) */
@@ -256,6 +260,8 @@ export const publicSettingDefaults: Readonly<PublicSettings> = {
   "content.share_utm_medium": "social",
   "content.stats_enabled": true,
   "emergency.sos_poll_seconds": 15,
+  "emergency_card.wallet_apple_enabled": false,
+  "emergency_card.wallet_google_enabled": false,
   "lab_results.collected_on_max_age_years": 30,
   "lab_results.max_rows_per_report": 60,
   "lab_results.pinned_max": 8,
@@ -365,6 +371,8 @@ export const publicSettingSpecs: Readonly<Record<PublicSettingKey, PublicSetting
   "content.share_utm_medium": { type: "str", min: null, max: null, allowed: [], unit: "utm_medium value" },
   "content.stats_enabled": { type: "bool", min: null, max: null, allowed: [], unit: "" },
   "emergency.sos_poll_seconds": { type: "int", min: 5, max: 120, allowed: [], unit: "seconds" },
+  "emergency_card.wallet_apple_enabled": { type: "bool", min: null, max: null, allowed: [], unit: "" },
+  "emergency_card.wallet_google_enabled": { type: "bool", min: null, max: null, allowed: [], unit: "" },
   "lab_results.collected_on_max_age_years": { type: "int", min: 1, max: 100, allowed: [], unit: "years" },
   "lab_results.max_rows_per_report": { type: "int", min: 1, max: 200, allowed: [], unit: "values" },
   "lab_results.pinned_max": { type: "int", min: 1, max: 50, allowed: [], unit: "tests" },

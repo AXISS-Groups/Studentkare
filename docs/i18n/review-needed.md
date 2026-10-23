@@ -883,3 +883,90 @@ Notes for the reviewer: "Monday Motivation" is a series name and stays in Englis
 | `cms.topics.aria` | Filter by category | విభాగం వారీగా ఫిల్టర్ చేయండి | श्रेणी से फ़िल्टर करें |
 | `cms.topics.all` | All topics | అన్ని అంశాలు | सभी विषय |
 
+## wallet — emergency card in the phone wallet (`src/i18n/areas/wallet.ts`, plan tier1-emergency-card-wallet-2026-10-24)
+
+Notes for the reviewer: **legal review is also owed** on `wlt.picker.lockScreen`, `wlt.picker.appleWhere`,
+`wlt.picker.googleWhere`, `wlt.google.consent` and `privacy.purpose.WALLET_GOOGLE.*` (the consent wording is
+versioned: changing it means a new `WALLET_GOOGLE_CONSENT_VERSION` in `backend/services/consent_ledger.py`).
+The Profile lines are in `src/i18n/areas/mobile2health.ts`, the privacy lines in `src/i18n/areas/privacy.ts`.
+
+| Key | English | te (current) | hi (current) |
+|---|---|---|---|
+| `wlt.title` | Keep it in your phone’s wallet | మీ ఫోన్ వాలెట్‌లో ఉంచుకోండి | इसे अपने फ़ोन के वॉलेट में रखें |
+| `wlt.intro` | A wallet pass opens without a connection or signing in. You choose what goes on it. | వాలెట్ పాస్ కనెక్షన్ లేకుండా, సైన్ ఇన్ చేయకుండా తెరుచుకుంటుంది. దానిపై ఏం ఉండాలో మీరే ఎంచుకుంటారు. | वॉलेट पास बिना कनेक्शन और बिना साइन इन के खुलता है। उस पर क्या हो, यह आप चुनते हैं। |
+| `wlt.loading` | Checking your wallet pass… | మీ వాలెట్ పాస్‌ను చూస్తున్నాం… | आपका वॉलेट पास देख रहे हैं… |
+| `wlt.failed` | We couldn’t check your wallet pass. This is on our side. Try again. | మీ వాలెట్ పాస్‌ను చూడలేకపోయాం. ఇది మా వైపు సమస్య. మళ్ళీ ప్రయత్నించండి. | आपका वॉलेट पास नहीं देख पाए। यह हमारी तरफ़ की समस्या है। फिर कोशिश करें। |
+| `wlt.offline` | Adding to or removing from a wallet needs a connection. | వాలెట్‌కి జోడించడానికి లేదా తీసివేయడానికి కనెక్షన్ కావాలి. | वॉलेट में जोड़ने या हटाने के लिए कनेक्शन चाहिए। |
+| `wlt.addApple` | Add to Apple Wallet | Apple Walletకి జోడించండి | Apple Wallet में जोड़ें |
+| `wlt.addGoogle` | Add to Google Wallet | Google Walletకి జోడించండి | Google Wallet में जोड़ें |
+| `wlt.status.inApple` | In Apple Wallet · updated {time} | Apple Walletలో ఉంది · {time}న అప్‌డేట్ | Apple Wallet में है · {time} को अपडेट |
+| `wlt.status.inGoogle` | In Google Wallet · updated {time} | Google Walletలో ఉంది · {time}న అప్‌డేట్ | Google Wallet में है · {time} को अपडेट |
+| `wlt.status.madeApple` | Apple Wallet pass ready · not added to a phone yet | Apple Wallet పాస్ సిద్ధం · ఇంకా ఫోన్‌కి జోడించలేదు | Apple Wallet पास तैयार · अभी किसी फ़ोन में नहीं जोड़ा |
+| `wlt.status.madeGoogle` | Google Wallet pass ready · not saved yet | Google Wallet పాస్ సిద్ధం · ఇంకా సేవ్ చేయలేదు | Google Wallet पास तैयार · अभी सेव नहीं किया |
+| `wlt.status.none` | Not in your phone’s wallet | మీ ఫోన్ వాలెట్‌లో లేదు | आपके फ़ोन के वॉलेट में नहीं है |
+| `wlt.status.sending` | Sending your latest card to the wallet… | మీ తాజా కార్డును వాలెట్‌కి పంపుతున్నాం… | आपका नया कार्ड वॉलेट में भेज रहे हैं… |
+| `wlt.status.removing` | Removing it from your wallet… | మీ వాలెట్ నుండి తీసివేస్తున్నాం… | आपके वॉलेट से हटा रहे हैं… |
+| `wlt.change` | Change what’s on the pass | పాస్‌పై ఉన్నదాన్ని మార్చండి | पास पर क्या है, बदलें |
+| `wlt.removeApple` | Remove from Apple Wallet | Apple Wallet నుండి తీసివేయండి | Apple Wallet से हटाएँ |
+| `wlt.removeGoogle` | Remove from Google Wallet | Google Wallet నుండి తీసివేయండి | Google Wallet से हटाएँ |
+| `wlt.removed` | Removed. The copy left in your wallet now shows no details. | తీసివేశాం. మీ వాలెట్‌లో మిగిలిన కాపీలో ఇప్పుడు ఏ వివరాలూ ఉండవు. | हटा दिया। आपके वॉलेट में बची कॉपी में अब कोई जानकारी नहीं दिखती। |
+| `wlt.addFailed` | That didn’t work, so nothing was added. Try again. | అది పని చేయలేదు, కాబట్టి ఏదీ జోడించలేదు. మళ్ళీ ప్రయత్నించండి. | यह नहीं हुआ, इसलिए कुछ नहीं जोड़ा गया। फिर कोशिश करें। |
+| `wlt.removeFailed` | That didn’t remove it. Try again. | తీసివేయడం కాలేదు. మళ్ళీ ప్రయత్నించండి. | हटाया नहीं जा सका। फिर कोशिश करें। |
+| `wlt.openFailed` | Your wallet didn’t open. Try again on the phone you want it on. | మీ వాలెట్ తెరుచుకోలేదు. పాస్ కావాల్సిన ఫోన్‌లో మళ్ళీ ప్రయత్నించండి. | आपका वॉलेट नहीं खुला। जिस फ़ोन पर पास चाहिए, उस पर फिर कोशिश करें। |
+| `wlt.picker.title` | Choose what goes on the pass | పాస్‌పై ఏం ఉండాలో ఎంచుకోండి | चुनें कि पास पर क्या हो |
+| `wlt.picker.lockScreen` | Anyone holding your phone can open the wallet from the lock screen and read this pass. | మీ ఫోన్ చేతిలో ఉన్న ఎవరైనా లాక్ స్క్రీన్ నుండి వాలెట్ తెరిచి ఈ పాస్ చదవవచ్చు. | आपका फ़ोन हाथ में लेने वाला कोई भी लॉक स्क्रीन से वॉलेट खोलकर यह पास पढ़ सकता है। |
+| `wlt.picker.appleWhere` | Apple Wallet keeps the pass on your Apple devices. We don’t send what’s on it to Apple. | Apple Wallet పాస్‌ను మీ Apple పరికరాల్లో ఉంచుతుంది. దానిపై ఉన్నదాన్ని మేము Appleకి పంపము. | Apple Wallet पास को आपके Apple डिवाइस पर रखता है। उस पर क्या है, यह हम Apple को नहीं भेजते। |
+| `wlt.picker.googleWhere` | Google Wallet keeps passes on Google’s servers, so Google stores what’s on it. | Google Wallet పాస్‌లను Google సర్వర్లలో ఉంచుతుంది, కాబట్టి దానిపై ఉన్నదాన్ని Google నిల్వ చేస్తుంది. | Google Wallet पास को Google के सर्वर पर रखता है, इसलिए उस पर जो है उसे Google स्टोर करता है। |
+| `wlt.picker.basics` | On the pass | పాస్‌పై | पास पर |
+| `wlt.picker.health` | Health details: off unless you switch them on | ఆరోగ్య వివరాలు: మీరు ఆన్ చేస్తేనే | स्वास्थ्य जानकारी: आप चालू करें तभी |
+| `wlt.picker.always` | Always on the pass: Call 112 and Tele-MANAS 14416. | పాస్‌పై ఎప్పుడూ: 112కి కాల్, Tele-MANAS 14416. | पास पर हमेशा: 112 पर कॉल और Tele-MANAS 14416। |
+| `wlt.picker.updates` | The pass updates when you change your card. Remove it here at any time. | మీరు కార్డు మార్చినప్పుడు పాస్ అప్‌డేట్ అవుతుంది. ఎప్పుడైనా ఇక్కడ తీసివేయవచ్చు. | कार्ड बदलने पर पास अपडेट होता है। इसे यहाँ कभी भी हटा सकते हैं। |
+| `wlt.picker.nothing` | Switch on at least one thing to add the pass. | పాస్ జోడించడానికి కనీసం ఒకటి ఆన్ చేయండి. | पास जोड़ने के लिए कम से कम एक चीज़ चालू करें। |
+| `wlt.field.name` | Your name | మీ పేరు | आपका नाम |
+| `wlt.field.blood` | Blood group | బ్లడ్ గ్రూప్ | ब्लड ग्रुप |
+| `wlt.field.contact` | Emergency contact | ఎమర్జెన్సీ కాంటాక్ట్ | इमरजेंसी संपर्क |
+| `wlt.field.contactDetail` | Name and full number, so a responder can call them | పేరు, పూర్తి నంబర్, సహాయం చేసేవారు కాల్ చేయడానికి | नाम और पूरा नंबर, ताकि मदद करने वाला कॉल कर सके |
+| `wlt.field.allergies` | Allergies | అలర్జీలు | एलर्जी |
+| `wlt.field.conditions` | Health conditions | ఆరోగ్య పరిస్థితులు | स्वास्थ्य स्थितियाँ |
+| `wlt.field.medicines` | Medicines | మందులు | दवाएँ |
+| `wlt.field.medicinesDetail` | The medicines in your reminders | మీ రిమైండర్లలోని మందులు | आपके रिमाइंडर वाली दवाएँ |
+| `wlt.field.healthDetail` | Readable from the lock screen if you switch it on | ఆన్ చేస్తే లాక్ స్క్రీన్ నుండి చదవవచ్చు | चालू करने पर लॉक स्क्रीन से पढ़ी जा सकती है |
+| `wlt.google.consent` | I agree that Google stores this pass and what I put on it. I can withdraw this on Privacy & consent, which removes the pass. | ఈ పాస్‌ను, దానిపై నేను ఉంచినదాన్ని Google నిల్వ చేయడానికి నేను అంగీకరిస్తున్నాను. Privacy & consentలో దీన్ని ఉపసంహరించుకోవచ్చు, అప్పుడు పాస్ తీసివేయబడుతుంది. | मैं सहमत हूँ कि Google यह पास और उस पर रखी जानकारी स्टोर करे। मैं इसे Privacy & consent पर वापस ले सकता/सकती हूँ, जिससे पास हट जाता है। |
+| `m2.prof.emergencyBody` | Blood group, allergies, contacts. Not kept on this phone. | బ్లడ్ గ్రూప్, అలర్జీలు, కాంటాక్టులు. ఈ ఫోన్‌లో ఉంచబడదు. | ब्लड ग्रुप, एलर्जी, संपर्क। इस फ़ोन पर नहीं रखा जाता। |
+| `m2.prof.emergencyBodyWallet` | Blood group, allergies, contacts. In your phone’s wallet. | బ్లడ్ గ్రూప్, అలర్జీలు, కాంటాక్టులు. మీ ఫోన్ వాలెట్‌లో ఉంది. | ब्लड ग्रुप, एलर्जी, संपर्क। आपके फ़ोन के वॉलेट में है। |
+| `m2.prof.emergencyBodyShort` | Blood group, allergies, contacts. | బ్లడ్ గ్రూప్, అలర్జీలు, కాంటాక్టులు. | ब्लड ग्रुप, एलर्जी, संपर्क। |
+| `privacy.purpose.WALLET_GOOGLE.title` | Emergency card in Google Wallet | Google Walletలో ఎమర్జెన్సీ కార్డు | Google Wallet में इमरजेंसी कार्ड |
+| `privacy.purpose.WALLET_GOOGLE.body` | Google keeps your emergency card pass on its servers. You turned this on when you added the card to Google Wallet. Turning it off removes the pass from Google Wallet. | మీ ఎమర్జెన్సీ కార్డు పాస్‌ను Google తన సర్వర్లలో ఉంచుతుంది. కార్డును Google Walletకి జోడించినప్పుడు మీరు దీన్ని ఆన్ చేశారు. ఆఫ్ చేస్తే పాస్ Google Wallet నుండి తీసివేయబడుతుంది. | Google आपके इमरजेंसी कार्ड पास को अपने सर्वर पर रखता है। कार्ड को Google Wallet में जोड़ते समय आपने इसे चालू किया था। बंद करने पर पास Google Wallet से हटा दिया जाता है। |
+| `privacy.optional.walletFromCard` | Add from your emergency card | మీ ఎమర్జెన్సీ కార్డు నుండి జోడించండి | अपने इमरजेंसी कार्ड से जोड़ें |
+
+### The pass itself (`backend/core/wallet_copy.py`)
+
+Shown inside Apple Wallet and Google Wallet in the phone's language. Same legal review applies to `value.about`.
+
+| Key | English | te (current) | hi (current) |
+|---|---|---|---|
+| `pass.description` | Emergency card | ఎమర్జెన్సీ కార్డు | इमरजेंसी कार्ड |
+| `pass.title` | In case of emergency | అత్యవసర పరిస్థితిలో | इमरजेंसी में |
+| `label.name` | Name | పేరు | नाम |
+| `label.blood` | Blood group | బ్లడ్ గ్రూప్ | ब्लड ग्रुप |
+| `label.contact` | Emergency contact | ఎమర్జెన్సీ కాంటాక్ట్ | इमरजेंसी संपर्क |
+| `label.allergies` | Allergies | అలర్జీలు | एलर्जी |
+| `label.conditions` | Health conditions | ఆరోగ్య పరిస్థితులు | स्वास्थ्य स्थितियाँ |
+| `label.medicines` | Medicines | మందులు | दवाएँ |
+| `label.call112` | Emergency | అత్యవసరం | इमरजेंसी |
+| `label.teleManas` | Tele-MANAS (mental health) | Tele-MANAS (మానసిక ఆరోగ్యం) | Tele-MANAS (मानसिक स्वास्थ्य) |
+| `label.updated` | Updated | అప్‌డేట్ | अपडेट |
+| `label.about` | About this pass | ఈ పాస్ గురించి | इस पास के बारे में |
+| `value.call112` | Call 112 | 112కి కాల్ చేయండి | 112 पर कॉल करें |
+| `value.teleManas` | Call 14416 | 14416కి కాల్ చేయండి | 14416 पर कॉल करें |
+| `value.notSet` | Not set | సెట్ చేయలేదు | सेट नहीं |
+| `value.about` | The student chose what is on this pass in Studentkare. It may be read from the lock screen. It updates when they change their emergency card. | ఈ పాస్‌లో ఏం ఉండాలో విద్యార్థి Studentkareలో ఎంచుకున్నారు. దీన్ని లాక్ స్క్రీన్ నుండి చదవవచ్చు. ఎమర్జెన్సీ కార్డు మారిస్తే ఇది అప్‌డేట్ అవుతుంది. | इस पास पर क्या हो, यह छात्र ने Studentkare में चुना है। इसे लॉक स्क्रीन से पढ़ा जा सकता है। इमरजेंसी कार्ड बदलने पर यह अपडेट होता है। |
+| `value.removed` | This card was removed from Studentkare. It holds no details. | ఈ కార్డు Studentkare నుండి తీసివేయబడింది. ఇందులో ఏ వివరాలూ లేవు. | यह कार्ड Studentkare से हटा दिया गया है। इसमें कोई जानकारी नहीं है। |
+| `blood.A+` | A positive | A పాజిటివ్ | A पॉज़िटिव |
+| `blood.A-` | A negative | A నెగటివ్ | A नेगेटिव |
+| `blood.B+` | B positive | B పాజిటివ్ | B पॉज़िटिव |
+| `blood.B-` | B negative | B నెగటివ్ | B नेगेटिव |
+| `blood.O+` | O positive | O పాజిటివ్ | O पॉज़िटिव |
+| `blood.O-` | O negative | O నెగటివ్ | O नेगेटिव |
+| `blood.AB+` | AB positive | AB పాజిటివ్ | AB पॉज़िटिव |
+| `blood.AB-` | AB negative | AB నెగటివ్ | AB नेगेटिव |

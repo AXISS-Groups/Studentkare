@@ -8,6 +8,7 @@ import { useAuth } from '@/data/contexts/AuthContext';
 import { shortNameOf } from '@/design-system/student-shell/StudentWebShell';
 import { BLOOD_GROUPS, EmergencyCardViewModel, RELATIONS, isValidIndianMobile } from '@/features/emergency/viewmodel/EmergencyCardViewModel';
 import type { EmergencyCardDraft } from '@/features/emergency/viewmodel/EmergencyCardViewModel';
+import { WalletPassSection } from '@/features/emergency/views/WalletPassPanel';
 import { ErrorPanel, LoadingRows, OfflinePanel, PageHead } from '../parts';
 import { CrisisLine } from './shared';
 import '../../studentweb.css';
@@ -188,6 +189,8 @@ export const WebEmergencyCardView = observer(function WebEmergencyCardView({ vm 
               ))}
             </ul>
           </section>
+
+          <div className="sk-swt-noprint"><WalletPassSection refreshKey={vm.saved} /></div>
 
           <section className="sk-sw-card sk-swt-side sk-swt-noprint" aria-labelledby="sk-swt-who-title">
             <h2 id="sk-swt-who-title" className="sk-sw-card__title">{t('swt.ice.whoTitle')}</h2>
