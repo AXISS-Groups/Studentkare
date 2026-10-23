@@ -3763,7 +3763,8 @@
     "ReportReviews",
     "WebFindCare",
     "WebNewsroom",
-    "WebPost"
+    "WebPost",
+    "AdminPosts"
    ],
    "elements": [
     [
@@ -5082,7 +5083,8 @@
     "ClinicianToday",
     "EncounterNote",
     "Prescribe",
-    "ReportReviews"
+    "ReportReviews",
+    "AdminPosts"
    ],
    "elements": [
     [
@@ -5199,7 +5201,8 @@
     "M2FacilityDetail",
     "Prescribe",
     "ReportReviews",
-    "AdminPosts"
+    "AdminPosts",
+    "WebPost"
    ],
    "elements": [
     [
@@ -6976,7 +6979,8 @@
    "uses": 2,
    "screens": [
     "IconSystem",
-    "M2Profile"
+    "M2Profile",
+    "AdminPosts"
    ],
    "elements": [
     [
@@ -7814,7 +7818,8 @@
    "uses": 2,
    "screens": [
     "Landing",
-    "WebPartnerships"
+    "WebPartnerships",
+    "AdminPosts"
    ],
    "elements": [
     [
@@ -8102,7 +8107,8 @@
    "uses": 2,
    "screens": [
     "EmergencyCard",
-    "StateScreens"
+    "StateScreens",
+    "AdminPosts"
    ],
    "elements": [
     [
@@ -9287,7 +9293,8 @@
     "M2Home",
     "M2Insurance",
     "SuperAdminConsole",
-    "WebFindCare"
+    "WebFindCare",
+    "AdminPosts"
    ],
    "elements": [
     [
@@ -9479,7 +9486,8 @@
    "source": "canvas",
    "uses": 1,
    "screens": [
-    "YourCare"
+    "YourCare",
+    "AdminPosts"
    ],
    "elements": [
     [
@@ -9655,7 +9663,8 @@
     "M2Medicines",
     "M2Steps",
     "OtpVerify",
-    "WebNewsroom"
+    "WebNewsroom",
+    "AdminPosts"
    ],
    "elements": [
     [
@@ -11538,7 +11547,8 @@
     "CreateAccount",
     "SetPasscode",
     "SignIn",
-    "WebSignIn"
+    "WebSignIn",
+    "AdminPosts"
    ],
    "elements": [
     [
@@ -11565,7 +11575,8 @@
     "CreateAccount",
     "SetPasscode",
     "SignIn",
-    "WebSignIn"
+    "WebSignIn",
+    "AdminPosts"
    ],
    "elements": [
     [
@@ -21457,6 +21468,7 @@
     "alert-triangle",
     "arrow-left",
     "arrow-right",
+    "arrow-up-right",
     "brand-linkedin",
     "calendar",
     "check",
@@ -21507,6 +21519,7 @@
    "page": "New · Newsroom: News and Blog (2026-10-23, no canvas board)",
    "size": "1440x1600",
    "icons": [
+    "activity",
     "alert-triangle",
     "align-left",
     "align-left-2",
@@ -21519,26 +21532,35 @@
     "check-circle",
     "chevron-down",
     "clipboard",
+    "clock",
     "eye",
     "eye-off",
     "file-text",
     "graduation-cap",
     "heart-pulse",
+    "inbox",
     "info",
     "lock",
     "megaphone",
     "message-square-text",
     "mic",
+    "pause",
     "pencil",
+    "play",
     "plus",
+    "refresh",
     "rotate-ccw",
     "rows-split",
     "search",
+    "settings",
+    "shield-alert",
     "shield-check",
     "sparkles",
     "stethoscope",
     "trash",
-    "upload"
+    "upload",
+    "wifi-off",
+    "zap"
    ],
    "icons3d": [
     "bell--p2",

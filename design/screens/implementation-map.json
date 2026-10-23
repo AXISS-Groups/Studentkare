@@ -2033,6 +2033,9 @@
     ],
     "AdminPosts": [
       "src/features/newsroom/admin/PostsAdminView.tsx",
+      "src/features/newsroom/admin/AutopilotView.tsx",
+      "src/features/newsroom/viewmodel/AutopilotViewModel.ts",
+      "src/features/newsroom/data/AutopilotRepository.ts",
       "src/features/newsroom/admin/posts-admin.css",
       "src/features/newsroom/viewmodel/PostsAdminViewModel.ts",
       "src/features/newsroom/model/templates.ts",

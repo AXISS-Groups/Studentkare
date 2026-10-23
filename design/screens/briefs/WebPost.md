@@ -11,7 +11,7 @@
 
 ## Icons this screen must show (all of them)
 
-- **Line / solid icons (25):** `alert-circle`, `alert-triangle`, `arrow-left`, `arrow-right`, `brand-linkedin`, `calendar`, `check`, `clipboard`, `clock`, `copy`, `file-text`, `graduation-cap`, `heart-pulse`, `image-off`, `info`, `megaphone`, `message-circle-2`, `message-square-text`, `mic`, `share`, `shield-check`, `sparkles`, `star`, `user`, `x-2`
+- **Line / solid icons (26):** `alert-circle`, `alert-triangle`, `arrow-left`, `arrow-right`, `arrow-up-right`, `brand-linkedin`, `calendar`, `check`, `clipboard`, `clock`, `copy`, `file-text`, `graduation-cap`, `heart-pulse`, `image-off`, `info`, `megaphone`, `message-circle-2`, `message-square-text`, `mic`, `share`, `shield-check`, `sparkles`, `star`, `user`, `x-2`
 - **3D icon tiles (13):** `bell--p2`, `brain-alt--p3`, `calendar-alt--p4`, `chat-alt--p4`, `doc--p4`, `heart--p1`, `home-alt--p4`, `idcard-alt--p4`, `settings-alt--p4`, `thermo-alt--p1`, `user--p4`, `vault-alt--p4`, `wellness-alt--p5`
 - **Brand mark:** the SK shield on the cover
 - **Text symbols to replace with icons:** —
@@ -23,9 +23,12 @@
 3. Health tip: `shield-check` "Reviewed by {clinician} on {date}" (only while the approval matches the content).
 4. **Body blocks** (each template allows its own set; the server refuses others): heading, paragraph, list, quote (`message-square-text`), callout (`info` information or `alert-triangle` amber "needs attention"; never red), image with alt text (`image-off` when missing), key facts (`clipboard`, `check` per line), button to an app page (`arrow-right`).
 5. Health tip footer (template-fixed, not authored): "General information, not advice for you … In an emergency, call 112." with a link to /crisis.
-6. Tags; "Updated {date}".
-7. **Share** (`share`): Copy link (`copy` then `check`), WhatsApp (`message-circle-2`), LinkedIn (`brand-linkedin`), X (`x-2`) — plain URLs, no third-party script.
-8. **Related posts** (same template first, then the section).
+6. Auto posts (content autopilot): a source box, template-fixed: `sparkles` "Summary by StudentKare from {publisher}.", `arrow-up-right`
+   "Source: {publisher}" linking the original (new tab, nofollow) with its date, and "A short summary, not medical advice". The tag
+   `auto` is in the tags.
+7. Tags; "Updated {date}".
+8. **Share** (`share`): Copy link (`copy` then `check`), WhatsApp (`message-circle-2`), LinkedIn (`brand-linkedin`), X (`x-2`) — plain URLs, no third-party script.
+9. **Related posts** (same template first, then the section).
 
 ## SEO
 
