@@ -12,7 +12,7 @@ import { M2WaterView } from './M2WaterView';
  * offered in a browser (it can remind only while the page is open); the screen
  * says they need the phone app.
  */
-export function M2WaterRoute(): React.ReactElement {
+export function M2WaterRoute({ wide = false }: { wide?: boolean } = {}): React.ReactElement {
   const slot = usePhoneHeaderSlot();
   const online = useOnline();
   const [vm] = useState(() => new WaterViewModel());
@@ -23,8 +23,8 @@ export function M2WaterRoute(): React.ReactElement {
     return () => vm.dispose();
   }, [vm]);
   return (
-    <M2WaterView vm={vm} online={online} links={{
-      back: () => navigate(STUDENT_NAV_ROUTES.health),
+    <M2WaterView vm={vm} online={online} wide={wide} links={{
+      back: () => navigate(wide ? 'home' : STUDENT_NAV_ROUTES.health),
       sos: () => (slot?.openSos ? slot.openSos() : navigate('sos')),
     }} />
   );

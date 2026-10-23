@@ -281,7 +281,7 @@ const styles = StyleSheet.create({
     width: size.touchTarget, height: size.touchTarget, borderRadius: radius.full, alignItems: 'center', justifyContent: 'center',
     backgroundColor: color.surface, ...shadowStyle(shadow.hairline),
   },
-  roundOnHero: { backgroundColor: color.onHeroVeil, shadowOpacity: 0, elevation: 0, ...webOnly({ boxShadow: 'none' }) },
+  roundOnHero: { backgroundColor: color.onHeroVeil, ...(Platform.OS === 'web' ? { boxShadow: 'none' } : { shadowOpacity: 0, elevation: 0 }) },
   badge: {
     position: 'absolute', top: space.s2, right: space.s2, minWidth: 18, height: 18, paddingHorizontal: space.s4, borderRadius: radius.full,
     alignItems: 'center', justifyContent: 'center', backgroundColor: color.action, borderWidth: 2, borderColor: color.canvas,

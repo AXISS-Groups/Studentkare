@@ -13,7 +13,7 @@ import { useUndoClock } from './useUndoClock';
  * phone app, so none are offered here. "Add a medicine" opens the existing
  * medicine form (/medications).
  */
-export function M2RemindersRoute(): React.ReactElement {
+export function M2RemindersRoute({ wide = false }: { wide?: boolean } = {}): React.ReactElement {
   const slot = usePhoneHeaderSlot();
   const online = useOnline();
   const [vm] = useState(() => new MedsTodayViewModel());
@@ -24,8 +24,8 @@ export function M2RemindersRoute(): React.ReactElement {
   }, [vm]);
   useUndoClock(vm);
   return (
-    <M2RemindersView vm={vm} online={online} links={{
-      back: () => navigate(STUDENT_NAV_ROUTES.health),
+    <M2RemindersView vm={vm} online={online} wide={wide} links={{
+      back: () => navigate(wide ? 'home' : STUDENT_NAV_ROUTES.health),
       sos: () => (slot?.openSos ? slot.openSos() : navigate('sos')),
       water: () => navigate('health/water'),
       uploadPrescription: () => navigate('prescriptions'),

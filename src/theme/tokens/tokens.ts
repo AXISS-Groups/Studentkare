@@ -9,6 +9,7 @@
 // turquoise, cyan and reward violet), it is mapped to the nearest sanctioned
 // role rather than left off-palette. Some names therefore resolve to the same
 // colour; that is deliberate and honest.
+import { Platform } from 'react-native';
 import { skTokens } from './generated/skTokens';
 
 // Widened to `string`: skTokens is `as const`, so without this every value keeps
@@ -251,28 +252,28 @@ export const radius = {
 };
 
 export const shadows = {
-  sm: {
+  sm: Platform.OS === 'web' ? { boxShadow: skTokens.shadow.hairline } : {
     shadowColor: '#13192E',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
     shadowRadius: 6,
     elevation: 2,
   },
-  md: {
+  md: Platform.OS === 'web' ? { boxShadow: skTokens.shadow.card } : {
     shadowColor: '#13192E',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.10,
     shadowRadius: 24,
     elevation: 4,
   },
-  lg: {
+  lg: Platform.OS === 'web' ? { boxShadow: skTokens.shadow.float } : {
     shadowColor: '#13192E',
     shadowOffset: { width: 0, height: 14 },
     shadowOpacity: 0.14,
     shadowRadius: 30,
     elevation: 8,
   },
-  glow: {
+  glow: Platform.OS === 'web' ? { boxShadow: skTokens.shadow.float } : {
     shadowColor: '#3525CD',
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.28,

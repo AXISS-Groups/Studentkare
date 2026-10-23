@@ -910,6 +910,19 @@
 .sk-setpc__lengths li[data-tone='fair'] .sk-setpc__len { background: var(--sk-color-surface-3); color: var(--sk-color-action); }
 .sk-setpc__lengths li[data-tone='strong'] .sk-setpc__len { background: var(--sk-color-positive-bg); color: var(--sk-color-positive); }
 .sk-setpc__lengths li[data-tone='strong'] { color: var(--sk-color-text); font-weight: 700; }
+@media (min-width: 641px) {
+  .sk-signin--web .sk-setpc__lengths ul {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--sk-space-12);
+  }
+  .sk-signin--web .sk-setpc__lengths li {
+    padding: var(--sk-space-8);
+    border-radius: var(--sk-radius-md);
+    background: var(--sk-color-surface);
+    border: 1px solid var(--sk-color-rule-soft);
+  }
+}
 .sk-signin .sk-setpc__current-hint { margin-top: calc(var(--sk-space-12) * -1); }
 .sk-strength { display: flex; flex-direction: column; gap: var(--sk-space-6); margin-top: calc(var(--sk-space-8) * -1); }
 .sk-strength__bars { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--sk-space-4); }
