@@ -643,11 +643,11 @@ Notes for the reviewer: "Monday Motivation" is a series name and stays in Englis
 | `news.tplPlural.MYTH_FACT` | Myths vs facts | అపోహలు vs వాస్తవాలు | मिथक बनाम तथ्य |
 | `news.tplPlural.QUICK_CARD` | Quick cards | క్విక్ కార్డ్‌లు | क्विक कार्ड |
 | `news.tplAbout.MOTIVATION` | Orange cover. A short line or a clearly attributed public-domain quote. No advice. | నారింజ కవర్. ఒక చిన్న మాట లేదా స్పష్టంగా ఆపాదించిన పబ్లిక్-డొమైన్ కోట్. సలహా లేదు. | नारंगी कवर। एक छोटी बात या साफ़ तौर पर किसी के नाम का पब्लिक-डोमेन उद्धरण। कोई सलाह नहीं। |
-| `news.tplAbout.SERIES_EPISODE` | Teal cover (or its series' colour), numbered in its series. Health episodes need a clinician. | టీల్ కవర్ (లేదా దాని సిరీస్ రంగు), సిరీస్‌లో నంబర్‌తో. ఆరోగ్య ఎపిసోడ్‌లకు డాక్టర్ ఆమోదం కావాలి. | टील कवर (या उसकी सीरीज़ का रंग), सीरीज़ में नंबर के साथ। स्वास्थ्य एपिसोड को डॉक्टर की मंज़ूरी चाहिए। |
+| `news.tplAbout.SERIES_EPISODE` | Teal cover (or its series' colour), numbered in its series. | టీల్ కవర్ (లేదా దాని సిరీస్ రంగు), సిరీస్‌లో నంబర్‌తో. | टील कवर (या उसकी सीरीज़ का रंग), सीरीज़ में नंबर के साथ। |
 | `news.tplAbout.EVENT` | Rose cover, with a key-facts box for when and where. | గులాబీ కవర్, ఎప్పుడు, ఎక్కడ కోసం ముఖ్య వివరాల బాక్స్‌తో. | गुलाबी कवर, कब और कहाँ के लिए मुख्य तथ्यों के बॉक्स के साथ। |
 | `news.tplAbout.CAMPUS_SPOTLIGHT` | Sky cover. A campus team, club or service, never a student's health. | ఆకాశ నీలం కవర్. క్యాంపస్ టీమ్, క్లబ్ లేదా సేవ, ఎప్పుడూ విద్యార్థి ఆరోగ్యం కాదు. | आसमानी कवर। कैंपस की टीम, क्लब या सेवा, कभी किसी छात्र का स्वास्थ्य नहीं। |
-| `news.tplAbout.EXPLAINER` | Blue cover, for how something works. Health explainers need a clinician. | నీలం కవర్, ఏదైనా ఎలా పని చేస్తుందో చెప్పడానికి. ఆరోగ్య వివరణలకు డాక్టర్ ఆమోదం కావాలి. | नीला कवर, कोई चीज़ कैसे काम करती है। स्वास्थ्य व्याख्याओं को डॉक्टर की मंज़ूरी चाहिए। |
-| `news.tplAbout.MYTH_FACT` | Violet cover, myth and fact side by side. Health myths need a clinician. | ఊదా కవర్, అపోహ, వాస్తవం పక్కపక్కనే. ఆరోగ్య అపోహలకు డాక్టర్ ఆమోదం కావాలి. | बैंगनी कवर, मिथक और तथ्य साथ-साथ। स्वास्थ्य मिथकों को डॉक्टर की मंज़ूरी चाहिए। |
+| `news.tplAbout.EXPLAINER` | Blue cover, for how something works. | నీలం కవర్, ఏదైనా ఎలా పని చేస్తుందో చెప్పడానికి. | नीला कवर, कोई चीज़ कैसे काम करती है। |
+| `news.tplAbout.MYTH_FACT` | Violet cover, myth and fact side by side. | ఊదా కవర్, అపోహ, వాస్తవం పక్కపక్కనే. | बैंगनी कवर, मिथक और तथ्य साथ-साथ। |
 | `news.tplAbout.QUICK_CARD` | Navy cover, one big figure and a few facts. Only figures from a source. | నేవీ కవర్, ఒక పెద్ద సంఖ్య, కొన్ని వాస్తవాలు. మూలంలోని సంఖ్యలు మాత్రమే. | नेवी कवर, एक बड़ा आँकड़ा और कुछ तथ्य। सिर्फ़ स्रोत के आँकड़े। |
 | `news.block.mythfact` | Myth and fact | అపోహ, వాస్తవం | मिथक और तथ्य |
 | `news.block.stat` | Big figure | పెద్ద సంఖ్య | बड़ा आँकड़ा |
@@ -727,6 +727,7 @@ Notes for the reviewer: "Monday Motivation" is a series name and stays in Englis
 | `cms.reason.ADVICE` | Medical advice (dose, diagnosis or treatment) | వైద్య సలహా (మోతాదు, నిర్ధారణ లేదా చికిత్స) | चिकित्सा सलाह (खुराक, निदान या इलाज) |
 | `cms.reason.UNVERIFIABLE` | A claim the source does not make | మూలం చెప్పని దావా | ऐसा दावा जो स्रोत नहीं करता |
 | `cms.reason.SOURCE_NOT_ALLOWED` | The source is not on the allow-list | మూలం అనుమతి జాబితాలో లేదు | स्रोत अनुमति-सूची में नहीं है |
+| `cms.reason.CRISIS` | Crisis words: a person reads it first | సంక్షోభ పదాలు: ముందుగా ఒక వ్యక్తి చదవాలి | संकट वाले शब्द: पहले कोई व्यक्ति पढ़े |
 | `cms.reason.SOURCE_OLD` | The source item is too old | మూల అంశం చాలా పాతది | स्रोत की ख़बर बहुत पुरानी है |
 | `cms.reason.SOURCE_UNDATED` | The source gives no date | మూలం తేదీ ఇవ్వలేదు | स्रोत में तारीख़ नहीं है |
 | `cms.reason.NOTHING_TO_CHECK` | Nothing to check | తనిఖీ చేయడానికి ఏమీ లేదు | जाँचने को कुछ नहीं |
@@ -817,6 +818,7 @@ Notes for the reviewer: "Monday Motivation" is a series name and stays in Englis
 | `cms.lane.healthClinician` | Each episode waits for a clinician's approval, however precise. | ఎంత ఖచ్చితంగా ఉన్నా, ప్రతి ఎపిసోడ్ డాక్టర్ ఆమోదం కోసం వేచి ఉంటుంది. | चाहे जितना सटीक हो, हर एपिसोड डॉक्टर की मंज़ूरी का इंतज़ार करता है। |
 | `cms.lane.healthPrecise` | Precise episodes go out on their own; imprecise ones wait for you in Review. | ఖచ్చితమైన ఎపిసోడ్‌లు తమంతట తాము ప్రచురితమవుతాయి; కానివి సమీక్షలో మీ కోసం వేచి ఉంటాయి. | सटीक एपिसोड अपने आप प्रकाशित होते हैं; बाकी समीक्षा में आपका इंतज़ार करते हैं। |
 | `cms.lane.episodes` | Episodes so far: {n} | ఇప్పటివరకు ఎపిసోడ్‌లు: {n} | अब तक एपिसोड: {n} |
+| `cms.lane.tipPrecise` | Health tips that pass the precision gate go out on their day; the rest wait for you in Content, Review. Turn on "Health posts need a clinician" to send every one to a clinician. | ఖచ్చితత్వ గేట్ దాటిన ఆరోగ్య చిట్కాలు తమ రోజున ప్రచురితమవుతాయి; మిగిలినవి కంటెంట్, సమీక్షలో మీ కోసం వేచి ఉంటాయి. ప్రతిదాన్నీ డాక్టర్‌కు పంపాలంటే "ఆరోగ్య పోస్ట్‌లకు డాక్టర్ కావాలి" ఆన్ చేయండి. | सटीकता गेट पार करने वाले हेल्थ टिप अपने दिन प्रकाशित होते हैं; बाकी कंटेंट, समीक्षा में आपका इंतज़ार करते हैं। हर टिप डॉक्टर को भेजने के लिए "स्वास्थ्य पोस्ट को डॉक्टर चाहिए" चालू करें। |
 | `cms.key.fetch_interval_minutes` | Read feeds every (minutes) | ఫీడ్‌లను చదవడం ప్రతి (నిమిషాలు) | फ़ीड पढ़ें हर (मिनट) |
 | `cms.key.health_requires_clinician` | Health posts need a clinician | ఆరోగ్య పోస్ట్‌లకు డాక్టర్ కావాలి | स्वास्थ्य पोस्ट को डॉक्टर चाहिए |
 | `cms.key.precision_threshold` | Precision threshold | ఖచ్చితత్వ పరిమితి | सटीकता सीमा |
@@ -880,5 +882,4 @@ Notes for the reviewer: "Monday Motivation" is a series name and stays in Englis
 | `cms.crisis.emergency` | Emergency 112 | అత్యవసరం 112 | आपातकाल 112 |
 | `cms.topics.aria` | Filter by category | విభాగం వారీగా ఫిల్టర్ చేయండి | श्रेणी से फ़िल्टर करें |
 | `cms.topics.all` | All topics | అన్ని అంశాలు | सभी विषय |
-| `cms.reason.CRISIS` | Crisis words: a person reads it first | సంక్షోభ పదాలు: ముందుగా ఒక వ్యక్తి చదవాలి | संकट वाले शब्द: पहले कोई व्यक्ति पढ़े |
-| `cms.lane.tipPrecise` | Health tips that pass the precision gate go out on their day; the rest wait for you in Content, Review. … | ఖచ్చితత్వ గేట్ దాటిన ఆరోగ్య చిట్కాలు … | सटीकता गेट पार करने वाले हेल्थ टिप … |
+
