@@ -169,6 +169,7 @@ ORDERED_PAIRS: tuple[tuple[str, str], ...] = (
     ("medicine_info.adult_from_years", "medicine_info.older_adult_from_years"),
     ("medicine_info.child_from_years", "medicine_info.ask_doctor_below_years"),
     ("platform.api_rate_per_account_per_minute", "platform.api_rate_per_ip_per_minute"),
+    ("autopilot.news_window_start_hour", "autopilot.news_window_end_hour"),
 )
 
 
@@ -272,6 +273,95 @@ declare("newsroom.image_max_bytes", INT, 5 * 1024 * 1024, area="newsroom", unit=
         maximum=10 * 1024 * 1024, description="Largest image an editor can place in a post.")
 declare("newsroom.words_per_minute", INT, 200, area="newsroom", unit="words per minute", minimum=100, maximum=400,
         public=True, description="Reading speed used for a post's reading time.")
+
+# --- content autopilot (services/newsroom_autopilot.py) ------------------------------
+# Off until a super admin turns a lane on. News: up to news_per_day short summaries of
+# new items from the allow-listed official feeds below, each naming and linking its
+# source. Blog: posts_per_week drafts on the configured days from the topic plan (built
+# only from approved knowledge sources) and a round-up of the week's What's new posts.
+# Health tips always wait for a clinician's approval, whatever auto_publish says.
+# Times are in platform.default_timezone (IST).
+declare("autopilot.kill_switch", BOOL, False, area="autopilot",
+        description="Emergency stop for the content autopilot: while true it fetches, drafts and publishes nothing.")
+declare("autopilot.news_enabled", BOOL, False, area="autopilot",
+        description="Autopilot News lane: summarise new items from the allow-listed official feeds.")
+declare("autopilot.blog_enabled", BOOL, False, area="autopilot",
+        description="Autopilot Blog lane: draft the week's blog posts from the topic plan.")
+declare("autopilot.news_auto_publish", BOOL, False, area="autopilot",
+        description="Publish autopilot news at once. Off: each one waits as a draft for an editor.")
+declare("autopilot.blog_auto_publish", BOOL, False, area="autopilot",
+        description="Publish autopilot stories on their day. Health tips always wait for a clinician's approval.")
+declare("autopilot.use_model", BOOL, True, area="autopilot",
+        description="Let the configured on-prem model write the headline and summary (checked against the source; "
+                    "anything not grounded falls back to the source's own words).")
+declare("autopilot.news_per_day", INT, 3, area="autopilot", unit="posts per day", minimum=1, maximum=5,
+        description="Most autopilot news posts in one day.")
+declare("autopilot.news_min_gap_minutes", INT, 120, area="autopilot", unit="minutes", minimum=0, maximum=720,
+        description="Least time between two autopilot news posts, so a day's posts are spread out.")
+declare("autopilot.news_window_start_hour", INT, 7, area="autopilot", unit="hour of day (IST)", minimum=0, maximum=23,
+        description="Autopilot news posts only from this hour.")
+declare("autopilot.news_window_end_hour", INT, 21, area="autopilot", unit="hour of day (IST)", minimum=1, maximum=24,
+        description="Autopilot news posts only before this hour.")
+declare("autopilot.news_max_age_hours", INT, 72, area="autopilot", unit="hours", minimum=6, maximum=336,
+        description="Oldest source item the autopilot still summarises.")
+declare("autopilot.news_min_relevance", INT, 1, area="autopilot", unit="keyword matches", minimum=0, maximum=10,
+        description="Fewest student-relevance keyword matches an item needs to be posted.")
+declare("autopilot.relevance_keywords", STR,
+        "student,students,campus,college,university,youth,young people,adolescent,exam,mental health,sleep,"
+        "nutrition,hydration,heat,heatwave,air quality,vaccine,vaccination,immunization,dengue,malaria,"
+        "tuberculosis,hygiene,physical activity,sport,injury,tobacco,alcohol,road safety,drug alert,recall,"
+        "not of standard quality,outbreak,advisory,scholarship,education,ugc",
+        area="autopilot", unit="comma-separated words and phrases",
+        description="What makes an item student-relevant: each word or phrase found counts once (twice in the title).")
+declare("autopilot.block_words", STR,
+        "patient,deceased,died,death of,obituary,victim,suicide,murder,rape,assault,arrested,accused,named",
+        area="autopilot", unit="comma-separated words and phrases",
+        description="An item or a written summary containing any of these is never posted (people, deaths, crime).")
+declare("autopilot.headline_max_chars", INT, 90, area="autopilot", unit="characters", minimum=30, maximum=160,
+        description="Longest autopilot headline.")
+declare("autopilot.summary_max_chars", INT, 300, area="autopilot", unit="characters", minimum=80, maximum=300,
+        description="Longest autopilot summary (two or three sentences).")
+declare("autopilot.max_posts_per_day", INT, 6, area="autopilot", unit="posts per day", minimum=1, maximum=20,
+        description="Hard cap on everything the autopilot drafts or publishes in one day, both lanes together.")
+declare("autopilot.blog_posts_per_week", INT, 2, area="autopilot", unit="posts per week", minimum=0, maximum=7,
+        description="Autopilot blog posts a week (one per configured day, in order).")
+declare("autopilot.blog_days", STR, "MON,THU", area="autopilot", unit="comma-separated MON..SUN",
+        description="The days the autopilot blog posts go out.")
+declare("autopilot.blog_hour", INT, 10, area="autopilot", unit="hour of day (IST)", minimum=0, maximum=23,
+        description="The hour the autopilot blog posts go out on their day.")
+declare("autopilot.blog_lead_hours", INT, 24, area="autopilot", unit="hours", minimum=1, maximum=96,
+        description="How long before its time a blog post is drafted (time for a clinician to review a health tip).")
+declare("autopilot.blog_topics", STR,
+        "sleep,exam stress,hydration,campus food,sports injuries,heat and sun,eye strain,handwashing,"
+        "physical activity,mental wellbeing",
+        area="autopilot", unit="comma-separated topics",
+        description="The rotating topic plan. A topic is drafted only from approved knowledge sources about it.")
+declare("autopilot.fetch_timeout_seconds", INT, 10, area="autopilot", unit="seconds", minimum=2, maximum=30,
+        description="How long the autopilot waits for one feed.")
+declare("autopilot.fetch_max_bytes", INT, 2 * 1024 * 1024, area="autopilot", unit="bytes", minimum=64 * 1024,
+        maximum=8 * 1024 * 1024, description="Largest feed the autopilot reads.")
+declare("autopilot.source_failures_before_alert", INT, 3, area="autopilot", unit="failed fetches", minimum=1,
+        maximum=20, description="Failed fetches in a row before a feed raises an ops alert.")
+declare("autopilot.log_size", INT, 50, area="autopilot", unit="entries", minimum=10, maximum=200,
+        description="Entries in the Autopilot tab's log and queue.")
+# The allow-list of feeds. The publisher, its hosts and what was verified are in
+# backend/content/newsroom/autopilot.json; a feed address must stay on its hosts.
+# Verified from the network on 2026-10-23: who_news (RSS 2.0 with summaries) and
+# pib_releases (RSS 2.0, titles and links only, no dates; left off). No public feed
+# was found for the others: their address is empty until one is confirmed.
+AUTOPILOT_SOURCES: tuple[tuple[str, str, bool], ...] = (
+    ("cdsco_alerts", "", False),
+    ("icmr", "", False),
+    ("mohfw", "", False),
+    ("pib_releases", "https://www.pib.gov.in/RssMain.aspx?ModId=6&Lang=1&Regid=3", False),
+    ("ugc_notices", "", False),
+    ("who_news", "https://www.who.int/rss-feeds/news-english.xml", True),
+)
+for _source, _url, _on in AUTOPILOT_SOURCES:
+    declare(f"autopilot.source.{_source}.url", STR, _url, area="autopilot", unit="https URL on the source's hosts",
+            description=f"Feed address (RSS or Atom) of the autopilot source {_source}. Empty: not verified yet.")
+    declare(f"autopilot.source.{_source}.enabled", BOOL, _on, area="autopilot",
+            description=f"Whether the autopilot reads the source {_source}.")
 
 # --- medicine information (services/medicine_info.py; plan tier1-medicine-info-2026-10-22) ---
 # The "Who is it for?" age bands. The band a person picks stays on the device;

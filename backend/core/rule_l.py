@@ -156,6 +156,8 @@ TABLE_PLANES: dict[str, str] = {
     "care_posts": PLATFORM,                       # News and Blog posts: editorial text, never about a student
     "care_post_events": PLATFORM,                 # append-only trail of post edits, reviews and publishing (ids, hashes)
     "care_post_images": PLATFORM,                 # images placed in posts, virus-scanned before storing
+    "care_autopilot_items": PLATFORM,             # content autopilot: official feed items and blog slots, never a person
+    "care_autopilot_sources": PLATFORM,           # content autopilot: per-feed fetch health (times, error class)
     "care_availability_slots": PLATFORM,
     "care_lab_test_reference": PLATFORM,          # test names and body-system groups; no person, no range
     "care_lab_collectors": PLATFORM,              # which staff account collects for which lab

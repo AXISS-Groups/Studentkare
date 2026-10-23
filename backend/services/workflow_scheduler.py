@@ -46,6 +46,7 @@ PERIODIC_JOBS = {
     "campus_departures": "Complete campus departures whose date has arrived",
     "account_erasure": "Erase accounts whose deletion grace period has passed; destroy expired archives",
     "payment_expiry": "Release the stock of orders and the slots of lab bookings not paid in time",
+    "content_autopilot": "Content autopilot: official health news and the weekly blog plan (off until turned on)",
 }
 
 # Per-job cadence overrides (seconds). Everything else uses DEFAULT_INTERVAL_SECONDS.
@@ -59,6 +60,9 @@ JOB_INTERVAL_OVERRIDES = {
     # Unpaid orders hold stock for PAYMENT_HOLD_MINUTES (default 30); give it back
     # within a few minutes of the deadline, not hours.
     "payment_expiry": 300,
+    # The content autopilot posts news "instantly": a new item is picked up within
+    # one pass. It does nothing while its lanes are off (services/newsroom_autopilot.py).
+    "content_autopilot": 900,
 }
 
 # Jobs that carry safety deliveries. They run first in every pass and again between
@@ -298,6 +302,9 @@ class WorkflowScheduler:
             labs = expire_unpaid_lab_bookings(db)["summary"]
             return {"summary": {**orders, "lab_bookings_due": labs["due"], "lab_bookings_expired": labs["expired"],
                                 "lab_bookings_needs_review": labs["needs_review"]}}
+        if key == "content_autopilot":
+            from services.newsroom_autopilot import run as run_content_autopilot
+            return run_content_autopilot(db)
         raise UnknownJobError("Unknown job.")
 
 
