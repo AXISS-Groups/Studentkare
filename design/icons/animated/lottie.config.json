@@ -202,8 +202,10 @@
       "pack": "ui",
       "file": "calendar/calendar_lottie.json",
       "rest": 1,
-      "screens": [],
-      "uses": "Appointments empty (web panel, native booking)"
+      "screens": [
+        "M2Camps"
+      ],
+      "uses": "Appointments empty (web panel, native booking); health camps empty (M2Camps)"
     },
     {
       "name": "anim-bell-off",

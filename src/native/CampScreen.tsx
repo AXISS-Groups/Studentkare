@@ -10,15 +10,14 @@ import type { CampDayData, CampDayStationView } from '@/features/camp/day/campDa
 /**
  * CampDay on the phone (design page 6, Tier 2): the camp the student is
  * registered for, their slot and stations, read from the same endpoints as
- * the web panel (see features/camp/day/campDay.ts). Booking a slot happens in
- * the camp list on the web; with no registration this says so and offers the
- * provider directory. The board's token, "students ahead" and live queue have
+ * the web panel (see features/camp/day/campDay.ts). Booking a slot happens on
+ * the Camps screen (M2Camps); with no booking this says so and opens it. The board's token, "students ahead" and live queue have
  * no endpoint: the queue says it isn't connected, and no number is invented.
  * Navigation and safe-area handling belong to the native shell.
  */
 type Load = { state: 'loading' } | { state: 'error' } | { state: 'ready'; data: CampDayData | null };
 
-export function CampScreen({ onOpenProviders, onSeeResults, onBack }: { onOpenProviders?: () => void; onSeeResults?: () => void; onBack?: () => void }) {
+export function CampScreen({ onOpenProviders, onFindCamps, onSeeResults, onBack }: { onOpenProviders?: () => void; onFindCamps?: () => void; onSeeResults?: () => void; onBack?: () => void }) {
   const t = useT();
   const [load, setLoad] = useState<Load>({ state: 'loading' });
   const [busy, setBusy] = useState(false);
@@ -50,7 +49,7 @@ export function CampScreen({ onOpenProviders, onSeeResults, onBack }: { onOpenPr
   if (!data) {
     return (
       <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-        <EmptyState title={t('care.campNative.emptyTitle')} body={t('care.campNative.emptyBody')} action={onOpenProviders ? { label: t('care.campNative.directory'), onPress: onOpenProviders } : undefined} />
+        <EmptyState title={t('care.campNative.emptyTitle')} body={t('care.campNative.emptyBody')} action={onFindCamps ? { label: t('camps.findCamp'), onPress: onFindCamps } : onOpenProviders ? { label: t('care.campNative.directory'), onPress: onOpenProviders } : undefined} />
       </ScrollView>
     );
   }

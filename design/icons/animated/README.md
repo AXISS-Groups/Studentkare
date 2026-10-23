@@ -61,7 +61,7 @@ Sizes come from the `size.anim-*` tokens.
 | `anim-shopping-cart` | icon | User Interface Animated Icons (200) → `shopping-cart/shopping-cart_lottie.json` | M2Orders, Cart | M2Orders first order (3D), cart empty | 12.1 → 9.7 |
 | `anim-file-text` | icon | User Interface Animated Icons (200) → `file-text/file-text_lottie.json` | — | Member records empty (web) | 11.7 → 10.3 |
 | `anim-clock` | icon | User Interface Animated Icons (200) → `clock/clock_lottie.json` | — | Medicines panel empty (web) | 3.7 → 3.0 |
-| `anim-calendar` | icon | User Interface Animated Icons (200) → `calendar/calendar_lottie.json` | — | Appointments empty (web panel, native booking) | 8.0 → 6.6 |
+| `anim-calendar` | icon | User Interface Animated Icons (200) → `calendar/calendar_lottie.json` | M2Camps | Appointments empty (web panel, native booking); health camps empty (M2Camps) | 8.0 → 6.6 |
 | `anim-bell-off` | icon | User Interface Animated Icons (200) → `bell-off/belloff_lottie.json` | Notifications | Notifications empty (native view, web inbox panel) | 11.4 → 9.8 |
 | `anim-search-off` | icon | Google Material: 200 Animated Icons (UI Action Category) → `Search_Off_lottie.json` | — | Shop search with no results | 9.3 → 7.5 |
 | `anim-book-open` | icon | User Interface Animated Icons (200) → `book-open/bookopen_lottie.json` | WebNewsroom | Blog empty | 4.7 → 4.2 |

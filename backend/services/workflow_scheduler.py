@@ -403,7 +403,7 @@ def _count_pending(db) -> int:
 URGENT_EVENT_TYPES = frozenset({"BLOOD_SOS", "CRISIS_ALERT", "SOS_ACKNOWLEDGED", "SOS_RESOLVED"})
 
 # Event types a student can turn off under "consult and dose reminders".
-REMINDER_EVENT_TYPES = frozenset({"MEDICATION_REMINDER", "medication_refill", "appointment_reminder"})
+REMINDER_EVENT_TYPES = frozenset({"MEDICATION_REMINDER", "medication_refill", "appointment_reminder", "camp_reminder"})
 
 def in_quiet_hours(start: str, end: str, at: datetime) -> bool:
     """Whether ``at`` falls inside a HH:MM..HH:MM window that may wrap midnight."""
@@ -505,6 +505,8 @@ REMINDER_MESSAGES = {
     "appointment_reminder": "You have an upcoming appointment in Student Kare. Open the app for details.",
     "medication_refill": "You have a medicine reminder in Student Kare. Open the app for details.",
     "MEDICATION_REMINDER": "You have a medicine reminder in Student Kare. Open the app for details.",
+    # Never the camp's name or services: a dental or eye camp is care sought.
+    "camp_reminder": "You have an upcoming booking in Student Kare. Open the app for details.",
 }
 
 # Appointment states a reminder still makes sense for.
@@ -560,6 +562,12 @@ def reminder_timing(db, event, at: float | None = None) -> tuple[str, str]:
     """
     from core import workflow_models as M
 
+    if (event.event_type or "") == "camp_reminder":
+        from services.health_camps import camp_reminder_timing
+        verdict, reason, due = camp_reminder_timing(db, event, time.time() if at is None else at)
+        if verdict == "defer" and due is not None:
+            defer_until(event, due)
+        return verdict, reason
     if (event.event_type or "") != "appointment_reminder":
         return "send", ""
     payload = event.payload or {}

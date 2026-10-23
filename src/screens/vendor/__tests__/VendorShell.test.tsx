@@ -23,7 +23,7 @@ describe('partner console sidebar (VendorConsole / VendorHome boards)', () => {
       ['Home', 'home-2'], ['Verify student', 'scan'], ['Orders', 'box-2'], ['Rx review', 'prescription'],
       ['Substitutions', 'arrows-left-right-2'], ['OTP handover', 'key'], ['Returns', 'undo'],
       ['Dispense register', 'clipboard'], ['Medicine info', 'pill'], ['Reorder rules', 'repeat'],
-      ['Sample queue', 'flask'], ['Run sheet', 'truck'], ['Cold chain', 'asterisk'], ['Lab reports', 'file'], ['Camp intake', 'alert-triangle-2'],
+      ['Sample queue', 'flask'], ['Run sheet', 'truck'], ['Cold chain', 'asterisk'], ['Lab reports', 'file'], ['Health camps', 'calendar'], ['Camp intake', 'alert-triangle-2'],
       ['Staff & roles', 'users'], ['Catalogue', 'grid'], ['Settlement', 'banknote'], ['Performance', 'bar-chart'],
     ]);
   });

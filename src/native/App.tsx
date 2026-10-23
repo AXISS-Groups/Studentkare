@@ -62,6 +62,7 @@ import {
 } from './M2StoreScreens';
 import {
   AskAyushScreen,
+  CampsScreen,
   InsightsScreen,
   ProductScreen,
   ProfileScreen,
@@ -90,6 +91,7 @@ export type RootStackParamList = {
   Appointments: undefined;
   BookAppointment: undefined;
   Camp: undefined;
+  Camps: undefined;
   Campuses: undefined;
   CaptureRecord: undefined;
   Checkout: undefined;
@@ -153,7 +155,7 @@ function CampRoute() {
   const navigate = useNavigate();
   return (
     <SafeAreaView edges={['left', 'right', 'bottom']} style={{ flex: 1 }}>
-      <CampScreen onOpenProviders={() => navigate('PreventiveCare')} onSeeResults={() => navigate('Vault')} />
+      <CampScreen onOpenProviders={() => navigate('PreventiveCare')} onFindCamps={() => navigate('Camps')} onSeeResults={() => navigate('Vault')} />
     </SafeAreaView>
   );
 }
@@ -436,6 +438,7 @@ function RootNavigator() {
           <Stack.Screen name="Consults" component={ConsultsScreen} options={{ title: t('m2.doc.eyebrow'), headerShown: false }} />
           <Stack.Screen name="Insurance" component={InsuranceScreen} options={{ title: t('m2.ins.title'), headerShown: false }} />
           <Stack.Screen name="Vaccines" component={VaccinesScreen} options={{ title: t('m2.vac.eyebrow'), headerShown: false }} />
+          <Stack.Screen name="Camps" component={CampsScreen} options={{ title: t('camps.title'), headerShown: false }} />
           <Stack.Screen name="Product" component={ProductScreen} options={{ title: t('m2.med.title'), headerShown: false }} />
           <Stack.Screen name="Insights" component={InsightsScreen} options={{ title: t('m2.nav.health'), headerShown: false }} />
           <Stack.Screen name="Profile" component={ProfileScreen} options={{ title: t('m2.nav.profile'), headerShown: false }} />

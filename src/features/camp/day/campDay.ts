@@ -77,6 +77,20 @@ export async function loadMyCampDay(signal?: AbortSignal): Promise<CampDayData |
   return null;
 }
 
+/** One camp's day for the student (the camp list's "Open camp day"); null when they hold no place at it. */
+export async function loadCampDay(campId: string, signal?: AbortSignal): Promise<CampDayData | null> {
+  const id = encodeURIComponent(campId);
+  const camps = await apiRequest<{ items: CampSummary[] }>('/camps', { signal });
+  const status = await apiRequest<CampStatus>(`/camps/${id}/me`, { signal });
+  const camp = camps.items.find((item) => item.id === campId);
+  if (!camp || !status.registered) return null;
+  const [stations, slots] = await Promise.all([
+    apiRequest<{ items: CampStation[] }>(`/camps/${id}/stations`, { signal }),
+    apiRequest<{ items: CampSlot[] }>(`/camps/${id}/slots`, { signal }),
+  ]);
+  return { camp, status, stations: stations.items, slot: slots.items.find((slot) => slot.id === status.slotId) ?? null };
+}
+
 export function checkInToCamp(campId: string): Promise<unknown> {
   return apiRequest(`/camps/${encodeURIComponent(campId)}/check-in`, { method: 'POST' });
 }

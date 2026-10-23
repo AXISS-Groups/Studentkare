@@ -1075,7 +1075,13 @@ class RefillRequest(Base):
 
 
 class HealthCamp(Base):
-    """A health camp with bookable time slots and a fixed station sequence."""
+    """A health camp with bookable time slots and a fixed station sequence.
+
+    ``campus`` is the campus it is held for ("" = every campus: camps made before
+    campus scoping). ``status``: PENDING_APPROVAL (a partner proposed it; the
+    campus has not approved it yet), PUBLISHED, DECLINED or CANCELLED. Only a
+    PUBLISHED, active camp is shown to students (services/health_camps.py).
+    """
     __tablename__ = "care_health_camps"
     id: Mapped[str] = mapped_column(String, primary_key=True)
     name: Mapped[str] = mapped_column(String(160))
@@ -1083,6 +1089,18 @@ class HealthCamp(Base):
     location: Mapped[str] = mapped_column(String(160), default="")
     what_to_bring: Mapped[str] = mapped_column(String(1000), default="")
     active: Mapped[bool] = mapped_column(Boolean, default=True)
+    campus: Mapped[str] = mapped_column(String(160), default="", server_default="", index=True)
+    # Service codes (services/health_camps.SERVICES), in the order the host listed them.
+    services: Mapped[list | None] = mapped_column(JSON, default=list, nullable=True)
+    # CAMPUS_VERIFIED | CAMPUS_ANY | OPEN (services/health_camps.ELIGIBILITY).
+    eligibility: Mapped[str] = mapped_column(String(24), default="CAMPUS_VERIFIED", server_default="CAMPUS_VERIFIED")
+    price_paise: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
+    status: Mapped[str] = mapped_column(String(20), default="PUBLISHED", server_default="PUBLISHED", index=True)
+    host_account_id: Mapped[str] = mapped_column(String, default="", server_default="")
+    # CAMPUS (a campus administrator), PARTNER (a clinic or lab) or PLATFORM (a super admin).
+    host_kind: Mapped[str] = mapped_column(String(12), default="", server_default="")
+    created_at: Mapped[float] = mapped_column(Float, default=0.0, server_default="0")
+    cancel_reason: Mapped[str] = mapped_column(String(300), default="", server_default="")
 
 
 class HealthCampSlot(Base):
@@ -1121,6 +1139,11 @@ class CampAttendance(Base):
     checked_in: Mapped[bool] = mapped_column(Boolean, default=False)
     completed_stations: Mapped[list] = mapped_column(JSON, default=list)
     created_at: Mapped[float] = mapped_column(Float, default=0.0)
+    # REGISTERED (no slot chosen) | BOOKED | WAITLISTED (slot_id is the full slot it waits for) | CANCELLED.
+    status: Mapped[str] = mapped_column(String(16), default="BOOKED", server_default="BOOKED", index=True)
+    # The reference the student is shown for this booking. A new one for every booking.
+    booking_code: Mapped[str] = mapped_column(String(16), default="", server_default="")
+    updated_at: Mapped[float] = mapped_column(Float, default=0.0, server_default="0")
 
 class ConsultationSession(Base):
     """A teleconsult session for a confirmed appointment. Tracks an honest state."""

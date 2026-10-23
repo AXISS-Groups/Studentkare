@@ -1,6 +1,6 @@
 # Icon coverage
 
-Screens built and passing: **231 / 260** · built with gaps: 0 · not started: 29 · superseded: 2
+Screens built and passing: **237 / 266** · built with gaps: 0 · not started: 29 · superseded: 2
 
 | Screen | Status | Missing |
 |---|---|---|
@@ -235,6 +235,12 @@ Screens built and passing: **231 / 260** · built with gaps: 0 · not started: 2
 | SetPasscode | pass | — |
 | M2MedicineInfo | pass | — |
 | AdminMedicineInfo | pass | — |
+| WebNewsroom | pass | — |
+| WebPost | pass | — |
+| AdminPosts | pass | — |
+| M2WhatsNew | pass | — |
+| M2Camps | pass | — |
+| PartnerCamps | pass | — |
 | AyushChat | not started | — |
 | AyushSheet | not started | — |
 | CheckinReceipt | not started | — |

@@ -56,6 +56,8 @@ export const VENDOR_NAVIGATION: VendorNavGroup[] = [
       // shows where every filed report has got to (with the doctor, released, acknowledged).
       { label: 'Lab reports', labelKey: 'partner.vhome.home.tool.labReports', icon: 'file', route: 'lab-reporting', kinds: LAB },
       // Camp fast mode (the staff app board) opens from Camp intake and keeps it lit.
+      // Health camps a clinic or lab runs on a partner campus (booking, waitlist, counts, CSV).
+      { label: 'Health camps', labelKey: 'partner.vcon.nav.camps', icon: 'calendar', route: 'partner-camps', kinds: ['CLINIC', 'LAB', 'WELLNESS'] },
       { label: 'Camp intake', labelKey: 'partner.vcon.nav.campIntake', icon: 'alert-triangle-2', route: 'camp-intake', activeFor: ['vendor-camp-intake', 'camp-fast'], kinds: LAB },
     ],
   },

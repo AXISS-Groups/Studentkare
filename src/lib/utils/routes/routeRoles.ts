@@ -70,6 +70,7 @@ export const routeRoles: Readonly<Partial<Record<RoutePath, RouteRoles>>> = {
   'meo': MEO_TRIAGE, // features/care/module.ts
   'my-lab-tests': STUDENT_ONLY, // the student's own released reports (WP-09)
   'my-requests': STUDENT_ONLY,
+  'partner-camps': PARTNER,
   'partner-staff': PARTNER,
   'performance': PARTNER,
   'privacy-consent': STUDENT_ONLY, // Profile → Privacy & consent: the student's own consent ledger
