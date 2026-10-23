@@ -3,7 +3,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { observer } from 'mobx-react-lite';
 import { Button, Chip, ErrorState, OfflineBanner, Rise, Sheet, Skeleton, SwitchRow, TextField } from '@/design-system';
 import { Icon } from '@/design-system/icons';
-import { Gradient, M2Card, M2Heading, M2_NAV_CLEARANCE, RoundButton, SoftIcon, SosButton, heroStops, m2Text, useOwnPhoneChrome, webAttrs } from '@/design-system/m2';
+import { Gradient, M2Card, M2Heading, M2WideColumn, M2_NAV_CLEARANCE, RoundButton, SoftIcon, SosButton, heroStops, m2Text, useOwnPhoneChrome, webAttrs } from '@/design-system/m2';
 import type { PressState } from '@/design-system/m2';
 import { color, focusRing, font, fontWeight, radius, size, space } from '@/design-system/theme';
 import { say, useT } from '@/i18n';
@@ -205,7 +205,7 @@ const RowSheet = observer(function RowSheet({ vm }: { vm: RefillsViewModel }) {
   );
 });
 
-export const M2RefillsView = observer(function M2RefillsView({ vm, links }: { vm: RefillsViewModel; links: M2RefillsLinks }) {
+export const M2RefillsView = observer(function M2RefillsView({ vm, links, wide = false }: { vm: RefillsViewModel; links: M2RefillsLinks; /** Laid out wide in the desktop web shell (parity phase 2); the shell's top bar carries SOS. */ wide?: boolean }) {
   const t = useT();
   useOwnPhoneChrome();
   const rows = vm.items;
@@ -238,34 +238,39 @@ export const M2RefillsView = observer(function M2RefillsView({ vm, links }: { vm
     );
   }
 
-  return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content} testID="m2-refills">
-      <View style={styles.header} testID="m2-refill-header">
+  const gutter = wide ? undefined : styles.gutter;
+  const board = (
+    <>
+      <View style={[styles.header, wide ? styles.headerWide : null]} testID="m2-refill-header">
         <RoundButton icon="arrow-left" label={t('refill.back')} onPress={links.back} testID="m2-refill-back" />
         <View style={styles.grow}>
           <Text numberOfLines={1} style={styles.eyebrow}>{t('refill.eyebrow')}</Text>
           <M2Heading level={1} style={styles.title}>{t('refill.title')}</M2Heading>
         </View>
-        <SosButton label={t('m2.sos')} spoken={t('m2.sosSpoken')} onPress={links.sos} testID="m2-refill-sos" />
+        {wide ? null : <SosButton label={t('m2.sos')} spoken={t('m2.sosSpoken')} onPress={links.sos} testID="m2-refill-sos" />}
       </View>
-      <Rise style={styles.gutter}>
+      <Rise style={gutter}>
         <Gradient colors={heroStops('teal')} angle={150} style={styles.hero} testID="m2-refill-hero">
           <Text style={styles.heroEyebrow}>{t('refill.heroEyebrow')}</Text>
           <Text style={styles.heroLine} aria-live="polite" testID="m2-refill-headline">{headline}</Text>
           <Text style={styles.heroNote}>{t('refill.heroNote')}</Text>
         </Gradient>
       </Rise>
-      {!vm.online ? <View style={styles.gutter}><OfflineBanner message={t('refill.offline')} /></View> : null}
-      <Rise index={1} style={styles.gutter}>{body}</Rise>
-      {vm.status ? <Text aria-live="polite" accessibilityLiveRegion="polite" style={[styles.status, styles.gutter]} testID="m2-refill-status">{say(t, vm.status)}</Text> : null}
-      <View style={[styles.lockNote, styles.gutter]} testID="m2-refill-lock-note">
+      {!vm.online ? <View style={gutter}><OfflineBanner message={t('refill.offline')} /></View> : null}
+      <Rise index={1} style={gutter}>{body}</Rise>
+      {vm.status ? <Text aria-live="polite" accessibilityLiveRegion="polite" style={[styles.status, gutter]} testID="m2-refill-status">{say(t, vm.status)}</Text> : null}
+      <View style={[styles.lockNote, gutter]} testID="m2-refill-lock-note">
         <Icon name="bell" size={16} color={color.text2} />
         <Text style={[m2Text.meta, styles.grow]}>{t('refill.lockNote')}</Text>
       </View>
-      <View {...webAttrs({ 'aria-hidden': 'true' })} style={styles.spacer} />
+      {wide ? null : <View {...webAttrs({ 'aria-hidden': 'true' })} style={styles.spacer} />}
       <SetupSheet vm={vm} />
       <RowSheet vm={vm} />
-    </ScrollView>
+    </>
+  );
+  if (wide) return <M2WideColumn testID="m2-refills">{board}</M2WideColumn>;
+  return (
+    <ScrollView style={styles.screen} contentContainerStyle={styles.content} testID="m2-refills">{board}</ScrollView>
   );
 });
 
@@ -275,6 +280,7 @@ const styles = StyleSheet.create({
   grow: { flex: 1, minWidth: 0, gap: space.s2 },
   gutter: { paddingHorizontal: space.gutterPhone },
   header: { flexDirection: 'row', alignItems: 'center', gap: space.s12, paddingHorizontal: space.gutterPhone, paddingTop: space.s16 },
+  headerWide: { paddingHorizontal: 0, paddingTop: 0 },
   eyebrow: { fontFamily: font.family.sans, fontSize: font.size.caption, fontWeight: fontWeight(font.weight.strong), color: color.text3 },
   title: { fontFamily: font.family.sans, fontSize: font.size.title, fontWeight: fontWeight(font.weight.heavy), letterSpacing: -0.5, color: color.text },
   hero: { borderRadius: radius.xl, padding: space.s20, gap: space.s8 },

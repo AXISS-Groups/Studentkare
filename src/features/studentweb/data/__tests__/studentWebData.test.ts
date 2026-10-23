@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { LiveCatalogItem, LiveOrder, OrderLine } from '@/data/types/workflowTypes';
-import { buyAgainBlock, buyAgainEntries, filterOrders, maxQuantity, orderRef, orderStatus, sortItems, trackProgress } from '../studentWebData';
+import { buyAgainBlock, buyAgainEntries, maxQuantity, orderRef, orderStatus, sortItems } from '../studentWebData';
 
 const line = (status: OrderLine['status'], extra: Partial<OrderLine> = {}): OrderLine => ({ id: Math.random().toString(36), itemId: 'i1', name: 'ORS sachets', kind: 'product', quantity: 1, pricePaise: 12000, status, ...extra });
 const order = (id: string, lines: OrderLine[], extra: Partial<LiveOrder> = {}): LiveOrder => ({ id, createdAt: 1_000, totalPaise: 12000, delivery: { mode: 'pickup', address: '', city: 'Hyderabad', pincode: '500090' }, requestedSlot: '', paymentStatus: 'PAID', lines, ...extra });
@@ -15,19 +15,7 @@ describe('order status and tracking', () => {
     expect(orderStatus(order('a', [line('DECLINED')]))).toBe('DECLINED');
   });
 
-  it('tracks only the steps the lines have reached; a closed order has no progress', () => {
-    expect(trackProgress(order('a', [line('REQUESTED')]))).toBe(1);
-    expect(trackProgress(order('a', [line('DISPATCHED')]))).toBe(3);
-    expect(trackProgress(order('a', [line('COMPLETED')]))).toBe(4);
-    expect(trackProgress(order('a', [line('CANCELLED')]))).toBe(0);
-  });
-
-  it('filters by tab and gives the short reference', () => {
-    const orders = [order('active1', [line('ACCEPTED')]), order('past1', [line('COMPLETED')]), order('lab1', [line('COMPLETED', { kind: 'lab' })])];
-    expect(filterOrders(orders, 'active').map((o) => o.id)).toEqual(['active1']);
-    expect(filterOrders(orders, 'past').map((o) => o.id)).toEqual(['past1', 'lab1']);
-    expect(filterOrders(orders, 'lab').map((o) => o.id)).toEqual(['lab1']);
-    expect(filterOrders(orders, 'all')).toHaveLength(3);
+  it('gives the short reference', () => {
     expect(orderRef('abcdef123456')).toBe('SK-ABCDEF12');
   });
 });

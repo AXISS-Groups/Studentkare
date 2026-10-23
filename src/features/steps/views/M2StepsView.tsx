@@ -5,7 +5,7 @@ import { Icon } from '@/design-system/icons';
 import type { SkIconName } from '@/design-system/icons';
 import { Button, OfflineBanner, Rise, Sheet, Skeleton, TextField, useOnline } from '@/design-system';
 import {
-  Gradient, M2Card, M2Heading, M2_NAV_CLEARANCE, RoundButton, SERVICE_HUES, floatTransform, heroStops, m2Text,
+  Gradient, M2Card, M2Heading, M2WideColumn, M2_NAV_CLEARANCE, RoundButton, SERVICE_HUES, floatTransform, heroStops, m2Text,
   useAmbientMotion, useLoop, useOwnPhoneChrome,
   M2HeaderSos,
 } from '@/design-system/m2';
@@ -87,7 +87,7 @@ export function SourceChip({ source, onHero = false, testID }: { source: StepSou
   );
 }
 
-const Hero = observer(function Hero({ vm, links }: { vm: StepsViewModel; links: M2StepsLinks }) {
+const Hero = observer(function Hero({ vm, links, wide }: { vm: StepsViewModel; links: M2StepsLinks; wide: boolean }) {
   const t = useT();
   const ambient = useAmbientMotion();
   const float = useLoop(ambient, motion.duration.ambient);
@@ -95,7 +95,7 @@ const Hero = observer(function Hero({ vm, links }: { vm: StepsViewModel; links: 
   const week = vm.week;
   const noneBody: MessageKey = !vm.automatic ? 'steps.noneTodayWeb' : vm.connected.length ? 'steps.noneTodayAutomatic' : 'steps.noneTodayManual';
   return (
-    <Gradient colors={heroStops('teal')} angle={160} style={styles.hero} testID="m2-steps-hero">
+    <Gradient colors={heroStops('teal')} angle={160} style={[styles.hero, wide ? styles.heroWide : null]} testID="m2-steps-hero">
       <View pointerEvents="none" style={styles.ringBig} />
       <View pointerEvents="none" style={styles.ringSmall} />
       <Animated.View pointerEvents="none" accessibilityElementsHidden importantForAccessibility="no-hide-descendants"
@@ -231,7 +231,7 @@ const SyncLine = observer(function SyncLine({ vm }: { vm: StepsViewModel }) {
   );
 });
 
-export const M2StepsView = observer(function M2StepsView({ vm, links }: { vm: StepsViewModel; links: M2StepsLinks }) {
+export const M2StepsView = observer(function M2StepsView({ vm, links, wide = false }: { vm: StepsViewModel; links: M2StepsLinks; /** Laid out wide in the desktop web shell (parity phase 2). */ wide?: boolean }) {
   const t = useT();
   useOwnPhoneChrome();
   const online = useOnline();
@@ -239,14 +239,15 @@ export const M2StepsView = observer(function M2StepsView({ vm, links }: { vm: St
   const explainName = explaining ? t(PROVIDER_NAME[explaining]) : '';
   const average = vm.average;
 
-  return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content} testID="m2-steps">
-      <Rise><Hero vm={vm} links={links} /></Rise>
+  const gutter = wide ? undefined : styles.gutter;
+  const board = (
+    <>
+      <Rise><Hero vm={vm} links={links} wide={wide} /></Rise>
 
-      {!online ? <View style={styles.gutter}><OfflineBanner message={t('steps.offline')} /></View> : null}
+      {!online ? <View style={gutter}><OfflineBanner message={t('steps.offline')} /></View> : null}
 
       {vm.liveSteps !== null ? (
-        <Rise index={1} style={styles.gutter}>
+        <Rise index={1} style={gutter}>
           <M2Card style={styles.card} testID="m2-steps-live">
             <View style={styles.row}>
               <View style={[styles.sourceIcon, { backgroundColor: TEAL.soft }]}><Icon name="walk" size={20} color={TEAL.ink} strokeWidth={2.1} /></View>
@@ -260,7 +261,7 @@ export const M2StepsView = observer(function M2StepsView({ vm, links }: { vm: St
         </Rise>
       ) : null}
 
-      <Rise index={2} style={styles.gutter}>
+      <Rise index={2} style={gutter}>
         <M2Card style={styles.card} testID="m2-steps-week-card">
           <M2Heading style={m2Text.section}>{t('steps.week.title')}</M2Heading>
           {vm.week.phase === 'loading' && !vm.week.data ? <Skeleton label={t('steps.card.loading')} lines={['100%', '60%']} /> : null}
@@ -277,7 +278,7 @@ export const M2StepsView = observer(function M2StepsView({ vm, links }: { vm: St
         </M2Card>
       </Rise>
 
-      <Rise index={3} style={styles.gutter}>
+      <Rise index={3} style={gutter}>
         {vm.automatic ? (
           <M2Card style={styles.card} testID="m2-steps-sources">
             <M2Heading style={m2Text.section}>{t('steps.sources.title')}</M2Heading>
@@ -298,7 +299,7 @@ export const M2StepsView = observer(function M2StepsView({ vm, links }: { vm: St
         )}
       </Rise>
 
-      <Rise index={4} style={styles.gutter}>
+      <Rise index={4} style={gutter}>
         <M2Card style={styles.card} testID="m2-steps-typed">
           <View style={styles.row}>
             <View style={[styles.sourceIcon, { backgroundColor: color.surface3 }]}><Icon name="pencil" size={18} color={color.action} strokeWidth={2.2} /></View>
@@ -326,8 +327,10 @@ export const M2StepsView = observer(function M2StepsView({ vm, links }: { vm: St
           </View>
         ) : null}
       </Sheet>
-    </ScrollView>
+    </>
   );
+  if (wide) return <M2WideColumn testID="m2-steps">{board}</M2WideColumn>;
+  return <ScrollView style={styles.screen} contentContainerStyle={styles.content} testID="m2-steps">{board}</ScrollView>;
 });
 
 const BAR_HEIGHT = 112;
@@ -342,6 +345,7 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', gap: space.s12 },
   top: { alignItems: 'flex-start' },
   hero: { paddingTop: space.s16, paddingHorizontal: space.gutterPhone, paddingBottom: space.s24, borderBottomLeftRadius: 36, borderBottomRightRadius: 36, overflow: 'hidden', gap: space.s16 },
+  heroWide: { borderRadius: 36, paddingHorizontal: space.s32 },
   ringBig: { position: 'absolute', right: -50, bottom: -70, width: 210, height: 210, borderRadius: radius.full, borderWidth: 28, borderColor: color.onHeroRule },
   ringSmall: { position: 'absolute', right: 60, top: -60, width: 140, height: 140, borderRadius: radius.full, backgroundColor: color.onHeroVeil },
   glyph: { position: 'absolute', right: space.gutterPhone, top: 76, width: 64, height: 64, borderRadius: radius.xl, alignItems: 'center', justifyContent: 'center', backgroundColor: color.onHeroVeil },

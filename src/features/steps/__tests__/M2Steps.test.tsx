@@ -198,6 +198,18 @@ describe('M2StepsView', () => {
     vm.dispose();
   });
 
+  it('wide (desktop shell): the same week, source and typed entry in the page column, axe-clean', async () => {
+    const { vm } = makeVm();
+    vm.open();
+    const { container } = wrap(<M2StepsView vm={vm} links={{ back: vi.fn() }} wide />);
+    expect(await screen.findByTestId('m2-steps-today-value')).toHaveTextContent('6,120');
+    expect(screen.getByTestId('m2-steps-web')).toBeInTheDocument();
+    expect(within(screen.getByTestId('m2-steps-week')).getAllByRole('listitem')).toHaveLength(3);
+    const violations = await axeViolations(container);
+    expect(violations, describeViolations(violations)).toEqual([]);
+    vm.dispose();
+  });
+
   it('no steps for today: no invented number, says what to do', async () => {
     const { vm } = makeVm({ routes: { [WEEK_PATH]: EMPTY } });
     vm.open();

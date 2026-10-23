@@ -17,7 +17,7 @@ import { M2ReorderView } from './M2ReorderView';
  * opens Track a refill on that line. Only opaque ids travel in the URL, never a
  * medicine (Rule L). Reorder is the next board on the same route.
  */
-export function M2RefillsRoute(): React.ReactElement {
+export function M2RefillsRoute({ wide = false }: { /** Laid out wide in the desktop web shell. */ wide?: boolean } = {}): React.ReactElement {
   const [params] = useSearchParams();
   const online = useOnline();
   const slot = usePhoneHeaderSlot();
@@ -61,7 +61,7 @@ export function M2RefillsRoute(): React.ReactElement {
     );
   }
   return (
-    <M2RefillsView vm={vm} links={{
+    <M2RefillsView vm={vm} wide={wide} links={{
       back: () => navigate('health/medicines'),
       sos,
       reorder: open,
