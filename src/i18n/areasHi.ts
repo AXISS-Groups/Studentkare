@@ -6,8 +6,8 @@ import { adminHi } from './areas/admin';
 import { assistHi } from './areas/assist';
 import { authChannelsHi } from './areas/authChannels';
 import { authPasscodeHi } from './areas/authPasscode';
-import { campsHi } from './areas/camps';
 import { autopilotHi } from './areas/autopilot';
+import { campsHi } from './areas/camps';
 import { campusBoardsHi } from './areas/campusBoards';
 import { campusConsoleHi } from './areas/campusConsole';
 import { campusHi } from './areas/campus';
@@ -67,8 +67,8 @@ export const areasHi = {
   ...assistHi,
   ...authChannelsHi,
   ...authPasscodeHi,
-  ...campsHi,
   ...autopilotHi,
+  ...campsHi,
   ...campusBoardsHi,
   ...campusConsoleHi,
   ...campusHi,
