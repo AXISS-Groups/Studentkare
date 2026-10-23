@@ -87,7 +87,7 @@ export function SourceChip({ source, onHero = false, testID }: { source: StepSou
   );
 }
 
-const Hero = observer(function Hero({ vm, links }: { vm: StepsViewModel; links: M2StepsLinks }) {
+const Hero = observer(function Hero({ vm, links, wide = false }: { vm: StepsViewModel; links: M2StepsLinks; wide?: boolean }) {
   const t = useT();
   const ambient = useAmbientMotion();
   const float = useLoop(ambient, motion.duration.ambient);
@@ -95,7 +95,7 @@ const Hero = observer(function Hero({ vm, links }: { vm: StepsViewModel; links: 
   const week = vm.week;
   const noneBody: MessageKey = !vm.automatic ? 'steps.noneTodayWeb' : vm.connected.length ? 'steps.noneTodayAutomatic' : 'steps.noneTodayManual';
   return (
-    <Gradient colors={heroStops('teal')} angle={160} style={styles.hero} testID="m2-steps-hero">
+    <Gradient colors={heroStops('teal')} angle={160} style={[styles.hero, wide ? styles.heroWide : null]} testID="m2-steps-hero">
       <View pointerEvents="none" style={styles.ringBig} />
       <View pointerEvents="none" style={styles.ringSmall} />
       <Animated.View pointerEvents="none" accessibilityElementsHidden importantForAccessibility="no-hide-descendants"
@@ -143,11 +143,11 @@ const Hero = observer(function Hero({ vm, links }: { vm: StepsViewModel; links: 
   );
 });
 
-function WeekChart({ bars }: { bars: readonly WeekBar[] }) {
+function WeekChart({ bars, wide = false }: { bars: readonly WeekBar[]; wide?: boolean }) {
   const t = useT();
   const max = Math.max(0, ...bars.map((b) => b.steps ?? 0));
   return (
-    <View role="list" accessibilityLabel={t('steps.week.chartLabel')} aria-label={t('steps.week.chartLabel')} style={styles.chart} testID="m2-steps-week">
+    <View role="list" accessibilityLabel={t('steps.week.chartLabel')} aria-label={t('steps.week.chartLabel')} style={[styles.chart, wide ? styles.chartWide : null]} testID="m2-steps-week">
       {bars.map((bar) => {
         const day = bar.isToday ? t('steps.week.today') : weekdayShort(bar.date);
         const spoken = bar.steps === null
@@ -156,11 +156,11 @@ function WeekChart({ bars }: { bars: readonly WeekBar[] }) {
         const share = bar.steps !== null && max > 0 ? bar.steps / max : 0;
         return (
           <View key={bar.date} role="listitem" accessible accessibilityLabel={spoken} aria-label={spoken} style={styles.barCol} testID={`m2-steps-bar-${bar.date}`}>
-            <Text style={styles.barValue} numberOfLines={1}>{bar.steps === null ? '' : stepsText(bar.steps)}</Text>
-            <View style={[styles.barTrack, bar.steps === null ? styles.barTrackEmpty : null]}>
+            <Text style={[styles.barValue, wide ? styles.barValueWide : null]} numberOfLines={1}>{bar.steps === null ? '' : stepsText(bar.steps)}</Text>
+            <View style={[styles.barTrack, bar.steps === null ? styles.barTrackEmpty : null, wide ? styles.barTrackWide : null]}>
               {bar.steps !== null ? <View style={[styles.barFill, { height: `${Math.max(share * 100, bar.steps > 0 ? MIN_BAR_PERCENT : 0)}%` }]} /> : null}
             </View>
-            <Text style={[styles.barDay, bar.isToday ? styles.barDayToday : null]} numberOfLines={1}>{day}</Text>
+            <Text style={[styles.barDay, bar.isToday ? styles.barDayToday : null, wide ? styles.barDayWide : null]} numberOfLines={1}>{day}</Text>
           </View>
         );
       })}
@@ -231,7 +231,13 @@ const SyncLine = observer(function SyncLine({ vm }: { vm: StepsViewModel }) {
   );
 });
 
-export const M2StepsView = observer(function M2StepsView({ vm, links }: { vm: StepsViewModel; links: M2StepsLinks }) {
+export interface M2StepsViewProps {
+  vm: StepsViewModel;
+  links: M2StepsLinks;
+  wide?: boolean;
+}
+
+export const M2StepsView = observer(function M2StepsView({ vm, links, wide = false }: M2StepsViewProps) {
   const t = useT();
   useOwnPhoneChrome();
   const online = useOnline();
@@ -240,14 +246,14 @@ export const M2StepsView = observer(function M2StepsView({ vm, links }: { vm: St
   const average = vm.average;
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content} testID="m2-steps">
-      <Rise><Hero vm={vm} links={links} /></Rise>
+    <ScrollView style={styles.screen} contentContainerStyle={[styles.content, wide ? styles.contentWide : null]} testID="m2-steps">
+      <Rise><Hero vm={vm} links={links} wide={wide} /></Rise>
 
-      {!online ? <View style={styles.gutter}><OfflineBanner message={t('steps.offline')} /></View> : null}
+      {!online ? <View style={[styles.gutter, wide ? styles.gutterWide : null]}><OfflineBanner message={t('steps.offline')} /></View> : null}
 
       {vm.liveSteps !== null ? (
-        <Rise index={1} style={styles.gutter}>
-          <M2Card style={styles.card} testID="m2-steps-live">
+        <Rise index={1} style={[styles.gutter, wide ? styles.gutterWide : null]}>
+          <M2Card style={[styles.card, wide ? styles.cardWide : null]} testID="m2-steps-live">
             <View style={styles.row}>
               <View style={[styles.sourceIcon, { backgroundColor: TEAL.soft }]}><Icon name="walk" size={20} color={TEAL.ink} strokeWidth={2.1} /></View>
               <View style={styles.grow} aria-live="polite">
@@ -260,14 +266,14 @@ export const M2StepsView = observer(function M2StepsView({ vm, links }: { vm: St
         </Rise>
       ) : null}
 
-      <Rise index={2} style={styles.gutter}>
-        <M2Card style={styles.card} testID="m2-steps-week-card">
+      <Rise index={2} style={[styles.gutter, wide ? styles.gutterWide : null]}>
+        <M2Card style={[styles.card, wide ? styles.cardWide : null]} testID="m2-steps-week-card">
           <M2Heading style={m2Text.section}>{t('steps.week.title')}</M2Heading>
           {vm.week.phase === 'loading' && !vm.week.data ? <Skeleton label={t('steps.card.loading')} lines={['100%', '60%']} /> : null}
           {vm.week.phase === 'error' ? <Text style={m2Text.meta}>{t('steps.failed')}</Text> : null}
           {vm.week.data ? (
             <>
-              <WeekChart bars={vm.bars} />
+              <WeekChart bars={vm.bars} wide={wide} />
               {average !== null ? <Text style={m2Text.meta} testID="m2-steps-average">{t('steps.week.average', { count: stepsText(average) })}</Text> : (
                 <Text style={m2Text.meta} testID="m2-steps-week-empty">{t('steps.week.empty')}</Text>
               )}
@@ -277,9 +283,9 @@ export const M2StepsView = observer(function M2StepsView({ vm, links }: { vm: St
         </M2Card>
       </Rise>
 
-      <Rise index={3} style={styles.gutter}>
+      <Rise index={3} style={[styles.gutter, wide ? styles.gutterWide : null]}>
         {vm.automatic ? (
-          <M2Card style={styles.card} testID="m2-steps-sources">
+          <M2Card style={[styles.card, wide ? styles.cardWide : null]} testID="m2-steps-sources">
             <M2Heading style={m2Text.section}>{t('steps.sources.title')}</M2Heading>
             {vm.connectors.map((c) => <SourceRow key={c.provider} connector={c} vm={vm} />)}
             <View style={styles.note}>
@@ -288,7 +294,7 @@ export const M2StepsView = observer(function M2StepsView({ vm, links }: { vm: St
             </View>
           </M2Card>
         ) : (
-          <M2Card style={[styles.card, styles.row, styles.top]} testID="m2-steps-web">
+          <M2Card style={[styles.card, styles.row, styles.top, wide ? styles.cardWide : null]} testID="m2-steps-web">
             <View style={[styles.sourceIcon, { backgroundColor: TEAL.soft }]}><Icon name="devices" size={20} color={TEAL.ink} strokeWidth={2.1} /></View>
             <View style={styles.grow}>
               <M2Heading style={m2Text.cardTitle}>{t('steps.sources.webTitle')}</M2Heading>
@@ -298,8 +304,8 @@ export const M2StepsView = observer(function M2StepsView({ vm, links }: { vm: St
         )}
       </Rise>
 
-      <Rise index={4} style={styles.gutter}>
-        <M2Card style={styles.card} testID="m2-steps-typed">
+      <Rise index={4} style={[styles.gutter, wide ? styles.gutterWide : null]}>
+        <M2Card style={[styles.card, wide ? styles.cardWide : null]} testID="m2-steps-typed">
           <View style={styles.row}>
             <View style={[styles.sourceIcon, { backgroundColor: color.surface3 }]}><Icon name="pencil" size={18} color={color.action} strokeWidth={2.2} /></View>
             <M2Heading style={[m2Text.section, styles.grow]}>{t('steps.typed.title')}</M2Heading>
@@ -337,11 +343,14 @@ const MIN_BAR_PERCENT = 4;
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.canvas },
   content: { paddingBottom: M2_NAV_CLEARANCE, gap: space.s16, width: '100%', maxWidth: size.phoneFrameMax, alignSelf: 'center', overflow: 'hidden' },
+  contentWide: { maxWidth: 1024, paddingHorizontal: space.s32, paddingBottom: space.s40 },
   gutter: { paddingHorizontal: space.gutterPhone },
+  gutterWide: { paddingHorizontal: 0 },
   grow: { flex: 1, minWidth: 0, gap: space.s2 },
   row: { flexDirection: 'row', alignItems: 'center', gap: space.s12 },
   top: { alignItems: 'flex-start' },
   hero: { paddingTop: space.s16, paddingHorizontal: space.gutterPhone, paddingBottom: space.s24, borderBottomLeftRadius: 36, borderBottomRightRadius: 36, overflow: 'hidden', gap: space.s16 },
+  heroWide: { borderRadius: 32, marginTop: space.s16 },
   ringBig: { position: 'absolute', right: -50, bottom: -70, width: 210, height: 210, borderRadius: radius.full, borderWidth: 28, borderColor: color.onHeroRule },
   ringSmall: { position: 'absolute', right: 60, top: -60, width: 140, height: 140, borderRadius: radius.full, backgroundColor: color.onHeroVeil },
   glyph: { position: 'absolute', right: space.gutterPhone, top: 76, width: 64, height: 64, borderRadius: radius.xl, alignItems: 'center', justifyContent: 'center', backgroundColor: color.onHeroVeil },
@@ -363,15 +372,20 @@ const styles = StyleSheet.create({
   chipOnCard: { backgroundColor: TEAL.soft },
   chipText: { fontFamily: font.family.sans, fontSize: font.size.caption, fontWeight: fontWeight(font.weight.heavy) },
   card: { padding: space.s16, gap: space.s12, borderRadius: 24 },
+  cardWide: { padding: space.s24, borderRadius: 24, borderWidth: 1, borderColor: color.ruleSoft },
   liveCount: { fontFamily: font.family.sans, fontSize: font.size.body, fontWeight: fontWeight(font.weight.heavy), color: color.text, fontVariant: ['tabular-nums'] },
   chart: { flexDirection: 'row', alignItems: 'flex-end', gap: space.s6, paddingTop: space.s4 },
+  chartWide: { gap: space.s16, paddingTop: space.s8 },
   barCol: { flex: 1, minWidth: 0, alignItems: 'center', gap: space.s4 },
   barValue: { fontFamily: font.family.sans, fontSize: 10, fontWeight: fontWeight(font.weight.heavy), color: color.text2, fontVariant: ['tabular-nums'] },
+  barValueWide: { fontSize: font.size.caption },
   barTrack: { width: '100%', maxWidth: 30, height: BAR_HEIGHT, borderRadius: radius.md, backgroundColor: color.surface2, justifyContent: 'flex-end', overflow: 'hidden' },
+  barTrackWide: { maxWidth: 64, height: 160 },
   barTrackEmpty: { backgroundColor: 'transparent', borderWidth: 1.5, borderStyle: 'dashed', borderColor: color.ruleStrong },
   barFill: { width: '100%', borderRadius: radius.md, backgroundColor: color.chartCategorical1 },
   barDay: { fontFamily: font.family.sans, fontSize: font.size.caption, fontWeight: fontWeight(font.weight.strong), color: color.text3 },
   barDayToday: { color: color.text, fontWeight: fontWeight(font.weight.heavy) },
+  barDayWide: { fontSize: font.size.bodySm },
   syncLine: { flexDirection: 'row', alignItems: 'center', gap: space.s8, borderTopWidth: 1, borderTopColor: color.ruleSoft, paddingTop: space.s8 },
   attention: { color: color.attention },
   sourceRow: { flexDirection: 'row', alignItems: 'center', gap: space.s12, paddingVertical: space.s8, borderTopWidth: 1, borderTopColor: color.ruleSoft },
