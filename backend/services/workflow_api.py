@@ -486,10 +486,15 @@ class PreferencesInput(StrictModel):
         return list(dict.fromkeys(value))
 
 
+def _student_day(db: Session, account_id: str) -> str:
+    """Completed tasks belong to the student's calendar day (services/student_time.py), not the server's."""
+    return student_time.local_today(student_time.student_zone(db, account_id)).isoformat()
+
+
 @router.get("/health/preferences")
 def preferences(user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
     row = db.get(M.Preference, user["id"])
-    return {"savedExercises": row.saved_exercises if row else [], "completedTasks": row.completed_tasks if row and row.task_date == date.today().isoformat() else []}
+    return {"savedExercises": row.saved_exercises if row else [], "completedTasks": row.completed_tasks if row and row.task_date == _student_day(db, user["id"]) else []}
 
 
 @router.put("/health/preferences")
@@ -498,7 +503,7 @@ def save_preferences(body: PreferencesInput, user=Depends(authenticated_user), d
     if not row:
         row = M.Preference(account_id=user["id"])
         db.add(row)
-    row.saved_exercises, row.completed_tasks, row.task_date = body.savedExercises, body.completedTasks, date.today().isoformat()
+    row.saved_exercises, row.completed_tasks, row.task_date = body.savedExercises, body.completedTasks, _student_day(db, user["id"])
     db.commit()
     return body.model_dump()
 
