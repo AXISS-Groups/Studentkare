@@ -94,7 +94,7 @@ export function InsurancePage({ wide = false }: { wide?: boolean } = {}): React.
   );
 }
 
-function HelpCentrePage(): React.ReactElement {
+export function HelpCentrePage(): React.ReactElement {
   return (
     <HelpCentreBoard links={{
       topic: { orders: () => navigate('orders'), prescriptions: () => navigate('prescriptions'), records: () => navigate('records'), verify: () => navigate('verify'), delete: () => navigate('delete-account') },
@@ -143,7 +143,7 @@ function YourCarePage(): React.ReactElement {
   );
 }
 
-function AppointmentsPage(): React.ReactElement {
+export function AppointmentsPage(): React.ReactElement {
   const [booking, setBooking] = useState(false);
   const [consulting, setConsulting] = useState<BoardAppointment | null>(null);
   const [version, setVersion] = useState(0);
@@ -165,6 +165,11 @@ export function NotificationsPage(): React.ReactElement {
   return <NotificationNativeView viewModel={vm} links={{ settings: () => navigate('notification-settings') }} />;
 }
 
+/** Plan & billing: the phone board, also the student's page above phone width (parity phase 2). */
+export function PlanBillingPage(): React.ReactElement {
+  return <PlanBillingBoard links={{ support: () => navigate('support') }} />;
+}
+
 /**
  * The Tier 1 boards of WP-06 (safety, consent and account deletion), approved
  * by Krishna Chintakayala on 2026-10-21. The same boards serve the desktop
@@ -176,7 +181,7 @@ export function safetyBoardFor(route: RoutePath): React.ReactElement | null {
     case 'ice-contacts': return <IceContactsRoute links={{}} />;
     case 'pass': return <MyPassRoute links={{ digitalId: () => navigate('digital-id') }} />;
     case 'delete-account': return <DeleteAccountRoute links={{ exportData: () => navigate('data-export'), crisis: () => navigate('crisis') }} />;
-    case 'billing': return <PlanBillingBoard links={{ support: () => navigate('support') }} />;
+    case 'billing': return <PlanBillingPage />;
     case 'consent': return <ConsentInboxBoard links={{ records: () => navigate('records') }} />;
     case 'care-circle': return <FamilyCircleBoard links={{ emergencyCard: () => navigate('emergency-card'), consent: () => navigate('consent') }} />;
     default: return null;

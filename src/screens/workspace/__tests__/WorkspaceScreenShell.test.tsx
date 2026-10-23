@@ -107,6 +107,14 @@ describe('which shell a route gets', () => {
     expect(screen.getAllByRole('button', { name: /my requests/i }).length).toBeGreaterThan(0);
   });
 
+  // Parity phase 2c: above phone width a student gets the phone boards, not the older panels.
+  it.each([['appointments', 'appointments'], ['support', 'help-centre'], ['billing', 'plan-billing']] as const)('a student’s %s page above phone width is the phone board', async (route, testId) => {
+    auth.user = { fullName: 'Asha Rao', role: 'STUDENT', isVerifiedStudent: true };
+    render(<WorkspaceScreen route={route} />);
+    expect(await screen.findByTestId(testId)).toBeInTheDocument();
+    expect(screen.getAllByRole('navigation', { name: 'My Student Kare' }).length).toBeGreaterThan(0);
+  });
+
   it('keeps the member orders page for students', () => {
     auth.user = { fullName: 'Asha Rao', role: 'STUDENT', isVerifiedStudent: true };
     render(<WorkspaceScreen route="orders" />);
