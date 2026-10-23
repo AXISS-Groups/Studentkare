@@ -17,12 +17,12 @@ from test_workflow_api import harness, register  # noqa: F401 — pytest fixture
 from core import rule_l
 from core import workflow_models as M
 from services import refill_tracker, reorder, student_time, workflow_scheduler
+from services.commerce_session import commerce_db
 
 
 def _student_today() -> date:
     """The student's calendar day (platform zone), which the server counts in; the test runner's date can differ near midnight."""
     return student_time.local_today(student_time.default_zone())
-from services.commerce_session import commerce_db
 
 
 @pytest.fixture(autouse=True)
