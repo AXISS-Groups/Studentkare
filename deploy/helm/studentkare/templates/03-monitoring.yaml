@@ -7,7 +7,7 @@ metadata:
   namespace: {{ .Release.Namespace }}
 data:
   prometheus.yml: |
-{{ .Values.prometheus.config | indent 4 }}
+{{ toYaml .Values.prometheus.config | indent 4 }}
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -16,9 +16,9 @@ metadata:
   namespace: {{ .Release.Namespace }}
 data:
   alerts.yml: |
-{{ .Files.Get "deploy/alerts.yml" | indent 4 }}
+{{ .Files.Get "files/alerts.yml" | indent 4 }}
   slo-alerts.yml: |
-{{ .Files.Get "deploy/slo-alerts.yml" | indent 4 }}
+{{ .Files.Get "files/slo-alerts.yml" | indent 4 }}
 ---
 apiVersion: apps/v1
 kind: StatefulSet
@@ -55,8 +55,10 @@ spec:
           volumeMounts:
             - name: config
               mountPath: /etc/prometheus
+            # Alert rules (deploy/alerts.yml, deploy/slo-alerts.yml via files/);
+            # prometheus.config.rule_files globs this directory.
             - name: rules
-              mountPath: /etc/prometheus/rules
+              mountPath: /etc/prometheus-rules
             - name: data
               mountPath: /prometheus
           resources:
@@ -119,7 +121,7 @@ metadata:
   namespace: {{ .Release.Namespace }}
 data:
   tempo.yaml: |
-{{ .Files.Get "deploy/tempo-config.yaml" | indent 4 }}
+{{ .Files.Get "files/tempo-config.yaml" | indent 4 }}
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -149,7 +151,7 @@ spec:
             - containerPort: 4317
               name: grpc
             - containerPort: 4318
-              name: http
+              name: otlp-http
           volumeMounts:
             - name: config
               mountPath: /etc/tempo.yaml
@@ -182,7 +184,7 @@ spec:
       name: grpc
     - port: 4318
       targetPort: 4318
-      name: http
+      name: otlp-http
   selector:
     app: tempo
 ---
@@ -207,8 +209,8 @@ metadata:
   name: loki-config
   namespace: {{ .Release.Namespace }}
 data:
-  loki-config.yaml: |
-{{ .Files.Get "deploy/loki-config-prod.yaml" | indent 4 }}
+  local-config.yaml: |
+{{ .Files.Get "files/loki-config-prod.yaml" | indent 4 }}
 ---
 apiVersion: apps/v1
 kind: StatefulSet
@@ -279,8 +281,8 @@ metadata:
   name: promtail-config
   namespace: {{ .Release.Namespace }}
 data:
-  promtail-config.yml: |
-{{ .Files.Get "deploy/promtail-config-prod.yml" | indent 4 }}
+  config.yml: |
+{{ .Files.Get "files/promtail-config-prod.yml" | indent 4 }}
 ---
 apiVersion: apps/v1
 kind: DaemonSet
@@ -335,7 +337,9 @@ metadata:
   namespace: {{ .Release.Namespace }}
 data:
   datasources.yaml: |
-{{ .Values.grafana.config.datasources | indent 4 }}
+    apiVersion: 1
+    datasources:
+{{ toYaml .Values.grafana.config.datasources | indent 6 }}
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -343,9 +347,9 @@ metadata:
   name: grafana-dashboards
   namespace: {{ .Release.Namespace }}
 data:
-{{- range $name, $json := .Values.grafana.config.dashboards.default }}
+{{- range $name, $dashboard := .Values.grafana.config.dashboards.default }}
   {{ $name }}.json: |
-{{ $json | indent 4 }}
+{{ tpl $dashboard.json $ | trim | indent 4 }}
 {{- end }}
 ---
 apiVersion: apps/v1
@@ -377,9 +381,9 @@ spec:
             - name: GF_USERS_ALLOW_SIGN_UP
               value: "{{ .Values.grafana.config.users.allow_sign_up }}"
             - name: GF_SERVER_ROOT_URL
-              value: "{{ .Values.grafana.config.server.root_url }}"
+              value: {{ .Values.grafana.config.server.root_url | default (printf "https://%s" .Values.global.monitoringDomain) | quote }}
             - name: GF_SERVER_SERVE_FROM_SUB_PATH
-              value: "{{ .Values.grafana.config.server.serve_from_sub_path }}"
+              value: {{ .Values.grafana.config.server.serve_from_sub_path | default false | quote }}
           ports:
             - containerPort: 3000
               name: http
@@ -450,7 +454,7 @@ metadata:
   namespace: {{ .Release.Namespace }}
 data:
   alertmanager.yml: |
-{{ .Files.Get "deploy/alertmanager-prod.yml" | indent 4 }}
+{{ .Files.Get "files/alertmanager-prod.yml" | indent 4 }}
 ---
 apiVersion: apps/v1
 kind: StatefulSet
@@ -482,6 +486,10 @@ spec:
           volumeMounts:
             - name: config
               mountPath: /etc/alertmanager
+            # alertmanager-prod.yml: slack_api_url_file (Alertmanager does not expand env vars).
+            - name: slack-webhook
+              mountPath: /etc/alertmanager-secrets
+              readOnly: true
             - name: data
               mountPath: /alertmanager
           resources:
@@ -490,6 +498,12 @@ spec:
         - name: config
           configMap:
             name: alertmanager-config
+        - name: slack-webhook
+          secret:
+            secretName: studentkare-secrets
+            items:
+              - key: SLACK_WEBHOOK_URL
+                path: slack_webhook_url
   volumeClaimTemplates:
     - metadata:
         name: data
@@ -522,8 +536,8 @@ metadata:
   name: blackbox-config
   namespace: {{ .Release.Namespace }}
 data:
-  blackbox.yml: |
-{{ .Files.Get "deploy/blackbox-config.yml" | indent 4 }}
+  config.yml: |
+{{ .Files.Get "files/blackbox-config.yml" | indent 4 }}
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -583,7 +597,7 @@ metadata:
   namespace: {{ .Release.Namespace }}
 data:
   otel-collector-config.yaml: |
-{{ .Values.otelCollector.config | indent 4 }}
+{{ toYaml .Values.otelCollector.config | indent 4 }}
 ---
 apiVersion: apps/v1
 kind: Deployment

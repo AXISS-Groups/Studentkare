@@ -45,6 +45,8 @@ spec:
               value: {{ .Values.global.environment }}
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
               value: {{ .Values.backend.env.OTEL_EXPORTER_OTLP_ENDPOINT }}
+            - name: RULE_L_REQUIRE_GRANTS
+              value: {{ .Values.backend.env.RULE_L_REQUIRE_GRANTS | default "1" | quote }}
             - name: DATABASE_URL
               valueFrom:
                 secretKeyRef:

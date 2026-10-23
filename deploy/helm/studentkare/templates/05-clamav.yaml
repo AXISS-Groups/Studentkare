@@ -1,0 +1,128 @@
+{{- if .Values.clamav.enabled }}
+# Upload virus scanner. The backend (CLAMAV_HOST=clamav, CLAMAV_PORT) streams each
+# upload to clamd (INSTREAM) and refuses prescriptions while no replica answers.
+# freshclam runs in the same container and refreshes signatures; they live in an
+# emptyDir, so a new pod downloads them (the startup probe allows ten minutes).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: clamav
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: clamav
+    app.kubernetes.io/name: studentkare
+    app.kubernetes.io/component: virus-scanner
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: {{ .Values.clamav.replicaCount }}
+  selector:
+    matchLabels:
+      app: clamav
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: clamav
+        app.kubernetes.io/name: studentkare
+        app.kubernetes.io/component: virus-scanner
+    spec:
+      containers:
+        - name: clamav
+          image: "{{ .Values.clamav.image.repository }}:{{ .Values.clamav.image.tag }}"
+          imagePullPolicy: {{ .Values.clamav.image.pullPolicy }}
+          env:
+            - name: CLAMAV_NO_FRESHCLAMD
+              value: "false"
+            - name: CLAMAV_NO_CLAMD
+              value: "false"
+            - name: FRESHCLAM_CHECKS
+              value: {{ .Values.clamav.freshclamChecksPerDay | quote }}
+          ports:
+            - containerPort: {{ .Values.clamav.port }}
+              name: clamd
+          resources:
+            {{- toYaml .Values.clamav.resources | nindent 12 }}
+          startupProbe:
+            tcpSocket:
+              port: clamd
+            periodSeconds: 10
+            failureThreshold: 60
+          readinessProbe:
+            exec:
+              command: ["clamdcheck.sh"]
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 3
+          livenessProbe:
+            tcpSocket:
+              port: clamd
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 4
+          securityContext:
+            allowPrivilegeEscalation: false
+          volumeMounts:
+            - name: signatures
+              mountPath: /var/lib/clamav
+      volumes:
+        - name: signatures
+          emptyDir:
+            sizeLimit: {{ .Values.clamav.signatureStorage.sizeLimit }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: clamav
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: clamav
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.clamav.port }}
+      targetPort: clamd
+      protocol: TCP
+      name: clamd
+  selector:
+    app: clamav
+---
+# The namespace-wide policy (03-monitoring.yaml) admits only the ingress and
+# monitoring namespaces. Policies add up, so this one lets the API pods reach clamd.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: clamav-from-backend
+  namespace: {{ .Release.Namespace }}
+spec:
+  podSelector:
+    matchLabels:
+      app: clamav
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: studentkare-backend
+        - podSelector:
+            matchLabels:
+              app: studentkare-worker
+      ports:
+        - protocol: TCP
+          port: {{ .Values.clamav.port }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: clamav-pdb
+  namespace: {{ .Release.Namespace }}
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: clamav
+{{- end }}

@@ -17,7 +17,7 @@ groups:
         annotations:
           summary: "Availability SLO burn rate exceeded"
           description: "5xx error rate is {{ $value | humanizePercentage }} (SLO: <0.1%)"
-          runbook_url: "https://runbooks.studentkare.in/slo-availability"
+          runbook_url: "https://runbooks.studentkare.co/slo-availability"
 
       - alert: SLOAvailabilityBurnRateMedium
         expr: |

@@ -98,7 +98,7 @@ services:
       start_period: 60s
 
   pgbouncer:
-    image: edoburu/pgbouncer:latest
+    image: edoburu/pgbouncer:v1.25.2-p0
     container_name: studentkare-pgbouncer
     restart: unless-stopped
     env_file:

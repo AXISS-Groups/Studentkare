@@ -30,6 +30,10 @@ spec:
         - name: frontend
           image: "{{ .Values.frontend.image.repository }}:{{ required "Set frontend.image.tag to a released sha-<commit> tag (see release.yml)" .Values.frontend.image.tag }}"
           imagePullPolicy: {{ .Values.frontend.image.pullPolicy }}
+          env:
+            # deploy/nginx.conf proxies /api here (the compose default is backend:8000).
+            - name: BACKEND_UPSTREAM
+              value: "studentkare-backend:{{ .Values.backend.service.port }}"
           ports:
             - containerPort: 80
               name: http
@@ -57,6 +61,21 @@ spec:
               drop:
                 - ALL
             readOnlyRootFilesystem: true
+          # nginx writes its rendered config, cache and pid file; the root is read-only.
+          volumeMounts:
+            - name: nginx-conf
+              mountPath: /etc/nginx/conf.d
+            - name: nginx-cache
+              mountPath: /var/cache/nginx
+            - name: nginx-run
+              mountPath: /var/run
+      volumes:
+        - name: nginx-conf
+          emptyDir: {}
+        - name: nginx-cache
+          emptyDir: {}
+        - name: nginx-run
+          emptyDir: {}
       imagePullSecrets:
         {{- range .Values.global.imagePullSecrets }}
         - name: {{ .name }}
@@ -92,16 +111,20 @@ metadata:
     nginx.ingress.kubernetes.io/proxy-body-size: "12m"
     nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
     nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
+    # Edge flood backstop per client address, sized for campus NAT (deploy/nginx.conf
+    # has the same limit; the app's own per-IP and per-session limits from #221 bite first).
+    nginx.ingress.kubernetes.io/limit-rps: {{ .Values.frontend.ingress.limitRps | default 100 | quote }}
+    nginx.ingress.kubernetes.io/limit-burst-multiplier: "5"
 spec:
   ingressClassName: {{ .Values.frontend.ingress.className }}
   tls:
     {{- if .Values.frontend.ingress.tls.enabled }}
     - hosts:
-        - {{ .Values.frontend.ingress.host }}
+        - {{ .Values.frontend.ingress.host | default .Values.global.domain }}
       secretName: {{ .Values.frontend.ingress.tls.secretName }}
     {{- end }}
   rules:
-    - host: {{ .Values.frontend.ingress.host }}
+    - host: {{ .Values.frontend.ingress.host | default .Values.global.domain }}
       http:
         paths:
           - path: /

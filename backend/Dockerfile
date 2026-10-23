@@ -3,9 +3,17 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
+# tesseract-ocr + English, Hindi and Telugu data: the on-server reader for photos of
+# medicine strips (services/medicine_ocr.py). Installing it does not turn the
+# feature on: MEDICINE_OCR_ENABLED / Admin › Integrations stays off until the
+# AI-constitution owner and the DPO sign (plan tier1-medicine-info-2026-10-22).
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     curl \
+    tesseract-ocr \
+    tesseract-ocr-eng \
+    tesseract-ocr-hin \
+    tesseract-ocr-tel \
     && rm -rf /var/lib/apt/lists/*
 
 COPY config/requirements.txt /app/requirements.txt

@@ -138,7 +138,11 @@ metadata:
   name: studentkare-backend-config
   namespace: {{ .Release.Namespace }}
 data:
-  ALLOWED_ORIGINS: {{ .Values.backend.env.ALLOWED_ORIGINS | default "https://studentkare.in,https://monitoring.studentkare.in" }}
+  # One app domain (global.domain): CORS origins, mail/invite links (APP_BASE_URL)
+  # and the platform domain all follow it unless overridden in backend.env.
+  APP_DOMAIN: {{ .Values.global.domain | quote }}
+  APP_BASE_URL: {{ .Values.backend.env.APP_BASE_URL | default (printf "https://%s" .Values.global.domain) | quote }}
+  ALLOWED_ORIGINS: {{ .Values.backend.env.ALLOWED_ORIGINS | default (printf "https://%s" .Values.global.domain) | quote }}
   # Proxies whose X-Forwarded-For the backend trusts (audit TD-10): the ingress
   # controller's pod network. Set backend.env.FORWARDED_ALLOW_IPS to your
   # cluster's pod CIDR to narrow it.
@@ -146,17 +150,17 @@ data:
   # Order payments (docs/billing-payments.md). The backend refuses to start with
   # "mock" in production; Razorpay keys come from studentkare-secrets.
   PAYMENT_PROVIDER: {{ .Values.backend.env.PAYMENT_PROVIDER | default "razorpay" | quote }}
-  # Video consults (docs/video-consults.md): the wss:// LiveKit address browsers
-  # connect to. Empty = no call can be started; key and secret are in studentkare-secrets.
-  LIVEKIT_URL: {{ .Values.backend.env.LIVEKIT_URL | default "" | quote }}
-  # Agent Ayush (docs/guides/ayush-operations.md): on-prem Ollama only. Empty OLLAMA_URL =
-  # quoted answers and keyword retrieval, shown in Admin › Knowledge.
-  OLLAMA_URL: {{ .Values.backend.env.OLLAMA_URL | default "" | quote }}
-  LLM_MODEL: {{ .Values.backend.env.LLM_MODEL | default "" | quote }}
-  EMBEDDING_PROVIDER: {{ .Values.backend.env.EMBEDDING_PROVIDER | default "local" | quote }}
-  EMBEDDING_MODEL: {{ .Values.backend.env.EMBEDDING_MODEL | default "" | quote }}
-  EMBEDDING_OLLAMA_URL: {{ .Values.backend.env.EMBEDDING_OLLAMA_URL | default "" | quote }}
-  AYUSH_HELP_PACK_AUTOLOAD: {{ .Values.backend.env.AYUSH_HELP_PACK_AUTOLOAD | default "true" | quote }}
+  # Upload virus scanner (templates/05-clamav.yaml). Prescriptions fail closed without it.
+  CLAMAV_HOST: {{ .Values.backend.env.CLAMAV_HOST | default (ternary "clamav" "" .Values.clamav.enabled) | quote }}
+  CLAMAV_PORT: {{ .Values.backend.env.CLAMAV_PORT | default .Values.clamav.port | toString | quote }}
+  # Every other non-empty backend.env value (empty = unset, the code default
+  # applies). Keys set on the containers directly are skipped here.
+  {{- $skip := list "APP_DOMAIN" "APP_BASE_URL" "ALLOWED_ORIGINS" "FORWARDED_ALLOW_IPS" "PAYMENT_PROVIDER" "CLAMAV_HOST" "CLAMAV_PORT" "APP_ENV" "OTEL_EXPORTER_OTLP_ENDPOINT" "RULE_L_REQUIRE_GRANTS" "USE_PGBOUNCER" }}
+  {{- range $key, $value := .Values.backend.env }}
+  {{- if and (not (has $key $skip)) (ne (toString $value) "") }}
+  {{ $key }}: {{ toString $value | quote }}
+  {{- end }}
+  {{- end }}
 ---
 apiVersion: v1
 kind: ServiceAccount

@@ -129,19 +129,86 @@ jobs:
         run: |
           cp .env.dev.example .env
           docker compose -f docker-compose.yml config >/dev/null
-          DATABASE_URL=postgresql://ci:ci@localhost:5432/ci?sslmode=disable \
-          ALLOWED_ORIGINS=https://example.test \
-          OTP_HASH_SECRET=dummy-config-check-only \
-          ALERTMANAGER_WEBHOOK_SECRET=dummy \
-          SENTRY_DSN=https://dummy@sentry.test/1 \
-          GRAFANA_ADMIN_PASSWORD=dummy \
-          TWO_FACTOR_ENCRYPTION_KEY=dummy \
-          PASS_SIGNING_SECRET=dummy \
-          DPDP_ARCHIVE_KEY=dummy \
-          DPDP_ARCHIVE_RETENTION_DAYS=30 \
-          INTEGRATIONS_ENCRYPTION_KEY=dummy \
-          docker compose -f docker-compose.yml -f docker-compose.prod.yml config >/dev/null
+          # Exported (not a one-command prefix) so every prod check below sees them.
+          export DATABASE_URL='postgresql://ci:ci@localhost:5432/ci?sslmode=disable' \
+            ALLOWED_ORIGINS=https://example.test \
+            OTP_HASH_SECRET=dummy-config-check-only \
+            ALERTMANAGER_WEBHOOK_SECRET=dummy \
+            SENTRY_DSN=https://dummy@sentry.test/1 \
+            GRAFANA_ADMIN_PASSWORD=dummy \
+            TWO_FACTOR_ENCRYPTION_KEY=dummy \
+            PASS_SIGNING_SECRET=dummy \
+            DPDP_ARCHIVE_KEY=dummy \
+            DPDP_ARCHIVE_RETENTION_DAYS=30 \
+            INTEGRATIONS_ENCRYPTION_KEY=dummy
+          docker compose -f docker-compose.yml -f docker-compose.prod.yml config > /tmp/compose-prod.yml
+          # Uploads fail closed without a virus scanner: prod must run clamd with a health check.
+          docker compose -f docker-compose.yml -f docker-compose.prod.yml config --services | grep -qx clamav
+          docker compose -f docker-compose.yml -f docker-compose.prod.yml config --format json clamav \
+            | python -c "import json,sys; s=json.load(sys.stdin)['services']['clamav']; assert s['healthcheck']['test'] and s['deploy']['resources']['limits']['memory'], s"
           rm -f .env
+
+  ops-config:
+    # Production deploy config: the Helm chart renders and lints with the
+    # production values. A chart that cannot render cannot be deployed.
+    name: Ops config (Helm chart, env passthrough)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v4
+
+      - name: Setup Python Environment
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Setup Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.17.3
+
+      - name: Helm lint + template (production values)
+        run: |
+          set -euo pipefail
+          chart=deploy/helm/studentkare
+          args=(-f "$chart/values/production.yaml"
+                --set backend.image.tag=sha-ci,frontend.image.tag=sha-ci
+                --set backend.secrets.ALERTMANAGER_WEBHOOK_SECRET=ci-dummy
+                --set alertmanager.config.global.slack_api_url=https://hooks.slack.test/ci)
+          helm lint "$chart" "${args[@]}"
+          helm template studentkare "$chart" "${args[@]}" > /tmp/studentkare-rendered.yaml
+
+      - name: No floating image tags (latest, or no tag at all)
+        run: |
+          set -euo pipefail
+          files="docker-compose.yml docker-compose.prod.yml deploy/helm/studentkare/values/production.yaml deploy/Dockerfile deploy/backup/Dockerfile backend/Dockerfile"
+          if grep -nE '(^\s*image:\s*[^ :]+(\s|$)|^\s*image:\s*\S+:latest\b|^\s*tag:\s*"?latest"?\s*(#.*)?$|^FROM\s+[^ :]+(\s|$)|^FROM\s+\S+:latest\b)' $files; then
+            echo "Pin these image tags."; exit 1
+          fi
+
+      - name: nginx config test (the web image's template, rendered by the image's entrypoint)
+        run: |
+          docker run --rm -e BACKEND_UPSTREAM=127.0.0.1:8000 \
+            -v "$PWD/deploy/nginx.conf:/etc/nginx/templates/default.conf.template:ro" \
+            -v "$PWD/deploy/nginx/security-headers.conf:/etc/nginx/snippets/security-headers.conf:ro" \
+            nginx:1.28-alpine nginx -t
+
+      - name: Alert rules and Alertmanager config (promtool / amtool, compose and rendered Helm)
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/bin"
+          # Same versions as the prom/prometheus and prom/alertmanager images.
+          curl -sSL https://github.com/prometheus/prometheus/releases/download/v2.53.0/prometheus-2.53.0.linux-amd64.tar.gz \
+            | tar -xz -C "$RUNNER_TEMP/bin" --strip-components=1 prometheus-2.53.0.linux-amd64/promtool
+          curl -sSL https://github.com/prometheus/alertmanager/releases/download/v0.27.0/alertmanager-0.27.0.linux-amd64.tar.gz \
+            | tar -xz -C "$RUNNER_TEMP/bin" --strip-components=1 alertmanager-0.27.0.linux-amd64/amtool
+          pip install pyyaml
+          PATH="$RUNNER_TEMP/bin:$PATH" python scripts/ops/check-monitoring.py
+
+      - name: Env passthrough (every env var the app reads reaches prod compose AND Helm)
+        run: |
+          pip install pyyaml
+          python scripts/ops/check-env-passthrough.py
 
   expo-bundle:
     # Blocking: the phone app must bundle for both platforms. tsc on the native
@@ -285,6 +352,16 @@ jobs:
       - name: Models vs migrations drift (alembic check)
         # Blocking: a model change without a matching migration fails here.
         run: python -m alembic -c config/alembic.ini check
+
+      - name: Backup and restore drill (pg-backup + restore-check on the migrated schema)
+        # docs/guides/backups.md. The runner's client tools are Postgres 16.
+        working-directory: .
+        run: |
+          set -euo pipefail
+          export BACKUP_DIR="$RUNNER_TEMP/backups"
+          sh deploy/backup/pg-backup.sh
+          RESTORE_ADMIN_URL="postgresql://ci:ci@localhost:5432/postgres?sslmode=disable" \
+            sh scripts/ops/restore-check.sh
 
       - name: Backend Pytest Suite on Postgres
         # -rs prints every skip with its reason, so nothing skips silently.
