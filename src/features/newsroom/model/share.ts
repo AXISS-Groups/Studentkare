@@ -30,6 +30,16 @@ export function formatDate(iso: string | null, lang: Lang): string {
   return new Intl.DateTimeFormat(DATE_LOCALES[lang], { day: 'numeric', month: 'short', year: 'numeric' }).format(date);
 }
 
+/** A date and time (Unix seconds) in a given zone, e.g. "1 Oct, 10:00 am" for the autopilot's IST schedule. */
+export function formatDateTime(at: number | null, lang: Lang, timeZone: string): string {
+  if (!at) return '';
+  try {
+    return new Intl.DateTimeFormat(DATE_LOCALES[lang], { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit', timeZone }).format(new Date(at * 1000));
+  } catch {
+    return new Intl.DateTimeFormat(DATE_LOCALES[lang], { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' }).format(new Date(at * 1000));
+  }
+}
+
 /** Press releases and campus news are news articles to a search engine; the rest are articles. */
 const NEWS_ARTICLE: ReadonlySet<PostTemplate> = new Set<PostTemplate>(['CAMPUS_NEWS', 'PRESS_RELEASE', 'PRODUCT_UPDATE']);
 

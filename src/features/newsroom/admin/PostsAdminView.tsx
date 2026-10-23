@@ -18,6 +18,7 @@ import type { Console, Notice, ReviewFilter } from '../viewmodel/PostsAdminViewM
 import { PostArticle } from '../views/PostPage';
 import { PostCover } from '../views/PostCover';
 import { ClinicianConsoleFrame } from '@/features/clinician/shared/ClinicianConsoleFrame';
+import { AutopilotView } from './AutopilotView';
 import '@/features/admin/views/gov-board.css';
 import '@/theme/workflows.css';
 import '../views/newsroom.css';
@@ -42,7 +43,12 @@ const ACTIONS: Readonly<Record<string, MessageKey>> = {
   CREATED: 'news.adm.h.CREATED', EDITED: 'news.adm.h.EDITED', REVIEW_VOIDED: 'news.adm.h.REVIEW_VOIDED', PUBLISHED: 'news.adm.h.PUBLISHED',
   SCHEDULED: 'news.adm.h.SCHEDULED', UNPUBLISHED: 'news.adm.h.UNPUBLISHED', DELETED: 'news.adm.h.DELETED', IMAGE_ADDED: 'news.adm.h.IMAGE_ADDED',
   REVIEWED: 'news.adm.h.REVIEWED', REVIEW_WITHDRAWN: 'news.adm.h.REVIEW_WITHDRAWN',
+  AUTO_CREATED: 'autopilot.h.AUTO_CREATED', AUTO_PUBLISHED: 'autopilot.h.AUTO_PUBLISHED', AUTO_SCHEDULED: 'autopilot.h.AUTO_SCHEDULED',
 };
+type AdminTab = 'posts' | 'autopilot';
+const ADMIN_TABS: readonly { id: AdminTab; label: MessageKey; icon: 'file-text' | 'zap' }[] = [
+  { id: 'posts', label: 'autopilot.tabPosts', icon: 'file-text' }, { id: 'autopilot', label: 'autopilot.tab', icon: 'zap' },
+];
 const CTA_LABEL: Readonly<Record<CtaRoute, MessageKey>> = {
   '/blog': 'news.nav.blog', '/consult': 'news.route.consult', '/crisis': 'news.route.crisis', '/find-care': 'news.route.findCare',
   '/lab-tests': 'news.route.labTests', '/medicine-info': 'news.route.medicineInfo', '/news': 'news.nav.news', '/plans': 'news.route.plans',
@@ -69,7 +75,7 @@ function previewPost(vm: PostsAdminViewModel, authorName: string): PostDetail {
     coverAlt: d.coverAlt, coverArt: d.coverArt || null, author: { name: authorName }, publishedAt: new Date().toISOString(), updatedAt: null,
     featured: d.featured, readingMinutes: Math.max(1, Math.ceil(words / 200)), reviewed: vm.open?.review?.current ? { by: vm.open.review.by, on: new Date(vm.open.review.at * 1000).toISOString() } : null,
     sample: vm.open?.sample ?? false, path: `/${spec.section}/${d.slug}`, ogImage: '', body: vm.previewBody, seoTitle: d.seoTitle || d.title,
-    seoDescription: d.seoDescription || d.summary, related: [],
+    seoDescription: d.seoDescription || d.summary, related: [], auto: vm.open?.auto ?? false, source: vm.open?.source ?? null,
   };
 }
 
@@ -358,6 +364,7 @@ const ReviewPanel = observer(function ReviewPanel({ vm }: { vm: PostsAdminViewMo
 export const PostsAdminView = observer(function PostsAdminView({ console: where }: { console: Console }) {
   const t = useT();
   const [vm] = useState(() => new PostsAdminViewModel(where));
+  const [tab, setTab] = useState<AdminTab>('posts');
   useEffect(() => { void vm.load(); return () => vm.dispose(); }, [vm]);
 
   if (vm.phase === 'loading' && !vm.items.length && !vm.editing) return <BoardLoading label={t('news.adm.loading')} />;
@@ -371,7 +378,7 @@ export const PostsAdminView = observer(function PostsAdminView({ console: where 
       muted: post.status === 'UNPUBLISHED',
       cells: [
         { text: post.title, weight: 'strong', sub: post.path },
-        { text: t(TEMPLATES[post.template].label) },
+        { text: post.auto ? `${t(TEMPLATES[post.template].label)} · ${t('autopilot.auto')}` : t(TEMPLATES[post.template].label) },
         { pill: { label: t(pill.label), tone: pill.tone } },
         { text: when(post.updatedAt), weight: 'muted', mono: true },
       ],
@@ -383,8 +390,17 @@ export const PostsAdminView = observer(function PostsAdminView({ console: where 
     <div className="sk-ds sk-admin-page sk-gov sk-posts" data-testid="posts-admin">
       <ConsolePageHeader eyebrow={t(review ? 'news.adm.rev.eyebrow' : 'news.adm.eyebrow')} title={t(review ? 'news.adm.rev.title' : 'news.adm.title')}
         subtitle={t(review ? 'news.adm.rev.subtitle' : 'news.adm.subtitle')}
-        actions={!review && !vm.editing ? <SkButton onClick={() => vm.startNew()} data-testid="post-new"><Icon name="plus" size={16} />{t('news.adm.new')}</SkButton> : undefined} />
-      {vm.editing ? (review ? <ReviewPanel vm={vm} /> : <Editor vm={vm} />) : (
+        actions={!review && !vm.editing && tab === 'posts' ? <SkButton onClick={() => vm.startNew()} data-testid="post-new"><Icon name="plus" size={16} />{t('news.adm.new')}</SkButton> : undefined} />
+      {!review && !vm.editing ? (
+        <div role="tablist" aria-label={t('autopilot.tabsAria')} className="sk-gov-toolbar sk-posts-tabs">
+          {ADMIN_TABS.map((item) => (
+            <SkButton key={item.id} role="tab" aria-selected={tab === item.id} variant={tab === item.id ? 'primary' : 'secondary'} onClick={() => setTab(item.id)} data-testid={`posts-tab-${item.id}`}>
+              <Icon name={item.icon} size={16} />{t(item.label)}
+            </SkButton>
+          ))}
+        </div>
+      ) : null}
+      {!review && !vm.editing && tab === 'autopilot' ? <AutopilotView /> : vm.editing ? (review ? <ReviewPanel vm={vm} /> : <Editor vm={vm} />) : (
         <div className="sk-gov-stack">
           {vm.error ? <FormError message={vm.error} /> : null}
           {review ? (

@@ -7,6 +7,7 @@ import { assistTe } from './areas/assist';
 import { authChannelsTe } from './areas/authChannels';
 import { authPasscodeTe } from './areas/authPasscode';
 import { campsTe } from './areas/camps';
+import { autopilotTe } from './areas/autopilot';
 import { campusBoardsTe } from './areas/campusBoards';
 import { campusConsoleTe } from './areas/campusConsole';
 import { campusSafetyTe } from './areas/campusSafety';
@@ -67,6 +68,7 @@ export const areasTe = {
   ...authChannelsTe,
   ...authPasscodeTe,
   ...campsTe,
+  ...autopilotTe,
   ...campusBoardsTe,
   ...campusConsoleTe,
   ...campusSafetyTe,
