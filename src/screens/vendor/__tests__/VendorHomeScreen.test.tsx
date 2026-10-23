@@ -42,6 +42,12 @@ const sourceOf = (value: HomeData): HomeSource => vi.fn(async () => value);
 describe('VendorHome', () => {
   beforeEach(() => { partner.partnerKind = 'PHARMACY'; updateRequest.mockReset(); });
 
+  it('lists a cancelled order line as "Cancelled by student" instead of crashing', async () => {
+    render(<VendorHomeScreen source={sourceOf(data({ recent: [line({ id: 'line-c', status: 'CANCELLED', awaitingPayment: true, paymentStatus: 'CANCELLED' })], total: 1, newest: null }))} />);
+    expect(await screen.findByText('Cancelled by student')).toBeInTheDocument();
+    expect(screen.queryByText('Awaiting payment')).toBeNull();
+  });
+
   it('shows the partner’s own account and real server figures, never a sample business', async () => {
     render(<VendorHomeScreen source={sourceOf(data())} />);
     expect(await screen.findByRole('heading', { level: 1, name: 'Demo Wellness Store' })).toBeInTheDocument();

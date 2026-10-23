@@ -206,6 +206,32 @@ def test_catalog_orders_authoritative_prices_and_vendor_isolation(harness):
     assert client.patch(f"/api/work/requests/{line_id}", headers=vendor_headers, json={"status": "ACCEPTED"}).status_code == 200
 
 
+def test_a_cancelled_order_line_reaches_the_partner_as_cancelled_not_awaiting_payment(harness):
+    """The partner console used to blank on a cancelled line: it must arrive as a plain CANCELLED row."""
+    client, factory, codes = harness
+    _student, headers = register(client, codes)
+    with factory() as db:
+        for key, role in [("admin", "SUPER_ADMIN"), ("vendor", "VENDOR")]:
+            db.add(M.Account(id=key, identifier=f"{key}@example.test", channel="EMAIL", full_name=key, role=role, active=True, profile={}, created_at=time.time()))
+        db.commit()
+    client.post("/api/auth/logout", headers=headers)
+    admin_headers = login(client, codes, "admin@example.test")
+    item = {"name": "Test device", "brand": "Test", "kind": "product", "category": "devices", "description": "Inventory supplied by a test fixture.", "pack": "1 device", "pricePaise": 25000, "stock": 3, "providerId": "vendor"}
+    item_id = client.post("/api/ops/catalog", headers=admin_headers, json=item).json()["id"]
+    client.post("/api/auth/logout", headers=admin_headers)
+    student_headers = login(client, codes, "member@example.test")
+    request = {"items": [{"id": item_id, "quantity": 1}], "delivery": {"mode": "pickup", "address": "", "city": "Hyderabad", "pincode": "500001"}, "requestedSlot": ""}
+    order = client.post("/api/orders", json=request, headers={**student_headers, "Idempotency-Key": "cancel-me-order-key"})
+    assert order.status_code == 201, order.text
+    assert client.post(f"/api/orders/{order.json()['id']}/cancel", headers=student_headers).status_code == 200
+    client.post("/api/auth/logout", headers=student_headers)
+    login(client, codes, "vendor@example.test")
+    rows = client.get("/api/work/requests").json()["items"]
+    assert [(row["status"], row["awaitingPayment"]) for row in rows] == [("CANCELLED", False)]
+    assert client.get("/api/work/requests?status=AWAITING_PAYMENT").json()["total"] == 0
+    assert client.get("/api/work/requests?status=CANCELLED").json()["total"] == 1
+
+
 def test_empty_services_are_not_seeded_demos(harness):
     client, _, _ = harness
     assert client.get("/api/catalog").json()["items"] == []

@@ -1226,7 +1226,10 @@ def provider_requests(
     return {
         "items": [{**line_payload(line), "orderId": order.id, "customer": account.full_name, "contact": account.identifier,
                    "delivery": order.delivery, "requestedSlot": order.requested_slot, "createdAt": order.created_at,
-                   "paymentStatus": order.payment_status, "awaitingPayment": payments.order_awaits_payment(order)}
+                   # Only an open request can wait for payment: a cancelled or handled line never does
+                   # (the AWAITING_PAYMENT filter above already requires REQUESTED).
+                   "paymentStatus": order.payment_status,
+                   "awaitingPayment": line.status == "REQUESTED" and payments.order_awaits_payment(order)}
                   for line, order, account in rows],
         "total": total,
         "limit": limit,
@@ -1698,6 +1701,28 @@ def pending_campus(user=Depends(require_campus_admin), db: Session = Depends(wor
         rows = [(cv, account) for cv, account in rows if _campus_key(cv.university) == scope]
     return {"items": [{"accountId": cv.account_id, "fullName": account.full_name, "email": account.identifier,
                        "university": cv.university, "rollNumber": cv.roll_number, "status": cv.status} for cv, account in rows]}
+
+
+@router.get("/ops/campus/team")
+def campus_team(user=Depends(require_campus_admin), db: Session = Depends(workflow_db)):
+    """The campus Team board (CampusAdminTeam): the staff who act for the caller's campus.
+
+    ``GET /ops/accounts`` is super admin only, so a campus administrator got a 403
+    there. This read is scoped by ``campus_scope`` (fails closed with no campus),
+    lists only campus-scoped staff roles, and carries no student and no health
+    data: name, work contact, role, active and whether 2FA is on. Audited.
+    """
+    scope = campus_scope(user, db)
+    rows = db.scalars(select(M.Account).where(M.Account.role.in_(sorted(CAMPUS_SCOPED_ROLES)))
+                      .order_by(M.Account.role, M.Account.full_name)).all()
+    rows = [row for row in rows if scope is None or _campus_key(staff_campus_of(row)) == scope]
+    with_two_factor = set(db.scalars(select(M.TwoFactorSecret.account_id).where(
+        M.TwoFactorSecret.account_id.in_([row.id for row in rows]), M.TwoFactorSecret.enabled.is_(True))).all()) if rows else set()
+    audit(db, user, "CAMPUS_TEAM_VIEWED", scope or "ALL")
+    db.commit()
+    return {"items": [{"id": row.id, "fullName": row.full_name, "identifier": row.identifier, "role": row.role,
+                       "active": row.active, "twoFactorEnabled": row.id in with_two_factor,
+                       "campus": staff_campus_of(row)} for row in rows]}
 
 
 # --- Approved knowledge sources and the read-only care navigator ---
