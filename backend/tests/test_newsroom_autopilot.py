@@ -94,10 +94,12 @@ def test_autopilot_tables_have_a_plane_and_sources_match_the_registry():
         assert bool(url) == bool(source["verified"])
         if url:
             A.check_url(url, source["hosts"])
-    # Everything is off until a super admin turns it on.
-    for key in ("autopilot.news_enabled", "autopilot.blog_enabled", "autopilot.news_auto_publish",
-                "autopilot.blog_auto_publish", "autopilot.kill_switch"):
+    # Everything is off until a super admin turns it on. Once news is on, precise news goes out on its own
+    # (the precision gate holds the rest; tests/test_newsroom_content.py).
+    for key in ("autopilot.news_enabled", "autopilot.blog_enabled", "autopilot.blog_auto_publish",
+                "autopilot.kill_switch", "series.motivation.enabled", "series.health.enabled"):
         assert R.get_declaration(key).default is False
+    assert R.get_declaration("autopilot.news_auto_publish").default is True
 
 
 def test_the_job_is_registered_every_fifteen_minutes_and_does_nothing_while_off(harness):
@@ -219,7 +221,7 @@ def test_the_daily_cap_counts_both_lanes(harness, monkeypatch):
 
 def test_with_auto_publish_off_news_waits_as_a_draft_for_an_editor(harness, monkeypatch):
     client, factory, codes = harness
-    configure(factory, {"autopilot.news_enabled": True})
+    configure(factory, {"autopilot.news_enabled": True, "autopilot.news_auto_publish": False})
     serve(monkeypatch, feed(THU_10))
     run(factory, THU_10)
     (post,) = auto_posts(factory)
@@ -260,7 +262,7 @@ def test_a_model_summary_is_used_only_when_grounded_in_the_source(harness, monke
 
 def test_a_failing_feed_is_recorded_and_alerts_after_repeated_failures(harness, monkeypatch):
     _, factory, _ = harness
-    configure(factory, {**NEWS_ON, "autopilot.source_failures_before_alert": 2})
+    configure(factory, {**NEWS_ON, "autopilot.source_failures_before_alert": 2, "autopilot.fetch_interval_minutes": 15})
     serve(monkeypatch, TimeoutError("boom"))
     assert run(factory, THU_10)["status"] == "DEGRADED"
     assert run(factory, THU_10 + 900)["status"] == "DEGRADED"
@@ -365,7 +367,7 @@ def test_the_autopilot_tab_is_the_super_admins_and_shows_sources_queue_and_log(h
     assert client.get("/api/ops/autopilot").status_code in (401, 403)
     reviewer = doctor(client, factory, codes)
     assert client.get("/api/ops/autopilot", headers=reviewer).status_code == 403
-    configure(factory, {"autopilot.news_enabled": True})
+    configure(factory, {"autopilot.news_enabled": True, "autopilot.news_auto_publish": False})
     serve(monkeypatch, feed(THU_10))
     run(factory, THU_10)
     headers = admin(client, factory, codes)

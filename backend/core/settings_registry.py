@@ -288,8 +288,9 @@ declare("autopilot.news_enabled", BOOL, False, area="autopilot",
         description="Autopilot News lane: summarise new items from the allow-listed official feeds.")
 declare("autopilot.blog_enabled", BOOL, False, area="autopilot",
         description="Autopilot Blog lane: draft the week's blog posts from the topic plan.")
-declare("autopilot.news_auto_publish", BOOL, False, area="autopilot",
-        description="Publish autopilot news at once. Off: each one waits as a draft for an editor.")
+declare("autopilot.news_auto_publish", BOOL, True, area="autopilot",
+        description="Publish autopilot news at once when it passes the precision gate (content.precision_threshold). "
+                    "Imprecise news always waits in Content, Review. Off: every news draft waits for an editor.")
 declare("autopilot.blog_auto_publish", BOOL, False, area="autopilot",
         description="Publish autopilot stories on their day. Health tips always wait for a clinician's approval.")
 declare("autopilot.use_model", BOOL, True, area="autopilot",
@@ -345,6 +346,10 @@ declare("autopilot.source_failures_before_alert", INT, 3, area="autopilot", unit
         maximum=20, description="Failed fetches in a row before a feed raises an ops alert.")
 declare("autopilot.log_size", INT, 50, area="autopilot", unit="entries", minimum=10, maximum=200,
         description="Entries in the Autopilot tab's log and queue.")
+declare("autopilot.fetch_interval_minutes", INT, 30, area="autopilot", unit="minutes", minimum=15, maximum=240,
+        description="How often the aggregator reads the allow-listed feeds, round the clock (the job runs every 15 "
+                    "minutes; a pass reads the feeds only when this much time has gone by). Posting stays inside the "
+                    "news window.")
 # The allow-list of feeds. The publisher, its hosts and what was verified are in
 # backend/content/newsroom/autopilot.json; a feed address must stay on its hosts.
 # Verified from the network on 2026-10-23: who_news (RSS 2.0 with summaries) and
@@ -363,6 +368,75 @@ for _source, _url, _on in AUTOPILOT_SOURCES:
             description=f"Feed address (RSS or Atom) of the autopilot source {_source}. Empty: not verified yet.")
     declare(f"autopilot.source.{_source}.enabled", BOOL, _on, area="autopilot",
             description=f"Whether the autopilot reads the source {_source}.")
+
+# --- content module: categories, series, precision gate, share kit (services/newsroom_content.py,
+# newsroom_precision.py, newsroom_series.py) --------------------------------------------------------
+# Health-advice posts (an advice template in a clinical category, and every health tip) wait for a
+# clinician while health_requires_clinician is on, however precise they are. Off: an auto post that
+# passes the precision gate goes out; an imprecise one waits for the super admin. A health tip typed
+# by the team always needs a clinician (#229).
+declare("content.health_requires_clinician", BOOL, True, area="content",
+        description="Health-advice auto posts (health series, health tips, explainers, myths, quick cards in a "
+                    "clinical category) wait for a clinician's approval even when they pass the precision gate.")
+declare("content.precision_threshold", INT, 100, area="content", unit="percent of sentences", minimum=50, maximum=100,
+        description="Least share of an auto post's sentences that must be traceable to its source for it to be "
+                    "approved without a person. Any failed source check (not allow-listed, too old, undated) is 0.")
+declare("content.precision_sentence_min_support", INT, 70, area="content", unit="percent of words", minimum=50,
+        maximum=100, description="Least share of a sentence's content words found in the source for the sentence "
+                                 "to count as traceable when it is not copied word for word.")
+declare("content.advice_phrases", STR,
+        "you should take,should take,take a dose,dose of,dosage,mg,milligram,tablet,tablets,capsule,capsules,"
+        "syrup,injection,cure,cures,treats,diagnose,diagnosis,diagnosed with,you have,prescribe,prescription,"
+        "stop taking,start taking,increase your dose,reduce your dose,self-medicate",
+        area="content", unit="comma-separated words and phrases",
+        description="Medical-advice language: an auto post containing any of these never goes out without a person "
+                    "(no dosing, no diagnosis, no treatment advice).")
+declare("content.unverifiable_phrases", STR,
+        "studies show,research shows,experts say,doctors say,scientists agree,it is proven,proven to,guaranteed,"
+        "miracle,100%,always works,never fails,best ever,the best,number one,secret",
+        area="content", unit="comma-separated words and phrases",
+        description="Claims that need a source of their own: a sentence with one of these fails the gate unless "
+                    "the source itself says it.")
+declare("content.duplicate_similarity", INT, 60, area="content", unit="percent of title words", minimum=30,
+        maximum=100, description="How alike two titles must be for the composer to warn of a duplicate topic.")
+declare("content.duplicate_window_days", INT, 60, area="content", unit="days", minimum=1, maximum=365,
+        description="How far back the composer looks for a post on the same topic.")
+declare("content.share_utm_enabled", BOOL, True, area="content", public=True,
+        description="Add utm_source (the network), utm_medium and utm_campaign to shared post links.")
+declare("content.share_utm_medium", STR, "social", area="content", unit="utm_medium value", public=True,
+        description="utm_medium on shared post links.")
+declare("content.share_utm_campaign", STR, "newsroom", area="content", unit="utm_campaign value", public=True,
+        description="utm_campaign on shared post links (a series adds its own slug).")
+declare("content.caption_hashtags_max", INT, 5, area="content", unit="hashtags", minimum=0, maximum=10,
+        description="Most hashtags in a LinkedIn caption from the share kit (the category's, then the brand's).")
+declare("content.caption_brand_hashtag", STR, "StudentKare", area="content", unit="hashtag without #",
+        description="The brand hashtag the share kit adds to every caption.")
+declare("content.stats_enabled", BOOL, True, area="content", public=True,
+        description="Count post views and shares (counts only: no reader, address or device is kept).")
+declare("content.list_max", INT, 200, area="content", unit="posts", minimum=50, maximum=1000,
+        description="Most posts one Content list or Analytics view loads.")
+declare("series.lead_hours", INT, 24, area="content", unit="hours", minimum=1, maximum=96,
+        description="How long before its slot a series episode is drafted (time for a clinician to review it).")
+declare("series.auto_publish", BOOL, True, area="content",
+        description="Schedule a series episode that passes the precision gate without a person (health episodes "
+                    "still follow content.health_requires_clinician). Off: every episode waits for the super admin.")
+declare("series.motivation.enabled", BOOL, False, area="content",
+        description="Monday Motivation: draft an episode from the series' own library of lines and attributed "
+                    "public-domain quotes on its days. Off until a super admin turns it on.")
+declare("series.motivation.days", STR, "MON", area="content", unit="comma-separated MON..SUN",
+        description="The days Monday Motivation goes out.")
+declare("series.motivation.hour", INT, 8, area="content", unit="hour of day (IST)", minimum=0, maximum=23,
+        description="The hour Monday Motivation goes out on its day.")
+declare("series.health.enabled", BOOL, False, area="content",
+        description="The health series: draft an episode from approved knowledge on its days, cycling the rota. "
+                    "Off until a super admin turns it on.")
+declare("series.health.days", STR, "MON,WED,FRI", area="content", unit="comma-separated MON..SUN",
+        description="The days the health series goes out.")
+declare("series.health.hour", INT, 17, area="content", unit="hour of day (IST)", minimum=0, maximum=23,
+        description="The hour the health series goes out on its day.")
+declare("series.health.rota", STR, "mental-health,womens-health,common-health", area="content",
+        unit="comma-separated category ids",
+        description="The categories the health series cycles through, one per episode, in order.")
 
 # --- medicine information (services/medicine_info.py; plan tier1-medicine-info-2026-10-22) ---
 # The "Who is it for?" age bands. The band a person picks stays on the device;
@@ -630,8 +704,9 @@ declare("ayush.min_term_overlap", FLOAT, 0.5, area="ayush", unit="share of subje
 # --- platform --------------------------------------------------------------
 # A name zoneinfo does not know (in an override or a student's preference) is
 # never used: the student's day then falls back to this declared default.
-declare("platform.default_timezone", STR, "Asia/Kolkata", area="platform", unit="IANA timezone",
-        description="Timezone for a student's calendar day when they have not set a valid one.")
+declare("platform.default_timezone", STR, "Asia/Kolkata", area="platform", unit="IANA timezone", public=True,
+        description="Timezone for a student's calendar day when they have not set a valid one, and for the "
+                    "newsroom's schedules (the composer's publish-later time, series and autopilot slots).")
 # General API rate limits (core/rate_limiter.py, founder decision 2026-10-22). A
 # signed-in request counts against its session's budget and against its network
 # address's ceiling; a request without a session against the ceiling only. One

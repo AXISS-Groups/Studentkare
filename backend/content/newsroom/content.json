@@ -1,0 +1,298 @@
+{
+  "_about": "Definitions for the newsroom content module (services/newsroom_content.py, newsroom_series.py, newsroom_precision.py). 'categories' are the defaults a fresh install starts with; after that the super admin owns them (rename, archive, colour, icon). 'series' are the two built-in series; their days, hours and rota are settings (series.<key>.*). 'copy' is the fixed text the server puts around generated captions and episodes. Nothing here is a post.",
+  "categories": [
+    {
+      "id": "mental-health",
+      "name": "Mental health",
+      "hue": "violet",
+      "icon": "brain",
+      "clinical": true,
+      "crisisLines": true,
+      "hashtags": [
+        "MentalHealth",
+        "StudentWellbeing"
+      ],
+      "keywords": [
+        "mental health",
+        "stress",
+        "anxiety",
+        "depression",
+        "wellbeing",
+        "loneliness",
+        "suicide prevention",
+        "tele-manas"
+      ],
+      "topics": [
+        "exam stress",
+        "sleep",
+        "loneliness",
+        "mental wellbeing"
+      ]
+    },
+    {
+      "id": "womens-health",
+      "name": "Women's health",
+      "hue": "rose",
+      "icon": "female",
+      "clinical": true,
+      "crisisLines": false,
+      "hashtags": [
+        "WomensHealth"
+      ],
+      "keywords": [
+        "women",
+        "woman",
+        "girls",
+        "maternal",
+        "menstrual",
+        "menstruation",
+        "pregnancy",
+        "cervical",
+        "breast",
+        "anaemia"
+      ],
+      "topics": [
+        "menstrual health",
+        "anaemia",
+        "bone health"
+      ]
+    },
+    {
+      "id": "common-health",
+      "name": "Common health",
+      "hue": "green",
+      "icon": "heart-pulse",
+      "clinical": true,
+      "crisisLines": false,
+      "hashtags": [
+        "HealthForAll"
+      ],
+      "keywords": [
+        "dengue",
+        "malaria",
+        "tuberculosis",
+        "vaccine",
+        "vaccination",
+        "immunization",
+        "influenza",
+        "hygiene",
+        "heatwave",
+        "air quality",
+        "outbreak"
+      ],
+      "topics": [
+        "hydration",
+        "handwashing",
+        "heat and sun",
+        "eye strain"
+      ]
+    },
+    {
+      "id": "nutrition",
+      "name": "Nutrition",
+      "hue": "amber",
+      "icon": "fruit",
+      "clinical": true,
+      "crisisLines": false,
+      "hashtags": [
+        "Nutrition"
+      ],
+      "keywords": [
+        "nutrition",
+        "diet",
+        "food",
+        "obesity",
+        "salt",
+        "sugar",
+        "breakfast"
+      ],
+      "topics": [
+        "campus food"
+      ]
+    },
+    {
+      "id": "fitness",
+      "name": "Fitness",
+      "hue": "orange",
+      "icon": "dumbbell",
+      "clinical": true,
+      "crisisLines": false,
+      "hashtags": [
+        "Fitness"
+      ],
+      "keywords": [
+        "physical activity",
+        "exercise",
+        "sport",
+        "sports",
+        "walking",
+        "yoga"
+      ],
+      "topics": [
+        "physical activity",
+        "sports injuries"
+      ]
+    },
+    {
+      "id": "campus-life",
+      "name": "Campus life",
+      "hue": "sky",
+      "icon": "graduation-cap",
+      "clinical": false,
+      "crisisLines": false,
+      "hashtags": [
+        "CampusLife",
+        "Students"
+      ],
+      "keywords": [
+        "student",
+        "students",
+        "campus",
+        "college",
+        "university",
+        "exam",
+        "ugc",
+        "scholarship",
+        "youth"
+      ],
+      "topics": []
+    },
+    {
+      "id": "product",
+      "name": "Product",
+      "hue": "indigo",
+      "icon": "sparkles",
+      "clinical": false,
+      "crisisLines": false,
+      "hashtags": [
+        "ProductUpdate"
+      ],
+      "keywords": [],
+      "topics": []
+    },
+    {
+      "id": "policy-news",
+      "name": "Policy and news",
+      "hue": "blue",
+      "icon": "building-columns",
+      "clinical": false,
+      "crisisLines": false,
+      "hashtags": [
+        "HealthNews",
+        "PublicHealth"
+      ],
+      "keywords": [
+        "policy",
+        "ministry",
+        "government",
+        "guideline",
+        "guidelines",
+        "regulation",
+        "advisory",
+        "recall",
+        "world health organization"
+      ],
+      "topics": []
+    }
+  ],
+  "defaultNewsCategory": "policy-news",
+  "protectedCategories": {
+    "mental-health": {
+      "clinical": true,
+      "crisisLines": true
+    }
+  },
+  "series": [
+    {
+      "key": "motivation",
+      "slug": "monday-motivation",
+      "name": "Monday Motivation",
+      "template": "MOTIVATION",
+      "hue": "orange",
+      "categoryId": "campus-life",
+      "summary": "A short line to start the week: the team's own words, or a quote from a public-domain source with its author and source."
+    },
+    {
+      "key": "health",
+      "slug": "health-series",
+      "name": "Health series",
+      "template": "SERIES_EPISODE",
+      "hue": "teal",
+      "categoryId": "common-health",
+      "summary": "Mental health, women's health and common health in turn, three times a week, written from clinician-approved sources."
+    }
+  ],
+  "copy": {
+    "captionCrisis": "If you are struggling, call Tele-MANAS 14416 (free, 24x7). In an emergency, call 112.",
+    "captionReadMore": "Read more:",
+    "motivationCoverAlt": "Monday Motivation cover with the StudentKare shield",
+    "episodeCoverAlt": "Health series cover with the StudentKare shield",
+    "episodeSourcesTitle": "From approved sources",
+    "motivationOwnWords": "From the StudentKare team",
+    "tagSeries": "series",
+    "tagMotivation": "motivation",
+    "previewReadOn": "Read on StudentKare",
+    "motivationSource": "Source: {url}"
+  },
+  "views": {
+    "channels": [
+      "linkedin",
+      "whatsapp",
+      "x",
+      "facebook",
+      "telegram",
+      "email",
+      "copy",
+      "native"
+    ]
+  },
+  "hues": [
+    "indigo",
+    "violet",
+    "blue",
+    "sky",
+    "teal",
+    "green",
+    "amber",
+    "orange",
+    "rose"
+  ],
+  "categoryIcons": [
+    "activity",
+    "apple",
+    "bell",
+    "book",
+    "brain",
+    "building-columns",
+    "calendar",
+    "chat",
+    "dumbbell",
+    "female",
+    "file-text",
+    "fruit",
+    "graduation-cap",
+    "heart",
+    "heart-pulse",
+    "leaf",
+    "male",
+    "megaphone",
+    "moon",
+    "shield-check",
+    "sparkles",
+    "star",
+    "sun",
+    "users",
+    "utensils",
+    "walk",
+    "wellness",
+    "wind"
+  ],
+  "shareEndpoints": {
+    "linkedin": "https://www.linkedin.com/sharing/share-offsite/",
+    "whatsapp": "https://wa.me/",
+    "x": "https://x.com/intent/post",
+    "facebook": "https://www.facebook.com/sharer/sharer.php",
+    "telegram": "https://t.me/share/url",
+    "email": "mailto:"
+  }
+}
