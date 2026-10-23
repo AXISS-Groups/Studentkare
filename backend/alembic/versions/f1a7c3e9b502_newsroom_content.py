@@ -35,7 +35,7 @@ POST_COLUMNS = (
     ("series_id", lambda: sa.Column("series_id", sa.String(), nullable=False, server_default="")),
     ("episode", lambda: sa.Column("episode", sa.Integer(), nullable=False, server_default="0")),
     ("precision", lambda: sa.Column("precision", sa.Integer(), nullable=False, server_default="-1")),
-    ("precision_report", lambda: sa.Column("precision_report", sa.JSON(), nullable=True)),
+    ("precision_report", lambda: sa.Column("precision_report", sa.JSON(), nullable=False, server_default=sa.text("'{}'"))),
     ("hold_reason", lambda: sa.Column("hold_reason", sa.String(20), nullable=False, server_default="")),
 )
 ITEM_COLUMNS = (
@@ -76,9 +76,9 @@ def upgrade() -> None:
             sa.Column("icon", sa.String(40), nullable=False, server_default="file-text"),
             sa.Column("clinical", sa.Boolean(), nullable=False, server_default=sa.false()),
             sa.Column("crisis_lines", sa.Boolean(), nullable=False, server_default=sa.false()),
-            sa.Column("hashtags", sa.JSON(), nullable=True),
-            sa.Column("keywords", sa.JSON(), nullable=True),
-            sa.Column("topics", sa.JSON(), nullable=True),
+            sa.Column("hashtags", sa.JSON(), nullable=False),
+            sa.Column("keywords", sa.JSON(), nullable=False),
+            sa.Column("topics", sa.JSON(), nullable=False),
             sa.Column("archived", sa.Boolean(), nullable=False, server_default=sa.false()),
             sa.Column("sort", sa.Integer(), nullable=False, server_default="0"),
             sa.Column("created_at", sa.Float(), nullable=False, server_default="0"),
@@ -98,7 +98,7 @@ def upgrade() -> None:
             sa.Column("hue", sa.String(12), nullable=False, server_default="teal"),
             sa.Column("autopilot_key", sa.String(20), nullable=False, server_default=""),
             sa.Column("episode_count", sa.Integer(), nullable=False, server_default="0"),
-            sa.Column("library", sa.JSON(), nullable=True),
+            sa.Column("library", sa.JSON(), nullable=False),
             sa.Column("archived", sa.Boolean(), nullable=False, server_default=sa.false()),
             sa.Column("sample", sa.Boolean(), nullable=False, server_default=sa.false()),
             sa.Column("created_at", sa.Float(), nullable=False, server_default="0"),
@@ -112,7 +112,7 @@ def upgrade() -> None:
             "care_post_stats",
             sa.Column("post_id", sa.String(), primary_key=True),
             sa.Column("views", sa.Integer(), nullable=False, server_default="0"),
-            sa.Column("shares", sa.JSON(), nullable=True),
+            sa.Column("shares", sa.JSON(), nullable=False),
         )
 
     from core.rule_l import apply_grants
