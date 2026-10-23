@@ -13,6 +13,7 @@ import { LandingWellnessView } from '../LandingWellnessView';
 import { LandingCampusView } from '../LandingCampusView';
 import { LandingClinicianView } from '../LandingClinicianView';
 import { LandingPartnershipsView } from '../LandingPartnershipsView';
+import { ART_CREDIT } from '@/design-system/public-site/publicSiteNav';
 
 vi.mock('@/data/services/http', () => ({ apiRequest: vi.fn() }));
 vi.mock('@/components/clinical/ComprehensiveHealthCalculators', () => ({ ComprehensiveHealthCalculators: () => null }));
@@ -101,7 +102,8 @@ describe.each(PAGES)('%s on the public frame', (_name, Page, current) => {
     await settle();
     for (const a of container.querySelectorAll('a[href]')) {
       const href = a.getAttribute('href') ?? '';
-      if (href.startsWith('#') || href.startsWith('tel:')) continue;
+      // The licence credit for the medical illustrations is the one link out (docs/licences/animation-packs.md).
+      if (href.startsWith('#') || href.startsWith('tel:') || href === ART_CREDIT.href) continue;
       const path = href.split(/[?#]/)[0] ?? '';
       expect(routes.has(path), href).toBe(true);
     }

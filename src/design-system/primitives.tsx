@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import type { RoutePath } from '@/lib/utils/workflowRouting';
+import { AnimatedIcon } from './icons/animated/AnimatedIcon';
 import { SkIcon } from './icons/SkIcon';
 import type { SkIconName } from './icons/SkIcon';
 
@@ -48,7 +49,7 @@ export function SkButton({ variant = 'primary', icon, busy = false, disabled, cl
       disabled={disabled || busy}
       aria-busy={busy || undefined}
     >
-      {busy ? <span className="sk-btn__spinner" aria-hidden="true" /> : icon ? <SkIcon name={icon} size={17} /> : null}
+      {busy ? <AnimatedIcon name="anim-rotate-cw" size="inline" color="currentColor" poster={<span className="sk-btn__spinner" aria-hidden="true" />} /> : icon ? <SkIcon name={icon} size={17} /> : null}
       {children}
     </button>
   );
@@ -165,7 +166,7 @@ export function ErrorStateView({
   return (
     <div className="sk-state">
       <div className="sk-state__body sk-state__body--card" role="alert">
-        <span className="sk-state__badge"><SkIcon name="alert" size={30} strokeWidth={2.2} /></span>
+        <span className="sk-state__badge"><AnimatedIcon name="anim-alert-circle" size="mark" color="currentColor" poster={<SkIcon name="alert" size={30} strokeWidth={2.2} />} /></span>
         <h2 className="sk-state__title">{title}</h2>
         <p className="sk-state__text">{body}</p>
         <div className="sk-state__actions">

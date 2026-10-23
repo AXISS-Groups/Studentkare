@@ -58,6 +58,8 @@
     "expo-notifications": "~0.29.14",
     "expo-sensors": "14.0.2",
     "livekit-client": "2.22.3",
+    "lottie-react-native": "7.1.0",
+    "lottie-web": "5.13.0",
     "lucide-react": "^1.16.0",
     "mobx": "^7.0.3",
     "mobx-react-lite": "^5.0.3",

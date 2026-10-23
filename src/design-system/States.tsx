@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Animated, Easing, Platform, StyleSheet, Text, View } from 'react-native';
 import { Button } from './Button';
-import { Icon } from './icons';
-import type { SkIconName } from './icons';
+import { AnimatedIcon, AnimatedIllustration, Icon } from './icons';
+import type { SkAnimatedName, SkIconName } from './icons';
+import { skAnimated } from './icons/generated/skAnimatedData';
 import { usePulse, useReducedMotion } from './motion';
 import { color, font, fontWeight, motion, radius, space } from './theme';
 
@@ -37,11 +38,25 @@ export interface EmptyStateProps {
   body: string;
   /** The one next step. Omit only when there is genuinely nothing to do. */
   action?: { label: string; onPress: () => void };
+  /**
+   * Optional animated art above the title (design/icons/animated): an `anim-*` icon draws on a 3D
+   * tile; a `scene-*` or `loop-chart-*` draws as a small illustration. Decorative; plays once
+   * (scenes loop) and rests under reduced motion.
+   */
+  animation?: SkAnimatedName;
 }
 
-export function EmptyState({ title, body, action }: EmptyStateProps) {
+/** The art an empty state can carry: icons on a 3D tile, scenes and chart loops as small illustrations. */
+export function EmptyArt({ name }: { name: SkAnimatedName }) {
+  return skAnimated[name].kind === 'icon'
+    ? <AnimatedIcon name={name} variant="3d" />
+    : <AnimatedIllustration name={name} size="sm" />;
+}
+
+export function EmptyState({ title, body, action, animation }: EmptyStateProps) {
   return (
     <View style={styles.state}>
+      {animation ? <EmptyArt name={animation} /> : null}
       <Text accessibilityRole="header" style={styles.title}>
         {title}
       </Text>
@@ -157,11 +172,15 @@ export type StateScreenProps =
       testID?: string;
     };
 
-const STATE_LOOK: Record<StateKind, { icon: SkIconName; bg: string; ink: string }> = {
-  success: { icon: 'check', bg: color.positiveBg, ink: color.positive },
+/**
+ * Each kind's board icon, and the animation that draws the same thing (played once, on arrival).
+ * A failure has none: it never animates like a success (board Feedback).
+ */
+const STATE_LOOK: Record<StateKind, { icon: SkIconName; anim?: SkAnimatedName; bg: string; ink: string }> = {
+  success: { icon: 'check', anim: 'anim-check', bg: color.positiveBg, ink: color.positive },
   failure: { icon: 'x', bg: color.dangerBg, ink: color.danger },
-  empty: { icon: 'file', bg: color.surface3, ink: color.action },
-  offline: { icon: 'wifi-off', bg: color.attentionBg, ink: color.attention },
+  empty: { icon: 'file', anim: 'anim-file', bg: color.surface3, ink: color.action },
+  offline: { icon: 'wifi-off', anim: 'anim-wifi-off', bg: color.attentionBg, ink: color.attention },
 };
 
 const STATE_MARK = 84;
@@ -191,7 +210,10 @@ function StateMark({ kind, icon }: { kind: StateKind; icon: SkIconName }) {
     <View style={styles.markWrap} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" testID={`state-mark-${kind}`}>
       {kind === 'success' ? <Animated.View style={[styles.halo, { backgroundColor: look.ink, opacity: Animated.multiply(halo, 0.16) }]} /> : null}
       <Animated.View style={[styles.mark, { backgroundColor: look.bg, transform: [{ translateY: float }] }]}>
-        <Icon name={icon} size={STATE_ICON} color={look.ink} strokeWidth={2.4} />
+        {look.anim && icon === look.icon ? (
+          <AnimatedIcon name={look.anim} size="mark" color={look.ink} background={look.bg}
+            poster={<Icon name={icon} size={STATE_ICON} color={look.ink} strokeWidth={2.4} />} />
+        ) : <Icon name={icon} size={STATE_ICON} color={look.ink} strokeWidth={2.4} />}
       </Animated.View>
     </View>
   );

@@ -1,0 +1,441 @@
+{
+  "_readme": "Source of truth for the animated set. scripts/icons/build-lottie.mjs reads the licensed originals from the packs folder given on the command line, recolours them to SK tokens, strips and minifies them into src/assets/lottie/<name>.json, and writes the `animated` list in design/icons/icon-manifest.json and the table in design/icons/animated/README.md. `screens` are canvas screens whose mapped files must use the animation (check-icons enforces it); `uses` says where else it is wired. `rest` is the progress (0-1) shown when motion is reduced. Icons are single-ink: every colour becomes @ink, which the component fills from its `color` prop.",
+  "packs": {
+    "material": {
+      "dir": "x-8bfd8afb-google-material-200-animated-icon_1696582799764/Ae & JSON",
+      "title": "Google Material: 200 Animated Icons (UI Action Category)",
+      "author": "Sadjad",
+      "licence": "sadjad"
+    },
+    "ui": {
+      "dir": "x-0cd67a14-user-interface-animated-icons_1697477407202/User Interface Animated Icons",
+      "title": "User Interface Animated Icons (200)",
+      "author": "Sadjad",
+      "licence": "sadjad"
+    },
+    "medical": {
+      "dir": "med/Medical Characters Animated Illustration Pack",
+      "title": "Medical Characters Animated Illustration Pack",
+      "author": "Shakuro",
+      "licence": "shakuro"
+    },
+    "charts": {
+      "dir": "x-ee690f2f-animated-charts/Animated Charts/Perfect_loop/JSON",
+      "title": "Animated Charts (perfect loop)",
+      "author": "Animated Charts pack (UI8 listing)",
+      "licence": "charts"
+    }
+  },
+  "maps": {
+    "chart": {
+      "#949fff": "illustration-indigo",
+      "#5d69d3": "illustration-indigo",
+      "#5e6ad5": "illustration-indigo",
+      "#535ebc": "illustration-indigo",
+      "#4b54a9": "illustration-indigo-deep",
+      "#4952a4": "illustration-indigo-deep",
+      "#4851a3": "illustration-indigo-deep",
+      "#73dca3": "illustration-mint",
+      "#01bb56": "illustration-mint",
+      "#00bc57": "illustration-mint",
+      "#01a54d": "illustration-mint-deep",
+      "#019043": "illustration-mint-deep",
+      "#018e42": "illustration-mint-deep",
+      "#fff3b4": "illustration-gold-soft",
+      "#fee770": "illustration-gold",
+      "#f7d107": "illustration-gold-deep",
+      "#ffc2c0": "illustration-peach-soft",
+      "#fe918f": "illustration-peach",
+      "#f06764": "illustration-peach-deep",
+      "#eef1f7": "illustration-indigo-soft",
+      "#dce1ec": "illustration-indigo-soft",
+      "#ced6e7": "illustration-ink-light",
+      "#bfcce1": "illustration-indigo-soft"
+    }
+  },
+  "palettes": {
+    "illustration": [
+      "illustration-indigo-soft",
+      "illustration-indigo",
+      "illustration-indigo-deep",
+      "illustration-mint-soft",
+      "illustration-mint",
+      "illustration-mint-deep",
+      "illustration-gold-soft",
+      "illustration-gold",
+      "illustration-gold-deep",
+      "illustration-peach-soft",
+      "illustration-peach",
+      "illustration-peach-deep",
+      "illustration-sky-soft",
+      "illustration-sky",
+      "illustration-sky-deep",
+      "illustration-ink",
+      "illustration-ink-light",
+      "illustration-highlight"
+    ]
+  },
+  "assets": [
+    {
+      "name": "anim-check",
+      "kind": "icon",
+      "pack": "ui",
+      "file": "check/check_lottie.json",
+      "rest": 1,
+      "screens": [
+        "Feedback"
+      ],
+      "uses": "StateScreen success mark (OrderHistory, SearchEntry, LabPackages); Toast success tick"
+    },
+    {
+      "name": "anim-alert-triangle",
+      "kind": "icon",
+      "pack": "ui",
+      "file": "alert-triangle/Alt_lottie.json",
+      "rest": 1,
+      "screens": [
+        "Feedback"
+      ],
+      "uses": "Toast attention"
+    },
+    {
+      "name": "anim-alert-circle",
+      "kind": "icon",
+      "pack": "ui",
+      "file": "alert-circle/Alc_lottie.json",
+      "rest": 1,
+      "danger": true,
+      "screens": [],
+      "uses": "Console DataState error (WorkflowUI), ErrorStateView badge"
+    },
+    {
+      "name": "anim-file",
+      "kind": "icon",
+      "pack": "ui",
+      "file": "file/file_lottie.json",
+      "rest": 1,
+      "screens": [],
+      "uses": "StateScreen empty mark"
+    },
+    {
+      "name": "anim-wifi-off",
+      "kind": "icon",
+      "pack": "ui",
+      "file": "wifi-off/wifi-off_lottie.json",
+      "rest": 1,
+      "screens": [],
+      "uses": "StateScreen offline mark (OfflineBoard)"
+    },
+    {
+      "name": "anim-refresh",
+      "kind": "icon",
+      "pack": "material",
+      "file": "Refresh_lottie.json",
+      "rest": 1,
+      "loop": true,
+      "screens": [],
+      "uses": "Loader: CareLoader (console DataState), appointments loading, native boot and landing loaders"
+    },
+    {
+      "name": "anim-rotate-cw",
+      "kind": "icon",
+      "pack": "ui",
+      "file": "rotate-cw/rotate-cw_lottie.json",
+      "rest": 1,
+      "loop": true,
+      "screens": [],
+      "uses": "Busy spinner in Button, SkButton and SubmitButton"
+    },
+    {
+      "name": "anim-folder",
+      "kind": "icon",
+      "pack": "ui",
+      "file": "folder/folder_lottie.json",
+      "rest": 1,
+      "screens": [],
+      "uses": "Console EmptyState default (WorkflowUI)"
+    },
+    {
+      "name": "anim-package",
+      "kind": "icon",
+      "pack": "ui",
+      "file": "package/package_lottie.json",
+      "rest": 1,
+      "screens": [
+        "M2Orders"
+      ],
+      "uses": "M2Orders empty tab, member orders empty, pill nav Orders"
+    },
+    {
+      "name": "anim-shopping-cart",
+      "kind": "icon",
+      "pack": "ui",
+      "file": "shopping-cart/shopping-cart_lottie.json",
+      "rest": 1,
+      "screens": [
+        "M2Orders",
+        "Cart"
+      ],
+      "uses": "M2Orders first order (3D), cart empty"
+    },
+    {
+      "name": "anim-file-text",
+      "kind": "icon",
+      "pack": "ui",
+      "file": "file-text/file-text_lottie.json",
+      "rest": 1,
+      "screens": [],
+      "uses": "Member records empty (web)"
+    },
+    {
+      "name": "anim-clock",
+      "kind": "icon",
+      "pack": "ui",
+      "file": "clock/clock_lottie.json",
+      "rest": 1,
+      "screens": [],
+      "uses": "Medicines panel empty (web)"
+    },
+    {
+      "name": "anim-calendar",
+      "kind": "icon",
+      "pack": "ui",
+      "file": "calendar/calendar_lottie.json",
+      "rest": 1,
+      "screens": [],
+      "uses": "Appointments empty (web panel, native booking)"
+    },
+    {
+      "name": "anim-bell-off",
+      "kind": "icon",
+      "pack": "ui",
+      "file": "bell-off/belloff_lottie.json",
+      "rest": 1,
+      "screens": [
+        "Notifications"
+      ],
+      "uses": "Notifications empty (native view, web inbox panel)"
+    },
+    {
+      "name": "anim-search-off",
+      "kind": "icon",
+      "pack": "material",
+      "file": "Search_Off_lottie.json",
+      "rest": 1,
+      "screens": [],
+      "uses": "Shop search with no results"
+    },
+    {
+      "name": "anim-book-open",
+      "kind": "icon",
+      "pack": "ui",
+      "file": "book-open/bookopen_lottie.json",
+      "rest": 1,
+      "screens": [
+        "WebNewsroom"
+      ],
+      "uses": "Blog empty"
+    },
+    {
+      "name": "anim-message",
+      "kind": "icon",
+      "pack": "ui",
+      "file": "message/message_lottie.json",
+      "rest": 1,
+      "screens": [],
+      "uses": "Member support tickets empty (web)"
+    },
+    {
+      "name": "anim-inbox",
+      "kind": "icon",
+      "pack": "ui",
+      "file": "inbox/inbox_lottie.json",
+      "rest": 1,
+      "screens": [],
+      "uses": "Doctor clinical inbox empty"
+    },
+    {
+      "name": "anim-home",
+      "kind": "icon",
+      "pack": "ui",
+      "file": "home/home_lottie.json",
+      "rest": 1,
+      "screens": [
+        "M2Home",
+        "M2Medicines",
+        "M2Product",
+        "M2Labs",
+        "M2Consults",
+        "M2Vaccines",
+        "M2Insurance",
+        "M2Orders",
+        "M2Insights",
+        "M2Reminders",
+        "M2Water",
+        "M2Trends",
+        "M2ReportUpload",
+        "M2AskAyush",
+        "M2Profile",
+        "M2Steps"
+      ],
+      "uses": "Pill nav: Home becomes current"
+    },
+    {
+      "name": "anim-heart",
+      "kind": "icon",
+      "pack": "ui",
+      "file": "heart/heart_lottie.json",
+      "rest": 1,
+      "screens": [
+        "M2Home",
+        "M2Medicines",
+        "M2Product",
+        "M2Labs",
+        "M2Consults",
+        "M2Vaccines",
+        "M2Insurance",
+        "M2Orders",
+        "M2Insights",
+        "M2Reminders",
+        "M2Water",
+        "M2Trends",
+        "M2ReportUpload",
+        "M2AskAyush",
+        "M2Profile",
+        "M2Steps"
+      ],
+      "uses": "Pill nav: My health becomes current"
+    },
+    {
+      "name": "anim-user",
+      "kind": "icon",
+      "pack": "ui",
+      "file": "user/user_lottie.json",
+      "rest": 1,
+      "screens": [
+        "M2Home",
+        "M2Medicines",
+        "M2Product",
+        "M2Labs",
+        "M2Consults",
+        "M2Vaccines",
+        "M2Insurance",
+        "M2Orders",
+        "M2Insights",
+        "M2Reminders",
+        "M2Water",
+        "M2Trends",
+        "M2ReportUpload",
+        "M2AskAyush",
+        "M2Profile",
+        "M2Steps"
+      ],
+      "uses": "Pill nav: Profile becomes current"
+    },
+    {
+      "name": "scene-doctor-consult",
+      "crop": [
+        327,
+        222,
+        970,
+        797
+      ],
+      "kind": "illustration",
+      "pack": "medical",
+      "file": "A doctor consulting a patient/A doctor consulting a patient.json",
+      "rest": 0,
+      "loop": true,
+      "screens": [
+        "ClinicianConsultRoom"
+      ],
+      "uses": "Consult call waiting room (before video arrives)",
+      "alt": "A doctor and a student talking across a desk"
+    },
+    {
+      "name": "scene-medical-workers",
+      "crop": [
+        437,
+        86,
+        730,
+        1021
+      ],
+      "kind": "illustration",
+      "pack": "medical",
+      "file": "Medical workers/Medical workers.json",
+      "rest": 0,
+      "loop": true,
+      "screens": [
+        "M2Consults"
+      ],
+      "uses": "M2Consults: no doctors listed yet",
+      "alt": "Two clinicians standing together"
+    },
+    {
+      "name": "scene-lab-workers",
+      "crop": [
+        380,
+        72,
+        917,
+        1023
+      ],
+      "kind": "illustration",
+      "pack": "medical",
+      "file": "Medical lab workers/Medical lab workers.json",
+      "rest": 0,
+      "loop": true,
+      "screens": [
+        "M2Labs"
+      ],
+      "uses": "M2Labs: no packages listed yet",
+      "alt": "Two lab workers with a microscope and test tubes"
+    },
+    {
+      "name": "loop-chart-bars",
+      "crop": [
+        111,
+        30,
+        278,
+        400
+      ],
+      "kind": "chart",
+      "pack": "charts",
+      "file": "chart_6_loop.json",
+      "rest": 1,
+      "loop": true,
+      "screens": [],
+      "uses": "Clinician earnings empty (decoration, never data)"
+    },
+    {
+      "name": "loop-chart-line",
+      "crop": [
+        57,
+        91,
+        386,
+        313
+      ],
+      "kind": "chart",
+      "pack": "charts",
+      "file": "chart_15_loop.json",
+      "rest": 1,
+      "loop": true,
+      "screens": [],
+      "uses": "Telemetry: no AI evaluations yet (decoration, never data)"
+    },
+    {
+      "name": "loop-chart-rings",
+      "crop": [
+        58,
+        31,
+        383,
+        395
+      ],
+      "kind": "chart",
+      "pack": "charts",
+      "file": "chart_13_loop.json",
+      "rest": 1,
+      "loop": true,
+      "screens": [],
+      "uses": "Telemetry: no health checks yet (decoration, never data)"
+    }
+  ]
+}

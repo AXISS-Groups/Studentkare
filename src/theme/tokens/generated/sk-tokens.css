@@ -192,6 +192,13 @@
   --sk-size-panel-max: 640px;
   --sk-size-web-content-max: 1440px;
   --sk-size-web-sidebar: 260px;
+  --sk-size-anim-inline: 16px;
+  --sk-size-anim-icon: 24px;
+  --sk-size-anim-mark: 48px;
+  --sk-size-anim-tile: 72px;
+  --sk-size-anim-scene-sm: 160px;
+  --sk-size-anim-scene: 240px;
+  --sk-size-anim-scene-lg: 320px;
   --sk-shadow-hairline: 0px 1px 4px 0px #13192E14;
   --sk-shadow-card: 0px 8px 24px 0px #13192E14;
   --sk-shadow-float: 0px 14px 30px 0px #13192E26;

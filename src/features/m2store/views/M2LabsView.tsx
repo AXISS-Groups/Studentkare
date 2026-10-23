@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Animated, Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { Icon } from '@/design-system/icons';
+import { AnimatedIllustration, Icon } from '@/design-system/icons';
 import type { SkIconName } from '@/design-system/icons';
 import { ErrorState, Rise, Skeleton, useReducedMotion } from '@/design-system';
 import {
@@ -173,7 +173,12 @@ export function M2LabsView({ links, phase, packages, retry, block }: M2LabsViewP
           <M2SectionHead title={t('m2.labs.packages')} />
           {phase === 'loading' ? <Skeleton label={t('m2.labs.loading')} lines={['100%', '100%', '100%']} /> : null}
           {phase === 'error' ? <ErrorState title={t('m2.labs.failedTitle')} body={t('m2.labs.failedBody')} retryLabel={t('common.tryAgain')} onRetry={retry} /> : null}
-          {phase === 'ready' && packages.length === 0 ? <Text style={m2Text.body} testID="m2-labs-empty">{t('m2.labs.empty')}</Text> : null}
+          {phase === 'ready' && packages.length === 0 ? (
+            <View style={styles.emptyArt} testID="m2-labs-empty">
+              <AnimatedIllustration name="scene-lab-workers" size="sm" />
+              <Text style={m2Text.body}>{t('m2.labs.empty')}</Text>
+            </View>
+          ) : null}
           {phase === 'ready' && packages.length > 0 && shown.length === 0 ? <Text style={m2Text.body} testID="m2-labs-no-match">{t('m2.labs.noMatch', { query: query.trim() })}</Text> : null}
           <View style={styles.list}>
             {shown.map((p) => {
@@ -217,6 +222,7 @@ export function M2LabsView({ links, phase, packages, retry, block }: M2LabsViewP
 }
 
 const styles = StyleSheet.create({
+  emptyArt: { alignItems: 'center', gap: space.s12 },
   screen: { flex: 1, backgroundColor: color.canvas },
   content: { paddingBottom: M2_NAV_CLEARANCE, gap: space.s16, width: '100%', maxWidth: size.phoneFrameMax, alignSelf: 'center', overflow: 'hidden' },
   glow: { position: 'absolute', top: -140, right: -110, width: 330, height: 330, borderRadius: radius.full },

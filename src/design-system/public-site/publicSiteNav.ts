@@ -128,6 +128,12 @@ export const FOOTER_SOCIAL: ReadonlyArray<{ setting: PublicSiteLinkSetting; icon
   { setting: 'public_site.youtube_url', icon: 'brand-youtube', label: 'landing.site.footer.youtube' },
 ];
 
+/**
+ * Credit for the animated medical illustrations (licence: docs/licences/animation-packs.md#shakuro asks
+ * for a link back to Shakuro, never to a download file).
+ */
+export const ART_CREDIT = { href: 'https://shakuro.com', label: 'landing.site.footer.artCredit' } as const satisfies { href: string; label: MessageKey };
+
 /** Store badges: shown only when a listing is published (settings registry). */
 export const FOOTER_STORES: ReadonlyArray<{ setting: PublicSiteLinkSetting; icon: SkIconName; top: MessageKey; name: MessageKey }> = [
   { setting: 'public_site.app_store_url', icon: 'brand-apple', top: 'landing.site.footer.appStoreTop', name: 'landing.site.footer.appStore' },

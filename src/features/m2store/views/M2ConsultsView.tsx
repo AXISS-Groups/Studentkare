@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Animated, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { observer } from 'mobx-react-lite';
-import { Icon } from '@/design-system/icons';
+import { AnimatedIllustration, Icon } from '@/design-system/icons';
 import { CrisisLinks, ErrorState, Rise, Skeleton } from '@/design-system';
 import {
   Gradient, LiftCard, M2Card, M2Heading, M2SectionHead, M2_NAV_CLEARANCE, NotYetTile, RoundButton, SERVICE_HUES, SoftIcon, floatTransform, heroStops,
@@ -221,7 +221,12 @@ export const M2ConsultsView = observer(function M2ConsultsView({ vm, links }: { 
         <View style={styles.gutter}>
           {vm.phase === 'loading' ? <Skeleton label={t('m2.doc.loading')} lines={['100%', '80%']} /> : null}
           {vm.phase === 'error' ? <ErrorState title={t('m2.doc.failedTitle')} body={t('m2.doc.failedBody')} retryLabel={t('common.tryAgain')} onRetry={() => void vm.load()} /> : null}
-          {vm.phase === 'ready' && vm.options.length === 0 ? <Text style={m2Text.body} testID="m2-doc-empty">{t('m2.doc.empty')}</Text> : null}
+          {vm.phase === 'ready' && vm.options.length === 0 ? (
+            <View style={styles.emptyArt} testID="m2-doc-empty">
+              <AnimatedIllustration name="scene-medical-workers" size="sm" />
+              <Text style={m2Text.body}>{t('m2.doc.empty')}</Text>
+            </View>
+          ) : null}
         </View>
         {vm.options.length > 0 ? (
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.rail} testID="m2-doc-rail">
@@ -254,6 +259,7 @@ export const M2ConsultsView = observer(function M2ConsultsView({ vm, links }: { 
 });
 
 const styles = StyleSheet.create({
+  emptyArt: { alignItems: 'center', gap: space.s12 },
   screen: { flex: 1, backgroundColor: color.canvas },
   content: { paddingBottom: M2_NAV_CLEARANCE, gap: space.s16, width: '100%', maxWidth: size.phoneFrameMax, alignSelf: 'center', overflow: 'hidden' },
   gutter: { paddingHorizontal: space.gutterPhone },

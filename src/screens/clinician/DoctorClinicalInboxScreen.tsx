@@ -53,7 +53,7 @@ export function DoctorClinicalInboxScreen() {
         {/* No critical-value feed reaches this inbox yet. It used to show an
             invented student with an invented panic value; absence is shown
             as absence. */}
-        <EmptyState title={t('partner.clin.inbox.emptyTitle')} description={t('partner.clin.inbox.emptyBody')} />
+        <EmptyState title={t('partner.clin.inbox.emptyTitle')} description={t('partner.clin.inbox.emptyBody')} animation="anim-inbox" />
       </div>
 
       <ClinicalReviewPanel />

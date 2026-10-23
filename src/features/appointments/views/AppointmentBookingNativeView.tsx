@@ -51,7 +51,7 @@ export const AppointmentBookingNativeView = observer(function AppointmentBooking
       {vm.loadingServices ? <Skeleton label={t('appt.loading')} lines={['90%', '70%', '80%']} /> : null}
       {vm.servicesFailed ? <ErrorState title={t('appt.loadFailedTitle')} body={t('appt.nothingBooked')} retryLabel={t('common.tryAgain')} onRetry={() => void vm.load()} /> : null}
       {!vm.loadingServices && !vm.servicesFailed && vm.services.length === 0 ? (
-        <EmptyState title={t('appt.emptyTitle')} body={t('appt.emptyBody')} />
+        <EmptyState title={t('appt.emptyTitle')} body={t('appt.emptyBody')} animation="anim-calendar" />
       ) : null}
 
       {vm.services.length > 0 ? (
@@ -71,7 +71,7 @@ export const AppointmentBookingNativeView = observer(function AppointmentBooking
           {vm.loadingSlots ? <Skeleton label={t('appt.loadingTimes')} lines={['80%', '60%']} /> : null}
           {vm.slotsFailed ? <ErrorState title={t('appt.timesFailedTitle')} body={t('appt.nothingBooked')} retryLabel={t('common.tryAgain')} onRetry={() => void vm.loadSlots()} /> : null}
           {!vm.loadingSlots && !vm.slotsFailed && bookable.length === 0 ? (
-            <EmptyState title={t('appt.noTimesTitle')} body={t('appt.noTimesBody')} />
+            <EmptyState title={t('appt.noTimesTitle')} body={t('appt.noTimesBody')} animation="anim-calendar" />
           ) : null}
           {bookable.length > 0 ? (
             <RadioGroup

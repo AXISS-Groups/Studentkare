@@ -8,6 +8,7 @@ import {
   Pressable,
   View
 } from 'react-native';
+import { AnimatedIcon } from '@/design-system/icons';
 import { observer } from 'mobx-react-lite';
 import { color } from '@/design-system/theme';
 import { useT } from '@/i18n';
@@ -180,7 +181,7 @@ export const LandingLabTestsNativeView: React.FC<LandingLabTestsNativeViewProps>
 
           {viewModel.status === 'loading' ? (
             <View style={styles.stateRow} accessibilityLiveRegion="polite">
-              <ActivityIndicator color={color.action} />
+              <AnimatedIcon name="anim-refresh" size="icon" color={color.action} poster={<ActivityIndicator color={color.action} />} />
               <Text style={styles.stateText}>{t(k('loading'))}</Text>
             </View>
           ) : viewModel.status === 'error' ? (

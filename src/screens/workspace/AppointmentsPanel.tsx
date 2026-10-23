@@ -65,7 +65,7 @@ export function AppointmentsPanel() {
           {/* There is no video service: this records that the student is ready, nothing more. */}
           {appt.status === 'CONFIRMED' && <button type="button" className="health-button" onClick={() => setConsulting(appt)}><UserCheck size={16} aria-hidden="true" />{t('care.appts.checkIn')}</button>}
         </article>)}
-      </div> : <EmptyState title={t('care.appts.emptyTitle')} description={t('care.appts.emptyBody')} action={t('care.appts.book')} onAction={() => setBooking(true)} />}
+      </div> : <EmptyState title={t('care.appts.emptyTitle')} description={t('care.appts.emptyBody')} action={t('care.appts.book')} onAction={() => setBooking(true)} animation="anim-calendar" />}
     </DataState>
 
     {booking && <BookAppointmentDialog onClose={() => setBooking(false)} onDone={() => { setBooking(false); resource.reload(); }} />}

@@ -52,7 +52,7 @@ export const CartView = observer(function CartView({ vm, cart }: { vm: PhoneShop
       <ShopTopBar title={t('phone.cart.title')} onBack={() => vm.back()} />
       {cart.lines.length === 0 ? (
         <View style={phoneLayout.content}>
-          <EmptyState title={t('cart.emptyTitle')} body={t('phone.cart.emptyBody')} action={{ label: t('phone.list.backToShop'), onPress: vm.home }} />
+          <EmptyState title={t('cart.emptyTitle')} body={t('phone.cart.emptyBody')} action={{ label: t('phone.list.backToShop'), onPress: vm.home }} animation="anim-shopping-cart" />
         </View>
       ) : (
         <>
