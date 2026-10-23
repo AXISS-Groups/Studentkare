@@ -39,7 +39,7 @@ Sizes come from the `size.anim-*` tokens.
 - **Web, initial load:** +16.5 KB raw / +5.0 KB gzip (the components, the palette swap and the name
   registry). lottie-web's light SVG player (165 KB / 47 KB gzip) and every animation are separate
   chunks, fetched the first time an animation scrolls into view.
-- **Web, lazy chunks:** 21 icons 114 KB (12 KB gzip) in all, the three scenes 37–43 KB gzip each, the
+- **Web, lazy chunks:** 21 icons 114 KB (12 KB gzip) in all, the three scenes 13–17 KB gzip each, the
   three chart loops 1–2 KB gzip each.
 - **Native (expo export, Android, Hermes):** 7.29 MB → 8.33 MB (+1.04 MB, +241 KB gzip). Most of it is
   Hermes compiling the 27 JSON objects to bytecode; the three scenes are about two thirds. If that
