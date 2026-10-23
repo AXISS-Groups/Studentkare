@@ -83,7 +83,9 @@ export function LottiePlayer({ name, width, height, trigger, active, ink, bg, on
   const pageVisible = usePageVisible();
   const screenActive = useContext(M2ActiveContext);
   const { scheme, appReduced } = usePagePrefs();
-  const reduced = systemReduced || appReduced;
+  // The media query is read here as well: the shared hook answers from a value cached at start-up.
+  const mediaReduced = typeof window !== 'undefined' && Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
+  const reduced = systemReduced || appReduced || mediaReduced;
   const [seen, setSeen] = useState(false);
   const [onScreen, setOnScreen] = useState(false);
   const [ready, setReady] = useState(false);

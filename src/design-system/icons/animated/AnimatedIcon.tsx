@@ -79,7 +79,7 @@ export function AnimatedIcon({
     )
     : <LottiePlayer name={name} width={px} height={px} trigger={trigger} active={active} ink={ink} bg={background} onReady={() => setReady(true)} />;
   return (
-    <View testID={testID} {...a11y(label)} {...{ 'data-anim-icon': name }} style={styles.wrap}>
+    <View testID={testID} {...a11y(label)} {...{ dataSet: { animIcon: name } }} style={styles.wrap}>
       <WithPoster poster={poster} ready={ready} width={px} height={px}>{body}</WithPoster>
     </View>
   );
@@ -105,7 +105,7 @@ export function AnimatedIllustration({ name, size = 'md', play = 'loop', poster,
   const width = SCENE_WIDTH[size];
   const height = Math.round(width * (def.height / def.width));
   return (
-    <View testID={testID} {...a11y(label)} {...{ 'data-anim-illustration': name }} style={styles.wrap}>
+    <View testID={testID} {...a11y(label)} {...{ dataSet: { animIllustration: name } }} style={styles.wrap}>
       <WithPoster poster={poster} ready={ready} width={width} height={height}>
         <LottiePlayer name={name} width={width} height={height} trigger={play} active={false} ink={color.action} bg={color.surface} onReady={() => setReady(true)} />
       </WithPoster>
