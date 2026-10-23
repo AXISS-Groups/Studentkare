@@ -4,19 +4,18 @@ import { Icon } from '@/design-system/icons';
 import { ErrorState, Rise, Skeleton } from '@/design-system';
 import {
   cardLabel,
-  Gradient, LiftCard, M2Card, M2Header, M2Heading, M2SearchField, M2SectionHead, M2_NAV_CLEARANCE, NAVY_STOPS, NotYetTile, RoundButton, SERVICE_HUES,
-  SoftIcon, SoftTileGrid, floatTransform, heroStops, m2Text, useAmbientMotion, useLift, useLoop, useOwnPhoneChrome,
+  Gradient, LiftCard, M2Card, M2Header, M2ListRow, M2ProductCard, M2SearchField, M2SectionHead, M2_NAV_CLEARANCE, NAVY_STOPS, NotYetTile, RoundButton, SERVICE_HUES, SoftTileGrid, floatTransform, heroStops, m2Text, useAmbientMotion, useLift, useLoop, useOwnPhoneChrome,
 } from '@/design-system/m2';
 import type { PressState } from '@/design-system/m2';
-import { color, focusRing, font, fontWeight, motion, radius, shadow, shadowStyle, size, space } from '@/design-system/theme';
+import { color, font, fontWeight, motion, radius, shadow, shadowStyle, size, space } from '@/design-system/theme';
 import { useT } from '@/i18n';
-import type { MessageKey } from '@/i18n';
 import { discountPercent, money } from '@/data/types/workflowTypes';
 import type { LiveCatalogItem } from '@/data/types/workflowTypes';
 import { FirewallNote } from '@/features/phoneKit/phoneParts';
 import { MEDICINE_CATEGORIES, productArt } from '../data/storeArt';
 import type { ShopFilter } from '../data/storeArt';
 import { orderLinePhone } from '../data/orderLine';
+import { GenericsCompare } from './GenericsCompare';
 
 /**
  * Mobile 2.0 Medicines (canvas page 9 M2Medicines, Tier 2; replaces the
@@ -65,12 +64,6 @@ export interface M2MedicinesViewProps {
   cart?: { add: (item: LiveCatalogItem) => void; canAdd: (item: LiveCatalogItem) => boolean };
 }
 
-const COMPARE: readonly { key: string; label: MessageKey; generic: MessageKey; branded: MessageKey }[] = [
-  { key: 'ingredient', label: 'm2.med.cmp.ingredient', generic: 'm2.med.cmp.same', branded: 'm2.med.cmp.same' },
-  { key: 'strength', label: 'm2.med.cmp.strength', generic: 'm2.med.cmp.same', branded: 'm2.med.cmp.same' },
-  { key: 'quality', label: 'm2.med.cmp.quality', generic: 'm2.med.cmp.same', branded: 'm2.med.cmp.same' },
-  { key: 'price', label: 'm2.med.cmp.price', generic: 'm2.med.cmp.lower', branded: 'm2.med.cmp.higher' },
-];
 
 function Coin() {
   const ambient = useAmbientMotion();
@@ -85,34 +78,26 @@ function Coin() {
   );
 }
 
+/** A "Below MRP" listing: the shared Mobile 2.0 product card (the web shop's grid draws the same card). */
 function DealCard({ item, onOpen, cart }: { item: LiveCatalogItem; onOpen: () => void; cart?: M2MedicinesViewProps['cart'] }) {
   const t = useT();
-  const art = productArt(item);
-  const hue = SERVICE_HUES[art.hue];
   const off = discountPercent(item.mrpPaise, item.pricePaise);
   const canAdd = cart ? cart.canAdd(item) : false;
   return (
-    <View style={styles.deal}>
-      <LiftCard label={`${item.name}, ${item.pack}, ${money(item.pricePaise)}`} onPress={onOpen} testID={`m2-med-deal-${item.id}`} style={styles.dealOpen}>
-        <View style={[styles.dealArt, { backgroundColor: hue.soft }]}>
-          {off > 0 ? <View style={styles.off}><Text style={styles.offText}>{t('m2.med.off', { percent: off })}</Text></View> : null}
-          <Icon name={art.icon} size={34} color={hue.ink} strokeWidth={1.8} />
-        </View>
-        <Text numberOfLines={2} style={m2Text.cardTitle}>{item.name}</Text>
-        <Text numberOfLines={1} style={m2Text.meta}>{item.pack}</Text>
-        {item.requiresPrescription ? <Text style={styles.rxNeeded}>{t('m2.med.rxNeeded')}</Text> : null}
-        <View style={styles.priceRow}>
-          <Text style={m2Text.price}>{money(item.pricePaise)}</Text>
-          {off > 0 ? <Text style={styles.mrp}>{money(item.mrpPaise)}</Text> : null}
-        </View>
-      </LiftCard>
-      {cart && canAdd ? (
-        <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('m2.addSpoken', { name: item.name })} aria-label={t('m2.addSpoken', { name: item.name })}
-          onPress={() => cart.add(item)} testID={`m2-med-add-${item.id}`} style={({ focused }: PressState) => [styles.addPill, focused ? focusRing : null]}>
-          <Text style={styles.addText}>{t('m2.add')}</Text>
-        </Pressable>
-      ) : null}
-    </View>
+    <M2ProductCard
+      testID={`m2-med-deal-${item.id}`}
+      style={styles.deal}
+      art={productArt(item)}
+      off={off > 0 ? t('m2.med.off', { percent: off }) : undefined}
+      name={item.name}
+      pack={item.pack}
+      notes={item.requiresPrescription ? [{ text: t('m2.med.rxNeeded'), tone: 'attention' }] : []}
+      price={money(item.pricePaise)}
+      mrp={off > 0 ? money(item.mrpPaise) : undefined}
+      onOpen={onOpen}
+      label={`${item.name}, ${item.pack}, ${money(item.pricePaise)}`}
+      action={cart && canAdd ? { label: t('m2.add'), spoken: t('m2.addSpoken', { name: item.name }), onPress: () => cart.add(item) } : undefined}
+    />
   );
 }
 
@@ -189,23 +174,9 @@ export function M2MedicinesView({ links, cartCount, shelf, points, labFromPaise 
       </Rise>
 
       <Rise index={5} style={styles.gutter}>
-        <LiftCard label={`${t('m2.med.refills')}. ${t('m2.med.refillsBody')}`} onPress={links.refills} testID="m2-med-refills" style={styles.linkCard}>
-          <SoftIcon icon="refresh" hue="indigo" tile={44} iconSize={22} />
-          <View style={styles.grow}>
-            <Text style={m2Text.cardTitle}>{t('m2.med.refills')}</Text>
-            <Text style={m2Text.meta}>{t('m2.med.refillsBody')}</Text>
-          </View>
-          <Icon name="chevron-right" size={16} color={color.text3} strokeWidth={2.6} />
-        </LiftCard>
+        <M2ListRow icon="refresh" hue="indigo" title={t('m2.med.refills')} meta={t('m2.med.refillsBody')} onPress={links.refills} testID="m2-med-refills" />
         {links.medicineInfo ? (
-          <LiftCard label={`${t('mi.entryTitle')}. ${t('mi.entryBody')}`} onPress={links.medicineInfo} testID="m2-med-info" style={[styles.linkCard, styles.infoCard]}>
-            <SoftIcon icon="pill" hue="teal" tile={44} iconSize={22} />
-            <View style={styles.grow}>
-              <Text style={m2Text.cardTitle}>{t('mi.entryTitle')}</Text>
-              <Text style={m2Text.meta}>{t('mi.entryBody')}</Text>
-            </View>
-            <Icon name="chevron-right" size={16} color={color.text3} strokeWidth={2.6} />
-          </LiftCard>
+          <M2ListRow icon="pill" hue="teal" title={t('mi.entryTitle')} meta={t('mi.entryBody')} onPress={links.medicineInfo} testID="m2-med-info" style={styles.infoCard} />
         ) : null}
       </Rise>
 
@@ -224,42 +195,17 @@ export function M2MedicinesView({ links, cartCount, shelf, points, labFromPaise 
       </Rise>
 
       <Rise index={7} style={styles.gutter}>
-        <M2Card style={styles.compare} testID="m2-med-compare">
-          <View style={styles.compareHead}><M2Heading style={m2Text.cardTitle}>{t('m2.med.cmpTitle')}</M2Heading></View>
-          <View style={styles.cmpRow}>
-            <View style={[styles.cmpKey, styles.cmpHeadCell]} />
-            <Text style={[styles.cmpCell, styles.cmpGenericHead]}>{t('m2.med.cmpGeneric')}</Text>
-            <Text style={[styles.cmpCell, styles.cmpBrandHead]}>{t('m2.med.cmpBranded')}</Text>
-          </View>
-          {COMPARE.map((row) => (
-            <View key={row.key} style={[styles.cmpRow, styles.cmpRule]}>
-              <Text style={styles.cmpKey}>{t(row.label)}</Text>
-              <Text style={[styles.cmpCell, styles.cmpGeneric]}>{t(row.generic)}</Text>
-              <Text style={[styles.cmpCell, styles.cmpBrand]}>{t(row.branded)}</Text>
-            </View>
-          ))}
-          <Text style={[m2Text.body, styles.cmpNote]}>{t('m2.med.cmpNote')}</Text>
-        </M2Card>
+        <GenericsCompare />
       </Rise>
 
       {points || (labFromPaise !== null && links.labs) ? (
         <View style={[styles.gutter, styles.extras]}>
           {points && links.rewards ? (
-            <LiftCard label={points.value === null ? t('phone.shop.pointsTitle') : t('phone.shop.points', { count: points.value })} onPress={links.rewards} testID="m2-med-points" style={styles.linkCard}>
-              <SoftIcon icon="star" hue="amber" tile={44} iconSize={22} />
-              <View style={styles.grow}>
-                <Text style={m2Text.cardTitle}>{points.value === null ? t('phone.shop.pointsTitle') : t('phone.shop.points', { count: points.value })}</Text>
-                <Text style={m2Text.meta}>{points.ready && points.value === null ? t('phone.shop.pointsUnavailable') : t('phone.shop.pointsNote')}</Text>
-              </View>
-              <Icon name="chevron-right" size={16} color={color.text3} strokeWidth={2.6} />
-            </LiftCard>
+            <M2ListRow icon="star" hue="amber" title={points.value === null ? t('phone.shop.pointsTitle') : t('phone.shop.points', { count: points.value })}
+              meta={points.ready && points.value === null ? t('phone.shop.pointsUnavailable') : t('phone.shop.pointsNote')} onPress={links.rewards} testID="m2-med-points" />
           ) : null}
           {labFromPaise !== null && links.labs ? (
-            <LiftCard label={t('phone.shop.labsFrom', { price: money(labFromPaise) })} onPress={links.labs} testID="m2-med-labs" style={styles.linkCard}>
-              <SoftIcon icon="lab" hue="violet" tile={44} iconSize={22} />
-              <Text style={[m2Text.cardTitle, styles.grow]}>{t('phone.shop.labsFrom', { price: money(labFromPaise) })}</Text>
-              <Icon name="chevron-right" size={16} color={color.text3} strokeWidth={2.6} />
-            </LiftCard>
+            <M2ListRow icon="lab" hue="violet" title={t('phone.shop.labsFrom', { price: money(labFromPaise) })} onPress={links.labs} testID="m2-med-labs" />
           ) : null}
         </View>
       ) : null}
@@ -298,32 +244,7 @@ const styles = StyleSheet.create({
   info: { flex: 1, padding: space.s12, justifyContent: 'space-between', gap: space.s6 },
   infoEyebrow: { fontFamily: font.family.sans, fontSize: font.size.caption, fontWeight: fontWeight(font.weight.heavy), letterSpacing: 0.8, textTransform: 'uppercase' },
   infoCard: { marginTop: space.s12 },
-  linkCard: { borderRadius: 22, paddingVertical: space.s14, paddingHorizontal: space.s16, flexDirection: 'row', alignItems: 'center', gap: space.s12, backgroundColor: color.surface, ...shadowStyle(shadow.card) },
   rail: { paddingHorizontal: space.gutterPhone, paddingBottom: space.s8, gap: space.s12 },
   deal: { width: 156 },
-  dealOpen: { borderRadius: 22, padding: space.s12, gap: space.s6, backgroundColor: color.surface, ...shadowStyle(shadow.card), paddingBottom: space.s12 + size.touchTarget },
-  dealArt: { height: 92, borderRadius: radius.lg, alignItems: 'center', justifyContent: 'center' },
-  off: { position: 'absolute', top: space.s8, left: space.s8, paddingHorizontal: space.s8, paddingVertical: space.s2, borderRadius: radius.full, backgroundColor: color.brandNavy },
-  offText: { fontFamily: font.family.sans, fontSize: font.size.caption, fontWeight: fontWeight(font.weight.heavy), color: color.onHero },
-  rxNeeded: { fontFamily: font.family.sans, fontSize: font.size.caption, fontWeight: fontWeight(font.weight.strong), color: color.attention },
-  priceRow: { flexDirection: 'row', alignItems: 'baseline', gap: space.s6, flexWrap: 'wrap' },
-  mrp: { fontFamily: font.family.sans, fontSize: font.size.caption, fontWeight: fontWeight(font.weight.strong), color: color.text3, textDecorationLine: 'line-through' },
-  addPill: {
-    position: 'absolute', left: space.s12, right: space.s12, bottom: space.s10, minHeight: size.touchTarget, borderRadius: radius.full,
-    borderWidth: 1.5, borderColor: color.action, alignItems: 'center', justifyContent: 'center', backgroundColor: color.surface,
-  },
-  addText: { fontFamily: font.family.sans, fontSize: font.size.bodySm, fontWeight: fontWeight(font.weight.heavy), color: color.action },
-  compare: { borderRadius: 26, overflow: 'hidden' },
-  compareHead: { paddingHorizontal: space.s16, paddingTop: space.s16, paddingBottom: space.s10 },
-  cmpRow: { flexDirection: 'row' },
-  cmpRule: { borderTopWidth: 1, borderTopColor: color.ruleSoft },
-  cmpHeadCell: { backgroundColor: color.canvas },
-  cmpKey: { flex: 1.5, paddingVertical: space.s10, paddingHorizontal: space.s16, fontFamily: font.family.sans, fontSize: font.size.bodySm, fontWeight: fontWeight(font.weight.strong), color: color.text },
-  cmpCell: { flex: 1, paddingVertical: space.s10, textAlign: 'center', fontFamily: font.family.sans, fontSize: font.size.bodySm },
-  cmpGenericHead: { fontWeight: fontWeight(font.weight.heavy), color: color.positive, backgroundColor: color.positiveBg },
-  cmpBrandHead: { fontWeight: fontWeight(font.weight.heavy), color: color.text2, backgroundColor: color.canvas },
-  cmpGeneric: { fontWeight: fontWeight(font.weight.heavy), color: color.positive, backgroundColor: color.positiveBg },
-  cmpBrand: { fontWeight: fontWeight(font.weight.strong), color: color.text2 },
-  cmpNote: { paddingHorizontal: space.s16, paddingTop: space.s12, paddingBottom: space.s16 },
   extras: { gap: space.s12 },
 });

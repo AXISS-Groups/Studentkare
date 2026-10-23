@@ -7,6 +7,7 @@ import { GradientHeroCard } from './GradientHeroCard';
 import { useAutoAdvance, useOnScreen } from './m2Motion';
 import { webAttrs, webHandlers } from './M2Parts';
 import type { PressState } from './M2Parts';
+import { useM2Layout } from './m2Layout';
 
 /**
  * The Mobile 2.0 highlights carousel (M2Home): one gradient hero card at a
@@ -14,6 +15,9 @@ import type { PressState } from './M2Parts';
  * `motion.duration.carousel` while motion is allowed and it is on screen; it
  * holds while hovered or focused, and stops for good once the student picks a
  * dot (WCAG 2.2.2). Each card rises in as it arrives (skipped when reduced).
+ *
+ * On a desktop (inside `<M2Responsive>`) two cards show side by side: the
+ * current one and the next, wrapping round; the dots still move one at a time.
  */
 export interface HeroSlide {
   key: string;
@@ -42,7 +46,9 @@ export function HeroCarousel({ label, slides, dotLabel, testID = 'hero-carousel'
   const onScreen = useOnScreen(node);
   const { index, pick, hold } = useAutoAdvance(slides.length, onScreen);
   const slide = slides[index];
+  const pair = useM2Layout() === 'desktop' && slides.length > 1;
   if (!slide) return null;
+  const shown = pair ? [slide, slides[(index + 1) % slides.length]] : [slide];
   return (
     <View
       ref={(n: unknown) => setNode(n)}
@@ -55,20 +61,24 @@ export function HeroCarousel({ label, slides, dotLabel, testID = 'hero-carousel'
       {...webHandlers({ onFocus: () => hold(true), onBlur: () => hold(false) })}
       style={styles.wrap}
     >
-      <Rise key={slide.key}>
-        <GradientHeroCard
-          testID={`${testID}-slide-${slide.key}`}
-          stops={slide.stops}
-          chipFill={slide.chipFill}
-          eyebrow={slide.eyebrow}
-          title={slide.title}
-          body={slide.body}
-          cta={{ label: slide.cta, ink: slide.ink }}
-          icon={slide.icon}
-          onPress={slide.onPress}
-          label={`${slide.title}. ${slide.cta}`}
-        />
-      </Rise>
+      <View style={pair ? styles.pair : null}>
+        {shown.map((s) => (
+          <Rise key={s.key} style={pair ? styles.pairCell : undefined}>
+            <GradientHeroCard
+              testID={`${testID}-slide-${s.key}`}
+              stops={s.stops}
+              chipFill={s.chipFill}
+              eyebrow={s.eyebrow}
+              title={s.title}
+              body={s.body}
+              cta={{ label: s.cta, ink: s.ink }}
+              icon={s.icon}
+              onPress={s.onPress}
+              label={`${s.title}. ${s.cta}`}
+            />
+          </Rise>
+        ))}
+      </View>
       <View style={styles.dots}>
         {slides.map((s, i) => (
           <Pressable
@@ -93,6 +103,8 @@ export function HeroCarousel({ label, slides, dotLabel, testID = 'hero-carousel'
 
 const styles = StyleSheet.create({
   wrap: { gap: space.s4 },
+  pair: { flexDirection: 'row', gap: space.s16 },
+  pairCell: { flex: 1, minWidth: 0 },
   dots: { flexDirection: 'row', justifyContent: 'center' },
   dotHit: { minWidth: size.touchTarget, height: size.touchTarget, alignItems: 'center', justifyContent: 'center', borderRadius: radius.full },
   dot: {

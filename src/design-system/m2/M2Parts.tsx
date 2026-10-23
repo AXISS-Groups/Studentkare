@@ -8,6 +8,8 @@ import { color, focusRing, font, fontWeight, motion, radius, shadow, shadowStyle
 import { useAmbientMotion, useLoop } from './m2Motion';
 import { SERVICE_HUES } from './servicePalette';
 import type { ServiceHue } from './servicePalette';
+import { isWide, m2Gutter, useM2Layout } from './m2Layout';
+import type { M2Layout } from './m2Layout';
 
 /**
  * Small pieces every Mobile 2.0 board shares (canvas page 9): the round
@@ -70,8 +72,10 @@ export function cardLabel(label: string): { accessibilityLabel?: string; 'aria-l
 }
 
 /** A tappable card: lifts on hover and press, focus ring, ≥ 44 px. Named as `cardLabel` says. */
-export function LiftCard({ label, onPress, role = 'link', style, children, testID, disabled = false }: {
+export function LiftCard({ label, onPress, role = 'link', style, children, testID, disabled = false, fill = false }: {
   label: string; onPress?: () => void; role?: 'link' | 'button'; style?: StyleProp<ViewStyle>; children: React.ReactNode; testID?: string; disabled?: boolean;
+  /** Grows to its grid cell's height (`M2Grid`), so cards in a row line up. */
+  fill?: boolean;
 }) {
   const lift = useLift();
   return (
@@ -83,7 +87,7 @@ export function LiftCard({ label, onPress, role = 'link', style, children, testI
       disabled={disabled}
       onPress={onPress}
       testID={testID}
-      style={(state: PressState) => [styles.liftBase, style, lift(state)]}
+      style={(state: PressState) => [styles.liftBase, fill ? styles.fill : null, style, lift(state)]}
     >
       {children}
     </Pressable>
@@ -127,18 +131,29 @@ export function SosButton({ label, spoken, onPress, testID = 'm2-sos' }: { label
   );
 }
 
-/** A store board's header: the round back button, a small line over the title, and its own controls. */
-export function M2Header({ backLabel, onBack, eyebrow, title, trailing, testID = 'm2-header' }: {
-  backLabel: string; onBack: () => void; eyebrow?: string; title: string; trailing?: React.ReactNode; testID?: string;
+/**
+ * A store board's header: the round back button, a small line over the title,
+ * and its own controls. Wider than a phone it takes the web gutter and a
+ * larger title. `onBack` is optional so a navigation root draws no back
+ * button. `sos` puts the SOS pill at the end; it is off unless a board asks
+ * (whether every board carries SOS is the founder's decision, parity audit
+ * 2026-10-23).
+ */
+export function M2Header({ backLabel, onBack, eyebrow, title, trailing, sos, testID = 'm2-header' }: {
+  backLabel?: string; onBack?: () => void; eyebrow?: string; title: string; trailing?: React.ReactNode;
+  sos?: { label: string; spoken: string; onPress: () => void };
+  testID?: string;
 }) {
+  const layout = useM2Layout();
   return (
-    <View style={styles.header} testID={testID}>
-      <RoundButton icon="arrow-left" label={backLabel} onPress={onBack} testID={`${testID}-back`} />
+    <View style={[styles.header, { paddingHorizontal: m2Gutter(layout) }]} testID={testID}>
+      {onBack && backLabel ? <RoundButton icon="arrow-left" label={backLabel} onPress={onBack} testID={`${testID}-back`} /> : null}
       <View style={styles.grow}>
         {eyebrow ? <Text numberOfLines={1} style={styles.headerEyebrow}>{eyebrow}</Text> : null}
-        <M2Heading level={1} style={styles.headerTitle}>{title}</M2Heading>
+        <M2Heading level={1} style={[styles.headerTitle, layout === 'desktop' ? styles.headerTitleDesktop : null]}>{title}</M2Heading>
       </View>
       {trailing}
+      {sos ? <SosButton label={sos.label} spoken={sos.spoken} onPress={sos.onPress} testID={`${testID}-sos`} /> : null}
     </View>
   );
 }
@@ -160,11 +175,14 @@ export interface M2SearchFieldProps {
 /** The white search field with the magnifier (and the microphone, unavailable). */
 export function M2SearchField({ placeholder, label, onPress, value = '', onChangeText, onSubmit, micUnavailable, testID = 'm2-search' }: M2SearchFieldProps) {
   const [inputFocused, setInputFocused] = useState(false);
+  // Wider than a phone: the taller primary-control height and body-size text.
+  const wide = isWide(useM2Layout()) ? styles.searchWide : null;
+  const wideText = wide ? styles.searchTextWide : null;
   const body = (
     <>
       <Icon name="search" size={19} color={color.text3} strokeWidth={2.2} />
       {onPress ? (
-        <Text numberOfLines={1} style={[styles.searchText, styles.searchPlaceholder]}>{placeholder}</Text>
+        <Text numberOfLines={1} style={[styles.searchText, wideText, styles.searchPlaceholder]}>{placeholder}</Text>
       ) : (
         <TextInput
           testID={`${testID}-input`}
@@ -179,7 +197,7 @@ export function M2SearchField({ placeholder, label, onPress, value = '', onChang
           autoCorrect={false}
           onFocus={() => setInputFocused(true)}
           onBlur={() => setInputFocused(false)}
-          style={[styles.searchText, webOnly({ outlineStyle: 'none' as const })]}
+          style={[styles.searchText, wideText, webOnly({ outlineStyle: 'none' as const })]}
         />
       )}
       {micUnavailable ? (
@@ -192,19 +210,20 @@ export function M2SearchField({ placeholder, label, onPress, value = '', onChang
   if (onPress) {
     return (
       <Pressable testID={testID} {...webAttrs({ role: 'search' })} accessibilityRole="search" accessibilityLabel={label} aria-label={label} onPress={onPress}
-        style={({ focused }: PressState) => [styles.search, focused ? focusRing : null]}>
+        style={({ focused }: PressState) => [styles.search, wide, focused ? focusRing : null]}>
         {body}
       </Pressable>
     );
   }
-  return <View testID={testID} {...webAttrs({ role: 'search' })} accessibilityRole="search" style={[styles.search, inputFocused ? focusRing : null]}>{body}</View>;
+  return <View testID={testID} {...webAttrs({ role: 'search' })} accessibilityRole="search" style={[styles.search, wide, inputFocused ? focusRing : null]}>{body}</View>;
 }
 
 /** A section's heading row, with an optional link on the right ("See all"). */
 export function M2SectionHead({ title, action, testID }: { title: string; action?: { label: string; spoken?: string; onPress: () => void }; testID?: string }) {
+  const desktop = useM2Layout() === 'desktop';
   return (
     <View style={styles.sectionHead} testID={testID}>
-      <M2Heading style={m2Text.section}>{title}</M2Heading>
+      <M2Heading style={[m2Text.section, desktop ? styles.sectionDesktop : null]}>{title}</M2Heading>
       {action ? (
         <Pressable role="link" accessibilityRole="link" accessibilityLabel={action.spoken ?? action.label} aria-label={action.spoken ?? action.label} onPress={action.onPress}
           style={({ focused }: PressState) => [styles.sectionLink, focused ? focusRing : null]}>
@@ -234,14 +253,21 @@ export interface SoftTileItem {
   onPress: () => void;
 }
 
-/** Four soft tiles a row with their names under them (Shop by concern, Categories). */
-export function SoftTileGrid({ items, testID }: { items: readonly SoftTileItem[]; testID?: string }) {
+/** Tiles a row per layout: four on a phone (as on the boards), six on a tablet, eight on a desktop. */
+export const SOFT_TILE_COLUMNS: Readonly<Record<M2Layout, number>> = { phone: 4, tablet: 6, desktop: 8 };
+
+const PERCENT = 100;
+
+/** Soft tiles with their names under them (Shop by concern, Categories): four a row on a phone, more wider. */
+export function SoftTileGrid({ items, columns, testID }: { items: readonly SoftTileItem[]; columns?: number; testID?: string }) {
   const lift = useLift();
+  const layout = useM2Layout();
+  const width = `${PERCENT / Math.max(1, columns ?? SOFT_TILE_COLUMNS[layout])}%` as const;
   return (
     <View style={styles.tileGrid} testID={testID}>
       {items.map((item) => (
         <Pressable key={item.key} role="link" accessibilityRole="link" accessibilityLabel={item.label} aria-label={item.label} onPress={item.onPress}
-          testID={`${testID ?? 'tile'}-${item.key}`} style={(state: PressState) => [styles.tileCell, lift(state)]}>
+          testID={`${testID ?? 'tile'}-${item.key}`} style={(state: PressState) => [styles.tileCell, { width }, lift(state)]}>
           <SoftIcon icon={item.icon} hue={item.hue} neutral={item.neutral} />
           <Text style={m2Text.tileLabel}>{item.label}</Text>
         </Pressable>
@@ -251,8 +277,8 @@ export function SoftTileGrid({ items, testID }: { items: readonly SoftTileItem[]
 }
 
 /** A white card (no action). */
-export function M2Card({ children, style, testID }: { children: React.ReactNode; style?: StyleProp<ViewStyle>; testID?: string }) {
-  return <View style={[styles.card, style]} testID={testID}>{children}</View>;
+export function M2Card({ children, style, fill = false, testID }: { children: React.ReactNode; style?: StyleProp<ViewStyle>; fill?: boolean; testID?: string }) {
+  return <View style={[styles.card, fill ? styles.fill : null, style]} testID={testID}>{children}</View>;
 }
 
 /**
@@ -260,9 +286,11 @@ export function M2Card({ children, style, testID }: { children: React.ReactNode;
  * with "not available yet" (or "soon"), and does nothing when pressed — it is
  * not a button (rule 2 of the M2 build brief; DESIGN.md §2.7).
  */
-export function NotYetTile({ icon, title, note, style, centred = false, testID }: { icon: SkIconName; title: string; note: string; style?: StyleProp<ViewStyle>; centred?: boolean; testID?: string }) {
+export function NotYetTile({ icon, title, note, style, centred = false, fill = false, testID }: { icon: SkIconName; title: string; note: string; style?: StyleProp<ViewStyle>; centred?: boolean; fill?: boolean; testID?: string }) {
+  const wide = isWide(useM2Layout());
   return (
-    <View style={[styles.notYet, style, centred ? styles.notYetCentred : null]} testID={testID} accessible accessibilityLabel={`${title}, ${note}`} aria-label={`${title}, ${note}`}>
+    <View style={[styles.notYet, wide ? styles.notYetWide : null, fill ? styles.fill : null, style, centred ? styles.notYetCentred : null]} testID={testID} accessible accessibilityLabel={`${title}, ${note}`} aria-label={`${title}, ${note}`}
+      {...webAttrs({ role: 'group' })}>
       <Icon name={icon} size={22} color={color.text2} strokeWidth={2.1} />
       <Text style={[styles.notYetTitle, centred ? styles.textCentre : null]}>{title}</Text>
       <Text style={[styles.notYetNote, centred ? styles.textCentre : null]}>{note}</Text>
@@ -297,20 +325,26 @@ const styles = StyleSheet.create({
   header: { flexDirection: 'row', alignItems: 'center', gap: space.s12, paddingHorizontal: space.gutterPhone, paddingTop: space.s16 },
   headerEyebrow: { fontFamily: font.family.sans, fontSize: font.size.caption, fontWeight: fontWeight(font.weight.regular), color: color.text3 },
   headerTitle: { fontFamily: font.family.sans, fontSize: font.size.title, fontWeight: fontWeight(font.weight.heavy), letterSpacing: -0.5, color: color.text },
+  headerTitleDesktop: { fontSize: font.size.heading },
+  fill: { flexGrow: 1 },
   search: {
     flexGrow: 1, flexShrink: 1, minHeight: 52, borderRadius: 18, paddingHorizontal: space.s14, flexDirection: 'row', alignItems: 'center', gap: space.s10,
     backgroundColor: color.surface, ...shadowStyle(shadow.card),
   },
+  searchWide: { minHeight: size.controlLg },
+  searchTextWide: { fontSize: font.size.body },
   searchText: { flex: 1, minWidth: 0, fontFamily: font.family.sans, fontSize: font.size.bodySm, fontWeight: fontWeight(font.weight.strong), color: color.text, paddingVertical: space.s8 },
   searchPlaceholder: { color: color.text3 },
   mic: { width: size.touchTarget, height: size.touchTarget, alignItems: 'center', justifyContent: 'center', marginRight: -space.s10 },
+  sectionDesktop: { fontSize: font.size.title },
   sectionHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: space.s12, marginBottom: space.s12 },
   sectionLink: { minHeight: size.touchTarget, justifyContent: 'center' },
   softIcon: { alignItems: 'center', justifyContent: 'center' },
   tileGrid: { flexDirection: 'row', flexWrap: 'wrap', rowGap: space.s14 },
-  tileCell: { width: '25%', alignItems: 'center', gap: space.s6, paddingHorizontal: space.s2, minHeight: size.touchTarget, borderRadius: radius.lg },
+  tileCell: { alignItems: 'center', gap: space.s6, paddingHorizontal: space.s2, minHeight: size.touchTarget, borderRadius: radius.lg },
   card: { borderRadius: 22, backgroundColor: color.surface, ...shadowStyle(shadow.card) },
   notYet: { borderRadius: radius.xl, padding: space.s12, gap: space.s6, backgroundColor: color.neutralBg },
+  notYetWide: { padding: space.s16 },
   notYetCentred: { alignItems: 'center' },
   textCentre: { textAlign: 'center' },
   notYetTitle: { fontFamily: font.family.sans, fontSize: font.size.caption, lineHeight: font.size.caption + space.s4, fontWeight: fontWeight(font.weight.heavy), color: color.text2 },

@@ -292,7 +292,7 @@ describe('WebShop, search and product', () => {
     let units = 0;
     render(withCart(<><WebShopView /><CartProbe onCart={(n) => { units = n; }} /></>));
     await settle();
-    fireEvent.click(screen.getByRole('button', { name: 'Vitamin D3' }));
+    fireEvent.click(screen.getByTestId('m2w-card-a-open'));
     expect(screen.getByRole('heading', { level: 1, name: 'Vitamin D3' })).toBeInTheDocument();
     expect(screen.getByText('No ratings yet')).toBeInTheDocument();
     expect(document.body.textContent).not.toMatch(/student reviews|Earn \d+ Kare points/);

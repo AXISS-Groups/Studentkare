@@ -167,6 +167,13 @@ describe('phone boards in the frame (WP-04)', () => {
     expect(screen.getByRole('heading', { name: 'Search' })).toBeInTheDocument();
   });
 
+  it('draws Refills above 430 px too (it fell through to the old overview, parity audit 2026-10-23)', async () => {
+    phoneWidth(false);
+    render(<BrowserRouter><WorkspaceScreen route="health/refills" /></BrowserRouter>);
+    expect(await screen.findByTestId('m2-refills')).toBeInTheDocument();
+    expect(screen.queryByTestId('pill-nav')).toBeNull();
+  });
+
   it('keeps the desktop orders page above 430 px', () => {
     phoneWidth(false);
     render(<WorkspaceScreen route="orders" />);

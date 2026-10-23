@@ -117,6 +117,8 @@ Translucent tokens (`scrim*`, `on-hero-veil/track/rule`, `on-action-2`, `action-
 
 Existing primitives to consolidate into this set: `Button`, `Input`, `Card`, `Badge`, `Modal` (`src/components/`) and `WorkflowUI` (`src/components/interface/`).
 
+**Mobile 2.0 at every width.** Web and phone draw the same `src/design-system/m2` pieces (cards, bento cells, rows, rail, heroes, product cards, empty states); the web never redraws them in CSS. Wrap a region in `<M2Responsive>` and the pieces lay out for the width that region really has: `phone` up to `size.phone-frame-max`, `tablet` between, `desktop` from `size.desktop-min`. Use `M2Grid` for columns. Outside `<M2Responsive>` everything stays exactly as the phone boards draw it. Stories: *Design system / Mobile 2.0 (phone and desktop)*.
+
 ### When a pattern becomes a design-system component
 Promote it (Figma **and** code **and** Storybook) when it appears on **3 or more screens**, or when it carries a safety or legal rule (for example the price-before-booking row, the consent share card, the crisis card). Otherwise it can live inside the screen.
 
