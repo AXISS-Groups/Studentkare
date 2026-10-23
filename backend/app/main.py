@@ -86,6 +86,7 @@ from services.medicine_master import router as medicine_master_router
 from services.member_profile_api import router as member_profile_router
 from services.named_super_admins import router as named_super_admins_router
 from services.newsroom import router as newsroom_router
+from services.newsroom_autopilot import router as newsroom_autopilot_router
 from services.otp_delivery import available_channels, whatsapp_status
 from services.preventive_care import router as preventive_router
 from services.refill_tracker import router as refill_tracker_router
@@ -374,6 +375,7 @@ app.include_router(clinical_router)
 app.include_router(medicine_master_router)
 app.include_router(medicine_info_router)
 app.include_router(newsroom_router)
+app.include_router(newsroom_autopilot_router)
 app.include_router(lab_booking_router)
 app.include_router(rx_uploads_router)
 app.include_router(lab_results_router)

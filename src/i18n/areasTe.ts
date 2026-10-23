@@ -6,6 +6,7 @@ import { adminTe } from './areas/admin';
 import { assistTe } from './areas/assist';
 import { authChannelsTe } from './areas/authChannels';
 import { authPasscodeTe } from './areas/authPasscode';
+import { autopilotTe } from './areas/autopilot';
 import { campsTe } from './areas/camps';
 import { campusBoardsTe } from './areas/campusBoards';
 import { campusConsoleTe } from './areas/campusConsole';
@@ -67,6 +68,7 @@ export const areasTe = {
   ...assistTe,
   ...authChannelsTe,
   ...authPasscodeTe,
+  ...autopilotTe,
   ...campsTe,
   ...campusBoardsTe,
   ...campusConsoleTe,

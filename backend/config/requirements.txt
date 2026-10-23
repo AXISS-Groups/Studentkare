@@ -28,6 +28,9 @@ alembic>=1.13.0
 # The newsroom's 1200x630 share image is drawn on our own server (services/newsroom_cover.py):
 # a gradient, the shield PNG and the brand font, with no outside image service.
 Pillow==12.3.0
+# The content autopilot reads official RSS/Atom feeds (services/newsroom_autopilot.py): parsed with
+# defusedxml so no entity, DTD or external reference in a feed is ever expanded.
+defusedxml==0.7.1
 # Video consults: signs LiveKit join tokens (services/livekit_media.py). Brings
 # PyJWT, protobuf, livekit-protocol and aiohttp; only AccessToken is used.
 livekit-api==1.2.1

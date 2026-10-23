@@ -2030,10 +2030,61 @@ class Post(Base):
     reviewed_at: Mapped[float] = mapped_column(Float, default=0.0)
     reviewed_hash: Mapped[str] = mapped_column(String(64), default="")
     sample: Mapped[bool] = mapped_column(Boolean, default=False)
+    # MANUAL (typed by the team) or AUTO (the content autopilot, services/newsroom_autopilot.py).
+    # An AUTO news post names the outside item it summarises; the page shows "Source:" with its link.
+    origin: Mapped[str] = mapped_column(String(8), default="MANUAL", index=True)
+    source_name: Mapped[str] = mapped_column(String(120), default="")
+    source_url: Mapped[str] = mapped_column(String(1000), default="")
+    source_published_at: Mapped[float] = mapped_column(Float, default=0.0)
     created_by: Mapped[str] = mapped_column(String, default="")
     created_at: Mapped[float] = mapped_column(Float, default=0.0)
     updated_by: Mapped[str] = mapped_column(String, default="")
     updated_at: Mapped[float] = mapped_column(Float, default=0.0)
+
+
+class AutopilotItem(Base):
+    """One thing the content autopilot saw or drafted, kept once (dedupe by ``dedupe_key``).
+
+    Platform plane. A NEWS item is an entry of an allow-listed official feed: its
+    title, link and the source's own short text (public already), never anything
+    about a person. A BLOG item is one weekly slot of the topic plan. ``state``:
+    SEEN (a candidate), SKIPPED (refused, ``reason`` says why), POSTED (published),
+    HELD (drafted, waiting for a person: an editor, or a clinician for a health
+    tip), FAILED.
+    """
+    __tablename__ = "care_autopilot_items"
+    __table_args__ = (
+        CheckConstraint("lane IN ('NEWS', 'BLOG')", name="ck_care_autopilot_items_lane"),
+        CheckConstraint("state IN ('SEEN', 'SKIPPED', 'POSTED', 'HELD', 'FAILED')", name="ck_care_autopilot_items_state"),
+    )
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    lane: Mapped[str] = mapped_column(String(8), index=True)
+    dedupe_key: Mapped[str] = mapped_column(String(64), unique=True, index=True)   # sha256 of the normalised URL or slot
+    source_id: Mapped[str] = mapped_column(String(40), default="", index=True)
+    source_url: Mapped[str] = mapped_column(String(1000), default="")
+    title: Mapped[str] = mapped_column(String(300), default="")
+    excerpt: Mapped[str] = mapped_column(String(2000), default="")    # the source's own summary, tags stripped
+    published_at: Mapped[float] = mapped_column(Float, default=0.0)   # the source's date (0 when it gives none)
+    relevance: Mapped[int] = mapped_column(Integer, default=0)
+    state: Mapped[str] = mapped_column(String(8), default="SEEN", index=True)
+    reason: Mapped[str] = mapped_column(String(200), default="")
+    topic: Mapped[str] = mapped_column(String(60), default="")
+    slot_at: Mapped[float] = mapped_column(Float, default=0.0)        # BLOG: when the post is due
+    post_id: Mapped[str] = mapped_column(String, default="", index=True)
+    generator: Mapped[str] = mapped_column(String(40), default="")   # source | rephrased | fallback:<why> | extractive
+    created_at: Mapped[float] = mapped_column(Float, default=0.0, index=True)
+    updated_at: Mapped[float] = mapped_column(Float, default=0.0)
+
+
+class AutopilotSource(Base):
+    """The health of one allow-listed feed: when it was last fetched, last worked, and its last error class."""
+    __tablename__ = "care_autopilot_sources"
+    source_id: Mapped[str] = mapped_column(String(40), primary_key=True)
+    last_fetch_at: Mapped[float] = mapped_column(Float, default=0.0)
+    last_ok_at: Mapped[float] = mapped_column(Float, default=0.0)
+    last_error: Mapped[str] = mapped_column(String(200), default="")
+    last_items: Mapped[int] = mapped_column(Integer, default=0)
+    failures: Mapped[int] = mapped_column(Integer, default=0)       # consecutive
 
 
 class PostEvent(Base):

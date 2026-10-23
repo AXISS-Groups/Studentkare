@@ -44,7 +44,7 @@ const teaser = (over: Partial<PostTeaser> = {}): PostTeaser => ({
   id: 'p1', slug: 'exam-week-sleep', section: 'blog', template: 'HEALTH_TIP', title: 'Sleep in exam week', summary: 'Small habits that help.',
   tags: ['sleep'], coverAlt: 'Green health tip cover', coverArt: 'heart--p1', author: { name: 'Asha Editor' }, publishedAt: '2026-10-20T08:00:00Z',
   updatedAt: '2026-10-20T08:00:00Z', featured: false, readingMinutes: 3, reviewed: { by: 'Dr. Meera Rao', on: '2026-10-19T08:00:00Z' }, sample: false,
-  path: '/blog/exam-week-sleep', ogImage: '/api/posts/blog/exam-week-sleep/og.png', ...over,
+  path: '/blog/exam-week-sleep', ogImage: '/api/posts/blog/exam-week-sleep/og.png', auto: false, source: null, ...over,
 });
 
 const detail = (over: Partial<PostDetail> = {}): PostDetail => ({
@@ -222,7 +222,7 @@ const adminPost = (over: Partial<AdminPostDetail> = {}): AdminPostDetail => ({
   tags: [], coverAlt: 'Green cover', coverArt: 'heart--p1', seoTitle: '', seoDescription: '', featured: false, authorId: 'admin', authorName: 'Asha Editor',
   status: 'DRAFT', publishAt: null, live: false, needsReview: true, review: null, contentHash: 'a'.repeat(64),
   blockedBy: 'A clinician must review this health tip as it stands before it is published.', sample: false, path: '/blog/exam-week-sleep',
-  readingMinutes: 1, createdAt: 1, updatedAt: 1, history: [{ id: 'e1', action: 'CREATED', actorRole: 'SUPER_ADMIN', actorName: 'Asha Editor', byYou: true, at: 1 }], ...over,
+  readingMinutes: 1, createdAt: 1, updatedAt: 1, auto: false, source: null, history: [{ id: 'e1', action: 'CREATED', actorRole: 'SUPER_ADMIN', actorName: 'Asha Editor', byYou: true, at: 1 }], ...over,
 });
 
 describe('Super admin, Posts and the clinician review', () => {
@@ -241,7 +241,7 @@ describe('Super admin, Posts and the clinician review', () => {
     expect(preview.querySelector('.sk-news-cover')?.getAttribute('data-hue')).toBe('green');
     fireEvent.change(screen.getByTestId('post-title'), { target: { value: 'Sleep well in exam week' } });
     expect(within(preview).getByRole('heading', { level: 1, name: 'Sleep well in exam week' })).toBeTruthy();
-    expect(screen.getByText(/Write every post yourself/)).toBeTruthy();
+    expect(screen.getByText(/never writes them with AI/)).toBeTruthy();
   });
 
   it('lets a clinician approve exactly the version they read', async () => {
