@@ -52,7 +52,7 @@ export interface M2LabsViewProps {
 
 const STEPS: readonly MessageKey[] = ['m2.labs.step1', 'm2.labs.step2', 'm2.labs.step3', 'm2.labs.step4'];
 
-function packageMeta(p: LabPackage, t: ReturnType<typeof useT>): string {
+export function packageMeta(p: LabPackage, t: ReturnType<typeof useT>): string {
   const tests = t(p.includes.length === 1 ? 'm2.labs.testsOne' : 'm2.labs.tests', { count: p.includes.length });
   const fasting = p.fastingHours > 0 ? t('m2.labs.fasting', { hours: p.fastingHours }) : t('m2.labs.noFasting');
   return `${tests} · ${fasting}`;

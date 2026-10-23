@@ -17,6 +17,7 @@ import { clockLabel, dayLabel } from '@/features/phoneboards/format';
 import { HOME_CONCERNS, productArt } from '../data/storeArt';
 import type { ShopFilter } from '../data/storeArt';
 import { orderLinePhone } from '../data/orderLine';
+import { packageMeta } from './M2LabsView';
 import type { M2HomeData } from '../data/useM2Home';
 
 /**
@@ -216,9 +217,12 @@ export function M2HomeView({ name, campus, verified, data, links, cart, recent, 
   const t = useT();
   useOwnPhoneChrome();
   const phone = orderLinePhone();
+  // Highlights from real data only: the lab package the catalogue lists, Generics when the programme is on, and the
+  // report upload (an action, not an offer). No promotional claim the platform cannot back (founder, 23 Oct 2026).
+  const lab = data.featuredLab ?? null;
   const slides: HeroSlide[] = [
-    { key: 'check', eyebrow: t('m2.home.s1.eyebrow'), title: t('m2.home.s1.title'), body: t('m2.home.s1.body'), cta: t('m2.home.s1.cta'), icon: 'lab', stops: NAVY_STOPS, chipFill: color.brandNavy, ink: color.onHeroCurrent, onPress: links.labs },
-    { key: 'generics', eyebrow: t('m2.home.s2.eyebrow'), title: t('m2.home.s2.title'), body: t('m2.home.s2.body'), cta: t('m2.home.s2.cta'), icon: 'plus-slash', stops: heroStops('green'), chipFill: SERVICE_HUES.green.end, ink: SERVICE_HUES.green.end, onPress: links.generics },
+    ...(lab ? [{ key: 'check', eyebrow: t('m2.labs.heroEyebrow'), title: lab.name, body: t('m2.labs.heroMeta', { meta: packageMeta(lab, t), hours: lab.reportHours }), cta: t('m2.labs.bookSlot'), icon: 'lab' as const, stops: NAVY_STOPS, chipFill: color.brandNavy, ink: color.onHeroCurrent, onPress: links.labs }] : []),
+    ...(data.genericsHighlight ? [{ key: 'generics', eyebrow: t('m2.home.s2.eyebrow'), title: t('m2.home.s2.title'), body: t('m2.home.s2.body'), cta: t('m2.home.s2.cta'), icon: 'plus-slash' as const, stops: heroStops('green'), chipFill: SERVICE_HUES.green.end, ink: SERVICE_HUES.green.end, onPress: links.generics }] : []),
     { key: 'report', eyebrow: t('m2.home.s3.eyebrow'), title: t('m2.home.s3.title'), body: t('m2.home.s3.body'), cta: t('m2.home.s3.cta'), icon: 'doc-upload', stops: heroStops('orange'), chipFill: SERVICE_HUES.orange.end, ink: SERVICE_HUES.orange.deep, onPress: links.uploadReport },
   ];
   const tiles: ServiceTile[] = SERVICES.flatMap((s) => {

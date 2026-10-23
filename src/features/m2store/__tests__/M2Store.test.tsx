@@ -159,6 +159,16 @@ describe('M2Home', () => {
     expect(links.concern).toHaveBeenCalledWith({ query: 'fever' });
   });
 
+  it('highlights only what is real: a listed lab package, Generics only when switched on, never a made-up offer', () => {
+    wrap(<M2HomeView name="A" campus="" verified={false} data={DATA} links={homeLinks()} recent={[]} />);
+    expect(screen.queryByTestId('hero-carousel-slide-check')).toBeNull();
+    expect(screen.queryByTestId('hero-carousel-slide-generics')).toBeNull();
+    expect(document.body.textContent).not.toMatch(/Three checks, one visit/);
+    cleanup();
+    wrap(<M2HomeView name="A" campus="" verified={false} data={{ ...DATA, featuredLab: pkg({ name: 'Complete Health Checkup' }), genericsHighlight: true }} links={homeLinks()} recent={[]} />);
+    expect(screen.getByTestId('hero-carousel-slide-check')).toHaveTextContent('Complete Health Checkup');
+  });
+
   it('has no axe violations', async () => {
     const { container } = wrap(<M2HomeView name="Asha Rao" campus="VNR VJIET" verified data={DATA} links={homeLinks()} recent={[]} />);
     const violations = await axeViolations(container);

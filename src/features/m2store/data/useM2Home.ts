@@ -1,5 +1,8 @@
 import { useMemo } from 'react';
 import { useApiResource } from '@/hooks/api/useApiResource';
+import { getSetting } from '@/data/services/config';
+import { biggestPackage, useLabPackages } from './useLabPackages';
+import type { LabPackage } from '@/features/labBooking/data/LabBookingRepository';
 import type { LiveOrder } from '@/data/types/workflowTypes';
 import { toDate } from '@/features/phoneboards/format';
 import { BUY_AGAIN_ORDER_LIMIT, buyAgainEntries } from '@/features/studentweb/data/studentWebData';
@@ -67,6 +70,13 @@ export function nextCamp(items: readonly Camp[], now = new Date()): Camp | null 
 }
 
 export interface M2HomeData {
+  /**
+   * The highlights carousel's offers, from real data only (founder request, 23 Oct 2026): a lab package the
+   * catalogue really lists (the biggest), and the Generics highlight only when `shop.generics_highlight_enabled`
+   * is on. None of them: that slide is not drawn.
+   */
+  featuredLab?: LabPackage | null;
+  genericsHighlight?: boolean;
   meds: { loading: boolean; failed: boolean; summary: MedsSummary | null };
   consult: { loading: boolean; next: Appointment | null };
   buyAgainCount: number | null;
@@ -78,10 +88,15 @@ export function useM2HomeData(): M2HomeData {
   const appts = useApiResource<{ items: Appointment[] }>('/appointments');
   const orders = useApiResource<{ items: LiveOrder[] }>(`/orders?limit=${BUY_AGAIN_ORDER_LIMIT}&offset=0`);
   const camps = useApiResource<{ items: Camp[] }>('/camps');
+  const labs = useLabPackages();
+  const featuredLab = labs.phase === 'ready' ? biggestPackage(labs.items) : null;
+  const genericsHighlight = getSetting('shop.generics_highlight_enabled');
   return useMemo(() => ({
+    featuredLab,
+    genericsHighlight,
     meds: { loading: meds.loading, failed: Boolean(meds.error), summary: medsSummary(meds.data) },
     consult: { loading: appts.loading, next: appts.data ? nextAppointment(appts.data.items) : null },
     buyAgainCount: orders.data ? buyAgainEntries(orders.data.items).length : null,
     camp: camps.data ? nextCamp(camps.data.items) : null,
-  }), [meds.loading, meds.error, meds.data, appts.loading, appts.data, orders.data, camps.data]);
+  }), [featuredLab, genericsHighlight, meds.loading, meds.error, meds.data, appts.loading, appts.data, orders.data, camps.data]);
 }

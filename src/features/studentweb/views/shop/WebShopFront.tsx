@@ -16,6 +16,8 @@ import { MEDICINE_CATEGORIES } from '@/features/m2store/data/storeArt';
 import type { ShopFilter } from '@/features/m2store/data/storeArt';
 import { orderLinePhone } from '@/features/m2store/data/orderLine';
 import { GenericsCompare } from '@/features/m2store/views/GenericsCompare';
+import { packageMeta } from '@/features/m2store/views/M2LabsView';
+import { biggestPackage, useLabPackages } from '@/features/m2store/data/useLabPackages';
 
 /**
  * The top of /shop above phone width in the Mobile 2.0 language: the campus
@@ -36,8 +38,11 @@ export function WebShopFront({ signedIn, onFilter }: { signedIn: boolean; onFilt
   const phone = orderLinePhone();
   const points = useApiResource<{ balance: number }>(signedIn ? '/points/me' : null);
 
+  const labs = useLabPackages();
+  const lab = labs.phase === 'ready' ? biggestPackage(labs.items) : null;
   const slides: HeroSlide[] = [
-    { key: 'check', eyebrow: t('m2.home.s1.eyebrow'), title: t('m2.home.s1.title'), body: t('m2.home.s1.body'), cta: t('m2.home.s1.cta'), icon: 'lab', stops: NAVY_STOPS, chipFill: color.brandNavy, ink: color.onHeroCurrent, onPress: () => onFilter({ kind: 'lab' }) },
+    // A lab package the catalogue really lists (the biggest), never a made-up offer (founder, 23 Oct 2026).
+    ...(lab ? [{ key: 'check', eyebrow: t('m2.labs.heroEyebrow'), title: lab.name, body: t('m2.labs.heroMeta', { meta: packageMeta(lab, t), hours: lab.reportHours }), cta: t('m2.labs.bookSlot'), icon: 'lab' as const, stops: NAVY_STOPS, chipFill: color.brandNavy, ink: color.onHeroCurrent, onPress: () => onFilter({ kind: 'lab' }) }] : []),
     { key: 'rx', eyebrow: t('m2w.rxSlide.eyebrow'), title: t('m2w.rxSlide.title'), body: t('m2w.rxSlide.body'), cta: t('m2w.rxSlide.cta'), icon: 'doc-upload', stops: heroStops('orange'), chipFill: SERVICE_HUES.orange.end, ink: SERVICE_HUES.orange.deep, onPress: () => navigate('prescriptions') },
     { key: 'report', eyebrow: t('m2.home.s3.eyebrow'), title: t('m2.home.s3.title'), body: t('m2.home.s3.body'), cta: t('m2.home.s3.cta'), icon: 'doc-upload', stops: heroStops('violet'), chipFill: SERVICE_HUES.violet.end, ink: SERVICE_HUES.violet.deep, onPress: () => navigate('health/report-upload') },
   ];

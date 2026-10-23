@@ -22,6 +22,7 @@ import { LiveCartProvider, useLiveCart } from '@/data/contexts/LiveCartContext';
 import type { LiveCatalogItem, LiveOrder } from '@/data/types/workflowTypes';
 import { forgetListings } from '@/features/phoneKit/listingCache';
 import { motion } from '@/design-system/theme';
+import { pkg } from '@/features/phoneKit/__tests__/fixtures';
 import { axeViolations, describeViolations } from '@/test/axe';
 import { WebShopView } from '../WebShopView';
 import { WebCheckoutView } from '../WebCheckoutView';
@@ -292,8 +293,21 @@ describe('web checkout (Mobile 2.0)', () => {
 });
 
 describe('motion', () => {
+  it('the lab highlight is a package the catalogue really lists; with none, it is not drawn (no made-up offer)', async () => {
+    serve({ '/catalog': catalog(), '/points/me': { balance: 1 }, '/lab-packages': { items: [pkg({ id: 'big', name: 'Complete Health Checkup', includes: ['a', 'b', 'c'] }), pkg({})] } });
+    render(withCart(<WebShopView />));
+    await settle();
+    expect(screen.getByTestId('m2w-carousel-slide-check')).toHaveTextContent('Complete Health Checkup');
+    expect(document.body.textContent).not.toMatch(/Three checks, one visit/);
+    cleanup();
+    serve({ '/catalog': catalog(), '/points/me': { balance: 1 }, '/lab-packages': { items: [] } });
+    render(withCart(<WebShopView />));
+    await settle();
+    expect(screen.queryByTestId('m2w-carousel-slide-check')).toBeNull();
+  });
+
   it('the highlights never advance under reduced motion', async () => {
-    serve({ '/catalog': catalog(), '/points/me': { balance: 1 } });
+    serve({ '/catalog': catalog(), '/points/me': { balance: 1 }, '/lab-packages': { items: [pkg({})] } });
     render(withCart(<WebShopView />));
     await settle();
     vi.useFakeTimers();
@@ -304,7 +318,7 @@ describe('motion', () => {
   it('the highlights move on when motion is allowed', async () => {
     state.reduced = false;
     vi.useFakeTimers();
-    serve({ '/catalog': catalog(), '/points/me': { balance: 1 } });
+    serve({ '/catalog': catalog(), '/points/me': { balance: 1 }, '/lab-packages': { items: [pkg({})] } });
     render(withCart(<WebShopView />));
     await settle();
     act(() => { vi.advanceTimersByTime(motion.duration.carousel); });
