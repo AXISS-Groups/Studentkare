@@ -83,6 +83,7 @@ const workspacePaths: { path: string; access?: (role: AccountRole | null) => boo
   { path: '/rx-review', access: hasRole('VENDOR', 'SUPER_ADMIN') },
   { path: '/vendor-rx-review', access: hasRole('VENDOR', 'SUPER_ADMIN') },
   { path: '/staff', access: hasRole('VENDOR', 'SUPER_ADMIN') },
+  { path: '/partner-camps', access: hasRole('VENDOR', 'SUPER_ADMIN') },
   { path: '/partner-staff', access: hasRole('VENDOR', 'SUPER_ADMIN') },
   { path: '/vendor-staff', access: hasRole('VENDOR', 'SUPER_ADMIN') },
   { path: '/staff-roles', access: hasRole('VENDOR', 'SUPER_ADMIN') },

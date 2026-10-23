@@ -165,6 +165,7 @@ export const routePaths = [
   'notification-settings',
   'notifications',
   'orders',
+  'partner-camps',
   'partner-staff',
   'partnerships',
   'partnerships/apply',

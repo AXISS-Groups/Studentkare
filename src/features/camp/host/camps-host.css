@@ -1,0 +1,25 @@
+/* Health camps host board (campus console CampusCamps, partner Health camps). Tokens only. */
+.cb-camp.ch-camp { display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start; gap: var(--sk-space-12); min-width: 0; max-width: 100%; }
+.ch-camp__top { display: flex; justify-content: space-between; gap: var(--sk-space-16); flex-wrap: wrap; }
+.ch-camp__actions { display: flex; align-items: center; gap: var(--sk-space-8); flex-wrap: wrap; }
+.ch-toggle { display: inline-flex; align-items: center; gap: var(--sk-space-4); min-height: var(--sk-size-touch-target); background: none; border: 0; padding: 0 var(--sk-space-4); cursor: pointer; }
+.ch-chevron, .ch-flip { display: inline-flex; transition: transform var(--sk-duration-fast) ease; }
+.ch-flip { transform: rotate(180deg); }
+.ch-slots { display: flex; flex-direction: column; gap: var(--sk-space-8); overflow-x: auto; max-width: 100%; min-width: 0; }
+.ch-camp__top > * { min-width: 0; }
+.cb-camp.ch-camp .cb-camp__staffing, .cb-camp.ch-camp .cb-camp__where { overflow-wrap: anywhere; }
+.ch-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.ch-table th, .ch-table td { text-align: left; padding: var(--sk-space-8) var(--sk-space-10); border-bottom: 1px solid var(--sk-color-rule-soft); color: var(--sk-color-text); }
+.ch-table thead th { font-size: 11px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: var(--sk-color-text-3); }
+.ch-table tbody th { font-weight: 700; white-space: nowrap; }
+.ch-select { height: 50px; padding: 0 var(--sk-space-14); border-radius: var(--sk-radius-md); border: 1.5px solid var(--sk-color-rule); background: var(--sk-color-surface); color: var(--sk-color-text); font: inherit; }
+.ch-select:focus-visible, .ch-radio input:focus-visible { outline: 3px solid var(--sk-color-focus); outline-offset: 2px; }
+.ch-radio { display: flex; align-items: center; gap: var(--sk-space-8); min-height: var(--sk-size-touch-target); font-size: 13.5px; font-weight: 600; color: var(--sk-color-text); cursor: pointer; }
+.ch-radio input { width: 20px; height: 20px; accent-color: var(--sk-color-action); }
+.ch-slot-row { position: relative; align-items: end; padding-right: var(--sk-space-40); }
+.ch-remove { position: absolute; right: 0; bottom: 3px; width: var(--sk-size-touch-target); height: var(--sk-size-touch-target); display: inline-flex; align-items: center; justify-content: center; border: 0; border-radius: var(--sk-radius-full); background: var(--sk-color-surface-2); color: var(--sk-color-text-2); cursor: pointer; }
+.ch-remove:focus-visible, .ch-toggle:focus-visible, .ch-add:focus-visible { outline: 3px solid var(--sk-color-focus); outline-offset: 2px; }
+.ch-add { display: inline-flex; align-items: center; gap: var(--sk-space-6); min-height: var(--sk-size-touch-target); align-self: flex-start; background: none; border: 0; padding: 0; cursor: pointer; }
+.cb-chip[disabled] { opacity: .55; cursor: not-allowed; }
+@media (prefers-reduced-motion: reduce) { .ch-chevron, .ch-flip { transition: none; } }
+@media (max-width: 640px) { .ch-slot-row { grid-template-columns: repeat(3, minmax(0, 1fr)); } }

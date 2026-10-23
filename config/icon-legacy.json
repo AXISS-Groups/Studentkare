@@ -82,7 +82,6 @@
   "src/screens/workspace/DigitalIdPanel.tsx",
   "src/screens/workspace/EncounterNotesPanel.tsx",
   "src/screens/workspace/FulfilmentQueuePanel.tsx",
-  "src/screens/workspace/HealthCampPanel.tsx",
   "src/screens/workspace/MedicationPanel.tsx",
   "src/screens/workspace/MemberPanels.tsx",
   "src/screens/workspace/MemberProfilePanel.tsx",

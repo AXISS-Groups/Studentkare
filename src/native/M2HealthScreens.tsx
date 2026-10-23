@@ -16,6 +16,9 @@ import { ProfileViewModel } from '@/features/m2profile/viewmodel/ProfileViewMode
 import { M2ProfileView } from '@/features/m2profile/views/M2ProfileView';
 import { AyushViewModel } from '@/features/chat/viewmodel/AyushViewModel';
 import { M2AskAyushView } from '@/features/chat/views/M2AskAyushView';
+import { CampsBookingViewModel } from '@/features/camp/viewmodel/CampsBookingViewModel';
+import { M2CampsView } from '@/features/camp/views/M2CampsView';
+import { ResultCampBookedView } from '@/features/camp/views/ResultCampBookedView';
 import { VaccinesViewModel } from '@/features/preventive/viewmodel/VaccinesViewModel';
 import { M2VaccinesView } from '@/features/preventive/views/M2VaccinesView';
 import { M2ProductViewModel } from '@/features/shopPhone/viewmodel/M2ProductViewModel';
@@ -171,10 +174,30 @@ export function VaccinesScreen(): React.ReactElement {
   useEffect(() => { vm.load(); return () => vm.dispose(); }, [vm]);
   return (
     <Frame>
-      <M2VaccinesView vm={vm} links={{ back, myHealth: () => navigate('Insights'), camp: () => navigate('Camp'), more: () => navigate('PreventiveCare') }} />
+      <M2VaccinesView vm={vm} links={{ back, myHealth: () => navigate('Insights'), camp: () => navigate('Camps'), more: () => navigate('PreventiveCare') }} />
     </Frame>
   );
 }
+
+/** Health camps (M2Camps): the same board as the web; "Open camp day" opens the Camp screen. */
+export const CampsScreen = observer(function CampsScreen(): React.ReactElement {
+  const navigate = useNavigate();
+  const back = useBack();
+  const { user } = useNativeSession();
+  const [vm] = useState(() => new CampsBookingViewModel());
+  useEffect(() => { vm.load(); return () => vm.dispose(); }, [vm]);
+  const booked = vm.confirmation;
+  return (
+    <Frame>
+      {booked ? (
+        <ResultCampBookedView booking={booked} studentName={user?.fullName ?? ''} onBack={vm.clearConfirmation}
+          onSeeCamp={() => { vm.clearConfirmation(); navigate('Camp'); }} />
+      ) : (
+        <M2CampsView vm={vm} links={{ back, campDay: () => navigate('Camp'), verifyCampus: () => navigate('Verify'), findCare: () => navigate('FindCare') }} />
+      )}
+    </Frame>
+  );
+});
 
 const ProductBoard = observer(function ProductBoard({ itemId }: { itemId: string }) {
   const navigate = useNavigate();

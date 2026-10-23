@@ -773,7 +773,8 @@
       "src/design-system/campus-shell/campusNav.ts",
       "src/features/campus/console/campusPages.tsx",
       "src/features/campus/boards/CampusCampsScreen.tsx",
-      "src/features/campus/boards/boardKit.tsx"
+      "src/features/campus/boards/boardKit.tsx",
+      "src/features/camp/host/CampsHostBoard.tsx"
     ],
     "CampusApprovals": [
       "src/design-system/campus-shell/CampusShell.tsx",
@@ -2049,6 +2050,20 @@
       "src/features/newsroom/model/templates.ts",
       "src/features/phoneKit/studentPhoneBoards.tsx",
       "src/screens/workspace/StudentPhoneFrame.tsx"
+    ],
+    "M2Camps": [
+      "src/features/camp/views/M2CampsView.tsx",
+      "src/features/camp/views/M2CampsRoute.tsx",
+      "src/features/camp/viewmodel/CampsBookingViewModel.ts",
+      "src/features/camp/data/campsApi.ts",
+      "src/native/M2HealthScreens.tsx"
+    ],
+    "PartnerCamps": [
+      "src/features/partner/camps/PartnerCampsScreen.tsx",
+      "src/features/camp/host/CampsHostBoard.tsx",
+      "src/features/camp/host/hostApi.ts",
+      "src/features/camp/host/campCsv.ts",
+      "src/screens/vendor/vendorNavigation.ts"
     ]
   },
   "inProgress": {

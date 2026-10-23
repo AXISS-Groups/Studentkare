@@ -185,6 +185,7 @@ Endpoints are under `/api` (`backend/services/*.py`). "No backend yet" means the
 | M2Insights, M2Steps | Steps today and this week, with the source of each day's number (new screen, no board; 2026-10-21) | `GET /activity/trends` (`wellness_api.py`; per day one total per source, most trusted source shown: Apple Health / Health Connect, then phone motion sensor, then typed) |
 | M2Steps | Connect Apple Health, Health Connect, the phone's motion sensor; live count | phone only (`src/native/stepConnectors.ts`); sync `POST /v1/movement/background-sync` (providers `healthkit`, `health_connect`, `phone_motion`) |
 | M2Steps | Add today's steps yourself | `POST /activity/entries` (source MANUAL) |
+| M2Camps | Health camps for my campus, book a slot, waitlist, change, cancel (new screen, no board; 2026-10-23) | `GET /camps`, `GET /camps/bookings/me`, `GET /camps/{id}/slots`, `POST /camps/{id}/book` · `/waitlist` · `/reschedule` · `/cancel` (`health_camps.py`); replaces the old web camp panel (`HealthCampPanel`); the result moment is ResultCampBooked and "Open camp day" is CampDay |
 | M2Trends | Each test over time, range bar, table | no backend yet (`care_readings` holds vitals by metric, not lab tests) |
 | M2Trends | Bookmark a test | no backend yet |
 | M2Trends | Your doctor's 3 steps | partial: free-text doctor note via `report-reviews`; no structured steps |

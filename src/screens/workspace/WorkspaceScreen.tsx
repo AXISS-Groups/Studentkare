@@ -48,7 +48,6 @@ import { MemberOverview, OrdersPanel, SupportPanel } from './MemberPanels';
 import { DevicesAndSensorsScreen } from './DevicesAndSensorsScreen';
 import { AppointmentsPanel } from './AppointmentsPanel';
 import { MedicationPanel } from './MedicationPanel';
-import { HealthCampPanel } from './HealthCampPanel';
 import { NotificationInboxPanel } from './NotificationInboxPanel';
 import { MyRequestsRoute, NewRequestRoute } from '@/features/requests/views/RequestsViews';
 import { attachReturnPhoto } from '@/features/requests/views/attachReturnPhoto.web';
@@ -82,6 +81,7 @@ const M2TrendsRoute = lazy(() => import('@/features/labResults/views/M2TrendsRou
 const M2ReportUploadRoute = lazy(() => import('@/features/labResults/views/M2ReportUploadRoute').then(module => ({ default: module.M2ReportUploadRoute })));
 const M2RemindersRoute = lazy(() => import('@/features/reminders/views/M2RemindersRoute').then(module => ({ default: module.M2RemindersRoute })));
 const M2WaterRoute = lazy(() => import('@/features/reminders/views/M2WaterRoute').then(module => ({ default: module.M2WaterRoute })));
+const M2CampsRoute = lazy(() => import('@/features/camp/views/M2CampsRoute').then(module => ({ default: module.M2CampsRoute })));
 const M2StepsRoute = lazy(() => import('@/features/steps/views/M2StepsRoute').then(module => ({ default: module.M2StepsRoute })));
 const M2LabsRoute = lazy(() => import('@/features/m2store/views/M2LabsRoute').then(module => ({ default: module.M2LabsRoute })));
 const M2ConsultsRoute = lazy(() => import('@/features/m2store/views/M2ConsultsRoute').then(module => ({ default: module.M2ConsultsRoute })));
@@ -127,6 +127,7 @@ const DispenseRegisterScreen = lazy(() => import('../vendor/DispenseRegisterScre
 const VendorConsoleScreen = lazy(() => import('../vendor/VendorConsoleScreen').then(module => ({ default: module.VendorConsoleScreen })));
 const VendorSettlementScreen = lazy(() => import('../vendor/VendorSettlementScreen').then(module => ({ default: module.VendorSettlementScreen })));
 const VendorRxReviewScreen = lazy(() => import('../vendor/VendorRxReviewScreen').then(module => ({ default: module.VendorRxReviewScreen })));
+const PartnerCampsScreen = lazy(() => import('@/features/partner/camps/PartnerCampsScreen').then(module => ({ default: module.PartnerCampsScreen })));
 const PartnerStaffScreen = lazy(() => import('../vendor/PartnerStaffScreen').then(module => ({ default: module.PartnerStaffScreen })));
 // Signed-in student web pages (canvas 3b, WP-08), drawn in the student web shell.
 const WebHomeView = lazy(() => import('@/features/studentweb/views/WebHomeView').then(module => ({ default: module.WebHomeView })));
@@ -188,6 +189,8 @@ function vendorPageFor(route: RoutePath, role: AccountRole | null, onNavigate: (
     case 'rx-review': case 'vendor-rx-review': return <VendorRxReviewScreen {...props} />;
     // Medicine information review: pharmacists approve (plan tier1-medicine-info-2026-10-22); super admins see it too.
     case 'medicine-info-review': return <PharmacyMedicineInfoScreen />;
+    // Health camps a clinic or lab runs on a partner campus (the campus approves them).
+    case 'partner-camps': return <PartnerCampsScreen />;
     case 'staff': case 'partner-staff': case 'vendor-staff': case 'staff-roles': return <PartnerStaffScreen {...props} />;
     case 'orders': return role === 'VENDOR' ? <VendorOrdersScreen {...props} /> : null;
     case 'admin/catalog': return role === 'VENDOR' ? <VendorCatalogueScreen {...props} /> : null;
@@ -394,7 +397,7 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
       case 'orders': return <OrdersPanel />;
       case 'appointments': return <AppointmentsPanel />;
       case 'medications': return <MedicationPanel />;
-      case 'health-camp': return <HealthCampPanel />;
+      case 'health-camp': return <M2CampsRoute />;
       case 'notifications': return <NotificationInboxPanel />;
       case 'notification-settings': return <NotificationSettingsRoute />;
       case 'security': return <SignInSecurityRoute />;

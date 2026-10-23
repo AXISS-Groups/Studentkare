@@ -76,6 +76,7 @@ from services.consent_ledger import router as consent_ledger_router
 from services.db_sql import SessionLocal, create_all_tables, is_persistent
 from services.emergency_api import router as emergency_router
 from services.erasure import router as erasure_router
+from services.health_camps import router as health_camps_router
 from services.integrations import router as integrations_router
 from services.lab_booking import router as lab_booking_router
 from services.lab_results import router as lab_results_router
@@ -354,6 +355,7 @@ def persistence(user=Depends(require_super_admin), db=Depends(workflow_db)):
 
 app.include_router(auth_router)
 app.include_router(workflow_router)
+app.include_router(health_camps_router)
 app.include_router(wellness_router)
 app.include_router(member_profile_router)
 app.include_router(preventive_router)

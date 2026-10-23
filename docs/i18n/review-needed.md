@@ -184,3 +184,160 @@ Notes for the reviewer: a passcode's length is counted in **characters** (te క
 | `admin.kb.health.where.indexing` | indexing a source | సోర్స్‌ను ఇండెక్స్ చేస్తున్నప్పుడు | स्रोत इंडेक्स करते |
 | `admin.kb.health.where.retrieval` | searching sources | సోర్స్‌లు వెతుకుతున్నప్పుడు | स्रोत खोजते |
 | `admin.kb.health.where.startup` | starting up | ప్రారంభమవుతున్నప్పుడు | शुरू होते |
+
+## camps — health camp booking (feat/health-camps, `src/i18n/areas/camps.ts`)
+
+Notes for the reviewer: "slot" is the booked time window (te స్లాట్, hi स्लॉट); "waitlist" stays a loanword
+(te వెయిట్‌లిస్ట్, hi वेटलिस्ट). "Booking reference" is the 8-character code a student quotes at the camp desk, not a
+pass. `camps.host.*` is console copy for campus administrators and partners. "CSV" stays in English.
+
+| Key | English | te (current) | hi (current) |
+|---|---|---|---|
+| `camps.title` | Health camps | ఆరోగ్య శిబిరాలు | हेल्थ कैंप |
+| `camps.eyebrow` | Campus health | క్యాంపస్ ఆరోగ్యం | कैंपस हेल्थ |
+| `camps.body` | Checkups your campus runs. Book a slot, then change or cancel it up to {hours} hours before. | మీ క్యాంపస్ నిర్వహించే చెకప్‌లు. ఒక స్లాట్ బుక్ చేయండి; {hours} గంటల ముందు వరకు మార్చవచ్చు లేదా రద్దు చేయవచ్చు. | आपके कैंपस के चेकअप। स्लॉट बुक करें, फिर {hours} घंटे पहले तक बदलें या रद्द करें। |
+| `camps.offline` | You’re offline. Booking, changing and cancelling need a connection. | మీరు ఆఫ్‌లైన్‌లో ఉన్నారు. బుక్ చేయడానికి, మార్చడానికి, రద్దు చేయడానికి కనెక్షన్ అవసరం. | आप ऑफ़लाइन हैं। बुक करने, बदलने और रद्द करने के लिए कनेक्शन चाहिए। |
+| `camps.yours` | Your bookings | మీ బుకింగ్‌లు | आपकी बुकिंग |
+| `camps.upcoming` | Upcoming camps | రాబోయే శిబిరాలు | आने वाले कैंप |
+| `camps.ended` | Cancelled | రద్దయినవి | रद्द |
+| `camps.loading` | Loading health camps | ఆరోగ్య శిబిరాలు లోడ్ అవుతున్నాయి | हेल्थ कैंप लोड हो रहे हैं |
+| `camps.bookingsLoading` | Loading your bookings | మీ బుకింగ్‌లు లోడ్ అవుతున్నాయి | आपकी बुकिंग लोड हो रही है |
+| `camps.failed` | Camps couldn’t load | శిబిరాలు లోడ్ కాలేదు | कैंप लोड नहीं हो सके |
+| `camps.bookingsFailed` | Your bookings couldn’t load | మీ బుకింగ్‌లు లోడ్ కాలేదు | आपकी बुकिंग लोड नहीं हो सकी |
+| `camps.failedBody` | This is on our side, not yours. Try again. | ఇది మా వైపు సమస్య, మీది కాదు. మళ్లీ ప్రయత్నించండి. | गड़बड़ी हमारी तरफ़ है, आपकी नहीं। फिर से कोशिश करें। |
+| `camps.noBookings` | You haven’t booked a camp yet. | మీరు ఇంకా ఏ శిబిరమూ బుక్ చేయలేదు. | आपने अभी तक कोई कैंप बुक नहीं किया है। |
+| `camps.emptyTitle` | No camps on your campus yet | మీ క్యాంపస్‌లో ఇంకా శిబిరాలు లేవు | आपके कैंपस पर अभी कोई कैंप नहीं |
+| `camps.emptyBody` | When your campus or one of its partner clinics sets up a camp, it shows here. | మీ క్యాంపస్ లేదా దాని భాగస్వామి క్లినిక్ శిబిరం ఏర్పాటు చేసినప్పుడు, అది ఇక్కడ కనిపిస్తుంది. | जब आपका कैंपस या उसका कोई पार्टनर क्लिनिक कैंप लगाएगा, वह यहाँ दिखेगा। |
+| `camps.findCare` | Find care near you | మీ దగ్గర వైద్య సేవలు కనుగొనండి | अपने पास इलाज खोजें |
+| `camps.findCamp` | Find a camp to book | బుక్ చేయడానికి శిబిరం కనుగొనండి | बुक करने के लिए कैंप खोजें |
+| `camps.services` | Services at this camp | ఈ శిబిరంలో సేవలు | इस कैंप की सेवाएँ |
+| `camps.free` | Free | ఉచితం | मुफ़्त |
+| `camps.placesLeft` | {n} places left | {n} స్థానాలు మిగిలి ఉన్నాయి | {n} जगह बाकी |
+| `camps.full` | Every slot is full | అన్ని స్లాట్‌లు నిండిపోయాయి | सभी स्लॉट भर गए |
+| `camps.seeSlots` | See slots | స్లాట్‌లు చూడండి | स्लॉट देखें |
+| `camps.alreadyHave` | You have a place at this camp. See Your bookings. | ఈ శిబిరంలో మీకు స్థానం ఉంది. మీ బుకింగ్‌లు చూడండి. | इस कैंप में आपकी जगह है। आपकी बुकिंग देखें। |
+| `camps.bring` | Bring: {items} | తీసుకురండి: {items} | साथ लाएँ: {items} |
+| `camps.pickSlot` | Pick a slot | ఒక స్లాట్ ఎంచుకోండి | स्लॉट चुनें |
+| `camps.slotRange` | {start} – {end} | {start} – {end} | {start} – {end} |
+| `camps.slotsLoading` | Loading slots | స్లాట్‌లు లోడ్ అవుతున్నాయి | स्लॉट लोड हो रहे हैं |
+| `camps.slotsFailed` | Slots couldn’t load | స్లాట్‌లు లోడ్ కాలేదు | स्लॉट लोड नहीं हो सके |
+| `camps.noSlots` | This camp has no bookable slots. | ఈ శిబిరంలో బుక్ చేయగల స్లాట్‌లు లేవు. | इस कैंप में बुक करने लायक कोई स्लॉट नहीं है। |
+| `camps.slot.left` | {n} left | {n} మిగిలాయి | {n} बाकी |
+| `camps.slot.full` | Full | నిండింది | भरा हुआ |
+| `camps.slot.fullWait` | Full · join the waitlist | నిండింది · వెయిట్‌లిస్ట్‌లో చేరండి | भरा हुआ · वेटलिस्ट में जुड़ें |
+| `camps.slot.started` | Already started | ఇప్పటికే మొదలైంది | शुरू हो चुका |
+| `camps.slot.yours` | Your slot | మీ స్లాట్ | आपका स्लॉट |
+| `camps.book` | Book this slot | ఈ స్లాట్ బుక్ చేయండి | यह स्लॉट बुक करें |
+| `camps.joinWaitlist` | Join the waitlist | వెయిట్‌లిస్ట్‌లో చేరండి | वेटलिस्ट में जुड़ें |
+| `camps.moveHere` | Move to this slot | ఈ స్లాట్‌కు మార్చండి | इस स्लॉट में बदलें |
+| `camps.notNow` | Not now | ఇప్పుడు కాదు | अभी नहीं |
+| `camps.waitExplain` | If a place opens in this slot, you’re booked into it in the order you joined, and we tell you in the app. | ఈ స్లాట్‌లో స్థానం ఖాళీ అయితే, మీరు చేరిన క్రమంలో మీకు బుక్ అవుతుంది, యాప్‌లో మీకు తెలియజేస్తాం. | इस स्लॉट में जगह खाली हुई तो जुड़ने के क्रम में आपकी बुकिंग हो जाएगी, और हम ऐप में बताएँगे। |
+| `camps.changeTitle` | Change your slot | మీ స్లాట్ మార్చండి | अपना स्लॉट बदलें |
+| `camps.status.booked` | Booked | బుక్ అయింది | बुक है |
+| `camps.status.waitlisted` | Waitlist · {n} | వెయిట్‌లిస్ట్ · {n} | वेटलिस्ट · {n} |
+| `camps.bookingRef` | Booking reference | బుకింగ్ రిఫరెన్స్ | बुकिंग रेफ़रेंस |
+| `camps.waitRef` | Waitlist reference | వెయిట్‌లిస్ట్ రిఫరెన్స్ | वेटलिस्ट रेफ़रेंस |
+| `camps.waitBody` | You’re booked in automatically if a place opens. Nothing to do until then. | స్థానం ఖాళీ అయితే మీకు ఆటోమేటిక్‌గా బుక్ అవుతుంది. అప్పటి వరకు ఏమీ చేయనక్కర్లేదు. | जगह खाली होते ही आपकी बुकिंग अपने आप हो जाएगी। तब तक कुछ करने की ज़रूरत नहीं। |
+| `camps.change` | Change slot | స్లాట్ మార్చండి | स्लॉट बदलें |
+| `camps.cancel` | Cancel booking | బుకింగ్ రద్దు చేయండి | बुकिंग रद्द करें |
+| `camps.leaveWaitlist` | Leave the waitlist | వెయిట్‌లిస్ట్ నుండి తప్పుకోండి | वेटलिस्ट छोड़ें |
+| `camps.changeUntil` | You can change or cancel until {when}. | {when} వరకు మార్చవచ్చు లేదా రద్దు చేయవచ్చు. | {when} तक बदल या रद्द कर सकते हैं। |
+| `camps.tooLate` | It’s less than {hours} hours to your slot, so it can’t be changed in the app. Tell the camp desk instead. | మీ స్లాట్‌కు {hours} గంటల కంటే తక్కువ సమయం ఉంది, కాబట్టి యాప్‌లో మార్చలేరు. శిబిరం డెస్క్‌కు చెప్పండి. | आपके स्लॉट में {hours} घंटे से कम बचे हैं, इसलिए ऐप में बदलाव नहीं हो सकता। कैंप डेस्क को बताएँ। |
+| `camps.checkedIn` | You’ve checked in at this camp. | మీరు ఈ శిబిరంలో చెక్ ఇన్ అయ్యారు. | आप इस कैंप में चेक इन कर चुके हैं। |
+| `camps.openDay` | Open camp day | శిబిరం రోజు తెరవండి | कैंप का दिन खोलें |
+| `camps.calledOff` | Called off by the camp: {reason} | శిబిరం రద్దు చేయబడింది: {reason} | कैंप ने रद्द किया: {reason} |
+| `camps.youCancelled` | You cancelled this booking. | మీరు ఈ బుకింగ్ రద్దు చేశారు. | आपने यह बुकिंग रद्द की। |
+| `camps.privacy` | Your campus and the camp’s partner see how many students booked each slot, never who. | ప్రతి స్లాట్‌కు ఎంతమంది బుక్ చేశారో మీ క్యాంపస్‌కు, శిబిరం భాగస్వామికి తెలుస్తుంది — ఎవరు అనేది ఎప్పుడూ కాదు. | आपका कैंपस और कैंप का पार्टनर देखते हैं कि हर स्लॉट में कितने छात्रों ने बुक किया, कौन — यह कभी नहीं। |
+| `camps.ineligible.NOT_VERIFIED` | This camp is for students their campus has verified. | ఈ శిబిరం క్యాంపస్ ధృవీకరించిన విద్యార్థుల కోసం. | यह कैंप उन छात्रों के लिए है जिन्हें कैंपस ने वेरिफ़ाई किया है। |
+| `camps.verifyNow` | Verify your campus | మీ క్యాంపస్‌ను ధృవీకరించండి | अपना कैंपस वेरिफ़ाई करें |
+| `camps.confirm.title` | Cancel this camp booking? | ఈ శిబిరం బుకింగ్ రద్దు చేయాలా? | यह कैंप बुकिंग रद्द करें? |
+| `camps.confirm.body` | Your place goes to the next student waiting, if there is one. You can book again while places are left. | మీ స్థానం వేచి ఉన్న తదుపరి విద్యార్థికి వెళ్తుంది. స్థానాలు మిగిలి ఉంటే మళ్లీ బుక్ చేయవచ్చు. | आपकी जगह इंतज़ार कर रहे अगले छात्र को मिलेगी। जगह बाकी रहने तक आप फिर से बुक कर सकते हैं। |
+| `camps.confirm.leaveTitle` | Leave the waitlist? | వెయిట్‌లిస్ట్ నుండి తప్పుకోవాలా? | वेटलिस्ट छोड़ें? |
+| `camps.confirm.leaveBody` | You lose your place in the queue for this slot. | ఈ స్లాట్ క్యూలో మీ స్థానం పోతుంది. | इस स्लॉट की कतार में आपकी जगह चली जाएगी। |
+| `camps.confirm.keep` | Keep it | అలాగే ఉంచండి | रहने दें |
+| `camps.confirm.busy` | Cancelling… | రద్దు చేస్తున్నాం… | रद्द कर रहे हैं… |
+| `camps.done.cancelled` | Done. Your place is cancelled. | పూర్తైంది. మీ స్థానం రద్దయింది. | हो गया। आपकी जगह रद्द हो गई। |
+| `camps.done.changed` | Your slot is changed. Your booking reference is new. | మీ స్లాట్ మారింది. మీ బుకింగ్ రిఫరెన్స్ కొత్తది. | आपका स्लॉट बदल गया। आपका बुकिंग रेफ़रेंस नया है। |
+| `camps.done.waitlist` | You’re on the waitlist. | మీరు వెయిట్‌లిస్ట్‌లో ఉన్నారు. | आप वेटलिस्ट में हैं। |
+| `camps.service.GENERAL_SCREENING` | General health check | సాధారణ ఆరోగ్య పరీక్ష | सामान्य हेल्थ चेक |
+| `camps.service.EYE_CHECK` | Eye check | కంటి పరీక్ష | आँखों की जाँच |
+| `camps.service.DENTAL_CHECK` | Dental check | దంత పరీక్ష | दाँतों की जाँच |
+| `camps.service.BLOOD_DONATION` | Blood donation | రక్తదానం | रक्तदान |
+| `camps.service.VACCINATION` | Vaccination | టీకా | टीकाकरण |
+| `camps.err.SLOT_FULL` | That slot just filled up. Pick another, or join its waitlist. | ఆ స్లాట్ ఇప్పుడే నిండింది. మరొకటి ఎంచుకోండి లేదా దాని వెయిట్‌లిస్ట్‌లో చేరండి. | वह स्लॉट अभी भर गया। दूसरा चुनें या उसकी वेटलिस्ट में जुड़ें। |
+| `camps.err.SLOT_OPEN` | That slot has room now. Book it instead. | ఆ స్లాట్‌లో ఇప్పుడు స్థానం ఉంది. దాన్ని బుక్ చేయండి. | उस स्लॉट में अब जगह है। उसे बुक करें। |
+| `camps.err.SLOT_STARTED` | That slot has already started. Pick a later one. | ఆ స్లాట్ ఇప్పటికే మొదలైంది. తర్వాతి స్లాట్ ఎంచుకోండి. | वह स्लॉट शुरू हो चुका है। बाद का स्लॉट चुनें। |
+| `camps.err.WAITLIST_FULL` | The waitlist for that slot is full. | ఆ స్లాట్ వెయిట్‌లిస్ట్ నిండింది. | उस स्लॉट की वेटलिस्ट भर गई है। |
+| `camps.err.TOO_LATE` | It’s too close to your slot to change it in the app. Tell the camp desk instead. | మీ స్లాట్‌కు చాలా దగ్గరగా ఉంది, యాప్‌లో మార్చలేరు. శిబిరం డెస్క్‌కు చెప్పండి. | आपके स्लॉट में बहुत कम समय बचा है, ऐप में बदलाव नहीं हो सकता। कैंप डेस्क को बताएँ। |
+| `camps.err.CHECKED_IN` | You’ve checked in, so this booking can’t be changed. | మీరు చెక్ ఇన్ అయ్యారు, కాబట్టి ఈ బుకింగ్ మార్చలేరు. | आप चेक इन कर चुके हैं, इसलिए यह बुकिंग नहीं बदल सकती। |
+| `camps.err.SAME_SLOT` | That’s already your slot. | అది ఇప్పటికే మీ స్లాట్. | यह पहले से आपका स्लॉट है। |
+| `camps.err.NOT_VERIFIED` | This camp is for verified students. Verify your campus first. | ఈ శిబిరం ధృవీకరించిన విద్యార్థుల కోసం. ముందు మీ క్యాంపస్‌ను ధృవీకరించండి. | यह कैंप वेरिफ़ाइड छात्रों के लिए है। पहले अपना कैंपस वेरिफ़ाई करें। |
+| `camps.err.OTHER_CAMPUS` | This camp is for students of another campus. | ఈ శిబిరం మరొక క్యాంపస్ విద్యార్థుల కోసం. | यह कैंप किसी दूसरे कैंपस के छात्रों के लिए है। |
+| `camps.err.NOT_STUDENT` | Only students can book a health camp. | విద్యార్థులు మాత్రమే ఆరోగ్య శిబిరం బుక్ చేయగలరు. | सिर्फ़ छात्र ही हेल्थ कैंप बुक कर सकते हैं। |
+| `camps.err.PAYMENT_NOT_AVAILABLE` | Paying for a camp in the app isn’t available yet. | యాప్‌లో శిబిరానికి చెల్లించడం ఇంకా అందుబాటులో లేదు. | ऐप में कैंप का भुगतान अभी उपलब्ध नहीं है। |
+| `camps.err.SERVICE_HELD` | Vaccination and blood donation camps need a clinical review before they can be offered. | టీకా, రక్తదాన శిబిరాలు అందించే ముందు క్లినికల్ సమీక్ష అవసరం. | टीकाकरण और रक्तदान कैंप पेश करने से पहले क्लिनिकल समीक्षा ज़रूरी है। |
+| `camps.err.PAID_CAMPS_OFF` | Paid camps aren’t available yet. Make the camp free. | చెల్లింపు శిబిరాలు ఇంకా అందుబాటులో లేవు. శిబిరాన్ని ఉచితం చేయండి. | पेड कैंप अभी उपलब्ध नहीं हैं। कैंप को मुफ़्त रखें। |
+| `camps.err.offline` | You’re offline. Try again when you’re connected. | మీరు ఆఫ్‌లైన్‌లో ఉన్నారు. కనెక్ట్ అయ్యాక మళ్లీ ప్రయత్నించండి. | आप ऑफ़लाइन हैं। कनेक्ट होने पर फिर कोशिश करें। |
+| `camps.err.generic` | That didn’t work. This is on our side, not yours. Try again. | అది జరగలేదు. ఇది మా వైపు సమస్య, మీది కాదు. మళ్లీ ప్రయత్నించండి. | यह नहीं हो पाया। गड़बड़ी हमारी तरफ़ है, आपकी नहीं। फिर से कोशिश करें। |
+| `camps.host.partnerEyebrow` | Partner · campus health | భాగస్వామి · క్యాంపస్ ఆరోగ్యం | पार्टनर · कैंपस हेल्थ |
+| `camps.host.emptyBody` | Set up a camp: a date, a place on campus, the services and bookable slots. | ఒక శిబిరం ఏర్పాటు చేయండి: తేదీ, క్యాంపస్‌లో స్థలం, సేవలు, బుక్ చేయగల స్లాట్‌లు. | एक कैंप तय करें: तारीख, कैंपस पर जगह, सेवाएँ और बुक करने लायक स्लॉट। |
+| `camps.host.scopeCampus` | Counts per slot only, never who booked. A count under the campus minimum group is withheld. | ప్రతి స్లాట్‌కు సంఖ్యలు మాత్రమే, ఎవరు బుక్ చేశారో ఎప్పుడూ కాదు. క్యాంపస్ కనీస గ్రూప్ కంటే తక్కువ సంఖ్య దాచబడుతుంది. | सिर्फ़ हर स्लॉट की गिनती, किसने बुक किया यह कभी नहीं। कैंपस के न्यूनतम समूह से कम गिनती छिपाई जाती है। |
+| `camps.host.scopePartner` | Counts per slot for the camps you run, never who booked. | మీరు నిర్వహించే శిబిరాలకు ప్రతి స్లాట్ సంఖ్యలు, ఎవరు బుక్ చేశారో ఎప్పుడూ కాదు. | आपके कैंपों के हर स्लॉट की गिनती, किसने बुक किया यह कभी नहीं। |
+| `camps.host.footnote` | Check-in by scanning a pass, and results from a camp, are waiting for clinical review. Students check themselves in on the camp day. | పాస్ స్కాన్ చేసి చెక్ ఇన్, శిబిరం ఫలితాలు క్లినికల్ సమీక్ష కోసం వేచి ఉన్నాయి. శిబిరం రోజు విద్యార్థులు తామే చెక్ ఇన్ అవుతారు. | पास स्कैन करके चेक इन और कैंप के नतीजे क्लिनिकल समीक्षा की प्रतीक्षा में हैं। कैंप के दिन छात्र खुद चेक इन करते हैं। |
+| `camps.host.noAccess` | Only campus administrators, clinic and lab partners and super admins can run health camps. | క్యాంపస్ నిర్వాహకులు, క్లినిక్ మరియు ల్యాబ్ భాగస్వాములు, సూపర్ అడ్మిన్‌లు మాత్రమే ఆరోగ్య శిబిరాలు నిర్వహించగలరు. | सिर्फ़ कैंपस एडमिन, क्लिनिक और लैब पार्टनर और सुपर एडमिन ही हेल्थ कैंप चला सकते हैं। |
+| `camps.host.stat.upcoming` | Upcoming camps | రాబోయే శిబిరాలు | आने वाले कैंप |
+| `camps.host.stat.pending` | Waiting for approval | ఆమోదం కోసం వేచి ఉన్నవి | मंज़ूरी की प्रतीक्षा में |
+| `camps.host.stat.booked` | Booked, upcoming | బుక్ అయినవి, రాబోయేవి | बुक, आने वाले |
+| `camps.host.stat.ofPlaces` | of {n} places | {n} స్థానాలలో | {n} जगहों में से |
+| `camps.host.stat.checkedToday` | Checked in today | ఈరోజు చెక్ ఇన్ | आज चेक इन |
+| `camps.host.status.pending` | Waiting for approval | ఆమోదం కోసం వేచి ఉంది | मंज़ूरी की प्रतीक्षा |
+| `camps.host.status.declined` | Declined | తిరస్కరించబడింది | अस्वीकार |
+| `camps.host.status.cancelled` | Called off | రద్దు చేయబడింది | रद्द |
+| `camps.host.cancelledBecause` | Called off: {reason} | రద్దు చేయబడింది: {reason} | रद्द: {reason} |
+| `camps.host.elig.CAMPUS_VERIFIED` | Verified students of this campus | ఈ క్యాంపస్ ధృవీకరించిన విద్యార్థులు | इस कैंपस के वेरिफ़ाइड छात्र |
+| `camps.host.elig.CAMPUS_ANY` | Every student of this campus | ఈ క్యాంపస్ విద్యార్థులందరూ | इस कैंपस के सभी छात्र |
+| `camps.host.elig.OPEN` | Every student | విద్యార్థులందరూ | सभी छात्र |
+| `camps.host.metric.waitlist` | Waitlist | వెయిట్‌లిస్ట్ | वेटलिस्ट |
+| `camps.host.metric.checkedIn` | Checked in | చెక్ ఇన్ | चेक इन |
+| `camps.host.col.slot` | Slot | స్లాట్ | स्लॉट |
+| `camps.host.col.cancelled` | Cancelled | రద్దయినవి | रद्द |
+| `camps.host.showSlots` | Bookings by slot | స్లాట్ వారీగా బుకింగ్‌లు | स्लॉट के हिसाब से बुकिंग |
+| `camps.host.hideSlots` | Hide bookings | బుకింగ్‌లు దాచండి | बुकिंग छिपाएँ |
+| `camps.host.slotsCaption` | Bookings by slot for {camp} | {camp} కోసం స్లాట్ వారీగా బుకింగ్‌లు | {camp} की स्लॉट के हिसाब से बुकिंग |
+| `camps.host.noNames` | Students’ names aren’t shown here. | విద్యార్థుల పేర్లు ఇక్కడ చూపబడవు. | छात्रों के नाम यहाँ नहीं दिखाए जाते। |
+| `camps.host.export` | Export CSV | CSV ఎగుమతి చేయండి | CSV एक्सपोर्ट करें |
+| `camps.host.approve` | Approve | ఆమోదించండి | मंज़ूर करें |
+| `camps.host.decline` | Decline | తిరస్కరించండి | अस्वीकार करें |
+| `camps.host.approved` | Approved. Students of the campus can see it and book. | ఆమోదించబడింది. క్యాంపస్ విద్యార్థులు దాన్ని చూసి బుక్ చేయగలరు. | मंज़ूर। कैंपस के छात्र इसे देखकर बुक कर सकते हैं। |
+| `camps.host.declined` | Declined. The partner is told. | తిరస్కరించబడింది. భాగస్వామికి తెలియజేశాం. | अस्वीकार। पार्टनर को बता दिया गया है। |
+| `camps.host.cancelCamp` | Call off camp | శిబిరం రద్దు చేయండి | कैंप रद्द करें |
+| `camps.host.cancelTitle` | Call off {camp}? | {camp} రద్దు చేయాలా? | {camp} रद्द करें? |
+| `camps.host.cancelBody` | Every booking and waitlist place is cancelled, and each student is told in the app. | ప్రతి బుకింగ్, వెయిట్‌లిస్ట్ స్థానం రద్దవుతుంది, ప్రతి విద్యార్థికి యాప్‌లో తెలియజేస్తాం. | हर बुकिंग और वेटलिस्ट की जगह रद्द होगी, और हर छात्र को ऐप में बताया जाएगा। |
+| `camps.host.cancelReason` | Why (students see this) | ఎందుకు (విద్యార్థులు ఇది చూస్తారు) | क्यों (छात्र यह देखेंगे) |
+| `camps.host.cancelHint` | Plain words, no names. For example: “The hall is closed for repairs.” | సరళమైన మాటలు, పేర్లు వద్దు. ఉదాహరణకు: “మరమ్మతుల కోసం హాల్ మూసి ఉంది.” | सीधे शब्द, कोई नाम नहीं। जैसे: “मरम्मत के कारण हॉल बंद है।” |
+| `camps.host.cancelConfirm` | Call off camp | శిబిరం రద్దు చేయండి | कैंप रद्द करें |
+| `camps.host.cancelled` | Camp called off. Every student who booked is told. | శిబిరం రద్దయింది. బుక్ చేసిన ప్రతి విద్యార్థికి తెలియజేశాం. | कैंप रद्द हुआ। बुक करने वाले हर छात्र को बताया गया है। |
+| `camps.host.actionFailed` | That didn’t go through. {ref} | అది జరగలేదు. {ref} | यह नहीं हो पाया। {ref} |
+| `camps.host.campus` | Campus | క్యాంపస్ | कैंपस |
+| `camps.host.campusPick` | Choose a campus | క్యాంపస్ ఎంచుకోండి | कैंपस चुनें |
+| `camps.host.noCampuses` | No partner campus has an administrator yet. | ఇంకా ఏ భాగస్వామి క్యాంపస్‌కూ నిర్వాహకుడు లేరు. | अभी किसी पार्टनर कैंपस का एडमिन नहीं है। |
+| `camps.host.services` | Services | సేవలు | सेवाएँ |
+| `camps.host.heldHint` | Vaccination and blood donation need a clinical review before a camp can offer them. | శిబిరం టీకా, రక్తదానం అందించే ముందు క్లినికల్ సమీక్ష అవసరం. | कैंप में टीकाकरण और रक्तदान से पहले क्लिनिकल समीक्षा ज़रूरी है। |
+| `camps.host.who` | Who can book | ఎవరు బుక్ చేయవచ్చు | कौन बुक कर सकता है |
+| `camps.host.slots` | Slots | స్లాట్‌లు | स्लॉट |
+| `camps.host.addSlot` | Add a slot | స్లాట్ జోడించండి | स्लॉट जोड़ें |
+| `camps.host.removeSlot` | Remove slot {n} | స్లాట్ {n} తీసివేయండి | स्लॉट {n} हटाएँ |
+| `camps.host.slotsHint` | Up to {max} places in one slot. | ఒక స్లాట్‌లో గరిష్టంగా {max} స్థానాలు. | एक स्लॉट में ज़्यादा से ज़्यादा {max} जगह। |
+| `camps.host.price` | Price | ధర | कीमत |
+| `camps.host.priceHint` | In rupees. Students see it before they book. Leave empty for a free camp. | రూపాయలలో. బుక్ చేసే ముందు విద్యార్థులు చూస్తారు. ఉచిత శిబిరం కోసం ఖాళీగా వదలండి. | रुपयों में। बुक करने से पहले छात्र इसे देखते हैं। मुफ़्त कैंप के लिए खाली छोड़ें। |
+| `camps.host.priceOff` | Paid camps aren’t available yet, so every camp is free. | చెల్లింపు శిబిరాలు ఇంకా అందుబాటులో లేవు, కాబట్టి ప్రతి శిబిరం ఉచితం. | पेड कैंप अभी उपलब्ध नहीं हैं, इसलिए हर कैंप मुफ़्त है। |
+| `camps.host.needsApproval` | The campus approves your camp before students see it. | విద్యార్థులు చూసే ముందు క్యాంపస్ మీ శిబిరాన్ని ఆమోదిస్తుంది. | छात्रों के देखने से पहले कैंपस आपका कैंप मंज़ूर करता है। |
+| `camps.host.publishNow` | Students who can book see it as soon as it is created. | సృష్టించిన వెంటనే బుక్ చేయగల విద్యార్థులకు కనిపిస్తుంది. | बनते ही बुक कर सकने वाले छात्र इसे देख लेते हैं। |
+| `camps.host.created` | Camp created. Students who can book see it now. | శిబిరం సృష్టించబడింది. బుక్ చేయగల విద్యార్థులు ఇప్పుడు చూస్తారు. | कैंप बन गया। बुक कर सकने वाले छात्र अब इसे देख रहे हैं। |
+| `camps.host.createdPending` | Camp sent to the campus. Students see it once they approve it. | శిబిరం క్యాంపస్‌కు పంపబడింది. వారు ఆమోదించిన తర్వాత విద్యార్థులు చూస్తారు. | कैंप कैंपस को भेजा गया। उनकी मंज़ूरी के बाद छात्र इसे देखेंगे। |
+| `camps.host.optionsFailed` | The form couldn’t load its choices. Close it and try again. | ఫారమ్ ఎంపికలు లోడ్ కాలేదు. మూసి మళ్లీ ప్రయత్నించండి. | फ़ॉर्म के विकल्प लोड नहीं हुए। बंद करके फिर कोशिश करें। |
+| `camps.csv.camp` | Camp | శిబిరం | कैंप |
+| `camps.csv.date` | Date | తేదీ | तारीख |
+| `camps.csv.start` | Slot start | స్లాట్ ప్రారంభం | स्लॉट शुरू |
+| `camps.csv.end` | Slot end | స్లాట్ ముగింపు | स्लॉट खत्म |
+| `partner.vcon.nav.camps` | Health camps | ఆరోగ్య శిబిరాలు | हेल्थ कैंप |

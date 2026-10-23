@@ -21,6 +21,22 @@ export interface PublicSettings {
   "billing.student_plus.monthly_inr": number;
   /** Price of the Student Plus 3-month package, paid once. (₹ per 3 months) */
   "billing.student_plus.quarter_package_inr": number;
+  /** Until how long before a booked slot starts the student can still cancel or change it in the app. (hours) */
+  "camps.change_cutoff_hours": number;
+  /** Whether a host may set a price on a health camp. Off until camp payments are built (Rule L). */
+  "camps.paid_camps_enabled": boolean;
+  /** Highest price a host may set on a paid health camp. (paise) */
+  "camps.price_paise_max": number;
+  /** How long before a booked camp slot starts the student is reminded (if reminders are on). (hours) */
+  "camps.reminder_hours_before": number;
+  /** Most students one camp slot may hold. (students) */
+  "camps.slot_capacity_max": number;
+  /** Most bookable time slots one health camp may have. (slots) */
+  "camps.slots_per_camp_max": number;
+  /** How far ahead a student's list of upcoming health camps reaches. (days) */
+  "camps.upcoming_days_max": number;
+  /** Most students who can wait for a full camp slot. 0 turns the waitlist off. (students) */
+  "camps.waitlist_max_per_slot": number;
   /** Oldest device location fix the app reuses to sort by distance. (seconds) */
   "care_directory.location_max_age_seconds": number;
   /** How long the app waits for the device location before saying so. (seconds) */
@@ -191,6 +207,14 @@ export const publicSettingDefaults: Readonly<PublicSettings> = {
   "billing.premium.from_monthly_inr": 499,
   "billing.student_plus.monthly_inr": 149,
   "billing.student_plus.quarter_package_inr": 2199,
+  "camps.change_cutoff_hours": 2,
+  "camps.paid_camps_enabled": false,
+  "camps.price_paise_max": 500000,
+  "camps.reminder_hours_before": 24,
+  "camps.slot_capacity_max": 500,
+  "camps.slots_per_camp_max": 24,
+  "camps.upcoming_days_max": 90,
+  "camps.waitlist_max_per_slot": 50,
   "care_directory.location_max_age_seconds": 120,
   "care_directory.location_timeout_seconds": 15,
   "consult.media_join_after_minutes": 30,
@@ -276,6 +300,14 @@ export const publicSettingSpecs: Readonly<Record<PublicSettingKey, PublicSetting
   "billing.premium.from_monthly_inr": { type: "int", min: 1, max: 100000, allowed: [], unit: "\u20b9 per month (starting price)" },
   "billing.student_plus.monthly_inr": { type: "int", min: 1, max: 100000, allowed: [], unit: "\u20b9 per month" },
   "billing.student_plus.quarter_package_inr": { type: "int", min: 1, max: 1000000, allowed: [], unit: "\u20b9 per 3 months" },
+  "camps.change_cutoff_hours": { type: "int", min: 0, max: 72, allowed: [], unit: "hours" },
+  "camps.paid_camps_enabled": { type: "bool", min: null, max: null, allowed: [], unit: "" },
+  "camps.price_paise_max": { type: "int", min: 0, max: 10000000, allowed: [], unit: "paise" },
+  "camps.reminder_hours_before": { type: "int", min: 1, max: 168, allowed: [], unit: "hours" },
+  "camps.slot_capacity_max": { type: "int", min: 1, max: 5000, allowed: [], unit: "students" },
+  "camps.slots_per_camp_max": { type: "int", min: 1, max: 96, allowed: [], unit: "slots" },
+  "camps.upcoming_days_max": { type: "int", min: 7, max: 365, allowed: [], unit: "days" },
+  "camps.waitlist_max_per_slot": { type: "int", min: 0, max: 1000, allowed: [], unit: "students" },
   "care_directory.location_max_age_seconds": { type: "int", min: 0, max: 900, allowed: [], unit: "seconds" },
   "care_directory.location_timeout_seconds": { type: "int", min: 3, max: 60, allowed: [], unit: "seconds" },
   "consult.media_join_after_minutes": { type: "int", min: 0, max: 240, allowed: [], unit: "minutes" },

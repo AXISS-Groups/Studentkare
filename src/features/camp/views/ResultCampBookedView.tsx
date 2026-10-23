@@ -3,10 +3,13 @@ import { ResultMomentCard, ResultMomentScreen, Toast } from '@/design-system';
 import { copyText } from '@/data/services/clipboard';
 import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
+import { groupCode } from '../data/campsApi';
 
 /** A camp booking as the server confirmed it (POST /api/camps/{id}/book). */
 export interface CampBooking {
   bookingId: string;
+  /** The reference the student quotes at the camp desk (not a scannable pass: that is Tier 1). */
+  bookingCode?: string;
   camp: { id: string; name: string; date: string; location: string; whatToBring: string };
   slot: { id: string; slotStart: string; slotEnd: string };
 }
@@ -27,7 +30,8 @@ export function ResultCampBookedView({ booking, studentName, onBack, onSeeCamp, 
   studentName: string;
   onBack: () => void;
   onSeeCamp: () => void;
-  onCalendar: () => void;
+  /** Web only (an .ics download); the phone app leaves it out. */
+  onCalendar?: () => void;
   onCopy?: (text: string) => Promise<boolean>;
 }): React.ReactElement {
   const t = useT();
@@ -54,6 +58,7 @@ export function ResultCampBookedView({ booking, studentName, onBack, onSeeCamp, 
           ]}
           more={{
             rows: [
+              ...(booking.bookingCode ? [{ k: t('camps.bookingRef'), v: groupCode(booking.bookingCode) }] : []),
               { k: t('phone.camp.bring'), v: booking.camp.whatToBring || t('care.camp.nothingToBring') },
               { k: t('phone.camp.whereLabel'), v: place },
             ],
@@ -61,7 +66,7 @@ export function ResultCampBookedView({ booking, studentName, onBack, onSeeCamp, 
             hideLabel: t('pay.result.less'),
           }}
           primary={{ label: t('phone.camp.seeDay'), onPress: onSeeCamp, testID: 'camp-see-day' }}
-          secondary={{ label: t('phone.camp.calendar'), onPress: onCalendar, testID: 'camp-calendar' }}
+          secondary={onCalendar ? { label: t('phone.camp.calendar'), onPress: onCalendar, testID: 'camp-calendar' } : undefined}
         />
       </ResultMomentScreen>
       {toast ? <Toast message={t(toast)} tone={toast === 'phone.result.copyFailed' ? 'error' : 'success'} onDone={() => setToast('')} /> : null}

@@ -6,6 +6,7 @@ import { adminGovEn } from './areas/adminGov';
 import { assistEn } from './areas/assist';
 import { authChannelsEn } from './areas/authChannels';
 import { authPasscodeEn } from './areas/authPasscode';
+import { campsEn } from './areas/camps';
 import { campusBoardsEn } from './areas/campusBoards';
 import { campusConsoleEn } from './areas/campusConsole';
 import { campusEn } from './areas/campus';
@@ -65,6 +66,7 @@ export const areasEn = {
   ...assistEn,
   ...authChannelsEn,
   ...authPasscodeEn,
+  ...campsEn,
   ...campusBoardsEn,
   ...campusConsoleEn,
   ...campusEn,

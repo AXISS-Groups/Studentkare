@@ -233,6 +233,28 @@ declare("care_directory.location_timeout_seconds", INT, 15, area="care_directory
 declare("care_directory.location_max_age_seconds", INT, 120, area="care_directory", unit="seconds", minimum=0,
         maximum=900, public=True, description="Oldest device location fix the app reuses to sort by distance.")
 
+# --- health camps (services/health_camps.py) ------------------------------------------
+# Campus health camps a campus or a clinic/lab partner runs and students book a slot at.
+declare("camps.upcoming_days_max", INT, 90, area="camps", unit="days", minimum=7, maximum=365, public=True,
+        description="How far ahead a student's list of upcoming health camps reaches.")
+declare("camps.reminder_hours_before", INT, 24, area="camps", unit="hours", minimum=1, maximum=168, public=True,
+        description="How long before a booked camp slot starts the student is reminded (if reminders are on).")
+declare("camps.change_cutoff_hours", INT, 2, area="camps", unit="hours", minimum=0, maximum=72, public=True,
+        description="Until how long before a booked slot starts the student can still cancel or change it in the app.")
+declare("camps.waitlist_max_per_slot", INT, 50, area="camps", unit="students", minimum=0, maximum=1000, public=True,
+        description="Most students who can wait for a full camp slot. 0 turns the waitlist off.")
+declare("camps.slots_per_camp_max", INT, 24, area="camps", unit="slots", minimum=1, maximum=96, public=True,
+        description="Most bookable time slots one health camp may have.")
+declare("camps.slot_capacity_max", INT, 500, area="camps", unit="students", minimum=1, maximum=5000, public=True,
+        description="Most students one camp slot may hold.")
+# Paid camps need a payment flow that keeps the camp (a health fact) off the commerce
+# plane (Rule L). None exists yet (docs/plans/tier1-health-camps-2026-10-23.md), so a
+# host cannot set a price and a paid camp cannot be booked until this is turned on.
+declare("camps.paid_camps_enabled", BOOL, False, area="camps", public=True,
+        description="Whether a host may set a price on a health camp. Off until camp payments are built (Rule L).")
+declare("camps.price_paise_max", INT, 500000, area="camps", unit="paise", minimum=0, maximum=10000000, public=True,
+        description="Highest price a host may set on a paid health camp.")
+
 # --- newsroom: News and Blog (services/newsroom.py) ---------------------------------
 # How many posts a list page, a feed and the related list show, how long public
 # readers (and the CDN) may keep a response, and the size of an image placed in a post.

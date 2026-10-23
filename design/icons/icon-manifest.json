@@ -83,6 +83,7 @@
     "LabReporting",
     "M2MedicineInfo",
     "MyPass",
+    "PartnerCamps",
     "Prescribe",
     "ReportReviews",
     "SuperAdminConsole",
@@ -158,6 +159,7 @@
     "OrderSuccess",
     "OrderTracking",
     "PartnerApply",
+    "PartnerCamps",
     "PlanBilling",
     "PrescriptionUpload",
     "ScanVerify",
@@ -975,6 +977,7 @@
     "LabCollection",
     "LabQueue",
     "LabReporting",
+    "M2Camps",
     "M2MedicineInfo",
     "PartnerStaff",
     "Prescribe",
@@ -1132,6 +1135,7 @@
     "LabPackages",
     "LabResults",
     "M2AskAyush",
+    "M2Camps",
     "M2Consults",
     "M2FacilityDetail",
     "M2FindCare",
@@ -1480,6 +1484,7 @@
     "ClinicianToday",
     "EmergencyCard",
     "OnboardingConsent",
+    "PartnerCamps",
     "ReturnRequest",
     "VendorHome",
     "VendorRxReview",
@@ -2063,6 +2068,7 @@
     "Feedback",
     "LabQueue",
     "NoResults",
+    "PartnerCamps",
     "Prescribe",
     "SearchEntry",
     "SearchResults",
@@ -2095,6 +2101,7 @@
     "CrisisSupport",
     "HomeDiscover",
     "Landing",
+    "M2Camps",
     "MoreHub",
     "NavSheets",
     "SearchEntry",
@@ -3403,6 +3410,7 @@
     "M2Consults",
     "M2Home",
     "M2Product",
+    "PartnerCamps",
     "PaymentResult",
     "ResultCampBooked",
     "ResultLabBooked",
@@ -3615,6 +3623,7 @@
     "CampusSla",
     "CampusWater",
     "CampusWellness",
+    "M2Camps",
     "M2MedicineInfo",
     "AdminPosts"
    ],
@@ -4061,6 +4070,7 @@
    "uses": 19,
    "screens": [
     "ConfirmDialogs",
+    "M2Camps",
     "WebAccount",
     "WebConsultSummary",
     "WebDashboard",
@@ -4669,6 +4679,7 @@
     "AccountDetails",
     "Checkout",
     "HelpCentre",
+    "M2Camps",
     "M2Consults",
     "M2FindCare",
     "M2Insights",
@@ -5453,6 +5464,7 @@
     "CampusSettings",
     "ClinicianConsultRoom",
     "ClinicianToday",
+    "M2Camps",
     "M2FacilityDetail",
     "M2FindCare",
     "M2MedicineInfo",
@@ -5499,6 +5511,7 @@
     "M2Insurance",
     "M2Product",
     "M2Profile",
+    "PartnerCamps",
     "ProductList",
     "Teleconsult",
     "WebDashboard",
@@ -5935,6 +5948,7 @@
    "source": "canvas",
    "uses": 5,
    "screens": [
+    "PartnerCamps",
     "PaymentResult",
     "ResultCampBooked",
     "ResultLabBooked",
@@ -8590,6 +8604,7 @@
    "uses": 2,
    "screens": [
     "IconSystem",
+    "M2Camps",
     "WebNewsroom",
     "WebPost",
     "AdminPosts"
@@ -11713,6 +11728,7 @@
     "CampusWellness",
     "IconSystem",
     "LoggedOut",
+    "PartnerCamps",
     "WebDashboard",
     "WebLoggedOut",
     "YourCare"
@@ -21569,6 +21585,49 @@
    "brand": [],
    "assets": [],
    "textGlyphs": []
+  },
+  "M2Camps": {
+   "page": "9 · Mobile 2.0 — new screen, no canvas board (feat/health-camps, 2026-10-23)",
+   "size": "390x1600",
+   "icons": [
+    "arrow-left",
+    "calendar",
+    "calendar-x",
+    "chevron-right",
+    "info",
+    "lock",
+    "map-pin",
+    "users"
+   ],
+   "icons3d": [],
+   "glyphs": [],
+   "illustrations": [],
+   "charts": [],
+   "brand": [],
+   "assets": [],
+   "textGlyphs": []
+  },
+  "PartnerCamps": {
+   "page": "6 · Partner — new page, no canvas board (feat/health-camps, 2026-10-23)",
+   "size": "1440x1024",
+   "icons": [
+    "alert-triangle",
+    "check",
+    "check-2",
+    "chevron-down",
+    "download",
+    "plus",
+    "x"
+   ],
+   "icons3d": [
+    "chart-alt--p4"
+   ],
+   "glyphs": [],
+   "illustrations": [],
+   "charts": [],
+   "brand": [],
+   "assets": [],
+   "textGlyphs": []
   }
  },
  "assets": {
@@ -22312,8 +22371,10 @@
    ],
    "bytes": 6765,
    "originalBytes": 8149,
-   "screens": [],
-   "uses": "Appointments empty (web panel, native booking)"
+   "screens": [
+    "M2Camps"
+   ],
+   "uses": "Appointments empty (web panel, native booking); health camps empty (M2Camps)"
   },
   {
    "name": "anim-bell-off",

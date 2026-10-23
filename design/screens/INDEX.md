@@ -1,6 +1,6 @@
 # Student Kare — every screen
 
-266 screens: 252 on 10 canvas pages, plus new screens with no board yet (M2Reminders, M2Water and M2Steps; the 4 Find care screens; SetPasscode; the 2 medicine information screens; the 4 newsroom screens), designed in code in the Mobile 2.0 language. Each row links to a brief that lists every icon, picture, link and state the screen needs.
+268 screens: 252 on 10 canvas pages, plus new screens with no board yet (M2Reminders, M2Water and M2Steps; the 4 Find care screens; SetPasscode; the 2 medicine information screens; the 4 newsroom screens; M2Camps and PartnerCamps), designed in code in the Mobile 2.0 language. Each row links to a brief that lists every icon, picture, link and state the screen needs.
 
 | # | Screen | What it is | Platform | Tier | Tickets | Icons | 3D | Glyphs | Pictures |
 |---|---|---|---|---|---|---|---|---|---|
@@ -284,3 +284,6 @@
 | 264 | [WebPost](briefs/WebPost.md) | One post in its SK template, share links, related posts | Web 1440x2000 | 3 | Newsroom | 25 | 13 | 0 | 0 |
 | 265 | [AdminPosts](briefs/AdminPosts.md) | Super admin Posts editor with live preview; clinician health tip reviews | Web 1440x1600 | 3 | Newsroom | 32 | 13 | 0 | 0 |
 | 266 | [M2WhatsNew](briefs/M2WhatsNew.md) | What's new: product update posts, from Profile | Phone 390x1200 | 3 | Newsroom | 5 | 3 | 0 | 0 |
+| | **New · Health camp booking (2026-10-23, no canvas board)** | | | | | | | | |
+| 267 | [M2Camps](briefs/M2Camps.md) | Health camps: book a slot, waitlist, change or cancel, booking reference, camp day | Phone 390x1600 | 2 | Health camps | 8 | 0 | 0 | 0 |
+| 268 | [PartnerCamps](briefs/PartnerCamps.md) | Partner console Health camps: propose a camp, counts per slot, CSV (shares the CampusCamps board) | Web 1440x1024 | 3 | Health camps | 7 | 1 | 0 | 0 |
