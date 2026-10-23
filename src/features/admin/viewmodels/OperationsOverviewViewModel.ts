@@ -1,5 +1,5 @@
 import { makeAutoObservable, observableShallow, runInAction } from 'mobx';
-import type { AccountRole, IntegrationHealth, OpsFeed, OpsFeedEvent, OpsSummary } from '@/data/workflowTypes';
+import type { AccountRole, AuditEvent, IntegrationHealth, OpsFeed, OpsFeedEvent, OpsSummary } from '@/data/types/workflowTypes';
 import type { PlanCatalog } from '@/data/datasets/billing';
 import type { AccountsRepository } from '../model/accountsRepository';
 import type { AuditRepository } from '../model/auditRepository';
@@ -9,7 +9,8 @@ import type { AccountPage, AuditPage, MetricValue, OpsFeedCounts, SourceState, S
 import { auditLedgerStatus, integrationsStatus, metricFrom, openSafetyStatus, servicesLine } from '../model/format';
 
 const FEED_LIMIT = 5;
-const AUDIT_PREVIEW = 1;
+/** The Overview's audit ledger card shows the latest few entries. */
+const AUDIT_PREVIEW = 6;
 
 /** The repositories the Overview reads from — existing ones, narrowed to what it uses. */
 export interface OverviewRepositories {
@@ -38,7 +39,7 @@ const SOURCES: OverviewSource[] = ['summary', 'audit', 'health', 'feed', 'counts
 const loadingState = <T>(): SourceState<T> => ({ data: null, loading: true, error: '' });
 
 /**
- * Super Admin → Overview: the platform command center. It summarises what other screens
+ * Super Admin, Overview: the platform command center. It summarises what other screens
  * already load — nine sources, each loading on its own the way useApiResource did, with
  * its own error and retry. Nothing missing is turned into a number: a source that is
  * loading or failed yields a blank (see metricFrom), and figures with no source at all
@@ -84,6 +85,14 @@ export class OperationsOverviewViewModel {
   get auditLedger(): StatusReading { return auditLedgerStatus(this.sources.audit); }
   get integrations(): StatusReading { return integrationsStatus(this.sources.health); }
   get openSafety(): StatusReading { return openSafetyStatus(this.sources.counts); }
+
+  // ── Audit ledger ───────────────────────────────────────────────────────────
+  get auditLoading(): boolean { return this.sources.audit.loading; }
+  get auditError(): string { return this.sources.audit.error; }
+  get auditFailed(): boolean { return !this.sources.audit.loading && this.sources.audit.data === null; }
+  get auditEntries(): AuditEvent[] { return this.sources.audit.data?.items ?? []; }
+  get auditTotal(): number | null { return this.sources.audit.data?.total ?? null; }
+  reloadAudit() { this.reload('audit'); }
 
   // ── Loading ────────────────────────────────────────────────────────────────
   /** Every source, each independently. */

@@ -8,6 +8,8 @@
  * DO NOT duplicate these values in other files.
  */
 
+import type { SkColorRole } from '../../theme/tokens/generated/skTokens';
+
 /** Points gained toward readiness score for completing each milestone type. */
 export const GAINS: Record<string, number> = {
   RESUME: 8,
@@ -57,18 +59,27 @@ export const SKILL_CATEGORY_KEYS = [
 
 export type SkillCategoryKey = typeof SKILL_CATEGORY_KEYS[number];
 
+/**
+ * A categorical chart token NAME (chart-categorical-1…8, DESIGN.md §3), not a
+ * value. Resolve it at render time with `color[name]` from
+ * '@/design-system/theme' (web: a CSS variable; native: the scheme's value), or
+ * `skTokens.color[scheme][name]` where a raw value is needed (PDF), so dark mode
+ * follows the theme. Always shown with its text label, never colour alone.
+ */
+export type CareerSeriesColor = Extract<SkColorRole, `chartCategorical${number}`>;
+
 /** Impact label thresholds (matches IMPACT_LABEL in career-ai.tsx). */
 export const IMPACT_THRESHOLDS = [
-  { min: 10, text: 'High Impact',   color: '#a78bfa' },
-  { min: 6,  text: 'Medium Impact', color: '#2dd4bf' },
-  { min: 0,  text: 'Low Impact',    color: '#fbbf24' },
-] as const;
+  { min: 10, text: 'High Impact',   color: 'chartCategorical1' },
+  { min: 6,  text: 'Medium Impact', color: 'chartCategorical3' },
+  { min: 0,  text: 'Low Impact',    color: 'chartCategorical2' },
+] as const satisfies readonly { min: number; text: string; color: CareerSeriesColor }[];
 
-export function getImpactLabel(gain: number): { text: string; color: string } {
+export function getImpactLabel(gain: number): { text: string; color: CareerSeriesColor } {
   for (const t of IMPACT_THRESHOLDS) {
     if (gain >= t.min) return { text: t.text, color: t.color };
   }
-  return { text: 'Low Impact', color: '#fbbf24' };
+  return { text: 'Low Impact', color: 'chartCategorical2' };
 }
 
 /**
@@ -86,16 +97,17 @@ export function normalizeRoadmapSkillScores(
   return out;
 }
 
-export const SIM_ACTIONS = [
-  { type: 'RESUME', label: 'Upload Resume', color: '#818CF8' },
-  { type: 'PROJECT', label: 'Add a Project', color: '#2DD4BF' },
-  { type: 'SKILLS', label: 'List 3+ Skills', color: '#F59E0B' },
-  { type: 'LINKEDIN', label: 'Link LinkedIn', color: '#3B82F6' },
-  { type: 'PORTFOLIO', label: 'Build Portfolio', color: '#EC4899' },
-  { type: 'MOCK_INTERVIEW', label: 'Practice Mock Interview', color: '#10B981' },
-  { type: 'CERTIFICATION', label: 'Get Certified', color: '#F59E0B' },
-  { type: 'NETWORKING', label: 'Network with Alumni', color: '#2DD4BF' },
-  { type: 'PROFILE', label: 'Complete Profile', color: '#818CF8' },
-  { type: 'EDUCATION', label: 'Add Education Details', color: '#3B82F6' },
+/** Each action is labelled; its colour is a chart token name (see CareerSeriesColor). */
+export const SIM_ACTIONS: { type: string; label: string; color: CareerSeriesColor }[] = [
+  { type: 'RESUME', label: 'Upload Resume', color: 'chartCategorical1' },
+  { type: 'PROJECT', label: 'Add a Project', color: 'chartCategorical3' },
+  { type: 'SKILLS', label: 'List 3+ Skills', color: 'chartCategorical2' },
+  { type: 'LINKEDIN', label: 'Link LinkedIn', color: 'chartCategorical5' },
+  { type: 'PORTFOLIO', label: 'Build Portfolio', color: 'chartCategorical4' },
+  { type: 'MOCK_INTERVIEW', label: 'Practice Mock Interview', color: 'chartCategorical8' },
+  { type: 'CERTIFICATION', label: 'Get Certified', color: 'chartCategorical2' },
+  { type: 'NETWORKING', label: 'Network with Alumni', color: 'chartCategorical3' },
+  { type: 'PROFILE', label: 'Complete Profile', color: 'chartCategorical1' },
+  { type: 'EDUCATION', label: 'Add Education Details', color: 'chartCategorical5' },
 ];
 

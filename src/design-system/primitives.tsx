@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import type { RoutePath } from '@/lib/workflowRouting';
+import type { RoutePath } from '@/lib/utils/workflowRouting';
+import { AnimatedIcon } from './icons/animated/AnimatedIcon';
 import { SkIcon } from './icons/SkIcon';
 import type { SkIconName } from './icons/SkIcon';
 
@@ -48,7 +49,7 @@ export function SkButton({ variant = 'primary', icon, busy = false, disabled, cl
       disabled={disabled || busy}
       aria-busy={busy || undefined}
     >
-      {busy ? <span className="sk-btn__spinner" aria-hidden="true" /> : icon ? <SkIcon name={icon} size={17} /> : null}
+      {busy ? <AnimatedIcon name="anim-rotate-cw" size="inline" color="currentColor" poster={<span className="sk-btn__spinner" aria-hidden="true" />} /> : icon ? <SkIcon name={icon} size={17} /> : null}
       {children}
     </button>
   );
@@ -165,7 +166,7 @@ export function ErrorStateView({
   return (
     <div className="sk-state">
       <div className="sk-state__body sk-state__body--card" role="alert">
-        <span className="sk-state__badge"><SkIcon name="alert" size={30} strokeWidth={2.2} /></span>
+        <span className="sk-state__badge"><AnimatedIcon name="anim-alert-circle" size="mark" color="currentColor" poster={<SkIcon name="alert" size={30} strokeWidth={2.2} />} /></span>
         <h2 className="sk-state__title">{title}</h2>
         <p className="sk-state__text">{body}</p>
         <div className="sk-state__actions">
@@ -184,7 +185,13 @@ export function ErrorStateView({
  * A polite status message that clears itself. Rendered through a persistent
  * live region so screen readers announce each new message.
  */
-export function Toast({ message, onDone, durationMs = 2600 }: { message: string | null; onDone: () => void; durationMs?: number }): React.ReactElement {
+export function Toast({ message, onDone, durationMs = 2600, icon }: {
+  message: string | null;
+  onDone: () => void;
+  durationMs?: number;
+  /** Drawn before the message, e.g. the canvas's `check-2` on a done toast. Decorative. */
+  icon?: React.ReactNode;
+}): React.ReactElement {
   const [shown, setShown] = useState(message);
   useEffect(() => {
     setShown(message);
@@ -194,7 +201,7 @@ export function Toast({ message, onDone, durationMs = 2600 }: { message: string 
   }, [message, onDone, durationMs]);
   return (
     <div role="status" aria-live="polite">
-      {shown ? <div className="sk-toast">{shown}</div> : null}
+      {shown ? <div className="sk-toast">{icon ? <span className="sk-toast__icon" aria-hidden="true">{icon}</span> : null}{shown}</div> : null}
     </div>
   );
 }

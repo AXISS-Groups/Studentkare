@@ -1,0 +1,102 @@
+{{- if .Values.backup.enabled }}
+# Nightly logical backup (docs/guides/backups.md). pg_dump -> the studentkare-backups
+# PVC (and S3 when backup.s3Uri is set), pruned after backup.retentionDays.
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: studentkare-pg-backup
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: studentkare-backup
+    app.kubernetes.io/name: studentkare
+    app.kubernetes.io/component: backup
+    app.kubernetes.io/managed-by: Helm
+spec:
+  schedule: {{ .Values.backup.schedule | quote }}
+  concurrencyPolicy: Forbid
+  startingDeadlineSeconds: 3600
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 5
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      activeDeadlineSeconds: 10800
+      template:
+        metadata:
+          labels:
+            app: studentkare-backup
+        spec:
+          restartPolicy: Never
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 70     # postgres in postgres:16-alpine
+            runAsGroup: 70
+            fsGroup: 70
+          containers:
+            - name: backup
+              image: "{{ .Values.backup.image.repository }}:{{ .Values.backup.image.tag | default .Values.backend.image.tag | required "Set backup.image.tag or backend.image.tag to a released sha-<commit> tag" }}"
+              imagePullPolicy: {{ .Values.backup.image.pullPolicy }}
+              command: ["pg-backup"]
+              env:
+                - name: DATABASE_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: studentkare-secrets
+                      key: DATABASE_URL
+                - name: BACKUP_DIR
+                  value: /backups
+                - name: BACKUP_RETENTION_DAYS
+                  value: {{ .Values.backup.retentionDays | quote }}
+                - name: BACKUP_S3_URI
+                  value: {{ .Values.backup.s3Uri | quote }}
+                - name: BACKUP_S3_ENDPOINT_URL
+                  value: {{ .Values.backup.s3EndpointUrl | quote }}
+                - name: AWS_DEFAULT_REGION
+                  value: {{ .Values.backup.awsRegion | quote }}
+                {{- range $key, $_ := .Values.backup.secrets }}
+                - name: {{ $key }}
+                  valueFrom:
+                    secretKeyRef:
+                      name: studentkare-secrets
+                      key: BACKUP_{{ $key }}
+                      optional: true
+                {{- end }}
+              resources:
+                {{- toYaml .Values.backup.resources | nindent 16 }}
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop:
+                    - ALL
+              volumeMounts:
+                - name: backups
+                  mountPath: /backups
+                - name: tmp
+                  mountPath: /tmp
+          volumes:
+            - name: backups
+              persistentVolumeClaim:
+                claimName: studentkare-backups
+            - name: tmp
+              emptyDir: {}
+          imagePullSecrets:
+            {{- range .Values.global.imagePullSecrets }}
+            - name: {{ .name }}
+            {{- end }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: studentkare-backups
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    # Keep the backups if the release is uninstalled.
+    helm.sh/resource-policy: keep
+spec:
+  accessModes: ["ReadWriteOnce"]
+  storageClassName: {{ .Values.backup.persistence.storageClass }}
+  resources:
+    requests:
+      storage: {{ .Values.backup.persistence.size }}
+{{- end }}

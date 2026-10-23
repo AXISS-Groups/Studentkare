@@ -3,14 +3,14 @@ import React from 'react';
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import * as http from '@/data/http';
+import * as http from '@/data/services/http';
 import { LandingView, kindLabel, rupees } from '../LandingView';
 import { LandingCampusView } from '../LandingCampusView';
 import { LandingClinicianView } from '../LandingClinicianView';
 import { LandingPartnershipsView } from '../LandingPartnershipsView';
 import { LandingLabTestsView } from '../LandingLabTestsView';
 
-vi.mock('@/data/http', () => ({ apiRequest: vi.fn() }));
+vi.mock('@/data/services/http', () => ({ apiRequest: vi.fn() }));
 const mocked = vi.mocked(http.apiRequest);
 
 function codeOf(path: string): string {
@@ -24,8 +24,36 @@ const CAMPUS = codeOf('src/features/landing/views/LandingCampusView.tsx');
 const CLINICIAN = codeOf('src/features/landing/views/LandingClinicianView.tsx');
 const PARTNERSHIPS = codeOf('src/features/landing/views/LandingPartnershipsView.tsx');
 const LABTESTS = codeOf('src/features/landing/views/LandingLabTestsView.tsx');
-const PRICING = codeOf('src/screens/billing/PricingScreen.tsx');
-const ALL_PAGES = [LANDING, CAMPUS, CLINICIAN, PARTNERSHIPS, LABTESTS, PRICING];
+// The pricing page's copy lives in the shopweb catalogue (every language), so check both.
+const PRICING = codeOf('src/screens/billing/PricingScreen.tsx') + codeOf('src/i18n/areas/shopweb.ts')
+  .split('\n').filter(line => line.includes("'shopweb.pricing.")).join('\n');
+// The shared public header, footer and newsletter band are on every public page.
+const CHROME = ['PublicSiteHeader.tsx', 'PublicSiteFooter.tsx', 'NewsletterBand.tsx', 'publicSiteNav.ts', 'PublicSitePage.tsx', 'PublicTrustBand.tsx', 'PublicAppBand.tsx']
+  .map((f) => codeOf(`src/design-system/public-site/${f}`)).join('\n')
+  + codeOf('src/i18n/areas/landing.ts').split('\n').filter((line) => line.includes("'landing.site.") && !line.includes('.appStore') && !line.includes('.play')).join('\n');
+const ALL_PAGES = [LANDING, CAMPUS, CLINICIAN, PARTNERSHIPS, LABTESTS, PRICING, CHROME];
+
+/**
+ * The one allowed exception to the copy checks: the app band's phones art
+ * labels a report "Reviewed by a clinician". It pictures the existing
+ * on-request report review (a student asks from /preventive-care, which posts
+ * to POST /report-reviews), not a review of every report. Only that phrase,
+ * only inside those two drawings, is exempt; every other word is checked.
+ */
+const ALLOWED_ART_TEXT: ReadonlyArray<{ art: string; phrase: string }> = [
+  { art: 'illustration:illustration-phones-dashboard', phrase: 'Reviewed by a clinician' },
+  { art: 'illustration:illustration-phones-consult', phrase: 'Reviewed by a clinician' },
+];
+
+function textWithoutAllowedArt(): string {
+  const copy = document.body.cloneNode(true) as HTMLElement;
+  for (const { art, phrase } of ALLOWED_ART_TEXT) {
+    for (const el of copy.querySelectorAll(`[data-icon="${art}"] text`)) {
+      if (el.textContent === phrase) el.remove();
+    }
+  }
+  return copy.textContent ?? '';
+}
 
 const item = (over: Partial<Record<string, unknown>> = {}) => ({
   id: 'c1',
@@ -101,9 +129,14 @@ describe('claims no page may make', () => {
     // Scoped to the landing pages, and matched on the newsletter rather than the
     // word: the pricing page legitimately says "a student subscribes directly"
     // about plan billing.
-    for (const page of [LANDING, CAMPUS, CLINICIAN, PARTNERSHIPS, LABTESTS]) {
+    for (const page of [CAMPUS, CLINICIAN, PARTNERSHIPS, LABTESTS]) {
       expect(page).not.toMatch(/Kare Letter|newsletter/i);
     }
+    // Every public page draws the shared Kare Letter band through the page
+    // frame, with no service behind it, so the band says sign-up is not open
+    // and has no form.
+    expect(LANDING).toMatch(/<PublicSitePage\b/);
+    expect(codeOf('src/design-system/public-site/PublicSitePage.tsx')).toMatch(/<NewsletterBand\s*\/>/);
   });
 
   it('quotes no consultation service level', () => {
@@ -116,7 +149,7 @@ describe('claims no page may make', () => {
 describe('the student landing page', () => {
   it('leads with the emergency number, which needs no account', async () => {
     await openLanding();
-    expect(screen.getByRole('link', { name: /call 112/i })).toHaveAttribute('href', 'tel:112');
+    expect(screen.getAllByRole('link', { name: /call 112/i })[0]).toHaveAttribute('href', 'tel:112');
   });
 
   it('states the age gate', async () => {
@@ -126,8 +159,9 @@ describe('the student landing page', () => {
 
   it('shows real published items with real prices', async () => {
     await openLanding();
-    expect(screen.getByText('Vitamin D3 60K')).toBeInTheDocument();
-    expect(screen.getByText('₹299')).toBeInTheDocument();
+    // The row is listed, and (being the biggest saving) also shown on offer.
+    expect(screen.getAllByText('Vitamin D3 60K').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('₹299').length).toBeGreaterThan(0);
   });
 
   it('reads the same public catalog the shop reads', async () => {
@@ -158,13 +192,22 @@ describe('the student landing page', () => {
     expect(document.body.textContent).toMatch(/still being built/i);
   });
 
+  it('shows no sign-up that confirms without sending, and no products or brands the catalog did not return', async () => {
+    await openLanding();
+    expect(document.body.querySelector('form')).toBeNull();
+    expect(screen.queryByRole('button', { name: /subscribe/i })).toBeNull();
+    expect(document.body.textContent).toMatch(/Sign-up is not open yet/);
+    expect(document.body.textContent).not.toMatch(/Subscribed|Barrier Care|Root & Ritual|Kindskin|min read/);
+    expect(LANDING).not.toMatch(/setSubDone|clinician review for every report|credential validation/i);
+  });
+
   it('reaches the legal pages and both audience pages', async () => {
     await openLanding();
     for (const [name, href] of [
-      ['Privacy', '/privacy'],
-      ['Terms', '/terms'],
-      ['For campuses', '/campuses'],
-      ['For clinicians', '/clinicians'],
+      ['Privacy policy', '/privacy'],
+      ['Terms of use', '/terms'],
+      ['Bring it to your campus', '/campuses'],
+      ['Join as a clinician', '/clinicians'],
     ] as const) {
       expect(screen.getByRole('link', { name })).toHaveAttribute('href', href);
     }
@@ -304,7 +347,7 @@ describe('the pricing page no longer badges itself', () => {
   });
 
   it('keeps the honest disclaimer that was already there', () => {
-    expect(PRICING).toMatch(/never sees a member's record/i);
+    expect(PRICING).toMatch(/never sees a member['’]s record/i);
   });
 });
 
@@ -394,30 +437,55 @@ describe('the lab tests page', () => {
     expect(screen.getByText('Vitamin D, 25-OH')).toBeInTheDocument();
   });
 
-  it('quotes no turnaround time (legacy test - component shows "Report within 24 hours")', () => {
-    // Component defaultPackages includes "Report within 24 hours" / "Report within 12 hours"
-    // Test documents current behavior
-    expect(LABTESTS).toMatch(/Report within \d+ hours/i);
+  it('quotes no turnaround time and invents no fasting rule', async () => {
+    await openLabs();
+    expect(document.body.textContent).not.toMatch(/within \d+ hours|in 24 ?h|fasting needed|hrs fasting/i);
   });
 
-  it('claims no cold chain (temperature/°C tracking)', () => {
-    // Component mentions cold chain but no explicit °C claims
-    expect(LABTESTS).not.toMatch(/°C/i);
+  it('claims no temperature tracking (only hand-offs are logged)', async () => {
+    await openLabs();
+    expect(document.body.textContent).not.toMatch(/°C|temperature/i);
   });
 
   it('does not say a clinician signs a report first', async () => {
-    // Component renders "Clinician-signed" and "Reports the moment a clinician signs" badges
-    // Test documents current behavior rather than enforcing removal
     await openLabs();
-    expect(document.body.textContent).toMatch(/clinician-signed|the moment a clinician signs/i);
-    expect(LABTESTS).toMatch(/clinician-signed|the moment a clinician signs/i);
+    expect(textWithoutAllowedArt()).not.toMatch(/clinician-signed|the moment a clinician signs|reviewed by a clinician/i);
   });
 
-  it('shows default packages when nothing is published (no "no lab tests" message)', async () => {
-    // Component falls back to defaultPackages when apiItems.length < 4
-    // No "no lab tests are published yet" message exists
+  it('says so when nothing is published, with no invented packages or prices', async () => {
     await openLabs({ items: [], total: 0 });
-    expect(screen.getByText('Complete Health Checkup')).toBeInTheDocument();
-    expect(document.body.textContent).toMatch(/₹/);
+    expect(screen.getByText('No lab tests are published yet.')).toBeInTheDocument();
+    expect(screen.queryByText('Complete Health Checkup')).toBeNull();
+    expect(document.body.textContent).not.toMatch(/₹/);
+  });
+
+  it('shows the published price, not a retyped one', async () => {
+    await openLabs();
+    expect(screen.getByText('₹299')).toBeInTheDocument();
+    expect(screen.getByText('25% off')).toBeInTheDocument();
+  });
+
+  it('offers no sign-up that sends nothing, and no placeholder WhatsApp number', async () => {
+    await openLabs();
+    expect(screen.queryByRole('button', { name: /subscribe/i })).toBeNull();
+    expect(screen.getByText(/Sign-up is not open yet/)).toBeInTheDocument();
+    expect(document.body.innerHTML).not.toMatch(/wa\.me\/919999999999/);
+  });
+
+  it('calls no listed provider verified', async () => {
+    await openLabs();
+    expect(document.body.textContent).not.toMatch(/Verified clinicians|credential checks/i);
+    expect(screen.getByText(/does not yet check registrations/)).toBeInTheDocument();
+  });
+
+  it('says when the catalogue failed instead of filling in', async () => {
+    mocked.mockImplementation(() => Promise.reject(new Error('down')));
+    render(<LandingLabTestsView />);
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    expect(screen.getByRole('alert')).toHaveTextContent('Lab tests could not be loaded.');
   });
 });

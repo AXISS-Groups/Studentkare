@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Doctor consults</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:#FAF8FF;color:#131B2E}
+a{color:#0C0494;text-decoration:none}a:hover{color:#2B20C9}
+button{font-family:inherit}
+a:focus-visible,button:focus-visible{outline:3px solid #6D5BFF;outline-offset:3px;border-radius:14px}
+@keyframes skRise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes skFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+@keyframes skWave{0%,100%{transform:scaleY(.4)}50%{transform:scaleY(1)}}
+@keyframes skLive{0%{box-shadow:0 0 0 0 rgba(130,245,193,.6)}100%{box-shadow:0 0 0 10px rgba(130,245,193,0)}}
+.sk-card{transition:transform .25s cubic-bezier(.2,.7,.3,1),box-shadow .25s}.sk-card:hover{transform:translateY(-2px);box-shadow:0 14px 30px rgba(12,4,148,.12)}
+.sk-rail{scrollbar-width:none;scroll-snap-type:x mandatory}.sk-rail::-webkit-scrollbar{display:none}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div style="width: 390px; height: 1640px; box-sizing: border-box; background: #FAF8FF; position: relative; overflow: hidden;">
+
+  <div style="position: relative; padding: 18px 20px 26px; border-radius: 0 0 36px 36px; background: linear-gradient(160deg, #1D4ED8 0%, #0C0494 100%); color: #FFFFFF; overflow: hidden; animation: skRise .5s both;">
+    <span aria-hidden="true" style="position: absolute; right: -70px; top: 40px; width: 230px; height: 230px; border-radius: 999px; border: 30px solid rgba(255,255,255,.08);"></span>
+    <header style="position: relative; display: flex; align-items: center; gap: 12px;">
+      <a href="Main.dc.html" aria-label="Back to Home" style="width: 44px; height: 44px; border-radius: 999px; background: rgba(255,255,255,.16); display: flex; align-items: center; justify-content: center;"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"></path></svg></a>
+      <span style="flex-grow: 1; font-size: 13px; font-weight: 700; color: #DBEAFE;">Doctor consults</span>
+      <span style="padding: 6px 11px; border-radius: 999px; background: rgba(255,255,255,.16); font-size: 11.5px; font-weight: 800; display: flex; align-items: center; gap: 6px;"><span style="width: 8px; height: 8px; border-radius: 999px; background: #82F5C1; animation: skLive 1.6s infinite;"></span>[n] doctors online</span>
+    </header>
+    <h1 style="position: relative; margin: 20px 0 6px; font-size: 27px; line-height: 32px; font-weight: 800; letter-spacing: -0.8px; max-width: 260px;">Talk to a doctor from your room</h1>
+    <p style="position: relative; margin: 0; font-size: 13.5px; line-height: 20px; font-weight: 600; color: #DBEAFE; max-width: 250px;">Video, audio or chat. Your prescription goes straight to your vault.</p>
+    <div aria-hidden="true" style="position: absolute; right: 22px; top: 84px; width: 86px; height: 86px; border-radius: 28px; background: rgba(255,255,255,.16); display: flex; align-items: center; justify-content: center; gap: 4px; animation: skFloat 3.8s ease-in-out infinite;">
+      <span style="width: 5px; height: 30px; border-radius: 999px; background: #FFFFFF; animation: skWave 1s ease-in-out infinite;"></span><span style="width: 5px; height: 42px; border-radius: 999px; background: #FFFFFF; animation: skWave 1s .15s ease-in-out infinite;"></span><span style="width: 5px; height: 24px; border-radius: 999px; background: #FFFFFF; animation: skWave 1s .3s ease-in-out infinite;"></span><span style="width: 5px; height: 36px; border-radius: 999px; background: #FFFFFF; animation: skWave 1s .45s ease-in-out infinite;"></span>
+    </div>
+    <a href="Orders.dc.html" style="position: relative; margin-top: 18px; height: 52px; border-radius: 999px; background: #FFFFFF; color: #0C0494; font-size: 15px; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 8px;">Consult now · from ₹[fee]<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0C0494" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></a>
+  </div>
+
+  <div style="padding: 16px 20px 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; animation: skRise .5s .1s both;">
+    <span style="border-radius: 20px; padding: 12px 10px; background: #FFFFFF; box-shadow: 0 6px 18px rgba(12,4,148,.06); display: flex; flex-direction: column; gap: 8px;"><span style="width: 34px; height: 34px; border-radius: 12px; background: #DBEAFE; display: flex; align-items: center; justify-content: center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1D4ED8" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="6" width="14" height="12" rx="3"></rect><path d="M16 10l6-3v10l-6-3"></path></svg></span><span style="font-size: 12.5px; font-weight: 800; line-height: 16px;">Video, audio or chat</span></span>
+    <span style="border-radius: 20px; padding: 12px 10px; background: #FFFFFF; box-shadow: 0 6px 18px rgba(12,4,148,.06); display: flex; flex-direction: column; gap: 8px;"><span style="width: 34px; height: 34px; border-radius: 12px; background: #D1FAE5; display: flex; align-items: center; justify-content: center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#047857" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 0 1 15.5-6.2L21 8M21 3v5h-5M21 12a9 9 0 0 1-15.5 6.2L3 16"></path></svg></span><span style="font-size: 12.5px; font-weight: 800; line-height: 16px;">Free follow-up for [n] days</span></span>
+    <span style="border-radius: 20px; padding: 12px 10px; background: #FFFFFF; box-shadow: 0 6px 18px rgba(12,4,148,.06); display: flex; flex-direction: column; gap: 8px;"><span style="width: 34px; height: 34px; border-radius: 12px; background: #FEF3C7; display: flex; align-items: center; justify-content: center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B45309" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"></path><path d="M14 3v5h5M9 14l2 2 4-4"></path></svg></span><span style="font-size: 12.5px; font-weight: 800; line-height: 16px;">Valid e-prescription</span></span>
+  </div>
+
+  <a href="Profile.dc.html" class="sk-card" style="margin: 14px 20px 0; padding: 14px 16px; border-radius: 22px; background: linear-gradient(120deg, #EEF2FF, #F5F3FF); display: flex; align-items: center; gap: 12px; color: #131B2E; animation: skRise .5s .15s both;">
+    <span style="width: 42px; height: 42px; border-radius: 14px; background: linear-gradient(145deg, #6D5BFF, #0C0494); display: flex; align-items: center; justify-content: center;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6z"></path><path d="M8.5 12l2.5 2.5 4.5-5"></path></svg></span>
+    <span style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px;"><span style="font-size: 13.5px; font-weight: 800;">Student Plus covers [n] consults a month</span><span style="font-size: 12px; font-weight: 600; color: #464555;">₹149 a month · see what is included</span></span>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0C0494" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
+  </a>
+
+  <section aria-labelledby="concerns" style="padding: 22px 20px 0; animation: skRise .55s .2s both;">
+    <h2 id="concerns" style="margin: 0 0 4px; font-size: 17px; font-weight: 800; letter-spacing: -0.3px;">What is bothering you?</h2>
+    <p style="margin: 0 0 12px; font-size: 12.5px; font-weight: 600; color: #6B6980;">Pick one and we match the right doctor.</p>
+    <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+      <sc-for list="{{ chips }}" as="c" hint-placeholder-count="12">
+        <button type="button" aria-pressed="{{ c.pressed }}" onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</button>
+      </sc-for>
+    </div>
+    <sc-if value="{{ mindPicked }}" hint-placeholder-val="{{ false }}">
+      <div style="margin-top: 12px; padding: 14px; border-radius: 20px; background: #ECFDF5; display: flex; gap: 10px; animation: skRise .3s both;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#047857" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0;"><path d="M20.8 5.6a5 5 0 0 0-7.1 0L12 7.3l-1.7-1.7a5 5 0 1 0-7.1 7.1L12 21.5l8.8-8.8a5 5 0 0 0 0-7.1z"></path></svg>
+        <span style="font-size: 12.5px; line-height: 18px; font-weight: 700; color: #065F46;">The campus counsellor is free and private. Need someone right now? Call Tele-MANAS 14416, any time.</span>
+      </div>
+    </sc-if>
+  </section>
+
+  <section aria-labelledby="docs" style="padding: 22px 0 0; animation: skRise .55s .25s both;">
+    <h2 id="docs" style="margin: 0 20px 12px; font-size: 17px; font-weight: 800; letter-spacing: -0.3px;">Doctors available today</h2>
+    <div class="sk-rail" style="display: flex; gap: 12px; overflow-x: auto; padding: 0 20px 8px;">
+      <sc-for list="{{ doctors }}" as="d" hint-placeholder-count="3">
+        <a href="Orders.dc.html" class="sk-card" style="scroll-snap-align: start; flex-shrink: 0; width: 250px; border-radius: 26px; padding: 16px; background: #FFFFFF; box-shadow: 0 6px 18px rgba(12,4,148,.06); display: flex; flex-direction: column; gap: 10px; color: #131B2E;">
+          <span style="display: flex; align-items: center; gap: 12px;">
+            <span style="{{ d.avatar }}">{{ d.initials }}</span>
+            <span style="display: flex; flex-direction: column; gap: 2px;"><span style="font-size: 14.5px; font-weight: 800;">{{ d.name }}</span><span style="font-size: 12px; font-weight: 600; color: #464555;">{{ d.spec }}</span></span>
+          </span>
+          <span style="display: flex; gap: 6px; flex-wrap: wrap;"><span style="padding: 4px 9px; border-radius: 999px; background: #F2F3FF; font-size: 11px; font-weight: 700; color: #464555;">{{ d.years }}</span><span style="padding: 4px 9px; border-radius: 999px; background: #F2F3FF; font-size: 11px; font-weight: 700; color: #464555;">{{ d.langs }}</span></span>
+          <span style="font-size: 11.5px; font-weight: 600; color: #6B6980;">Reg. no. [registration number]</span>
+          <span style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 12.5px; font-weight: 800; color: #047857;">{{ d.next }}</span><span style="height: 34px; padding: 0 14px; border-radius: 999px; background: #0C0494; color: #FFFFFF; font-size: 12.5px; font-weight: 800; display: flex; align-items: center;">Book</span></span>
+        </a>
+      </sc-for>
+    </div>
+  </section>
+
+  <section aria-labelledby="faq" style="margin: 16px 20px 0; border-radius: 26px; background: #FFFFFF; box-shadow: 0 6px 18px rgba(12,4,148,.06); overflow: hidden; animation: skRise .55s .3s both;">
+    <h2 id="faq" style="margin: 0; padding: 16px 16px 4px; font-size: 15px; font-weight: 800;">Questions students ask</h2>
+    <sc-for list="{{ faq }}" as="q" hint-placeholder-count="4">
+      <div style="border-top: 1px solid #EEF2FF;">
+        <button type="button" onClick="{{ q.toggle }}" aria-expanded="{{ q.expanded }}" style="width: 100%; border: 0; background: none; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 13.5px; font-weight: 700; color: #131B2E; cursor: pointer; text-align: left;">{{ q.k }}<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#131B2E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="{{ q.chev }}"><path d="M6 9l6 6 6-6"></path></svg></button>
+        <sc-if value="{{ q.open }}" hint-placeholder-val="{{ false }}"><p style="margin: 0; padding: 0 16px 14px; font-size: 12.5px; line-height: 19px; font-weight: 600; color: #464555; animation: skRise .3s both;">{{ q.v }}</p></sc-if>
+      </div>
+    </sc-for>
+  </section>
+
+  <nav aria-label="Main" style="position: absolute; left: 16px; right: 16px; bottom: 22px; height: 70px; border-radius: 999px; background: linear-gradient(160deg, #1A10B5, #0C0494); box-shadow: 0 18px 40px rgba(12,4,148,.35); display: flex; align-items: center; justify-content: space-between; padding: 0 10px;">
+    <a href="Main.dc.html" style="height: 52px; padding: 0 18px; border-radius: 999px; background: #FFFFFF; color: #0C0494; font-size: 13.5px; font-weight: 800; display: flex; align-items: center; gap: 7px;"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#0C0494" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5L12 4l9 6.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"></path></svg>Home</a>
+    <a href="Orders.dc.html" aria-label="Orders" style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C7C3FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8l-9-5-9 5 9 5zM3 8v8l9 5 9-5V8M12 13v8"></path></svg></a>
+    <a href="AskAyush.dc.html" aria-label="Ask Ayush" style="width: 52px; height: 52px; border-radius: 999px; background: radial-gradient(circle at 35% 30%, #A5F3FC, #6D5BFF 55%, #2B20C9); display: flex; align-items: center; justify-content: center;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M5.6 18.4l2.8-2.8M15.6 8.4l2.8-2.8"></path></svg></a>
+    <a href="Insights.dc.html" aria-label="My health" style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C7C3FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 5.6a5 5 0 0 0-7.1 0L12 7.3l-1.7-1.7a5 5 0 1 0-7.1 7.1L12 21.5l8.8-8.8a5 5 0 0 0 0-7.1z"></path></svg></a>
+    <a href="Profile.dc.html" aria-label="Profile" style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C7C3FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21a8 8 0 0 1 16 0"></path></svg></a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1640}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { chip: 'Fever', open: 0 }; }
+  renderVals() {
+    const s = this.state;
+    const labels = ['Fever', 'Cough and cold', 'Stomach pain', 'Headache', 'Skin and acne', 'Hair fall', 'Period problems', 'Sexual health', 'Sports injury', 'Stress or anxiety', 'Sleep trouble', 'Low mood'];
+    const mind = ['Stress or anxiety', 'Sleep trouble', 'Low mood'];
+    const av = (a, b, ink) => 'width: 52px; height: 52px; border-radius: 18px; flex-shrink: 0; background: linear-gradient(145deg, ' + a + ', ' + b + '); color: ' + ink + '; font-size: 16px; font-weight: 800; display: flex; align-items: center; justify-content: center;';
+    const faqs = [
+      ['How soon can I talk to a doctor?', 'Usually within the hour in the day. The app shows the next free slot before you pay.'],
+      ['Is my consult private?', 'Yes. Only you and your doctor see it. Your campus never sees what you discussed.'],
+      ['What if I need a test or medicine?', 'The doctor adds it to your e-prescription. You can order it here or anywhere.'],
+      ['I am not satisfied. What now?', 'Raise it in Help within 7 days. A support person calls you back.']
+    ];
+    return {
+      chips: labels.map((l) => ({
+        label: l, pressed: s.chip === l ? 'true' : 'false', pick: () => this.setState({ chip: l }),
+        style: 'height: 40px; padding: 0 14px; border-radius: 999px; cursor: pointer; font-size: 12.5px; font-weight: 800; transition: all .2s; ' + (s.chip === l ? 'border: 0; background: #1D4ED8; color: #FFFFFF; box-shadow: 0 8px 18px rgba(29,78,216,.28);' : 'border: 1.5px solid #DAE2FD; background: #FFFFFF; color: #464555;')
+      })),
+      mindPicked: mind.indexOf(s.chip) >= 0,
+      doctors: [
+        { name: 'Dr. [Name]', initials: 'DR', spec: 'General medicine', years: '[n] yrs', langs: 'English, Telugu', next: 'Free at 4:30 pm', avatar: av('#DBEAFE', '#BFDBFE', '#1D4ED8') },
+        { name: 'Dr. [Name]', initials: 'DR', spec: 'Dermatology', years: '[n] yrs', langs: 'English, Hindi', next: 'Free at 6:00 pm', avatar: av('#FCE7F3', '#FBCFE8', '#9D174D') },
+        { name: 'Dr. [Name]', initials: 'DR', spec: 'Psychiatry', years: '[n] yrs', langs: 'English, Telugu', next: 'Free tomorrow', avatar: av('#D1FAE5', '#A7F3D0', '#065F46') }
+      ],
+      faq: faqs.map(([k, v], i) => ({ k, v, open: s.open === i, expanded: s.open === i ? 'true' : 'false', toggle: () => this.setState({ open: s.open === i ? -1 : i }), chev: 'flex-shrink: 0; transition: transform .25s; transform: rotate(' + (s.open === i ? '180deg' : '0deg') + ');' }))
+    };
+  }
+}
+</script>
+</body>
+</html>

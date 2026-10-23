@@ -15,9 +15,11 @@ export abstract class LoadableViewModel<T> {
   status: LoadStatus = 'loading';
   data: T | null = null;
   toast: string | null = null;
+  /** When the data on screen was loaded (ms). Offline, the screen shows it read-only with this time. */
+  loadedAt: number | null = null;
 
   protected constructor(protected readonly loader: Loadable<T>) {
-    makeObservable(this, { status: observable, data: observable, toast: observable, load: actionBound, clearToast: actionBound, say: actionBound });
+    makeObservable(this, { status: observable, data: observable, toast: observable, loadedAt: observable, load: actionBound, clearToast: actionBound, say: actionBound });
   }
 
   protected abstract isEmpty(data: T): boolean;
@@ -34,7 +36,10 @@ export abstract class LoadableViewModel<T> {
         if (data === null) this.status = 'unconnected';
         else if (this.isEmpty(data)) this.status = 'empty';
         else this.status = 'ready';
-        if (data !== null) this.afterLoad(data);
+        if (data !== null) {
+          this.loadedAt = Date.now();
+          this.afterLoad(data);
+        }
       });
     } catch {
       runInAction(() => {

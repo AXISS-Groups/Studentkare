@@ -6,7 +6,7 @@ import {
   formatRupees,
   getMetricSeries,
   healthMetrics,
-} from '../../data/healthExperience';
+} from '../../data/datasets/healthExperience';
 
 
 describe('Coverage estimates', () => {

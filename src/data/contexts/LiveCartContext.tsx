@@ -32,3 +32,16 @@ export function useLiveCart() {
   if (!context) throw new Error('useLiveCart must be used inside LiveCartProvider');
   return context;
 }
+/**
+ * Items in the cart, for a count badge in a shared frame (the student web shell).
+ * Outside a LiveCartProvider there is no cart, so the count is 0 and no badge shows.
+ */
+/** The cart when a LiveCartProvider is mounted, else null (a board drawn on its own, tests). */
+export function useOptionalLiveCart(): CartContextValue | null {
+  return useContext(CartContext);
+}
+
+export function useLiveCartCount(): number {
+  const context = useContext(CartContext);
+  return context ? context.lines.reduce((sum, line) => sum + line.quantity, 0) : 0;
+}

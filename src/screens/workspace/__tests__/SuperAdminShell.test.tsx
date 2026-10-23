@@ -7,7 +7,7 @@ import { SUPER_ADMIN_NAVIGATION } from '../admin/superAdminNavigation';
 const onNavigate = vi.fn();
 const onSignOut = vi.fn();
 const theme = { mode: 'light' as 'light' | 'dark', setTheme: vi.fn() };
-vi.mock('../../../theme/theme', () => ({ useTheme: () => theme }));
+vi.mock('../../../theme/tokens/theme', () => ({ useTheme: () => theme }));
 
 const renderShell = (props: Partial<React.ComponentProps<typeof SuperAdminShell>> = {}) => render(
   <SuperAdminShell route="admin" role="SUPER_ADMIN" onNavigate={onNavigate} onSignOut={onSignOut} signingOut={false} signOutError="" {...props}>
@@ -19,7 +19,7 @@ const nav = () => screen.getByRole('navigation', { name: 'Super admin navigation
 
 beforeEach(() => { onNavigate.mockReset(); onSignOut.mockReset(); theme.mode = 'light'; theme.setTheme.mockReset(); });
 
-describe('alerts and SOS', () => {
+describe('alerts, and no SOS', () => {
   it('opens the real activity feed from Alerts, not the demo notification centre', () => {
     renderShell();
     fireEvent.click(within(screen.getByRole('main')).getByRole('button', { name: 'Alerts' }));
@@ -43,16 +43,9 @@ describe('alerts and SOS', () => {
     expect(current.map(button => button.textContent)).toEqual([parent]);
   });
 
-  it('opens the emergency helplines from SOS, with real numbers to call', () => {
-    // jsdom has no <dialog>.showModal(); the dialog's content is what is under test.
-    const dialog = HTMLDialogElement.prototype as { showModal?: () => void; close?: () => void };
-    dialog.showModal ??= vi.fn();
-    dialog.close ??= vi.fn();
+  it('has no SOS: emergency help is for students, and admins see student SOS under Operations & SOS', () => {
     renderShell();
-    fireEvent.click(within(screen.getByRole('main')).getByRole('button', { name: 'SOS' }));
-    expect(screen.getByText('24x7 Emergency Helplines')).toBeInTheDocument();
-    // Without a real showModal the dialog never gets `open`, so its content counts as hidden.
-    expect(screen.getByRole('link', { name: /call national emergency response/i, hidden: true })).toHaveAttribute('href', 'tel:112');
+    expect(screen.queryByRole('button', { name: 'SOS' })).toBeNull();
   });
 });
 
@@ -78,25 +71,46 @@ describe('theme toggle', () => {
 });
 
 describe('navigation structure', () => {
-  it('follows the design’s groups and order exactly, with nothing extra', () => {
+  // The design's entries, plus eight not on the canvas: Team accounts, Care directory, Medicine info, Lab report reviewers, Message outbox, Announcements, Posts and Legal documents.
+  it('follows the design’s groups and order, with only the eight added entries', () => {
     expect(SUPER_ADMIN_NAVIGATION.map(group => group.title)).toEqual(['Platform', 'Tenants', 'Gatekeeping', 'Commerce', 'Content & AI', 'Governance']);
     const designed = SUPER_ADMIN_NAVIGATION.flatMap(group => group.items.map(item => item.label));
     expect(designed).toEqual([
-      'Overview', 'Operations & SOS', 'Surveillance map', 'Feature flags', 'Accounts',
+      'Overview', 'Operations & SOS', 'Surveillance map', 'Feature flags', 'Accounts', 'Team accounts',
       'Organisations', 'Integrations', 'Code sentinel', 'Token sync',
-      'Clinician verification', 'Partner applications', 'Catalogue ops',
+      'Clinician verification', 'Partner applications', 'Catalogue ops', 'Care directory', 'Medicine info', 'Lab report reviewers',
       'Plans & pricing', 'Billing ledger',
-      'Message templates', 'Knowledge base', 'Intake & OCR',
-      'Rule L firewall', 'Consent policy', 'Break-glass log', 'Check-in audit', 'Casualty handover', 'Audit explorer', 'AI governance', 'Erasure queue',
+      'Message templates', 'Message outbox', 'Announcements', 'Knowledge base', 'Posts', 'Intake & OCR',
+      'Rule L firewall', 'Consent policy', 'Legal documents', 'Break-glass log', 'Check-in audit', 'Casualty handover', 'Audit explorer', 'AI governance', 'Erasure queue',
     ]);
   });
 
   it('gives every designed entry its own screen', () => {
     SUPER_ADMIN_NAVIGATION.forEach(group => group.items.forEach(item => expect(item.route, item.label).toBeDefined()));
     const routes = SUPER_ADMIN_NAVIGATION.flatMap(group => group.items.flatMap(item => item.route ? [item.route] : []));
-    expect(new Set(routes).size).toBe(25);
+    expect(new Set(routes).size).toBe(33);
     // Removed from the sidebar on request; the routes still exist.
     ['admin/activity', 'admin/billing', 'admin/requests', 'admin/support', 'admin/telemetry', 'admin/preventive'].forEach(route => expect(routes).not.toContain(route));
+  });
+
+  it('draws each entry with the icon the SuperAdminConsole brief names', () => {
+    renderShell();
+    const icons = Array.from(nav().querySelectorAll('svg')).map(icon => icon.getAttribute('data-icon'));
+    expect(icons).toEqual([
+      'users-small', 'alert-triangle-3', 'map', 'settings-2', 'users-2', 'key',
+      'box', 'plug', 'shield-2', 'settings-2',
+      'shield', 'hand-pointer', 'box', 'hospital', 'pill', 'flask',
+      'banknote', 'bar-chart',
+      'message-circle', 'inbox', 'megaphone', 'file', 'megaphone', 'clipboard',
+      'rows-split', 'book', 'file-text', 'heart-plus', 'heart-plus', 'arrows-left-right', 'book', 'cpu', 'shield-2',
+    ]);
+  });
+
+  it('shows the brand mark and the SUPER ADMIN role line', () => {
+    renderShell();
+    const sidebar = document.getElementById('sk-admin-sidebar') as HTMLElement;
+    expect(sidebar.querySelector('[data-icon="brand:studentkare-logo"]')).not.toBeNull();
+    expect(within(sidebar).getByText('SUPER ADMIN')).toBeInTheDocument();
   });
 
   it('renders every group heading', () => {
@@ -120,9 +134,9 @@ describe('available entries', () => {
     expect(onNavigate).toHaveBeenCalledWith('admin/ops');
   });
 
-  it('has the design’s 25 links and no More tools group', () => {
+  it('has the design’s 25 links plus the 8 added ones, and no More tools group', () => {
     renderShell();
-    expect(within(nav()).getAllByRole('button')).toHaveLength(25);
+    expect(within(nav()).getAllByRole('button')).toHaveLength(33);
     expect(within(nav()).queryByRole('heading', { name: 'More tools' })).toBeNull();
   });
 

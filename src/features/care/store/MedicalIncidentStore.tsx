@@ -3,7 +3,7 @@ import {
   MedicalIncident,
   MeoOfficer,
   CampusOutbreakAlert,
-} from '../../../data/medicalIncidentData';
+} from '../../../data/datasets/medicalIncidentData';
 
 /**
  * Incidents reported in this tab, and nothing else.

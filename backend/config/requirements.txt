@@ -2,21 +2,17 @@
 # badly: fastapi was pinned at 0.111.0 while local development ran 0.141.1, so CI
 # installed a different — and vulnerable — stack from the one anyone tested.
 # fastapi 0.141.1 brings starlette 1.6.0, which clears all 14 starlette
-# advisories; python-jose was removed because nothing imports it (everything uses
-# PyJWT) and it was the only thing pulling in ecdsa, whose advisories have no
-# published fix.
+# advisories; python-jose was removed because nothing imports it and it was the
+# only thing pulling in ecdsa, whose advisories have no published fix. motor,
+# passlib and PyJWT went with the MongoDB/JWT code that nothing ran (audit TD-48).
 fastapi==0.141.1
 uvicorn==0.52.4
 pydantic==2.13.5
-passlib[bcrypt]==1.7.4
 python-multipart==0.0.31
 httpx==0.28.1
 dnspython==2.8.0
-APScheduler==3.10.4
 python-dotenv==1.2.2
-motor==3.7.1
-PyJWT==2.13.0
-# Direct dependency: AESGCM in core/crypto_service.py and Fernet in
+# Direct dependency: Fernet in services/twofa_store.py, services/erasure.py and
 # services/integration_secret_vault.py. It was only ever present transitively,
 # via python-jose[cryptography]; removing that unused package dropped it, which a
 # local run did not catch because the old wheel was still installed.
@@ -24,9 +20,17 @@ cryptography==50.0.0
 SQLAlchemy>=2.0.30,<2.1
 psycopg[binary]>=3.1,<4
 qrcode==8.2
-langchain-ollama==1.1.0
 prometheus_client==0.26.0
 opentelemetry-api==1.45.0
 opentelemetry-sdk==1.45.0
 opentelemetry-exporter-prometheus==0.66b0
 alembic>=1.13.0
+# The newsroom's 1200x630 share image is drawn on our own server (services/newsroom_cover.py):
+# a gradient, the shield PNG and the brand font, with no outside image service.
+Pillow==12.3.0
+# The content autopilot reads official RSS/Atom feeds (services/newsroom_autopilot.py): parsed with
+# defusedxml so no entity, DTD or external reference in a feed is ever expanded.
+defusedxml==0.7.1
+# Video consults: signs LiveKit join tokens (services/livekit_media.py). Brings
+# PyJWT, protobuf, livekit-protocol and aiohttp; only AccessToken is used.
+livekit-api==1.2.1

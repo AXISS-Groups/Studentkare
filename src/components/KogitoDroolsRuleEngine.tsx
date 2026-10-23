@@ -1,10 +1,10 @@
 import React from "react";
 import { View, Text } from "react-native";
-import { useTheme } from "../theme/theme";
+import { useTheme } from "../theme/tokens/theme";
 import { Card } from "./Card";
 import { Badge } from "./Badge";
 import { Cpu } from "lucide-react";
-import { assertRule } from "../ai/constitution";
+import { assertRule } from "../ai/core/constitution";
 
 export const KogitoDroolsRuleEngine: React.FC = () => {
   const { tokens, radius, typography } = useTheme();

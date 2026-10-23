@@ -9,7 +9,10 @@ from core import workflow_models as M
 
 def _staff(factory):
     with factory() as db:
-        db.add(M.Account(id="campusadmin", identifier="campus@example.test", channel="EMAIL", full_name="Campus Admin", role="CAMPUS_ADMIN", active=True, profile={}, created_at=time.time()))
+        db.add(M.Account(id="campusadmin", identifier="campus@example.test", channel="EMAIL", full_name="Campus Admin", role="CAMPUS_ADMIN", active=True,
+                         # Campus admins act only for their own campus.
+                         profile={"university": "Test University"}, created_at=time.time(),
+                         staff_campus="Test University"))
         db.commit()
 
 
@@ -17,9 +20,9 @@ def test_campus_verify_flow(harness):
     client, factory, codes = harness
     user, headers = register(client, codes, "student@example.test")
 
-    # Student submits verification.
+    # Sign-up already asked the campus (live-run audit #4); the student can resubmit.
     status = client.get("/api/campus/verification", headers=headers).json()
-    assert status["status"] == "NOT_SUBMITTED"
+    assert status["status"] == "PENDING"
     sub = client.post("/api/campus/verification", json={"university": "Test University", "rollNumber": "S-42"}, headers=headers).json()
     assert sub["status"] == "PENDING"
 
@@ -44,10 +47,10 @@ def test_campus_verify_flow(harness):
 def test_cannot_reverify_after_verified(harness):
     client, factory, codes = harness
     user, headers = register(client, codes, "student2@example.test")
-    client.post("/api/campus/verification", json={"university": "Test", "rollNumber": "R1"}, headers=headers)
+    client.post("/api/campus/verification", json={"university": "Test University", "rollNumber": "R1"}, headers=headers)
     _staff(factory)
     staff_headers = login(client, codes, "campus@example.test")
     client.patch(f"/api/ops/campus/{user['id']}", json={"status": "VERIFIED"}, headers=staff_headers)
     # Re-login as student and confirm re-submission is rejected.
     student_headers = login(client, codes, "student2@example.test")
-    assert client.post("/api/campus/verification", json={"university": "Test", "rollNumber": "R2"}, headers=student_headers).status_code == 409
+    assert client.post("/api/campus/verification", json={"university": "Test University", "rollNumber": "R2"}, headers=student_headers).status_code == 409

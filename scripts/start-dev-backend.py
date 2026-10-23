@@ -9,6 +9,9 @@ import sys
 # Ensure testing/local development mode uses sqlite and dev secret
 os.environ.setdefault("APP_ENV", "testing")
 os.environ.setdefault("OTP_HASH_SECRET", "dev-test-secret-studentkare")
+# Local only: demo accounts and console codes are off unless opted into.
+os.environ.setdefault("SEED_DEMO_DATA", "true")
+os.environ.setdefault("DEV_OTP_CONSOLE", "true")
 repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 backend_dir = os.path.join(repo_root, "backend")
 

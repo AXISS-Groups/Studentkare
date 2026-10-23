@@ -1,105 +1,65 @@
-/* Clinician console frame. Tokens only — see design-system.css. */
+/* Clinician console frame. The brand, sidebar rows and top bar are the shared
+   console pieces (../console-shell/console-shell.css); this file lays out the
+   frame, the account menu and the drawer. Tokens only — see design-system.css. */
 
 .sk-shell {
-  display: flex; min-height: 100vh; min-height: 100dvh;
-  background: var(--sk-color-canvas); color: var(--sk-color-text);
+  display: grid;
+  grid-template-columns: var(--sk-size-web-sidebar) minmax(0, 1fr);
+  min-height: 100vh; min-height: 100dvh;
   font-family: var(--sk-font-sans);
+  background: var(--sk-color-canvas);
+  color: var(--sk-color-text);
 }
 
 /* ---- sidebar ---- */
 .sk-shell__sidebar {
-  position: sticky; top: 0; align-self: flex-start;
-  width: 236px; height: 100vh; height: 100dvh; flex: none; box-sizing: border-box;
-  padding: var(--sk-space-16) var(--sk-space-12);
-  display: flex; flex-direction: column; gap: var(--sk-space-8);
-  background: var(--sk-color-nav-bg); overflow-y: auto;
-  animation: skFade 400ms linear both;
+  position: sticky; top: 0;
+  display: flex; flex-direction: column; gap: var(--sk-space-14);
+  height: 100vh; height: 100dvh; box-sizing: border-box;
+  margin: 0; overflow-y: auto; overscroll-behavior: contain;
+  padding: var(--sk-space-20) var(--sk-space-12);
+  /* Flush with the window's left edge; only the edge facing the page is rounded. */
+  border-radius: 0 var(--sk-radius-xl) var(--sk-radius-xl) 0;
+  background: var(--sk-color-sidebar);
+  box-shadow: var(--sk-shadow-card);
+  color: var(--sk-color-sidebar-ink);
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--sk-color-sidebar-ink-3) 40%, transparent) transparent;
 }
-.sk-shell__brand { display: flex; align-items: center; gap: var(--sk-space-10); padding: 0 var(--sk-space-8) var(--sk-space-4); }
-.sk-shell__brand img { flex: none; }
-.sk-shell__wordmark { display: flex; flex-direction: column; gap: 1px; }
-.sk-shell__name { font-size: 14px; font-weight: 800; letter-spacing: -.4px; color: var(--sk-color-on-nav-current); }
-.sk-shell__name em { font-family: var(--sk-font-serif); font-style: italic; font-weight: 700; }
-.sk-shell__role { font-size: 10px; font-weight: 700; letter-spacing: .7px; color: var(--sk-color-nav-text); }
+.sk-shell__brand {
+  display: flex; align-items: center; gap: var(--sk-space-12);
+  padding: var(--sk-space-4) var(--sk-space-8) var(--sk-space-16);
+}
 .sk-shell__drawer-close { display: none; }
-
-.sk-shell__nav { display: flex; flex-direction: column; }
-.sk-shell__group { display: flex; flex-direction: column; }
-.sk-shell__group-label {
-  padding: var(--sk-space-8) var(--sk-space-12) var(--sk-space-2);
-  font-size: 9.5px; font-weight: 800; letter-spacing: 1.2px; color: var(--sk-color-nav-label);
-}
-.sk-shell__link {
-  display: flex; align-items: center; gap: var(--sk-space-10);
-  width: 100%; min-height: var(--sk-size-touch-target); padding: 0 11px; box-sizing: border-box;
-  border: 0; border-radius: 9px; background: transparent;
-  font-family: inherit; font-size: 12.5px; font-weight: 600; text-align: left;
-  color: var(--sk-color-nav-text); cursor: pointer;
-  transition: background var(--sk-duration-fast) var(--sk-ease-standard);
-}
-.sk-shell__link:hover { background: color-mix(in srgb, var(--sk-color-nav-text) 10%, transparent); }
-.sk-shell__link.is-current { background: var(--sk-color-nav-current); color: var(--sk-color-on-nav-current); font-weight: 700; }
-.sk-shell__link.is-unavailable { cursor: default; opacity: .55; }
-.sk-shell__link.is-unavailable:hover { background: transparent; }
-.sk-shell__link:focus-visible { outline-color: var(--sk-color-nav-text); outline-offset: -3px; }
-.sk-shell__badge {
-  margin-left: auto; min-width: 18px; height: 18px; padding: 0 5px; box-sizing: border-box;
-  border-radius: var(--sk-radius-full); background: var(--sk-color-danger-fill);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 10.5px; font-weight: 800; color: var(--sk-color-on-danger-fill);
-}
-.sk-shell__link.is-current .sk-shell__badge { background: var(--sk-color-on-nav-current); color: var(--sk-color-nav-current); }
 .sk-shell__spacer { flex: 1; min-height: var(--sk-space-8); }
-.sk-shell__footer { font-size: 12px; }
+/* The footer sits on the same rule as the Super Admin sidebar footer. */
+.sk-shell__sidebar-footer {
+  display: flex; flex-direction: column; gap: var(--sk-space-2);
+  margin-top: auto; padding-top: var(--sk-space-16);
+  border-top: 1px solid color-mix(in srgb, var(--sk-color-sidebar-ink-3) 35%, transparent);
+}
 
-/* ---- body + top bar ---- */
-.sk-shell__body { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-.sk-shell__topbar {
-  position: sticky; top: 0; z-index: 20;
-  height: 64px; flex: none; box-sizing: border-box; padding: 0 30px;
-  display: flex; align-items: center; gap: var(--sk-space-16);
-  background: var(--sk-color-surface); border-bottom: 1px solid var(--sk-color-rule-soft);
-  animation: skFade 400ms linear both;
-}
-.sk-shell__context { font-size: 14px; font-weight: 800; color: var(--sk-color-text); white-space: nowrap; }
-.sk-shell__context-short { display: none; }
-.sk-shell__search {
-  flex: 1; max-width: 380px; display: flex; align-items: center; gap: var(--sk-space-10);
-  height: var(--sk-size-touch-target); padding: 0 var(--sk-space-14); box-sizing: border-box;
-  border-radius: var(--sk-radius-md); background: var(--sk-color-surface-2); color: var(--sk-color-text-3);
-}
-.sk-shell__search input {
-  flex: 1; min-width: 0; border: 0; outline: none; background: transparent;
-  font-family: inherit; font-size: 13.5px; color: var(--sk-color-text);
-}
-.sk-shell__search input::placeholder { color: var(--sk-color-text-3); }
-.sk-shell__search input:disabled { cursor: not-allowed; }
-.sk-shell__grow { flex: 1; }
-.sk-shell__twofa { height: 30px; padding: 0 11px; }
-.sk-shell__icon-btn {
-  position: relative; flex: none;
-  width: var(--sk-size-touch-target); height: var(--sk-size-touch-target);
-  border-radius: var(--sk-radius-md); border: 1px solid var(--sk-color-rule-soft);
-  background: var(--sk-color-surface); color: var(--sk-color-text);
-  display: flex; align-items: center; justify-content: center; cursor: pointer;
-}
-.sk-shell__unread {
-  position: absolute; top: 8px; right: 9px; width: 8px; height: 8px;
-  border-radius: var(--sk-radius-full); background: var(--sk-color-danger-fill);
-  border: 2px solid var(--sk-color-surface);
-}
-.sk-shell__menu-btn { display: none; }
+/* ---- page column: the white top bar across the column, then the page ---- */
+.sk-shell__body { min-width: 0; display: flex; flex-direction: column; }
+.sk-shell .sk-console-topbar .sk-shell__menu-btn { display: none; }
+.sk-shell__chip:focus-visible,
+.sk-shell__menu-item:focus-visible { outline: 3px solid var(--sk-color-focus); outline-offset: 3px; }
 
+/* Account: a pill like the Super Admin top-right actions. */
 .sk-shell__account { position: relative; }
 .sk-shell__chip {
   display: flex; align-items: center; gap: var(--sk-space-10);
-  min-height: var(--sk-size-touch-target); padding: 0 var(--sk-space-4);
-  border: 0; border-radius: var(--sk-radius-md); background: transparent;
+  min-height: var(--sk-size-touch-target); padding: var(--sk-space-4) var(--sk-space-16) var(--sk-space-4) var(--sk-space-4);
+  box-sizing: border-box;
+  border: 1px solid var(--sk-color-rule-strong); border-radius: var(--sk-radius-full);
+  background: var(--sk-color-surface);
   font-family: inherit; text-align: left; cursor: pointer;
+  transition: background-color var(--sk-duration-fast) var(--sk-ease-standard);
 }
+.sk-shell__chip:hover { background: var(--sk-color-surface-2); }
 .sk-shell__chip-text { display: flex; flex-direction: column; gap: 1px; }
-.sk-shell__chip-name { font-size: 13px; font-weight: 800; color: var(--sk-color-text); }
-.sk-shell__chip-meta { font-size: 11px; font-weight: 600; color: var(--sk-color-text-3); }
+.sk-shell__chip-name { font-size: var(--sk-text-body-sm); font-weight: 800; color: var(--sk-color-text); }
+.sk-shell__chip-meta { font-size: var(--sk-text-caption); font-weight: 600; color: var(--sk-color-text-3); }
 .sk-shell__menu {
   position: absolute; right: 0; top: calc(100% + 6px); z-index: 30;
   min-width: 220px; padding: var(--sk-space-6);
@@ -112,7 +72,7 @@
   display: flex; align-items: center; gap: var(--sk-space-10);
   min-height: var(--sk-size-touch-target); padding: 0 var(--sk-space-12);
   border: 0; border-radius: var(--sk-radius-md); background: transparent;
-  font-family: inherit; font-size: 13.5px; font-weight: 700; color: var(--sk-color-text);
+  font-family: inherit; font-size: var(--sk-text-body-sm); font-weight: 700; color: var(--sk-color-text);
   text-align: left; cursor: pointer;
 }
 .sk-shell__menu-item:hover { background: var(--sk-color-surface-2); }
@@ -120,16 +80,25 @@
 
 .sk-shell__main {
   flex: 1; min-width: 0; box-sizing: border-box;
-  padding: var(--sk-space-24) 30px; display: flex; flex-direction: column; gap: 18px;
+  padding: var(--sk-space-24) var(--sk-space-32);
+  display: flex; flex-direction: column; gap: var(--sk-space-20);
+}
+/* Page changes: the shell stays put and only the page content eases in. */
+.sk-shell__main > .care-page-enter { animation: sk-shell-page-in var(--sk-duration-base) var(--sk-ease-standard) both; }
+@keyframes sk-shell-page-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
 }
 
-/* ---- tablet / phone: sidebar becomes a drawer ---- */
-@media (max-width: 960px) {
+/* ---- phone and tablet: the sidebar becomes a drawer (same breakpoint as Super Admin) ---- */
+@media (max-width: 1024px) {
+  .sk-shell { grid-template-columns: minmax(0, 1fr); }
   .sk-shell__sidebar {
-    position: fixed; inset: 0 auto 0 0; z-index: 50; height: 100%;
+    position: fixed; inset: 0 auto 0 0; z-index: 50;
+    width: min(300px, 86vw); height: auto; max-height: none;
     transform: translateX(-100%); visibility: hidden;
     transition: transform var(--sk-duration-sheet) var(--sk-ease-sheet), visibility 0s linear var(--sk-duration-sheet);
-    animation: none;
+    box-shadow: var(--sk-shadow-sheet);
   }
   .is-drawer-open .sk-shell__sidebar {
     transform: none; visibility: visible;
@@ -137,22 +106,25 @@
   }
   .sk-shell__scrim {
     position: fixed; inset: 0; z-index: 40;
-    background: color-mix(in srgb, var(--sk-color-hero-bg) 45%, transparent);
-    animation: skFade 300ms linear both;
+    background: var(--sk-color-sidebar); opacity: 0.5;
   }
   .sk-shell__drawer-close {
-    display: flex; align-items: center; justify-content: center; margin-left: auto;
+    display: grid; place-items: center; margin-left: auto;
     width: var(--sk-size-touch-target); height: var(--sk-size-touch-target);
     border: 0; border-radius: var(--sk-radius-md); background: transparent;
-    color: var(--sk-color-nav-text); cursor: pointer;
+    color: var(--sk-color-sidebar-ink); cursor: pointer;
   }
-  .sk-shell__menu-btn { display: flex; }
-  .sk-shell__topbar { padding: 0 var(--sk-space-16); gap: var(--sk-space-10); }
-  .sk-shell__main { padding: var(--sk-space-20) var(--sk-space-16); }
+  .sk-shell .sk-console-topbar .sk-shell__menu-btn { display: grid; }
+  .sk-shell__main { padding: var(--sk-space-24) var(--sk-space-gutter-phone); }
 }
 @media (max-width: 720px) {
-  .sk-shell__search, .sk-shell__chip-text, .sk-shell__twofa { display: none; }
-  .sk-shell__context { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
-  .sk-shell__context-long { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-  .sk-shell__context-short { display: inline; }
+  .sk-shell__chip-text, .sk-shell .sk-console-topbar__twofa { display: none; }
+  .sk-shell__chip { padding: var(--sk-space-4); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sk-shell__main > .care-page-enter,
+  .sk-shell__menu { animation: none; }
+  .sk-shell__sidebar,
+  .sk-shell__chip { transition: none; }
 }

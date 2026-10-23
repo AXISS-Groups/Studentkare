@@ -1,17 +1,17 @@
 import { Suspense } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
-import type { OpsFeedEvent, StaffAccount } from '../../../data/workflowTypes';
+import type { OpsFeedEvent, StaffAccount } from '../../../data/types/workflowTypes';
 
 // Behaviour of Super Admin → Accounts & roles, including Manage accounts. Only the HTTP
 // layer is mocked, keyed by request path, so these tests hold for any implementation.
 const apiAnswers: Record<string, () => Promise<unknown>> = {};
 const apiRequest = vi.fn((path: string, _init?: RequestInit) => apiAnswers[path]?.() ?? new Promise(() => undefined));
-vi.mock('../../../data/http', async importOriginal => ({ ...(await importOriginal<typeof import('../../../data/http')>()), apiRequest: (path: string, init?: RequestInit) => apiRequest(path, init) }));
+vi.mock('../../../data/services/http', async importOriginal => ({ ...(await importOriginal<typeof import('../../../data/services/http')>()), apiRequest: (path: string, init?: RequestInit) => apiRequest(path, init) }));
 
 import { superAdminScreen } from '../admin/SuperAdminScreens';
 
-const ROLES = ['STUDENT', 'NMC_DOCTOR', 'VENDOR', 'CAMPUS_ADMIN', 'SUPER_ADMIN'] as const;
+const ROLES = ['STUDENT', 'NMC_DOCTOR', 'VENDOR', 'CAMPUS_ADMIN', 'COUNSELLOR', 'SUPER_ADMIN', 'LAB_COLLECTOR'] as const;
 const countPath = (role: string) => `/ops/accounts?limit=1&role=${role}`;
 const COUNT_PATHS = ROLES.map(countPath);
 const LIST = '/ops/accounts?limit=15&offset=0';
@@ -35,53 +35,58 @@ beforeEach(() => {
 
 describe('Accounts & roles overview', () => {
   it('requests the account list, then each role’s count, in order', async () => {
-    answerCounts([900, 40, 12, 6, 2]);
+    answerCounts([900, 40, 12, 6, 0, 2, 2]);
     answer(LIST, { items: [], total: 0 });
     show();
-    expect(screen.getByText('Loading accounts by role…')).toBeInTheDocument();
+    expect(screen.getByLabelText('Loading accounts by role…')).toHaveAttribute('aria-busy', 'true');
     await screen.findByRole('table', { name: 'Accounts by role' });
     expect(paths()).toEqual([LIST, ...COUNT_PATHS]);
   });
 
   it('shows counts per role, the clinical data each may reach and the workspace each uses', async () => {
-    answerCounts([900, 40, 12, 6, 2]);
+    answerCounts([900, 40, 12, 6, 0, 2, 2]);
     show();
     const table = await screen.findByRole('table', { name: 'Accounts by role' });
-    const tiles = within(screen.getByRole('group', { name: 'Accounts summary' })).getAllByRole('article');
-    expect(tiles[0]).toHaveTextContent('960');
-    expect(tiles[1]).toHaveTextContent('5');
-    const rows = within(table).getAllByRole('row').slice(1).map(row => Array.from(row.querySelectorAll('td')).map(cell => cell.textContent));
+    const figures = Array.from(screen.getByRole('group', { name: 'Accounts summary' }).querySelectorAll('.sk-stat'));
+    // Lab collectors count too: the same total as the overview (live-run audit #15).
+    expect(figures[0]).toHaveTextContent('962');
+    expect(figures[1]).toHaveTextContent('7');
+    // The role is the row header (th), then one cell per column.
+    const rows = within(table).getAllByRole('row').slice(1).map(row => Array.from(row.querySelectorAll('th, td')).map(cell => cell.textContent));
     expect(rows).toEqual([
       ['StudentSTUDENTOwns their own record', '900', 'Own record only', 'Student portal'],
       ['NMC DoctorNMC_DOCTORRegistered clinician', '40', 'Consented records only', 'Clinical workspace'],
       ['VendorVENDORPharmacy, lab or provider', '12', 'Permission policy unavailable', 'Vendor workspace'],
       ['Campus AdminCAMPUS_ADMINInstitution staff', '6', 'No clinical access', 'Campus administration'],
+      ['CounsellorCOUNSELLORCampus crisis follow-up', '0', 'Permission policy unavailable', 'Counsellor queue'],
       ['Super AdminSUPER_ADMINPlatform operations', '2', 'No clinical access', 'Platform administration'],
+      ['Lab collectorLAB_COLLECTORA lab’s sample collector', '2', 'Permission policy unavailable', 'Staff app (sample collection)'],
     ]);
     expect(document.body.textContent).not.toMatch(/signed-in/);
     // Development-only state switchers are not part of the screen.
     ['Preview', 'Data', 'Loading', 'Empty', 'Error'].forEach(label => expect(screen.queryByRole('button', { name: label })).toBeNull());
-    const tagClasses = (role: string) => (within(table).getByText(role).closest('tr') as HTMLElement).querySelector('.sk-admin-tag')?.className;
-    expect(ROLES.map(tagClasses)).toEqual(['sk-admin-tag is-positive', 'sk-admin-tag is-positive', 'sk-admin-tag is-attention', 'sk-admin-tag is-positive', 'sk-admin-tag is-positive']);
+    const tone = (role: string) => ['positive', 'attention'].find(name => (within(table).getByText(role).closest('tr') as HTMLElement).querySelector(`.sk-pill--${name}`));
+    expect(ROLES.map(tone)).toEqual(['positive', 'positive', 'attention', 'positive', 'attention', 'positive', 'attention']);
   });
 
   it('shows the first failing count’s error, and Try again requests every count again', async () => {
-    answerCounts([900, 40, 12, 6, 2]);
+    answerCounts([900, 40, 12, 6, 0, 2, 2]);
     apiAnswers[countPath('VENDOR')] = () => Promise.reject(new Error('Vendor count timed out'));
     apiAnswers[countPath('SUPER_ADMIN')] = () => Promise.reject(new Error('Admin count timed out'));
     answer(LIST, { items: [], total: 0 });
     show();
     const alert = await screen.findByRole('alert');
-    expect(alert).toHaveTextContent('Couldn’t load accounts by role');
+    expect(alert).toHaveTextContent('Couldn’t load accounts & roles');
+    expect(alert).toHaveTextContent('Ref ERR-503 · AdminAccounts');
     expect(alert).toHaveTextContent('Vendor count timed out');
-    answerCounts([900, 40, 12, 6, 2]);
+    answerCounts([900, 40, 12, 6, 0, 2, 2]);
     fireEvent.click(within(alert).getByRole('button', { name: /try again/i }));
     expect(await screen.findByRole('table', { name: 'Accounts by role' })).toBeInTheDocument();
     expect(paths()).toEqual([LIST, ...COUNT_PATHS, ...COUNT_PATHS]);
   });
 
   it('loads recent account changes each time that tab opens, showing staff accounts created only', async () => {
-    answerCounts([1, 0, 0, 0, 1]);
+    answerCounts([1, 0, 0, 0, 0, 1, 0]);
     answer(RECENT, { items: [feedEvent('1', 'STAFF_ACCOUNT_CREATED', 'Staff account created with the vendor role'), feedEvent('2', 'SUBSCRIPTION_STARTED', 'Plan started'), feedEvent('3', 'STAFF_ACCOUNT_CREATED', '')], total: 3, critical: 0, scope: 'all' });
     show();
     await screen.findByRole('table', { name: 'Accounts by role' });
@@ -89,7 +94,7 @@ describe('Accounts & roles overview', () => {
     fireEvent.click(screen.getByRole('tab', { name: 'Recently changed' }));
     expect(screen.getByText('Loading recent account changes…')).toBeInTheDocument();
     const table = await screen.findByRole('table', { name: 'Recently changed accounts' });
-    const rows = within(table).getAllByRole('row').slice(1).map(row => Array.from(row.querySelectorAll('td')).map(cell => cell.textContent));
+    const rows = within(table).getAllByRole('row').slice(1).map(row => Array.from(row.querySelectorAll('th, td')).map(cell => cell.textContent));
     expect(rows).toEqual([
       ['Staff account created', 'Staff account created with the vendor role', expect.any(String)],
       ['Staff account created', '—', expect.any(String)],
@@ -102,7 +107,7 @@ describe('Accounts & roles overview', () => {
   });
 
   it('shows recent changes empty, then an error with Try again', async () => {
-    answerCounts([1, 0, 0, 0, 1]);
+    answerCounts([1, 0, 0, 0, 0, 1, 0]);
     answer(RECENT, { items: [feedEvent('2', 'SUBSCRIPTION_STARTED', 'Plan started')], total: 1, critical: 0, scope: 'all' });
     show();
     await screen.findByRole('table', { name: 'Accounts by role' });
@@ -121,7 +126,7 @@ describe('Accounts & roles overview', () => {
   });
 
   it('moves between tabs with the arrow, Home and End keys', async () => {
-    answerCounts([1, 0, 0, 0, 1]);
+    answerCounts([1, 0, 0, 0, 0, 1, 0]);
     show();
     const byRole = await screen.findByRole('tab', { name: 'By role' });
     fireEvent.keyDown(byRole, { key: 'ArrowRight' });
@@ -140,8 +145,9 @@ describe('Manage accounts', () => {
     answer(LIST, { items: [account('a1', { fullName: 'Asha Rao', role: 'CAMPUS_ADMIN' }), account('a2', { active: false })], total: 2 });
     show();
     await waitFor(() => expect(listRows()).toHaveLength(2));
-    expect(listRows()).toEqual([['Asha Rao', 'a1@example.test', 'CAMPUS ADMIN', 'Active'], ['Person a2', 'a2@example.test', 'NMC DOCTOR', 'Inactive']]);
-    expect(within(listTable()).getAllByRole('columnheader').map(cell => cell.textContent)).toEqual(['Name', 'Verified at sign-in', 'Role', 'Status']);
+    // A campus admin with no campus sees no students; the column says so and offers to set it.
+    expect(listRows()).toEqual([['Asha Rao', 'a1@example.test', 'CAMPUS ADMIN', '—', 'Active', 'Not set — sees no students Set campus', 'Off'], ['Person a2', 'a2@example.test', 'NMC DOCTOR', '—', 'Inactive', '—', 'Off']]);
+    expect(within(listTable()).getAllByRole('columnheader').map(cell => cell.textContent)).toEqual(['Name', 'Verified at sign-in', 'Role', 'Partner type', 'Status', 'Campus', 'Two-step sign-in']);
     expect(screen.queryByRole('button', { name: /Next/ })).toBeNull();
   });
 
@@ -168,12 +174,12 @@ describe('Manage accounts', () => {
     expect(screen.getByRole('button', { name: /Previous/ })).toBeDisabled();
     fireEvent.click(screen.getByRole('button', { name: /Next/ }));
     expect(screen.getAllByText('Loading your information…').length).toBeGreaterThan(0);
-    await waitFor(() => expect(listRows()).toEqual([['Person a16', 'a16@example.test', 'NMC DOCTOR', 'Active']]));
+    await waitFor(() => expect(listRows()).toEqual([['Person a16', 'a16@example.test', 'NMC DOCTOR', '—', 'Active', '—', 'Off']]));
     expect(screen.getByText(/of/, { selector: '.wf-pagination span' })).toHaveTextContent('Page 2 of 3 (40 items)');
   });
 
   it('shows a list error and requests the same page on Try again', async () => {
-    answerCounts([1, 0, 0, 0, 1]);
+    answerCounts([1, 0, 0, 0, 0, 1, 0]);
     apiAnswers[LIST] = () => Promise.reject(new Error('Accounts unavailable'));
     show();
     const alert = await screen.findByText('Accounts unavailable');
@@ -197,9 +203,11 @@ describe('Manage accounts', () => {
     fireEvent.change(within(dialog).getByLabelText('Sign-in channel'), { target: { value: 'WHATSAPP' } });
     expect(within(dialog).getByLabelText('Contact address')).toHaveAttribute('type', 'tel');
     fireEvent.change(within(dialog).getByLabelText('Contact address'), { target: { value: '+919800000000' } });
+    // A doctor needs their NMC registration number (audit M1).
+    fireEvent.change(within(dialog).getByLabelText('NMC registration number'), { target: { value: 'TSMC-12345' } });
     fireEvent.click(within(dialog).getByRole('button', { name: 'Create account' }));
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
-    expect(apiRequest).toHaveBeenCalledWith('/ops/accounts', { method: 'POST', body: JSON.stringify({ fullName: 'Dr Meera Iyer', identifier: '+919800000000', channel: 'WHATSAPP', role: 'NMC_DOCTOR' }) });
+    expect(apiRequest).toHaveBeenCalledWith('/ops/accounts', { method: 'POST', body: JSON.stringify({ fullName: 'Dr Meera Iyer', identifier: '+919800000000', channel: 'WHATSAPP', role: 'NMC_DOCTOR', registrationNumber: 'TSMC-12345' }) });
     await waitFor(() => expect(paths().filter(path => path === LIST)).toHaveLength(2));
     // Name and contact clear; role and channel stay as last chosen.
     fireEvent.click(screen.getByRole('button', { name: 'Create staff account' }));
@@ -218,11 +226,12 @@ describe('Manage accounts', () => {
     const dialog = screen.getByRole('dialog', { name: 'Create a staff account' });
     fireEvent.change(within(dialog).getByLabelText('Full name'), { target: { value: 'Asha Rao' } });
     fireEvent.change(within(dialog).getByLabelText('Contact address'), { target: { value: 'asha@example.test' } });
+    fireEvent.change(within(dialog).getByLabelText('Partner type'), { target: { value: 'PHARMACY' } });
     fireEvent.click(within(dialog).getByRole('button', { name: 'Create account' }));
     expect(await within(dialog).findByRole('alert')).toHaveTextContent('That contact address is already registered');
     expect(within(dialog).getByLabelText('Full name')).toHaveValue('Asha Rao');
     expect(paths().filter(path => path === LIST)).toHaveLength(1);
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Close dialog' }));
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Close' }));
     fireEvent.click(screen.getByRole('button', { name: 'Create staff account' }));
     expect(within(screen.getByRole('dialog', { name: 'Create a staff account' })).getByRole('alert')).toHaveTextContent('That contact address is already registered');
   });
@@ -234,10 +243,60 @@ describe('Manage accounts', () => {
     const dialog = screen.getByRole('dialog', { name: 'Create a staff account' });
     fireEvent.change(within(dialog).getByLabelText('Full name'), { target: { value: 'Asha Rao' } });
     fireEvent.change(within(dialog).getByLabelText('Contact address'), { target: { value: 'asha@example.test' } });
+    fireEvent.change(within(dialog).getByLabelText('Partner type'), { target: { value: 'PHARMACY' } });
     const form = dialog.querySelector('form') as HTMLFormElement;
     fireEvent.submit(form);
     fireEvent.submit(form);
     await waitFor(() => expect(within(dialog).getByRole('button', { name: /Create account/ })).toBeDisabled());
     expect(paths().filter(path => path === '/ops/accounts')).toHaveLength(1);
+  });
+});
+
+describe('Reset two-step sign-in', () => {
+  const RESET = '/ops/accounts/a1/2fa/reset';
+
+  it('is offered only where an authenticator is on, needs a reason, then resets and reloads', async () => {
+    answer(LIST, { items: [account('a1', { fullName: 'Asha Rao', role: 'SUPER_ADMIN', twoFactorEnabled: true }), account('a2')], total: 2 });
+    answer(RESET, { id: 'a1', sessionsEnded: 1, setupRequired: true });
+    show();
+    await waitFor(() => expect(listRows()).toHaveLength(2));
+    expect(listRows().map(row => row[6])).toEqual(['On Reset two-step sign-in', 'Off']);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Reset two-step sign-in for Asha Rao' }));
+    const dialog = screen.getByRole('alertdialog', { name: 'Reset two-step sign-in for Asha Rao?' });
+    expect(dialog).toHaveTextContent('signs them out on every device');
+
+    // No reason, no request.
+    fireEvent.change(within(dialog).getByLabelText('Reason (kept in the audit log)'), { target: { value: 'lost it' } });
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Reset and sign them out' }));
+    expect(within(dialog).getByRole('alert')).toHaveTextContent('Give a reason of 10 to 500 characters.');
+    expect(paths()).not.toContain(RESET);
+
+    fireEvent.change(within(dialog).getByLabelText('Reason (kept in the audit log)'), { target: { value: '  Lost phone,   confirmed on a call ' } });
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Reset and sign them out' }));
+    await waitFor(() => expect(screen.queryByRole('alertdialog')).toBeNull());
+    expect(apiRequest).toHaveBeenCalledWith(RESET, { method: 'POST', body: JSON.stringify({ reason: 'Lost phone, confirmed on a call' }) });
+    expect(screen.getByText('Two-step sign-in was reset for Asha Rao, and they were signed out.').closest('[role=status]')).not.toBeNull();
+    await waitFor(() => expect(paths().filter(path => path === LIST)).toHaveLength(2));
+  });
+
+  it('keeps the dialog open with the server’s refusal, and cancel sends nothing', async () => {
+    answer(LIST, { items: [account('a1', { fullName: 'Asha Rao', twoFactorEnabled: true })], total: 1 });
+    apiAnswers[RESET] = () => Promise.reject(new Error("You can't reset your own two-step sign-in. Ask another super admin."));
+    show();
+    await waitFor(() => expect(listRows()).toHaveLength(1));
+    fireEvent.click(screen.getByRole('button', { name: 'Reset two-step sign-in for Asha Rao' }));
+    let dialog = screen.getByRole('alertdialog');
+    fireEvent.change(within(dialog).getByLabelText('Reason (kept in the audit log)'), { target: { value: 'Lost phone, confirmed on a call' } });
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Reset and sign them out' }));
+    expect(await within(dialog).findByRole('alert')).toHaveTextContent("You can't reset your own two-step sign-in.");
+    expect(screen.queryByText(/Two-step sign-in was reset/)).toBeNull();
+
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }));
+    expect(screen.queryByRole('alertdialog')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Reset two-step sign-in for Asha Rao' }));
+    dialog = screen.getByRole('alertdialog');
+    expect(within(dialog).getByLabelText('Reason (kept in the audit log)')).toHaveValue('');
+    expect(paths().filter(path => path === RESET)).toHaveLength(1);
   });
 });

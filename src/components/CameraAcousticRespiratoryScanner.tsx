@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { View, Text, TouchableOpacity } from "react-native";
-import { useTheme } from "../theme/theme";
+import { useTheme } from "../theme/tokens/theme";
 import { Card } from "./Card";
 import { Badge } from "./Badge";
 import { Mic, CheckCircle2, RefreshCw } from "lucide-react";
-import { assertRule } from "../ai/constitution";
+import { assertRule } from "../ai/core/constitution";
 
 export const CameraAcousticRespiratoryScanner: React.FC = () => {
   const { tokens, radius, typography } = useTheme();
@@ -71,8 +71,8 @@ export const CameraAcousticRespiratoryScanner: React.FC = () => {
           gap: 8,
         }}
       >
-        {isAnalyzing ? <RefreshCw size={18} color="#ffffff" /> : <Mic size={18} color="#ffffff" />}
-        <Text style={{ color: "#ffffff", fontWeight: "800", fontSize: 13, fontFamily: typography.fontFamily }}>
+        {isAnalyzing ? <RefreshCw size={18} color={tokens.onAction} /> : <Mic size={18} color={tokens.onAction} />}
+        <Text style={{ color: tokens.onAction, fontWeight: "800", fontSize: 13, fontFamily: typography.fontFamily }}>
           {isAnalyzing ? "Analyzing Acoustic Frequency Spectrum..." : "Record & Analyze Cough / Breathing Sound"}
         </Text>
       </TouchableOpacity>

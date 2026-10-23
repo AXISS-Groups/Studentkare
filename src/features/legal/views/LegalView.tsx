@@ -1,13 +1,18 @@
 import React from 'react';
 import { AlertTriangle, ArrowRight } from 'lucide-react';
 import { useRoutePath } from '@/core/navigation';
+import { useT } from '@/i18n';
+import type { MessageKey } from '@/i18n';
+import { usePhoneFrame } from '@/design-system/navigation/usePhoneFrame';
+import { navigate } from '@/lib/utils/workflowRouting';
+import { LegalBoard } from './LegalBoard';
 import './legal.css';
 
 type LegalTopic = 'privacy' | 'terms';
 
-const TITLES: Record<LegalTopic, string> = {
-  privacy: 'Privacy notice',
-  terms: 'Terms of use',
+const TITLES: Record<LegalTopic, MessageKey> = {
+  privacy: 'member.legal.privacyTitle',
+  terms: 'member.legal.termsTitle',
 };
 
 /**
@@ -34,14 +39,29 @@ const TITLES: Record<LegalTopic, string> = {
  * tells the reader something true.
  */
 export function LegalView(): React.ReactElement {
+  const t = useT();
   const route = useRoutePath();
   const topic: LegalTopic = route.includes('terms') ? 'terms' : 'privacy';
+  const phone = usePhoneFrame();
+
+  // At phone width: the Legal board (canvas page 2), with the same honest gap.
+  if (phone) {
+    return (
+      <LegalBoard
+        initialTab={topic}
+        links={{
+          back: () => (window.history.length > 1 ? window.history.back() : navigate('landing')),
+          help: () => navigate('support'),
+        }}
+      />
+    );
+  }
 
   return (
     <main className="sk-legal">
       <header className="sk-legal__head">
         <span className="sk-legal__eyebrow">STUDENTKARE</span>
-        <h1 className="sk-legal__title">{TITLES[topic]}</h1>
+        <h1 className="sk-legal__title">{t(TITLES[topic])}</h1>
       </header>
 
       <div className="sk-legal__notice" role="status">
@@ -50,83 +70,58 @@ export function LegalView(): React.ReactElement {
         </span>
         <div>
           <p className="sk-legal__notice-title">
-            {topic === 'privacy'
-              ? 'Our privacy notice is not published yet.'
-              : 'Our terms of use are not published yet.'}
+            {topic === 'privacy' ? t('member.legal.privacyNotPublished') : t('member.legal.termsNotPublished')}
           </p>
-          <p className="sk-legal__notice-body">
-            Rather than show you something that reads like a policy but binds nobody, this page says
-            so plainly. Until it is published and reviewed, treat Studentkare as unfinished and do
-            not put anything here you would mind losing.
-          </p>
+          <p className="sk-legal__notice-body">{t('member.legal.noticeBody')}</p>
         </div>
       </div>
 
       <section className="sk-legal__section" aria-labelledby="sk-legal-required">
         <h2 className="sk-legal__heading" id="sk-legal-required">
-          What has to exist before this page can be written
+          {t('member.legal.requiredHeading')}
         </h2>
         <ul className="sk-legal__list">
           <li>
-            <strong>A named grievance officer.</strong> The DPDP Act requires one, reachable, who
-            answers complaints about your data. We are not going to print a name and an address that
-            nobody is behind.
+            <strong>{t('member.legal.officerLead')}</strong> {t('member.legal.officerBody')}
           </li>
           <li>
-            <strong>A stated purpose for each kind of data.</strong> Consent is per purpose, so the
-            notice has to list them individually rather than ask once for everything.
+            <strong>{t('member.legal.purposeLead')}</strong> {t('member.legal.purposeBody')}
           </li>
           <li>
-            <strong>A retention period, and what deletion actually does.</strong> Including which
-            records survive a deletion request because a clinician or a pharmacy is required to keep
-            them, and for how long.
+            <strong>{t('member.legal.retentionLead')}</strong> {t('member.legal.retentionBody')}
           </li>
           <li>
-            <strong>Legal review and sign-off.</strong> Not a draft generated from a template.
+            <strong>{t('member.legal.reviewLead')}</strong> {t('member.legal.reviewBody')}
           </li>
         </ul>
       </section>
 
       <section className="sk-legal__section" aria-labelledby="sk-legal-meanwhile">
         <h2 className="sk-legal__heading" id="sk-legal-meanwhile">
-          What we can tell you now
+          {t('member.legal.nowHeading')}
         </h2>
-        <p className="sk-legal__body">
-          These are things the code does today, not commitments — they can be checked, and they can
-          change before anything is published.
-        </p>
+        <p className="sk-legal__body">{t('member.legal.nowBody')}</p>
         <ul className="sk-legal__list">
-          <li>
-            A record in your vault is opened by a clinician only through a share you granted, for a
-            number of days you chose, and every open is written to an audit trail.
-          </li>
-          <li>
-            You can end a share yourself at any time, and you can leave a care programme without
-            your campus being told.
-          </li>
-          <li>
-            Notification consents default to off. Nothing is pre-ticked on your behalf.
-          </li>
-          <li>
-            Studentkare is for adults aged 18 and over.
-          </li>
+          <li>{t('member.legal.nowShare')}</li>
+          <li>{t('member.legal.nowEndShare')}</li>
+          <li>{t('member.legal.nowConsents')}</li>
+          <li>{t('member.legal.nowAdults')}</li>
         </ul>
       </section>
 
-      <nav className="sk-legal__links" aria-label="Related pages">
+      <nav className="sk-legal__links" aria-label={t('member.legal.relatedPages')}>
         <a className="sk-legal__link" href={topic === 'privacy' ? '/terms' : '/privacy'}>
-          {topic === 'privacy' ? 'Terms of use' : 'Privacy notice'}
+          {topic === 'privacy' ? t('member.legal.termsTitle') : t('member.legal.privacyTitle')}
           <ArrowRight size={15} aria-hidden="true" />
         </a>
         <a className="sk-legal__link" href="/">
-          Back to Studentkare
+          {t('member.legal.backHome')}
           <ArrowRight size={15} aria-hidden="true" />
         </a>
       </nav>
 
       <p className="sk-legal__emergency">
-        In an emergency, call <a href="tel:112">112</a>. You do not need an account and you do not
-        need this page.
+        {t('member.legal.emergencyBefore')} <a href="tel:112">112</a>{t('member.legal.emergencyAfter')}
       </p>
     </main>
   );

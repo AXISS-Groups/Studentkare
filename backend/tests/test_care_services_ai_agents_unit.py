@@ -9,7 +9,6 @@ from core import workflow_models as M
 from services.agents.blood_emergency_agent import BloodDonor, blood_emergency_agent
 from services.agents.medication_adherence_loop_agent import medication_adherence_loop_agent
 from services.agents.phlebotomist_dispatch_agent import phlebotomist_dispatch_agent
-from services.agents.rx_extractor_ai_agent import rx_extractor_ai_agent
 from services.db_sql import Base
 
 
@@ -34,25 +33,13 @@ def test_phlebotomist_dispatch_agent():
     assert len(res.sample_kit_code) > len("SAMPLE-KIT-") + 6
 
 
-def test_rx_extractor_ai_agent():
-    sample_catalog = [
-        {"id": "cat_01", "name": "Studentkare Paracetamol 650mg", "brand": "Studentkare", "pricePaise": 3500, "requiresPrescription": True},
-        {"id": "cat_02", "name": "Vitamin D3 60,000 IU", "brand": "Studentkare", "pricePaise": 24900, "requiresPrescription": False},
-    ]
-    res = rx_extractor_ai_agent.analyze_prescription_text(
-        "Rx: Dr. Sen. Paracetamol 650mg 1 tab BD. Vitamin D3 1 cap weekly.",
-        sample_catalog,
-    )
-    assert len(res.extracted_items) >= 1
-    assert res.detected_doctor != ""
-
-
 def test_medication_adherence_loop_agent():
     schedule = medication_adherence_loop_agent.get_user_schedule(None, "demo-student")
     assert schedule["user_id"] == "demo-student"
-    # No plans yet -> zero completion, no fabricated todays_medications.
+    # No plans yet -> nothing taken, no fabricated todays_medications, and no score.
     assert schedule["plans"] == []
-    assert schedule["daily_completion_rate"] == 0.0
+    assert schedule["todays_taken"] == 0
+    assert "daily_completion_rate" not in schedule
 
     plan = medication_adherence_loop_agent.add_plan(None, "demo-student", "Paracetamol", "1 tablet", "twice daily")
     assert plan["source"] == "USER"
@@ -70,30 +57,28 @@ def test_blood_emergency_agent():
     Base.metadata.create_all(engine)
     factory = sessionmaker(bind=engine, expire_on_commit=False)
     with factory() as db:
-        db.add(M.Account(id="donor-acct", identifier="donor@example.test", channel="EMAIL",
+        db.add(M.Account(id="donor-acct", identifier="9999999999", channel="WHATSAPP",
                          full_name="Donor", role="STUDENT", active=True, profile={}, created_at=1))
+        db.add(M.Account(id="asker", identifier="asker@example.test", channel="EMAIL",
+                         full_name="Asker", role="STUDENT", active=True, profile={}, created_at=1))
+        db.add(M.CampusVerification(account_id="donor-acct", university="Test University", roll_number="R1",
+                                    status="VERIFIED"))
         db.commit()
         blood_emergency_agent.register_donor(db, "donor-acct", BloodDonor(
-            id="bd_unit01", name="Consenting Donor", blood_group="O-",
-            hostel_block="Block A", phone="+91 9999999999",
-            last_donated="6 months ago", is_available=True, visible=True,
+            blood_group="O-", hostel_block="Block A", is_available=True, visible=True,
         ))
-        donors = blood_emergency_agent.get_donors(db, "ALL", public=True)
-        assert len(donors) > 0
-        assert all(d.get("phone") == "" for d in donors)
+        donors = blood_emergency_agent.campus_donors(db, "Test University")
+        assert len(donors) == 1
+        assert blood_emergency_agent.campus_donors(db, "Another College") == []
 
         sos_res = blood_emergency_agent.trigger_sos_broadcast(
-            db=db,
-            account_id="donor-acct",
-            patient_name="Demo Student Patient",
-            required_group="O-",
-            units=2,
-            location="Campus Health Centre",
+            db=db, account_id="asker", required_group="O+", units=2, campus="Test University",
         )
+        db.commit()
         assert sos_res["status"] == "SOS_QUEUED"
-        assert sos_res["events_staged"] >= 1
-        assert sos_res["matching_donors_count"] >= 1
+        assert sos_res["events_staged"] == 1
+        assert sos_res["matching_donors_count"] == 1
         pending = db.scalars(select(M.OutboxEvent).where(M.OutboxEvent.status == "PENDING")).all()
         assert len(pending) == sos_res["events_staged"]
-        assert all(e.event_type == "BLOOD_SOS" for e in pending)
+        assert all(e.event_type == "BLOOD_SOS" and e.payload["phone"] == "9999999999" for e in pending)
     engine.dispose()

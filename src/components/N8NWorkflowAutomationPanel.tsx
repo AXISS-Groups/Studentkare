@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
-import { useTheme } from '../theme/theme';
+import { useTheme } from '../theme/tokens/theme';
 import { Card } from './Card';
 import { Badge } from './Badge';
 import { Workflow, Play, RefreshCw } from 'lucide-react';
-import { multiAgentLoopEngine, MultiAgentSwarmResult } from '../ai/multiAgentLoopOrchestrator';
+import { multiAgentLoopEngine, MultiAgentSwarmResult } from '../ai/engines/multiAgentLoopOrchestrator';
 import { aiApi } from '../data/api';
 
 export const N8NWorkflowAutomationPanel: React.FC = () => {
@@ -17,7 +17,6 @@ export const N8NWorkflowAutomationPanel: React.FC = () => {
     { id: 'wf-01', name: 'Campus Emergency SOS 108 Alert Dispatcher', webhookUrl: '/webhook/sos-alert-108', status: 'ACTIVE', totalTriggers: 142 },
     { id: 'wf-02', name: 'Hostel Express Pharmacy Order & Rider Dispatch', webhookUrl: '/webhook/pharma-rider-dispatch', status: 'ACTIVE', totalTriggers: 512 },
     { id: 'wf-03', name: 'DPDP Act 2023 Statutory SLA Breach Countdown Warning', webhookUrl: '/webhook/dpdp-sla-warning', status: 'ACTIVE', totalTriggers: 28 },
-    { id: 'wf-04', name: 'ABDM Gateway Token Revocation Sync Engine', webhookUrl: '/webhook/abdm-token-sync', status: 'ACTIVE', totalTriggers: 89 },
   ]);
 
   const handleRunSwarmLoop = () => {
@@ -50,7 +49,7 @@ export const N8NWorkflowAutomationPanel: React.FC = () => {
       </View>
 
       <Text style={{ fontSize: 12, color: tokens.text2, marginBottom: 16 }}>
-        Distributed n8n webhook automation & multi-agent ReAct swarm orchestrator. Automates end-to-end campus emergency dispatches, pharmacy fulfillment, and ABDM gateway token reconciliation.
+        Distributed n8n webhook automation & multi-agent ReAct swarm orchestrator. Automates end-to-end campus emergency dispatches and pharmacy fulfillment.
       </Text>
 
       {/* Active Workflows Table */}
@@ -83,8 +82,8 @@ export const N8NWorkflowAutomationPanel: React.FC = () => {
             disabled={executing}
             style={{ backgroundColor: tokens.action, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 8, flexDirection: 'row', alignItems: 'center', gap: 6 }}
           >
-            {executing ? <RefreshCw size={14} color="#ffffff" /> : <Play size={14} color="#ffffff" />}
-            <Text style={{ fontSize: 12, fontWeight: '800', color: '#ffffff' }}>
+            {executing ? <RefreshCw size={14} color={tokens.onAction} /> : <Play size={14} color={tokens.onAction} />}
+            <Text style={{ fontSize: 12, fontWeight: '800', color: tokens.onAction }}>
               {executing ? 'Executing ReAct Loop...' : 'Trigger 5-Agent Swarm Loop'}
             </Text>
           </TouchableOpacity>

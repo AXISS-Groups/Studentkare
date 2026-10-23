@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
-import { displayDate } from '../../../data/workflowTypes';
+import { displayDate } from '../../../data/types/workflowTypes';
 
 // Behaviour of Super Admin → Organisations → Inquiries & contracts. Only the HTTP layer is
 // mocked, keyed by request path, so these tests hold for any implementation of the screen.
@@ -8,8 +8,8 @@ const apiAnswers: Record<string, (init?: RequestInit) => Promise<unknown>> = {};
 const apiRequest = vi.fn((path: string, init?: RequestInit) => apiAnswers[path]?.(init) ?? new Promise(() => undefined));
 const navigate = vi.fn();
 
-vi.mock('../../../data/http', async importOriginal => ({ ...(await importOriginal<typeof import('../../../data/http')>()), apiRequest: (path: string, init?: RequestInit) => apiRequest(path, init) }));
-vi.mock('../../../lib/workflowRouting', async importOriginal => ({ ...(await importOriginal<typeof import('../../../lib/workflowRouting')>()), navigate: (path: string) => navigate(path) }));
+vi.mock('../../../data/services/http', async importOriginal => ({ ...(await importOriginal<typeof import('../../../data/services/http')>()), apiRequest: (path: string, init?: RequestInit) => apiRequest(path, init) }));
+vi.mock('../../../lib/utils/workflowRouting', async importOriginal => ({ ...(await importOriginal<typeof import('../../../lib/utils/workflowRouting')>()), navigate: (path: string) => navigate(path) }));
 
 import { ContractsView as Subject } from '../../../features/admin/views/ContractsView';
 
@@ -33,26 +33,31 @@ describe('Inquiries & contracts', () => {
   it('loads inquiries and contracts together, then lists them', async () => {
     answerLists();
     render(<Subject />);
-    expect(screen.getByRole('status')).toHaveTextContent('Loading your information…');
+    expect(screen.getByRole('status')).toHaveTextContent('Loading inquiries and contracts…');
     expect(paths()).toEqual([INQUIRIES, CONTRACTS]);
-    const inquiries = await screen.findByRole('heading', { name: 'Institutional inquiries' });
-    const inquiryRow = within(inquiries.closest('.wf-card') as HTMLElement).getByText('IIT Example').closest('li') as HTMLElement;
-    expect(inquiryRow).toHaveTextContent(`Asha Rao · asha@iit.example · 1200 seats · CAMPUS · ${displayDate(1790000000)}`);
+    const inquiries = await screen.findByRole('table', { name: 'Institutional inquiries' });
+    const inquiryRow = within(inquiries).getByRole('rowheader', { name: /IIT Example/ }).closest('tr') as HTMLElement;
     expect(inquiryRow).toHaveTextContent('Two hostels first.');
+    expect(inquiryRow).toHaveTextContent('Asha Rao');
+    expect(inquiryRow).toHaveTextContent('asha@iit.example');
+    expect(inquiryRow).toHaveTextContent('1200 seats');
+    expect(inquiryRow).toHaveTextContent('CAMPUS');
+    expect(inquiryRow).toHaveTextContent(displayDate(1790000000));
     expect(within(inquiryRow).getByRole('combobox', { name: 'Inquiry status IIT Example' })).toHaveValue('NEW');
-    expect(within(inquiryRow).getAllByRole('option').map(option => option.textContent)).toEqual(['NEW', 'CONTACTED', 'QUALIFIED', 'CLOSED']);
-    const contractsCard = screen.getByRole('heading', { name: 'Active contracts' }).closest('.wf-card') as HTMLElement;
-    const contractRow = within(contractsCard).getByText('NIT Example').closest('li') as HTMLElement;
-    expect(contractRow).toHaveTextContent(`ENTERPRISE · 800 seats · 2 assigned · ${displayDate(1790000000)} → ${displayDate(1821536000)}`);
-    expect(within(contractRow).getByText('ACTIVE')).toHaveClass('wf-status', 'status-completed');
+    expect(within(inquiryRow).getAllByRole('option').map(option => [option.getAttribute('value'), option.textContent])).toEqual([['NEW', 'New'], ['CONTACTED', 'Contacted'], ['QUALIFIED', 'Qualified'], ['CLOSED', 'Closed']]);
+    const contractRow = within(screen.getByRole('table', { name: 'Active contracts' })).getByRole('rowheader', { name: /NIT Example/ }).closest('tr') as HTMLElement;
+    expect(contractRow).toHaveTextContent('ENTERPRISE');
+    expect(contractRow).toHaveTextContent('800 seats');
+    expect(contractRow).toHaveTextContent('2 assigned');
+    expect(contractRow).toHaveTextContent(`${displayDate(1790000000)} to ${displayDate(1821536000)}`);
+    expect(within(contractRow).getByText('ACTIVE').closest('.sk-pill')).toHaveClass('sk-pill--positive');
   });
 
-  it('shows no inquiries yet, and marks only an ACTIVE contract as complete', async () => {
+  it('shows no inquiries yet, and marks only an ACTIVE contract as positive', async () => {
     answerLists([], [{ ...contract, status: 'PENDING' }]);
     render(<Subject />);
     expect(await screen.findByText('No inquiries yet.')).toBeInTheDocument();
-    expect(screen.getByText('PENDING')).toHaveClass('wf-status');
-    expect(screen.getByText('PENDING')).not.toHaveClass('status-completed');
+    expect(screen.getByText('PENDING').closest('.sk-pill')).not.toHaveClass('sk-pill--positive');
   });
 
   it('shows no contracts yet', async () => {
@@ -66,7 +71,7 @@ describe('Inquiries & contracts', () => {
     apiAnswers[CONTRACTS] = () => Promise.resolve({ items: [] });
     render(<Subject />);
     const alert = await screen.findByRole('alert');
-    expect(alert).toHaveTextContent('We couldn’t load this yet.');
+    expect(alert).toHaveTextContent('Couldn’t load inquiries and contracts');
     expect(alert).toHaveTextContent('Billing is unavailable');
     answerLists();
     fireEvent.click(within(alert).getByRole('button', { name: /try again/i }));
@@ -101,7 +106,7 @@ describe('Inquiries & contracts', () => {
     apiAnswers['/billing/admin/contracts'] = () => Promise.resolve({});
     render(<Subject />);
     await screen.findByText('IIT Example');
-    expect(screen.queryByRole('heading', { name: 'Create a contract' })).toBeNull();
+    expect(screen.queryByRole('dialog', { name: 'Create a contract' })).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'New contract' }));
     expect(screen.getByLabelText('Plan')).toHaveValue('CAMPUS');
     expect(screen.getByLabelText('Seats')).toHaveValue(1000);
@@ -113,7 +118,7 @@ describe('Inquiries & contracts', () => {
     fireEvent.change(screen.getByLabelText('Annual amount (paise)'), { target: { value: '150000000' } });
     fireEvent.change(screen.getByLabelText('Signed reference'), { target: { value: 'MOU-2026-14' } });
     fireEvent.click(screen.getByRole('button', { name: 'Create contract' }));
-    await waitFor(() => expect(screen.queryByRole('heading', { name: 'Create a contract' })).toBeNull());
+    await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Create a contract' })).toBeNull());
     expect(apiRequest).toHaveBeenCalledWith('/billing/admin/contracts', { method: 'POST', body: JSON.stringify({ organization: 'VIT Example', planId: 'ENTERPRISE', managerEmail: 'ops@vit.example', seats: 2500, annualAmountPaise: 150000000, signedReference: 'MOU-2026-14' }) });
     await waitFor(() => expect(paths()).toEqual([INQUIRIES, CONTRACTS, '/billing/admin/contracts', INQUIRIES, CONTRACTS]));
     // The form is not reset: opening it again shows what was entered.
@@ -131,7 +136,7 @@ describe('Inquiries & contracts', () => {
     fireEvent.change(screen.getByLabelText('Manager email'), { target: { value: 'ops@vit.example' } });
     fireEvent.click(screen.getByRole('button', { name: 'Create contract' }));
     expect(await screen.findByRole('alert')).toHaveTextContent('Manager email is already a manager');
-    expect(screen.getByRole('heading', { name: 'Create a contract' })).toBeInTheDocument();
+    expect(screen.getByRole('dialog', { name: 'Create a contract' })).toBeInTheDocument();
     expect(paths()).toEqual([INQUIRIES, CONTRACTS, '/billing/admin/contracts']);
   });
 

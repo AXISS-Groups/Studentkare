@@ -146,3 +146,15 @@ def test_no_challenge_cookie_is_not_a_way_in(harness):
 
     assert refused.status_code == 401
     assert client.get("/api/auth/session").json()["user"] is None
+
+
+def test_auth_limits_are_unchanged_by_the_per_account_api_budget(harness):
+    # Founder decision 2026-10-22: the general API limit moved to a per-session
+    # budget with a high per-IP ceiling. The sign-in limits stay strict: three
+    # codes per identifier per five minutes, even for a request that carries a
+    # session cookie and has plenty of general budget left.
+    client, _, _ = harness
+    client.cookies.set("sacare_session", "someone-signed-in", path="/api")
+    body = {"identifier": "limits@example.test", "channel": "EMAIL", "intent": "SIGNUP"}
+    statuses = [client.post("/api/auth/otp/send", json=body).status_code for _ in range(4)]
+    assert statuses == [200, 200, 200, 429]

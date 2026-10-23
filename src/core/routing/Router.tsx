@@ -3,8 +3,11 @@ import { Navigate, Route, Routes, useLocation } from '@/core/navigation';
 import { getModules, resolveAccess, joinPath } from './registry';
 import type { FeatureRoute } from './registry';
 import { ScreenLoading } from '@/components/health/ScreenLoading';
-import { useAuth } from '@/data/AuthContext';
-import { homeForRole } from '@/lib/workflowRouting';
+import { useAuth } from '@/data/contexts/AuthContext';
+import { homeForRole } from '@/lib/utils/workflowRouting';
+import { useT } from '@/i18n';
+
+const HTTP_TOO_MANY_REQUESTS = 429;
 
 // Keep lazy identities and their resolved promises across shell/auth rerenders.
 const components = new WeakMap<FeatureRoute['load'], React.LazyExoticComponent<React.ComponentType>>();
@@ -51,24 +54,37 @@ export function RouteGuard({
   public: isPublic,
   children,
 }: {
-  access?: (role: import('@/data/workflowTypes').AccountRole | null) => boolean;
+  access?: (role: import('@/data/types/workflowTypes').AccountRole | null) => boolean;
   public?: boolean;
   children: React.ReactNode;
 }) {
   const location = useLocation();
   const auth = useAuth();
+  const t = useT();
   if (isPublic) return <>{children}</>;
   if (auth.status === 'loading') return <ScreenLoading />;
   if (auth.status === 'error') {
+    // A 429 is the server asking for a pause, not a broken session: say so.
+    if (auth.errorStatus === HTTP_TOO_MANY_REQUESTS) {
+      return <section className="wf-state" role="alert">
+        <h2>{t('ident.session.tooMany')}</h2>
+        <button className="health-button" onClick={auth.refresh}>{t('ident.session.retry')}</button>
+      </section>;
+    }
     return <section className="wf-state" role="alert">
-      <h2>Your session could not be checked.</h2>
+      <h2>{t('ident.session.checkFailed')}</h2>
       <p>{auth.error}</p>
-      <button className="health-button" onClick={auth.refresh}>Retry session check</button>
+      <button className="health-button" onClick={auth.refresh}>{t('ident.session.retry')}</button>
     </section>;
   }
   if (!auth.user) {
     const next = location.pathname.replace(/^\//, '');
     return <Navigate to={`/login?next=${encodeURIComponent(next)}`} replace />;
+  }
+  // The server holds this session to 2FA set-up; every other screen would only
+  // meet 403s, so send it to the one place it can act.
+  if (auth.user.twoFactorSetupRequired && location.pathname !== '/security') {
+    return <Navigate to="/security" replace />;
   }
   if (access && !access(auth.user.role)) {
     return <Navigate to={`/${homeForRole(auth.user.role)}`} replace />;

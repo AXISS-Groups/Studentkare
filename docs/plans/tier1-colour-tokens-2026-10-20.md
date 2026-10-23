@@ -1,0 +1,1002 @@
+# Tier 1 screens: hard-coded colours moved onto design tokens (rule 11)
+
+**Status:** approved. Branch `feat/hex-tier1` (PR #151).
+**Approved by (design):** Krishna Chintakayala, founder, 2026-10-20
+**Approved by (clinical):** Krishna Chintakayala, founder, 2026-10-20. Approved finishing every
+remaining Tier 1 colour swap with the defaults in the "Completed" sections below: status colours
+keep their role (red stays red), QR plates stay fixed light, colours only.
+**Note:** no clinician has reviewed this. The safety colours keep their meaning, but a clinical
+reviewer should still look at the "Completed" sections before launch.
+
+**Process note for the reviewer.** `CLAUDE.md` asks for a Tier 1 plan to be approved *before*
+code is written. This branch was opened by the integrator with the code already applied, on the
+understanding that nothing merges until both approvals above are filled in. Every swap is one
+line; any row below can be reverted on its own without touching the others.
+
+## What changed, and what did not
+
+- **Only the source of colours changed.** No layout, copy, spacing, behaviour, icon or logic
+  change. The only non-colour line added is `import { color } from '@/design-system/theme'` in
+  four native views that had no token import.
+- **Light theme (the default, `DEFAULT_THEME_PREFERENCE = 'light'`):** every safety-critical
+  swap renders the exact same colour as before. The swap script refused any safety row whose
+  token's current light value differs from the old hex.
+- **Dark theme (opt-in in Appearance):** before, these hard-coded colours stayed the same in dark;
+  after, a token follows the theme. 177 of 233 swaps render differently in dark, almost all of
+  them because a white card, field or text that ignored the theme now uses the dark palette. 12
+  of those are on safety-critical elements and are listed in **Decision 1** for you to approve or
+  reject one by one.
+- **Light-theme changes:** 68 swaps change the light colour slightly. **None of them is
+  safety-critical.** They are neutral text, surface, border and brand-indigo (slate `#0f172a` →
+  `text #131B2E`, indigo-600 `#4f46e5` → `action #3525CD`, etc.). They are listed in
+  **Decision 2**.
+
+### What counts as safety-critical here
+Crisis / SOS / danger / critical red (fills, text, borders), every emergency affordance (SOS,
+dispatch, cancel, call ICE, save emergency pass, unseal vault, remove emergency contact), the
+identity-mismatch and match-meter colours in scan-verify, and clinical-value colours. These rows
+are marked **⚠ safety** below.
+
+### Rules used
+1. **Swapped, identical in both themes:** the token's light *and* dark value equal the old hex
+   (e.g. white on a red SOS fill → `on-danger-fill`, `#FFFFFF` in both; `#10B981` →
+   `positive-fill`), an unreachable fallback is dropped (`var(--sk-color-text, #131B2E)` →
+   `var(--sk-color-text)`), or a legacy alias is replaced by the token it already resolved to
+   (`var(--emergency, #ef4444)`: `--emergency` is set by `ThemeProvider` to `danger`, so the
+   `#ef4444` fallback never rendered).
+2. **Swapped, identical in light, follows the theme in dark:** the token's light value equals the
+   old hex and its role matches. Done only where the colour and the background it sits on move
+   together (both tokens), so dark mode never puts a token colour on a hard-coded one.
+3. **Swapped, light changes slightly:** neutral or brand colours mapped by role. Never on a
+   safety-critical element.
+4. **Not swapped, kept as hex** (listed at the end with a proposed token):
+   - Tailwind status colours with no token of the same value (`#dc2626`, `#ef4444`, `#b91c1c`,
+     `#991b1b`, `#fee2e2`, `#16a34a`, `#15803d`, `#d97706`, `#0369a1` …). Mapping them to
+     `danger*` / `positive*` / `attention*` would change what the SOS, incident and blood-request
+     screens look like, which this ticket must not do.
+   - Neutrals that sit **directly on** such a kept status colour, or that host one directly
+     (e.g. the slate text inside the pink SOS countdown card, the white SOS card holding the red
+     SOS button). Tokenising those alone would put light dark-mode text on a light pink card.
+     For that reason the SOS, incident and LifeShare screens only received rule-1 swaps.
+   - QR codes and camera viewfinders: they must stay dark-on-light / dark in both themes.
+     `DigitalIdNativeView.tsx` already exempts its QR this way with an `eslint-disable` comment;
+     that file is unchanged.
+   - Translucent scrims, glows and shadows (`rgba(...)`): there is no scrim token, and the shadow
+     tokens carry their own offsets and blur, so using them would change geometry.
+
+## Depends on the parallel token-value change
+
+Another branch is changing token **values** to the founder's navy (#0C0494): nav, buttons,
+selected states, brand panels. After it merges, rows here that use `action`, `action-hover`,
+`focus`, `sidebar*`, `brand-navy`, `hero-*` and `on-hero*` will render in the new values. That
+is intended. Rows using `danger`, `danger-fill`, `danger-bg`, `danger-rule`, `on-danger-fill`,
+`positive`, `positive-fill`, `positive-bg`, `positive-rule` and `info` assume those status tokens
+keep their current values. **Please confirm the navy change does not touch them**, or re-check
+the ⚠ safety rows after it merges.
+
+## Decision 1: safety-critical rows that change in dark mode only (12)
+
+Light is identical for every one. In dark, each now follows its token, which is the
+design-system's dark pair for that role.
+
+| File | Line | Element | Old (both themes) | Token (dark) | Effect in dark |
+|---|---:|---|---|---|---|
+| `OfflineEmergencyPassLocker.tsx` | 78, 79 | Save-pass button icon and label on the `emergency` / `positive` fill | `#FFFFFF` | `on-action` `#131B2E` | Dark text on the pink `#FDA4AF` / green `#6EE7B7` fills that `emergency` / `positive` already switch to. Before, it was white on pink (about 1.9:1). |
+| `Flow06EmergencyScreen.tsx` | 76 | TRIGGER 1-TAP SOS button icon | `#FFFFFF` | `on-action` `#131B2E` | Matches the button's own label, which `Button` already draws in `on-action`. Before, the icon was white and the label was dark. |
+| `Flow06EmergencyScreen.tsx` | 189 | Call ICE button icon | `#FFFFFF` | `on-action` `#131B2E` | Same as above (primary button). |
+| `web-pass.css` | 228, 229 | Reported history item border and fill | `#FECDD3`, `#FFF1F2` | `danger-rule` `#5B2130`, `danger-bg` `#3A1420` | A dark rose card instead of a light pink card. Its text already used tokens and was light-on-light in dark before. |
+| `web-pass.css` | 280–282, 287 | 'Report misuse' button: border, fill, label, hover | `#FECDD3`, `#FFFFFF`, `#BE123C`, `#FFF1F2` | `danger-rule`, `surface`, `danger` `#FDA4AF`, `danger-bg` | The dark danger button pair. |
+| `webScanVerify.css` | 1059, 1060 | Scan log 'mismatch' chip fill and text | `#FFF1F2`, `#BE123C` | `danger-bg` `#3A1420`, `danger` `#FDA4AF` | The dark danger chip pair. |
+
+## Decision 2: rows whose light colour changes (68, none safety-critical)
+
+These are marked **CHANGES** in the *Light* column of the per-file tables. Summary:
+
+| Old (light) | Token (light) | Where |
+|---|---|---|
+| `#0f172a` slate text | `text` `#131B2E` | scanners (web + native) |
+| `#475569` | `text-2` `#464555` | scanners |
+| `#64748b` | `text-3` `#6B6980` | scanners (web + native), scanner search icon |
+| `#f8fafc`, `#f1f5f9`, `#F7F6FF` | `surface-2` `#F2F3FF` | scanners, VerifyGate 'what you need' box, VitalTrends sync strip, scan-verify visit card |
+| `#f8fafc` | `surface` `#FFFFFF` | scanner diagnostic card (white keeps the kept green finding ticks at ≥ 3:1) |
+| `#e2e8f0`, `#cbd5e1` card borders, `#C7D2FE` note border | `rule` `#DAE2FD` | scanners, scan-verify offline note |
+| `#cbd5e1`, `#C7C4D8` input / checkbox outlines | `rule-strong` `#918F9E` | scanner search, scan-verify inputs and checkbox. Darker; meets WCAG 1.4.11 (3:1 for a control boundary), which the old outline did not. |
+| `#F1F2FA` row divider | `rule-soft` `#EEF2FF` | scan-verify log |
+| `#4f46e5`, `#4F46E5`, `#2563eb` indigo / blue | `action` `#3525CD` | scanner eyebrow, tabs, buttons, icons, price; VerifyGate eyebrow; VitalTrends phone icon |
+| `#4338ca` | `info` `#312E81` | scanner 'Analysing' box text |
+| `#2A1EA8` | `action-hover` `#2A1DB0` | scan-verify primary hover |
+| `#3525CD` input focus border | `focus` `#4F46E5` | scan-verify inputs |
+| `#A9A5E0` header sub-line | `on-hero-label` `#A5B4FC` | scan-verify header |
+| `#131B2E` selected pill label | `on-hero-current` `#0C0494` | scan-verify context switch |
+
+## Per-file list of every swap
+
+*Light* / *Dark* say whether the rendered colour changed in that theme. "same" means identical.
+Line numbers are from the branch.
+
+### `src/components/CameraAcousticRespiratoryScanner.tsx`
+
+| Line | Element | Old | Token | Token now (light / dark) | Light | Dark |
+|---:|---|---|---|---|---|---|
+| 74 | Record/Analyze button icons (on action fill) (×2) | `#FFFFFF` | `on-action` | #FFFFFF / #131B2E | same | **CHANGES** #FFFFFF → #131B2E |
+| 75 | Record/Analyze button label (on action fill) | `#FFFFFF` | `on-action` | #FFFFFF / #131B2E | same | **CHANGES** #FFFFFF → #131B2E |
+
+### `src/components/ClinicalPrescriptionStudio.tsx`
+
+| Line | Element | Old | Token | Token now (light / dark) | Light | Dark |
+|---:|---|---|---|---|---|---|
+| 98 | Sign & Dispatch button icons (on action / positive fill) (×2) | `#FFFFFF` | `on-action` | #FFFFFF / #131B2E | same | **CHANGES** #FFFFFF → #131B2E |
+| 99 | Sign & Dispatch button label (on action / positive fill) | `#FFFFFF` | `on-action` | #FFFFFF / #131B2E | same | **CHANGES** #FFFFFF → #131B2E |
+
+### `src/components/DpdpConsentManagerSimulator.tsx`
+
+| Line | Element | Old | Token | Token now (light / dark) | Light | Dark |
+|---:|---|---|---|---|---|---|
+| 80 | Consent scope toggle thumb (same token as design-system SwitchRow thumb) | `#FFFFFF` | `surface` | #FFFFFF / #171F38 | same | **CHANGES** #FFFFFF → #171F38 |
+
+### `src/components/LiveWebcamDocScanner.tsx`
+
+| Line | Element | Old | Token | Token now (light / dark) | Light | Dark |
+|---:|---|---|---|---|---|---|
+| 100 | Capture button icon (on action fill) | `#FFFFFF` | `on-action` | #FFFFFF / #131B2E | same | **CHANGES** #FFFFFF → #131B2E |
+| 101 | Capture button label (on action fill) | `#FFFFFF` | `on-action` | #FFFFFF / #131B2E | same | **CHANGES** #FFFFFF → #131B2E |
+
+### `src/components/OfflineEmergencyHealthCard.tsx`
+
+| Line | Element | Old | Token | Token now (light / dark) | Light | Dark |
+|---:|---|---|---|---|---|---|
+| 108 | Re-Encrypt Offline button icon (on action fill) | `#FFFFFF` | `on-action` | #FFFFFF / #131B2E | same | **CHANGES** #FFFFFF → #131B2E |
+| 109 | Re-Encrypt Offline button label (on action fill) | `#FFFFFF` | `on-action` | #FFFFFF / #131B2E | same | **CHANGES** #FFFFFF → #131B2E |
+
+### `src/components/OfflineEmergencyPassLocker.tsx`
+
+| Line | Element | Old | Token | Token now (light / dark) | Light | Dark |
+|---:|---|---|---|---|---|---|
+| 78 | Save-pass button icons (on emergency / positive fill) (×2) ⚠ safety | `#FFFFFF` | `on-action` | #FFFFFF / #131B2E | same | **CHANGES** #FFFFFF → #131B2E |
+| 79 | Save-pass button label (on emergency / positive fill) ⚠ safety | `#FFFFFF` | `on-action` | #FFFFFF / #131B2E | same | **CHANGES** #FFFFFF → #131B2E |
+
+### `src/components/emergency/EmergencyCasualtyHandoverModal.tsx`
+
+| Line | Element | Old | Token | Token now (light / dark) | Light | Dark |
+|---:|---|---|---|---|---|---|
+| 37 | CASUALTY ER HANDOVER eyebrow. Was the legacy --emergency var (= danger, set by ThemeProvider); #ef4444 was only an unreachable fallback ⚠ safety | `legacy `--emergency` (= danger)` | `danger` | #BE123C / #FDA4AF | same | same |
+| 44 | Vault-unsealed success box border ⚠ safety | `#10B981` | `positive-fill` | #10B981 / #10B981 | same | same |
+| 45 | Vault-unsealed success tick icon ⚠ safety | `#10B981` | `positive-fill` | #10B981 / #10B981 | same | same |
+| 90 | Unseal Health Vault button label (on #ef4444 fill) ⚠ safety | `#FFFFFF` | `on-danger-fill` | #FFFFFF / #FFFFFF | same | same |
+
+### `src/components/emergency/EmergencySosBeaconWidget.tsx`
+
+| Line | Element | Old | Token | Token now (light / dark) | Light | Dark |
+|---:|---|---|---|---|---|---|
+| 53 | SOS beacon card text (on red gradient) ⚠ safety | `#FFFFFF` | `on-danger-fill` | #FFFFFF / #FFFFFF | same | same |
+| 62 | SOS beacon heading (on red gradient) ⚠ safety | `#FFFFFF` | `on-danger-fill` | #FFFFFF / #FFFFFF | same | same |
+| 75 | Broadcast countdown number (on red gradient) ⚠ safety | `#FFFFFF` | `on-danger-fill` | #FFFFFF / #FFFFFF | same | same |
+| 99 | Stand-down button label (on red gradient) ⚠ safety | `#FFFFFF` | `on-danger-fill` | #FFFFFF / #FFFFFF | same | same |
+
+### `src/components/health/PrescriptionRefillRequestModal.tsx`
+
+| Line | Element | Old | Token | Token now (light / dark) | Light | Dark |
+|---:|---|---|---|---|---|---|
+| 36 | Refill-requested success box border | `#10B981` | `positive-fill` | #10B981 / #10B981 | same | same |
+| 37 | Refill-requested success tick icon | `#10B981` | `positive-fill` | #10B981 / #10B981 | same | same |
+
+### `src/features/auth/views/VerifyGateView.tsx`
+
+| Line | Element | Old | Token | Token now (light / dark) | Light | Dark |
+|---:|---|---|---|---|---|---|
+| 16 | Gate dialog card | `#FFFFFF` | `surface` | #FFFFFF / #171F38 | same | **CHANGES** #FFFFFF → #171F38 |
+| 22 | Close (X) button | `#6B6980` | `text-3` | #6B6980 / #A5B1CE | same | **CHANGES** #6B6980 → #A5B1CE |
+| 28 | Icon tile | `#EEF2FF` | `surface-3` | #EEF2FF / #2E3862 | same | **CHANGES** #EEF2FF → #2E3862 |
+| 28 | Icon tile glyph | `#3525CD` | `action` | #3525CD / #A5B4FC | same | **CHANGES** #3525CD → #A5B4FC |
+| 33 | Eyebrow label | `#4F46E5` | `action` | #3525CD / #A5B4FC | **CHANGES** #4F46E5 → #3525CD | **CHANGES** #4F46E5 → #A5B4FC |
+| 34 | Title | `#131B2E` | `text` | #131B2E / #EEF2FF | same | **CHANGES** #131B2E → #EEF2FF |
+| 37 | Body | `#464555` | `text-2` | #464555 / #BCC7E2 | same | **CHANGES** #464555 → #BCC7E2 |
+| 42 | 'What you need' box | `#F8FAFC` | `surface-2` | #F2F3FF / #202A48 | **CHANGES** #F8FAFC → #F2F3FF | **CHANGES** #F8FAFC → #202A48 |
+| 42 | 'What you need' box border | `#EEF2FF` | `rule-soft` | #EEF2FF / #283350 | same | **CHANGES** #EEF2FF → #283350 |
+| 43 | 'What you need' heading | `#131B2E` | `text` | #131B2E / #EEF2FF | same | **CHANGES** #131B2E → #EEF2FF |
+| 44 | 'What you need' list | `#464555` | `text-2` | #464555 / #BCC7E2 | same | **CHANGES** #464555 → #BCC7E2 |
+| 54 | Secondary button border | `#DAE2FD` | `rule` | #DAE2FD / #354161 | same | **CHANGES** #DAE2FD → #354161 |
+| 54 | Secondary button fill | `#FFFFFF` | `surface` | #FFFFFF / #171F38 | same | **CHANGES** #FFFFFF → #171F38 |
+| 54 | Secondary button label | `#464555` | `text-2` | #464555 / #BCC7E2 | same | **CHANGES** #464555 → #BCC7E2 |
+| 65 | Primary (verify) button fill | `#3525CD` | `action` | #3525CD / #A5B4FC | same | **CHANGES** #3525CD → #A5B4FC |
+| 66 | Primary (verify) button label | `#FFFFFF` | `on-action` | #FFFFFF / #131B2E | same | **CHANGES** #FFFFFF → #131B2E |
+
+### `src/features/digital_id/views/web-pass.css`
+
+| Line | Element | Old | Token | Token now (light / dark) | Light | Dark |
+|---:|---|---|---|---|---|---|
+| 31 | Pass card gradient start | `#EEF2FF` | `surface-3` | #EEF2FF / #2E3862 | same | **CHANGES** #EEF2FF → #2E3862 |
+| 31 | Pass card gradient end | `#FFFFFF` | `surface` | #FFFFFF / #171F38 | same | **CHANGES** #FFFFFF → #171F38 |
+| 32 | Pass card border: unreachable fallback removed | `token already applied; fallback unreachable` | `rule` | #DAE2FD / #354161 | same | same |
+| 65 | Avatar inner ring (card-coloured gap) | `#FFFFFF` | `surface` | #FFFFFF / #171F38 | same | **CHANGES** #FFFFFF → #171F38 |
+| 65 | Avatar verified outer ring | `#6EE7B7` | `positive-rule` | #6EE7B7 / #2F6B57 | same | **CHANGES** #6EE7B7 → #2F6B57 |
+| 75 | Verified badge dot | `#10B981` | `positive-fill` | #10B981 / #10B981 | same | same |
+| 76 | Verified badge cut-out border | `#FFFFFF` | `surface` | #FFFFFF / #171F38 | same | **CHANGES** #FFFFFF → #171F38 |
+| 91 | User name: fallback removed | `token already applied; fallback unreachable` | `text` | #131B2E / #EEF2FF | same | same |
+| 97 | User sub-line: fallback removed | `token already applied; fallback unreachable` | `text-2` | #464555 / #BCC7E2 | same | same |
+| 103 | 'Verified' line: fallback removed | `token already applied; fallback unreachable` | `positive` | #047857 / #6EE7B7 | same | same |
+| 192 | Pass code value: fallback removed | `token already applied; fallback unreachable` | `text` | #131B2E / #EEF2FF | same | same |
+| 199 | Instructions: fallback removed | `token already applied; fallback unreachable` | `text-2` | #464555 / #BCC7E2 | same | same |
+| 222 | History item card | `#FFFFFF` | `surface` | #FFFFFF / #171F38 | same | **CHANGES** #FFFFFF → #171F38 |
+| 223 | History item border: fallback removed | `token already applied; fallback unreachable` | `rule-soft` | #EEF2FF / #283350 | same | same |
+| 228 | Reported history item border ⚠ safety | `#FECDD3` | `danger-rule` | #FECDD3 / #5B2130 | same | **CHANGES** #FECDD3 → #5B2130 |
+| 229 | Reported history item fill ⚠ safety | `#FFF1F2` | `danger-bg` | #FFF1F2 / #3A1420 | same | **CHANGES** #FFF1F2 → #3A1420 |
+| 237 | History icon tile | `#EEF2FF` | `surface-3` | #EEF2FF / #2E3862 | same | **CHANGES** #EEF2FF → #2E3862 |
+| 243 | History icon glyph | `#3525CD` | `action` | #3525CD / #A5B4FC | same | **CHANGES** #3525CD → #A5B4FC |
+| 257 | History provider: fallback removed | `token already applied; fallback unreachable` | `text` | #131B2E / #EEF2FF | same | same |
+| 263 | History meta: fallback removed | `token already applied; fallback unreachable` | `text-2` | #464555 / #BCC7E2 | same | same |
+| 280 | 'Report misuse' button border ⚠ safety | `#FECDD3` | `danger-rule` | #FECDD3 / #5B2130 | same | **CHANGES** #FECDD3 → #5B2130 |
+| 281 | 'Report misuse' button fill ⚠ safety | `#FFFFFF` | `surface` | #FFFFFF / #171F38 | same | **CHANGES** #FFFFFF → #171F38 |
+| 282 | 'Report misuse' button label ⚠ safety | `#BE123C` | `danger` | #BE123C / #FDA4AF | same | **CHANGES** #BE123C → #FDA4AF |
+| 287 | 'Report misuse' button hover ⚠ safety | `#FFF1F2` | `danger-bg` | #FFF1F2 / #3A1420 | same | **CHANGES** #FFF1F2 → #3A1420 |
+| 312 | Security tile | `#FFFFFF` | `surface` | #FFFFFF / #171F38 | same | **CHANGES** #FFFFFF → #171F38 |
+| 313 | Security tile border: fallback removed | `token already applied; fallback unreachable` | `rule-soft` | #EEF2FF / #283350 | same | same |
+| 317 | Security tile text: fallback removed | `token already applied; fallback unreachable` | `text` | #131B2E / #EEF2FF | same | same |
+| 346 | Dialog box | `#FFFFFF` | `surface` | #FFFFFF / #171F38 | same | **CHANGES** #FFFFFF → #171F38 |
+
+### `src/features/emergency/views/EmergencySosNativeView.tsx`
+
+| Line | Element | Old | Token | Token now (light / dark) | Light | Dark |
+|---:|---|---|---|---|---|---|
+| 123 | SOS button 'SOS' label (on #dc2626) ⚠ safety | `#FFFFFF` | `on-danger-fill` | #FFFFFF / #FFFFFF | same | same |
+| 128 | SOS button sub-label (on #dc2626) ⚠ safety | `#FFFFFF` | `on-danger-fill` | #FFFFFF / #FFFFFF | same | same |
+| 201 | DISPATCH NOW label (on #dc2626) ⚠ safety | `#FFFFFF` | `on-danger-fill` | #FFFFFF / #FFFFFF | same | same |
+
+### `src/features/emergency/views/emergency.css`
+
+| Line | Element | Old | Token | Token now (light / dark) | Light | Dark |
+|---:|---|---|---|---|---|---|
+| 55 | SOS trigger button label (on red gradient) ⚠ safety | `#FFFFFF` | `on-danger-fill` | #FFFFFF / #FFFFFF | same | same |
+| 172 | Dispatch-now button label (on #dc2626) ⚠ safety | `#FFFFFF` | `on-danger-fill` | #FFFFFF / #FFFFFF | same | same |
+
+### `src/features/incidents/views/IncidentTriageNativeView.tsx`
+
+| Line | Element | Old | Token | Token now (light / dark) | Light | Dark |
+|---:|---|---|---|---|---|---|
+| 190 | TRIGGER 112 SOS label (on #dc2626) ⚠ safety | `#FFFFFF` | `on-danger-fill` | #FFFFFF / #FFFFFF | same | same |
+
+### `src/features/incidents/views/incidents.css`
+
+| Line | Element | Old | Token | Token now (light / dark) | Light | Dark |
+|---:|---|---|---|---|---|---|
+| 44 | SOS trigger button label (on #dc2626) ⚠ safety | `#FFFFFF` | `on-danger-fill` | #FFFFFF / #FFFFFF | same | same |
+
+### `src/features/lifeshare/views/LifeShareNativeView.tsx`
+
+| Line | Element | Old | Token | Token now (light / dark) | Light | Dark |
+|---:|---|---|---|---|---|---|
+| 144 | Selected blood-group pill label (on #dc2626) ⚠ safety | `#FFFFFF` | `on-danger-fill` | #FFFFFF / #FFFFFF | same | same |
+| 152 | Request button label (on #dc2626; white on grey when disabled, unchanged) ⚠ safety | `#FFFFFF` | `on-danger-fill` | #FFFFFF / #FFFFFF | same | same |
+
+### `src/features/lifeshare/views/lifeshare.css`
+
+| Line | Element | Old | Token | Token now (light / dark) | Light | Dark |
+|---:|---|---|---|---|---|---|
+| 94 | Selected blood-group pill label (on #dc2626) ⚠ safety | `#FFFFFF` | `on-danger-fill` | #FFFFFF / #FFFFFF | same | same |
+| 148 | Submit request label (on #dc2626; white on grey when disabled, unchanged) ⚠ safety | `#FFFFFF` | `on-danger-fill` | #FFFFFF / #FFFFFF | same | same |
+| 156 | Primary button label (on #dc2626) ⚠ safety | `#FFFFFF` | `on-danger-fill` | #FFFFFF / #FFFFFF | same | same |
+
+### `src/features/scanners/views/MedicalScannerNativeView.tsx`
+
+| Line | Element | Old | Token | Token now (light / dark) | Light | Dark |
+|---:|---|---|---|---|---|---|
+| 114 | Screen background | `#F8FAFC` | `surface-2` | #F2F3FF / #202A48 | **CHANGES** #F8FAFC → #F2F3FF | **CHANGES** #F8FAFC → #202A48 |
+| 116 | Eyebrow | `#4F46E5` | `action` | #3525CD / #A5B4FC | **CHANGES** #4F46E5 → #3525CD | **CHANGES** #4F46E5 → #A5B4FC |
+| 117 | Title | `#0F172A` | `text` | #131B2E / #EEF2FF | **CHANGES** #0F172A → #131B2E | **CHANGES** #0F172A → #EEF2FF |
+| 120 | Tab row track | `#F1F5F9` | `surface-2` | #F2F3FF / #202A48 | **CHANGES** #F1F5F9 → #F2F3FF | **CHANGES** #F1F5F9 → #202A48 |
+| 122 | Active tab | `#FFFFFF` | `surface` | #FFFFFF / #171F38 | same | **CHANGES** #FFFFFF → #171F38 |
+| 123 | Tab label | `#64748B` | `text-3` | #6B6980 / #A5B1CE | **CHANGES** #64748B → #6B6980 | **CHANGES** #64748B → #A5B1CE |
+| 124 | Active tab label | `#4F46E5` | `action` | #3525CD / #A5B4FC | **CHANGES** #4F46E5 → #3525CD | **CHANGES** #4F46E5 → #A5B4FC |
+| 125 | Card | `#FFFFFF` | `surface` | #FFFFFF / #171F38 | same | **CHANGES** #FFFFFF → #171F38 |
+| 125 | Card border | `#E2E8F0` | `rule` | #DAE2FD / #354161 | **CHANGES** #E2E8F0 → #DAE2FD | **CHANGES** #E2E8F0 → #354161 |
+| 126 | Card title | `#0F172A` | `text` | #131B2E / #EEF2FF | **CHANGES** #0F172A → #131B2E | **CHANGES** #0F172A → #EEF2FF |
+| 128 | Search input outline (control boundary) | `#CBD5E1` | `rule-strong` | #918F9E / #56699D | **CHANGES** #CBD5E1 → #918F9E | **CHANGES** #CBD5E1 → #56699D |
+| 128 | Search input fill | `#FFFFFF` | `surface` | #FFFFFF / #171F38 | same | **CHANGES** #FFFFFF → #171F38 |
+| 129 | Search button | `#4F46E5` | `action` | #3525CD / #A5B4FC | **CHANGES** #4F46E5 → #3525CD | **CHANGES** #4F46E5 → #A5B4FC |
+| 130 | Search button label | `#FFFFFF` | `on-action` | #FFFFFF / #131B2E | same | **CHANGES** #FFFFFF → #131B2E |
+| 131 | Medicine result card | `#F8FAFC` | `surface-2` | #F2F3FF / #202A48 | **CHANGES** #F8FAFC → #F2F3FF | **CHANGES** #F8FAFC → #202A48 |
+| 131 | Medicine result card border | `#E2E8F0` | `rule` | #DAE2FD / #354161 | **CHANGES** #E2E8F0 → #DAE2FD | **CHANGES** #E2E8F0 → #354161 |
+| 133 | Medicine brand name | `#0F172A` | `text` | #131B2E / #EEF2FF | **CHANGES** #0F172A → #131B2E | **CHANGES** #0F172A → #EEF2FF |
+| 135 | Medicine description | `#475569` | `text-2` | #464555 / #BCC7E2 | **CHANGES** #475569 → #464555 | **CHANGES** #475569 → #BCC7E2 |
+| 136 | Upload area | `#F8FAFC` | `surface-2` | #F2F3FF / #202A48 | **CHANGES** #F8FAFC → #F2F3FF | **CHANGES** #F8FAFC → #202A48 |
+| 136 | Upload area dashed border | `#CBD5E1` | `rule` | #DAE2FD / #354161 | **CHANGES** #CBD5E1 → #DAE2FD | **CHANGES** #CBD5E1 → #354161 |
+| 137 | Upload title | `#4F46E5` | `action` | #3525CD / #A5B4FC | **CHANGES** #4F46E5 → #3525CD | **CHANGES** #4F46E5 → #A5B4FC |
+| 138 | Upload hint | `#64748B` | `text-3` | #6B6980 / #A5B1CE | **CHANGES** #64748B → #6B6980 | **CHANGES** #64748B → #A5B1CE |
+
+### `src/features/scanners/views/MedicalScannerWebView.tsx`
+
+| Line | Element | Old | Token | Token now (light / dark) | Light | Dark |
+|---:|---|---|---|---|---|---|
+| 66 | Search field icon | `#64748B` | `text-3` | #6B6980 / #A5B1CE | **CHANGES** #64748B → #6B6980 | **CHANGES** #64748B → #A5B1CE |
+| 85 | Upload icon | `#4F46E5` | `action` | #3525CD / #A5B4FC | **CHANGES** #4F46E5 → #3525CD | **CHANGES** #4F46E5 → #A5B4FC |
+| 116 | Report upload icon | `#4F46E5` | `action` | #3525CD / #A5B4FC | **CHANGES** #4F46E5 → #3525CD | **CHANGES** #4F46E5 → #A5B4FC |
+| 123 | Analysing spinner | `#4F46E5` | `action` | #3525CD / #A5B4FC | **CHANGES** #4F46E5 → #3525CD | **CHANGES** #4F46E5 → #A5B4FC |
+| 131 | AI sparkles icon | `#4F46E5` | `action` | #3525CD / #A5B4FC | **CHANGES** #4F46E5 → #3525CD | **CHANGES** #4F46E5 → #A5B4FC |
+
+### `src/features/scanners/views/scanners.css`
+
+| Line | Element | Old | Token | Token now (light / dark) | Light | Dark |
+|---:|---|---|---|---|---|---|
+| 5 | Scanner container | `#FFFFFF` | `surface` | #FFFFFF / #171F38 | same | **CHANGES** #FFFFFF → #171F38 |
+| 6 | Scanner container border | `#E2E8F0` | `rule` | #DAE2FD / #354161 | **CHANGES** #E2E8F0 → #DAE2FD | **CHANGES** #E2E8F0 → #354161 |
+| 19 | Eyebrow | `#4F46E5` | `action` | #3525CD / #A5B4FC | **CHANGES** #4F46E5 → #3525CD | **CHANGES** #4F46E5 → #A5B4FC |
+| 27 | Title | `#0F172A` | `text` | #131B2E / #EEF2FF | **CHANGES** #0F172A → #131B2E | **CHANGES** #0F172A → #EEF2FF |
+| 33 | Subtitle | `#64748B` | `text-3` | #6B6980 / #A5B1CE | **CHANGES** #64748B → #6B6980 | **CHANGES** #64748B → #A5B1CE |
+| 40 | Tab track | `#F1F5F9` | `surface-2` | #F2F3FF / #202A48 | **CHANGES** #F1F5F9 → #F2F3FF | **CHANGES** #F1F5F9 → #202A48 |
+| 57 | Tab label | `#64748B` | `text-3` | #6B6980 / #A5B1CE | **CHANGES** #64748B → #6B6980 | **CHANGES** #64748B → #A5B1CE |
+| 63 | Active tab | `#FFFFFF` | `surface` | #FFFFFF / #171F38 | same | **CHANGES** #FFFFFF → #171F38 |
+| 64 | Active tab label | `#4F46E5` | `action` | #3525CD / #A5B4FC | **CHANGES** #4F46E5 → #3525CD | **CHANGES** #4F46E5 → #A5B4FC |
+| 79 | Search bar | `#F8FAFC` | `surface-2` | #F2F3FF / #202A48 | **CHANGES** #F8FAFC → #F2F3FF | **CHANGES** #F8FAFC → #202A48 |
+| 80 | Search bar outline (control boundary) | `#CBD5E1` | `rule-strong` | #918F9E / #56699D | **CHANGES** #CBD5E1 → #918F9E | **CHANGES** #CBD5E1 → #56699D |
+| 90 | Search input text | `#0F172A` | `text` | #131B2E / #EEF2FF | **CHANGES** #0F172A → #131B2E | **CHANGES** #0F172A → #EEF2FF |
+| 97 | Search button | `#4F46E5` | `action` | #3525CD / #A5B4FC | **CHANGES** #4F46E5 → #3525CD | **CHANGES** #4F46E5 → #A5B4FC |
+| 98 | Search button label | `#FFFFFF` | `on-action` | #FFFFFF / #131B2E | same | **CHANGES** #FFFFFF → #131B2E |
+| 111 | Upload box | `#F8FAFC` | `surface-2` | #F2F3FF / #202A48 | **CHANGES** #F8FAFC → #F2F3FF | **CHANGES** #F8FAFC → #202A48 |
+| 112 | Upload box dashed border | `#CBD5E1` | `rule` | #DAE2FD / #354161 | **CHANGES** #CBD5E1 → #DAE2FD | **CHANGES** #CBD5E1 → #354161 |
+| 121 | Upload box hover border | `#4F46E5` | `action` | #3525CD / #A5B4FC | **CHANGES** #4F46E5 → #3525CD | **CHANGES** #4F46E5 → #A5B4FC |
+| 137 | Upload box hint | `#475569` | `text-2` | #464555 / #BCC7E2 | **CHANGES** #475569 → #464555 | **CHANGES** #475569 → #BCC7E2 |
+| 151 | Results heading | `#0F172A` | `text` | #131B2E / #EEF2FF | **CHANGES** #0F172A → #131B2E | **CHANGES** #0F172A → #EEF2FF |
+| 156 | Medicine card | `#F8FAFC` | `surface-2` | #F2F3FF / #202A48 | **CHANGES** #F8FAFC → #F2F3FF | **CHANGES** #F8FAFC → #202A48 |
+| 157 | Medicine card border | `#E2E8F0` | `rule` | #DAE2FD / #354161 | **CHANGES** #E2E8F0 → #DAE2FD | **CHANGES** #E2E8F0 → #354161 |
+| 172 | Medicine brand name | `#0F172A` | `text` | #131B2E / #EEF2FF | **CHANGES** #0F172A → #131B2E | **CHANGES** #0F172A → #EEF2FF |
+| 187 | Medicine description | `#475569` | `text-2` | #464555 / #BCC7E2 | **CHANGES** #475569 → #464555 | **CHANGES** #475569 → #BCC7E2 |
+| 193 | Price | `#4F46E5` | `action` | #3525CD / #A5B4FC | **CHANGES** #4F46E5 → #3525CD | **CHANGES** #4F46E5 → #A5B4FC |
+| 203 | 'Analysing' box | `#EEF2FF` | `surface-3` | #EEF2FF / #2E3862 | same | **CHANGES** #EEF2FF → #2E3862 |
+| 205 | 'Analysing' box text (info on surface-3) | `#4338CA` | `info` | #312E81 / #C7D2FE | **CHANGES** #4338CA → #312E81 | **CHANGES** #4338CA → #C7D2FE |
+| 212 | Diagnostic card (surface, not surface-2: keeps the kept #16a34a finding ticks at >= 3:1) | `#F8FAFC` | `surface` | #FFFFFF / #171F38 | **CHANGES** #F8FAFC → #FFFFFF | **CHANGES** #F8FAFC → #171F38 |
+| 213 | Diagnostic card border | `#E2E8F0` | `rule` | #DAE2FD / #354161 | **CHANGES** #E2E8F0 → #DAE2FD | **CHANGES** #E2E8F0 → #354161 |
+| 227 | Diagnostic heading | `#0F172A` | `text` | #131B2E / #EEF2FF | **CHANGES** #0F172A → #131B2E | **CHANGES** #0F172A → #EEF2FF |
+| 242 | Diagnostic section labels | `#64748B` | `text-3` | #6B6980 / #A5B1CE | **CHANGES** #64748B → #6B6980 | **CHANGES** #64748B → #A5B1CE |
+| 260 | Finding list items | `#0F172A` | `text` | #131B2E / #EEF2FF | **CHANGES** #0F172A → #131B2E | **CHANGES** #0F172A → #EEF2FF |
+| 265 | Impression box | `#FFFFFF` | `surface` | #FFFFFF / #171F38 | same | **CHANGES** #FFFFFF → #171F38 |
+| 266 | Impression box border | `#CBD5E1` | `rule` | #DAE2FD / #354161 | **CHANGES** #CBD5E1 → #DAE2FD | **CHANGES** #CBD5E1 → #354161 |
+| 274 | Impression text | `#0F172A` | `text` | #131B2E / #EEF2FF | **CHANGES** #0F172A → #131B2E | **CHANGES** #0F172A → #EEF2FF |
+| 279 | Reference note | `#64748B` | `text-3` | #6B6980 / #A5B1CE | **CHANGES** #64748B → #6B6980 | **CHANGES** #64748B → #A5B1CE |
+
+### `src/screens/emergency/EmergencyContactsSetupScreen.tsx`
+
+| Line | Element | Old | Token | Token now (light / dark) | Light | Dark |
+|---:|---|---|---|---|---|---|
+| 89 | Contact card. --surface-card is defined nowhere, so #fff was what rendered | `#FFFFFF` | `surface` | #FFFFFF / #171F38 | same | **CHANGES** #FFFFFF → #171F38 |
+| 99 | Remove-contact button. Was the legacy --emergency var (= danger); #ef4444 was an unreachable fallback ⚠ safety | `legacy `--emergency` (= danger)` | `danger` | #BE123C / #FDA4AF | same | same |
+
+### `src/screens/emergency/Flow06EmergencyScreen.tsx`
+
+| Line | Element | Old | Token | Token now (light / dark) | Light | Dark |
+|---:|---|---|---|---|---|---|
+| 76 | TRIGGER 1-TAP SOS button icon. Button variant=danger draws its label in on-action; icon now matches ⚠ safety | `#FFFFFF` | `on-action` | #FFFFFF / #131B2E | same | **CHANGES** #FFFFFF → #131B2E |
+| 101 | LifeShare card droplet icon ⚠ safety | `#E11D48` | `danger-fill` | #E11D48 / #E11D48 | same | same |
+| 189 | Call ICE button icon (primary button; label already on-action) ⚠ safety | `#FFFFFF` | `on-action` | #FFFFFF / #131B2E | same | **CHANGES** #FFFFFF → #131B2E |
+
+### `src/screens/health/VitalTrendsTelemetryScreen.tsx`
+
+| Line | Element | Old | Token | Token now (light / dark) | Light | Dark |
+|---:|---|---|---|---|---|---|
+| 45 | Device-sync strip. --surface-subtle is defined nowhere, so #f8fafc was what rendered | `#F8FAFC` | `surface-2` | #F2F3FF / #202A48 | **CHANGES** #F8FAFC → #F2F3FF | **CHANGES** #F8FAFC → #202A48 |
+| 47 | Phone (device) icon | `#2563EB` | `action` | #3525CD / #A5B4FC | **CHANGES** #2563EB → #3525CD | **CHANGES** #2563EB → #A5B4FC |
+| 78 | Telemetry log success tick | `#10B981` | `positive-fill` | #10B981 / #10B981 | same | same |
+
+### `src/theme/styles/webScanVerify.css`
+
+| Line | Element | Old | Token | Token now (light / dark) | Light | Dark |
+|---:|---|---|---|---|---|---|
+| 89 | Page background | `#FAF8FF` | `canvas` | #FAF8FF / #0E1428 | same | **CHANGES** #FAF8FF → #0E1428 |
+| 94 | Page text | `#131B2E` | `text` | #131B2E / #EEF2FF | same | **CHANGES** #131B2E → #EEF2FF |
+| 105 | Console sidebar | `#283044` | `sidebar` | #283044 / #1A2033 | same | **CHANGES** #283044 → #1A2033 |
+| 137 | Sidebar brand name | `#FFFFFF` | `sidebar-ink` | #FFFFFF / #EEF2FF | same | **CHANGES** #FFFFFF → #EEF2FF |
+| 150 | Sidebar partner line | `#C3C0FF` | `sidebar-ink-2` | #C3C0FF / #C3C0FF | same | same |
+| 165 | Sidebar section label | `#A9A5E0` | `sidebar-ink-3` | #A9A5E0 / #A9A5E0 | same | same |
+| 178 | Sidebar link | `#C3C0FF` | `sidebar-ink-2` | #C3C0FF / #C3C0FF | same | same |
+| 190 | Sidebar link text | `#C3C0FF` | `sidebar-ink-2` | #C3C0FF / #C3C0FF | same | same |
+| 194 | Sidebar link icon | `#C3C0FF` | `sidebar-ink-2` | #C3C0FF / #C3C0FF | same | same |
+| 195 | Sidebar link icon stroke | `#C3C0FF` | `sidebar-ink-2` | #C3C0FF / #C3C0FF | same | same |
+| 201 | Sidebar link hover | `#FFFFFF` | `sidebar-ink` | #FFFFFF / #EEF2FF | same | **CHANGES** #FFFFFF → #EEF2FF |
+| 205 | Sidebar link hover text | `#FFFFFF` | `sidebar-ink` | #FFFFFF / #EEF2FF | same | **CHANGES** #FFFFFF → #EEF2FF |
+| 209 | Sidebar link hover icon | `#FFFFFF` | `sidebar-ink` | #FFFFFF / #EEF2FF | same | **CHANGES** #FFFFFF → #EEF2FF |
+| 210 | Sidebar link hover icon stroke | `#FFFFFF` | `sidebar-ink` | #FFFFFF / #EEF2FF | same | **CHANGES** #FFFFFF → #EEF2FF |
+| 215 | Sidebar current page fill | `#4F46E5` | `sidebar-active` | #4F46E5 / #4F46E5 | same | same |
+| 216 | Sidebar current page | `#FFFFFF` | `sidebar-ink` | #FFFFFF / #EEF2FF | same | **CHANGES** #FFFFFF → #EEF2FF |
+| 222 | Sidebar current page text | `#FFFFFF` | `sidebar-ink` | #FFFFFF / #EEF2FF | same | **CHANGES** #FFFFFF → #EEF2FF |
+| 228 | Sidebar current page icon | `#FFFFFF` | `sidebar-ink` | #FFFFFF / #EEF2FF | same | **CHANGES** #FFFFFF → #EEF2FF |
+| 229 | Sidebar current page icon stroke | `#FFFFFF` | `sidebar-ink` | #FFFFFF / #EEF2FF | same | **CHANGES** #FFFFFF → #EEF2FF |
+| 239 | Sidebar count badge ⚠ safety | `#E11D48` | `danger-fill` | #E11D48 / #E11D48 | same | same |
+| 245 | Sidebar count badge number ⚠ safety | `#FFFFFF` | `on-danger-fill` | #FFFFFF / #FFFFFF | same | same |
+| 263 | Sidebar help link | `#C3C0FF` | `sidebar-ink-2` | #C3C0FF / #C3C0FF | same | same |
+| 272 | Sidebar help link hover | `#FFFFFF` | `sidebar-ink` | #FFFFFF / #EEF2FF | same | **CHANGES** #FFFFFF → #EEF2FF |
+| 287 | Header bar | `#1E1B4B` | `brand-navy` | #1E1B4B / #0B1020 | same | **CHANGES** #1E1B4B → #0B1020 |
+| 305 | Header title | `#FFFFFF` | `on-hero` | #FFFFFF / #FFFFFF | same | same |
+| 322 | Network pill text | `#FFFFFF` | `on-hero` | #FFFFFF / #FFFFFF | same | same |
+| 328 | Online pill border | `#10B981` | `positive-fill` | #10B981 / #10B981 | same | same |
+| 349 | Header sub-line | `#A9A5E0` | `on-hero-label` | #A5B4FC / #A5B4FC | **CHANGES** #A9A5E0 → #A5B4FC | **CHANGES** #A9A5E0 → #A5B4FC |
+| 369 | Context switch button label | `#C7D2FE` | `on-hero-2` | #C7D2FE / #C7D2FE | same | same |
+| 376 | Context switch button hover | `#FFFFFF` | `on-hero` | #FFFFFF / #FFFFFF | same | same |
+| 380 | Context switch selected pill | `#FFFFFF` | `hero-current` | #FFFFFF / #FFFFFF | same | same |
+| 381 | Context switch selected label | `#131B2E` | `on-hero-current` | #0C0494 / #0C0494 | **CHANGES** #131B2E → #0C0494 | **CHANGES** #131B2E → #0C0494 |
+| 492 | Primary button | `#3525CD` | `action` | #3525CD / #A5B4FC | same | **CHANGES** #3525CD → #A5B4FC |
+| 496 | Primary button label | `#FFFFFF` | `on-action` | #FFFFFF / #131B2E | same | **CHANGES** #FFFFFF → #131B2E |
+| 506 | Primary button hover | `#2A1EA8` | `action-hover` | #2A1DB0 / #C7D2FE | **CHANGES** #2A1EA8 → #2A1DB0 | **CHANGES** #2A1EA8 → #C7D2FE |
+| 510 | Primary button disabled fill | `#DAE2FD` | `action-soft` | #DAE2FD / #2E3862 | same | **CHANGES** #DAE2FD → #2E3862 |
+| 511 | Primary button disabled label | `#6B6980` | `text-3` | #6B6980 / #A5B1CE | same | **CHANGES** #6B6980 → #A5B1CE |
+| 528 | Pass-code input outline (control boundary) | `#C7C4D8` | `rule-strong` | #918F9E / #56699D | **CHANGES** #C7C4D8 → #918F9E | **CHANGES** #C7C4D8 → #56699D |
+| 533 | Pass-code input fill | `#FFFFFF` | `surface` | #FFFFFF / #171F38 | same | **CHANGES** #FFFFFF → #171F38 |
+| 534 | Pass-code input text | `#131B2E` | `text` | #131B2E / #EEF2FF | same | **CHANGES** #131B2E → #EEF2FF |
+| 539 | Pass-code input focus border | `#3525CD` | `focus` | #4F46E5 / #A5B4FC | **CHANGES** #3525CD → #4F46E5 | **CHANGES** #3525CD → #A5B4FC |
+| 552 | Code button (disabled) | `#DAE2FD` | `action-soft` | #DAE2FD / #2E3862 | same | **CHANGES** #DAE2FD → #2E3862 |
+| 553 | Code button label (disabled) | `#6B6980` | `text-3` | #6B6980 / #A5B1CE | same | **CHANGES** #6B6980 → #A5B1CE |
+| 558 | Code button (enabled) | `#3525CD` | `action` | #3525CD / #A5B4FC | same | **CHANGES** #3525CD → #A5B4FC |
+| 559 | Code button label (enabled) | `#FFFFFF` | `on-action` | #FFFFFF / #131B2E | same | **CHANGES** #FFFFFF → #131B2E |
+| 574 | Link button | `#3525CD` | `action` | #3525CD / #A5B4FC | same | **CHANGES** #3525CD → #A5B4FC |
+| 605 | Field label | `#464555` | `text-2` | #464555 / #BCC7E2 | same | **CHANGES** #464555 → #BCC7E2 |
+| 612 | Text input outline (control boundary) | `#C7C4D8` | `rule-strong` | #918F9E / #56699D | **CHANGES** #C7C4D8 → #918F9E | **CHANGES** #C7C4D8 → #56699D |
+| 617 | Text input fill | `#FFFFFF` | `surface` | #FFFFFF / #171F38 | same | **CHANGES** #FFFFFF → #171F38 |
+| 618 | Text input text | `#131B2E` | `text` | #131B2E / #EEF2FF | same | **CHANGES** #131B2E → #EEF2FF |
+| 622 | Text input focus border | `#3525CD` | `focus` | #4F46E5 / #A5B4FC | **CHANGES** #3525CD → #4F46E5 | **CHANGES** #3525CD → #A5B4FC |
+| 633 | Checkbox label | `#131B2E` | `text` | #131B2E / #EEF2FF | same | **CHANGES** #131B2E → #EEF2FF |
+| 646 | Checkbox box | `#FFFFFF` | `surface` | #FFFFFF / #171F38 | same | **CHANGES** #FFFFFF → #171F38 |
+| 647 | Checkbox outline (control boundary) | `#C7C4D8` | `rule-strong` | #918F9E / #56699D | **CHANGES** #C7C4D8 → #918F9E | **CHANGES** #C7C4D8 → #56699D |
+| 652 | Checkbox checked fill | `#047857` | `positive` | #047857 / #6EE7B7 | same | **CHANGES** #047857 → #6EE7B7 |
+| 653 | Checkbox checked border | `#047857` | `positive` | #047857 / #6EE7B7 | same | **CHANGES** #047857 → #6EE7B7 |
+| 685 | Student card | `#FFFFFF` | `surface` | #FFFFFF / #171F38 | same | **CHANGES** #FFFFFF → #171F38 |
+| 686 | Student card border | `#EEF2FF` | `rule-soft` | #EEF2FF / #283350 | same | **CHANGES** #EEF2FF → #283350 |
+| 716 | 'Verified' tag on student card | `#047857` | `positive` | #047857 / #6EE7B7 | same | **CHANGES** #047857 → #6EE7B7 |
+| 722 | Student name | `#131B2E` | `text` | #131B2E / #EEF2FF | same | **CHANGES** #131B2E → #EEF2FF |
+| 728 | Student roll number | `#464555` | `text-2` | #464555 / #BCC7E2 | same | **CHANGES** #464555 → #BCC7E2 |
+| 734 | Student date | `#464555` | `text-2` | #464555 / #BCC7E2 | same | **CHANGES** #464555 → #BCC7E2 |
+| 741 | Visit card | `#F7F6FF` | `surface-2` | #F2F3FF / #202A48 | **CHANGES** #F7F6FF → #F2F3FF | **CHANGES** #F7F6FF → #202A48 |
+| 750 | Visit title | `#131B2E` | `text` | #131B2E / #EEF2FF | same | **CHANGES** #131B2E → #EEF2FF |
+| 756 | Visit sub-line | `#464555` | `text-2` | #464555 / #BCC7E2 | same | **CHANGES** #464555 → #BCC7E2 |
+| 823 | Photo-compare label | `#464555` | `text-2` | #464555 / #BCC7E2 | same | **CHANGES** #464555 → #BCC7E2 |
+| 839 | Match meter heading | `#131B2E` | `text` | #131B2E / #EEF2FF | same | **CHANGES** #131B2E → #EEF2FF |
+| 853 | Match meter fill ⚠ safety | `#10B981` | `positive-fill` | #10B981 / #10B981 | same | same |
+| 905 | Success card | `#FFFFFF` | `surface` | #FFFFFF / #171F38 | same | **CHANGES** #FFFFFF → #171F38 |
+| 919 | Success badge ⚠ safety | `#10B981` | `positive-fill` | #10B981 / #10B981 | same | same |
+| 994 | Flag button label when active (on #DC2626) ⚠ safety | `#FFFFFF` | `on-danger-fill` | #FFFFFF / #FFFFFF | same | same |
+| 1007 | Scan log card | `#FFFFFF` | `surface` | #FFFFFF / #171F38 | same | **CHANGES** #FFFFFF → #171F38 |
+| 1008 | Scan log card border | `#EEF2FF` | `rule-soft` | #EEF2FF / #283350 | same | **CHANGES** #EEF2FF → #283350 |
+| 1015 | Scan log title | `#464555` | `text-2` | #464555 / #BCC7E2 | same | **CHANGES** #464555 → #BCC7E2 |
+| 1025 | Scan log row divider | `#F1F2FA` | `rule-soft` | #EEF2FF / #283350 | **CHANGES** #F1F2FA → #EEF2FF | **CHANGES** #F1F2FA → #283350 |
+| 1036 | Scan log name | `#131B2E` | `text` | #131B2E / #EEF2FF | same | **CHANGES** #131B2E → #EEF2FF |
+| 1042 | Scan log time | `#6B6980` | `text-3` | #6B6980 / #A5B1CE | same | **CHANGES** #6B6980 → #A5B1CE |
+| 1054 | Scan log 'ok' chip fill | `#ECFDF5` | `positive-bg` | #ECFDF5 / #0F2E26 | same | **CHANGES** #ECFDF5 → #0F2E26 |
+| 1055 | Scan log 'ok' chip text | `#047857` | `positive` | #047857 / #6EE7B7 | same | **CHANGES** #047857 → #6EE7B7 |
+| 1059 | Scan log 'mismatch' chip fill ⚠ safety | `#FFF1F2` | `danger-bg` | #FFF1F2 / #3A1420 | same | **CHANGES** #FFF1F2 → #3A1420 |
+| 1060 | Scan log 'mismatch' chip text ⚠ safety | `#BE123C` | `danger` | #BE123C / #FDA4AF | same | **CHANGES** #BE123C → #FDA4AF |
+| 1067 | Rules card | `#EEF2FF` | `surface-3` | #EEF2FF / #2E3862 | same | **CHANGES** #EEF2FF → #2E3862 |
+| 1074 | Rules card text | `#312E81` | `info` | #312E81 / #C7D2FE | same | **CHANGES** #312E81 → #C7D2FE |
+| 1111 | Offline note | `#EEF2FF` | `surface-3` | #EEF2FF / #2E3862 | same | **CHANGES** #EEF2FF → #2E3862 |
+| 1112 | Offline note border | `#C7D2FE` | `rule` | #DAE2FD / #354161 | **CHANGES** #C7D2FE → #DAE2FD | **CHANGES** #C7D2FE → #354161 |
+| 1116 | Offline note text | `#312E81` | `info` | #312E81 / #C7D2FE | same | **CHANGES** #312E81 → #C7D2FE |
+
+## Not swapped: kept as hex, with the token each would need
+
+Nothing in this section was changed. It is the work list for a later, reviewed ticket.
+
+### Needs a design decision (a token exists, but its value differs, so the screen would look different)
+
+| Old colours | Role | Proposed token (current light value) | Files |
+|---|---|---|---|
+| `#dc2626`, `#ef4444`, `#b91c1c`, `#991b1b`, `#7f1d1d` | SOS / crisis fills and text | `danger-fill` `#E11D48` (fills), `danger` `#BE123C` (text) | emergency.css, EmergencySosNativeView, EmergencySosWebView, EmergencySosBeaconWidget, incidents.css, IncidentTriageNativeView, IncidentTriageWebView, lifeshare.css, LifeShareNativeView, LifeShareWebView, EmergencyCasualtyHandoverModal (button fill), webScanVerify.css (reject / flag buttons) |
+| `#fee2e2`, `#fef2f2`, `#fff5f5`, `#ffe4e6` | crisis tints | `danger-bg` `#FFF1F2` | same files, plus scanners error banners |
+| `#fecaca`, `#fca5a5`, `#FDA4AF`, `#FB7185` | crisis borders | `danger-rule` `#FECDD3` | same files, Flow06 LifeShare card |
+| `#9F1239`, `#881337`, `#fca5a5` / `#fecaca` text on red | crisis text | `danger` `#BE123C`; `on-danger-fill` for text on a red fill | webScanVerify.css stop card, Flow06, EmergencySosBeaconWidget |
+| `#16a34a`, `#15803d`, `#166534`, `#14532d`, `#065f46`, `#34d399`, `#A7F3D0` | dispatched / sent / open / confidence | `positive` `#047857`, `positive-fill` `#10B981` | emergency views, incidents, lifeshare, scanners, VitalTrends, webScanVerify header pill |
+| `#bbf7d0`, `#f0fdf4`, `#dcfce7` | success tints | `positive-rule` `#6EE7B7`, `positive-bg` `#ECFDF5` | emergency views, scanners |
+| `#d97706`, `#ea580c`, `#F59E0B`, `#FBBF24`, `#FDE68A`, `#FCD34D`, `#92400E`, `#78350F`, `#FFFBEB` | medium / high severity, offline and warning callouts | `attention` `#B45309`, `attention-bg` `#FFFBEB` | incidents (severity pills), webScanVerify.css (warn callout, alert card, offline alert, offline pill) |
+| `#065F46` | accept-button hover | `positive` has no hover step; needs `positive-hover` | webScanVerify.css |
+| `#0369a1` / `#e0f2fe`, `#1e40af` / `#dbeafe` | category tags, "dispatched" tag, PRIMARY contact badge | `info` `#312E81` on `surface-3` `#EEF2FF` | scanners (web + native), incidents.css, EmergencyContactsSetupScreen |
+| Slate neutrals (`#0f172a`, `#334155`, `#475569`, `#64748b`, `#94a3b8`, `#cbd5e1`, `#e2e8f0`, `#f1f5f9`, `#f8fafc`, `#ffffff`) and indigo `#4f46e5` | text, surfaces, borders, buttons **on SOS / incident / LifeShare screens** | `text*`, `surface*`, `rule*`, `action` | emergency, incidents, lifeshare (web + native). Kept only because they host or sit on the kept crisis colours above; they should move in the same ticket as the crisis colours. Same for the scanner native diagnostic card (it holds the green confidence text). |
+| `#E5E7F2` | face-match meter track | `rule` `#DAE2FD` or `neutral-bg` `#F2F3F9` | webScanVerify.css |
+
+### Needs a new token (no token exists for the role)
+
+| Old colours | Role | Proposed new token | Files |
+|---|---|---|---|
+| `#FFFFFF` + `#131B2E` / `#000000` / `#111827` | QR code light and dark modules (must not invert in dark) | `qr-light`, `qr-dark` (fixed in both themes) | web-pass.css, OfflineEmergencyHealthCard.tsx; DigitalIdNativeView.tsx already exempts its QR with `eslint-disable` |
+| `#111827`, `#2A2F55` → `#0B1020`, `#818CF8`, `#A5B4FC`, `#C7D2FE`, `#F0F4FF`, `#4b5563`, `#9ca3af`, overlay `#ffffff` | camera viewfinder, reticle, laser line, shutter, hint text | `camera-bg`, `camera-accent`, `on-camera` | LiveWebcamDocScanner.tsx, webScanVerify.css |
+| `#818CF8` → `#3525CD`, `#6366F1` → `#312E81`, initials `#FFFFFF` | avatar / photo placeholder gradient | `avatar-from`, `avatar-to`, `on-avatar` | web-pass.css, webScanVerify.css |
+| `#131B2E` + `#FFFFFF` | toast (inverse surface) | `inverse-surface`, `on-inverse` | web-pass.css, webScanVerify.css |
+| `#ef4444`, `#3b82f6`, `#10b981`, `#8b5cf6`, `#f59e0b` | per-vital accent colour (heart rate, BP, SpO2, sleep, temperature) | categorical `chart-1` … `chart-5`. **Clinical review needed:** heart rate in red reads as a danger signal, and DESIGN.md says vitals are never red. | VitalTrendsTelemetryScreen.tsx |
+| `#FECDD3` fill + `#FFFFFF` label | disabled flag button | `danger-soft` / `on-danger-soft` | webScanVerify.css |
+| `#fff` fill with red label | white pill buttons on the red SOS card | `on-danger-fill` used as a fill, or a `danger-pill` token | EmergencySosBeaconWidget.tsx |
+| `rgba(...)` | scrims, glows, card shadows, translucent tints on red / navy | `scrim`; shadow tokens exist (`--sk-shadow-card/float/sheet`) but have their own offsets and blur | all files with `rgba` |
+
+## Legacy list
+
+`config/hex-colour-legacy.json`: **116 → 110**. Removed because no hex remains:
+`CameraAcousticRespiratoryScanner.tsx`, `ClinicalPrescriptionStudio.tsx`,
+`DpdpConsentManagerSimulator.tsx`, `OfflineEmergencyPassLocker.tsx`,
+`health/PrescriptionRefillRequestModal.tsx`, `auth/views/VerifyGateView.tsx`. Every other batch
+file stays on the list (or, for CSS, keeps hex) for the reasons above. Nothing was added.
+
+## Checks run on the branch
+
+`npx tsc --noEmit` and `-p config/tsconfig.native.json`: clean. ESLint on every changed TS/TSX
+file: clean. `npm run lint:ratchet`: passes (110). `npm run tokens:check`: up to date. Full
+`npx vitest run`: 244 files, 2761 tests passed. `var(--sk-color-…)` passed to a lucide icon's `color` prop
+renders in Chromium (checked headless; the repo already does this in
+`IntegratedTeleconsultSoapScribe.tsx`). `sk-tokens.css` is imported globally from `main.tsx`, so
+every `var(--sk-color-…)` used in these CSS files is defined.
+
+
+## Added 2026-10-20: three Tier 1 stylesheets moved here from `feat/hex-b1`
+
+`feat/hex-b1` (non-Tier 1 CSS batch) also swapped the colours in three stylesheets that style
+Tier 1 screens. The integration branch `feat/navy-app` restores them to `origin/main`
+("chore(colour): Tier 1 styles move to the reviewed Tier 1 branch"); their swap is applied here,
+unchanged from `feat/hex-b1` (commits `3853be9` and `cfa7251`), so it is reviewed with the
+rest of Tier 1.
+
+| File | Tier 1 screen | Swaps |
+|---|---|---:|
+| `src/screens/workspace/member-profile.css` | Member identity card (ID card, QR, emergency card) | 25 |
+| `src/features/vault/views/vault.css` | Vault (ABHA card, records list, status chips) | 41 |
+| `src/theme/styles/vendorRxReview.css` | Vendor prescription review (console shell, Rx list, decision bar) | 65 |
+
+Light / Dark values are the token values on this branch (`origin/main` tokens). *Visual change*
+says in which theme the rendered colour differs from the old hard-coded value; "mix/shadow"
+rows change opacity or shadow geometry, so they are approximate. CSS files are not on
+`config/hex-colour-legacy.json` (that list covers TS/TSX), so the list is unchanged by this
+commit.
+
+### Flags for the reviewers (please decide each before merge)
+
+1. **ID-card QR goes dark in dark mode.** `.member-id-qr` background `#fff` → `surface`
+   (dark `#171F38`). A QR image with a transparent background would lose its quiet zone and
+   could stop scanning. Proposed: keep the QR plate fixed white (the `qr-light` token proposed
+   above), not `surface`.
+2. **Emergency card icon changes red.** `.member-emergency-card > svg` `#be4562` → `danger`
+   (light `#BE123C`, dark `#FDA4AF`). Stronger red in light; this is a safety colour, so
+   clinical sign-off is needed.
+3. **ID card and ABHA card become flat navy.** The ID card gradient (`#272457` → `#393276` →
+   `#31576d`) and the ABHA card gradient (`#0284c7` → `#0369a1`, sky blue) both become
+   `hero-bg-top` → `hero-bg` (`#0C0494` in both themes). The sky-blue ABHA card and its
+   white pills with blue text become navy with `hero-current` / `on-hero-current` pills.
+4. **Sky-blue vault accents become the action colour** (`#0284c7` → `action`), and slate
+   neutrals move to the StudentKare neutrals (`text*`, `rule*`, `surface*`): small light-mode
+   shifts on every vault row.
+5. **Status chips on the vault** (`positive*`, `attention*`) keep their role; light values shift
+   slightly (`#166534` → `#047857`, `#bbf7d0` → `#6EE7B7` border, `#fef3c7` → `#FFFBEB`).
+6. **Prescription-review shell must follow the white-pill nav.** `.sk-rx-brand-title` and
+   `.sk-rx-nav-item:hover` draw `on-nav-current` on the navy sidebar. On `feat/navy-app`
+   `nav-current` becomes the white pill and `on-nav-current` becomes navy `#0C0494`, so these
+   two would turn navy-on-navy (invisible). Before this merges after `feat/navy-app`, switch
+   them to `sidebar-ink` (white on the navy); the active item (`nav-current` + `on-nav-current`)
+   is already correct for the white pill.
+7. **Prescription-review toast** `#131B2E` → `brand-navy` (light `#1E1B4B`, navy `#0C0494` after
+   `feat/navy-app`), white `on-hero` text: AA in both themes.
+8. **Disabled decision button** `#A5B4FC` → `action-soft` (`#DAE2FD` light): lighter disabled fill.
+
+### `src/screens/workspace/member-profile.css`
+
+| Selector | Old | Token | Light | Dark | Visual change |
+|---|---|---|---|---|---|
+| `.member-emergency-card > svg` | `#be4562` | `danger` | `#BE123C` | `#FDA4AF` | light, dark |
+| `.member-id-card` | `#a5b4fc66` | `on-hero-label` | `#A5B4FC` | `#A5B4FC` | light |
+| `.member-id-card` | `#272457` | `hero-bg-top` | `#0C0494` | `#0C0494` | light |
+| `.member-id-card` | `#393276` | `hero-bg` | `#0C0494` | `#0C0494` | light |
+| `.member-id-card` | `#31576d` | `hero-bg` | `#0C0494` | `#0C0494` | light |
+| `.member-id-card` | `#fff` | `on-hero` | `#FFFFFF` | `#FFFFFF` | none |
+| `.member-id-card` | `#28215324` | `shadow-float` | `#13192E26 0px 14px 30px` | `#13192E26 0px 14px 30px` | light |
+| `.member-id-card::before` | `#c4b5fd38` | `on-hero-label` | `#A5B4FC` | `#A5B4FC` | light |
+| `.member-id-card::before` | `#c4b5fd09` | `color-mix(in srgb, rule 4%, transparent)` | `#DAE2FD` | `#354161` | light (mix/shadow, approx.), dark |
+| `.member-id-card::before` | `#c4b5fd09` | `color-mix(in srgb, rule 4%, transparent)` | `#DAE2FD` | `#354161` | light (mix/shadow, approx.), dark |
+| `.member-id-card::before` | `#c4b5fd09` | `color-mix(in srgb, rule 4%, transparent)` | `#DAE2FD` | `#354161` | light (mix/shadow, approx.), dark |
+| `.member-id-top > span:last-child` | `#d3d8ff` | `on-hero-2` | `#C7D2FE` | `#C7D2FE` | light |
+| `.member-id-avatar` | `#e1d9ff` | `surface-3` | `#EEF2FF` | `#2E3862` | light, dark |
+| `.member-id-avatar` | `#abe1d5` | `positive-bg` | `#ECFDF5` | `#0F2E26` | light, dark |
+| `.member-id-avatar` | `#34315e` | `text` | `#131B2E` | `#EEF2FF` | light, dark |
+| `.member-id-person span` | `#d3d8ff` | `on-hero-2` | `#C7D2FE` | `#C7D2FE` | light |
+| `.wf-application .member-id-person h3` | `#fff` | `on-hero` | `#FFFFFF` | `#FFFFFF` | none |
+| `.wf-application .member-id-person p` | `#e0def9` | `on-hero-2` | `#C7D2FE` | `#C7D2FE` | light |
+| `.member-id-body dt` | `#d3d8ff` | `on-hero-2` | `#C7D2FE` | `#C7D2FE` | light |
+| `.member-id-qr` | `#fff` | `surface` | `#FFFFFF` | `#171F38` | dark |
+| `.member-id-qr-empty` | `#535279` | `text-2` | `#464555` | `#BCC7E2` | light, dark |
+| `.member-id-qr-empty` | `#b6b4cd` | `selected-rule` | `#818CF8` | `#818CF8` | light |
+| `.member-id-footer` | `#ffffff24` | `color-mix(in srgb, on-hero 15%, transparent)` | `#FFFFFF` | `#FFFFFF` | light (mix/shadow, approx.) |
+| `.member-id-footer` | `#dfdff8` | `on-hero-2` | `#C7D2FE` | `#C7D2FE` | light |
+| `.wf-application .member-id-disclaimer` | `#d3d8ff` | `on-hero-2` | `#C7D2FE` | `#C7D2FE` | light |
+
+### `src/features/vault/views/vault.css`
+
+| Selector | Old | Token | Light | Dark | Visual change |
+|---|---|---|---|---|---|
+| `.vault-container` | `#0f172a` | `text` | `#131B2E` | `#EEF2FF` | light, dark |
+| `.vault-eyebrow` | `#0284c7` | `action` | `#3525CD` | `#A5B4FC` | light, dark |
+| `.vault-eyebrow` | `#e0f2fe` | `surface-3` | `#EEF2FF` | `#2E3862` | light, dark |
+| `.vault-header h2` | `#0f172a` | `text` | `#131B2E` | `#EEF2FF` | light, dark |
+| `.vault-header p` | `#64748b` | `text-3` | `#6B6980` | `#A5B1CE` | light, dark |
+| `.abha-card` | `#0284c7` | `hero-bg-top` | `#0C0494` | `#0C0494` | light |
+| `.abha-card` | `#0369a1` | `hero-bg` | `#0C0494` | `#0C0494` | light |
+| `.abha-card` | `#ffffff` | `on-hero` | `#FFFFFF` | `#FFFFFF` | none |
+| `.abha-logo` | `#ffffff` | `hero-current` | `#FFFFFF` | `#FFFFFF` | none |
+| `.abha-logo` | `#0284c7` | `on-hero-current` | `#0C0494` | `#0C0494` | light |
+| `.abha-num` | `#e0f2fe` | `on-hero` | `#FFFFFF` | `#FFFFFF` | light |
+| `.btn-sync-abdm` | `#ffffff` | `hero-current` | `#FFFFFF` | `#FFFFFF` | none |
+| `.btn-sync-abdm` | `#0284c7` | `on-hero-current` | `#0C0494` | `#0C0494` | light |
+| `.sync-banner` | `#f0fdf4` | `positive-bg` | `#ECFDF5` | `#0F2E26` | light, dark |
+| `.sync-banner` | `#bbf7d0` | `positive-rule` | `#6EE7B7` | `#2F6B57` | light, dark |
+| `.sync-banner` | `#166534` | `positive` | `#047857` | `#6EE7B7` | light, dark |
+| `.vault-records-card, .vault-consent-card` | `#ffffff` | `surface` | `#FFFFFF` | `#171F38` | dark |
+| `.vault-records-card, .vault-consent-card` | `#e2e8f0` | `rule` | `#DAE2FD` | `#354161` | light, dark |
+| `.record-item` | `#f1f5f9` | `rule-soft` | `#EEF2FF` | `#283350` | light, dark |
+| `.record-item` | `#f8fafc` | `surface-2` | `#F2F3FF` | `#202A48` | light, dark |
+| `.category-pill` | `#0284c7` | `action` | `#3525CD` | `#A5B4FC` | light, dark |
+| `.category-pill` | `#e0f2fe` | `surface-3` | `#EEF2FF` | `#2E3862` | light, dark |
+| `.rec-date` | `#64748b` | `text-3` | `#6B6980` | `#A5B1CE` | light, dark |
+| `.facility` | `#64748b` | `text-3` | `#6B6980` | `#A5B1CE` | light, dark |
+| `.observations-box` | `#ffffff` | `surface` | `#FFFFFF` | `#171F38` | dark |
+| `.observations-box` | `#e2e8f0` | `rule` | `#DAE2FD` | `#354161` | light, dark |
+| `.consent-sub` | `#64748b` | `text-3` | `#6B6980` | `#A5B1CE` | light, dark |
+| `.consent-item` | `#e2e8f0` | `rule` | `#DAE2FD` | `#354161` | light, dark |
+| `.consent-item` | `#ffffff` | `surface` | `#FFFFFF` | `#171F38` | dark |
+| `.req-top strong` | `#0f172a` | `text` | `#131B2E` | `#EEF2FF` | light, dark |
+| `.status-tag.status-granted` | `#dcfce7` | `positive-bg` | `#ECFDF5` | `#0F2E26` | light, dark |
+| `.status-tag.status-granted` | `#15803d` | `positive` | `#047857` | `#6EE7B7` | light, dark |
+| `.status-tag.status-pending` | `#fef3c7` | `attention-bg` | `#FFFBEB` | `#33280F` | light, dark |
+| `.status-tag.status-pending` | `#b45309` | `attention` | `#B45309` | `#FCD34D` | dark |
+| `.purpose` | `#64748b` | `text-3` | `#6B6980` | `#A5B1CE` | light, dark |
+| `.btn-deny` | `#ffffff` | `surface` | `#FFFFFF` | `#171F38` | dark |
+| `.btn-deny` | `#cbd5e1` | `rule` | `#DAE2FD` | `#354161` | light, dark |
+| `.btn-deny` | `#64748b` | `text-3` | `#6B6980` | `#A5B1CE` | light, dark |
+| `.btn-grant` | `#0284c7` | `action` | `#3525CD` | `#A5B4FC` | light, dark |
+| `.btn-grant` | `#ffffff` | `on-action` | `#FFFFFF` | `#131B2E` | dark |
+| `.validity` | `#166534` | `positive` | `#047857` | `#6EE7B7` | light, dark |
+
+### `src/theme/styles/vendorRxReview.css`
+
+| Selector | Old | Token | Light | Dark | Visual change |
+|---|---|---|---|---|---|
+| `.sk-rx-layout` | `#FAF8FF` | `canvas` | `#FAF8FF` | `#0E1428` | dark |
+| `.sk-rx-sidebar` | `#283044` | `nav-bg` | `#283044` | `#0B1020` | dark |
+| `.sk-rx-brand-title` | `#FFFFFF` | `on-nav-current` | `#FFFFFF` | `#FFFFFF` | none |
+| `.sk-rx-brand-badge` | `#C3C0FF` | `nav-text` | `#C3C0FF` | `#C3C0FF` | none |
+| `.sk-rx-nav-group-title` | `#A9A5E0` | `nav-label` | `#A9A5E0` | `#A9A5E0` | none |
+| `.sk-rx-nav-item` | `#C3C0FF` | `nav-text` | `#C3C0FF` | `#C3C0FF` | none |
+| `.sk-rx-nav-item:hover` | `rgba(255, 255, 255, 0.08)` | `color-mix(in srgb, nav-text 8%, transparent)` | `#C3C0FF` | `#C3C0FF` | light (mix/shadow, approx.) |
+| `.sk-rx-nav-item:hover` | `#FFFFFF` | `on-nav-current` | `#FFFFFF` | `#FFFFFF` | none |
+| `.sk-rx-nav-item.is-active` | `#4F46E5` | `nav-current` | `#4F46E5` | `#4F46E5` | none |
+| `.sk-rx-nav-item.is-active` | `#FFFFFF` | `on-nav-current` | `#FFFFFF` | `#FFFFFF` | none |
+| `.sk-rx-nav-badge` | `#E11D48` | `danger-fill` | `#E11D48` | `#E11D48` | none |
+| `.sk-rx-nav-badge` | `#FFFFFF` | `on-danger-fill` | `#FFFFFF` | `#FFFFFF` | none |
+| `.sk-rx-nav-badge.is-white` | `#FFFFFF` | `surface` | `#FFFFFF` | `#171F38` | dark |
+| `.sk-rx-nav-badge.is-white` | `#3525CD` | `action` | `#3525CD` | `#A5B4FC` | dark |
+| `.sk-rx-top-bar` | `#FFFFFF` | `surface` | `#FFFFFF` | `#171F38` | dark |
+| `.sk-rx-top-bar` | `#EEF2FF` | `rule-soft` | `#EEF2FF` | `#283350` | dark |
+| `.sk-rx-search-label` | `#F2F3FF` | `surface-2` | `#F2F3FF` | `#202A48` | dark |
+| `.sk-rx-search-input` | `#131B2E` | `text` | `#131B2E` | `#EEF2FF` | dark |
+| `.sk-rx-2fa-pill` | `#ECFDF5` | `positive-bg` | `#ECFDF5` | `#0F2E26` | dark |
+| `.sk-rx-2fa-pill` | `#047857` | `positive` | `#047857` | `#6EE7B7` | dark |
+| `.sk-rx-notif-btn` | `#EEF2FF` | `rule-soft` | `#EEF2FF` | `#283350` | dark |
+| `.sk-rx-notif-btn` | `#FFFFFF` | `surface` | `#FFFFFF` | `#171F38` | dark |
+| `.sk-rx-notif-dot` | `#E11D48` | `danger-fill` | `#E11D48` | `#E11D48` | none |
+| `.sk-rx-notif-dot` | `#FFFFFF` | `surface` | `#FFFFFF` | `#171F38` | dark |
+| `.sk-rx-avatar-circle` | `#EEF2FF` | `surface-3` | `#EEF2FF` | `#2E3862` | dark |
+| `.sk-rx-avatar-circle` | `#3525CD` | `action` | `#3525CD` | `#A5B4FC` | dark |
+| `.sk-rx-title` | `#131B2E` | `text` | `#131B2E` | `#EEF2FF` | dark |
+| `.sk-rx-subtitle` | `#464555` | `text-2` | `#464555` | `#BCC7E2` | dark |
+| `.sk-rx-duty-pill` | `#EEF2FF` | `surface-3` | `#EEF2FF` | `#2E3862` | dark |
+| `.sk-rx-duty-pill` | `#3525CD` | `action` | `#3525CD` | `#A5B4FC` | dark |
+| `.sk-rx-col-queue` | `#FFFFFF` | `surface` | `#FFFFFF` | `#171F38` | dark |
+| `.sk-rx-col-queue` | `#EEF2FF` | `rule-soft` | `#EEF2FF` | `#283350` | dark |
+| `.sk-rx-queue-heading` | `#464555` | `text-2` | `#464555` | `#BCC7E2` | dark |
+| `.sk-rx-queue-item` | `#F3F4FE` | `rule-soft` | `#EEF2FF` | `#283350` | light, dark |
+| `.sk-rx-queue-item` | `#FFFFFF` | `surface` | `#FFFFFF` | `#171F38` | dark |
+| `.sk-rx-queue-item:hover` | `#F9FAFF` | `surface-2` | `#F2F3FF` | `#202A48` | light, dark |
+| `.sk-rx-queue-item.is-selected` | `#EEF2FF` | `surface-3` | `#EEF2FF` | `#2E3862` | dark |
+| `.sk-rx-queue-item.is-selected` | `#4F46E5` | `action` | `#3525CD` | `#A5B4FC` | light, dark |
+| `.sk-rx-col-document` | `#FFFFFF` | `surface` | `#FFFFFF` | `#171F38` | dark |
+| `.sk-rx-col-document` | `#EEF2FF` | `rule-soft` | `#EEF2FF` | `#283350` | dark |
+| `.sk-rx-col-checks` | `#FFFFFF` | `surface` | `#FFFFFF` | `#171F38` | dark |
+| `.sk-rx-col-checks` | `#EEF2FF` | `rule-soft` | `#EEF2FF` | `#283350` | dark |
+| `.sk-rx-check-btn` | `#FFFFFF` | `surface` | `#FFFFFF` | `#171F38` | dark |
+| `.sk-rx-check-btn` | `#EEF2FF` | `rule-soft` | `#EEF2FF` | `#283350` | dark |
+| `.sk-rx-check-btn.is-checked` | `#ECFDF5` | `positive-bg` | `#ECFDF5` | `#0F2E26` | dark |
+| `.sk-rx-check-btn.is-checked` | `#A7F3D0` | `positive-rule` | `#6EE7B7` | `#2F6B57` | light, dark |
+| `.sk-rx-check-box` | `#FFFFFF` | `surface` | `#FFFFFF` | `#171F38` | dark |
+| `.sk-rx-check-box` | `#C7C4D8` | `rule` | `#DAE2FD` | `#354161` | light, dark |
+| `.sk-rx-check-box.is-checked` | `#047857` | `positive` | `#047857` | `#6EE7B7` | dark |
+| `.sk-rx-check-box.is-checked` | `#047857` | `positive` | `#047857` | `#6EE7B7` | dark |
+| `.sk-rx-ocr-card` | `#EEF2FF` | `rule-soft` | `#EEF2FF` | `#283350` | dark |
+| `.sk-rx-ocr-card` | `#FFFFFF` | `surface` | `#FFFFFF` | `#171F38` | dark |
+| `.sk-rx-btn-approve` | `#FFFFFF` | `on-action` | `#FFFFFF` | `#131B2E` | dark |
+| `.sk-rx-btn-approve` | `#3525CD` | `action` | `#3525CD` | `#A5B4FC` | dark |
+| `.sk-rx-btn-approve:disabled` | `#A5B4FC` | `action-soft` | `#DAE2FD` | `#2E3862` | light, dark |
+| `.sk-rx-secondary-btn` | `#DAE2FD` | `rule` | `#DAE2FD` | `#354161` | dark |
+| `.sk-rx-secondary-btn` | `#FFFFFF` | `surface` | `#FFFFFF` | `#171F38` | dark |
+| `.sk-rx-secondary-btn` | `#3525CD` | `action` | `#3525CD` | `#A5B4FC` | dark |
+| `.sk-rx-secondary-btn:hover` | `#F8F9FE` | `surface-2` | `#F2F3FF` | `#202A48` | light, dark |
+| `.sk-rx-toast` | `#131B2E` | `brand-navy` | `#1E1B4B` | `#0B1020` | light, dark |
+| `.sk-rx-toast` | `rgba(19, 27, 46, 0.3)` | `shadow-float` | `#13192E26 0px 14px 30px` | `#13192E26 0px 14px 30px` | light |
+| `.sk-rx-toast` | `#FFFFFF` | `on-hero` | `#FFFFFF` | `#FFFFFF` | none |
+| `.sk-rx-skel` | `#ECEEF8` | `skeleton` | `#ECEEF8` | `#202A48` | dark |
+| `.sk-rx-skel` | `#F7F8FD` | `skeleton-shine` | `#F7F8FD` | `#2E3862` | dark |
+| `.sk-rx-skel` | `#ECEEF8` | `skeleton` | `#ECEEF8` | `#202A48` | dark |
+
+## Completed identity, scan and vault (approved by Krishna Chintakayala, 2026-10-20)
+
+Every remaining hard-coded colour in the ten files below is now a token; no colour is left in
+them. Removed from `config/css-colour-legacy.json` (9 → 3): `web-pass.css`, `scanners.css`,
+`vault.css`, `member-profile.css`, `vendorRxReview.css`, `webScanVerify.css`. Removed from
+`config/hex-colour-legacy.json` (26 → 22): `LiveWebcamDocScanner.tsx`,
+`OfflineEmergencyHealthCard.tsx`, `MedicalScannerNativeView.tsx`, `MedicalScannerWebView.tsx`.
+Neutral shadows (`rgba(19,27,46,a)`, `rgba(0,0,0,a)`) keep their geometry and alpha as
+`color-mix(in srgb, var(--sk-color-illustration-ink) a%, transparent)` (fixed dark ink, so a
+shadow never turns light in dark mode); they are not listed per row.
+
+**New tokens (default 4):** `camera-bg` `#0B1020`, `camera-accent` `#818CF8`, `on-camera`
+`#C7D2FE`, identical in both themes, with DESIGN.md row, contrast pairs (`on-camera` 12.7:1,
+`on-hero` 18.9:1 and `camera-accent` 6.3:1 on `camera-bg`) and a test that they never change
+with the theme and stay AA on the viewfinder's lit centre.
+
+**Plan flags applied:** flag 1 (`.member-id-qr` plate → `qr-background`, fixed white) and
+flag 6 (`.sk-rx-brand-title`, `.sk-rx-nav-item:hover` → `sidebar-ink`).
+
+### `src/features/digital_id/views/web-pass.css`
+| Element | Old | Token | Note |
+|---|---|---|---|
+| QR plate ⚠ | `#FFFFFF` | `qr-background` while it holds a QR (`:has(> img, > [role='img'])`), else `surface` | fixed white behind a QR; the empty / stale plate follows the theme (its `text-2` copy and button were 2:1 on white in dark) |
+| Pass code + timer on the QR plate | `text-2` | `qr-foreground` | readable on the fixed white plate in dark |
+| QR modules ⚠ | `#131B2E` | `qr-foreground` | now pure black (light changes slightly, contrast up) |
+| QR centre badge plate | `#FFFFFF` | `qr-background` | |
+| Avatar + QR centre mark | `#818CF8`→`#3525CD`, `#FFFFFF` | `hero-bg-top`→`hero-bg`, `on-hero` | light: indigo gradient becomes flat navy |
+| Dispute scrim | `rgba(8,10,24,.55)` | `scrim` | same in light, darker in dark |
+| Toast | `#131B2E` + `#FFFFFF` | `brand-navy` + `on-hero` | light: near-black → navy |
+
+### `src/features/scanners/views/scanners.css`, `MedicalScannerWebView.tsx`, `MedicalScannerNativeView.tsx`
+| Element | Old | Token | Note |
+|---|---|---|---|
+| Error banner ⚠ | `#fee2e2` / `#fca5a5` / `#b91c1c` | `danger-bg` / `danger-rule` / `danger` | stays red; lighter border |
+| Molecule tag | `#e0f2fe` + `#0369a1` | `surface-3` + `info` | light: sky blue → indigo |
+| Confidence badge / text | `#dcfce7` + `#15803d` | `positive-bg` + `positive` | |
+| Findings tick icon (web) | `#16a34a` | `positive` | |
+| Native diagnostic card | slate `#f8fafc` `#e2e8f0` `#0f172a` `#64748b` | `surface-2` `rule` `text` `text-3` | now follows dark mode (was a white card on dark) |
+
+### `src/features/vault/views/vault.css`
+| Element | Old | Token | Note |
+|---|---|---|---|
+| ABHA card glow | `rgba(2,132,199,.2)` | `hero-bg` 20% | matches the navy card (flag 3) |
+
+### `src/screens/workspace/member-profile.css`
+| Element | Old | Token | Note |
+|---|---|---|---|
+| ID-card QR plate ⚠ | `surface` | `qr-background` | **flag 1**: stays white in dark mode |
+| Print: card ink / paper | `#111` / `white` | `qr-foreground` / `qr-background` | print is black on white whatever the theme |
+
+### `src/theme/styles/vendorRxReview.css`
+| Element | Old | Token | Note |
+|---|---|---|---|
+| Sidebar brand, nav hover | `on-nav-current` | `sidebar-ink` | **flag 6**: white on navy (was navy on navy) |
+| Paper slip, rule, ink, meta | `#FFFDF7` `#F1E8D0` `#E2D9BF` `#1E3A5F` `#475569` | `paper` `paper-rule` `paper-ink` `paper-ink-2` | slip border slightly darker |
+
+### `src/theme/styles/webScanVerify.css`
+| Element | Old | Token | Note |
+|---|---|---|---|
+| Viewfinder + face frame ⚠ | `#2A2F55`→`#0B1020` | `camera-accent` 25% in `camera-bg` → `camera-bg` | dark in both themes |
+| Reticle, laser, hint text | `#818CF8` `#A5B4FC` `#C7D2FE` | `camera-accent`, accent/on-camera mix, `on-camera` | |
+| Shutter | `#C7D2FE` ring, `#FFFFFF`, hover `#F0F4FF` | `on-camera`, `on-hero`, mix | fixed |
+| Network pill online / offline | `#A7F3D0` `#34D399` / `#FDE68A` `#FBBF24` `#F59E0B` | `on-hero-positive` / `on-hero-attention` | on the navy header: 8.0:1 / 6.7:1 |
+| Warn callout, expired card, offline alert ⚠ | `#FFFBEB` `#FDE68A` `#FCD34D` `#F59E0B` `#92400E` `#D97706` | `attention-bg`, `attention` (borders as `attention` mixes) | amber stays amber; follows dark mode |
+| Offline alert bold | `#78350F` | `attention` 70% + `text` | 7.3:1 light, 10.7:1 dark |
+| Reject button ⚠ | `#DC2626` border/text on `#FFFFFF`, hover `#FFF1F2` | `danger` on `surface`, hover `danger-bg` | red stays red (rose `#BE123C`) |
+| Accept button | `#047857` + `#FFFFFF`, hover `#065F46` | `positive` + `on-action`, hover `positive` 80% + `text` | dark: mint fill with dark label (11.3:1) |
+| Success card border | `#A7F3D0` | `positive-rule` | |
+| Mismatch stop card ⚠ | `#FFFFFF`, `#FDA4AF`, title `#9F1239`, body `#464555` | `surface`, `danger-rule`, `danger`, `text-2` | border lighter in light |
+| Reason chips ⚠ | `#FECDD3` border; active `#FFE4E6` `#9F1239` `#FB7185` | `danger-rule`; active `danger-bg` `danger` `danger` | |
+| Flag button, no reason yet ⚠ | `#FECDD3` fill + `#FFFFFF` label (**1.4:1, failed AA**) | `danger-bg` + `danger` label + `danger-rule` inset ring | **looks different in light**: pale fill with a red label (5.7:1) instead of white-on-pink |
+| Flag button, active ⚠ | `#DC2626` | `danger-fill` (`#E11D48`) + `on-danger-fill` | |
+| Student photo placeholders | `#818CF8`→`#3525CD`, `#6366F1`→`#312E81` | `hero-bg-top`→`hero-bg`, `on-hero` | both compare photos navy; "just now" keeps its filter and label |
+| Meter track | `#E5E7F2` | `rule` | element no longer rendered by the screen |
+| Toast | `#131B2E` + `#FFFFFF` | `brand-navy` + `on-hero` | |
+
+### `src/components/LiveWebcamDocScanner.tsx`
+| Element | Old | Token | Note |
+|---|---|---|---|
+| Camera frame | `#111827` | `camera-bg` | |
+| Detection boxes | `action` border, `rgba(0,177,255,.15)` | `camera-accent`, `camera-accent` 15% | `action` was navy on a dark frame (1.2:1); now 6.3:1 |
+| Box label, empty hint, icon | `#ffffff`, `#9ca3af`, `#4b5563` | `on-hero`, `on-camera`, `on-camera` 55% in `camera-bg` | icon 4.5:1 (was 2.3:1) |
+
+### `src/components/OfflineEmergencyHealthCard.tsx`
+| Element | Old | Token | Note |
+|---|---|---|---|
+| Paramedic QR plate ⚠ | `#ffffff`, icon `#111827` | `qr-background`, `qr-foreground` | fixed |
+| Caption on the plate | `text-3` | `qr-foreground` | `text-3` on the white plate was 2.2:1 in dark mode |
+
+Not changed (outside colours-only scope): on `/pass` the pass code and timer overflow the 320 px QR plate (it lays out as a row); and the `⚠️` emoji in the allergy chip of
+`OfflineEmergencyHealthCard.tsx` should become an `<Icon>` in an icons ticket.
+
+## Completed crisis (approved by Krishna Chintakayala, 2026-10-20)
+
+Agent A, branch `feat/tier1-a`. SOS, incident triage and LifeShare: every hard-coded colour in the 13
+files below is now a token (approved defaults 1, 2 and 6). Colours only: no copy, layout, icon or
+logic change. Two native views gained a colour-only text style for states that already existed
+(critical / disabled), because dark `on-action` on `danger-fill` is 3.65:1. Red stays red
+everywhere; Tailwind reds move to the rose `danger*` family, which is a visible light-mode shift
+on every crisis element (e.g. `#dc2626` → `danger-fill #E11D48` / `danger #BE123C`).
+
+Shared mappings (all files): slate → `text` / `text-2` / `text-3`, `surface` / `surface-2` /
+`surface-3`, `rule`; indigo `#4f46e5` → `action` (navy); `#fef2f2 #fff5f5 #fee2e2` → `danger-bg`;
+`#fecaca #fca5a5 #fda4af` → `danger-rule`; greens → `positive*`; card shadows → `shadow-card`;
+red glows → `color-mix(danger-fill N%, transparent)` with the original alpha; red hover / deep red →
+`color-mix(danger-fill, illustration-ink)` (fixed in both themes). Control outlines (pills, inputs,
+Cancel) → `rule-strong` on a `surface` fill (3.17 / 3.03:1); before they were ~1.4:1.
+
+### `emergency.css`, `EmergencySosWebView.tsx`, `EmergencySosNativeView.tsx`
+
+| Element | Old | Token | Note |
+|---|---|---|---|
+| SOS trigger button fill ⚠ | radial `#ef4444` → `#dc2626` | `danger-fill` → mix 85% with `illustration-ink` | Light: rose instead of Tailwind red. White label 4.70:1 at the centre |
+| SOS sub-label ⚠ | white at `opacity: 0.9` | `on-danger-fill`, opacity removed | 0.9 opacity put it under 4.5:1 |
+| SOS button ring ⚠ | `#fee2e2` | `danger-rule` | |
+| Countdown card ⚠ | `#fff5f5`, border `#ef4444` | `danger-bg`, `danger-fill` | Dark: dark rose card (was light pink) |
+| Countdown number, heading, icon ⚠ | `#dc2626`, `#991b1b`, `#7f1d1d` | `danger` | Dark: `#FDA4AF` |
+| DISPATCH NOW ⚠ | `#dc2626`, hover `#b91c1c` | `danger-fill`, hover mix with `illustration-ink` | |
+| CANCEL ⚠ | `#fff`, `#cbd5e1` border | `surface`, `rule-strong` | Light: darker outline |
+| Dispatched card / ETA / SENT | `#bbf7d0`, `#f0fdf4`, `#14532d`…`#16a34a` | `positive-rule`, `positive-bg`, `positive` | Five greens collapse to one `positive` |
+| Location refresh | `#4f46e5` | `action` | Navy in light |
+
+### `EmergencySosBeaconWidget.tsx`
+
+| Element | Old | Token | Note |
+|---|---|---|---|
+| Card gradient (idle) ⚠ | `#ef4444` → `#dc2626` | `danger-fill` → mix 85% `illustration-ink` | Same in both themes |
+| Card gradient (active) ⚠ | `#991b1b` → `#7f1d1d` | mix 70% / 60% `danger-fill` + `illustration-ink` | Deep crimson; white 7.2–8.4:1 |
+| Pale pink text on red ⚠ | `#fca5a5`, `#fecaca` | `on-danger-fill` | **Looks different:** all text on the card is now white (pale pink was ~3:1) |
+| TAP FOR SOS / Cancel pills ⚠ | `#fff` + `#dc2626` text | `on-danger-fill` fill + `danger-fill` label | 4.70:1 both themes |
+| Countdown / active inner box ⚠ | `rgba(0,0,0,.3)` | `color-mix(scrim-strong 40%, transparent)` | |
+| "Active & Dispatched" ⚠ | `#34d399` | `on-hero-positive` | Light green on a fixed dark fill, 7.5:1 (flag: token named for the navy hero; same role) |
+| Stand-down button | white 15% / 30% | `color-mix(on-danger-fill …)` | |
+
+### `EmergencyCasualtyHandoverModal.tsx`, `Flow06EmergencyScreen.tsx`, `EmergencyContactsSetupScreen.tsx`
+
+| Element | Old | Token | Note |
+|---|---|---|---|
+| Unseal Health Vault button ⚠ | `#ef4444` | `danger-fill` | |
+| Vault-unsealed box fill | green 5% | `positive-bg` | |
+| Flow06 LifeShare card ⚠ | `#fda4af`, `#fff1f2`, `#881337`, `#9f1239` | `danger-rule`, `emergencyBg` (= `danger-bg`), `emergency` (= `danger`) | Dark: dark rose card |
+| PRIMARY contact badge | `#dbeafe` / `#1e40af` | `surface-3` / `info` | Light: indigo instead of blue |
+| Break-glass audit note | `#065f46` on green 10% | `positive` on `positive-bg` | |
+
+### `incidents.css`, `IncidentTriageWebView.tsx`, `IncidentTriageNativeView.tsx`
+
+| Element | Old | Token | Note |
+|---|---|---|---|
+| SOS strip ⚠ | `#fef2f2`/`#fff1f2`, `#fecaca`, `#991b1b`, `#b91c1c` | `danger-bg`, `danger-rule`, `danger` | |
+| TRIGGER 112 SOS ⚠ | `#dc2626`, hover `#b91c1c` | `danger-fill`, hover mix | |
+| Severity Low / Medium (selected) | `#16a34a`, `#d97706` + white | `positive`, `attention` + `on-action` | Light white 5.5 / 5.0:1 (was 3.3 / 3.2); dark: light fill, dark label |
+| Severity High (selected) | `#ea580c` | `color-mix(attention 50%, danger)` | No orange token; stays between amber and red in both themes |
+| Severity CRITICAL (selected) ⚠ | `#dc2626` + white | `danger-fill` + `on-danger-fill` | Native: new `pillTextCritical` style |
+| Submit, critical ⚠ | `#dc2626` + white | `danger-fill` + `on-danger-fill` | Native: new `btnCriticalText` style |
+| Submit, disabled | `#94a3b8` + white | `action-soft` + `text-2` | Lighter fill, readable label |
+| Error banner, SOS bar, SOS outcome card ⚠ | `#fee2e2`, `#fca5a5`, `#b91c1c`, `#991b1b`, `#fff5f5` | `danger-bg`, `danger-rule`, `danger` | |
+| Dispatched tag | `#e0f2fe` / `#0369a1` | `surface-3` / `info` | Light: indigo instead of sky |
+| Input focus | `#4f46e5` | `focus` | |
+
+### `lifeshare.css`, `LifeShareWebView.tsx`, `LifeShareNativeView.tsx`
+
+| Element | Old | Token | Note |
+|---|---|---|---|
+| Selected blood group, Broadcast / Create buttons ⚠ | `#dc2626` | `danger-fill` | |
+| Eyebrow, stepper −/+, blood group in summary, donor tag ⚠ | `#dc2626` (on `#fee2e2`) | `danger` (on `danger-bg`) | |
+| Broadcast, disabled | `#94a3b8` | `action-soft` + `text-2` | Native: new `btnDisabledText` style |
+| Inputs | `#fff`, `#cbd5e1`, no text colour | `surface`, `rule-strong`, `text` | Text colour added so dark inputs stay readable |
+| OPEN status, donor shield | `#16a34a` | `positive` | |
+
+Contrast: every pair introduced was computed from `sk-tokens.css` in both themes; text ≥ 4.70:1,
+control outlines ≥ 3.03:1. Found and fixed: dark `on-action` on `danger-fill` (3.65:1), `rule-strong`
+on `surface-2` (2.6–2.9:1, so those controls now sit on `surface`), SOS sub-label opacity, pale pink
+text on the beacon card. Screenshots (harness render; these views are not mounted on a live route):
+`/home/claude/navy-shots/tier1/crisis-{sos-countdown,sos-beacon-active,incident-critical,lifeshare-request}-{light,dark}.png`.
+
+Legacy lists: `hex-colour-legacy.json` 26 → 16, `css-colour-legacy.json` 9 → 6.
+
+## Completed clinical and medicines (approved by Krishna Chintakayala, 2026-10-20)
+
+Agent C, branch `feat/tier1-c`. Colours only: no copy, layout, icon, logic or threshold change.
+All 12 files are now free of hex / `rgb()` and are off `config/hex-colour-legacy.json`
+(**26 → 14**). Every new text pair is ≥ 4.5:1 and every icon/control border ≥ 3:1 in both
+themes (computed on `sk-tokens.css`; lowest: `on-danger-fill` on `danger-fill` 4.70,
+`attention` on `attention-bg` 4.84 light, `rule-strong` on `canvas` 3.01 light). Not colours and
+left as is: the `⚠️` emoji in the allergy flag (MedicationInfo), `var(--text-secondary)` (undefined
+legacy var, inherits text colour) in Vaccination / VitalTrends / CriticalValue timer.
+Screenshots: `/home/claude/navy-shots/tier1/clinical-*-{light,dark}.png`.
+
+### `src/components/CDSCORecallAlert.tsx`
+Was a hard-coded dark card in both themes; now a light danger card in light mode.
+
+| Element | Old | Token |
+|---|---|---|
+| ⚠ safety Recall card fill / border | `rgba(240,97,107,.13)` / `#5A1E2B` | `danger-bg` / `danger-rule` |
+| ⚠ safety Shield icon, eyebrow, "Batch … Recalled", batch code | `#F0616B` | `danger` |
+| ⚠ safety Contact Campus Clinic button | `#F0616B` + `#FFF` | `danger-fill` + `on-danger-fill` |
+| Body text; reason box | `#F4F4FA`; `#101019` / `#262638` / `#9095A8` | `text`; `surface` / `rule` / `text-2` |
+
+### `src/components/JanAushadhiComparison.tsx`
+Was dark in both themes; now light in light mode.
+
+| Element | Old | Token |
+|---|---|---|
+| Card, inner price box | `#101019` / `#1F1F30`, `#14141F` / `#262638` | `surface` / `rule`, `surface-2` / `rule` |
+| Icon tile, "Save %" pill | `rgba(52,211,153,.13/.15)` + `#17503E` | `positive-bg` + `positive-rule` |
+| Green label, price, savings, icons | `#34D399` | `positive` |
+| Generic name; heading; muted text | `#FFF`; `#F4F4FA`; `#9095A8`, `#7E7E92` | `text`; `text`; `text-2`, `text-3` |
+
+### `src/components/clinician/CriticalValueEscalationTimer.tsx`
+
+| Element | Old | Token |
+|---|---|---|
+| ⚠ safety Card border, eyebrow, critical value, countdown | `var(--emergency, #ef4444)` | `danger` (same value; `--emergency` was already `danger`) |
+| ⚠ safety Card tint | `rgba(239,68,68,.04)` | `color-mix(danger-fill 4%)` |
+| ⚠ safety Sign & Acknowledge button | `#ef4444` + `#fff` | `danger-fill` + `on-danger-fill` (light: `#ef4444` → `#E11D48`, white on it 3.8 → 4.7:1) |
+| ⚠ safety IVR auto-call chip | `#fee2e2` / `#991b1b` | `danger-bg` / `danger` |
+| Acknowledged border | `#10b981` (2.5:1) | `positive` (darker green in light, 5.5:1) |
+| Acknowledged eyebrow, chip, tint | `#065f46`, `rgba(16,185,129,.1/.04)` | `positive`, `positive-bg`, `color-mix(positive-fill 4%)` |
+
+The critical value itself stays red, as before (a panic value, not an out-of-range result);
+whether DESIGN.md's "lab values never `danger`" should apply here is a clinical call, unchanged.
+
+### `src/screens/vault/MedicationInfoScreen.tsx`
+Whole screen was hard-coded dark; now follows the theme (light page in light mode).
+
+| Element | Old | Token |
+|---|---|---|
+| ⚠ safety Crisis "Safety Priority Alert" banner | `rgba(240,97,107,.13)` / `#5A1E2B` / `#F0616B` | `danger-bg` / `danger-rule` / `danger` |
+| ⚠ safety Allergy conflict flag | `rgba(240,97,107,.14)` / `#5A1E2B` / `#F0616B` | `danger-bg` / `danger-rule` / `danger` |
+| ⚠ safety "Unlabelled Medication Detected — don't take it" | `rgba(245,158,11,.12)` / `#4A3410` / `#F59E0B` | `attention-bg` / `color-mix(attention 35%, attention-bg)` / `attention` (amber kept, now 4.8:1 in light) |
+| CDCI code (clinical ID, mono) | `#A78BFA` | `clinical-value` (purple → ink) |
+| Generic name · strength line (mono) | `#9095A8` | `text-2` |
+| Scan Printed Strip, selected language | `#7C5CFC` + `#FFF` | `action` + `on-action` |
+| Unselected language label | `#FFF` | `text` (was white on dark; now readable in light) |
+| Search field, Scan Loose Pill outline | `#262638`, `#1F1F30` | `rule-strong` (≥ 3:1 control boundary) |
+| Page, cards, inner boxes, muted text | `#08080F`, `#101019`, `#14141F`, `#9095A8`, `#7E7E92` | `canvas`, `surface`, `surface-2`, `text-2` / `text-3` |
+| Monograph heading; green ticks | `#A78BFA`; `#34D399` | `action`; `positive` |
+
+### `src/screens/health/VaccinationScheduleScreen.tsx`
+
+| Element | Old | Token |
+|---|---|---|
+| Immunisation status card | green gradient `#065f46 → #047857`, white text | `positive-bg` fill, `positive` eyebrow, `text` / `text-2` copy (light mode: pale green card, dark text) |
+| Completed chip + icon | `rgba(16,185,129,.1)` / `#065f46` / `#10b981` | `positive-bg` / `positive` / `positive` |
+| Due chip + icon | `rgba(245,158,11,.1)` / `#92400e` / `#f59e0b` | `attention-bg` / `attention` / `attention` |
+| Campus-mandatory tag | `#dbeafe` / `#1e40af` | `surface-3` / `info` |
+| Preventive / seasonal tag | `#f3e8ff` / `#6b21a8` (purple) | `neutral-bg` / `text-2` (grey; label text unchanged) |
+
+### `src/screens/health/VitalTrendsTelemetryScreen.tsx`
+
+| Element | Old | Token |
+|---|---|---|
+| Vital icons: heart rate, BP, SpO2, sleep, temp | `#ef4444`, `#3b82f6`, `#10b981`, `#8b5cf6`, `#f59e0b` | `chart-categorical-1…5` (heart rate is navy, no longer red) |
+| Status chip ("Normal") | `rgba(16,185,129,.1)` / `#065f46` | `positive-bg` / `positive` |
+| Telemetry log tick | `positive-fill` (2.5:1 in light) | `positive` |
+
+### Smaller files
+
+| File | Element | Old | Token |
+|---|---|---|---|
+| `institution/StudentHealthAccessRequestModal.tsx` | Consent-request-sent box | `var(--positive-fill)` (undefined → no fill) + `#064e3b` | `positive-bg` + `positive` (now shows its green tint) |
+| `vendor/CriticalResultEscalationScreen.tsx` | ⚠ safety "CRITICAL VALUE PROTOCOL" eyebrow | `var(--emergency, #ef4444)` | `danger` (same value) |
+| `workspace/MemberPanels.tsx` | Member metric trend line | `#927bae` | `chart-categorical-1` (muted purple → navy series 1) |
+| `MedicationSafetySimulator.tsx`, `vault/VaultTimelineScreen.tsx`, `vault/Flow02AddRecordScreen.tsx` | Text / icon on `action` fills | `#ffffff` | `tokens.onAction` (same light; dark text on the light dark-mode action) |
+| `vault/Flow02AddRecordScreen.tsx` | Preview header divider | `rgba(0,0,0,.06)` | `tokens.ruleSoft` |
+
+## SOS-only red (requested by Krishna Chintakayala, 2026-10-20)
+
+Krishna asked for "red as sos and rest on regular color" on the SOS / emergency screens, and confirmed
+that non-SOS alerts (critical lab values, medicine recalls, incident severity, LifeShare, rejected
+scans) keep their red. Colours only: copy, layout, behaviour and icons are unchanged. All new pairs
+were checked in light and dark (text ≥ 4.5:1, control borders ≥ 3:1).
+
+| File | Stays red | Moved to regular |
+|---|---|---|
+| `components/emergency/EmergencySosBeaconWidget.tsx` | "TAP FOR IMMEDIATE SOS" button (now `danger-fill` + `on-danger-fill`; it was white-on-red-card); countdown number (`danger`); card border turns `danger-fill` only while the countdown or beacon is live | Whole red gradient card → `surface` + `rule` border + `shadow-card`; eyebrow → `text-3`; heading → `text`, octagon icon → `text-2`; body, GPS and notified rows → `text-2`; inner countdown/active boxes → `surface-2`; "Cancel SOS (Accidental Tap)" and "I Am Safe / Stand Down SOS" → neutral outline (`surface`, `text`, `text-3` border: `rule-strong` on `surface-2` is only 2.9:1); "Active & Dispatched" line `on-hero-positive` → `positive` |
+| `features/emergency/views/emergency.css` + `EmergencySosWebView.tsx` | "PRESS FOR SOS" round trigger and its ring; "DISPATCH NOW IMMEDIATELY"; countdown number | Eyebrow pill `danger`/`danger-bg` → `text-2` on `surface-3`; SOS card gradient + `danger-rule` border → `surface` + `rule` + `shadow-card`; countdown card `danger-bg` + `danger-fill` border → `surface` + `rule-strong`; countdown heading → `text`; warning triangle → `text-2`. Dispatched card was already `positive` |
+| `features/emergency/views/EmergencySosNativeView.tsx` | SOS button, "DISPATCH NOW", countdown number | Eyebrow → `text3`; SOS card border `dangerRule` → `rule`; countdown card `dangerBg` + `dangerFill` border → `surface` + `ruleStrong`; countdown title → `text`, subline → `text2` |
+| `screens/emergency/Flow06EmergencyScreen.tsx` | "TRIGGER 1-TAP SOS RESCUE" (`danger` button); "108 EMERGENCY SOS ACTIVE" title + shield and the header box border while SOS is active; "Ambulance En Route · ETA" status line + its icon; allergy lines (clinical alert); LifeShare shortcut card (LifeShare keeps red) | Header box `emergencyBg` + red border → `surface` + `rule` when idle; idle title → `text`, shield → `text2`; telemetry card `alert` → `surface`; GPS pin → `text3`; "OFFLINE EMERGENCY MEDICAL ID" badge `emergency` → `primary`; blood-group pill → `surface2` / `rule` / `text`, heart → `text2`. "Call ICE" was already navy |
+| `components/emergency/EmergencyCasualtyHandoverModal.tsx` | — | Eyebrow `danger` → default `care-eyebrow`; "Unseal Health Vault & Notify Guardian" `danger-fill` → `action` / `on-action` (⚠ break-glass action is now navy; reviewer may want it back to red) |
+| `screens/emergency/EmergencyContactsSetupScreen.tsx` | Remove-contact (trash) button `danger` (destructive) | Nothing else was red |
+| `features/emergency/views/WebEmergencyCard.tsx` | Save-error `Note tone="danger"` (error state, not decoration) | Nothing else was red |
+| `components/Header.tsx` | Header "108 SOS" button already red: not touched | — |
+
+Not changed (outside this list): `OfflineEmergencyHealthCard` at the top of Flow06 still has its red
+left rule and red blood group.
+
+**Follow-up, same request.** `OfflineEmergencyHealthCard.tsx`: the side stripe and the offline icon are now `action`, and the blood group is `text`. The allergy chips stay red because they are a clinical warning. In `EmergencyCasualtyHandoverModal.tsx`, "Unseal Health Vault & Notify Guardian" stays navy (`action`). It is a break-glass action, not the SOS.

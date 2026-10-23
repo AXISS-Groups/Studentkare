@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { AlertTriangle, FlaskConical, Package, Pill, ShieldCheck } from 'lucide-react';
-import { useApiResource } from '../../hooks/useApiResource';
-import { apiRequest } from '../../data/http';
-import { displayDate } from '../../data/workflowTypes';
+import { useApiResource } from '../../hooks/api/useApiResource';
+import { apiRequest } from '../../data/services/http';
+import { displayDate } from '../../data/types/workflowTypes';
 import { DataState, EmptyState, Field, FormError, useMutation } from '../../components/interface/WorkflowUI';
 import { ShopDialog } from '../../components/marketplace/ShopDialog';
+import { useT } from '../../i18n';
+import type { MessageKey } from '../../i18n';
 import '../../theme/workflows.css';
 
 interface PrescriptionItem {
@@ -23,22 +25,23 @@ interface LabOrder {
 }
 
 /** A transition that needs more than a button: the field the API will demand. */
-const DISPENSE_PROMPT: Record<string, { label: string; field: 'pharmacistName' | 'note'; hint: string }> = {
-  RX_VERIFIED: { label: 'Verifying pharmacist', field: 'pharmacistName', hint: 'A dispense cannot be verified anonymously.' },
-  REJECTED: { label: 'Reason for the patient', field: 'note', hint: 'The student is told exactly this.' },
+const DISPENSE_PROMPT: Record<string, { label: MessageKey; field: 'pharmacistName' | 'note'; hint: MessageKey }> = {
+  RX_VERIFIED: { label: 'admin.fulfil.rxVerifiedLabel', field: 'pharmacistName', hint: 'admin.fulfil.rxVerifiedHint' },
+  REJECTED: { label: 'admin.fulfil.rejectedLabel', field: 'note', hint: 'admin.fulfil.rejectedHint' },
 };
-const LAB_PROMPT: Record<string, { label: string; field: 'collectorName' | 'sampleId' | 'reportDocumentId' | 'rejectionReason'; hint: string }> = {
-  ASSIGNED: { label: 'Assigned collector', field: 'collectorName', hint: 'The student is told who is coming.' },
-  SAMPLE_COLLECTED: { label: 'Sample identifier', field: 'sampleId', hint: 'Starts the chain of custody.' },
-  REPORT_READY: { label: 'Report document id', field: 'reportDocumentId', hint: 'Must be a document in this student’s own vault.' },
-  SAMPLE_REJECTED: { label: 'Why the sample failed', field: 'rejectionReason', hint: 'The student is being asked for another sample.' },
+const LAB_PROMPT: Record<string, { label: MessageKey; field: 'collectorName' | 'sampleId' | 'rejectionReason'; hint: MessageKey }> = {
+  ASSIGNED: { label: 'admin.fulfil.assignedLabel', field: 'collectorName', hint: 'admin.fulfil.assignedHint' },
+  SAMPLE_COLLECTED: { label: 'admin.fulfil.collectedLabel', field: 'sampleId', hint: 'admin.fulfil.collectedHint' },
+  SAMPLE_REJECTED: { label: 'admin.fulfil.sampleRejectedLabel', field: 'rejectionReason', hint: 'admin.fulfil.sampleRejectedHint' },
 };
 
+/** A server status code in readable form. The codes themselves are not translated. */
 function label(status: string): string {
   return status.replace(/_/g, ' ').toLowerCase().replace(/^./, character => character.toUpperCase());
 }
 
 export function PharmacyQueuePanel() {
+  const t = useT();
   const [status, setStatus] = useState('');
   const queue = useApiResource<{ items: Dispense[]; total: number }>(
     `/work/dispenses?limit=50${status ? `&status=${status}` : ''}`);
@@ -58,13 +61,13 @@ export function PharmacyQueuePanel() {
 
   return <>
     <div className="wf-panel-heading"><div>
-      <span className="care-eyebrow">PRESCRIPTIONS SENT TO YOU</span>
-      <h2>Dispensing queue.</h2>
-      <p>Every prescription here was issued by a registered clinician. Verify it before anything else — a dispense cannot move past verification without a named pharmacist.</p>
+      <span className="care-eyebrow">{t('admin.fulfil.rxEyebrow')}</span>
+      <h2>{t('admin.fulfil.rxTitle')}</h2>
+      <p>{t('admin.fulfil.rxIntro')}</p>
     </div>
-      <Field label="Status">
+      <Field label={t('admin.accountsList.colStatus')}>
         <select value={status} onChange={event => setStatus(event.target.value)}>
-          <option value="">All</option>
+          <option value="">{t('admin.ledger.filterAll')}</option>
           {['RX_ISSUED', 'RX_VERIFIED', 'SUBSTITUTION_PROPOSED', 'ACCEPTED', 'PARTIALLY_ACCEPTED',
             'PACKED', 'OUT_FOR_DELIVERY', 'DELIVERED', 'REJECTED'].map(value => (
               <option key={value} value={value}>{label(value)}</option>
@@ -80,13 +83,13 @@ export function PharmacyQueuePanel() {
         {queue.data.items.map(dispense => <article className="wf-card" key={dispense.id}>
           <div className="wf-panel-heading">
             <div>
-              <span className="care-eyebrow">DISPENSE {dispense.id.slice(0, 8).toUpperCase()}</span>
+              <span className="care-eyebrow">{t('admin.fulfil.dispenseRef', { id: dispense.id.slice(0, 8).toUpperCase() })}</span>
               <h3 style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <Pill size={18} aria-hidden="true" />
-                {dispense.prescription?.items.length ?? 0} item(s)
+                {(dispense.prescription?.items.length ?? 0) === 1 ? t('admin.fulfil.itemsOne') : t('admin.fulfil.itemsOther', { count: dispense.prescription?.items.length ?? 0 })}
               </h3>
-              <p>Received {displayDate(new Date(dispense.createdAt * 1000).toISOString())}
-                {dispense.prescription?.prescriberRegNo ? ` · prescriber ${dispense.prescription.prescriberRegNo}` : ''}</p>
+              <p>{t('admin.fulfil.received', { date: displayDate(new Date(dispense.createdAt * 1000).toISOString()) })}
+                {dispense.prescription?.prescriberRegNo ? ` · ${t('admin.fulfil.prescriber', { reg: dispense.prescription.prescriberRegNo })}` : ''}</p>
             </div>
             <span className={`wf-status status-${dispense.status === 'REJECTED' ? 'declined' : 'accepted'}`}>
               {label(dispense.status)}
@@ -95,38 +98,38 @@ export function PharmacyQueuePanel() {
 
           {dispense.prescription?.items.length ? <div className="wf-table-scroll">
             <table>
-              <thead><tr><th>Medicine</th><th>Dose</th><th>Qty</th><th>Schedule</th><th>Substitution</th></tr></thead>
+              <thead><tr><th>{t('admin.fulfil.colMedicine')}</th><th>{t('admin.fulfil.colDose')}</th><th>{t('admin.fulfil.colQty')}</th><th>{t('admin.fulfil.colSchedule')}</th><th>{t('admin.fulfil.colSubstitution')}</th></tr></thead>
               <tbody>
                 {dispense.prescription.items.map(item => <tr key={item.id}>
                   <td>{item.genericName} {item.strength}</td>
                   <td>{item.dose} {item.frequency}</td>
                   <td>{item.quantity}</td>
-                  <td>{item.scheduleClass}{item.registerRequired ? ' · register' : ''}</td>
-                  <td>{item.substitutionAllowed ? 'Allowed' : 'Not allowed'}</td>
+                  <td>{item.scheduleClass}{item.registerRequired ? ` · ${t('admin.fulfil.register')}` : ''}</td>
+                  <td>{item.substitutionAllowed ? t('admin.fulfil.allowed') : t('admin.fulfil.notAllowed')}</td>
                 </tr>)}
               </tbody>
             </table>
           </div> : null}
 
           {dispense.verifiedBy && <p className="wf-fineprint">
-            <ShieldCheck size={14} aria-hidden="true" /> Verified by {dispense.verifiedBy}
+            <ShieldCheck size={14} aria-hidden="true" /> {t('admin.fulfil.verifiedBy', { name: dispense.verifiedBy })}
           </p>}
           {dispense.substitutionNote && <div className="wf-notice" role="status">
-            Substitution proposed: {dispense.substitutionNote} — waiting on the prescriber.
+            {t('admin.fulfil.substitution', { note: dispense.substitutionNote })}
           </div>}
-          {dispense.rejectionReason && <p className="wf-fineprint">Rejected: {dispense.rejectionReason}</p>}
+          {dispense.rejectionReason && <p className="wf-fineprint">{t('admin.fulfil.rejected', { reason: dispense.rejectionReason })}</p>}
 
           <div className="wf-row-actions">
             {dispense.nextStates.length ? dispense.nextStates.map(next => (
-              <button key={next} className={`health-button ${next === 'RX_VERIFIED' ? 'health-button-primary' : ''}`}
+              <button key={next} type="button" className={`health-button ${next === 'RX_VERIFIED' ? 'health-button-primary' : ''}`}
                 disabled={mutation.busy} style={{ minHeight: 44 }}
-                aria-label={`${label(next)} for dispense ${dispense.id.slice(0, 8)}`}
+                aria-label={t('admin.fulfil.forDispense', { action: label(next), id: dispense.id.slice(0, 8) })}
                 onClick={() => start(dispense, next)}>{label(next)}</button>
-            )) : <span className="wf-fineprint">No further action.</span>}
+            )) : <span className="wf-fineprint">{t('admin.fulfil.noFurther')}</span>}
           </div>
         </article>)}
-      </div> : <EmptyState title="Nothing to dispense."
-        description="Prescriptions a student sends to your pharmacy appear here." />}
+      </div> : <EmptyState title={t('admin.fulfil.rxEmpty')}
+        description={t('admin.fulfil.rxEmptyBody')} />}
     </DataState>
 
     {step && <ShopDialog title={label(step.next)} onClose={() => setStep(null)}>
@@ -135,13 +138,13 @@ export function PharmacyQueuePanel() {
         advance(step.dispense, step.next, { [DISPENSE_PROMPT[step.next].field]: value });
       }}>
         <FormError message={mutation.error} />
-        <p>{DISPENSE_PROMPT[step.next].hint}</p>
-        <Field label={DISPENSE_PROMPT[step.next].label}>
+        <p>{t(DISPENSE_PROMPT[step.next].hint)}</p>
+        <Field label={t(DISPENSE_PROMPT[step.next].label)}>
           <input required minLength={2} maxLength={300} value={value} onChange={event => setValue(event.target.value)} />
         </Field>
         <button className="health-button health-button-primary" type="submit"
           disabled={mutation.busy || value.trim().length < 2} style={{ minHeight: 44 }}>
-          {mutation.busy ? 'Saving…' : 'Confirm'}
+          {mutation.busy ? t('admin.fulfil.saving') : t('admin.work.confirm')}
         </button>
       </form>
     </ShopDialog>}
@@ -149,26 +152,43 @@ export function PharmacyQueuePanel() {
 }
 
 export function LabQueuePanel() {
+  const t = useT();
   const queue = useApiResource<{ items: LabOrder[]; total: number; critical: number }>('/work/lab-orders?limit=50');
   const mutation = useMutation();
   const [step, setStep] = useState<{ order: LabOrder; next: string } | null>(null);
   const [value, setValue] = useState('');
+  // Filing a report is an upload, held for a doctor — not a status change.
+  const [filing, setFiling] = useState<LabOrder | null>(null);
+  const [reportFile, setReportFile] = useState<File | null>(null);
+  const [critical, setCritical] = useState(false);
+  const [criticalNote, setCriticalNote] = useState('');
 
   const advance = (order: LabOrder, next: string, extra: Record<string, string> = {}) => mutation.run(
     () => apiRequest(`/lab-orders/${order.id}`, { method: 'PATCH', body: JSON.stringify({ status: next, ...extra }) }),
     () => { setStep(null); setValue(''); queue.reload(); },
   );
 
+  const fileReport = (order: LabOrder, file: File) => {
+    const form = new FormData();
+    form.append('file', file);
+    if (critical) { form.append('criticalFlag', 'true'); form.append('criticalNote', criticalNote.trim()); }
+    mutation.run(
+      () => apiRequest(`/work/lab-orders/${order.id}/report`, { method: 'POST', body: form }),
+      () => { setFiling(null); setReportFile(null); setCritical(false); setCriticalNote(''); queue.reload(); },
+    );
+  };
+
   const start = (order: LabOrder, next: string) => {
+    if (next === 'REPORT_READY') { setFiling(order); setReportFile(null); setCritical(false); setCriticalNote(''); return; }
     if (LAB_PROMPT[next]) { setStep({ order, next }); setValue(''); return; }
     advance(order, next);
   };
 
   return <>
     <div className="wf-panel-heading"><div>
-      <span className="care-eyebrow">SAMPLES AND REPORTS</span>
-      <h2>Diagnostic queue.</h2>
-      <p>A sample is collected, transported, analysed and only then released. If a sample cannot be used, reject it and request a recollection rather than reporting on it.</p>
+      <span className="care-eyebrow">{t('admin.fulfil.labEyebrow')}</span>
+      <h2>{t('admin.fulfil.labTitle')}</h2>
+      <p>{t('admin.fulfil.labIntro')}</p>
     </div></div>
 
     <FormError message={mutation.error} />
@@ -176,7 +196,7 @@ export function LabQueuePanel() {
     <DataState {...queue} retry={queue.reload}>
       {queue.data?.critical ? <div className="wf-notice" role="alert" style={{ marginBottom: 14, borderColor: 'var(--emergency)' }}>
         <AlertTriangle size={18} aria-hidden="true" />
-        {queue.data.critical} result(s) flagged critical — a clinician is being asked to acknowledge them.
+        {queue.data.critical === 1 ? t('admin.fulfil.criticalOne') : t('admin.fulfil.criticalOther', { count: queue.data.critical })}
       </div> : null}
 
       {queue.data?.items.length ? <div className="wf-order-list">
@@ -184,35 +204,65 @@ export function LabQueuePanel() {
           style={order.criticalFlag ? { border: '2px solid var(--emergency)' } : undefined}>
           <div className="wf-panel-heading">
             <div>
-              <span className="care-eyebrow">ORDER {order.id.slice(0, 8).toUpperCase()}</span>
+              <span className="care-eyebrow">{t('admin.fulfil.orderRef', { id: order.id.slice(0, 8).toUpperCase() })}</span>
               <h3 style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <FlaskConical size={18} aria-hidden="true" />{order.testPanel.join(', ')}
               </h3>
               <p>
-                {order.collectionMode === 'HOME' ? 'Home collection' : 'Walk-in'}
-                {order.fastingRequired ? ' · fasting required' : ''}
-                {order.slotStart ? ` · ${order.slotStart}` : ''}
-                {order.sampleId ? ` · sample ${order.sampleId}` : ''}
+                {order.collectionMode === 'HOME' ? t('admin.fulfil.home') : t('admin.fulfil.walkIn')}
+                {order.fastingRequired ? ` · ${t('admin.fulfil.fasting')}` : ''}
+                {order.slotStart ? ` · ${t('admin.fulfil.slot', { time: displayDate(order.slotStart) })}`
+                  : order.status === 'BOOKED' ? ` · ${t('admin.fulfil.noSlot')}` : ''}
+                {order.sampleId ? ` · ${t('admin.fulfil.sample', { id: order.sampleId })}` : ''}
               </p>
             </div>
             <span className={`wf-status status-${order.criticalFlag ? 'declined' : 'accepted'}`}>{label(order.status)}</span>
           </div>
 
-          {order.collectorName && <p className="wf-fineprint">Collector: {order.collectorName}</p>}
-          {order.rejectionReason && <p className="wf-fineprint">Sample rejected: {order.rejectionReason}</p>}
+          {order.collectorName && <p className="wf-fineprint">{t('admin.fulfil.collector', { name: order.collectorName })}</p>}
+          {order.rejectionReason && <p className="wf-fineprint">{t('admin.fulfil.sampleRejected', { reason: order.rejectionReason })}</p>}
 
           <div className="wf-row-actions">
-            {order.nextStates.length ? order.nextStates.map(next => (
-              <button key={next} className={`health-button ${next === 'SAMPLE_REJECTED' ? '' : 'health-button-primary'}`}
-                disabled={mutation.busy} style={{ minHeight: 44 }}
-                aria-label={`${label(next)} for order ${order.id.slice(0, 8)}`}
-                onClick={() => start(order, next)}>{label(next)}</button>
-            )) : <span className="wf-fineprint">Released. No further action.</span>}
+            {order.status === 'REPORT_READY'
+              ? <span className="wf-fineprint">{t('admin.fulfil.withDoctor')}</span>
+              : order.nextStates.length ? order.nextStates.map(next => {
+                const action = next === 'REPORT_READY' ? t('admin.fulfil.fileReport') : label(next);
+                return <button key={next} type="button" className={`health-button ${next === 'SAMPLE_REJECTED' ? '' : 'health-button-primary'}`}
+                  disabled={mutation.busy} style={{ minHeight: 44 }}
+                  aria-label={t('admin.fulfil.forOrder', { action, id: order.id.slice(0, 8) })}
+                  onClick={() => start(order, next)}>{action}</button>;
+              }) : <span className="wf-fineprint">{t('admin.fulfil.released')}</span>}
           </div>
         </article>)}
-      </div> : <EmptyState title="No bookings yet."
-        description="Tests a student books with your laboratory appear here." />}
+      </div> : <EmptyState title={t('admin.fulfil.labEmpty')}
+        description={t('admin.fulfil.labEmptyBody')} />}
     </DataState>
+
+    {filing && <ShopDialog title={t('admin.fulfil.fileReport')} onClose={() => { if (!mutation.busy) setFiling(null); }}>
+      <form className="wf-form" onSubmit={event => {
+        event.preventDefault();
+        if (reportFile) fileReport(filing, reportFile);
+      }}>
+        <FormError message={mutation.error} />
+        <p>{t('admin.fulfil.fileHint')}</p>
+        <Field label={t('admin.fulfil.reportFile')}>
+          <input type="file" required accept="application/pdf,image/png,image/jpeg"
+            onChange={event => setReportFile(event.target.files?.[0] ?? null)} />
+        </Field>
+        <label style={{ display: 'flex', alignItems: 'center', gap: 10, minHeight: 44 }}>
+          <input type="checkbox" checked={critical} onChange={event => setCritical(event.target.checked)}
+            style={{ width: 22, height: 22 }} />
+          {t('admin.fulfil.criticalCheck')}
+        </label>
+        {critical && <Field label={t('admin.fulfil.criticalNoteLabel')}>
+          <input required minLength={3} maxLength={500} value={criticalNote} onChange={event => setCriticalNote(event.target.value)} />
+        </Field>}
+        <button className="health-button health-button-primary" type="submit"
+          disabled={mutation.busy || !reportFile || (critical && criticalNote.trim().length < 3)} style={{ minHeight: 44 }}>
+          {mutation.busy ? t('admin.fulfil.saving') : t('admin.fulfil.sendForReview')}
+        </button>
+      </form>
+    </ShopDialog>}
 
     {step && <ShopDialog title={label(step.next)} onClose={() => setStep(null)}>
       <form className="wf-form" onSubmit={event => {
@@ -220,13 +270,13 @@ export function LabQueuePanel() {
         advance(step.order, step.next, { [LAB_PROMPT[step.next].field]: value });
       }}>
         <FormError message={mutation.error} />
-        <p>{LAB_PROMPT[step.next].hint}</p>
-        <Field label={LAB_PROMPT[step.next].label}>
+        <p>{t(LAB_PROMPT[step.next].hint)}</p>
+        <Field label={t(LAB_PROMPT[step.next].label)}>
           <input required minLength={1} maxLength={300} value={value} onChange={event => setValue(event.target.value)} />
         </Field>
         <button className="health-button health-button-primary" type="submit"
           disabled={mutation.busy || !value.trim()} style={{ minHeight: 44 }}>
-          {mutation.busy ? 'Saving…' : 'Confirm'}
+          {mutation.busy ? t('admin.fulfil.saving') : t('admin.work.confirm')}
         </button>
       </form>
     </ShopDialog>}
@@ -234,6 +284,7 @@ export function LabQueuePanel() {
 }
 
 export function ProviderDirectoryPanel({ kind }: { kind: 'PHARMACY' | 'LAB' }) {
+  const t = useT();
   const [pincode, setPincode] = useState('');
   const [submitted, setSubmitted] = useState('');
   const providers = useApiResource<{ items: Array<{
@@ -243,20 +294,20 @@ export function ProviderDirectoryPanel({ kind }: { kind: 'PHARMACY' | 'LAB' }) {
 
   return <section className="wf-card wf-section-gap">
     <div className="wf-panel-heading"><div>
-      <span className="care-eyebrow">{kind === 'PHARMACY' ? 'NEARBY PHARMACIES' : 'NEARBY LABORATORIES'}</span>
+      <span className="care-eyebrow">{kind === 'PHARMACY' ? t('admin.fulfil.nearbyPharmacies') : t('admin.fulfil.nearbyLabs')}</span>
       <h3 style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         {kind === 'PHARMACY' ? <Pill size={20} aria-hidden="true" /> : <FlaskConical size={20} aria-hidden="true" />}
-        Find one near you
+        {t('admin.fulfil.findNear')}
       </h3>
     </div></div>
     <form className="wf-form" style={{ maxWidth: 360 }} onSubmit={event => { event.preventDefault(); setSubmitted(pincode); }}>
-      <Field label="Your pincode">
+      <Field label={t('admin.fulfil.pincode')}>
         <input inputMode="numeric" pattern="[1-9][0-9]{5}" maxLength={6} value={pincode}
           onChange={event => setPincode(event.target.value.replace(/\D/g, ''))} placeholder="500001" />
       </Field>
       <button className="health-button health-button-primary" type="submit"
         disabled={!/^[1-9][0-9]{5}$/.test(pincode)} style={{ minHeight: 44 }}>
-        <Package size={16} aria-hidden="true" />Search
+        <Package size={16} aria-hidden="true" />{t('admin.audit.search')}
       </button>
     </form>
 
@@ -268,20 +319,20 @@ export function ProviderDirectoryPanel({ kind }: { kind: 'PHARMACY' | 'LAB' }) {
               <strong>{provider.legalName}</strong>
               <small>{provider.address || provider.pincode}{provider.openHours ? ` · ${provider.openHours}` : ''}</small>
               <small>
-                {provider.inPincode ? 'In your pincode' : 'Serves your pincode'}
+                {provider.inPincode ? t('admin.fulfil.inPincode') : t('admin.fulfil.servesPincode')}
                 {provider.accreditation ? ` · ${provider.accreditation}` : ''}
-                {provider.homeCollection ? ' · home collection' : ''}
+                {provider.homeCollection ? ` · ${t('admin.fulfil.homeLower')}` : ''}
               </small>
               {!provider.licenceValid && <small style={{ color: 'var(--attention)' }}>
-                <AlertTriangle size={13} aria-hidden="true" /> Licence not currently verified
+                <AlertTriangle size={13} aria-hidden="true" /> {t('admin.fulfil.licence')}
               </small>}
             </div>
           </div>)}
         </div>
         {/* Stated plainly so a student can see the ordering is not bought. */}
-        <p className="wf-fineprint">Ordered by {providers.data.rankedBy}.</p>
-      </> : <EmptyState title="Nothing serving that pincode yet."
-        description="No verified provider covers this area. Try a nearby pincode." />}
+        <p className="wf-fineprint">{t('admin.fulfil.rankedBy', { by: providers.data.rankedBy })}</p>
+      </> : <EmptyState title={t('admin.fulfil.noneTitle')}
+        description={t('admin.fulfil.noneBody')} />}
     </DataState>}
   </section>;
 }

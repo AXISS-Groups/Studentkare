@@ -24,9 +24,10 @@ from __future__ import annotations
 import time
 import uuid
 
-from sqlalchemy import func, select
+from sqlalchemy import func, or_, select
 
 from core import workflow_models as M
+from core.team_scope import team_sandboxed
 
 DOMAINS = {"MARKETPLACE", "CLINICAL", "PHARMACY", "LAB", "CAMPUS", "SAFETY", "ACCOUNT", "SUPPORT"}
 SEVERITIES = {"INFO", "ATTENTION", "CRITICAL"}
@@ -38,6 +39,15 @@ ROLE_DOMAINS: dict[str, set[str]] = {
     "NMC_DOCTOR": {"CLINICAL", "LAB", "SAFETY"},
     "CAMPUS_ADMIN": {"CAMPUS", "SAFETY"},
 }
+
+
+# Events about a student's crisis signal. Visible in the feed to the super admin only.
+CRISIS_EVENT_KINDS = frozenset({"CRISIS_GATE_TRIGGERED"})
+CRISIS_RESOURCE_TYPE = "crisis_event"
+# A safety message (SOS, crisis alert) that could not be delivered: a super
+# admin checks with the recipient and requeues it. Super admin only.
+URGENT_DELIVERY_FAILED = "URGENT_DELIVERY_FAILED"
+SUPER_ADMIN_ONLY_KINDS = CRISIS_EVENT_KINDS | {URGENT_DELIVERY_FAILED}
 
 
 def publish(db, kind: str, domain: str, *, summary: str, severity: str = "INFO",
@@ -115,6 +125,19 @@ def _visible_statement(db, user: dict):
 
     if role == "SUPER_ADMIN":
         return statement
+
+    # Crisis-gate events name a student (subject id) and the kind of crisis, and the
+    # feed is scoped by domain, not by campus. Outside the super admin they are left
+    # out entirely: a counsellor follows them up in the campus-scoped crisis queue
+    # (/ops/crisis-events), and no campus admin or clinician sees another college's.
+    statement = statement.where(M.OpsEvent.kind.not_in(sorted(SUPER_ADMIN_ONLY_KINDS)),
+                                M.OpsEvent.resource_type != CRISIS_RESOURCE_TYPE)
+
+    if team_sandboxed(user) and role != "VENDOR":
+        # A team account (core/team_scope.py) sees only events it took part in: the
+        # domain-wide slice is about real students on real campuses.
+        return statement.where(or_(M.OpsEvent.actor_id == user.get("id", ""),
+                                   M.OpsEvent.subject_id == user.get("id", "")))
 
     if role == "VENDOR":
         # A vendor sees only their own queues: events tagged with a provider they own,

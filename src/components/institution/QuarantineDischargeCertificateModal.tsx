@@ -36,8 +36,8 @@ export function QuarantineDischargeCertificateModal({ studentName = 'Rohan Mehta
       </div>
 
       {certId ? (
-        <div style={{ textAlign: 'center', padding: 24, background: 'rgba(16, 185, 129, 0.05)', border: '1px solid #10b981', borderRadius: 12 }}>
-          <CheckCircle2 size={48} color="#10b981" style={{ margin: '0 auto 12px' }} />
+        <div style={{ textAlign: 'center', padding: 24, background: 'var(--sk-color-positive-bg)', border: '1px solid var(--sk-color-positive-fill)', borderRadius: 12 }}>
+          <CheckCircle2 size={48} color="var(--sk-color-positive-fill)" style={{ margin: '0 auto 12px' }} />
           <h3 style={{ fontSize: 20 }}>Isolation Discharge Certificate Issued!</h3>
           <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '4px 0 16px' }}>
             Certificate ID: <code>{certId}</code> · Hostel status updated to <strong>ACTIVE</strong> & academic clearance synced.
@@ -53,7 +53,7 @@ export function QuarantineDischargeCertificateModal({ studentName = 'Rohan Mehta
         </div>
       ) : (
         <form onSubmit={handleIssueDischarge} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          <div style={{ background: 'var(--surface-subtle, #f8fafc)', padding: 14, borderRadius: 10, fontSize: 13 }}>
+          <div style={{ background: 'var(--sk-color-surface-2)', padding: 14, borderRadius: 10, fontSize: 13 }}>
             <div>Student: <strong>{studentName}</strong></div>
             <div>Isolation Room: <code>{roomNo}</code></div>
           </div>

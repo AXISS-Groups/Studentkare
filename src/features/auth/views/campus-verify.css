@@ -1,0 +1,210 @@
+/* Find your campus — design page 1, CampusVerify (Tier 2). Tokens only, no hex. */
+
+.sk-campusverify {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sk-space-16);
+  width: 100%;
+  max-width: 560px;
+  font-family: var(--sk-font-sans);
+  color: var(--sk-color-text);
+}
+
+.sk-campusverify__sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.sk-campusverify__head { display: flex; flex-direction: column; gap: var(--sk-space-8); }
+
+.sk-campusverify .sk-campusverify__title {
+  margin: 0;
+  font-size: var(--sk-text-heading);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--sk-color-text);
+}
+
+.sk-campusverify .sk-campusverify__lede {
+  margin: 0;
+  font-size: var(--sk-text-body);
+  line-height: 1.55;
+  color: var(--sk-color-text-2);
+}
+
+.sk-campusverify__field { display: grid; gap: var(--sk-space-8); }
+
+.sk-campusverify__label { font-size: var(--sk-text-body-sm); font-weight: 700; }
+
+.sk-campusverify__control {
+  display: flex;
+  align-items: center;
+  gap: var(--sk-space-12);
+  min-height: 56px;
+  padding-inline: var(--sk-space-16);
+  border: 1px solid var(--sk-color-rule-strong);
+  border-radius: var(--sk-radius-xl);
+  background: var(--sk-color-surface);
+  color: var(--sk-color-text-2);
+}
+
+.sk-campusverify__control:focus-within { border-color: var(--sk-color-action); outline: 3px solid var(--sk-color-focus); outline-offset: 3px; }
+
+.sk-campusverify__control input {
+  flex: 1;
+  min-width: 0;
+  min-height: var(--sk-size-touch-target);
+  border: 0;
+  outline: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: var(--sk-text-body);
+  font-weight: 600;
+  color: var(--sk-color-text);
+}
+
+.sk-campusverify__listhead { display: flex; align-items: baseline; justify-content: space-between; gap: var(--sk-space-8); }
+
+.sk-campusverify__eyebrow {
+  font-size: var(--sk-text-caption);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sk-color-text-2);
+}
+
+.sk-campusverify__count { font-size: var(--sk-text-caption); color: var(--sk-color-text-2); }
+
+.sk-campusverify__list { display: flex; flex-direction: column; gap: var(--sk-space-10); }
+
+.sk-campusverify__campus {
+  display: flex;
+  align-items: center;
+  gap: var(--sk-space-14);
+  min-height: 64px;
+  padding: var(--sk-space-14) var(--sk-space-16);
+  border: 1.5px solid var(--sk-color-rule);
+  border-radius: var(--sk-radius-xl);
+  background: var(--sk-color-surface);
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+  color: var(--sk-color-text);
+}
+
+.sk-campusverify__campus.is-on { border-color: var(--sk-color-action); box-shadow: var(--sk-shadow-hairline); }
+
+.sk-campusverify__tile {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--sk-radius-md);
+  background: var(--sk-color-surface-3);
+  color: var(--sk-color-text-2);
+}
+
+.sk-campusverify__campus.is-on .sk-campusverify__tile { background: var(--sk-color-action-soft); color: var(--sk-color-action); }
+
+.sk-campusverify__name { flex: 1; min-width: 0; font-size: var(--sk-text-body); font-weight: 800; }
+
+.sk-campusverify__radio {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--sk-radius-full);
+  border: 1.5px solid var(--sk-color-rule-strong);
+}
+
+.sk-campusverify__campus.is-on .sk-campusverify__radio { border-color: var(--sk-color-action); background: var(--sk-color-action); color: var(--sk-color-on-action); }
+
+.sk-campusverify__info {
+  display: flex;
+  gap: var(--sk-space-10);
+  margin: 0;
+  padding: var(--sk-space-14) var(--sk-space-16);
+  border-radius: var(--sk-radius-lg);
+  background: var(--sk-color-surface-3);
+  font-size: var(--sk-text-caption);
+  line-height: 1.55;
+  font-weight: 600;
+  color: var(--sk-color-info);
+}
+
+.sk-campusverify__info svg { flex: none; }
+
+.sk-campusverify__current {
+  margin: 0;
+  padding: var(--sk-space-12) var(--sk-space-14);
+  border-radius: var(--sk-radius-md);
+  font-size: var(--sk-text-body-sm);
+}
+
+.sk-campusverify__current--pending { background: var(--sk-color-attention-bg); color: var(--sk-color-text); }
+.sk-campusverify__current--problem { background: var(--sk-color-danger-bg); color: var(--sk-color-text); }
+
+.sk-campusverify__done {
+  display: flex;
+  align-items: center;
+  gap: var(--sk-space-8);
+  margin: 0;
+  padding: var(--sk-space-12) var(--sk-space-14);
+  border-radius: var(--sk-radius-md);
+  background: var(--sk-color-positive-bg);
+  font-size: var(--sk-text-body-sm);
+  font-weight: 600;
+  color: var(--sk-color-positive);
+}
+
+.sk-campusverify__status { margin: 0; font-size: var(--sk-text-body-sm); color: var(--sk-color-text-2); }
+
+.sk-campusverify__alert {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sk-space-8);
+  padding: var(--sk-space-12) var(--sk-space-14);
+  border-radius: var(--sk-radius-md);
+  background: var(--sk-color-attention-bg);
+  font-size: var(--sk-text-body-sm);
+}
+
+.sk-campusverify__error { margin: 0; font-size: var(--sk-text-body-sm); color: var(--sk-color-danger); }
+
+.sk-campusverify__primary {
+  min-height: 56px;
+  border: 0;
+  border-radius: var(--sk-radius-full);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: var(--sk-text-title-sm);
+  font-weight: 800;
+  background: var(--sk-color-action);
+  color: var(--sk-color-on-action);
+}
+
+.sk-campusverify__primary:disabled { cursor: not-allowed; opacity: 0.6; }
+
+.sk-campusverify__link {
+  align-self: center;
+  min-height: var(--sk-size-touch-target);
+  padding-inline: var(--sk-space-8);
+  border: 0;
+  background: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: var(--sk-text-body-sm);
+  font-weight: 700;
+  color: var(--sk-color-text-2);
+}
+
+.sk-campusverify :where(button):focus-visible { outline: 3px solid var(--sk-color-focus); outline-offset: 3px; }

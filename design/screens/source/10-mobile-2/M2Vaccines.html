@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Vaccines</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:#FAF8FF;color:#131B2E}
+a{color:#0C0494;text-decoration:none}a:hover{color:#2B20C9}
+button{font-family:inherit}
+a:focus-visible,button:focus-visible{outline:3px solid #6D5BFF;outline-offset:3px;border-radius:14px}
+@keyframes skRise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes skFloat{0%,100%{transform:translateY(0) rotate(-10deg)}50%{transform:translateY(-8px) rotate(-4deg)}}
+@keyframes skDraw{from{stroke-dashoffset:30}to{stroke-dashoffset:0}}
+@keyframes skGrow{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+.sk-card{transition:transform .25s cubic-bezier(.2,.7,.3,1),box-shadow .25s}.sk-card:hover{transform:translateY(-2px);box-shadow:0 14px 30px rgba(12,4,148,.12)}
+.sk-rail{scrollbar-width:none}.sk-rail::-webkit-scrollbar{display:none}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div style="width: 390px; height: 1400px; box-sizing: border-box; background: #FAF8FF; position: relative; overflow: hidden;">
+
+  <div style="position: relative; padding: 18px 20px 24px; border-radius: 0 0 36px 36px; background: linear-gradient(160deg, #B45309 0%, #92400E 100%); overflow: hidden; animation: skRise .5s both;">
+    <span aria-hidden="true" style="position: absolute; left: -60px; bottom: -90px; width: 240px; height: 240px; border-radius: 999px; border: 30px solid rgba(255,255,255,.14);"></span>
+    <header style="position: relative; display: flex; align-items: center; gap: 12px;">
+      <a href="Main.dc.html" aria-label="Back to Home" style="width: 44px; height: 44px; border-radius: 999px; background: rgba(255,255,255,.18); display: flex; align-items: center; justify-content: center;"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"></path></svg></a>
+      <span style="font-size: 13px; font-weight: 800; color: #FFFFFF;">Vaccines</span>
+    </header>
+    <h1 style="position: relative; margin: 18px 0 6px; font-size: 27px; line-height: 32px; font-weight: 800; letter-spacing: -0.8px; color: #FFFFFF; max-width: 240px;">Your vaccines, in one place</h1>
+    <p style="position: relative; margin: 0; font-size: 13.5px; line-height: 20px; font-weight: 700; color: #FFFFFF; max-width: 230px;">See what you have had, what is due, and book at the campus clinic.</p>
+    <div aria-hidden="true" style="position: absolute; right: 18px; top: 72px; width: 96px; height: 96px; border-radius: 30px; background: rgba(255,255,255,.16); display: flex; align-items: center; justify-content: center; animation: skFloat 4s ease-in-out infinite;">
+      <svg width="54" height="54" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2l4 4M20 4l-6.5 6.5M15 6l3 3M5.5 15.5l-3.5 3.5M12 7l5 5-7.5 7.5a2.1 2.1 0 0 1-3 0l-2-2a2.1 2.1 0 0 1 0-3z"></path><path d="M9 12l3 3"></path></svg>
+    </div>
+  </div>
+
+  <section aria-labelledby="tracker" style="margin: 16px 20px 0; padding: 16px; border-radius: 26px; background: #FFFFFF; box-shadow: 0 6px 18px rgba(12,4,148,.06); animation: skRise .55s .1s both;">
+    <div style="display: flex; align-items: center; justify-content: space-between;"><h2 id="tracker" style="margin: 0; font-size: 15px; font-weight: 800;">Your vaccine record</h2><a href="ReportUpload.dc.html" style="font-size: 12.5px; font-weight: 800;">Add an old card</a></div>
+    <div style="margin-top: 12px; display: flex; flex-direction: column;">
+      <sc-for list="{{ record }}" as="r" hint-placeholder-count="5">
+        <div style="display: flex; gap: 12px;">
+          <div style="display: flex; flex-direction: column; align-items: center;">
+            <span style="{{ r.dot }}"><sc-if value="{{ r.done }}" hint-placeholder-val="{{ true }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7" stroke-dasharray="30" style="animation: skDraw .6s .4s both;"></path></svg></sc-if></span>
+            <sc-if value="{{ r.line }}" hint-placeholder-val="{{ true }}"><span style="width: 2px; flex-grow: 1; min-height: 22px; background: #EEF2FF; transform-origin: top; animation: skGrow .5s .3s both;"></span></sc-if>
+          </div>
+          <div style="flex-grow: 1; padding-bottom: 14px; display: flex; align-items: flex-start; justify-content: space-between; gap: 8px;">
+            <span style="display: flex; flex-direction: column; gap: 2px;"><span style="font-size: 13.5px; font-weight: 800;">{{ r.name }}</span><span style="font-size: 11.5px; font-weight: 600; color: #6B6980;">{{ r.meta }}</span></span>
+            <span style="{{ r.pill }}">{{ r.state }}</span>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+    <p style="margin: 0; font-size: 11.5px; line-height: 17px; font-weight: 600; color: #6B6980;">Only what you or a clinic recorded. We never guess a dose you might have had.</p>
+  </section>
+
+  <section aria-labelledby="book" style="padding: 22px 0 0; animation: skRise .55s .2s both;">
+    <h2 id="book" style="margin: 0 20px 12px; font-size: 17px; font-weight: 800; letter-spacing: -0.3px;">Book a vaccine</h2>
+    <div role="tablist" aria-label="Vaccines" class="sk-rail" style="display: flex; gap: 10px; overflow-x: auto; padding: 0 20px 6px;">
+      <sc-for list="{{ vaccines }}" as="v" hint-placeholder-count="5">
+        <button type="button" role="tab" aria-selected="{{ v.selected }}" onClick="{{ v.pick }}" style="{{ v.style }}"><span style="{{ v.badge }}">{{ v.short }}</span>{{ v.name }}</button>
+      </sc-for>
+    </div>
+    <div style="margin: 12px 20px 0; padding: 18px; border-radius: 26px; background: #FFFFFF; box-shadow: 0 6px 18px rgba(12,4,148,.06); animation: skRise .35s both;">
+      <div style="display: flex; align-items: center; justify-content: space-between;"><h3 style="margin: 0; font-size: 19px; font-weight: 800; letter-spacing: -0.4px;">{{ sel.name }}</h3><span style="padding: 5px 10px; border-radius: 999px; background: #FEF3C7; color: #92400E; font-size: 11px; font-weight: 800;">{{ sel.doses }}</span></div>
+      <p style="margin: 8px 0 0; font-size: 13px; line-height: 20px; font-weight: 600; color: #464555;">{{ sel.why }}</p>
+      <div role="radiogroup" aria-label="What you are buying" style="margin-top: 14px; padding: 4px; border-radius: 999px; background: #F2F3FF; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));">
+        <button type="button" role="radio" aria-checked="{{ adminChecked }}" onClick="{{ pickAdmin }}" style="{{ adminStyle }}">Given at the clinic</button>
+        <button type="button" role="radio" aria-checked="{{ medChecked }}" onClick="{{ pickMed }}" style="{{ medStyle }}">Vaccine only</button>
+      </div>
+      <div style="margin-top: 14px; display: flex; align-items: center; justify-content: space-between;">
+        <span style="display: flex; flex-direction: column;"><span style="font-size: 22px; font-weight: 800;">₹[price]</span><span style="font-size: 11.5px; font-weight: 600; color: #6B6980;">{{ priceNote }}</span></span>
+        <a href="Orders.dc.html" style="height: 48px; padding: 0 20px; border-radius: 999px; background: linear-gradient(150deg, #B45309, #92400E); color: #FFFFFF; font-size: 14px; font-weight: 800; display: flex; align-items: center; box-shadow: 0 12px 24px rgba(180,83,9,.28);">Pick a slot</a>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="steps" style="margin: 18px 20px 0; padding: 16px; border-radius: 26px; background: linear-gradient(160deg, #FFFBEB, #FFFFFF); animation: skRise .55s .3s both;">
+    <h2 id="steps" style="margin: 0 0 12px; font-size: 15px; font-weight: 800;">How it works</h2>
+    <sc-for list="{{ steps }}" as="s" hint-placeholder-count="3">
+      <div style="display: flex; align-items: center; gap: 12px; padding: 8px 0;">
+        <span style="width: 34px; height: 34px; flex-shrink: 0; border-radius: 12px; background: #FDE68A; color: #78350F; font-size: 14px; font-weight: 800; display: flex; align-items: center; justify-content: center;">{{ s.n }}</span>
+        <span style="display: flex; flex-direction: column; gap: 2px;"><span style="font-size: 13.5px; font-weight: 800;">{{ s.k }}</span><span style="font-size: 12px; font-weight: 600; color: #6B6980;">{{ s.v }}</span></span>
+      </div>
+    </sc-for>
+  </section>
+
+  <nav aria-label="Main" style="position: absolute; left: 16px; right: 16px; bottom: 22px; height: 70px; border-radius: 999px; background: linear-gradient(160deg, #1A10B5, #0C0494); box-shadow: 0 18px 40px rgba(12,4,148,.35); display: flex; align-items: center; justify-content: space-between; padding: 0 10px;">
+    <a href="Main.dc.html" style="height: 52px; padding: 0 18px; border-radius: 999px; background: #FFFFFF; color: #0C0494; font-size: 13.5px; font-weight: 800; display: flex; align-items: center; gap: 7px;"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#0C0494" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5L12 4l9 6.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"></path></svg>Home</a>
+    <a href="Orders.dc.html" aria-label="Orders" style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C7C3FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8l-9-5-9 5 9 5zM3 8v8l9 5 9-5V8M12 13v8"></path></svg></a>
+    <a href="AskAyush.dc.html" aria-label="Ask Ayush" style="width: 52px; height: 52px; border-radius: 999px; background: radial-gradient(circle at 35% 30%, #A5F3FC, #6D5BFF 55%, #2B20C9); display: flex; align-items: center; justify-content: center;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M5.6 18.4l2.8-2.8M15.6 8.4l2.8-2.8"></path></svg></a>
+    <a href="Insights.dc.html" aria-label="My health" style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C7C3FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 5.6a5 5 0 0 0-7.1 0L12 7.3l-1.7-1.7a5 5 0 1 0-7.1 7.1L12 21.5l8.8-8.8a5 5 0 0 0 0-7.1z"></path></svg></a>
+    <a href="Profile.dc.html" aria-label="Profile" style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C7C3FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21a8 8 0 0 1 16 0"></path></svg></a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1400}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { v: 'flu', admin: true }; }
+  renderVals() {
+    const s = this.state;
+    const pill = (k) => 'flex-shrink: 0; padding: 4px 9px; border-radius: 999px; font-size: 10.5px; font-weight: 800; ' + (k === 'done' ? 'background: #ECFDF5; color: #047857;' : k === 'due' ? 'background: #FFFBEB; color: #92400E;' : 'background: #F1F5F9; color: #475569;');
+    const dot = (k) => 'width: 26px; height: 26px; border-radius: 999px; display: flex; align-items: center; justify-content: center; ' + (k === 'done' ? 'background: #10B981;' : k === 'due' ? 'background: #FFFFFF; border: 3px solid #F59E0B; box-sizing: border-box;' : 'background: #FFFFFF; border: 2px dashed #C7C4D8; box-sizing: border-box;');
+    const rec = [
+      ['Hepatitis B', '3 of 3 doses · last 2019', 'done', 'Complete'],
+      ['Tetanus booster (Td)', 'Recorded 2021', 'done', 'Complete'],
+      ['Influenza', 'Yearly · last Oct 2025', 'due', 'Due now'],
+      ['HPV', 'Not recorded yet', 'none', 'Not started'],
+      ['Typhoid', 'Not recorded yet', 'none', 'Not started']
+    ];
+    const vacs = {
+      flu: { name: 'Influenza', short: 'FL', doses: '1 dose a year', why: 'This year’s flu vaccine matches this season’s strains. Hostels spread flu fast, so autumn is the time.' },
+      hpv: { name: 'HPV', short: 'HP', doses: '2 or 3 doses', why: 'Protects against the virus behind most cervical and some other cancers. Recommended for all young adults.' },
+      hepb: { name: 'Hepatitis B', short: 'HB', doses: '3 doses', why: 'Protects your liver for life. Most students had it as children; check your record first.' },
+      typh: { name: 'Typhoid', short: 'TY', doses: '1 dose · 3 years', why: 'Useful if you eat out often or travel. Spread through food and water.' }
+    };
+    const sel = vacs[s.v];
+    const seg = (on) => 'height: 40px; border: 0; border-radius: 999px; cursor: pointer; font-size: 12.5px; font-weight: 800; transition: all .25s; ' + (on ? 'background: #FFFFFF; color: #131B2E; box-shadow: 0 4px 12px rgba(12,4,148,.10);' : 'background: transparent; color: #6B6980;');
+    return {
+      record: rec.map(([name, meta, k, state], i) => ({ name, meta, state, done: k === 'done', line: i < rec.length - 1, dot: dot(k), pill: pill(k) })),
+      vaccines: Object.keys(vacs).map((id) => ({
+        name: vacs[id].name, short: vacs[id].short, selected: s.v === id ? 'true' : 'false', pick: () => this.setState({ v: id }),
+        style: 'flex-shrink: 0; height: 46px; padding: 0 14px 0 6px; border-radius: 999px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 800; transition: all .25s; ' + (s.v === id ? 'border: 0; background: #131B2E; color: #FFFFFF;' : 'border: 1.5px solid #DAE2FD; background: #FFFFFF; color: #464555;'),
+        badge: 'width: 34px; height: 34px; border-radius: 999px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; ' + (s.v === id ? 'background: linear-gradient(145deg, #B45309, #92400E); color: #FFFFFF;' : 'background: #FEF3C7; color: #92400E;')
+      })),
+      sel,
+      adminChecked: s.admin ? 'true' : 'false', medChecked: s.admin ? 'false' : 'true',
+      pickAdmin: () => this.setState({ admin: true }), pickMed: () => this.setState({ admin: false }),
+      adminStyle: seg(s.admin), medStyle: seg(!s.admin),
+      priceNote: s.admin ? 'Vaccine plus a nurse at the clinic' : 'Collect it; a clinic must give it',
+      steps: [
+        { n: '1', k: 'Pick the vaccine and a slot', v: 'Campus clinic times, this week and next' },
+        { n: '2', k: 'Show your check-in pass', v: 'The nurse checks it is you' },
+        { n: '3', k: 'It lands in your record', v: 'Batch number and date, added for you' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

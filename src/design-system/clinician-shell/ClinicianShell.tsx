@@ -1,8 +1,11 @@
 import React, { useCallback, useEffect, useId, useRef, useState } from 'react';
-import { SkIcon } from '../icons/SkIcon';
+import { Icon } from '../icons';
+import { ConsoleBrand, ConsoleNav, ConsoleSidebarLink, ConsoleTopbar } from '../console-shell/ConsoleShell';
+import type { ConsoleNavGroup } from '../console-shell/ConsoleShell';
 import { CLINICIAN_NAV } from './clinicianNav';
-import type { ClinicianNavId, ClinicianNavItem } from './clinicianNav';
-import type { RoutePath } from '@/lib/workflowRouting';
+import type { ClinicianNavId } from './clinicianNav';
+import { useT } from '@/i18n';
+import type { RoutePath } from '@/lib/utils/workflowRouting';
 import '../design-system.css';
 import './clinician-shell.css';
 
@@ -14,7 +17,8 @@ export interface ClinicianIdentity {
 }
 
 export interface ClinicianShellProps {
-  current: ClinicianNavId;
+  /** The sidebar item to highlight; null on pages outside the sidebar (notifications, help). */
+  current: ClinicianNavId | null;
   clinician: ClinicianIdentity;
   /** Sidebar count badges; a missing or zero count shows no badge. */
   counts?: Partial<Record<ClinicianNavId, number>>;
@@ -33,14 +37,17 @@ export interface ClinicianShellProps {
   onNavigate: (route: RoutePath) => void;
   onSignOut: () => void;
   onPersonalHealth: () => void;
+  /** In the top bar after the page name, e.g. the "Team account" badge. */
+  badge?: React.ReactNode;
   children: React.ReactNode;
 }
 
 const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 /**
- * Web console frame for every clinician screen: dark sidebar with the four
- * canvas groups, a 64 px top bar, and the page. Below 960 px the sidebar
+ * Web console frame for every clinician screen: the navy sidebar with the four
+ * canvas groups (shared ConsoleNav), the white 64 px top bar (shared
+ * ConsoleTopbar), and the page. Below 960 px the sidebar
  * becomes a modal drawer opened from the top bar.
  */
 export function ClinicianShell({
@@ -55,6 +62,7 @@ export function ClinicianShell({
   onNavigate,
   onSignOut,
   onPersonalHealth,
+  badge,
   children,
 }: ClinicianShellProps): React.ReactElement {
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -63,6 +71,7 @@ export function ClinicianShell({
   const sidebar = useRef<HTMLElement>(null);
   const accountRef = useRef<HTMLDivElement>(null);
   const accountMenuId = useId();
+  const t = useT();
 
   const closeDrawer = useCallback(() => {
     setDrawerOpen(false);
@@ -105,6 +114,22 @@ export function ClinicianShell({
     onNavigate(route);
   };
 
+  const groups: ConsoleNavGroup[] = CLINICIAN_NAV.map((group) => ({
+    id: group.label,
+    title: t(group.labelKey),
+    items: group.items.map((item) => {
+      const route = usePreviewRoutes && item.previewRoute ? item.previewRoute : item.route;
+      return {
+        id: item.id,
+        label: t(item.labelKey),
+        icon: item.icon,
+        current: item.id === current,
+        count: counts[item.id] ?? 0,
+        onSelect: route === null ? undefined : () => go(route),
+      };
+    }),
+  }));
+
   return (
     <div className={`sk-ds sk-shell${drawerOpen ? ' is-drawer-open' : ''}`}>
       {drawerOpen ? <div className="sk-shell__scrim" aria-hidden="true" onClick={closeDrawer} /> : null}
@@ -112,130 +137,86 @@ export function ClinicianShell({
         ref={sidebar}
         id="clinician-sidebar"
         className="sk-shell__sidebar"
-        aria-label="Clinician workspace"
+        aria-label={t('console.clin.sidebar')}
         {...(drawerOpen ? { role: 'dialog', 'aria-modal': true } : {})}
       >
         <div className="sk-shell__brand">
-          <img src="/brand/sk-shield.svg" width={29} height={34} alt="" />
-          <span className="sk-shell__wordmark">
-            <span className="sk-shell__name">Student<em>&nbsp;Kare</em></span>
-            <span className="sk-shell__role">CLINICIAN</span>
-          </span>
-          <button type="button" className="sk-shell__drawer-close" aria-label="Close navigation" onClick={closeDrawer}>
-            <SkIcon name="close" size={20} />
+          <ConsoleBrand role={t('console.clin.role')} />
+          <button type="button" className="sk-shell__drawer-close" aria-label={t('console.closeNav')} onClick={closeDrawer}>
+            <Icon name="x" size={20} />
           </button>
         </div>
-        <nav aria-label="Clinician" className="sk-shell__nav">
-          {CLINICIAN_NAV.map((group) => (
-            <div key={group.label} className="sk-shell__group" role="group" aria-labelledby={`nav-${group.label}`}>
-              <span id={`nav-${group.label}`} className="sk-shell__group-label">{group.label.toUpperCase()}</span>
-              {group.items.map((item) => (
-                <NavItem key={item.id} item={usePreviewRoutes && item.previewRoute ? { ...item, route: item.previewRoute } : item} current={item.id === current} count={counts[item.id] ?? 0} onGo={go} />
-              ))}
-            </div>
-          ))}
-        </nav>
+        <ConsoleNav label={t('console.clin.nav')} groups={groups} />
         <span className="sk-shell__spacer" />
-        <button type="button" className="sk-shell__link sk-shell__footer" onClick={() => go('support')}>
-          <SkIcon name="help" />
-          <span>{clinician.fullName}{clinician.credentials ? ` · ${clinician.credentials.split(' · ').pop()}` : ''}</span>
-          <span className="sk-visually-hidden"> — help centre</span>
-        </button>
+        {/* The canvas footer: help, labelled with the clinician's name and registration; then sign out. */}
+        <div className="sk-shell__sidebar-footer">
+          <ConsoleSidebarLink
+            icon="help-circle"
+            label={clinician.credentials ? `${clinician.fullName} · ${clinician.credentials.split(' · ').pop() ?? ''}` : clinician.fullName}
+            hint={t('console.helpCentre')}
+            onClick={() => go('support')}
+          />
+          <ConsoleSidebarLink icon="log-out" label={t('console.signOut')} onClick={() => { setDrawerOpen(false); onSignOut(); }} />
+        </div>
       </aside>
 
       <div className="sk-shell__body">
-        <header className="sk-shell__topbar">
-          <button
-            ref={menuButton}
-            type="button"
-            className="sk-shell__icon-btn sk-shell__menu-btn"
-            aria-label="Open navigation"
-            aria-expanded={drawerOpen}
-            aria-controls="clinician-sidebar"
-            onClick={() => setDrawerOpen(true)}
-          >
-            <SkIcon name="menu" size={20} />
-          </button>
-          <span className="sk-shell__context">
-            <span className="sk-shell__context-long">{context}</span>
-            <span className="sk-shell__context-short" aria-hidden="true">{contextShort ?? context}</span>
-          </span>
-          <label className="sk-shell__search">
-            <SkIcon name="search" size={16} />
-            <span className="sk-visually-hidden">Search patients, orders, results (not available yet)</span>
-            <input type="search" placeholder="Search patients, orders, results" disabled />
-          </label>
-          <span className="sk-shell__grow" />
-          {twoFactorOn ? (
-            <span className="sk-pill sk-pill--positive sk-shell__twofa"><SkIcon name="shield" size={14} strokeWidth={2} />2FA on</span>
-          ) : null}
-          <button
-            type="button"
-            className="sk-shell__icon-btn"
-            aria-label={hasUnreadNotifications ? 'Notifications, unread' : 'Notifications'}
-            onClick={() => go('notifications')}
-          >
-            <SkIcon name="bell" size={18} />
-            {hasUnreadNotifications ? <span className="sk-shell__unread" aria-hidden="true" /> : null}
-          </button>
-          <div className="sk-shell__account" ref={accountRef}>
+        <ConsoleTopbar
+          title={context}
+          titleShort={contextShort}
+          leading={(
             <button
+              ref={menuButton}
               type="button"
-              className="sk-shell__chip"
-              aria-haspopup="true"
-              aria-expanded={accountOpen}
-              aria-controls={accountMenuId}
-              onClick={() => setAccountOpen((open) => !open)}
+              className="sk-console-topbar__icon-btn sk-shell__menu-btn"
+              aria-label={t('console.openNav')}
+              aria-expanded={drawerOpen}
+              aria-controls="clinician-sidebar"
+              onClick={() => setDrawerOpen(true)}
             >
-              <span className="sk-avatar">{clinician.initials}</span>
-              <span className="sk-shell__chip-text">
-                <span className="sk-shell__chip-name">{clinician.fullName}</span>
-                {clinician.credentials ? <span className="sk-shell__chip-meta">{clinician.credentials}</span> : null}
-              </span>
-              <span className="sk-visually-hidden">, account menu</span>
+              <Icon name="menu" size={20} />
             </button>
-            {accountOpen ? (
-              <div id={accountMenuId} className="sk-shell__menu">
-                <button type="button" className="sk-shell__menu-item" onClick={() => { setAccountOpen(false); onPersonalHealth(); }}>
-                  <SkIcon name="heart" size={16} />My personal health
-                </button>
-                <button type="button" className="sk-shell__menu-item sk-shell__menu-item--danger" onClick={() => { setAccountOpen(false); onSignOut(); }}>
-                  <SkIcon name="logout" size={16} />Sign out
-                </button>
-              </div>
-            ) : null}
-          </div>
-        </header>
+          )}
+          badge={badge}
+          search={{ label: t('console.search') }}
+          twoFactorLabel={twoFactorOn ? t('console.twoFactorOn') : undefined}
+          notifications={{
+            label: hasUnreadNotifications ? t('console.notificationsUnread') : t('console.notifications'),
+            unread: hasUnreadNotifications,
+            onClick: () => go('notifications'),
+          }}
+          account={(
+            <div className="sk-shell__account" ref={accountRef}>
+              <button
+                type="button"
+                className="sk-shell__chip"
+                aria-haspopup="true"
+                aria-expanded={accountOpen}
+                aria-controls={accountMenuId}
+                onClick={() => setAccountOpen((open) => !open)}
+              >
+                <span className="sk-avatar">{clinician.initials}</span>
+                <span className="sk-shell__chip-text">
+                  <span className="sk-shell__chip-name">{clinician.fullName}</span>
+                  {clinician.credentials ? <span className="sk-shell__chip-meta">{clinician.credentials}</span> : null}
+                </span>
+                <span className="sk-visually-hidden">{t('console.clin.accountMenu')}</span>
+              </button>
+              {accountOpen ? (
+                <div id={accountMenuId} className="sk-shell__menu">
+                  <button type="button" className="sk-shell__menu-item" onClick={() => { setAccountOpen(false); onPersonalHealth(); }}>
+                    <Icon name="heart" size={16} />{t('console.clin.personalHealth')}
+                  </button>
+                  <button type="button" className="sk-shell__menu-item sk-shell__menu-item--danger" onClick={() => { setAccountOpen(false); onSignOut(); }}>
+                    <Icon name="log-out" size={16} />{t('console.signOut')}
+                  </button>
+                </div>
+              ) : null}
+            </div>
+          )}
+        />
         <main className="sk-shell__main" id="main">{children}</main>
       </div>
     </div>
-  );
-}
-
-function NavItem({ item, current, count, onGo }: { item: ClinicianNavItem; current: boolean; count: number; onGo: (route: RoutePath) => void }): React.ReactElement {
-  const { route } = item;
-  const badge = count > 0 ? <span className="sk-shell__badge" aria-hidden="true">{count}</span> : null;
-  const countText = count > 0 ? <span className="sk-visually-hidden">, {count} waiting</span> : null;
-  if (route === null) {
-    return (
-      <button type="button" className="sk-shell__link is-unavailable" aria-disabled="true" title="Not available yet">
-        <SkIcon name={item.icon} />
-        <span>{item.label}</span>
-        <span className="sk-visually-hidden"> — not available yet</span>
-        {badge}{countText}
-      </button>
-    );
-  }
-  return (
-    <button
-      type="button"
-      className={`sk-shell__link${current ? ' is-current' : ''}`}
-      aria-current={current ? 'page' : undefined}
-      onClick={() => onGo(route)}
-    >
-      <SkIcon name={item.icon} />
-      <span>{item.label}</span>
-      {badge}{countText}
-    </button>
   );
 }

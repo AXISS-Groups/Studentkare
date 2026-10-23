@@ -1,0 +1,88 @@
+{{- if .Values.worker.enabled }}
+# Periodic jobs on a timer (outbox delivery incl. BLOOD_SOS and SOS updates,
+# account erasure, ...). Mirrors the compose `worker` service: backend image,
+# same secrets, no HTTP. Safe with more than one replica: every job run takes a
+# lease on its care_scheduled_jobs row. Migrations are applied by the backend.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: studentkare-worker
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: studentkare-worker
+    app.kubernetes.io/name: studentkare
+    app.kubernetes.io/component: worker
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: {{ .Values.worker.replicaCount }}
+  selector:
+    matchLabels:
+      app: studentkare-worker
+  template:
+    metadata:
+      labels:
+        app: studentkare-worker
+        app.kubernetes.io/name: studentkare
+        app.kubernetes.io/component: worker
+    spec:
+      serviceAccountName: studentkare-backend
+      # SIGTERM finishes the current pass; a bounded pass can take minutes.
+      terminationGracePeriodSeconds: {{ .Values.worker.terminationGracePeriodSeconds }}
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+      containers:
+        - name: worker
+          image: "{{ .Values.backend.image.repository }}:{{ required "Set backend.image.tag to a released sha-<commit> tag (see release.yml)" .Values.backend.image.tag }}"
+          imagePullPolicy: {{ .Values.backend.image.pullPolicy }}
+          command: ["python", "-m", "scripts.workflow_worker", "--loop",
+                    "--poll-seconds", {{ .Values.worker.pollSeconds | quote }},
+                    "--heartbeat-file", "/tmp/workflow-worker.heartbeat"]
+          env:
+            - name: APP_ENV
+              value: {{ .Values.global.environment }}
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: {{ .Values.backend.env.OTEL_EXPORTER_OTLP_ENDPOINT }}
+            - name: RULE_L_REQUIRE_GRANTS
+              value: {{ .Values.backend.env.RULE_L_REQUIRE_GRANTS | default "1" | quote }}
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: studentkare-secrets
+                  key: DATABASE_URL
+            # No PgBouncer sidecar in this pod: connect directly.
+            - name: USE_PGBOUNCER
+              value: "false"
+            {{- include "studentkare.appSecretEnv" . | nindent 12 }}
+          envFrom:
+            - configMapRef:
+                name: studentkare-backend-config
+          resources:
+            {{- toYaml .Values.worker.resources | nindent 12 }}
+          livenessProbe:
+            # Alive while a pass completed in the last 2 minutes.
+            exec:
+              command: ["python", "-c", "import os,sys,time; sys.exit(0 if time.time() - os.path.getmtime('/tmp/workflow-worker.heartbeat') < 120 else 1)"]
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}
+      imagePullSecrets:
+        {{- range .Values.global.imagePullSecrets }}
+        - name: {{ .name }}
+        {{- end }}
+{{- end }}

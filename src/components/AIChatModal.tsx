@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
 import React from 'react';
 import { View, Text, StyleSheet, TextInput, ScrollView, TouchableOpacity } from 'react-native';
-import { useTheme } from '../theme/theme';
+import { useTheme } from '../theme/tokens/theme';
 import { useChatViewModel } from '../features/chat/viewmodel/useChatViewModel';
 import { Modal } from './Modal';
 import { Send, Bot, ShieldCheck, Sparkles, AlertTriangle } from 'lucide-react';
@@ -99,7 +99,7 @@ const AIChatModalUnwrapped: React.FC<AIChatModalProps> = ({ visible, onClose, on
                   style={[
                     styles.messageText,
                     {
-                      color: isUser ? '#ffffff' : tokens.text,
+                      color: isUser ? tokens.onAction : tokens.text,
                       fontFamily: typography.fontFamily,
                     },
                   ]}
@@ -122,15 +122,15 @@ const AIChatModalUnwrapped: React.FC<AIChatModalProps> = ({ visible, onClose, on
                       },
                     ]}
                   >
-                    {isEmergency && <AlertTriangle size={13} color="#ffffff" />}
-                    <Text style={styles.actionBtnText}>{msg.actionPrompt} →</Text>
+                    {isEmergency && <AlertTriangle size={13} color={tokens.onAction} />}
+                    <Text style={[styles.actionBtnText, { color: tokens.onAction }]}>{msg.actionPrompt} →</Text>
                   </TouchableOpacity>
                 )}
 
                 <Text
                   style={[
                     styles.timestamp,
-                    { color: isUser ? 'rgba(255,255,255,0.75)' : tokens.text3 },
+                    isUser ? { color: tokens.onAction, opacity: 0.75 } : { color: tokens.text3 },
                   ]}
                 >
                   {msg.timestamp}
@@ -186,7 +186,7 @@ const AIChatModalUnwrapped: React.FC<AIChatModalProps> = ({ visible, onClose, on
             accessibilityRole="button"
             style={[styles.sendBtn, { backgroundColor: tokens.action, borderRadius: radius.md }]}
           >
-            <Send size={16} color="#ffffff" />
+            <Send size={16} color={tokens.onAction} />
           </TouchableOpacity>
         </View>
       </View>
@@ -263,7 +263,6 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
   },
   actionBtnText: {
-    color: '#ffffff',
     fontSize: 12,
     fontWeight: '700',
   },

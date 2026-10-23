@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Upload a report</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:#FAF8FF;color:#131B2E}
+a{color:#0C0494;text-decoration:none}a:hover{color:#2B20C9}
+button{font-family:inherit}
+a:focus-visible,button:focus-visible{outline:3px solid #6D5BFF;outline-offset:3px;border-radius:14px}
+@keyframes skRise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes skScan{0%,100%{top:10%}50%{top:84%}}
+@keyframes skFill{from{width:0}to{width:100%}}
+@keyframes skPop{0%{transform:scale(.4);opacity:0}70%{transform:scale(1.12);opacity:1}100%{transform:scale(1)}}
+@keyframes skDraw{from{stroke-dashoffset:40}to{stroke-dashoffset:0}}
+@keyframes skRing{0%{transform:scale(.8);opacity:.6}100%{transform:scale(1.9);opacity:0}}
+@keyframes skFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.sk-opt{transition:transform .25s cubic-bezier(.2,.7,.3,1),box-shadow .25s}.sk-opt:hover{transform:translateY(-2px);box-shadow:0 14px 30px rgba(12,4,148,.12)}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div style="width: 390px; height: 1250px; box-sizing: border-box; background: #FAF8FF; position: relative; overflow: hidden;">
+  <div aria-hidden="true" style="position: absolute; top: -140px; right: -100px; width: 320px; height: 320px; border-radius: 999px; background: radial-gradient(circle, rgba(249,115,22,.18), rgba(249,115,22,0) 70%);"></div>
+
+  <header style="position: relative; padding: 18px 20px 0; display: flex; align-items: center; gap: 12px;">
+    <a href="Insights.dc.html" aria-label="Back to My health" style="width: 44px; height: 44px; border-radius: 999px; background: #FFFFFF; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(12,4,148,.08);"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#131B2E" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"></path></svg></a>
+    <div style="display: flex; flex-direction: column;"><span style="font-size: 12px; font-weight: 600; color: #6B6980;">Any lab, any format</span><h1 style="margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -0.5px;">Add a lab report</h1></div>
+  </header>
+
+  <ol aria-label="Steps" style="margin: 18px 20px 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px;">
+    <sc-for list="{{ stepper }}" as="s" hint-placeholder-count="4"><li style="display: flex; flex-direction: column; gap: 6px;"><span style="height: 6px; border-radius: 999px; background: #E6E4F5; overflow: hidden;"><span style="{{ s.bar }}"></span></span><span style="{{ s.label }}">{{ s.k }}</span></li></sc-for>
+  </ol>
+
+  <sc-if value="{{ isPick }}" hint-placeholder-val="{{ true }}">
+    <section style="padding: 20px 20px 0; animation: skRise .4s both;">
+      <div style="position: relative; height: 210px; border-radius: 30px; background: linear-gradient(150deg, #C2410C 0%, #9A3412 100%); color: #FFFFFF; padding: 20px; box-sizing: border-box; overflow: hidden; box-shadow: 0 18px 36px rgba(194,65,12,.30);">
+        <span aria-hidden="true" style="position: absolute; right: -40px; bottom: -60px; width: 190px; height: 190px; border-radius: 999px; border: 26px solid rgba(255,255,255,.12);"></span>
+        <span aria-hidden="true" style="position: absolute; right: 26px; top: 30px; width: 86px; height: 110px; border-radius: 14px; background: #FFFFFF; box-shadow: 0 12px 24px rgba(0,0,0,.18); padding: 12px 10px; box-sizing: border-box; display: flex; flex-direction: column; gap: 6px; animation: skFloat 4s ease-in-out infinite;"><span style="height: 6px; width: 70%; border-radius: 4px; background: #FED7AA;"></span><span style="height: 5px; border-radius: 4px; background: #E5E7EB;"></span><span style="height: 5px; border-radius: 4px; background: #E5E7EB;"></span><span style="height: 5px; width: 80%; border-radius: 4px; background: #FCD34D;"></span><span style="height: 5px; border-radius: 4px; background: #E5E7EB;"></span><span style="height: 5px; width: 60%; border-radius: 4px; background: #A7F3D0;"></span></span>
+        <span style="position: relative; display: block; font-size: 22px; line-height: 27px; font-weight: 800; letter-spacing: -0.5px; max-width: 200px;">We read the values. You check them.</span>
+        <span style="position: relative; display: block; margin-top: 8px; font-size: 13px; line-height: 19px; font-weight: 600; color: #FFEDD5; max-width: 200px;">Nothing is saved until you confirm. A doctor can then explain it.</span>
+      </div>
+      <h2 style="margin: 22px 0 12px; font-size: 17px; font-weight: 800;">How would you like to add it?</h2>
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <sc-for list="{{ sources }}" as="o" hint-placeholder-count="3">
+          <button type="button" class="sk-opt" onClick="{{ start }}" style="border: 0; cursor: pointer; text-align: left; border-radius: 22px; padding: 14px; background: #FFFFFF; box-shadow: 0 6px 18px rgba(12,4,148,.06); display: flex; align-items: center; gap: 14px;">
+            <span style="{{ o.tile }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{ o.icon }}"></path></svg></span>
+            <span style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px;"><span style="font-size: 14.5px; font-weight: 800; color: #131B2E;">{{ o.k }}</span><span style="font-size: 12px; font-weight: 600; color: #6B6980;">{{ o.v }}</span></span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0C0494" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
+          </button>
+        </sc-for>
+      </div>
+      <p style="margin: 14px 0 0; font-size: 11.5px; line-height: 17px; font-weight: 600; color: #6B6980;">Your report stays in your vault. It is never used to sell you anything.</p>
+    </section>
+  </sc-if>
+
+  <sc-if value="{{ isReading }}" hint-placeholder-val="{{ false }}">
+    <section style="padding: 26px 20px 0; display: flex; flex-direction: column; align-items: center; animation: skRise .4s both;">
+      <div style="position: relative; width: 220px; height: 280px; border-radius: 22px; background: #FFFFFF; box-shadow: 0 20px 40px rgba(12,4,148,.14); padding: 22px 18px; box-sizing: border-box; display: flex; flex-direction: column; gap: 10px; overflow: hidden;">
+        <span style="height: 10px; width: 60%; border-radius: 6px; background: #E0E7FF;"></span><span style="height: 8px; border-radius: 6px; background: #F1F5F9;"></span><span style="height: 8px; border-radius: 6px; background: #F1F5F9;"></span><span style="height: 8px; width: 80%; border-radius: 6px; background: #FDE68A;"></span><span style="height: 8px; border-radius: 6px; background: #F1F5F9;"></span><span style="height: 8px; width: 70%; border-radius: 6px; background: #A7F3D0;"></span><span style="height: 8px; border-radius: 6px; background: #F1F5F9;"></span><span style="height: 8px; width: 50%; border-radius: 6px; background: #FDE68A;"></span><span style="height: 8px; border-radius: 6px; background: #F1F5F9;"></span>
+        <span aria-hidden="true" style="position: absolute; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, rgba(109,91,255,0), #6D5BFF, rgba(109,91,255,0)); box-shadow: 0 0 18px #6D5BFF; animation: skScan 2.2s ease-in-out infinite;"></span>
+      </div>
+      <p role="status" style="margin: 24px 0 6px; font-size: 18px; font-weight: 800;">Reading your report…</p>
+      <p style="margin: 0; font-size: 13px; font-weight: 600; color: #6B6980;">City Lab · 20 Jun 2026 · 2 pages</p>
+      <div style="margin-top: 18px; width: 240px; height: 8px; border-radius: 999px; background: #E6E4F5; overflow: hidden;"><span style="display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, #6D5BFF, #0C0494); animation: skFill 2.4s both cubic-bezier(.4,0,.2,1);"></span></div>
+      <button type="button" onClick="{{ toConfirm }}" style="margin-top: 22px; height: 46px; padding: 0 20px; border: 0; border-radius: 999px; background: #EEF2FF; color: #0C0494; font-size: 13.5px; font-weight: 800; cursor: pointer;">Continue (preview)</button>
+    </section>
+  </sc-if>
+
+  <sc-if value="{{ isConfirm }}" hint-placeholder-val="{{ false }}">
+    <section style="padding: 20px 20px 0; animation: skRise .4s both;">
+      <h2 style="margin: 0; font-size: 19px; font-weight: 800; letter-spacing: -0.4px;">We found 8 values. Check them.</h2>
+      <p style="margin: 6px 0 14px; font-size: 12.5px; line-height: 18px; font-weight: 600; color: #464555;">Tap any value to fix it. Untick anything we read wrong; it won’t be saved.</p>
+      <div style="border-radius: 26px; background: #FFFFFF; box-shadow: 0 6px 18px rgba(12,4,148,.06); padding: 4px 16px;">
+        <sc-for list="{{ values }}" as="v" hint-placeholder-count="8">
+          <label style="display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid #EEF2FF; cursor: pointer;">
+            <input type="checkbox" checked="{{ v.on }}" onChange="{{ v.toggle }}" style="width: 22px; height: 22px; accent-color: #0C0494; margin: 0;">
+            <span style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px;"><span style="font-size: 13.5px; font-weight: 800;">{{ v.name }}</span><span style="font-size: 11px; font-weight: 600; color: #6B6980;">Lab range {{ v.range }}</span></span>
+            <span style="{{ v.chip }}">{{ v.val }}</span>
+          </label>
+        </sc-for>
+      </div>
+      <button type="button" onClick="{{ toDone }}" style="margin-top: 16px; width: 100%; height: 54px; border: 0; border-radius: 999px; background: linear-gradient(150deg, #2B20C9, #0C0494); color: #FFFFFF; font-size: 15px; font-weight: 800; cursor: pointer; box-shadow: 0 12px 26px rgba(12,4,148,.30);">Save {{ checkedCount }} values to my record</button>
+    </section>
+  </sc-if>
+
+  <sc-if value="{{ isDone }}" hint-placeholder-val="{{ false }}">
+    <section style="padding: 40px 20px 0; display: flex; flex-direction: column; align-items: center; text-align: center; animation: skRise .4s both;">
+      <div style="position: relative; width: 120px; height: 120px; display: flex; align-items: center; justify-content: center;">
+        <span aria-hidden="true" style="position: absolute; inset: 0; border-radius: 999px; background: #A7F3D0; animation: skRing 1.6s ease-out infinite;"></span>
+        <span style="position: relative; width: 96px; height: 96px; border-radius: 999px; background: linear-gradient(145deg, #047857, #065F46); display: flex; align-items: center; justify-content: center; animation: skPop .6s both;"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7" stroke-dasharray="40" style="animation: skDraw .5s .4s both;"></path></svg></span>
+      </div>
+      <h2 style="margin: 22px 0 6px; font-size: 24px; font-weight: 800; letter-spacing: -0.6px;">Added to your record</h2>
+      <p style="margin: 0; max-width: 290px; font-size: 13.5px; line-height: 20px; font-weight: 600; color: #464555;">{{ checkedCount }} values from City Lab, 20 Jun. 2 are outside the lab’s range.</p>
+      <a href="Insights.dc.html" style="margin-top: 24px; width: 100%; height: 54px; border-radius: 999px; background: linear-gradient(150deg, #2B20C9, #0C0494); color: #FFFFFF; font-size: 15px; font-weight: 800; display: flex; align-items: center; justify-content: center; box-shadow: 0 12px 26px rgba(12,4,148,.30);">Ask a doctor to explain it</a>
+      <a href="Trends.dc.html" style="margin-top: 12px; height: 46px; display: flex; align-items: center; font-size: 14px; font-weight: 800;">See my trends</a>
+    </section>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1250}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { step: 'pick', off: {} }; }
+  componentDidUpdate(prev, prevState) {
+    if (this.state.step === 'reading' && prevState.step !== 'reading') { clearTimeout(this._t); this._t = setTimeout(() => this.setState({ step: 'confirm' }), 2600); }
+  }
+  componentWillUnmount() { clearTimeout(this._t); }
+  renderVals() {
+    const s = this.state;
+    const order = ['pick', 'reading', 'confirm', 'done'];
+    const idx = order.indexOf(s.step);
+    const vals = [
+      ['HDL cholesterol', '26 mg/dL', '40–60', 'look'], ['LDL cholesterol', '92 mg/dL', 'under 100', 'ok'], ['Triglycerides', '118 mg/dL', 'under 150', 'ok'], ['Total cholesterol', '168 mg/dL', 'under 200', 'ok'],
+      ['HbA1c', '7.6 %', '4.0–5.6', 'look'], ['Fasting glucose', '98 mg/dL', '70–100', 'ok'], ['Vitamin B12', '412 pg/mL', '200–900', 'ok'], ['TSH', '2.1 mIU/L', '0.4–4.0', 'ok']
+    ];
+    const t = (a, b) => 'width: 46px; height: 46px; flex-shrink: 0; border-radius: 16px; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle at 28% 22%, rgba(255,255,255,.5), rgba(255,255,255,0) 46%), linear-gradient(150deg, ' + a + ', ' + b + ');';
+    const count = vals.filter((v) => !s.off[v[0]]).length;
+    return {
+      isPick: s.step === 'pick', isReading: s.step === 'reading', isConfirm: s.step === 'confirm', isDone: s.step === 'done',
+      start: () => this.setState({ step: 'reading' }), toConfirm: () => this.setState({ step: 'confirm' }), toDone: () => this.setState({ step: 'done' }),
+      stepper: ['Add', 'Read', 'Check', 'Saved'].map((k, i) => ({ k,
+        bar: 'display: block; height: 100%; border-radius: 999px; transition: width .5s; background: linear-gradient(90deg, #6D5BFF, #0C0494); width: ' + (i <= idx ? '100%' : '0') + ';',
+        label: 'font-size: 11px; font-weight: 800; color: ' + (i <= idx ? '#0C0494' : '#6B6980') + ';' })),
+      sources: [
+        { k: 'Take a photo', v: 'Each page, flat and in good light', icon: 'M4 8h3l2-3h6l2 3h3v11H4zM12 17a4 4 0 1 0 0-8 4 4 0 0 0 0 8z', tile: t('#FB923C', '#C2410C') },
+        { k: 'Upload a PDF', v: 'From your phone or email', icon: 'M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5M12 17v-6M9.5 13.5L12 11l2.5 2.5', tile: t('#6D5BFF', '#0C0494') },
+        { k: 'From a StudentKare lab', v: 'Already in your vault, nothing to upload', icon: 'M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.8 3h10.4A2 2 0 0 0 19 18l-5-9V3', tile: t('#34D399', '#047857') }
+      ],
+      values: vals.map(([name, val, range, k]) => ({ name, val, range, on: !s.off[name],
+        toggle: () => this.setState({ off: Object.assign({}, s.off, { [name]: !s.off[name] }) }),
+        chip: 'padding: 5px 10px; border-radius: 999px; font-size: 12.5px; font-weight: 800; font-variant-numeric: tabular-nums; ' + (k === 'look' ? 'background: #FFFBEB; color: #92400E;' : 'background: #ECFDF5; color: #047857;') })),
+      checkedCount: count
+    };
+  }
+}
+</script>
+</body>
+</html>

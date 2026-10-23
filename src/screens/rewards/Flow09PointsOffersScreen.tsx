@@ -1,202 +1,72 @@
-import { observer } from 'mobx-react-lite';
-import { TwoRoomPointsRewards } from '../../components/TwoRoomPointsRewards';
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
-import { useTheme } from '../../theme/theme';
-import { useStudentStore } from '../../store/AppStores';
-import { Card } from '../../components/Card';
-import { Badge } from '../../components/Badge';
-import { Button } from '../../components/Button';
-import { Flame, Gift, Coffee, Shield } from 'lucide-react';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useT } from '@/i18n';
+import { Card, EmptyState, ErrorState, Eyebrow, Note, Skeleton } from '@/design-system';
+import { Icon } from '@/design-system/icons';
+import { color, font, fontWeight, size, space } from '@/design-system/theme';
+import { useApiResource } from '../../hooks/api/useApiResource';
+import type { PointsSummary } from '@/features/rewards/viewmodel/RewardsViewModel';
 
-const Flow09PointsOffersScreenUnwrapped: React.FC = () => {
-  const { tokens } = useTheme();
-  const { student, updateStudent } = useStudentStore();
-
-  const handleRedeem = (cost: number) => {
-    if (student.pointsBalance >= cost) {
-      updateStudent({ pointsBalance: student.pointsBalance - cost });
-    }
-  };
+/**
+ * Points balance (Flow 09).
+ *
+ * The balance is the student's own ledger total from GET /api/points/me
+ * (backend/services/rewards_api.py); nothing here adds, spends or estimates
+ * points. This screen used to show a local balance with made-up campus
+ * vouchers ("40% off", "day pass") that "redeemed" by subtracting from it, a
+ * "5-Day Streak" badge, a points-for-steps list, and an "RBI PPI compliant"
+ * claim (AGENTS.md guardrail 6: no hard-coded compliance claims). None of it
+ * existed on the server: points have no cash value and nothing can be
+ * redeemed yet, which is what the note below says.
+ */
+export const Flow09PointsOffersScreen: React.FC = () => {
+  const t = useT();
+  const points = useApiResource<PointsSummary>('/points/me');
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: tokens.canvas }]}>
-      <View style={styles.headerBox}>
-        <Badge label="FLOW 09 · M12 POINTS LEDGER & M14 REWARDS" variant="mono" />
-        <Text style={[styles.title, { color: tokens.text }]}>Wellness Milestones & Campus Offers</Text>
-        <Text style={[styles.sub, { color: tokens.text2 }]}>
-          Earn points through verified health camp completions, uploading lab reports, and hydration streaks.
-          Redeem for campus merchant discounts (RBI PPI compliant non-monetary benefit).
-        </Text>
+    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+      <Eyebrow>{t('rewards.eyebrow')}</Eyebrow>
+      <Text accessibilityRole="header" style={styles.title}>{t('rewards.points.title')}</Text>
 
-        {/* Balance Card */}
-        <Card variant="dark" style={styles.balanceCard}>
-          <View style={styles.balanceTop}>
-            <View>
-              <Text style={styles.balanceLabel}>AVAILABLE WELLNESS POINTS</Text>
-              <Text style={styles.balanceVal}>{student.pointsBalance} PTS</Text>
-            </View>
-            <View style={[styles.streakBadge, { backgroundColor: tokens.surface3 }]}>
-              <Flame size={20} color="#ffb020" />
-              <Text style={[styles.streakText, { color: tokens.action }]}>5-Day Streak</Text>
-            </View>
-          </View>
-          <View style={[styles.rbiNotice, { backgroundColor: 'rgba(255,255,255,0.08)' }]}>
-            <Shield size={13} color="#00b1ff" />
-            <Text style={styles.rbiNoticeText}>
-              RBI PPI Compliant: Points represent non-stored-value campus rewards and cannot be converted to fiat currency.
-            </Text>
-          </View>
-        </Card>
-      </View>
+      {points.loading ? <Skeleton label={t('rewards.loading')} lines={['40%', '100%']} /> : null}
 
-      <TwoRoomPointsRewards />
-      {/* Offers Grid */}
-      <View style={styles.offersGrid}>
-        <Text style={[styles.sectionHeading, { color: tokens.text }]}>Campus Merchant Vouchers</Text>
+      {!points.loading && points.error ? (
+        <ErrorState
+          title={t('rewards.failedTitle')}
+          body={t('rewards.failedBody')}
+          retryLabel={t('common.tryAgain')}
+          onRetry={points.reload}
+        />
+      ) : null}
 
-        <Card variant="surface" style={styles.offerCard}>
-          <View style={styles.offerRow}>
-            <View style={[styles.offerIconBox, { backgroundColor: tokens.rewardBg }]}>
-              <Coffee size={24} color={tokens.reward} />
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={[styles.offerTitle, { color: tokens.text }]}>Campus CCD / Cafe Mocha 40% Off</Text>
-              <Text style={[styles.offerSub, { color: tokens.text2 }]}>Valid at Student Centre Food Court</Text>
-            </View>
-            <Button
-              label="Redeem 200 Pts"
-              onPress={() => handleRedeem(200)}
-              variant="reward"
-              size="sm"
-              disabled={student.pointsBalance < 200}
-            />
+      {!points.loading && !points.error && points.data && points.data.balance === 0 ? (
+        <EmptyState title={t('rewards.points.emptyTitle')} body={t('rewards.points.emptyBody')} />
+      ) : null}
+
+      {!points.loading && !points.error && points.data && points.data.balance > 0 ? (
+        <Card>
+          <View
+            style={styles.balanceRow}
+            accessible
+            accessibilityLabel={t('rewards.points.balanceSpoken', { balance: points.data.balance })}
+          >
+            <Icon name="star" size={space.s24} color={color.action} />
+            <Text style={styles.balance}>{points.data.balance}</Text>
+            <Text style={styles.meta}>{t('rewards.points.balance')}</Text>
           </View>
         </Card>
+      ) : null}
 
-        <Card variant="surface" style={styles.offerCard}>
-          <View style={styles.offerRow}>
-            <View style={[styles.offerIconBox, { backgroundColor: tokens.surface3 }]}>
-              <Gift size={24} color={tokens.action} />
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={[styles.offerTitle, { color: tokens.text }]}>Free Sports Complex Day Pass</Text>
-              <Text style={[styles.offerSub, { color: tokens.text2 }]}>Badminton & Swimming Pool Access</Text>
-            </View>
-            <Button
-              label="Redeem 350 Pts"
-              onPress={() => handleRedeem(350)}
-              variant="primary"
-              size="sm"
-              disabled={student.pointsBalance < 350}
-            />
-          </View>
-        </Card>
-      </View>
+      {!points.loading && !points.error && points.data ? <Note tone="info">{t('rewards.points.note')}</Note> : null}
     </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 24,
-  },
-  headerBox: {
-    maxWidth: 780,
-    alignSelf: 'center',
-    width: '100%',
-    marginBottom: 20,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: '800',
-    marginTop: 8,
-    marginBottom: 4,
-  },
-  sub: {
-    fontSize: 13,
-    marginBottom: 16,
-  },
-  balanceCard: {
-    padding: 20,
-  },
-  balanceTop: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 14,
-  },
-  balanceLabel: {
-    fontSize: 11,
-    color: '#b1a6f6',
-    fontWeight: '700',
-    letterSpacing: 0.5,
-  },
-  balanceVal: {
-    fontSize: 32,
-    fontWeight: '800',
-    color: '#ffffff',
-  },
-  streakBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 20,
-  },
-  streakText: {
-    fontSize: 13,
-    fontWeight: '700',
-  },
-  rbiNotice: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    padding: 10,
-    borderRadius: 8,
-  },
-  rbiNoticeText: {
-    color: '#d8d8e3',
-    fontSize: 11,
-    flex: 1,
-  },
-  offersGrid: {
-    maxWidth: 780,
-    alignSelf: 'center',
-    width: '100%',
-    gap: 12,
-    paddingBottom: 40,
-  },
-  sectionHeading: {
-    fontSize: 16,
-    fontWeight: '700',
-    marginBottom: 4,
-  },
-  offerCard: {
-    padding: 16,
-  },
-  offerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 14,
-  },
-  offerIconBox: {
-    width: 44,
-    height: 44,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  offerTitle: {
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  offerSub: {
-    fontSize: 12,
-    marginTop: 2,
-  },
+  screen: { flex: 1, backgroundColor: color.canvas },
+  content: { padding: space.gutterPhone, gap: space.s16, maxWidth: size.panelMax },
+  title: { fontFamily: font.family.sans, fontSize: font.size.heading, fontWeight: fontWeight(font.weight.heavy), color: color.text },
+  balanceRow: { flexDirection: 'row', alignItems: 'center', gap: space.s8 },
+  balance: { fontFamily: font.family.mono, fontSize: font.size.heading, fontWeight: fontWeight(font.weight.heavy), color: color.text },
+  meta: { fontFamily: font.family.sans, fontSize: font.size.caption, color: color.text3 },
 });
-
-export const Flow09PointsOffersScreen: React.FC = observer(Flow09PointsOffersScreenUnwrapped);

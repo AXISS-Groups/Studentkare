@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { FollowUpTask, StaffAppointment, WorkRequest } from '@/data/workflowTypes';
+import type { FollowUpTask, StaffAppointment, WorkRequest } from '@/data/types/workflowTypes';
 import type { WorkRepository } from '../../model/workRepository';
 import type { AppointmentList, WorkRequestPage, WorkRequestQuery } from '../../model/types';
 import { WorkRequestsViewModel } from '../WorkRequestsViewModel';
@@ -129,6 +129,12 @@ describe('WorkRequestsViewModel steps offered', () => {
     expect(vm.requestSteps(request('a', { status: 'ACCEPTED', kind: 'lab' }))).toEqual(['COMPLETED']);
     expect(vm.requestSteps(request('a', { status: 'DISPATCHED' }))).toEqual(['COMPLETED']);
     (['COMPLETED', 'DECLINED', 'CANCELLED'] as const).forEach(status => expect(vm.requestSteps(request('a', { status }))).toEqual([]));
+  });
+
+  it('offers only a decline on an order that is not paid yet (live-run audit #1)', () => {
+    const vm = new WorkRequestsViewModel(work());
+    expect(vm.requestSteps(request('a', { awaitingPayment: true }))).toEqual(['DECLINED']);
+    expect(vm.requestSteps(request('a', { status: 'ACCEPTED', kind: 'product', awaitingPayment: true }))).toEqual([]);
   });
 
   it('offers confirm or decline, then completion or no-show and the consultation, for appointments; resolution for open follow-ups', () => {

@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { View, Text, TouchableOpacity } from "react-native";
-import { useTheme } from "../theme/theme";
+import { useTheme } from "../theme/tokens/theme";
 import { Card } from "./Card";
 import { Badge } from "./Badge";
 import { Eye, Type, Contrast } from "lucide-react";
-import { assertRule } from "../ai/constitution";
+import { assertRule } from "../ai/core/constitution";
 
 export const UserAccessibilityCustomizer: React.FC = () => {
   const { tokens, typography } = useTheme();
@@ -40,8 +40,8 @@ export const UserAccessibilityCustomizer: React.FC = () => {
             border: `1px solid ${highContrast ? tokens.action : tokens.rule}`,
           }}
         >
-          <Contrast size={14} color={highContrast ? "#ffffff" : tokens.text} />
-          <Text style={{ fontSize: 11, fontWeight: "700", color: highContrast ? "#ffffff" : tokens.text }}>
+          <Contrast size={14} color={highContrast ? tokens.onAction : tokens.text} />
+          <Text style={{ fontSize: 11, fontWeight: "700", color: highContrast ? tokens.onAction : tokens.text }}>
             High Contrast Mode {highContrast ? "ON" : "OFF"}
           </Text>
         </TouchableOpacity>
@@ -59,8 +59,8 @@ export const UserAccessibilityCustomizer: React.FC = () => {
             border: `1px solid ${dyslexicFont ? tokens.action : tokens.rule}`,
           }}
         >
-          <Type size={14} color={dyslexicFont ? "#ffffff" : tokens.text} />
-          <Text style={{ fontSize: 11, fontWeight: "700", color: dyslexicFont ? "#ffffff" : tokens.text }}>
+          <Type size={14} color={dyslexicFont ? tokens.onAction : tokens.text} />
+          <Text style={{ fontSize: 11, fontWeight: "700", color: dyslexicFont ? tokens.onAction : tokens.text }}>
             OpenDyslexic Font {dyslexicFont ? "ON" : "OFF"}
           </Text>
         </TouchableOpacity>
@@ -79,7 +79,7 @@ export const UserAccessibilityCustomizer: React.FC = () => {
                 border: `1px solid ${active ? tokens.action : tokens.rule}`,
               }}
             >
-              <Text style={{ fontSize: 11, fontWeight: "700", color: active ? "#ffffff" : tokens.text }}>
+              <Text style={{ fontSize: 11, fontWeight: "700", color: active ? tokens.onAction : tokens.text }}>
                 Font: {scale}
               </Text>
             </TouchableOpacity>

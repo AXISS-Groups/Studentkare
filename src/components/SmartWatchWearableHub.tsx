@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { View, Text, TouchableOpacity } from "react-native";
-import { useTheme } from "../theme/theme";
+import { useTheme } from "../theme/tokens/theme";
 import { Card } from "./Card";
 import { Badge } from "./Badge";
 import { Watch, Heart, Activity, Moon, Thermometer, RefreshCw } from "lucide-react";
-import { assertRule } from "../ai/constitution";
+import { assertRule } from "../ai/core/constitution";
 
 export const SmartWatchWearableHub: React.FC = () => {
   const { tokens, radius, typography } = useTheme();
@@ -59,7 +59,7 @@ export const SmartWatchWearableHub: React.FC = () => {
                 border: `1px solid ${active ? tokens.action : tokens.rule}`,
               }}
             >
-              <Text style={{ fontSize: 11, fontWeight: "800", color: active ? "#ffffff" : tokens.text }}>
+              <Text style={{ fontSize: 11, fontWeight: "800", color: active ? tokens.onAction : tokens.text }}>
                 {dev.label}
               </Text>
             </TouchableOpacity>
@@ -126,8 +126,8 @@ export const SmartWatchWearableHub: React.FC = () => {
           gap: 6,
         }}
       >
-        <RefreshCw size={16} color="#ffffff" />
-        <Text style={{ color: "#ffffff", fontWeight: "800", fontSize: 12, fontFamily: typography.fontFamily }}>
+        <RefreshCw size={16} color={tokens.onAction} />
+        <Text style={{ color: tokens.onAction, fontWeight: "800", fontSize: 12, fontFamily: typography.fontFamily }}>
           {isSyncing ? "Fetching Latest Smartwatch Telemetry..." : "Sync Latest Telemetry from Smartwatch"}
         </Text>
       </TouchableOpacity>

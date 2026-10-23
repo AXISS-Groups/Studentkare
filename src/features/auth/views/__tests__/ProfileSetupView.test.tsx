@@ -1,18 +1,19 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import React from 'react';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { apiRequest } from '@/data/http';
+import { apiRequest } from '@/data/services/http';
 import { ProfileSetupView } from '../ProfileSetupView';
 
-vi.mock('@/data/http', () => ({ apiRequest: vi.fn() }));
+vi.mock('@/data/services/http', () => ({ apiRequest: vi.fn() }));
 const mocked = vi.mocked(apiRequest);
 
 const SERVER = { hostelBlock: '', room: '', bloodGroup: '', emergencyContactPhone: '' };
 const onDone = vi.fn();
+const onBack = vi.fn();
 
 async function open(overrides: Partial<typeof SERVER> = {}) {
   mocked.mockResolvedValueOnce({ ...SERVER, ...overrides } as never);
-  render(<ProfileSetupView onDone={onDone} />);
+  render(<ProfileSetupView onDone={onDone} onBack={onBack} />);
   // Waiting for the request to be *made* is not waiting for it to land — the
   // effect that fills the form runs after. Typing before that flush would be
   // overwritten by the server values.
@@ -105,5 +106,29 @@ describe('accessibility', () => {
     for (const svg of container.querySelectorAll('svg')) {
       expect(svg).toHaveAttribute('aria-hidden', 'true');
     }
+  });
+});
+
+describe('the board (canvas ProfileSetup)', () => {
+  it('has the back arrow, the setup progress and the field icons', async () => {
+    await open();
+    const container = document.body;
+    expect(screen.getByRole('progressbar', { name: 'Setup step 1 of 4' })).toHaveAttribute('aria-valuenow', '1');
+    for (const icon of ['arrow-left', 'map-pin-4', 'phone-2']) {
+      expect(container.querySelector(`[data-icon="${icon}"]`)).not.toBeNull();
+    }
+    fireEvent.click(screen.getByRole('button', { name: 'Back' }));
+    expect(onBack).toHaveBeenCalled();
+  });
+
+  it('cannot save over a profile that never loaded, but can still be skipped', async () => {
+    mocked.mockRejectedValueOnce(new Error('offline'));
+    render(<ProfileSetupView onDone={onDone} onBack={onBack} />);
+    expect(await screen.findByRole('alert')).toHaveTextContent(/couldn.t be loaded/i);
+    expect(screen.getByRole('button', { name: /^continue$/i })).toBeDisabled();
+    expect(screen.getByLabelText(/hostel block/i)).toBeDisabled();
+    fireEvent.click(screen.getByRole('button', { name: /add this later/i }));
+    expect(onDone).toHaveBeenCalled();
+    expect(mocked).toHaveBeenCalledTimes(1);
   });
 });

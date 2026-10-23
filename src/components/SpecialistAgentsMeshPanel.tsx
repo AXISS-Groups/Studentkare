@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
-import { useTheme } from '../theme/theme';
+import { useTheme } from '../theme/tokens/theme';
 import { Card } from './Card';
 import { Badge } from './Badge';
 import { Bot, Play, Cpu } from 'lucide-react';
-import { specialistMesh, SpecialistAgentResult } from '../ai/specialistAgentsMesh';
+import { specialistMesh, SpecialistAgentResult } from '../ai/agents/specialistAgentsMesh';
 
 export const SpecialistAgentsMeshPanel: React.FC = () => {
   const { tokens, radius, typography } = useTheme();
@@ -14,7 +14,6 @@ export const SpecialistAgentsMeshPanel: React.FC = () => {
     specialistMesh.runCdscoRecallGuard('Paracetamol 650mg'),
     specialistMesh.runFssaiHygieneAuditor('Hostel Mess Pod 1'),
     specialistMesh.runDpdpErasureReconciler('dpdp_req_003'),
-    specialistMesh.runAbdmGatewayHealthCheck(),
   ]);
 
   const [runningAll, setRunningAll] = useState(false);
@@ -27,7 +26,6 @@ export const SpecialistAgentsMeshPanel: React.FC = () => {
         specialistMesh.runCdscoRecallGuard('Paracetamol 650mg'),
         specialistMesh.runFssaiHygieneAuditor('Hostel Mess Pod 1'),
         specialistMesh.runDpdpErasureReconciler('dpdp_req_003'),
-        specialistMesh.runAbdmGatewayHealthCheck(),
       ]);
       setRunningAll(false);
     }, 800);
@@ -42,11 +40,11 @@ export const SpecialistAgentsMeshPanel: React.FC = () => {
             Specialist Autonomous Agent Swarm Mesh
           </Text>
         </View>
-        <Badge label="5 SPECIALIZED AGENTS ONLINE" variant="positive" />
+        <Badge label="4 SPECIALIZED AGENTS ONLINE" variant="positive" />
       </View>
 
       <Text style={{ fontSize: 12, color: tokens.text2, marginBottom: 16 }}>
-        Autonomous background agent mesh monitoring epidemic R0 rates, CDSCO drug recalls, FSSAI mess water quality, DPDP erasure SLAs, and ABDM gateway latency.
+        Autonomous background agent mesh monitoring epidemic R0 rates, CDSCO drug recalls, FSSAI mess water quality, and DPDP erasure SLAs.
       </Text>
 
       {/* Agents List */}
@@ -74,8 +72,8 @@ export const SpecialistAgentsMeshPanel: React.FC = () => {
         disabled={runningAll}
         style={{ backgroundColor: tokens.action, padding: 10, borderRadius: 10, alignItems: 'center', flexDirection: 'row', justifyContent: 'center', gap: 6 }}
       >
-        <Play size={14} color="#ffffff" />
-        <Text style={{ fontSize: 12, fontWeight: '800', color: '#ffffff', fontFamily: typography.fontFamily }}>
+        <Play size={14} color={tokens.onAction} />
+        <Text style={{ fontSize: 12, fontWeight: '800', color: tokens.onAction, fontFamily: typography.fontFamily }}>
           {runningAll ? 'Executing Specialist Mesh Sweep...' : 'Trigger Full Specialist Swarm Audit Sweep'}
         </Text>
       </TouchableOpacity>

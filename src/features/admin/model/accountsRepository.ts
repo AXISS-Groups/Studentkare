@@ -1,5 +1,5 @@
-import { apiRequest } from '@/data/http';
-import type { AccountRole } from '@/data/workflowTypes';
+import { apiRequest } from '@/data/services/http';
+import type { AccountRole, PartnerKind } from '@/data/types/workflowTypes';
 import type { AccountList, AccountListQuery, AccountPage, NewStaffAccount } from './types';
 
 /** Accounts for Super Admin. The only place that knows the /ops/accounts endpoints. */
@@ -10,6 +10,12 @@ export interface AccountsRepository {
   /** Every account, unfiltered (/ops/accounts), as the provider choices on Catalogue ops need. */
   listAll(signal?: AbortSignal): Promise<AccountList>;
   create(account: NewStaffAccount): Promise<unknown>;
+  /** Assign or change a partner's type, which decides the partner dashboard they see. */
+  setPartnerKind(accountId: string, partnerKind: PartnerKind): Promise<unknown>;
+  /** Set the campus a campus administrator acts for (PATCH /ops/accounts/{id}/campus). */
+  setCampus(accountId: string, university: string): Promise<unknown>;
+  /** Reset another account's lost authenticator (POST /ops/accounts/{id}/2fa/reset). Ends their sessions. */
+  resetTwoFactor(accountId: string, reason: string): Promise<unknown>;
 }
 
 /** /ops/accounts?limit=…&offset=…[&query=…][&role=…] */
@@ -21,4 +27,7 @@ export const accountsRepository: AccountsRepository = {
   list: (query, signal) => apiRequest<AccountPage>(listPath(query), { signal }),
   listAll: signal => apiRequest<AccountList>('/ops/accounts', { signal }),
   create: account => apiRequest('/ops/accounts', { method: 'POST', body: JSON.stringify(account) }),
+  setPartnerKind: (accountId, partnerKind) => apiRequest(`/ops/accounts/${encodeURIComponent(accountId)}/partner-kind`, { method: 'PATCH', body: JSON.stringify({ partnerKind }) }),
+  setCampus: (accountId, university) => apiRequest(`/ops/accounts/${encodeURIComponent(accountId)}/campus`, { method: 'PATCH', body: JSON.stringify({ university }) }),
+  resetTwoFactor: (accountId, reason) => apiRequest(`/ops/accounts/${encodeURIComponent(accountId)}/2fa/reset`, { method: 'POST', body: JSON.stringify({ reason }) }),
 };

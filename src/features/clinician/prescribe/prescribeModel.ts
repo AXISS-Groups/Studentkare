@@ -1,120 +1,145 @@
-import { isDev } from '@/core/env';
-import type { Loadable } from '../shared/LoadableViewModel';
+import { ApiError, apiRequest } from '@/data/services/http';
+import { careAppointments } from '../shared/clinicalData';
+import type { CareAppointment, Request } from '../shared/clinicalData';
 
 /**
- * Prescribe (design page 5). TIER 1: awaiting a named design reviewer and
- * clinical sign-off. Pure rules here so they can be tested on their own.
+ * Prescribe (design page 5, Tier 1, approved 2026-10-21) on the real
+ * `POST /prescriptions` contract. Pure rules here so they can be tested on
+ * their own.
+ *
+ * - The patient comes from the doctor's own confirmed or completed
+ *   appointments; the server refuses anyone else.
+ * - The allergy check runs on the server against the student's record (the
+ *   doctor's browser never reads the allergy list). It compares NAMES only:
+ *   no substance code is sent, so cross-reactivity is not checked, and the
+ *   screen says so every time it blocks.
+ * - A drug the check refuses stays on screen, struck through with the
+ *   reason, and is never sent again. This screen never sends the server's
+ *   "acknowledge the conflict" override.
  */
 
 export type DrugSchedule = 'OTC' | 'H' | 'H1' | 'X';
+export const SCHEDULES: readonly DrugSchedule[] = ['OTC', 'H', 'H1', 'X'];
 
-export interface Drug {
-  id: string;
-  /** "Amoxicillin 500 mg" */
-  name: string;
-  generic: string;
-  /** "Crocin · tablet" */
-  brand: string;
-  drugClass: string;
-  schedule: DrugSchedule;
+/** Server field limits (PrescriptionItemInput). */
+export const RX_LIMITS = { generic: 160, strength: 60, form: 40, dose: 60, frequency: 60, durationDays: 365, quantity: 1000, lines: 20 } as const;
+
+/** One drug as the doctor entered it (the board's "Add a drug"). */
+export interface DrugEntry {
+  genericName: string;
+  brandName: string;
+  strength: string;
+  form: string;
   dose: string;
   frequency: string;
-  duration: string;
-}
-
-export interface Allergy {
-  substance: string;
-  /** The class it was recorded against, e.g. "Penicillin". */
-  drugClass: string;
-  /** "14 Jul 2026" — as recorded, full date. */
-  recordedOn: string;
-}
-
-export interface RxLine {
-  id: string;
-  drugId: string;
-  generic: string;
-  brand: string;
-  schedule: DrugSchedule;
-  dose: string;
-  frequency: string;
-  duration: string;
+  durationDays: number;
+  quantity: number;
+  scheduleClass: DrugSchedule;
   substitutionAllowed: boolean;
-  /** Set when the check refused it; the line stays, struck through, with why. */
-  blockedReason?: string;
+}
+
+export interface RxLine extends DrugEntry {
+  id: string;
+  /** Set when a check refused it; the line stays, struck through, with why. */
+  blocked?: { kind: 'allergy'; substances: string[] } | { kind: 'schedule-x' };
+}
+
+/** GET /encounters, the fields Prescribe needs to link a note. */
+export interface PrescriberNote {
+  id: string;
+  appointmentId: string;
+  patientId: string;
+  status: string;
+  createdAt: number;
 }
 
 export interface PrescribeData {
-  patientName: string;
-  /** How the consult is happening — Schedule X is never prescribed by video. */
-  mode: 'video' | 'in-person';
-  /** Null when the allergy record could not be read: then nothing can be added. */
-  allergies: Allergy[] | null;
-  lines: RxLine[];
-  catalogue: Drug[];
+  /** Confirmed or completed appointments: who may be prescribed for. */
+  appointments: CareAppointment[];
+  /** This doctor's notes; null when they could not be read (prescribing stays possible, unlinked). */
+  notes: PrescriberNote[] | null;
 }
 
-export interface PrescribeSource extends Loadable<PrescribeData> {
-  sign?: (lines: RxLine[]) => Promise<void>;
+/** 409 from POST /prescriptions: which drugs matched which recorded allergy. */
+export interface AllergyConflict {
+  genericName: string;
+  conflicts: { substance: string; flag: string }[];
+}
+
+export interface IssueRequest {
+  patientId: string;
+  encounterId: string;
+  lines: DrugEntry[];
+}
+
+export type IssueResult = { kind: 'issued'; id: string } | { kind: 'conflict'; conflicts: AllergyConflict[] };
+
+export interface PrescribeSource {
+  load(): Promise<PrescribeData | null>;
+  issue?: (request: IssueRequest) => Promise<IssueResult>;
 }
 
 /**
- * Why a drug may not be prescribed here, or null if it may.
- * Name/class match only — cross-reactivity is NOT checked, and the screen says so.
+ * Why a line may not be sent from here, before the server sees it. Schedule
+ * X is never prescribed by video (Telemedicine Practice Guidelines 2020); the
+ * appointment does not report whether this consult is in person, so the rule
+ * fails closed and treats it as video.
  */
-export function matchingAllergy(drug: Pick<Drug, 'drugClass' | 'generic'>, allergies: Allergy[]): Allergy | null {
-  return allergies.find(
-    (a) => a.drugClass.toLowerCase() === drug.drugClass.toLowerCase() || drug.generic.toLowerCase().includes(a.substance.toLowerCase()),
-  ) ?? null;
+export function localBlock(entry: Pick<DrugEntry, 'scheduleClass'>): RxLine['blocked'] {
+  return entry.scheduleClass === 'X' ? { kind: 'schedule-x' } : undefined;
 }
 
-export function blockReason(drug: Drug, data: Pick<PrescribeData, 'allergies' | 'mode'>): string | null {
-  if (data.allergies === null) return 'Allergy record couldn’t be checked — nothing can be added until it can';
-  const allergy = matchingAllergy(drug, data.allergies);
-  if (allergy) return `${drug.drugClass} class — allergy recorded ${allergy.recordedOn}`;
-  if (drug.schedule === 'X' && data.mode === 'video') return 'Schedule X — never prescribed by video (Telemedicine Practice Guidelines 2020)';
-  return null;
+/** A line is complete when the server would accept it and a pharmacist can fill it. */
+export function lineComplete(line: DrugEntry): boolean {
+  return line.genericName.trim().length >= 2
+    && line.dose.trim().length > 0 && line.frequency.trim().length > 0
+    && line.durationDays >= 1 && line.durationDays <= RX_LIMITS.durationDays
+    && line.quantity >= 1 && line.quantity <= RX_LIMITS.quantity;
 }
 
-export function searchDrugs(catalogue: Drug[], query: string): Drug[] {
-  const q = query.trim().toLowerCase();
-  if (q.length < 2) return [];
-  return catalogue.filter((d) => d.name.toLowerCase().includes(q) || d.brand.toLowerCase().includes(q) || d.drugClass.toLowerCase().includes(q));
-}
-
-export const SCHEDULE_NOTE: Record<DrugSchedule, string> = {
-  OTC: 'Over the counter',
-  H: 'Schedule H · prescription only',
-  H1: 'Schedule H1 · ID needed at counter',
-  X: 'Schedule X',
-};
-
-export function prescribeSample(): PrescribeData {
-  const catalogue: Drug[] = [
-    { id: 'd-para', name: 'Paracetamol 650 mg', generic: 'Paracetamol', brand: 'Crocin · tablet', drugClass: 'Analgesic', schedule: 'OTC', dose: '650 mg', frequency: 'Every 6 hrs, as needed', duration: '3 days' },
-    { id: 'd-azi', name: 'Azithromycin 500 mg', generic: 'Azithromycin', brand: 'Azee · tablet', drugClass: 'Macrolide', schedule: 'H1', dose: '500 mg', frequency: 'Once daily', duration: '3 days' },
-    { id: 'd-amox', name: 'Amoxicillin 500 mg', generic: 'Amoxicillin', brand: 'Mox · capsule', drugClass: 'Penicillin', schedule: 'H', dose: '500 mg', frequency: 'Three times daily', duration: '5 days' },
-    { id: 'd-amoxclav', name: 'Amoxicillin + Clavulanate', generic: 'Amoxicillin + Clavulanate', brand: 'Augmentin · tablet', drugClass: 'Penicillin', schedule: 'H', dose: '625 mg', frequency: 'Twice daily', duration: '5 days' },
-    { id: 'd-cetir', name: 'Cetirizine 10 mg', generic: 'Cetirizine', brand: 'Cetzine · tablet', drugClass: 'Antihistamine', schedule: 'OTC', dose: '10 mg', frequency: 'Once at night', duration: '5 days' },
-    { id: 'd-ors', name: 'ORS sachet', generic: 'Oral rehydration salts', brand: 'Electral · sachet', drugClass: 'Rehydration', schedule: 'OTC', dose: '1 sachet in 1 L water', frequency: 'Sip through the day', duration: '3 days' },
-  ];
-  const line = (drug: Drug, blockedReason?: string): RxLine => ({
-    id: `l-${drug.id}`, drugId: drug.id, generic: drug.generic, brand: blockedReason ? 'Blocked by allergy check' : drug.brand, schedule: drug.schedule,
-    dose: blockedReason ? '—' : drug.dose, frequency: blockedReason ? '—' : drug.frequency, duration: blockedReason ? '—' : drug.duration,
-    substitutionAllowed: !blockedReason, blockedReason,
+/** Marks every line a 409 named, by generic name (as the server matched it). */
+export function applyConflicts(lines: RxLine[], conflicts: AllergyConflict[]): RxLine[] {
+  return lines.map((line) => {
+    const hit = conflicts.find((c) => c.genericName.trim().toLowerCase() === line.genericName.trim().toLowerCase());
+    return hit ? { ...line, blocked: { kind: 'allergy', substances: hit.conflicts.map((c) => c.substance) } } : line;
   });
-  return {
-    patientName: 'Priya N.',
-    mode: 'video',
-    allergies: [{ substance: 'Penicillin', drugClass: 'Penicillin', recordedOn: '14 Jul 2026' }],
-    catalogue,
-    lines: [line(catalogue[0]), line(catalogue[1]), line(catalogue[2], 'Penicillin class — allergy recorded 14 Jul 2026')],
-  };
 }
 
-export const samplePrescribeSource: PrescribeSource = { load: async () => prescribeSample(), sign: async () => undefined };
-export const unconnectedPrescribeSource: PrescribeSource = { load: async () => null };
+function isConflictDetail(detail: unknown): detail is { conflicts: AllergyConflict[] } {
+  return typeof detail === 'object' && detail !== null && Array.isArray((detail as { conflicts?: unknown }).conflicts);
+}
 
-export function defaultPrescribeSource(): PrescribeSource {
-  return isDev() ? samplePrescribeSource : unconnectedPrescribeSource;
+export function prescribeApiSource(request: Request = apiRequest): PrescribeSource {
+  return {
+    async load() {
+      // Notes only link the prescription; if they can't load, prescribing still works, unlinked.
+      const notes = request<{ items: PrescriberNote[] }>('/encounters').then((r) => r.items, () => null);
+      const appointments = await careAppointments(request);
+      return { appointments, notes: await notes };
+    },
+    async issue({ patientId, encounterId, lines }) {
+      try {
+        const issued = await request<{ id: string }>('/prescriptions', {
+          method: 'POST',
+          body: JSON.stringify({
+            patientId,
+            ...(encounterId ? { encounterId } : {}),
+            items: lines.map((l) => ({
+              genericName: l.genericName.trim(), brandName: l.brandName.trim(), strength: l.strength.trim(), form: l.form.trim(),
+              dose: l.dose.trim(), frequency: l.frequency.trim(), durationDays: l.durationDays, quantity: l.quantity,
+              substitutionAllowed: l.substitutionAllowed, scheduleClass: l.scheduleClass,
+            })),
+            // Never an override from this screen: a conflict blocks the drug.
+            acknowledgeAllergyConflict: false,
+          }),
+        });
+        return { kind: 'issued', id: issued.id };
+      } catch (reason) {
+        if (reason instanceof ApiError && reason.status === 409 && isConflictDetail(reason.detail)) {
+          return { kind: 'conflict', conflicts: reason.detail.conflicts };
+        }
+        throw reason;
+      }
+    },
+  };
 }

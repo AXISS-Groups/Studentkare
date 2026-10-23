@@ -28,7 +28,7 @@ from sqlalchemy.orm import Session
 
 from core import preventive_models as P
 from core import workflow_models as M
-from services import ops_feed
+from services import consent_ledger, ops_feed
 from services.workflow_auth import (
     StrictModel,
     authenticated_user,
@@ -327,11 +327,16 @@ def put_preferences(body: PreferenceInput, user: dict = Depends(authenticated_us
     if row is None:
         row = P.PreventivePreference(account_id=user["id"], consent_version=1)
         db.add(row)
+    was = {"SEASONAL_EDUCATION": bool(row.seasonal_education_enabled), "PREVENTIVE_OFFERS": bool(row.promotions_enabled)}
     row.seasonal_education_enabled = body.seasonalEducationEnabled
     row.promotions_enabled = body.promotionsEnabled
     row.region = body.region
     row.topics = body.topics
     row.updated_at = time.time()
+    # Both are optional consents: the ledger records each change (services/consent_ledger.py).
+    for purpose, on in (("SEASONAL_EDUCATION", body.seasonalEducationEnabled), ("PREVENTIVE_OFFERS", body.promotionsEnabled)):
+        if on != was[purpose]:
+            consent_ledger.record_change(db, user["id"], user["id"], purpose, on)
     audit(db, user, "PREVENTIVE_PREFERENCES_UPDATED", user["id"])
     db.commit()
     return preference_payload(row)
@@ -351,10 +356,30 @@ class SourceRef(StrictModel):
     url: HttpsUrl
 
 
+StepKind = Literal["ACTIVITY", "FOOD", "TEST", "OTHER"]
+StepDetail = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=80)]
+
+
+class GuidanceStep(StrictModel):
+    """One next step as the doctor chose it in the review form (Mobile 2.0 plan, D-M2-11).
+
+    ``kind`` only picks the icon on M2Trends (walk / bowl / flask); ``often`` and
+    ``when`` are the doctor's own words ("Daily", "In 3 months"). The app never
+    writes any of them.
+    """
+    text: GuidanceLine
+    kind: StepKind = "OTHER"
+    often: StepDetail | None = None
+    when: StepDetail | None = None
+
+
 class GuidanceView(StrictModel):
     summary: str
     questions: list[str]
+    # The text of every step, in order: what screens built before D-M2-11 read.
     nextSteps: list[str]
+    # The same steps with the doctor's kind / often / when; a plain-text step is OTHER.
+    steps: list[GuidanceStep]
     sourceRefs: list[SourceRef]
 
 
@@ -367,6 +392,7 @@ class ReviewView(StrictModel):
     createdAt: float
     updatedAt: float
     reviewedBy: str | None
+    reviewedByName: str | None = None
     reviewedAt: float | None
     guidance: GuidanceView | None
 
@@ -380,7 +406,8 @@ class ReviewInput(StrictModel):
     decision: Literal["APPROVED", "REJECTED"]
     summary: Annotated[str, StringConstraints(strip_whitespace=True, max_length=4000)] = ""
     questions: list[GuidanceLine] = Field(default_factory=list, max_length=10)
-    nextSteps: list[GuidanceLine] = Field(default_factory=list, max_length=10)
+    # A plain line (as before) or a structured step (D-M2-11); both may be mixed.
+    nextSteps: list[GuidanceLine | GuidanceStep] = Field(default_factory=list, max_length=10)
     sourceRefs: list[SourceRef] = Field(default_factory=list, max_length=10)
 
     @model_validator(mode="after")
@@ -392,11 +419,32 @@ class ReviewInput(StrictModel):
         return self
 
 
-def review_payload(row: P.ReportReview) -> dict:
+def guidance_view(stored: dict) -> dict:
+    """Stored guidance as the API returns it: ``nextSteps`` as text, ``steps`` structured.
+
+    Reviews approved before D-M2-11 stored plain strings; they read back as OTHER
+    steps with no often / when, exactly as the doctor wrote them.
+    """
+    steps = [{"text": step, "kind": "OTHER", "often": None, "when": None} if isinstance(step, str)
+             else {"text": step["text"], "kind": step.get("kind", "OTHER"), "often": step.get("often"),
+                   "when": step.get("when")}
+             for step in stored.get("nextSteps", [])]
+    return {**stored, "nextSteps": [step["text"] for step in steps], "steps": steps}
+
+
+def reviewer_name(db: Session | None, row: P.ReportReview) -> str | None:
+    """The reviewing doctor's display name (M2Insights "Your doctor's note"), only once approved."""
+    if db is None or row.status != "APPROVED" or not row.reviewed_by:
+        return None
+    account = db.get(M.Account, row.reviewed_by)
+    return account.full_name if account is not None else None
+
+
+def review_payload(row: P.ReportReview, db: Session | None = None) -> dict:
     return {"id": row.id, "documentId": row.document_id, "status": row.status, "version": row.version,
             "assignedClinicianId": row.assigned_clinician_id, "createdAt": row.created_at, "updatedAt": row.updated_at,
-            "reviewedBy": row.reviewed_by, "reviewedAt": row.reviewed_at,
-            "guidance": row.guidance if row.status == "APPROVED" else None}
+            "reviewedBy": row.reviewed_by, "reviewedByName": reviewer_name(db, row), "reviewedAt": row.reviewed_at,
+            "guidance": guidance_view(row.guidance) if row.status == "APPROVED" else None}
 
 
 def review_statement():
@@ -454,7 +502,7 @@ def request_review(body: ReviewRequest, response: Response, user: dict = Depends
 def my_reviews(offset: int = Query(0, ge=0, le=10000), limit: int = Query(20, ge=1, le=100),
                user: dict = Depends(authenticated_user), db: Session = Depends(workflow_db)) -> dict:
     stmt = review_statement().where(P.ReportReview.account_id == user["id"]).order_by(P.ReportReview.created_at.desc(), P.ReportReview.id)
-    return page_result(db, stmt, offset, limit, review_payload)
+    return page_result(db, stmt, offset, limit, lambda row: review_payload(row, db))
 
 
 @router.get("/ops/report-reviews", response_model=Page[ReviewView])

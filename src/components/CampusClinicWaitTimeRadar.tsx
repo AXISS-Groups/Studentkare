@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
-import { useTheme } from '../theme/theme';
+import { useTheme } from '../theme/tokens/theme';
 import { Card } from './Card';
 import { Badge } from './Badge';
 import { Clock, CheckCircle2 } from 'lucide-react';
-import { assertRule } from '../ai/constitution';
+import { assertRule } from '../ai/core/constitution';
 
 export interface ClinicStationQueue {
   id: string;
@@ -72,7 +72,7 @@ export const CampusClinicWaitTimeRadar: React.FC = () => {
                 onPress={() => handleBookExpressSlot(st.id, st.stationName)}
                 style={{ backgroundColor: tokens.action, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 6 }}
               >
-                <Text style={{ fontSize: 11, fontWeight: '800', color: '#ffffff' }}>Book Express Slot</Text>
+                <Text style={{ fontSize: 11, fontWeight: '800', color: tokens.onAction }}>Book Express Slot</Text>
               </TouchableOpacity>
             </View>
           </View>

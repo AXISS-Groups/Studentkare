@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss xmlns:a10="http://www.w3.org/2005/Atom" version="2.0">
+  <channel>
+    <title>News (English) - World Health Organization</title>
+    <link>https://www.who.int/</link>
+    <description>Fixture in the shape of the WHO news feed (checked 2026-10-23). The text is made up for tests.</description>
+    <item>
+      <guid isPermaLink="false">1</guid>
+      <link>https://www.who.int/news/item/dengue-young-people?utm_source=rss&amp;utm_medium=feed</link>
+      <title>WHO warns of rising dengue cases among young people</title>
+      <description>&lt;p&gt;Dengue cases have risen in 12 countries this season, WHO said. Young people and students should remove standing water around hostels and campuses. Most cases are mild and do not need hospital care.&lt;/p&gt;</description>
+      <pubDate>$recent</pubDate>
+    </item>
+    <item>
+      <guid isPermaLink="false">2</guid>
+      <link>https://www.who.int/news/item/student-mental-health</link>
+      <title>New guidance on student mental health and sleep</title>
+      <description>WHO published guidance for universities on mental health and sleep. It asks campuses to offer counselling.</description>
+      <pubDate>$recent</pubDate>
+    </item>
+    <item>
+      <guid isPermaLink="false">3</guid>
+      <link>https://www.who.int/news/item/a-patient-story</link>
+      <title>A patient in a campus clinic recovers from dengue</title>
+      <description>The patient, a student, recovered after treatment.</description>
+      <pubDate>$recent</pubDate>
+    </item>
+    <item>
+      <guid isPermaLink="false">4</guid>
+      <link>https://www.who.int/news/item/old-heat-advisory</link>
+      <title>Heat advisory for students</title>
+      <description>Drink water during exams in the heat.</description>
+      <pubDate>$old</pubDate>
+    </item>
+    <item>
+      <guid isPermaLink="false">5</guid>
+      <link>https://example.com/news/elsewhere</link>
+      <title>Students and vaccines: a story elsewhere</title>
+      <description>A link off the publisher's own site.</description>
+      <pubDate>$recent</pubDate>
+    </item>
+    <item>
+      <guid isPermaLink="false">6</guid>
+      <link>https://www.who.int/news/item/dengue-young-people#top</link>
+      <title>WHO warns of rising dengue cases among young people (again)</title>
+      <description>The same link, spelt differently.</description>
+      <pubDate>$recent</pubDate>
+    </item>
+    <item>
+      <guid isPermaLink="false">7</guid>
+      <link>https://www.who.int/news/item/no-summary</link>
+      <title>Vaccination week for students</title>
+      <pubDate>$recent</pubDate>
+    </item>
+    <item>
+      <guid isPermaLink="false">8</guid>
+      <link>https://www.who.int/news/item/budget-committee</link>
+      <title>Remarks at the budget committee</title>
+      <description>The Director-General spoke to the committee on the programme budget.</description>
+      <pubDate>$recent</pubDate>
+    </item>
+    <item>
+      <guid isPermaLink="false">9</guid>
+      <link>https://www.who.int/news/item/air-quality-campus</link>
+      <title>Air quality and outdoor sport</title>
+      <description>Poor air quality affects outdoor sport. Universities can move practice indoors on bad days.</description>
+      <pubDate>$recent</pubDate>
+    </item>
+    <item>
+      <guid isPermaLink="false">10</guid>
+      <link>https://www.who.int/news/item/handwashing-hostels</link>
+      <title>Handwashing and hygiene in student hostels</title>
+      <description>Hygiene in hostels cuts the spread of infections among students.</description>
+      <pubDate>$recent</pubDate>
+    </item>
+  </channel>
+</rss>

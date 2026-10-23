@@ -21,7 +21,6 @@ from __future__ import annotations
 
 import hashlib
 import math
-import os
 import re
 from typing import Protocol
 
@@ -102,20 +101,79 @@ def cosine(left: list[float], right: list[float]) -> float:
 _ACTIVE: Embedder = LocalHashingEmbedder()
 
 
+class OllamaEmbedder:
+    """An on-prem semantic model served by Ollama (``EMBEDDING_PROVIDER=ollama``).
+
+    Every call goes through ``llm_gateway.embed``: the AI constitution (Rule-C) and
+    the prompt guardrail, which masks PII before the text leaves the process. The
+    model's vector is L2-normalised so ``cosine`` stays a dot product. Raises
+    ``llm_gateway.ModelUnavailable`` (or another gateway error) when the model
+    cannot answer; callers fall back to the local embedder and say so.
+    """
+
+    dimensions = 0  # whatever the model returns
+
+    def __init__(self, model: str):
+        self.model = model
+        # The chunk table keeps this name (40 characters) to tell vectors apart.
+        self.name = f"ollama:{model}"[:40]
+
+    def embed(self, text: str) -> list[float]:
+        from services import llm_gateway
+        return _unit(llm_gateway.embed(text))
+
+
+def _unit(values: list[float]) -> list[float]:
+    magnitude = math.sqrt(sum(value * value for value in values))
+    return [value / magnitude for value in values] if magnitude else list(values)
+
+
+_OLLAMA: dict[str, OllamaEmbedder] = {}
+
+PROVIDER_LOCAL = "local"
+PROVIDER_OLLAMA = "ollama"
+
+
+def requested_provider() -> str:
+    """What ``EMBEDDING_PROVIDER`` asks for (``local`` when unset)."""
+    from services import llm_gateway
+    return llm_gateway.embedding_provider()
+
+
 def active_embedder() -> Embedder:
     """The embedder in use.
 
-    ``EMBEDDING_PROVIDER`` is read rather than hard-wired so a real model can be
-    introduced without touching the retrieval pipeline. Unknown providers fall back
-    to local rather than failing: retrieval degrading to morphological matching is
-    recoverable, retrieval not running at all is not.
+    ``EMBEDDING_PROVIDER=ollama`` with ``EMBEDDING_OLLAMA_URL`` or ``OLLAMA_URL`` set
+    selects the on-prem model named by ``EMBEDDING_MODEL``. Anything else — unset,
+    ``local``, an unknown provider, or ollama without a URL — is the local hashing
+    embedder, and the admin screen says retrieval is keyword-based.
     """
-    provider = os.getenv("EMBEDDING_PROVIDER", "local").strip().lower()
-    if provider in ("", "local"):
-        return _ACTIVE
+    from services import llm_gateway
+    if llm_gateway.embeddings_configured():
+        model = llm_gateway.embedding_model()
+        if model not in _OLLAMA:
+            _OLLAMA[model] = OllamaEmbedder(model)
+        return _OLLAMA[model]
     return _ACTIVE
+
+
+def local_embedder() -> Embedder:
+    """The honest fallback: always available, keyword-like."""
+    return _ACTIVE
+
+
+def embedder_named(name: str) -> Embedder | None:
+    """The embedder that produced vectors stored under ``name``, if it is usable now."""
+    if name == _ACTIVE.name:
+        return _ACTIVE
+    active = active_embedder()
+    return active if active.name == name else None
+
+
+def is_semantic_name(name: str) -> bool:
+    return bool(name) and name != LocalHashingEmbedder.name
 
 
 def is_semantic() -> bool:
     """False while the local embedder is in use — the agent says so in its answers."""
-    return active_embedder().name != LocalHashingEmbedder.name
+    return is_semantic_name(active_embedder().name)

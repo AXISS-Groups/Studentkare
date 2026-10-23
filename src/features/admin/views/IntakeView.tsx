@@ -1,54 +1,85 @@
 import React, { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import { AdminEmpty, AdminError, AdminLoading, AdminPage, AdminStatus } from '@/screens/workspace/admin/AdminPage';
+import { ConsoleTablePage } from '@/design-system';
+import type { ConsoleTableStatus, DataTableRow, SkTone } from '@/design-system';
+import type { MessageKey } from '@/i18n';
 import { intakeRepository } from '../model/intakeRepository';
-import { confidenceTone, count, percent, readable } from '../model/format';
+import { count, readable, when } from '../model/format';
 import { IntakeViewModel } from '../viewmodels/IntakeViewModel';
+import { useT } from '@/i18n';
+import { BoardNote, boardEmpty, boardError } from './AdminBoard';
+
+/** Document categories (care_documents.category) > their label. Unknown kinds fall back to their readable code. */
+const KIND_LABEL: Record<string, MessageKey> = {
+  LAB: 'member.records.category.LAB',
+  PRESCRIPTION: 'member.records.category.PRESCRIPTION',
+  VACCINE: 'member.records.category.VACCINE',
+  CAMP_REPORT: 'member.records.category.CAMP_REPORT',
+  DISCHARGE_SUMMARY: 'member.records.category.DISCHARGE_SUMMARY',
+  OTHER: 'member.records.category.OTHER',
+};
+
+/** Intake states (care_document_intake.status) > label and pill tone. A failed read needs attention, never red. */
+const STATUS: Record<string, { label: MessageKey; tone: SkTone }> = {
+  DRAFT: { label: 'admin.intake.status.DRAFT', tone: 'neutral' },
+  QUEUED: { label: 'admin.intake.status.QUEUED', tone: 'neutral' },
+  FAILED: { label: 'admin.intake.status.FAILED', tone: 'attention' },
+};
 
 /**
- * Intake & OCR, following its design (AdminIntake) on the data and actions the backend
- * already has. Design parts with no endpoint behind them (Ask the lab, document preview)
- * are not wired as working controls.
+ * Intake & OCR (design: AdminIntake), on the console table page: each uploaded
+ * document whose intake is still open, with its kind, state and times only.
+ *
+ * Privacy: a student's document and the fields read from it are theirs. This
+ * console never receives a title, a document id, an extracted field or a value
+ * (the server leaves them out), so the board's "original", "extracted fields"
+ * and confirm / reject panels are not drawn.
  */
 export const IntakeView = observer(function IntakeView() {
+  const t = useT();
   const [vm] = useState(() => new IntakeViewModel(intakeRepository));
   useEffect(() => { void vm.load(); return vm.dispose; }, [vm]);
-  const { items, documents, selected } = vm;
+  const { items } = vm;
 
-  return <AdminPage eyebrow="Content & AI" title="Intake & OCR" description="Uploaded reports and prescriptions read by OCR. Fields the reader isn’t sure of wait here for a person."
-    status={vm.queue && items.length > 0 ? <AdminStatus tone="attention">{count(items.length)} {items.length === 1 ? 'field' : 'fields'} waiting</AdminStatus> : undefined}>
-    {vm.loading ? <div className="sk-admin-card"><AdminLoading label="Loading the intake queue…" /></div>
-      : vm.error ? <AdminError title="Couldn’t load the intake queue" message={vm.error} onRetry={vm.reload} />
-        : !documents.length ? <div className="sk-admin-card"><AdminEmpty title="Nothing waiting for a person." description="Documents with fields the reader isn’t sure of will appear here." /></div>
-          : <div className="sk-admin-intake">
-            <section className="sk-admin-card" aria-labelledby="sk-admin-intake-queue">
-              <h3 id="sk-admin-intake-queue" className="sk-admin-eyebrow">Needs a human · {count(documents.length)}</h3>
-              <ul className="sk-admin-queue">{documents.map(document => <li key={document.intakeId}>
-                <button type="button" aria-pressed={document.intakeId === selected?.intakeId} onClick={() => vm.selectDocument(document.intakeId)}>
-                  <strong>Document {document.documentId.slice(0, 8)}</strong>
-                  <span>{count(document.fields.length)} {document.fields.length === 1 ? 'field' : 'fields'} to check</span>
-                  <span className={`sk-admin-tag ${confidenceTone(document.lowest)}`}>Lowest confidence {percent(document.lowest)}</span>
-                </button>
-              </li>)}</ul>
-            </section>
+  const rows: DataTableRow[] = items.map(item => {
+    const status = STATUS[item.status];
+    return {
+      id: item.id,
+      cells: [
+        { text: item.id, weight: 'strong', mono: true },
+        { text: KIND_LABEL[item.kind] ? t(KIND_LABEL[item.kind]) : readable(item.kind) },
+        { pill: { label: status ? t(status.label) : readable(item.status), tone: status?.tone ?? 'neutral' } },
+        { text: item.createdAt ? when(item.createdAt) : '—', weight: 'muted' },
+        { text: item.processedAt ? when(item.processedAt) : '—', weight: 'muted' },
+      ],
+    };
+  });
 
-            <section className="sk-admin-card" aria-labelledby="sk-admin-intake-original">
-              <h3 id="sk-admin-intake-original" className="sk-admin-eyebrow">Original</h3>
-              <AdminEmpty title="No preview." description="The original document will be shown here once document access is connected to this console." />
-            </section>
-
-            {selected && <section className="sk-admin-card" aria-labelledby="sk-admin-intake-fields">
-              <h3 id="sk-admin-intake-fields" className="sk-admin-eyebrow">Extracted fields</h3>
-              <div className="sk-admin-fields">{selected.fields.map(field => <label key={field.id}>
-                <span className="sk-admin-field-label">{readable(field.field)}<span className={`sk-admin-tag ${confidenceTone(field.confidence)}`}>{percent(field.confidence)}</span></span>
-                <input className={field.confidence < 0.9 ? 'is-uncertain' : undefined} value={vm.fieldValue(field)} onChange={event => vm.edit(field.id, event.target.value)} />
-              </label>)}</div>
-              {vm.decisionError && <p className="sk-admin-form-error" role="alert">{vm.decisionError}</p>}
-              <div className="sk-admin-actions">
-                <button type="button" className="sk-admin-button sk-admin-button-primary" disabled={vm.deciding} onClick={() => void vm.decide(true)}>Confirm fields</button>
-                <button type="button" className="sk-admin-button" disabled={vm.deciding} onClick={() => void vm.decide(false)}>Reject</button>
-              </div>
-            </section>}
-          </div>}
-  </AdminPage>;
+  const status: ConsoleTableStatus = vm.loading ? 'loading' : vm.error ? 'error' : items.length ? 'ready' : 'empty';
+  return <div className="sk-admin-page">
+    <ConsoleTablePage
+      status={status}
+      header={{
+        title: t('admin.intake.title'),
+        subtitle: t('admin.intake.description'),
+        badge: items.length ? { label: items.length === 1 ? t('admin.intake.openOne') : t('admin.intake.openOther', { count: count(items.length) }), tone: 'attention' } : undefined,
+      }}
+      note={<BoardNote icon="shield">{t('admin.intake.privacyNote')}</BoardNote>}
+      table={{
+        caption: t('admin.intake.title'),
+        columns: [
+          { label: t('admin.intake.col.intake'), width: '24%' },
+          { label: t('admin.intake.col.kind') },
+          { label: t('admin.intake.col.status') },
+          { label: t('admin.intake.col.received') },
+          { label: t('admin.intake.col.read') },
+        ],
+        rows,
+      }}
+      empty={boardEmpty(t, t('admin.intake.empty'), t('admin.intake.emptyBody'))}
+      unconnected={{ title: t('admin.intake.title'), body: t('admin.intake.emptyBody') }}
+      error={boardError(t, t('adminBoard.intake.what'), 'AdminIntake', vm.reload, vm.error)}
+      loadingLabel={t('admin.intake.loading')}
+    />
+  </div>;
 });

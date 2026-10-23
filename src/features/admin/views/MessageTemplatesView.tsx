@@ -1,15 +1,46 @@
 import React from 'react';
-import { AdminEmptySection, AdminPage } from '@/screens/workspace/admin/AdminPage';
+import { ConsolePageHeader, SkButton } from '@/design-system';
+import { Icon } from '@/design-system/icons';
+import { useT } from '@/i18n';
+import { BoardNote } from './AdminBoard';
+import { GovCard, Unavailable, ViewLink } from './GovBoard';
+import './gov-board.css';
 
-// Message templates (design: AdminTemplates). No endpoint lists or edits templates (the
-// notification outbox holds sent messages, not templates), so the list, editor and
-// preview are empty and there is no "New template", "Save draft" or "Submit to Meta" action.
+/**
+ * Message templates (design: AdminTemplates, Tier 1). No endpoint lists, edits or checks
+ * templates (the notification outbox holds sent messages, not templates), so the list,
+ * editor and preview are empty and "New template", "Save draft" and "Submit to Meta" are
+ * not offered. The checks every template must pass are named; none of them runs yet,
+ * and the leak checker belongs on the server, on save. The preview never renders a
+ * medicine name or a value: the board's sample ("Metformin", "HbA1c 7.2%") is exactly
+ * what such a checker must reject.
+ */
 export function MessageTemplatesView() {
-  return <AdminPage eyebrow="Content & AI" title="Message templates" description="WhatsApp, SMS and email templates. Every template should be checked so no health value leaves the app in a message.">
-    <div className="sk-admin-templates">
-      <AdminEmptySection title="Templates" description="Each template, its category and its approval state." emptyTitle="No templates yet." emptyDescription="Templates will be listed here once the template service is connected." />
-      <AdminEmptySection title="Editor" description="The text in each language, its variables, and the checks it must pass." emptyTitle="No template selected." emptyDescription="Choose a template to edit it here once templates are available." />
-      <AdminEmptySection title="Preview with sample values" description="How the message will look on a phone." emptyTitle="Nothing to preview." emptyDescription="A preview appears here for the selected template." />
+  const t = useT();
+  return <div className="sk-ds sk-admin-page sk-gov">
+    <ConsolePageHeader title={t('admin.templates.title')} subtitle={t('admin.templates.description')}
+      actions={<SkButton variant="secondary" disabled aria-describedby="sk-gov-tpl-new"><Icon name="plus" size={16} />{t('gov.templates.new')}</SkButton>} />
+    <span id="sk-gov-tpl-new" className="sk-board-visually-hidden">{t('gov.templates.newUnavailable')}</span>
+    <BoardNote icon="message-circle">{t('gov.templates.note')}</BoardNote>
+    <div className="sk-gov-grid sk-gov-grid--templates">
+      <GovCard eyebrow={t('admin.templates.list')}>
+        <p className="sk-gov-text">{t('admin.templates.listEmptyBody')}</p>
+      </GovCard>
+      <GovCard eyebrow={t('admin.templates.editor')}>
+        <p className="sk-gov-text">{t('admin.templates.editorEmptyBody')}</p>
+        <h3 className="sk-gov-eyebrow">{t('gov.templates.checks')}</h3>
+        <ul className="sk-gov-checks" aria-label={t('gov.templates.checks')}>
+          <li><Icon name="check" size={16} strokeWidth={2.4} />{t('gov.templates.checkNoHealth')}</li>
+          <li><Icon name="check" size={16} strokeWidth={2.4} />{t('gov.templates.checkSamples')}</li>
+          <li><Icon name="check" size={16} strokeWidth={2.4} />{t('gov.templates.checkLength')}</li>
+        </ul>
+        <Unavailable>{t('gov.templates.checksUnavailable')}</Unavailable>
+      </GovCard>
+      <div className="sk-gov-stack">
+        <h2 className="sk-gov-eyebrow">{t('admin.templates.preview')}</h2>
+        <div className="sk-gov-phone"><div className="sk-gov-phone__screen"><p className="sk-gov-fine">{t('admin.templates.previewEmptyBody')}</p></div></div>
+      </div>
     </div>
-  </AdminPage>;
+    <ViewLink route="admin/outbox" label={t('admin.templates.openOutbox')} />
+  </div>;
 }

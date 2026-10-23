@@ -1,0 +1,48 @@
+/* Setup top row — canvas ProfileSetup / Permissions. Tokens only. */
+
+.sk-setuptop {
+  display: flex;
+  align-items: center;
+  gap: var(--sk-space-14);
+}
+
+.sk-setuptop__back {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--sk-size-touch-target);
+  height: var(--sk-size-touch-target);
+  border-radius: var(--sk-radius-full);
+  border: 1px solid var(--sk-color-rule);
+  background: var(--sk-color-surface);
+  color: var(--sk-color-text);
+  cursor: pointer;
+}
+
+.sk-setuptop__back:focus-visible {
+  outline: 3px solid var(--sk-color-focus);
+  outline-offset: 3px;
+}
+
+.sk-setuptop__track {
+  flex: 1;
+  display: flex;
+  gap: var(--sk-space-6);
+}
+
+.sk-setuptop__track span {
+  flex: 1;
+  height: 4px;
+  border-radius: var(--sk-radius-full);
+  background: var(--sk-color-action-soft);
+}
+
+.sk-setuptop__track span[data-done='true'] { background: var(--sk-color-action); }
+
+.sk-setuptop__count {
+  flex: none;
+  font-size: var(--sk-text-caption);
+  font-weight: 800;
+  color: var(--sk-color-text);
+}

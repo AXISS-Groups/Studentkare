@@ -15,7 +15,6 @@ from test_workflow_api import (  # noqa: F401  (shared isolated-database fixture
 from app.main import app
 from core import workflow_models as M
 from services.agents.medication_adherence_loop_agent import medication_adherence_loop_agent
-from services.agents.rx_extractor_ai_agent import rx_extractor_ai_agent
 from services.db_sql import Base
 from services.workflow_auth import workflow_db
 
@@ -34,33 +33,35 @@ def db_harness():
     engine.dispose()
 
 
-def test_public_donor_directory_requires_auth_and_redacts_contact(harness):
-    client, _, codes = harness
+def test_donor_directory_requires_auth_and_never_returns_contact(harness):
+    client, factory, codes = harness
     assert client.get("/api/blood/donors").status_code == 401
-    _, headers = register(client, codes)
+    user, headers = register(client, codes)
+    with factory() as db:
+        db.merge(M.CampusVerification(account_id=user["id"], university="Test University", roll_number="R1",
+                                    status="VERIFIED"))
+        db.commit()
     registered = client.post("/api/blood/register-donor", headers=headers, json={
-        "fullName": "Consenting Donor",
         "bloodGroup": "O+",
         "hostelBlock": "Block A",
-        "phone": "+91 9000000001",
         "visible": True,
     })
     assert registered.status_code == 200, registered.text
     res = client.get("/api/blood/donors", headers=headers)
     assert res.status_code == 200
     donors = res.json()["donors"]
-    assert len(donors) > 0
-    assert all(d.get("phone") == "" for d in donors)
+    assert len(donors) == 1
+    assert all("phone" not in d for d in donors)
 
 
-def test_approvals_require_staff_role(harness):
+def test_approvals_require_the_super_admin(harness):
     client, factory, codes = harness
     _, headers = register(client, codes)  # STUDENT
     assert client.get("/api/ops/approvals", headers=headers).status_code == 403
     assert client.post("/api/ops/approve-action", json={"actionId": "act_01"}, headers=headers).status_code == 403
-    # Unknown action for a staff member returns 404, never a fake success.
+    # Unknown action for the super admin returns 404, never a fake success.
     with factory() as db:
-        db.add(M.Account(id="staff", identifier="staff@example.test", channel="EMAIL", full_name="Staff", role="NMC_DOCTOR", active=True, profile={}, created_at=time.time()))
+        db.add(M.Account(id="staff", identifier="staff@example.test", channel="EMAIL", full_name="Staff", role="SUPER_ADMIN", active=True, profile={}, created_at=time.time()))
         db.commit()
     staff_headers = login(client, codes, "staff@example.test")
     res = client.post("/api/ops/approve-action", json={"actionId": "does-not-exist"}, headers=staff_headers)
@@ -77,16 +78,3 @@ def test_medication_state_is_account_scoped(harness):
         # Another account must not inherit the logged medication.
         assert other["todays_taken"] == 0
         assert other["plans"] == []
-
-
-def test_rx_extraction_never_invents_fields(harness):
-    catalog = [{"id": "demo-vitamin-c", "name": "Vitamin C + Zinc Daily Support", "brand": "Nourish", "pricePaise": 34900}]
-    result = rx_extractor_ai_agent.analyze_prescription_text("Patient has a mild fever. No medication named.", catalog)
-    assert result.detected_doctor == "unknown"
-    assert result.detected_date == "unknown"
-    assert result.extracted_items == []
-
-    match = rx_extractor_ai_agent.analyze_prescription_text("Prescribed Vitamin C + Zinc Daily Support 1 tablet daily.", catalog)
-    assert len(match.extracted_items) == 1
-    assert match.extracted_items[0].dosage == "unknown"
-    assert match.extracted_items[0].needs_review is True

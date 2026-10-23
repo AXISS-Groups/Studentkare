@@ -1,0 +1,89 @@
+/* Create account — design page 1, CreateAccount, in the shared Mobile 2.0 frame.
+ *
+ * Adds the board's top row (round back button, six-segment progress, "n of 6")
+ * and the assurance note on top of sign-in-frame.css, which owns the fields,
+ * buttons and notes both screens share. Tokens only.
+ */
+
+.sk-create {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sk-space-20);
+}
+
+.sk-create__top {
+  display: flex;
+  align-items: center;
+  gap: var(--sk-space-14);
+}
+
+.sk-create__back {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--sk-size-touch-target);
+  height: var(--sk-size-touch-target);
+  border-radius: var(--sk-radius-full);
+  border: 1px solid var(--sk-color-rule);
+  background: var(--sk-color-surface);
+  color: var(--sk-color-text);
+  box-shadow: var(--sk-shadow-hairline);
+  cursor: pointer;
+}
+
+.sk-create__track {
+  flex: 1;
+  display: flex;
+  gap: var(--sk-space-6);
+}
+
+.sk-create__track span {
+  flex: 1;
+  height: 6px;
+  border-radius: var(--sk-radius-full);
+  background: var(--sk-color-action-soft);
+}
+
+.sk-create__track span[data-done='true'] {
+  background: linear-gradient(90deg, var(--sk-color-service-indigo), var(--sk-color-action));
+}
+
+.sk-create__step {
+  flex: none;
+  font-size: var(--sk-text-caption);
+  font-weight: 800;
+  color: var(--sk-color-text);
+}
+
+.sk-create .sk-create__assurance {
+  display: flex;
+  align-items: center;
+  gap: var(--sk-space-12);
+  margin: 0;
+  padding: var(--sk-space-12) var(--sk-space-14);
+  border: 1px solid var(--sk-color-positive-rule);
+  border-radius: var(--sk-radius-lg);
+  background: var(--sk-color-positive-bg);
+  font-size: var(--sk-text-caption);
+  line-height: 1.55;
+  font-weight: 600;
+  color: var(--sk-color-positive);
+}
+
+.sk-create__assurance-tile {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--sk-radius-md);
+  background: var(--sk-color-surface);
+  color: var(--sk-color-positive);
+}
+
+.sk-create__back:focus-visible {
+  outline: 3px solid var(--sk-color-focus);
+  outline-offset: 3px;
+}

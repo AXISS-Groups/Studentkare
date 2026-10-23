@@ -1,25 +1,15 @@
 import React from 'react';
 import { Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { observer } from 'mobx-react-lite';
+import { useT } from '@/i18n';
+import { Icon } from '@/design-system/icons';
+import type { MessageKey } from '@/i18n';
 import { PARTNER_CATEGORIES } from '../viewmodel/PartnershipEnquiryViewModel';
 import type { PartnershipEnquiryViewModel } from '../viewmodel/PartnershipEnquiryViewModel';
 import { BoundaryList, Footer, GapNote, Hero, Page, Paragraph, PrimaryAction, Section, color, styles } from './landingNativeKit';
 import type { LandingDestinations } from './landingNativeKit';
 
-const NOT_FOR_SALE = [
-  {
-    tag: 'Not for sale',
-    body: 'Position in search results. The ordering is pincode match, then name, and the API states that on every response.',
-  },
-  {
-    tag: 'Not for sale',
-    body: 'Anything in a student’s health record — for targeting, segmentation or any other purpose. Clinical data does not reach commercial surfaces.',
-  },
-  {
-    tag: 'Not for sale',
-    body: 'Advertising slots. There are none, and paying for anything never grants sight of a member’s record.',
-  },
-] as const;
+const NOT_FOR_SALE: readonly MessageKey[] = ['landing.partners.nfs.search', 'landing.partners.nfs.record', 'landing.partners.nfs.ads'];
 
 interface LandingPartnershipsNativeViewProps {
   viewModel: PartnershipEnquiryViewModel;
@@ -33,59 +23,55 @@ interface LandingPartnershipsNativeViewProps {
  * /billing/inquiries, which reaches the support queue. Left off, as on web:
  * partner logos, the founder's note, a commission rate, a reply-time promise.
  */
-export const LandingPartnershipsNativeView: React.FC<LandingPartnershipsNativeViewProps> = observer(({ viewModel: vm, destinations: to }) => (
-  <Page>
-    <Hero
-      eyebrow="PARTNERSHIPS"
-      title="Reach students without buying your way to the top."
-      lede="There are no sponsored slots, because there is nothing to sell you. Provider search sorts by whether you serve the student’s pincode, then alphabetically — never by what you pay. The way to be seen is to serve a campus well."
-    />
+export const LandingPartnershipsNativeView: React.FC<LandingPartnershipsNativeViewProps> = observer(({ viewModel: vm, destinations: to }) => {
+  const t = useT();
+  const notForSale = NOT_FOR_SALE.map(key => ({ tag: t('landing.partners.notForSale'), body: t(key) }));
+  return (
+    <Page>
+      <Hero
+        eyebrow={t('landing.partners.eyebrow')}
+        title={t('landing.partners.title')}
+        lede={t('landing.partners.lede')}
+      />
 
-    <Section title="What you cannot buy here">
-      <Paragraph>
-        Read this before you apply. If your model needs targeting or placement, we are the wrong platform, and we
-        would rather say so now than after a contract.
-      </Paragraph>
-      <BoundaryList items={NOT_FOR_SALE} />
-    </Section>
+      <Section title={t('landing.partners.firewall.title')}>
+        <Paragraph>{t('landing.partners.firewall.intro')}</Paragraph>
+        <BoundaryList items={notForSale} />
+      </Section>
 
-    <GapNote title="Commission is not published yet.">
-      <Paragraph>
-        Our designs say the rate is published on every line. No rate is configured in the system yet, so there is
-        nothing honest to print here. It will appear on this page and on every statement line once it is set — and
-        not before.
-      </Paragraph>
-    </GapNote>
+      <GapNote title={t('landing.partners.gap.title')}>
+        <Paragraph>{t('landing.partners.gap.body')}</Paragraph>
+      </GapNote>
 
-    <Section title="Tell us what you can serve">
-      {vm.status === 'sent' ? (
-        <View style={styles.sent} accessibilityRole="alert" accessibilityLiveRegion="polite">
-          <Text style={styles.sentTitle}>Your enquiry is with our team.</Text>
-          <Paragraph>
-            It has been recorded and raised to the people who read these. We have not set a response time, so we
-            are not going to promise you one.
-          </Paragraph>
-        </View>
-      ) : (
-        <EnquiryForm vm={vm} />
-      )}
-    </Section>
+      <Section title={t('landing.partners.apply.title')}>
+        {vm.status === 'sent' ? (
+          <View style={styles.sent} accessibilityRole="alert" accessibilityLiveRegion="polite">
+            <Text style={styles.sentTitle}>{t('landing.partners.sent.title')}</Text>
+            <Paragraph>{t('landing.partners.sent.body')}</Paragraph>
+          </View>
+        ) : (
+          <EnquiryForm vm={vm} />
+        )}
+      </Section>
 
-    <Footer
-      note="Studentkare is still being built, and this page lists what is missing on purpose. We do not show partner logos until a partner has signed and agreed in writing to appear."
-      links={[
-        { title: 'For students', onPress: to.students },
-        { title: 'For campuses', onPress: to.campuses },
-        { title: 'For clinicians', onPress: to.clinicians },
-        { title: 'Privacy', onPress: to.privacy },
-        { title: 'Terms', onPress: to.terms },
-      ]}
-    />
-  </Page>
-));
+      <Footer
+        note={t('landing.partners.footer.note')}
+        links={[
+          { title: t('landing.consult.footer.forStudents'), onPress: to.students },
+          { title: t('landing.consult.footer.forCampuses'), onPress: to.campuses },
+          { title: t('landing.consult.footer.forClinicians'), onPress: to.clinicians },
+          { title: t('landing.partners.footer.privacy'), onPress: to.privacy },
+          { title: t('landing.partners.footer.terms'), onPress: to.terms },
+        ]}
+      />
+    </Page>
+  );
+});
 
 const EnquiryForm = observer(({ vm }: { vm: PartnershipEnquiryViewModel }) => {
+  const t = useT();
   const sending = vm.status === 'sending';
+  const consentText = t('landing.partners.consent');
   return (
     <View style={styles.section}>
       {vm.error ? (
@@ -94,58 +80,57 @@ const EnquiryForm = observer(({ vm }: { vm: PartnershipEnquiryViewModel }) => {
         </View>
       ) : null}
 
-      <Field label="Organisation *" value={vm.organization} onChange={vm.setOrganization} maxLength={160} autoComplete="organization" />
-      <Field label="Your name" value={vm.contactName} onChange={vm.setContactName} maxLength={120} autoComplete="name" />
-      <Field label="Email *" value={vm.email} onChange={vm.setEmail} maxLength={254} autoComplete="email" keyboardType="email-address" />
+      <Field label={t('landing.partners.field.org')} required value={vm.organization} onChange={vm.setOrganization} maxLength={160} autoComplete="organization" />
+      <Field label={t('landing.partners.field.name')} value={vm.contactName} onChange={vm.setContactName} maxLength={120} autoComplete="name" />
+      <Field label={t('landing.partners.field.email')} required value={vm.email} onChange={vm.setEmail} maxLength={254} autoComplete="email" keyboardType="email-address" />
 
       <View style={styles.field}>
-        <Text style={styles.label} nativeID="partner-category">Category *</Text>
+        <Text style={styles.label} nativeID="partner-category">{t('landing.partners.field.category')} *</Text>
         <View style={styles.chips} accessibilityRole="radiogroup" accessibilityLabelledBy="partner-category">
           {PARTNER_CATEGORIES.map(option => {
             const selected = vm.category === option;
+            const optionLabel = t(`landing.partners.cat.${option}` as MessageKey);
             return (
               <TouchableOpacity
                 key={option}
                 style={[styles.chip, selected && styles.chipSelected]}
                 accessibilityRole="radio"
-                accessibilityLabel={option}
+                accessibilityLabel={optionLabel}
                 aria-checked={selected}
                 onPress={() => vm.setCategory(option)}
               >
-                <Text style={[styles.chipText, selected && styles.chipTextSelected]}>{option}</Text>
+                <Text style={[styles.chipText, selected && styles.chipTextSelected]}>{optionLabel}</Text>
               </TouchableOpacity>
             );
           })}
         </View>
       </View>
 
-      <Field label="What can you serve, and where?" value={vm.message} onChange={vm.setMessage} maxLength={4000} multiline />
+      <Field label={t('landing.partners.field.message')} value={vm.message} onChange={vm.setMessage} maxLength={4000} multiline />
 
       {/* Never pre-ticked, and the request is refused without it. */}
       <TouchableOpacity
         style={styles.consent}
         accessibilityRole="checkbox"
         aria-checked={vm.consent}
-        accessibilityLabel="You may contact me about this enquiry. We do not sell or share what you send here, and this form is not a contract."
+        accessibilityLabel={consentText}
         onPress={vm.toggleConsent}
       >
         <View style={[styles.box, vm.consent && styles.boxChecked]}>
-          {vm.consent ? <Text style={styles.boxMark}>✓</Text> : null}
+          {vm.consent ? <Icon name="check" size={14} strokeWidth={3} color={color.onAction} /> : null}
         </View>
-        <Text style={styles.consentText}>
-          You may contact me about this enquiry. We do not sell or share what you send here, and this form is not a
-          contract.
-        </Text>
+        <Text style={styles.consentText}>{consentText}</Text>
       </TouchableOpacity>
 
       {!vm.canSubmit && !sending && vm.problem ? <Text style={styles.meta}>{vm.problem}</Text> : null}
-      <PrimaryAction title={sending ? 'Sending…' : 'Send application'} onPress={() => void vm.submit()} disabled={!vm.canSubmit} />
+      <PrimaryAction title={sending ? t('landing.partners.sending') : t('landing.partners.send')} onPress={() => void vm.submit()} disabled={!vm.canSubmit} />
     </View>
   );
 });
 
-function Field({ label, value, onChange, maxLength, multiline = false, autoComplete, keyboardType }: {
+function Field({ label, required = false, value, onChange, maxLength, multiline = false, autoComplete, keyboardType }: {
   label: string;
+  required?: boolean;
   value: string;
   onChange: (value: string) => void;
   maxLength: number;
@@ -153,12 +138,13 @@ function Field({ label, value, onChange, maxLength, multiline = false, autoCompl
   autoComplete?: React.ComponentProps<typeof TextInput>['autoComplete'];
   keyboardType?: React.ComponentProps<typeof TextInput>['keyboardType'];
 }) {
+  const t = useT();
   return (
     <View style={styles.field}>
-      <Text style={styles.label}>{label}</Text>
+      <Text style={styles.label}>{required ? `${label} *` : label}</Text>
       <TextInput
         style={[styles.input, multiline && styles.inputMultiline]}
-        accessibilityLabel={label.replace(' *', ', required')}
+        accessibilityLabel={required ? t('landing.partners.field.required', { label }) : label}
         value={value}
         onChangeText={onChange}
         maxLength={maxLength}

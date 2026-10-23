@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
-import { useTheme } from "../theme/theme";
+import { useTheme } from "../theme/tokens/theme";
+import { color } from "@/design-system/theme";
 import { Search, HelpCircle, Bell, Power, ArrowLeft } from "lucide-react";
 import { StudentKareLogo } from "./StudentKareLogo";
 
@@ -14,8 +15,8 @@ interface HeroBannerLayoutProps {
 }
 
 export const HeroBannerLayout: React.FC<HeroBannerLayoutProps> = ({
-  title = "Student Health & ABDM Portal",
-  subtitle = "Ayushman Bharat Digital Mission (ABDM) & DPDP Act 2023 Compliant Platform",
+  title = "Student Health Portal",
+  subtitle = "Your health records and campus care in one place",
   onBack,
   currentRoute = "dashboard",
   onNavigateRoute,
@@ -28,7 +29,7 @@ export const HeroBannerLayout: React.FC<HeroBannerLayoutProps> = ({
     { label: "Health Vault", route: "vault" },
     { label: "Book Care", route: "flow-07" },
     { label: "NMC Doctor", route: "flow-08" },
-    { label: "ABDM Sync", route: "flow-04" },
+    { label: "Profile & Consent", route: "flow-04" },
     { label: "Claims & Insurance", route: "claims-m23" },
     { label: "108 SOS", route: "flow-06" },
     { label: "Campus Radar", route: "flow-11" },
@@ -49,7 +50,7 @@ export const HeroBannerLayout: React.FC<HeroBannerLayoutProps> = ({
             right: 0,
             bottom: 0,
             opacity: 0.14,
-            backgroundImage: "radial-gradient(circle at 25px 25px, #ffffff 2%, transparent 0%), radial-gradient(circle at 75px 75px, #ffffff 2%, transparent 0%)",
+            backgroundImage: `radial-gradient(circle at 25px 25px, ${color.onHero} 2%, transparent 0%), radial-gradient(circle at 75px 75px, ${color.onHero} 2%, transparent 0%)`,
             backgroundSize: "100px 100px",
             pointerEvents: "none",
           }}
@@ -63,7 +64,7 @@ export const HeroBannerLayout: React.FC<HeroBannerLayoutProps> = ({
 
           {/* Search Bar Input */}
           <View style={styles.searchBarBox}>
-            <Search size={15} color="#00205b" />
+            <Search size={15} color={color.text2} />
             <input
               type="text"
               placeholder="Search Download Statement, Lab Reports, Book OPD etc"
@@ -71,7 +72,7 @@ export const HeroBannerLayout: React.FC<HeroBannerLayoutProps> = ({
                 background: "transparent",
                 border: "none",
                 outline: "none",
-                color: "#1e293b",
+                color: color.text,
                 fontSize: 13,
                 fontFamily: typography.fontFamily,
                 width: "100%",
@@ -82,21 +83,21 @@ export const HeroBannerLayout: React.FC<HeroBannerLayoutProps> = ({
           {/* Top Right Quick Icons */}
           <View style={{ flexDirection: "row", alignItems: "center", gap: 18 }}>
             <TouchableOpacity style={styles.topNavIconBtn}>
-              <HelpCircle size={17} color="#cbd5e1" />
+              <HelpCircle size={17} color={color.onHero2} />
               <Text style={styles.topNavIconLabel}>Services & Support</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.topNavIconBtn}>
-              <Bell size={17} color="#cbd5e1" />
+              <Bell size={17} color={color.onHero2} />
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.topNavIconBtn}>
-              <Power size={17} color="#cbd5e1" />
+              <Power size={17} color={color.onHero2} />
             </TouchableOpacity>
 
             {/* Profile Avatar Pill */}
             <View style={styles.avatarPill}>
-              <Text style={{ color: "#00205b", fontWeight: "800", fontSize: 12, fontFamily: typography.fontMono }}>AS</Text>
+              <Text style={{ color: color.action, fontWeight: "800", fontSize: 12, fontFamily: typography.fontMono }}>AS</Text>
             </View>
           </View>
         </View>
@@ -121,8 +122,8 @@ export const HeroBannerLayout: React.FC<HeroBannerLayoutProps> = ({
         <View style={styles.heroTitleArea}>
           {onBack && (
             <TouchableOpacity onPress={onBack} style={styles.backBtn}>
-              <ArrowLeft size={16} color="#ffffff" />
-              <Text style={{ color: "#ffffff", fontSize: 13, fontWeight: "700" }}>Back</Text>
+              <ArrowLeft size={16} color={color.onHero} />
+              <Text style={{ color: color.onHero, fontSize: 13, fontWeight: "700" }}>Back</Text>
             </TouchableOpacity>
           )}
           <Text style={styles.heroTitleText}>{title}</Text>
@@ -141,11 +142,11 @@ export const HeroBannerLayout: React.FC<HeroBannerLayoutProps> = ({
 const styles = StyleSheet.create({
   outerContainer: {
     width: "100%",
-    backgroundColor: "#f4f6fa",
+    backgroundColor: color.canvas,
     minHeight: "100vh",
   },
   heroBannerHeader: {
-    backgroundColor: "#001a4d",
+    backgroundColor: color.heroBg,
     paddingTop: 12,
     paddingBottom: 72,
     paddingHorizontal: 24,
@@ -166,7 +167,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
-    backgroundColor: "rgba(255, 255, 255, 0.95)",
+    backgroundColor: color.surface,
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 8,
@@ -178,7 +179,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   topNavIconLabel: {
-    color: "#cbd5e1",
+    color: color.onHero2,
     fontSize: 12,
     fontWeight: "600",
   },
@@ -186,7 +187,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: "#ffffff",
+    backgroundColor: color.surface,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -206,15 +207,15 @@ const styles = StyleSheet.create({
   },
   catLinkBtnActive: {
     borderBottomWidth: 2,
-    borderBottomColor: "#ffffff",
+    borderBottomColor: color.heroCurrent,
   },
   catLinkLabel: {
-    color: "#94a3b8",
+    color: color.onHero2,
     fontSize: 13,
     fontWeight: "600",
   },
   catLinkLabelActive: {
-    color: "#ffffff",
+    color: color.onHero,
     fontWeight: "800",
   },
   heroTitleArea: {
@@ -232,11 +233,11 @@ const styles = StyleSheet.create({
   heroTitleText: {
     fontSize: 26,
     fontWeight: "800",
-    color: "#ffffff",
+    color: color.onHero,
   },
   heroSubText: {
     fontSize: 13,
-    color: "#cbd5e1",
+    color: color.onHero2,
     marginTop: 4,
   },
   overlappingContentWrap: {

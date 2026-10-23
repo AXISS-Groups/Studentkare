@@ -1,7 +1,6 @@
 """CIR-74: OTP send must not claim success for undeliverable email destinations."""
 import pytest
 from fastapi.testclient import TestClient
-from main import app
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
@@ -101,7 +100,8 @@ def test_fixture_domains_skip_dns(harness, monkeypatch):
     monkeypatch.setattr(email_deliverability, "_resolve_domain", lambda domain: False)
     assert _send(client, "member@example.test").status_code == 200
     assert _send(client, "demo@studentkare.test").status_code == 200
-    assert len(codes) == 1  # demo account bypasses delivery; fixture account sends
+    # Both send: the fixed demo code needs DEV_OTP_CONSOLE, which is off by default.
+    assert len(codes) == 2
 
 
 def test_whatsapp_channel_unaffected(harness, monkeypatch):

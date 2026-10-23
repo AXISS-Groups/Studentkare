@@ -1,13 +1,30 @@
 import { makeAutoObservable } from 'mobx';
-import { initialCamp } from '@/data/mockData';
 import type { HealthCamp } from '@/types';
-import type { StudentStore } from '../../health/store/StudentStore';
 
 /** Domain store for the campus health camp day (stations, badge, check-in). */
-export class CampStore {
-  camp: HealthCamp = initialCamp;
+/**
+ * No camp until a real one is set. This used to default to a fabricated camp
+ * whose stations carried invented vitals, BMI and dental findings shown as the
+ * student's own results.
+ */
+const NO_CAMP: HealthCamp = {
+  id: '',
+  campName: 'No health camp yet',
+  institution: '',
+  date: '',
+  location: '',
+  checkInStatus: false,
+  qrCode: '',
+  stations: [],
+  completedCount: 0,
+  totalStations: 0,
+  digitalBadgeEarned: false,
+};
 
-  constructor(private readonly studentStore: StudentStore) {
+export class CampStore {
+  camp: HealthCamp = NO_CAMP;
+
+  constructor() {
     makeAutoObservable(this, {}, { autoBind: true });
   }
 
@@ -22,7 +39,7 @@ export class CampStore {
             ...station,
             status: 'COMPLETED' as const,
             completedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            doctorNote: doctorNote || station.doctorNote || 'Verified and completed by station officer',
+            doctorNote: doctorNote || station.doctorNote,
           }
         : station
     );
@@ -33,6 +50,7 @@ export class CampStore {
       completedCount,
       digitalBadgeEarned: completedCount === this.camp.totalStations,
     };
-    this.studentStore.addPoints(100);
+    // No points for a station: points come only from the server's ledger
+    // (GET /api/points/me), and a health check is not something to score.
   }
 }

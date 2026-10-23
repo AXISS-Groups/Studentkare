@@ -1,17 +1,32 @@
-"""Verify the actual versioned schema, not create_all's approximation."""
+"""Verify the actual versioned schema, not create_all's approximation.
+
+Postgres-only. This used to point the migration at a SQLite file while being
+gated on a reachable Postgres, so it skipped everywhere except CI and then
+failed there: SQLite cannot ALTER constraints (7c5d1e2a4b90). It now runs the
+chain on a throwaway database on the CI server, so the downgrade it exercises
+never touches the database the rest of the suite uses.
+"""
 import os
 import subprocess
 import sys
+import uuid
 from pathlib import Path
 
-from postgres_support import requires_postgres
+from postgres_support import psycopg_url, requires_postgres
+from sqlalchemy import create_engine, text
 
 
 @requires_postgres
-def test_preventive_migration_upgrade_downgrade_and_metadata(tmp_path):
+def test_preventive_migration_upgrade_downgrade_and_metadata():
     backend = Path(__file__).resolve().parents[1]
+    server_url = psycopg_url(os.environ["DATABASE_URL"])
+    name = f"sk_preventive_{uuid.uuid4().hex[:12]}"
+    admin = create_engine(server_url, isolation_level="AUTOCOMMIT")
+    with admin.connect() as db:
+        db.execute(text(f'CREATE DATABASE "{name}"'))
+    scratch_url = server_url.set(database=name).render_as_string(hide_password=False)
     script = """
-import sys; sys.path.insert(0, [p for p in sys.path if 'site-packages' in p][0]); sys.path.insert(0, '/app'); from alembic import command
+from alembic import command
 from alembic.config import Config
 from alembic.autogenerate import compare_metadata
 from alembic.migration import MigrationContext
@@ -40,8 +55,13 @@ with engine.connect() as db:
 command.upgrade(config, 'head')
 assert expected <= set(inspect(engine).get_table_names())
 """
-    env = {**os.environ, "DATABASE_URL": f"sqlite:///{tmp_path / 'preventive.db'}",
+    env = {**os.environ, "DATABASE_URL": scratch_url,
            "PYTHONPATH": str(backend), "PYTHONDONTWRITEBYTECODE": "1"}
-    result = subprocess.run([sys.executable, "-c", script], cwd=backend, env=env,  # noqa: S603 — a literal script run by this test, no external input
-                            capture_output=True, text=True, timeout=60, check=False)
+    try:
+        result = subprocess.run([sys.executable, "-c", script], cwd=backend, env=env,  # noqa: S603 — a literal script run by this test, no external input
+                                capture_output=True, text=True, timeout=120, check=False)
+    finally:
+        with admin.connect() as db:
+            db.execute(text(f'DROP DATABASE IF EXISTS "{name}" WITH (FORCE)'))
+        admin.dispose()
     assert result.returncode == 0, result.stdout + result.stderr

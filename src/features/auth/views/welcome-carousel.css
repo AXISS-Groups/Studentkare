@@ -9,7 +9,8 @@
   flex-direction: column;
   gap: var(--sk-space-24);
   box-sizing: border-box;
-  min-height: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
   width: 100%;
   max-width: var(--sk-size-phone-width);
   margin-inline: auto;
@@ -66,54 +67,55 @@
   justify-content: flex-end;
 }
 
-/* --- illustration panel --- */
+/* --- illustration panel (canvas: 300 px, 28 px corners) --- */
 
 .sk-welcome__panel {
   position: relative;
   box-sizing: border-box;
-  min-height: 268px;
-  border-radius: var(--sk-radius-xl);
-  padding: var(--sk-space-20);
+  height: 300px;
+  margin-top: var(--sk-space-4);
+  border-radius: var(--sk-radius-sheet);
   overflow: hidden;
 }
 
+/* Slide 1 — the campus clinic with two fact cards floating over it */
+
 .sk-welcome__panel--campus {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  gap: var(--sk-space-16);
   background: var(--sk-color-action-soft);
 }
 
-.sk-welcome__panel--vault {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sk-space-12);
-  background: var(--sk-color-brand-navy);
+.sk-welcome__campus-art {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  height: 262px;
+  width: auto;
+  max-width: none;
+  transform: translateX(-50%);
 }
-
-.sk-welcome__panel--ayush {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sk-space-14);
-  background: var(--sk-color-action);
-}
-
-/* Slide 1 — two floating fact cards */
 
 .sk-welcome__card {
+  position: absolute;
+  z-index: 2;
   display: flex;
   flex-direction: column;
   gap: var(--sk-space-8);
-  width: 152px;
   padding: var(--sk-space-14);
   border-radius: var(--sk-radius-lg);
   background: var(--sk-color-surface);
   box-shadow: var(--sk-shadow-card);
 }
 
+.sk-welcome__card--start {
+  top: var(--sk-space-20);
+  left: var(--sk-space-16);
+  width: 140px;
+}
+
 .sk-welcome__card--end {
-  align-self: flex-end;
+  bottom: var(--sk-space-20);
+  right: var(--sk-space-16);
+  width: 150px;
 }
 
 .sk-welcome__card-icon {
@@ -144,78 +146,154 @@
 .sk-welcome__card-note {
   font-size: var(--sk-text-caption);
   font-weight: 500;
+  line-height: 1.4;
   color: var(--sk-color-text-2);
 }
 
-/* Slide 2 — vault rows on the navy card */
+/* Slide 2 — the vault on the navy card */
 
-.sk-welcome__badge {
-  display: inline-flex;
+.sk-welcome__panel--vault {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--sk-space-10);
+  padding: 0 var(--sk-space-24);
+  background: var(--sk-color-brand-navy);
+}
+
+.sk-welcome__vault-head {
+  display: flex;
   align-items: center;
-  gap: var(--sk-space-8);
-  align-self: flex-start;
-  padding: var(--sk-space-6) var(--sk-space-10);
-  border-radius: var(--sk-radius-full);
+  gap: var(--sk-space-10);
+  margin-bottom: var(--sk-space-6);
+}
+
+.sk-welcome__vault-lock {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--sk-radius-md);
+  background: var(--sk-color-on-hero-veil);
+  color: var(--sk-color-on-hero);
+}
+
+.sk-welcome__vault-label {
   font-size: var(--sk-text-caption);
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-}
-
-.sk-welcome__badge--vault {
-  background: color-mix(in srgb, var(--sk-color-on-action) 12%, transparent);
-  color: var(--sk-color-positive-fill);
-}
-
-.sk-welcome__badge--ayush {
-  background: color-mix(in srgb, var(--sk-color-on-action) 16%, transparent);
-  color: var(--sk-color-on-action);
+  color: var(--sk-color-on-hero-positive);
 }
 
 .sk-welcome__row {
   display: flex;
   align-items: center;
-  gap: var(--sk-space-10);
+  gap: var(--sk-space-12);
   padding: var(--sk-space-12) var(--sk-space-14);
-  border-radius: var(--sk-radius-md);
-  background: color-mix(in srgb, var(--sk-color-on-action) 8%, transparent);
+  border-radius: var(--sk-radius-lg);
+  border: 1px solid var(--sk-color-on-hero-rule);
+  background: var(--sk-color-on-hero-veil);
   font-size: var(--sk-text-body-sm);
   font-weight: 600;
-  color: var(--sk-color-on-action);
+  color: var(--sk-color-on-hero);
 }
 
 .sk-welcome__row svg {
   flex: none;
-  opacity: 0.75;
+  color: var(--sk-color-on-hero-2);
 }
 
-/* Slide 3 — the sample exchange */
+/* Slide 3 — the sample exchange on the indigo card */
+
+.sk-welcome__panel--ayush {
+  height: auto;
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--sk-space-14);
+  padding: var(--sk-space-24);
+  background: linear-gradient(160deg, var(--sk-color-hero-bg), color-mix(in srgb, var(--sk-color-hero-bg) 72%, var(--sk-color-illustration-indigo)));
+}
+
+.sk-welcome__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sk-space-6);
+  align-self: flex-start;
+  padding: var(--sk-space-6) var(--sk-space-12);
+  border-radius: var(--sk-radius-full);
+  font-size: var(--sk-text-caption);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.sk-welcome__badge--ayush {
+  background: color-mix(in srgb, var(--sk-color-on-hero-positive) 18%, transparent);
+  border: 1px solid color-mix(in srgb, var(--sk-color-on-hero-positive) 40%, transparent);
+  color: var(--sk-color-on-hero-positive);
+}
 
 .sk-welcome__bubble {
-  max-width: 86%;
-  padding: var(--sk-space-12) var(--sk-space-14);
-  border-radius: var(--sk-radius-lg);
+  max-width: 82%;
+  padding: var(--sk-space-12) var(--sk-space-16);
   font-size: var(--sk-text-body-sm);
   line-height: 1.5;
 }
 
 .sk-welcome__bubble--student {
   align-self: flex-end;
-  font-weight: 700;
+  border-radius: 18px 18px 4px 18px;
+  font-weight: 600;
   background: var(--sk-color-surface);
   color: var(--sk-color-text);
 }
 
 .sk-welcome__bubble--ayush {
   align-self: flex-start;
+  border-radius: 18px 18px 18px 4px;
+  border: 1px solid var(--sk-color-on-hero-rule);
   font-weight: 500;
-  background: color-mix(in srgb, var(--sk-color-on-action) 18%, transparent);
-  color: var(--sk-color-on-action);
+  background: var(--sk-color-on-hero-veil);
+  color: var(--sk-color-on-hero);
+}
+
+.sk-welcome__typing {
+  align-self: flex-start;
+  display: flex;
+  gap: 5px;
+  padding: var(--sk-space-12) var(--sk-space-14);
+  border-radius: 18px;
+  background: var(--sk-color-on-hero-veil);
+}
+
+.sk-welcome__typing span {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--sk-radius-full);
+  background: var(--sk-color-on-hero-2);
+  animation: sk-welcome-dot 1.2s ease-in-out infinite;
+}
+
+.sk-welcome__typing span:nth-child(2) { animation-delay: 0.15s; opacity: 0.6; }
+.sk-welcome__typing span:nth-child(3) { animation-delay: 0.3s; opacity: 0.35; }
+
+@keyframes sk-welcome-dot {
+  0%, 80%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-4px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sk-welcome__typing span { animation: none; }
 }
 
 /* --- words --- */
 
 .sk-welcome__words {
+  margin-top: var(--sk-space-16);
   display: flex;
   flex-direction: column;
   gap: var(--sk-space-14);

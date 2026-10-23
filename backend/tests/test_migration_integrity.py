@@ -27,15 +27,19 @@ BACKEND = Path(__file__).resolve().parents[1]
 VERSIONS = sorted(glob.glob(str(BACKEND / "alembic" / "versions" / "*.py")))
 
 
-def revisions() -> dict[str, tuple[str | None, str]]:
-    found: dict[str, tuple[str | None, str]] = {}
+def parents_of(text: str) -> tuple[str, ...]:
+    """The revision's parents: one id, a tuple of ids (a merge), or none (the root)."""
+    down = re.search(r'^down_revision\s*=\s*(.+)$', text, re.M)
+    return tuple(re.findall(r'["\']([^"\']+)["\']', down.group(1))) if down else ()
+
+
+def revisions() -> dict[str, tuple[tuple[str, ...], str]]:
+    found: dict[str, tuple[tuple[str, ...], str]] = {}
     for path in VERSIONS:
         text = Path(path).read_text()
         rev = re.search(r'^revision\s*=\s*["\']([^"\']+)', text, re.M)
-        down = re.search(r'^down_revision\s*=\s*(?:["\']([^"\']+)["\']|None)', text, re.M)
         if rev:
-            found[rev.group(1)] = (down.group(1) if down and down.group(1) else None,
-                                   Path(path).name)
+            found[rev.group(1)] = (parents_of(text), Path(path).name)
     return found
 
 
@@ -47,17 +51,17 @@ class TestTheChain:
         # Two heads make `alembic upgrade head` fail outright, and the failure
         # only appears wherever migrations actually run — production.
         revs = revisions()
-        parents = Counter(down for down, _ in revs.values())
+        parents = Counter(p for downs, _ in revs.values() for p in downs)
         heads = [r for r in revs if r not in parents]
         assert len(heads) == 1, f"expected one head, found {heads}"
 
     def test_exactly_one_root(self):
-        roots = [r for r, (down, _) in revisions().items() if down is None]
+        roots = [r for r, (downs, _) in revisions().items() if not downs]
         assert len(roots) == 1, f"expected one root, found {roots}"
 
     def test_no_dangling_parent(self):
         revs = revisions()
-        dangling = [(r, down) for r, (down, _) in revs.items() if down and down not in revs]
+        dangling = [(r, p) for r, (downs, _) in revs.items() for p in downs if p not in revs]
         assert dangling == [], f"down_revision points at a missing revision: {dangling}"
 
     def test_no_duplicate_revision_ids(self):
@@ -80,16 +84,31 @@ class TestTheRunnerCanFindItsConfig:
         from services.migrations import _alembic_ini
         assert "script_location" in _alembic_ini().read_text()
 
-    def test_production_startup_would_reach_the_database(self, monkeypatch):
+    def test_production_startup_would_reach_the_database(self):
         """Gets past config loading and fails on the connection, not the file.
 
         A FileNotFoundError here means production cannot boot.
+
+        Runs in a fresh interpreter: alembic/env.py takes its URL from
+        services.db_sql, which reads DATABASE_URL once, at import. In-process,
+        db_sql is already loaded with the suite's URL, so on the Postgres CI
+        job the unreachable URL below was ignored and the migration ran against
+        the real, reachable test database instead of failing.
         """
-        from services.migrations import run_migrations
-        monkeypatch.setenv("DATABASE_URL", "postgresql://u:p@127.0.0.1:59999/none")
-        with pytest.raises(Exception) as excinfo:
-            run_migrations()
-        assert not isinstance(excinfo.value, FileNotFoundError), excinfo.value
+        import os
+        import subprocess
+        import sys
+
+        env = {**os.environ, "DATABASE_URL": "postgresql://u:p@127.0.0.1:59999/none",
+               "PYTHONPATH": str(BACKEND)}
+        result = subprocess.run(  # noqa: S603 — a literal script run by this test, no external input
+            [sys.executable, "-c", "from services.migrations import run_migrations; run_migrations()"],
+            cwd=BACKEND, env=env, capture_output=True, text=True, timeout=60, check=False,
+        )
+        assert result.returncode != 0, "migrations ran against an unreachable database"
+        assert "FileNotFoundError" not in result.stderr, result.stderr
+        assert "alembic.ini not found" not in result.stderr, result.stderr
+        assert "OperationalError" in result.stderr, result.stderr
 
     def test_it_refuses_a_non_postgres_url(self, monkeypatch):
         from services.migrations import run_migrations

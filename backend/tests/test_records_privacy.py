@@ -60,3 +60,18 @@ def test_deletion_request_is_idempotent(harness):
     assert first["status"] == "PENDING"
     second = client.post("/api/records/deletion-request", headers=headers).json()
     assert second["status"] == "PENDING"
+
+
+def test_share_list_names_the_document_and_only_the_owner_sees_it(harness):
+    client, factory, codes = harness
+    user, headers = register(client, codes, "sharer@example.test")
+    _seed(factory, user["id"])
+    share_id = client.post("/api/records/shares", json={"documentId": "doc1", "clinicianEmail": "clinician@example.test", "expiresInDays": 7}, headers=headers).json()["id"]
+    items = client.get("/api/records/shares", headers=headers).json()["items"]
+    assert [(i["id"], i["documentId"], i["active"]) for i in items] == [(share_id, "doc1", True)]
+    client.post("/api/auth/logout", headers=headers)
+
+    _other, other_headers = register(client, codes, "other-student@example.test")
+    assert client.get("/api/records/shares", headers=other_headers).json()["items"] == []
+    # Someone else cannot revoke it either.
+    assert client.post(f"/api/records/shares/{share_id}/revoke", headers=other_headers).status_code == 404

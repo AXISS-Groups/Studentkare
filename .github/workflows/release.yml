@@ -1,0 +1,102 @@
+# Release images (audit TD-22). Every commit on main that passes CI is built
+# once and pushed to GHCR, tagged with its commit SHA; a v* git tag adds the
+# version as a second tag on the same build. Deploys pin a SHA (Helm
+# backend.image.tag / frontend.image.tag, compose APP_IMAGE_TAG), so a rollback
+# is redeploying the previous SHA.
+name: Release images
+
+on:
+  workflow_run:
+    workflows: ["Studentkare CI & PR Quality Gate"]
+    types: [completed]
+    branches: [main]
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: release-${{ github.event.workflow_run.head_sha || github.sha }}
+  cancel-in-progress: false
+
+jobs:
+  images:
+    # Only commits whose CI run succeeded; tags are released as pushed.
+    if: github.event_name == 'push' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - name: backend
+            context: backend
+            dockerfile: backend/Dockerfile
+          - name: frontend
+            context: .
+            dockerfile: deploy/Dockerfile
+          # Postgres backup + restore drill (Helm CronJob, compose `backup`).
+          - name: backup
+            context: .
+            dockerfile: deploy/backup/Dockerfile
+    steps:
+      - name: Resolve commit and tags
+        id: meta
+        env:
+          SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+          REF_TYPE: ${{ github.ref_type }}
+          REF_NAME: ${{ github.ref_name }}
+          OWNER: ${{ github.repository_owner }}
+        run: |
+          owner=$(echo "$OWNER" | tr '[:upper:]' '[:lower:]')
+          image="ghcr.io/${owner}/studentkare-${{ matrix.name }}"
+          short="${SHA::12}"
+          tags="${image}:sha-${short}"
+          version="sha-${short}"
+          if [ "$REF_TYPE" = "tag" ]; then
+            tags="${tags},${image}:${REF_NAME}"
+            version="${REF_NAME}"
+          fi
+          {
+            echo "sha=${SHA}"
+            echo "tags=${tags}"
+            echo "version=${version}"
+          } >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.meta.outputs.sha }}
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Front-end error reporting: VITE_SENTRY_DSN is a repository variable
+      # (Settings › Variables; a browser DSN is public by design). Unset builds
+      # fine and the app logs "Sentry disabled"; the release is the image version.
+      - uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.dockerfile }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          build-args: |
+            APP_VERSION=${{ steps.meta.outputs.version }}
+            GIT_COMMIT=${{ steps.meta.outputs.sha }}
+            VITE_APP_VERSION=${{ steps.meta.outputs.version }}
+            VITE_API_BASE_URL=/api
+            VITE_SENTRY_DSN=${{ vars.VITE_SENTRY_DSN }}
+            VITE_PUBLIC_SITE_URL=${{ vars.VITE_PUBLIC_SITE_URL }}
+          labels: |
+            org.opencontainers.image.revision=${{ steps.meta.outputs.sha }}
+            org.opencontainers.image.version=${{ steps.meta.outputs.version }}
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+          cache-from: type=gha,scope=${{ matrix.name }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.name }}
+
+      - name: Summary
+        run: echo "Pushed ${{ steps.meta.outputs.tags }}" >> "$GITHUB_STEP_SUMMARY"

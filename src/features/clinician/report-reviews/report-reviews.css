@@ -14,7 +14,7 @@
 .rr-row__ask { font-size: 12.5px; font-weight: 500; color: var(--sk-color-text-2); }
 .rr-steps { display: flex; gap: 5px; margin-top: var(--sk-space-10); }
 .rr-step { flex: 1; height: 5px; border-radius: var(--sk-radius-full); background: var(--sk-color-rule-soft); }
-.rr-step.is-done { background: var(--sk-color-nav-current); }
+.rr-step.is-done { background: var(--sk-color-action); }
 .rr-step--danger.is-done { background: var(--sk-color-danger-fill); }
 .rr-step--attention.is-done { background: var(--sk-color-attention); }
 .rr-step--positive.is-done { background: var(--sk-color-positive); }
@@ -45,3 +45,22 @@
   .rr-row { flex-direction: column; gap: var(--sk-space-12); }
   .rr-row__side { flex-direction: row; align-items: center; justify-content: space-between; }
 }
+
+.sk-ds .rr-foot { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.sk-ds .rr-question .rr-open { align-self: flex-start; min-height: var(--sk-size-touch-target); display: inline-flex; align-items: center; font-size: 13.5px; font-weight: 800; }
+.sk-ds .rr-small { display: block; margin: 0; font-size: 12px; line-height: 1.5; font-weight: 500; color: var(--sk-color-text-3); }
+.sk-ds .rr-small--invalid { font-weight: 600; color: var(--sk-color-danger); }
+.rr-decision, .rr-sources { margin: 0; padding: 0; border: 0; display: flex; flex-direction: column; gap: var(--sk-space-8); }
+.rr-choice {
+  display: flex; align-items: center; gap: var(--sk-space-10); min-height: var(--sk-size-touch-target); padding: 0 var(--sk-space-14);
+  border-radius: var(--sk-radius-lg); border: 1px solid var(--sk-color-rule); background: var(--sk-color-surface);
+  font-size: 13.5px; font-weight: 700; color: var(--sk-color-text); cursor: pointer;
+}
+.rr-choice.is-on { border: 1.5px solid var(--sk-color-action); background: var(--sk-color-action-soft); }
+.rr-choice input { width: 18px; height: 18px; accent-color: var(--sk-color-action); }
+.rr-form { display: flex; flex-direction: column; gap: var(--sk-space-14); }
+.rr-textarea--short { min-height: 84px; }
+.rr-source { display: flex; flex-direction: column; gap: var(--sk-space-8); padding: var(--sk-space-12); border-radius: var(--sk-radius-lg); background: var(--sk-color-surface-2); }
+
+/* The page's blocks, spaced as on the canvas. */
+.rr-page { display: flex; flex-direction: column; gap: var(--sk-space-24); min-width: 0; }

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { KeyRound, ShieldCheck, CheckCircle2 } from 'lucide-react';
+import { KeyRound, CheckCircle2 } from 'lucide-react';
 import { Field } from '../interface/WorkflowUI';
 import '../../theme/workflows.css';
 
@@ -30,20 +30,16 @@ export function ExpressOtpHandoverDesk() {
         <div>
           <span className="care-eyebrow">EXPRESS FULFILMENT & HANDOVER</span>
           <h2>Pharmacy OTP Dispense & Handover Desk</h2>
-          <p>Verify student 6-digit handover OTP and package barcode to log ABDM tamper-proof delivery proof.</p>
+          <p>Verify student 6-digit handover OTP and package barcode to log delivery proof.</p>
         </div>
-
-        <span style={{ fontSize: 12, background: 'rgba(16, 185, 129, 0.1)', color: '#065f46', padding: '6px 12px', borderRadius: 999, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-          <ShieldCheck size={16} /> ABDM Delivery Proof Enabled
-        </span>
       </div>
 
       {dispenseState === 'SUCCESS' ? (
-        <div style={{ textAlign: 'center', padding: 28, background: 'rgba(16, 185, 129, 0.05)', border: '1px solid #10b981', borderRadius: 12 }}>
-          <CheckCircle2 size={48} color="#10b981" style={{ margin: '0 auto 12px' }} />
+        <div style={{ textAlign: 'center', padding: 28, background: 'var(--sk-color-positive-bg)', border: '1px solid var(--sk-color-positive-fill)', borderRadius: 12 }}>
+          <CheckCircle2 size={48} color="var(--sk-color-positive-fill)" style={{ margin: '0 auto 12px' }} />
           <h3 style={{ fontSize: 20 }}>Medication Handover Successfully Verified!</h3>
           <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '4px 0 16px' }}>
-            Dispense proof recorded under ABDM Ledger ID <code>DELIV-2026-881290</code>. Student notified in Health Vault.
+            Dispense proof recorded under ID <code>DELIV-2026-881290</code>. Student notified in Health Vault.
           </p>
           <button className="health-button health-button-primary" style={{ minHeight: 44 }} onClick={handleReset}>
             Process Next Handover OTP
@@ -79,7 +75,7 @@ export function ExpressOtpHandoverDesk() {
             disabled={otpInput.length !== 6 || !packageBarcode.trim() || dispenseState === 'VERIFYING'}
             style={{ minHeight: 44, marginTop: 4 }}
           >
-            <KeyRound size={16} /> {dispenseState === 'VERIFYING' ? 'Verifying OTP & ABDM Record...' : 'Verify OTP & Release Order'}
+            <KeyRound size={16} /> {dispenseState === 'VERIFYING' ? 'Verifying OTP...' : 'Verify OTP & Release Order'}
           </button>
         </form>
       )}

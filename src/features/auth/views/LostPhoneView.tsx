@@ -1,245 +1,122 @@
-import React, { useState } from 'react';
-import { CheckCircle2, AlertTriangle, ArrowLeft } from 'lucide-react';
-import { apiRequest } from '@/data/http';
-import './auth-form.css';
+import React, { useEffect, useState } from 'react';
+import { observer } from 'mobx-react-lite';
+import { useAuth } from '@/data/contexts/AuthContext';
+import { navigate } from '@/lib/utils/workflowRouting';
+import { usePhoneFrame } from '@/design-system/navigation/usePhoneFrame';
+import { ConfirmDialog } from '@/design-system/overlays/ConfirmDialog';
+import { Icon } from '@/design-system/icons';
+import { useT } from '@/i18n';
+import { LostPhoneViewModel } from '../viewmodel/LostPhoneViewModel';
+import { LostPhoneCrisisLine, LostPhonePanel, LostPhoneResult } from './LostPhonePanel';
+import type { LostPhoneLinks } from './LostPhonePanel';
+import { StandaloneStudentShell } from './StandaloneStudentShell';
+import './web-lost-phone.css';
 
-interface DeviceItem {
-  id: string;
-  name: string;
-  meta: string;
-  note: string;
-  isCurrent: boolean;
+/**
+ * Web route /lost-phone (Tier 1, approved 2026-10-21). Public: it must work from
+ * a friend's phone, signed out. A signed-in student on a wide screen gets the
+ * WebLostPhone board in the student web shell; everyone else the LostPhone
+ * phone board. Both report only what POST /auth/sessions/revoke-others confirmed.
+ */
+export function LostPhoneView(): React.ReactElement {
+  const auth = useAuth();
+  const phone = usePhoneFrame();
+  const [vm] = useState(() => new LostPhoneViewModel());
+  useEffect(() => () => vm.dispose(), [vm]);
+  const signedIn = auth.status === 'authenticated' && auth.user !== null;
+  const links: LostPhoneLinks = {
+    signIn: () => navigate('login', 'lost-phone'),
+    openDigitalId: () => navigate('digital-id'),
+    back: () => navigate(signedIn ? 'security' : 'login'),
+    openHelp: signedIn ? () => navigate('support') : undefined,
+  };
+  if (signedIn && !phone && auth.user?.role === 'STUDENT') {
+    return (
+      <StandaloneStudentShell route="security">
+        <WebLostPhoneBoard viewModel={vm} links={links} />
+      </StandaloneStudentShell>
+    );
+  }
+  return <LostPhonePanel viewModel={vm} signedIn={signedIn} links={links} />;
 }
 
-export function LostPhoneView(): React.ReactElement {
-  const [step, setStep] = useState<'auth' | 'pick' | 'confirm' | 'done'>('pick');
-  const [selectedDev, setSelectedDev] = useState<number | null>(0);
-  const [stepProgress, setStepProgress] = useState(0);
-
-  const devices: DeviceItem[] = [
-    {
-      id: 'phone',
-      name: 'iPhone 13 · Student Kare app',
-      meta: 'Last active today 4:12 pm · Hyderabad',
-      note: 'Holds your check-in pass and offline emergency card',
-      isCurrent: false,
-    },
-    {
-      id: 'old',
-      name: 'Redmi Note 11 · Student Kare app',
-      meta: 'Last active 3 Aug · Hyderabad',
-      note: 'Old phone — still signed in',
-      isCurrent: false,
-    },
-    {
-      id: 'web',
-      name: 'Chrome on Windows',
-      meta: 'This browser · now',
-      note: 'You are using it',
-      isCurrent: true,
-    },
-  ];
-
-  const revocationSteps = [
-    'Check-in pass cancelled — the QR and code stop working now',
-    'Signed out of that phone',
-    'Offline emergency card will wipe itself when the phone next connects',
-    'Your campus health desk and ICE contacts are not told — this stays private',
-  ];
-
-  const handleConfirmRevocation = () => {
-    setStep('done');
-    setStepProgress(0);
-    // Call backend revocation endpoint if available
-    void apiRequest('/auth/lost-phone/revoke', {
-      method: 'POST',
-      body: JSON.stringify({ deviceId: devices[selectedDev ?? 0]?.id }),
-    }).catch(() => {
-      // Best-effort local simulation
-    });
-
-    let current = 0;
-    const interval = setInterval(() => {
-      current += 1;
-      setStepProgress(current);
-      if (current >= revocationSteps.length) {
-        clearInterval(interval);
-      }
-    }, 450);
-  };
-
+/**
+ * The WebLostPhone board. The device picker needs a session list the server does
+ * not have (D3-7), so the left column is the one honest action: sign out every
+ * other device, after the confirm dialog. The right column keeps only claims
+ * that are true today (the app lock and photo-matched handover do not exist).
+ */
+export const WebLostPhoneBoard = observer(function WebLostPhoneBoard({ viewModel: vm, links }: { viewModel: LostPhoneViewModel; links: LostPhoneLinks }) {
+  const t = useT();
   return (
-    <div style={{ minHeight: '100vh', background: '#FAF8FF', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 20px', boxSizing: 'border-box' }}>
-      <div style={{ width: '100%', maxWidth: '480px', background: '#FFFFFF', borderRadius: '24px', padding: '36px', border: '1px solid #EEF2FF', boxShadow: '0 12px 40px rgba(19, 27, 46, 0.06)', boxSizing: 'border-box' }}>
-        <a href="/login" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 700, color: '#3525CD', textDecoration: 'none', marginBottom: '20px' }}>
-          <ArrowLeft size={16} /> Back to sign in
-        </a>
+    <div className="sk-wlost">
+      <div className="sk-wlost__main">
+        <h1 className="sk-wlost__title">{t('ident.lost.title')}</h1>
+        <p className="sk-wlost__lead">{t('ident.lost.leadWeb')}</p>
+        <LostPhoneCrisisLine />
 
-        {step === 'pick' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
-            <div>
-              <span style={{ fontSize: '11px', fontWeight: 800, letterSpacing: '1.2px', color: '#E11D48' }}>LOST PHONE PROTECTION</span>
-              <h1 style={{ margin: '6px 0 8px', fontSize: '26px', fontWeight: 800, color: '#131B2E', letterSpacing: '-0.5px' }}>
-                Which device did you lose?
-              </h1>
-              <p style={{ margin: 0, fontSize: '14px', lineHeight: 1.55, color: '#464555' }}>
-                We will instantly invalidate your check-in QR code pass and sign that device out so nobody can view your health records.
-              </p>
+        {vm.phase === 'done' ? (
+          <LostPhoneResult viewModel={vm} links={links} />
+        ) : (
+          <section className="sk-wlost__card" aria-labelledby="sk-wlost-action">
+            <span className="sk-wlost__tile"><Icon name="devices" size={22} /></span>
+            <div className="sk-wlost__words">
+              <h2 id="sk-wlost-action" className="sk-wlost__card-title">{t('lost.title')}</h2>
+              <p>{t('lost.body')}</p>
+              <p className="sk-wlost__muted">{t('ident.lost.noList')}</p>
             </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {devices.map((d, i) => {
-                const isSelected = selectedDev === i;
-                return (
-                  <button
-                    key={d.id}
-                    type="button"
-                    disabled={d.isCurrent}
-                    onClick={() => setSelectedDev(i)}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '14px',
-                      padding: '16px',
-                      borderRadius: '16px',
-                      textAlign: 'left',
-                      fontFamily: 'inherit',
-                      cursor: d.isCurrent ? 'default' : 'pointer',
-                      border: isSelected ? '2px solid #E11D48' : '1px solid #DAE2FD',
-                      background: isSelected ? '#FFF1F2' : d.isCurrent ? '#F4F3FA' : '#FFFFFF',
-                      opacity: d.isCurrent ? 0.7 : 1,
-                    }}
-                  >
-                    <div style={{ width: '22px', height: '22px', borderRadius: '50%', border: isSelected ? '7px solid #E11D48' : '2px solid #C7C4D8', boxSizing: 'border-box', flexShrink: 0 }} />
-                    <div style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', gap: '3px' }}>
-                      <span style={{ fontSize: '14.5px', fontWeight: 700, color: '#131B2E' }}>{d.name}</span>
-                      <span style={{ fontSize: '12px', color: '#6B6980' }}>{d.meta}</span>
-                      <span style={{ fontSize: '11.5px', fontWeight: 600, color: i === 0 ? '#BE123C' : '#6B6980' }}>{d.note}</span>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-
-            <button
-              type="button"
-              onClick={() => setStep('confirm')}
-              style={{
-                height: '52px',
-                borderRadius: '14px',
-                border: 0,
-                background: selectedDev !== null ? '#DC2626' : '#FECDD3',
-                color: '#FFFFFF',
-                fontSize: '15.5px',
-                fontWeight: 800,
-                cursor: selectedDev !== null ? 'pointer' : 'not-allowed',
-                marginTop: '10px',
-              }}
-            >
-              Secure account and unbind
-            </button>
-          </div>
+          </section>
         )}
 
-        {step === 'confirm' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: '#FEE2E2', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#DC2626' }}>
-              <AlertTriangle size={26} />
-            </div>
-
+        {vm.phase === 'failed' ? (
+          <div className="sk-wlost__failed" role="alert">
+            <Icon name="alert-triangle" size={20} />
             <div>
-              <h1 style={{ margin: '0 0 8px', fontSize: '24px', fontWeight: 800, color: '#131B2E' }}>
-                Sign out {devices[selectedDev ?? 0]?.name}?
-              </h1>
-              <p style={{ margin: 0, fontSize: '14px', lineHeight: 1.6, color: '#464555' }}>
-                This immediately terminates its session. The check-in pass QR code becomes invalid, and the offline emergency cache will be cleared on its next connection.
-              </p>
-            </div>
-
-            <div style={{ display: 'flex', gap: '12px' }}>
-              <button
-                type="button"
-                onClick={() => setStep('pick')}
-                style={{ flex: 1, height: '48px', borderRadius: '12px', border: '1px solid #DAE2FD', background: '#FFFFFF', fontSize: '14.5px', fontWeight: 700, color: '#464555', cursor: 'pointer' }}
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleConfirmRevocation}
-                style={{ flex: 1, height: '48px', borderRadius: '12px', border: 0, background: '#DC2626', fontSize: '14.5px', fontWeight: 800, color: '#FFFFFF', cursor: 'pointer' }}
-              >
-                Yes, unbind device
-              </button>
+              <strong>{t('lost.failedTitle')}</strong>
+              <p>{t('lost.failedBody')}</p>
             </div>
           </div>
-        )}
+        ) : null}
 
-        {step === 'done' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: '#ECFDF5', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#059669' }}>
-              <CheckCircle2 size={26} />
-            </div>
-
-            <div>
-              <h1 style={{ margin: '0 0 8px', fontSize: '24px', fontWeight: 800, color: '#131B2E' }}>
-                Device unbind in progress
-              </h1>
-              <p style={{ margin: 0, fontSize: '14px', lineHeight: 1.6, color: '#464555' }}>
-                Your account is now secured against unauthorized access from {devices[selectedDev ?? 0]?.name}.
-              </p>
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {revocationSteps.map((st, idx) => {
-                const isComplete = idx < stepProgress;
-                return (
-                  <div
-                    key={st}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '12px',
-                      padding: '12px 14px',
-                      borderRadius: '12px',
-                      fontSize: '13px',
-                      fontWeight: 600,
-                      background: isComplete ? '#ECFDF5' : '#F4F3FA',
-                      color: isComplete ? '#065F46' : '#6B6980',
-                      transition: 'all 0.3s ease',
-                    }}
-                  >
-                    <CheckCircle2 size={16} color={isComplete ? '#059669' : '#C7C4D8'} />
-                    <span>{st}</span>
-                  </div>
-                );
-              })}
-            </div>
-
-            {stepProgress >= revocationSteps.length && (
-              <div style={{ marginTop: '14px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <a
-                  href="/login"
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    height: '48px',
-                    borderRadius: '12px',
-                    background: '#3525CD',
-                    color: '#FFFFFF',
-                    fontSize: '14.5px',
-                    fontWeight: 800,
-                    textDecoration: 'none',
-                  }}
-                >
-                  Return to sign in
-                </a>
-              </div>
-            )}
-          </div>
-        )}
+        {vm.phase !== 'done' ? (
+          <button type="button" className="sk-wlost__secure" onClick={vm.askConfirm} disabled={vm.phase === 'busy'} data-testid="lost-secure">
+            {t('ident.lost.secure')}
+          </button>
+        ) : null}
       </div>
+
+      <aside className="sk-wlost__side">
+        <section className="sk-wlost__info" aria-labelledby="sk-wlost-cant">
+          <h2 id="sk-wlost-cant" className="sk-wlost__eyebrow">{t('ident.lost.cantTitle')}</h2>
+          <ul>
+            <li><Icon name="check" size={16} strokeWidth={2.6} />{t('ident.lost.cantPass')}</li>
+            <li><Icon name="check" size={16} strokeWidth={2.6} />{t('ident.lost.cantSignIn')}</li>
+          </ul>
+        </section>
+        <section className="sk-wlost__report">
+          <p>{t('ident.lost.report')}</p>
+          {links.openHelp ? (
+            <button type="button" className="sk-wlost__link" onClick={links.openHelp}>
+              {t('ident.lost.help')}
+              <Icon name="arrow-right" size={16} />
+            </button>
+          ) : null}
+        </section>
+      </aside>
+
+      <ConfirmDialog
+        open={vm.phase === 'confirm' || vm.phase === 'busy'}
+        tone="danger"
+        icon="end-sessions"
+        title={t('ident.lost.confirmTitle')}
+        body={t('ident.lost.confirmBody')}
+        confirmLabel={t('ident.lost.confirmYes')}
+        busyLabel={t('ident.lost.securing')}
+        cancelLabel={t('ident.lost.confirmCancel')}
+        busy={vm.phase === 'busy'}
+        onConfirm={() => void vm.revokeOthers()}
+        onCancel={vm.cancelConfirm}
+      />
     </div>
   );
-}
+});

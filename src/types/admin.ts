@@ -1,4 +1,4 @@
-import { RuleId } from '../ai/constitution';
+import { RuleId } from '../ai/core/constitution';
 
 export type BreakGlassReason =
   | 'SAFETY_ESCALATION'

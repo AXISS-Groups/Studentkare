@@ -5,16 +5,31 @@ import path from 'path';
 import http from 'http';
 import { spawn } from 'child_process';
 
+const API_TARGET = process.env.CARE_API_TARGET || 'http://127.0.0.1:8000';
+
+// Starting a backend from the frontend dev server is opt-in (audit TD-28). The
+// spawned backend is APP_ENV=testing on SQLite, which hides Postgres-only bugs,
+// so the default is to tell the developer how to start the real one instead.
 function autoBackendPlugin(): Plugin {
   return {
     name: 'auto-backend',
     apply: 'serve',
     configureServer() {
       if (process.env.VITEST) return;
-      const checkReq = http.get('http://127.0.0.1:8000/api/health', () => {});
+      const checkReq = http.get(`${API_TARGET}/api/health`, (res) => res.resume());
       checkReq.on('error', () => {
+        if (process.env.CARE_AUTO_BACKEND !== '1') {
+          console.log(
+            `\x1b[33m[backend]\x1b[0m No backend at ${API_TARGET}. Start one with \`docker compose up backend\`` +
+              ' (Postgres, as in production), or set CARE_AUTO_BACKEND=1 to launch a SQLite test backend.',
+          );
+          return;
+        }
         const script = path.resolve(__dirname, 'scripts/start-dev-backend.py');
-        console.log('\x1b[36m[backend]\x1b[0m Launching FastAPI backend on http://127.0.0.1:8000 ...');
+        console.warn(
+          '\x1b[33m[backend]\x1b[0m CARE_AUTO_BACKEND=1: launching a SQLite test backend (APP_ENV=testing) on' +
+            ' http://127.0.0.1:8000. Postgres-only behaviour (Rule L, migrations, locks) is not exercised.',
+        );
         const proc = spawn('python', [script], {
           stdio: 'inherit',
           windowsHide: true,
@@ -65,7 +80,7 @@ export default defineConfig({
     port: 3000,
     host: true,
     proxy: {
-      '/api': { target: process.env.CARE_API_TARGET || 'http://127.0.0.1:8000', changeOrigin: false },
+      '/api': { target: API_TARGET, changeOrigin: false },
     },
   },
 });

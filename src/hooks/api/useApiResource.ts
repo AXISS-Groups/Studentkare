@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { apiRequest } from '../../data/http';
+import { apiRequest } from '../../data/services/http';
 
 export function useApiResource<T>(path: string | null) {
   const [data, setData] = useState<T | null>(null);

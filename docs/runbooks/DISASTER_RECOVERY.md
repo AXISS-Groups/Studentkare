@@ -75,12 +75,12 @@ kubectl exec -n studentkare alertmanager-0 -- amtool alert query
 kubectl apply -f deploy/helm/studentkare/templates/03-monitoring.yaml -n studentkare
 
 # 2. Or manual dashboard import via API
-curl -X POST https://monitoring.studentkare.in/api/dashboards/db \
+curl -X POST https://monitoring.studentkare.co/api/dashboards/db \
   -H "Authorization: Bearer <admin-token>" \
   -d @deploy/grafana/dashboards/api-overview.json
 
 # 3. Verify
-curl -s https://monitoring.studentkare.in/api/health
+curl -s https://monitoring.studentkare.co/api/health
 ```
 
 ### Loki Recovery
@@ -121,7 +121,7 @@ curl -s http://tempo:3200/ready
 kubectl apply -f deploy/helm/studentkare/templates/03-monitoring.yaml -n studentkare
 
 # Verify
-curl -s http://blackbox:9115/probe?target=https://api.studentkare.in/api/health&module=http_2xx
+curl -s http://blackbox:9115/probe?target=https://studentkare.co/api/health&module=http_2xx
 ```
 
 ### Sentry Recovery
@@ -154,8 +154,8 @@ kubectl scale deployment studentkare-backend --replicas=5 -n studentkare
 kubectl scale deployment studentkare-frontend --replicas=5 -n studentkare
 
 # 4. Verify health
-curl -f https://api.studentkare.in/api/health
-curl -f https://studentkare.in/
+curl -f https://studentkare.co/api/health
+curl -f https://studentkare.co/
 
 # 5. Update monitoring
 # Prometheus: Update scrape targets to new endpoints

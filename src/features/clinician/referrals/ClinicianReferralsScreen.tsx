@@ -1,29 +1,40 @@
-import React from 'react';
+import React, { useMemo } from 'react';
+import { useT } from '@/i18n';
 import { ConsoleTableScreen } from '../shared/ConsoleTableScreen';
 import { sampleInDevelopment } from '../shared/consoleTable';
 import type { ConsoleTableConfig, ConsoleTableData, ConsoleTableSource } from '../shared/consoleTable';
 import { cell, muted, pill, strong } from '../shared/cells';
+import type { T } from '../shared/clinicalData';
 
-/** ClinicianReferral (design page 5, Tier 3). */
-export const referralsConfig: ConsoleTableConfig = {
-  title: 'Referrals',
-  subtitle: 'Out to tertiary care and visiting specialists',
-  caption: 'Referrals you have sent, where to, and their state',
-  columns: [
-    { label: 'Student', width: '140px' },
-    { label: 'Reason for referral' },
-    { label: 'To', width: '190px' },
-    { label: 'Sent', width: '140px' },
-    { label: 'State', width: '150px', align: 'end' },
-  ],
-  footnote:
-    'We take nothing on a referral. Where a student is exercising choice, the destination is theirs to pick from the listed providers — the referral carries your reason, not your preferred hospital.',
-  empty: { title: 'No referrals open.', body: 'When you refer a student on, the referral and its reply appear here.' },
-  unconnected: { title: 'Referrals aren’t connected yet.', body: 'Referrals you send will appear here once they are connected. Until then this page shows nothing rather than a guess.' },
-  errorTitle: 'Couldn’t load referrals',
-  reference: 'Ref REFERRALS · ClinicianReferral',
-};
+/**
+ * ClinicianReferral (design page 5, Tier 1, approved 2026-10-21). No referral
+ * model exists yet, so production shows the not-connected layout. The
+ * "Commission taken" figure is a Rule L statement: it may only ever show a
+ * value computed from a ledger, so without one it is "—", never "₹0" or "0".
+ */
+export function referralsConfig(t: T): ConsoleTableConfig {
+  return {
+    title: t('clinReferral.title'),
+    subtitle: t('clinReferral.subtitle'),
+    caption: t('clinReferral.caption'),
+    columns: [
+      { label: t('clinReferral.col.student'), width: '140px' },
+      { label: t('clinReferral.col.reason') },
+      { label: t('clinReferral.col.to'), width: '190px' },
+      { label: t('clinReferral.col.sent'), width: '140px' },
+      { label: t('clinReferral.col.state'), width: '150px', align: 'end' },
+    ],
+    footnote: t('clinReferral.footnote'),
+    empty: { title: t('clinReferral.emptyTitle'), body: t('clinReferral.emptyBody') },
+    emptyIcon: 'stetho-alt--p4',
+    unconnected: { title: t('clinReferral.unconnectedTitle'), body: t('clinReferral.unconnectedBody') },
+    errorTitle: t('clinReferral.errorTitle'),
+    reference: t('clinReferral.reference'),
+    statLabels: [t('clinReferral.stat.open'), t('clinReferral.stat.awaiting'), t('clinReferral.stat.seen'), t('clinReferral.stat.commission')],
+  };
+}
 
+/* Development demo only (demoDataEnabled): the design's rows, never in production builds. */
 export function referralsSample(): ConsoleTableData {
   return {
     badge: { label: '1 awaiting acceptance', tone: 'action' },
@@ -31,7 +42,7 @@ export function referralsSample(): ConsoleTableData {
       { value: '4', label: 'Open referrals' },
       { value: '1', label: 'Awaiting acceptance', tone: 'attention' },
       { value: '2', label: 'Seen within 14 days', tone: 'positive' },
-      { value: '0', label: 'Commission taken', tone: 'positive' },
+      { value: null, label: 'Commission taken', meta: 'No ledger yet' },
     ],
     rows: [
       { id: 'r1', cells: [strong('D-042 · NP'), cell('Hb 7.1 with no obvious source — needs GI workup'), cell('Apollo · gastroenterology', 'action'), muted('24 Sep'), pill('Accepted, 02 Oct', 'positive')] },
@@ -43,5 +54,7 @@ export function referralsSample(): ConsoleTableData {
 }
 
 export function ClinicianReferralsScreen({ source }: { source?: ConsoleTableSource }): React.ReactElement {
-  return <ConsoleTableScreen navId="referrals" config={referralsConfig} source={source ?? sampleInDevelopment(referralsSample)} />;
+  const t = useT();
+  const config = useMemo(() => referralsConfig(t), [t]);
+  return <ConsoleTableScreen navId="referrals" config={config} source={source ?? sampleInDevelopment(referralsSample)} />;
 }

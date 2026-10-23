@@ -1,8 +1,9 @@
-import { isDev } from '@/core/env';
-import type { QueueData } from './queueModel';
+import { isLive, loadBookings, sameLocalDay } from '../shared/appointmentsSource';
+import type { BookingsLoader } from '../shared/appointmentsSource';
+import type { QueueData, QueueEntry } from './queueModel';
 
 export interface ClinicianQueueSource {
-  /** Null when the console is not connected to real consents. */
+  /** Null when the console is not connected to anything real. */
   load(): Promise<QueueData | null>;
   /**
    * Ask the student to share (awaiting) or renew (expired). The student
@@ -11,74 +12,35 @@ export interface ClinicianQueueSource {
   requestAccess?: (entryId: string) => Promise<void>;
 }
 
-const LOCKED_BEFORE_WINDOW = { id: 'window', label: 'Records before Aug 2026', reason: 'Outside the consent window', open: false };
-
-/** Development-only sample laid out like the canvas. Never served outside `isDev()`. */
-export const sampleQueueSource: ClinicianQueueSource = {
-  async load() {
-    const now = Date.now();
-    return {
-      activeRelationships: 6,
-      accepting: true,
-      crisisFlagged24h: 1,
-      entries: [
-        {
-          id: 'q1',
-          patientName: 'Priya N.',
-          reason: 'Sore throat and fever since last night',
-          consent: 'active',
-          scope: 'Shared: 2 lab reports, 1 prescription · expires in 12 days',
-          waitingSince: new Date(now - 4 * 60000),
-          access: [
-            { id: 'a1', label: 'Vitamin D Test — 20 Sep', reason: 'Shared by Priya on 21 Sep for this consult', open: true },
-            { id: 'a2', label: 'Complete Blood Count — 04 Aug', reason: 'Shared by Priya on 21 Sep for this consult', open: true },
-            LOCKED_BEFORE_WINDOW,
-          ],
-        },
-        {
-          id: 'q2',
-          patientName: 'Arjun M.',
-          reason: 'Follow-up on iron panel',
-          consent: 'active',
-          scope: 'Shared: 1 lab report · expires in 3 days',
-          waitingSince: new Date(now - 11 * 60000),
-          access: [
-            { id: 'b1', label: 'Iron studies — 12 Sep', reason: 'Shared by Arjun on 22 Sep for this consult', open: true },
-            LOCKED_BEFORE_WINDOW,
-          ],
-        },
-        {
-          id: 'q3',
-          patientName: 'Sneha K.',
-          reason: 'Requested a dermatology referral',
-          consent: 'awaiting',
-          scope: 'No records shared — request access to proceed',
-          scheduledAt: '2:30 PM',
-          access: [{ id: 'c1', label: 'No records shared', reason: 'Sneha has not shared anything with you yet', open: false }],
-        },
-        {
-          id: 'q4',
-          patientName: 'Rahul V.',
-          reason: 'Post-consult review',
-          consent: 'expired',
-          scope: 'Access lapsed 2 days ago — records now sealed',
-          scheduledAt: '4:00 PM',
-          access: [{ id: 'd1', label: 'All shared records', reason: 'Access lapsed 2 days ago — sealed until Rahul renews', open: false }],
-        },
-      ],
-    };
-  },
-  async requestAccess() {
-    // Sample only: nothing is sent.
-  },
-};
-
-export const unconnectedQueueSource: ClinicianQueueSource = {
-  async load() {
-    return null;
-  },
-};
+/**
+ * Today's queue from the doctor's own bookings (`GET /work/appointments`):
+ * today's requests and confirmed consults, in slot order. That API reports
+ * no sharing, waiting room, availability or crisis flags, so those stay
+ * "not reported" — never filled in. No request-access action: nothing on the
+ * server sends one.
+ */
+export function bookingsQueueSource(load: BookingsLoader = loadBookings, now: () => Date = () => new Date()): ClinicianQueueSource {
+  return {
+    async load() {
+      const today = now();
+      const entries: QueueEntry[] = [];
+      for (const booking of await load()) {
+        if (!isLive(booking) || !sameLocalDay(booking.start, today)) continue;
+        if (booking.status !== 'REQUESTED' && booking.status !== 'CONFIRMED') continue;
+        entries.push({
+          id: booking.id,
+          patientName: booking.patientName,
+          booking: booking.status,
+          consent: 'unreported',
+          scheduledAt: booking.start,
+          access: null,
+        });
+      }
+      return { entries, activeRelationships: null, accepting: null, crisisFlagged24h: null };
+    },
+  };
+}
 
 export function defaultQueueSource(): ClinicianQueueSource {
-  return isDev() ? sampleQueueSource : unconnectedQueueSource;
+  return bookingsQueueSource();
 }

@@ -1,5 +1,5 @@
 import React from 'react';
-import { useTheme } from '../theme/theme';
+import { useTheme } from '../theme/tokens/theme';
 import {
   WifiOff,
   Server,
@@ -180,7 +180,7 @@ export const SystemErrorOverlay: React.FC<SystemErrorOverlayProps> = ({
             onClick={onRetry || onClose}
             style={{
               backgroundColor: tokens.action,
-              color: '#ffffff',
+              color: tokens.onAction,
               border: 'none',
               borderRadius: 9999,
               padding: '13px 20px',

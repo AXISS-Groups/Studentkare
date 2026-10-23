@@ -1,0 +1,68 @@
+# Local development loop (audit TD-28). `docker compose up` loads this file
+# automatically on top of docker-compose.yml. It is NOT loaded when files are
+# named explicitly, so the production command
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up
+# never sees any of it.
+#
+# What it changes for development:
+#   web       Vite dev server with hot reload on http://localhost:3000
+#   backend   your backend/ folder mounted in, uvicorn --reload
+#   frontend  the production nginx build, only with --profile prodlike
+#   monitoring (otel, prometheus, loki, promtail, grafana, alertmanager)
+#             only with --profile observability
+#   pgbouncer only with --profile pooling (nothing in dev uses it)
+#
+#   docker compose up                          # daily development
+#   docker compose --profile prodlike up       # production-like nginx build on :3000 (stop `web` first)
+#   docker compose --profile observability up  # with the monitoring stack
+services:
+  backend:
+    volumes:
+      - ./backend:/app
+    command:
+      - sh
+      - -c
+      - >-
+        exec uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+        --proxy-headers --forwarded-allow-ips "$${FORWARDED_ALLOW_IPS:-127.0.0.1}"
+
+  web:
+    image: node:20-alpine
+    working_dir: /app
+    command: ["sh", "-c", "npm ci --legacy-peer-deps --no-audit --no-fund && exec npx vite --host 0.0.0.0 --port 3000"]
+    environment:
+      CARE_API_TARGET: http://backend:8000
+      # File events do not cross the Docker Desktop VM boundary reliably.
+      CHOKIDAR_USEPOLLING: "true"
+    volumes:
+      - .:/app
+      - web-node-modules:/app/node_modules
+    ports:
+      - "3000:3000"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - studentkare
+
+  frontend:
+    profiles: ["prodlike"]
+
+  pgbouncer:
+    profiles: ["pooling"]
+
+  otel-collector:
+    profiles: ["observability"]
+  prometheus:
+    profiles: ["observability"]
+  loki:
+    profiles: ["observability"]
+  promtail:
+    profiles: ["observability"]
+  grafana:
+    profiles: ["observability"]
+  alertmanager:
+    profiles: ["observability"]
+
+volumes:
+  web-node-modules:

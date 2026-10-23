@@ -1,266 +1,83 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { useT } from '@/i18n';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { observer } from 'mobx-react-lite';
-import type { HealthVaultViewModel } from '../viewmodel/HealthVaultViewModel';
+import { Button, Card, EmptyState, ErrorState, Eyebrow, Note, Skeleton } from '@/design-system';
+import { color, font, fontWeight, space } from '@/design-system/theme';
+import { HealthVaultViewModel } from '../viewmodel/HealthVaultViewModel';
 
-interface HealthVaultNativeViewProps {
-  viewModel: HealthVaultViewModel;
-}
+const day = (seconds: number) => new Date(seconds * 1000).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
 
-/**
- * Mobile (React Native) View Component for ABDM / ABHA Digital Health Vault & Consent Manager.
- * Binds reactively to `HealthVaultViewModel` via MobX `observer`.
- */
-export const HealthVaultNativeView: React.FC<HealthVaultNativeViewProps> = observer(({ viewModel }) => {
+/** Health records (design page 2: RecordsVault). Your documents, and who you've shared them with. */
+export const HealthVaultNativeView = observer(function HealthVaultNativeView({ viewModel: vm, onCapture }: { viewModel: HealthVaultViewModel; onCapture?: () => void }) {
+  const t = useT();
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <View style={styles.header}>
-        <Text style={styles.eyebrow}>ABDM / ABHA DIGITAL VAULT</Text>
-        <Text style={styles.title}>Health Vault & Consent</Text>
-      </View>
+    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+      <Eyebrow>{t('vault.eyebrow')}</Eyebrow>
+      <Text accessibilityRole="header" style={styles.title}>{t('vault.title')}</Text>
+      {onCapture ? <Button label={t('vault.capture')} variant="secondary" fullWidth onPress={onCapture} /> : null}
 
-      {/* ABHA Card */}
-      <View style={styles.abhaCard}>
-        <Text style={styles.abhaBadge}>ABHA DIGITAL ID</Text>
-        <Text style={styles.abhaAddr}>{viewModel.abhaAddress}</Text>
-        <Text style={styles.abhaNum}>Num: {viewModel.abhaNumber}</Text>
+      {vm.loading ? <Skeleton label={t('vault.loading')} lines={['90%', '70%', '80%']} /> : null}
+      {vm.loadFailed ? <ErrorState title={t('vault.failedTitle')} body={t('vault.failedBody')} retryLabel={t('common.tryAgain')} onRetry={() => void vm.load()} /> : null}
 
-        <TouchableOpacity
-          style={styles.syncBtn}
-          onPress={() => viewModel.syncAbdmRecords()}
-          disabled={viewModel.isSyncing}
-        >
-          <Text style={styles.syncBtnText}>{viewModel.isSyncing ? 'Syncing...' : 'Sync ABDM Vault'}</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Sync Message */}
-      {viewModel.syncMessage ? (
-        <View style={styles.syncBanner}>
-          <Text style={styles.syncText}>✓ {viewModel.syncMessage}</Text>
-        </View>
+      {vm.documents ? (
+        <Card>
+          <Text style={styles.cardTitle}>{t('vault.documents', { count: vm.documents.length })}</Text>
+          {vm.documents.length === 0 ? (
+            <EmptyState title={t('vault.emptyTitle')} body={t('vault.emptyBody')} />
+          ) : (
+            vm.documents.map((doc) => (
+              <View key={doc.id} style={styles.row}>
+                <Text style={styles.item}>{doc.title}</Text>
+                <Text style={styles.meta}>{`${doc.category.replace(/_/g, ' ').toLowerCase()} · ${t('vault.added', { date: day(doc.createdAt) })}`}</Text>
+              </View>
+            ))
+          )}
+        </Card>
       ) : null}
 
-      {/* Records Section */}
-      <Text style={styles.sectionTitle}>Stored Health Records ({viewModel.storedRecords.length})</Text>
-      {viewModel.storedRecords.map((rec) => (
-        <View key={rec.id} style={styles.recordCard}>
-          <View style={styles.recHeader}>
-            <Text style={styles.catBadge}>{rec.category}</Text>
-            <Text style={styles.recDate}>{rec.date}</Text>
-          </View>
-          <Text style={styles.recTitle}>{rec.title}</Text>
-          <Text style={styles.facilityText}>{rec.facilityName} • Dr. {rec.doctorName}</Text>
-        </View>
-      ))}
-
-      {/* Consents Section */}
-      <Text style={styles.sectionTitle}>ABDM Consent Requests</Text>
-      {viewModel.consentRequests.map((req) => (
-        <View key={req.id} style={styles.consentCard}>
-          <View style={styles.cHeader}>
-            <Text style={styles.cTitle}>{req.requesterName}</Text>
-            <Text style={[styles.cStatus, req.status === 'GRANTED' ? styles.statusGranted : styles.statusPending]}>
-              {req.status}
-            </Text>
-          </View>
-          <Text style={styles.cPurpose}>Purpose: {req.purpose}</Text>
-
-          {req.status === 'PENDING' && (
-            <View style={styles.actionRow}>
-              <TouchableOpacity style={styles.denyBtn} onPress={() => viewModel.denyConsent(req.id)}>
-                <Text style={styles.denyText}>Deny</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.grantBtn} onPress={() => viewModel.grantConsent(req.id)}>
-                <Text style={styles.grantText}>Authorize</Text>
-              </TouchableOpacity>
-            </View>
+      {vm.shares ? (
+        <Card>
+          <Text style={styles.cardTitle}>{t('vault.sharedWith')}</Text>
+          {vm.activeShares.length === 0 ? (
+            <Text style={styles.meta}>{t('vault.noShares')}</Text>
+          ) : (
+            vm.activeShares.map((share) => (
+              <View key={share.id} style={styles.row}>
+                <Text style={styles.item}>{share.clinician}</Text>
+                <Text style={styles.meta}>{t('vault.until', { document: share.document, date: day(share.expiresAt) })}</Text>
+                <Button
+                  label={t('vault.withdraw')}
+                  variant="secondary"
+                  accessibilityLabel={t('vault.withdrawSpoken', { clinician: share.clinician, document: share.document })}
+                  busy={vm.revokingId === share.id}
+                  onPress={() => void vm.revoke(share.id)}
+                />
+              </View>
+            ))
           )}
-        </View>
-      ))}
+          {vm.error ? <Note tone="danger">{vm.error}</Note> : null}
+        </Card>
+      ) : null}
     </ScrollView>
   );
 });
 
+export function HealthVaultRoute({ onCapture }: { onCapture?: () => void } = {}): React.ReactElement {
+  const [vm] = useState(() => new HealthVaultViewModel());
+  useEffect(() => {
+    void vm.load();
+    return () => vm.dispose();
+  }, [vm]);
+  return <HealthVaultNativeView viewModel={vm} onCapture={onCapture} />;
+}
+
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f8fafc',
-  },
-  content: {
-    padding: 16,
-    gap: 16,
-  },
-  header: {
-    marginBottom: 4,
-  },
-  eyebrow: {
-    fontSize: 10,
-    fontWeight: '800',
-    color: '#0284c7',
-    marginBottom: 2,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: '#0f172a',
-  },
-  abhaCard: {
-    backgroundColor: '#0284c7',
-    borderRadius: 12,
-    padding: 16,
-  },
-  abhaBadge: {
-    fontSize: 10,
-    fontWeight: '800',
-    color: '#ffffff',
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-    alignSelf: 'flex-start',
-    marginBottom: 8,
-  },
-  abhaAddr: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: '#ffffff',
-  },
-  abhaNum: {
-    fontSize: 12,
-    color: '#e0f2fe',
-    marginTop: 2,
-    marginBottom: 12,
-  },
-  syncBtn: {
-    backgroundColor: '#ffffff',
-    paddingVertical: 8,
-    borderRadius: 6,
-    alignItems: 'center',
-  },
-  syncBtnText: {
-    color: '#0284c7',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  syncBanner: {
-    backgroundColor: '#f0fdf4',
-    borderWidth: 1,
-    borderColor: '#bbf7d0',
-    padding: 12,
-    borderRadius: 8,
-  },
-  syncText: {
-    color: '#166534',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  sectionTitle: {
-    fontSize: 14,
-    fontWeight: '800',
-    color: '#0f172a',
-  },
-  recordCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
-    padding: 14,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-  },
-  recHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 4,
-  },
-  catBadge: {
-    fontSize: 10,
-    fontWeight: '800',
-    color: '#0284c7',
-    backgroundColor: '#e0f2fe',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-  },
-  recDate: {
-    fontSize: 11,
-    color: '#64748b',
-  },
-  recTitle: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#0f172a',
-    marginVertical: 4,
-  },
-  facilityText: {
-    fontSize: 11,
-    color: '#64748b',
-  },
-  consentCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
-    padding: 14,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-  },
-  cHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 4,
-  },
-  cTitle: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#0f172a',
-    flex: 1,
-  },
-  cStatus: {
-    fontSize: 10,
-    fontWeight: '800',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-  },
-  statusGranted: {
-    backgroundColor: '#dcfce7',
-    color: '#15803d',
-  },
-  statusPending: {
-    backgroundColor: '#fef3c7',
-    color: '#b45309',
-  },
-  cPurpose: {
-    fontSize: 11,
-    color: '#64748b',
-    marginBottom: 8,
-  },
-  actionRow: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  denyBtn: {
-    flex: 1,
-    backgroundColor: '#ffffff',
-    borderWidth: 1,
-    borderColor: '#cbd5e1',
-    paddingVertical: 6,
-    borderRadius: 6,
-    alignItems: 'center',
-  },
-  denyText: {
-    fontSize: 11,
-    color: '#64748b',
-  },
-  grantBtn: {
-    flex: 1,
-    backgroundColor: '#0284c7',
-    paddingVertical: 6,
-    borderRadius: 6,
-    alignItems: 'center',
-  },
-  grantText: {
-    fontSize: 11,
-    color: '#ffffff',
-    fontWeight: '700',
-  },
+  screen: { flex: 1, backgroundColor: color.canvas },
+  content: { padding: space.gutterPhone, gap: space.s16, maxWidth: 600, width: '100%', alignSelf: 'center' },
+  title: { fontFamily: font.family.sans, fontSize: font.size.heading, fontWeight: fontWeight(font.weight.heavy), color: color.text },
+  cardTitle: { fontFamily: font.family.sans, fontSize: font.size.titleSm, fontWeight: fontWeight(font.weight.strong), color: color.text },
+  row: { gap: space.s4, paddingVertical: space.s8 },
+  item: { fontFamily: font.family.sans, fontSize: font.size.body, color: color.text },
+  meta: { fontFamily: font.family.sans, fontSize: font.size.bodySm, color: color.text2 },
 });

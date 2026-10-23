@@ -2,7 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { LifeShareStore } from '@/features/care/store/LifeShareStore';
-import { getCompatibleDonorTypes, BLOOD_COMPATIBILITY_MAP } from '@/data/lifeshareData';
+import { getCompatibleDonorTypes, BLOOD_COMPATIBILITY_MAP } from '@/data/datasets/lifeshareData';
+import { memberEn } from '@/i18n/areas/member';
 
 /**
  * `/lifeshare` is a public route. It presented invented ICU bed counts,
@@ -24,6 +25,8 @@ function codeOf(path: string): string {
 const SCREEN = codeOf('src/screens/emergency/LifeShareExchangeScreen.tsx');
 const DATASET = codeOf('src/data/datasets/lifeshareData.ts');
 const STORE = codeOf('src/features/care/store/LifeShareStore.tsx');
+// The screen's copy now lives in the member catalogue; check both.
+const COPY = Object.entries(memberEn).filter(([key]) => key.startsWith('member.lifeshare.')).map(([, text]) => text).join('\n');
 
 describe('transfusion compatibility — real medicine, kept', () => {
   it('resolves the universal donor', () => {
@@ -65,7 +68,7 @@ describe('no hospital availability is invented', () => {
   it('names no real hospital', () => {
     // The store too: a vacuity check that seeded one hospital there slipped
     // past this assertion when it only covered the dataset and the screen.
-    for (const source of [DATASET, SCREEN, STORE]) {
+    for (const source of [DATASET, SCREEN, STORE, COPY]) {
       expect(source).not.toMatch(/Yashoda|Apollo|Kamineni/i);
     }
   });
@@ -89,11 +92,12 @@ describe('no hospital availability is invented', () => {
   });
 
   it('claims no network size or rating', () => {
-    expect(SCREEN).not.toMatch(/30,273|2,947|4\.92|CONNECTED HOSPITALS|Synergy/i);
+    for (const source of [SCREEN, COPY]) expect(source).not.toMatch(/30,273|2,947|4\.92|CONNECTED HOSPITALS|Synergy/i);
   });
 
   it('says plainly that availability is not connected', () => {
-    expect(SCREEN).toMatch(/not connected/i);
+    expect(SCREEN).toMatch(/member\.lifeshare\.availabilityHeading/);
+    expect(memberEn['member.lifeshare.availabilityHeading']).toMatch(/not connected/i);
   });
 });
 
@@ -104,7 +108,7 @@ describe('no transfer request pretends to have been sent', () => {
   });
 
   it('the screen claims no dispatch and no notification', () => {
-    expect(SCREEN).not.toMatch(
+    expect(SCREEN + COPY).not.toMatch(
       /Hospital network notified|dispatched to|Submit & Dispatch|Ready for dispatch/i,
     );
   });

@@ -4,15 +4,14 @@ import { Field } from '../../components/interface/WorkflowUI';
 import '../../theme/workflows.css';
 
 export function GenericSubstitutionScreen() {
-  const [prescribed, setPrescribed] = useState('Augmentin 625mg');
-  const [proposed, setProposed] = useState('Amoxyclav 625mg (Generic)');
-  const [reason, setReason] = useState('Brand out of stock; exact salt and strength match available.');
-  const [submitted, setSubmitted] = useState(false);
+  const [prescribed, setPrescribed] = useState('');
+  const [proposed, setProposed] = useState('');
+  const [reason, setReason] = useState('');
 
+  // There is no prescriber-inbox endpoint for substitution proposals yet, so
+  // nothing is sent and nothing claims to have been sent (fail closed).
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
-    setTimeout(() => setSubmitted(false), 2000);
   };
 
   return (
@@ -40,8 +39,9 @@ export function GenericSubstitutionScreen() {
             <textarea rows={3} value={reason} onChange={e => setReason(e.target.value)} required />
           </Field>
 
-          <button className="health-button health-button-primary" type="submit" style={{ minHeight: 44, width: 'fit-content' }}>
-            <Send size={16} /> {submitted ? 'Submitted to Doctor Inbox!' : 'Send Swap Proposal to Prescriber'}
+          <p className="wf-fineprint" id="generic-sub-unavailable" role="status">Sending substitution proposals to the prescriber isn’t available yet. Nothing is sent from this form.</p>
+          <button className="health-button health-button-primary" type="submit" disabled aria-describedby="generic-sub-unavailable" style={{ minHeight: 44, width: 'fit-content' }}>
+            <Send size={16} /> Send Swap Proposal to Prescriber
           </button>
         </form>
       </div>

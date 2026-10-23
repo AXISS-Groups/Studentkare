@@ -1,5 +1,5 @@
-import { apiRequest } from '@/data/http';
-import type { IntegrationHealth, OpsFeed, OpsSummary } from '@/data/workflowTypes';
+import { apiRequest } from '@/data/services/http';
+import type { IntegrationHealth, OpsFeed, OpsSummary } from '@/data/types/workflowTypes';
 import type { FeedQuery, OpsFeedCounts } from './types';
 
 /** The operations activity feed. The only place that knows the /ops/feed, /ops/summary and /ops/integration-health endpoints. */

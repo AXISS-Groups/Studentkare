@@ -1,4 +1,5 @@
 """Real request contracts, isolated SQL storage, and a mocked delivery boundary."""
+import secrets
 import time
 from datetime import datetime, timezone
 
@@ -10,7 +11,7 @@ from sqlalchemy.pool import StaticPool
 
 from app.main import app
 from core import workflow_models as M
-from services import workflow_auth
+from services import email_deliverability, workflow_auth
 from services.db_sql import Base
 from services.workflow_auth import workflow_db
 
@@ -25,12 +26,34 @@ def harness(monkeypatch):
             yield session
     codes = []
     monkeypatch.setattr(workflow_auth, "deliver_code", lambda identifier, code, channel: codes.append(code) or True)
+    # The OTP send path probes DNS for real domains (services.email_deliverability).
+    # Tests must never touch the network: a sandbox or CI runner without DNS
+    # answers "no nameservers", which the gate reads as undeliverable (422).
+    monkeypatch.setattr(email_deliverability, "_resolve_domain", lambda domain: True)
     app.dependency_overrides[workflow_db] = database
     client = TestClient(app)
     yield client, factory, codes
     app.dependency_overrides.clear()
     client.close()
     engine.dispose()
+
+
+SIGNUP_CONSENT = {"version": "signup-2026-10-16b", "purposes": ["RECORDS_STORAGE", "CAMPUS_ENROLMENT", "ADULT_18_PLUS"], "language": "en"}
+
+
+# Sign-up needs a password and, while WhatsApp can deliver, the second contact verified
+# too (plan tier1-auth-password-2026-10-22, B). Test harnesses offer both channels.
+SIGNUP_PASSWORD = "Tamarind-river 42"
+
+
+def verify_second_contact(client, codes, headers, number=None):
+    """Proves the sign-up's other contact (a fresh WhatsApp number by default) with its code."""
+    number = number or f"9{secrets.randbelow(10 ** 9):09d}"
+    sent = client.post("/api/auth/signup/contact/send-code", json={"value": number}, headers=headers)
+    assert sent.status_code == 200, sent.text
+    checked = client.post("/api/auth/signup/contact/verify", json={"otp": codes[-1]}, headers=headers)
+    assert checked.status_code == 200, checked.text
+    return number
 
 
 def register(client, codes, identifier="member@example.test"):
@@ -41,7 +64,8 @@ def register(client, codes, identifier="member@example.test"):
     assert checked.json()["requiresSignup"] is True
     assert client.get("/api/auth/session").json()["user"] is None
     headers = {"X-CSRF-Token": checked.json()["csrfToken"]}
-    result = client.post("/api/auth/signup", headers=headers, json={"fullName": "Test Member", "dob": "2000-03-14", "university": "Test University", "rollNumber": "TEST-42"})
+    verify_second_contact(client, codes, headers)
+    result = client.post("/api/auth/signup", headers=headers, json={"fullName": "Test Member", "dob": "2000-03-14", "university": "Test University", "rollNumber": "TEST-42", "consent": SIGNUP_CONSENT, "password": SIGNUP_PASSWORD})
     assert result.status_code == 201, result.text
     return result.json()["user"], {"X-CSRF-Token": result.json()["csrfToken"]}
 
@@ -70,7 +94,8 @@ def test_signup_is_verified_pending_and_persistent(harness):
 
 def test_no_signup_without_verified_grant_or_role_injection(harness):
     client, _, codes = harness
-    body = {"fullName": "Test", "dob": "2000-01-01", "university": "Test", "rollNumber": "T1"}
+    body = {"fullName": "Test", "dob": "2000-01-01", "university": "Test", "rollNumber": "T1", "consent": SIGNUP_CONSENT,
+            "password": SIGNUP_PASSWORD}
     assert client.post("/api/auth/signup", json=body).status_code == 401
     client.post("/api/auth/otp/send", json={"identifier": "new@example.test", "channel": "EMAIL", "intent": "SIGNUP"})
     check = client.post("/api/auth/otp/verify", json={"otp": codes[-1]}).json()
@@ -173,6 +198,11 @@ def test_catalog_orders_authoritative_prices_and_vendor_isolation(harness):
     client.post("/api/auth/logout", headers=other_headers)
     vendor_headers = login(client, codes, "vendor@example.test")
     assert client.patch(f"/api/work/requests/{line_id}", headers=vendor_headers, json={"status": "COMPLETED"}).status_code == 409
+    # Unpaid: refused until the money is in (live-run audit #1).
+    assert client.patch(f"/api/work/requests/{line_id}", headers=vendor_headers, json={"status": "ACCEPTED"}).status_code == 409
+    with factory() as db:
+        db.get(M.Order, first.json()["id"]).payment_status = "PAID"
+        db.commit()
     assert client.patch(f"/api/work/requests/{line_id}", headers=vendor_headers, json={"status": "ACCEPTED"}).status_code == 200
 
 

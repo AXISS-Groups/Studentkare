@@ -37,7 +37,7 @@ spec:
         fsGroup: 1000
       containers:
         - name: backend
-          image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag }}"
+          image: "{{ .Values.backend.image.repository }}:{{ required "Set backend.image.tag to a released sha-<commit> tag (see release.yml)" .Values.backend.image.tag }}"
           imagePullPolicy: {{ .Values.backend.image.pullPolicy }}
           ports:
             - containerPort: 8000
@@ -45,6 +45,9 @@ spec:
           env:
             - name: APP_ENV
               value: {{ .Values.global.environment }}
+            # Rule L (TD-03): commerce requests fail closed without the sk_commerce grants.
+            - name: RULE_L_REQUIRE_GRANTS
+              value: {{ .Values.backend.env.RULE_L_REQUIRE_GRANTS | default "1" | quote }}
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
               value: {{ .Values.backend.env.OTEL_EXPORTER_OTLP_ENDPOINT }}
             - name: DATABASE_URL
@@ -54,21 +57,7 @@ spec:
                   key: DATABASE_URL
             - name: USE_PGBOUNCER
               value: {{ .Values.backend.pgbouncer.enabled | quote }}
-            - name: OTP_HASH_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: studentkare-secrets
-                  key: OTP_HASH_SECRET
-            - name: SENTRY_DSN
-              valueFrom:
-                secretKeyRef:
-                  name: studentkare-secrets
-                  key: SENTRY_DSN
-            - name: ALERTMANAGER_WEBHOOK_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: studentkare-secrets
-                  key: ALERTMANAGER_WEBHOOK_SECRET
+            {{- include "studentkare.appSecretEnv" . | nindent 12 }}
           envFrom:
             - configMapRef:
                 name: studentkare-backend-config
@@ -149,7 +138,29 @@ metadata:
   name: studentkare-backend-config
   namespace: {{ .Release.Namespace }}
 data:
-  ALLOWED_ORIGINS: {{ .Values.backend.env.ALLOWED_ORIGINS | default "https://studentkare.in,https://monitoring.studentkare.in" }}
+  # One app domain (global.domain): CORS origins, mail/invite links (APP_BASE_URL)
+  # and the platform domain all follow it unless overridden in backend.env.
+  APP_DOMAIN: {{ .Values.global.domain | quote }}
+  APP_BASE_URL: {{ .Values.backend.env.APP_BASE_URL | default (printf "https://%s" .Values.global.domain) | quote }}
+  ALLOWED_ORIGINS: {{ .Values.backend.env.ALLOWED_ORIGINS | default (printf "https://%s" .Values.global.domain) | quote }}
+  # Proxies whose X-Forwarded-For the backend trusts (audit TD-10): the ingress
+  # controller's pod network. Set backend.env.FORWARDED_ALLOW_IPS to your
+  # cluster's pod CIDR to narrow it.
+  FORWARDED_ALLOW_IPS: {{ .Values.backend.env.FORWARDED_ALLOW_IPS | default "10.0.0.0/8,172.16.0.0/12,192.168.0.0/16" | quote }}
+  # Order payments (docs/billing-payments.md). The backend refuses to start with
+  # "mock" in production; Razorpay keys come from studentkare-secrets.
+  PAYMENT_PROVIDER: {{ .Values.backend.env.PAYMENT_PROVIDER | default "razorpay" | quote }}
+  # Upload virus scanner (templates/05-clamav.yaml). Prescriptions fail closed without it.
+  CLAMAV_HOST: {{ .Values.backend.env.CLAMAV_HOST | default (ternary "clamav" "" .Values.clamav.enabled) | quote }}
+  CLAMAV_PORT: {{ .Values.backend.env.CLAMAV_PORT | default .Values.clamav.port | toString | quote }}
+  # Every other non-empty backend.env value (empty = unset, the code default
+  # applies). Keys set on the containers directly are skipped here.
+  {{- $skip := list "APP_DOMAIN" "APP_BASE_URL" "ALLOWED_ORIGINS" "FORWARDED_ALLOW_IPS" "PAYMENT_PROVIDER" "CLAMAV_HOST" "CLAMAV_PORT" "APP_ENV" "OTEL_EXPORTER_OTLP_ENDPOINT" "RULE_L_REQUIRE_GRANTS" "USE_PGBOUNCER" }}
+  {{- range $key, $value := .Values.backend.env }}
+  {{- if and (not (has $key $skip)) (ne (toString $value) "") }}
+  {{ $key }}: {{ toString $value | quote }}
+  {{- end }}
+  {{- end }}
 ---
 apiVersion: v1
 kind: ServiceAccount

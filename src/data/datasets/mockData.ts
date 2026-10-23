@@ -5,7 +5,6 @@ import {
   FabricProvider,
   FabricOrder,
   ClaimAdjudication,
-  ClinicianPatient,
 } from '../../types';
 
 export const mockStudents: StudentProfile[] = [
@@ -26,8 +25,6 @@ export const mockStudents: StudentProfile[] = [
     campusName: 'Kandi Campus',
     rollNumber: 'CS22BTECH11042',
     bloodGroup: 'O+ (Positive)',
-    abhaId: '91-4829-1029-4412',
-    abhaAddress: 'rohit.sharma@abdm',
     emergencyContactName: 'Rajesh Sharma (Father)',
     emergencyContactPhone: '+91 98111 22334',
     emergencyContactRelation: 'Parent',
@@ -52,8 +49,6 @@ export const mockStudents: StudentProfile[] = [
     campusName: 'University Campus',
     rollNumber: 'CS2026-ARJUN-01',
     bloodGroup: 'B+ (Positive)',
-    abhaId: '91-1122-3344-5566',
-    abhaAddress: 'arjun.mehta@abdm',
     emergencyContactName: 'Sunita Mehta (Mother)',
     emergencyContactPhone: '+91 98222 33445',
     emergencyContactRelation: 'Mother',
@@ -78,8 +73,6 @@ export const mockStudents: StudentProfile[] = [
     campusName: 'Shamirpet Campus',
     rollNumber: '2023A4PS0108H',
     bloodGroup: 'A+ (Positive)',
-    abhaId: '91-7788-9900-1122',
-    abhaAddress: 'ananya.reddy@abdm',
     emergencyContactName: 'Dr. K. V. Reddy (Father)',
     emergencyContactPhone: '+91 98333 44556',
     emergencyContactRelation: 'Parent',
@@ -179,7 +172,7 @@ export const initialRecords: HealthRecord[] = [
     date: '2026-06-10',
     facilityName: 'University Health Center',
     doctorName: 'Dr. S. K. Murthy',
-    sourceType: 'ABDM_PULL',
+    sourceType: 'UPLOAD',
     confidenceGatePassed: true,
     humanReviewRequired: false,
     isCachedOffline: true,
@@ -416,7 +409,7 @@ export const initialFabricOrders: FabricOrder[] = [
       { state: 'accepted', timestamp: '2026-08-14 07:34', note: 'Phlebotomist assigned: K. Suresh' },
       { state: 'scheduled', timestamp: '2026-08-14 08:00', note: 'Slot 08:30-09:00 AM' },
       { state: 'in_progress', timestamp: '2026-08-14 08:40', note: 'Blood sample collected' },
-      { state: 'fulfilled', timestamp: '2026-08-14 13:10', note: 'NABL Report uploaded as FHIR R4' },
+      { state: 'fulfilled', timestamp: '2026-08-14 13:10', note: 'Lab report uploaded as FHIR R4' },
       { state: 'reported', timestamp: '2026-08-14 13:12', note: 'Report delivered to student vault' },
       { state: 'settled', timestamp: '2026-08-15 00:00', note: 'Reconciled in ledger' },
     ],
@@ -569,72 +562,5 @@ export const initialClaimAdjudications: ClaimAdjudication[] = [
         },
       },
     ],
-  },
-];
-
-// M18 Clinician Console Patients
-export const initialClinicianPatients: ClinicianPatient[] = [
-  {
-    id: 'PAT-01',
-    name: 'Rohit Sharma',
-    age: 22,
-    gender: 'Male',
-    bloodGroup: 'O+',
-    lastVisit: 'Today, 09:20 AM',
-    chiefComplaint: 'Acute pyrexia x 2 days, retro-orbital ache, mild myalgia',
-    vitals: {
-      bp: '118/76',
-      pulse: 72,
-      spo2: 99,
-      tempF: 100.8,
-      weightKg: 69.4,
-    },
-    timeline: [
-      { date: '2026-08-19', type: 'CAMP_VISIT', title: 'Monsoon Health Camp', notes: 'Completed Vitals, Dental, BMI stations' },
-      { date: '2026-08-14', type: 'LAB_CBC', title: 'Complete Blood Count', notes: 'Hb 14.2 g/dL, Platelets 240,000/µL' },
-      { date: '2026-06-10', type: 'VACCINE', title: 'Hepatitis B & Tetanus', notes: 'Booster doses completed' },
-    ],
-    currentMedications: [
-      { drug: 'Paracetamol 650mg', dosage: '1 tab SOS', freq: 'TDS (Post-meals)' },
-      { drug: 'Oral Rehydration Salts (ORS)', dosage: '1 sachet / 1L water', freq: 'Daily' },
-    ],
-    aiDifferentialSuggestions: [
-      'Viral Pyrexia / Early Dengue (Monsoon cluster)',
-      'Acute Upper Respiratory Infection',
-    ],
-    drugInteractions: [
-      {
-        drugPair: 'NSAID (Ibuprofen) + Suspected Dengue',
-        severity: 'HIGH',
-        warning: 'Avoid NSAIDs/Aspirin due to thrombocytopenia bleeding risks in monsoon fever season.',
-      },
-    ],
-  },
-  {
-    id: 'PAT-02',
-    name: 'Sneha Patel',
-    age: 21,
-    gender: 'Female',
-    bloodGroup: 'B+',
-    lastVisit: 'Yesterday',
-    chiefComplaint: 'Tension headache during mid-term exams, sleep disturbance',
-    vitals: {
-      bp: '110/70',
-      pulse: 78,
-      spo2: 98,
-      tempF: 98.4,
-      weightKg: 54.0,
-    },
-    timeline: [
-      { date: '2026-08-18', type: 'COUNSELLING', title: 'Student Wellness Check', notes: 'Discussed sleep hygiene & exam anxiety' },
-    ],
-    currentMedications: [
-      { drug: 'Magnesium Glycinate 250mg', dosage: '1 tab', freq: 'At Bedtime' },
-    ],
-    aiDifferentialSuggestions: [
-      'Stress-induced tension headache',
-      'Sleep deprivation syndrome',
-    ],
-    drugInteractions: [],
   },
 ];

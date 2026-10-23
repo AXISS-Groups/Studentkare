@@ -23,7 +23,7 @@
 .co-self {
   position: absolute; right: 18px; bottom: 96px; width: 172px; height: 112px; box-sizing: border-box;
   display: flex; align-items: center; justify-content: center; border-radius: 14px;
-  background: var(--sk-color-nav-current); border: 2px solid var(--sk-color-on-hero-label);
+  background: var(--sk-color-hero-current); color: var(--sk-color-on-hero-current); border: 2px solid var(--sk-color-on-hero-label);
   font-size: 13px; font-weight: 800;
 }
 .co-controls { position: absolute; bottom: 18px; left: 0; right: 0; display: flex; justify-content: center; gap: var(--sk-space-12); }
@@ -53,7 +53,7 @@
 .co-meds li { display: flex; flex-direction: column; gap: 2px; padding: var(--sk-space-12) var(--sk-space-14); border-radius: var(--sk-radius-lg); border: 1px solid var(--sk-color-rule-soft); }
 .co-chips { display: flex; flex-wrap: wrap; gap: var(--sk-space-8); }
 .co-soap { margin: 0; display: flex; flex-direction: column; gap: var(--sk-space-12); }
-.co-soap dt { font-size: 10.5px; font-weight: 800; letter-spacing: 1.2px; color: var(--sk-color-nav-current); }
+.co-soap dt { font-size: 10.5px; font-weight: 800; letter-spacing: 1.2px; color: var(--sk-color-action); }
 .co-soap dd { margin: 2px 0 0; font-size: 13.5px; line-height: 1.55; font-weight: 500; color: var(--sk-color-text); }
 .co-panel__actions { display: flex; gap: var(--sk-space-8); padding: var(--sk-space-12) 18px 18px; flex-wrap: wrap; }
 .sk-btn.co-action { flex: 1; height: 44px; padding: 0 var(--sk-space-12); background: var(--sk-color-surface-3); border-color: transparent; }
@@ -72,3 +72,30 @@
   .co-remote.sk-avatar { width: 110px; height: 110px; font-size: 32px; }
   .co-transport { display: none; }
 }
+
+/* No consult in progress (blank layout). */
+.co-stage--idle { display: flex; align-items: center; justify-content: center; }
+.co-idle { display: flex; flex-direction: column; gap: var(--sk-space-6); max-width: 420px; padding: var(--sk-space-24); text-align: center; color: var(--sk-color-sidebar-ink); }
+.co-idle strong { font-size: 15px; font-weight: 800; }
+.co-idle span { font-size: 12.5px; line-height: 1.55; font-weight: 500; color: var(--sk-color-sidebar-ink-2); }
+.co-idle__note { margin: 0; font-size: 12.5px; line-height: 1.55; font-weight: 500; color: var(--sk-color-text-3); }
+
+/* Back to Today (the board's "← Today"), the appointment switcher, unavailable notes. */
+.co-back {
+  align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; min-height: var(--sk-size-touch-target);
+  padding: 0; border: 0; background: transparent; cursor: pointer;
+  font-family: inherit; font-size: 13.5px; font-weight: 800; color: var(--sk-color-action);
+}
+.co-back:focus-visible { outline: 3px solid var(--sk-color-focus); outline-offset: 3px; border-radius: var(--sk-radius-sm); }
+.co-picker { display: inline-flex; align-items: center; gap: var(--sk-space-8); flex-wrap: wrap; }
+.co-picker__label { font-size: 12px; font-weight: 700; color: var(--sk-color-text-3); }
+.co-picker__select {
+  min-height: var(--sk-size-touch-target); padding: 0 var(--sk-space-12); border: 1px solid var(--sk-color-rule); border-radius: var(--sk-radius-md);
+  background: var(--sk-color-surface); font-family: inherit; font-size: 13px; font-weight: 600; color: var(--sk-color-text);
+}
+.sk-ds .co-note.co-note--info { background: var(--sk-color-surface-3); color: var(--sk-color-info); }
+.sk-ds .co-panel__why { padding: 0 18px 18px; }
+.co-stage .sk-call { width: 100%; padding: 72px 18px 96px; box-sizing: border-box; color: var(--sk-color-on-hero); }
+
+/* The page's blocks, spaced as on the canvas. */
+.co-page { display: flex; flex-direction: column; gap: var(--sk-space-24); min-width: 0; }

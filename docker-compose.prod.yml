@@ -1,17 +1,169 @@
 # Production overlay. Env MUST come from a vault, never `.env.dev.example`.
 # Usage: docker compose -f docker-compose.yml -f docker-compose.prod.yml up --build
 # Prerequisites: Vault/secrets populated with all required values
+#
+# Exposure (audit TD-16): only the web entry point publishes a host port. The
+# dev Postgres and PgBouncer from docker-compose.yml are moved to a `dev`
+# profile, so they never start here (production uses a managed database), and
+# every monitoring port is unpublished; Grafana binds to localhost only, so
+# reach it over an SSH tunnel or an authenticated reverse proxy. `!reset` and
+# `!override` replace the base file's lists instead of merging (Compose 2.24+).
+
+# One environment for backend and worker: the worker runs the same code (it
+# delivers messages and erases accounts), so it needs every key the backend
+# does. Keeping one list stops them drifting (audit ENV-06).
+x-app-env: &app-env
+  DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL to a real Postgres database}
+  APP_ENV: production
+  # One app domain (APP_DOMAIN, default studentkare.co) drives CORS, links and Grafana.
+  ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-https://${APP_DOMAIN:-studentkare.co}}
+  OTP_HASH_SECRET: ${OTP_HASH_SECRET:?Set OTP_HASH_SECRET from vault}
+  OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+  ALERTMANAGER_WEBHOOK_SECRET: ${ALERTMANAGER_WEBHOOK_SECRET:?Set ALERTMANAGER_WEBHOOK_SECRET from vault}
+  SENTRY_DSN: ${SENTRY_DSN:?Set SENTRY_DSN from vault}
+  # Fail-closed feature keys (audit TD-40). Without them 2FA setup, check-in
+  # passes, DPDP erasure and sealed integration secrets are off in production.
+  TWO_FACTOR_ENCRYPTION_KEY: ${TWO_FACTOR_ENCRYPTION_KEY:?Set TWO_FACTOR_ENCRYPTION_KEY (Fernet) from vault}
+  PASS_SIGNING_SECRET: ${PASS_SIGNING_SECRET:?Set PASS_SIGNING_SECRET from vault}
+  DPDP_ARCHIVE_KEY: ${DPDP_ARCHIVE_KEY:?Set DPDP_ARCHIVE_KEY (Fernet) from vault}
+  DPDP_ARCHIVE_RETENTION_DAYS: ${DPDP_ARCHIVE_RETENTION_DAYS:?Set DPDP_ARCHIVE_RETENTION_DAYS (whole days)}
+  INTEGRATIONS_ENCRYPTION_KEY: ${INTEGRATIONS_ENCRYPTION_KEY:?Set INTEGRATIONS_ENCRYPTION_KEY (Fernet) from vault}
+  # Payments (docs/billing-payments.md). "mock" refuses to start in production.
+  # Empty Razorpay keys = online payment off, and the app says so; nothing is charged.
+  PAYMENT_PROVIDER: ${PAYMENT_PROVIDER:-razorpay}
+  RAZORPAY_KEY_ID: ${RAZORPAY_KEY_ID:-}
+  RAZORPAY_KEY_SECRET: ${RAZORPAY_KEY_SECRET:-}
+  RAZORPAY_WEBHOOK_SECRET: ${RAZORPAY_WEBHOOK_SECRET:-}
+  # Video consults (docs/video-consults.md). Empty = no call can be started, said so in the app.
+  LIVEKIT_URL: ${LIVEKIT_URL:-}
+  LIVEKIT_API_KEY: ${LIVEKIT_API_KEY:-}
+  LIVEKIT_API_SECRET: ${LIVEKIT_API_SECRET:-}
+  # Agent Ayush (docs/guides/ayush-operations.md). On-prem Ollama only (Rule-C). Empty
+  # OLLAMA_URL = answers are quotes and retrieval is keyword matching, said so in Admin › Knowledge.
+  OLLAMA_URL: ${OLLAMA_URL:-}
+  LLM_MODEL: ${LLM_MODEL:-}
+  LLM_TIMEOUT_SECONDS: ${LLM_TIMEOUT_SECONDS:-}
+  EMBEDDING_PROVIDER: ${EMBEDDING_PROVIDER:-local}
+  EMBEDDING_MODEL: ${EMBEDDING_MODEL:-}
+  EMBEDDING_OLLAMA_URL: ${EMBEDDING_OLLAMA_URL:-}
+  AYUSH_HELP_PACK_AUTOLOAD: ${AYUSH_HELP_PACK_AUTOLOAD:-true}
+  # Rule L (TD-03): refuse commerce requests when sk_commerce is not usable.
+  # Set 0 only while provisioning roles; GET /api/ops/rule-l shows the state.
+  RULE_L_REQUIRE_GRANTS: ${RULE_L_REQUIRE_GRANTS:-1}
+  # Links in email and invites (claim#token=...). Unset used to mean http://localhost:3000.
+  APP_DOMAIN: ${APP_DOMAIN:-studentkare.co}
+  APP_BASE_URL: ${APP_BASE_URL:-https://${APP_DOMAIN:-studentkare.co}}
+
+  # From here on, a bare key is passed through only when set (a bare key = "take it from
+  # the deploy environment, else leave it unset"), so the code's own default
+  # applies otherwise. scripts/ops/check-env-passthrough.py keeps this list
+  # complete. Integration keys are fallbacks: Admin › Integrations wins.
+  # Payments: the Student Plus plan id (create it in Razorpay) and the generic
+  # signed-webhook secret; minutes an unpaid order holds stock (default 30).
+  RAZORPAY_PLUS_PLAN_ID:
+  RAZORPAY_BASE_URL:
+  PAYMENT_WEBHOOK_SECRET:
+  PAYMENT_HOLD_MINUTES:
+  # ABDM gateway. Unset = not configured; a sandbox URL is refused in production.
+  ABDM_BASE_URL:
+  ABDM_CLIENT_ID:
+  ABDM_CLIENT_SECRET:
+  ABDM_FACILITY_ID:
+  ABDM_HFR_ENABLED:
+  ABDM_HFR_REGISTRY_URL:
+  ABDM_HFR_CLIENT_ID:
+  ABDM_HFR_CLIENT_SECRET:
+  # Upload virus scanner: the clamav service below. Prescription uploads are
+  # refused while it is unreachable (fail closed), so it must run in production.
+  CLAMAV_HOST: ${CLAMAV_HOST:-clamav}
+  CLAMAV_PORT: ${CLAMAV_PORT:-3310}
+  CLAMAV_STRICT:
+  # Medicine-photo OCR: tesseract (eng+hin+tel) is in the image; the switch stays
+  # off until the AI-constitution owner and the DPO sign (Admin › Integrations wins).
+  MEDICINE_OCR_ENABLED: ${MEDICINE_OCR_ENABLED:-false}
+  MEDICINE_OCR_TESSERACT:
+  # Agent Ayush tuning.
+  LLM_ENABLED:
+  LLM_PROVIDER:
+  LLM_API_KEY:
+  LLM_RETRY_AFTER_SECONDS:
+  EMBEDDING_TIMEOUT_SECONDS:
+  # Sign-in codes and 2FA.
+  OTP_CHANNEL:
+  OTP_LENGTH:
+  OTP_TTL_SECONDS:
+  OTP_MAX_ATTEMPTS:
+  TWOFA_ENFORCED_ROLES:
+  TWOFA_ISSUER:
+  # Delivery channels (Admin › Integrations wins).
+  SMTP_HOST:
+  SMTP_PORT:
+  SMTP_TLS:
+  SMTP_FROM:
+  SMTP_USERNAME:
+  SMTP_PASSWORD:
+  DEFAULT_FROM_EMAIL:
+  POSTAL_ENABLED:
+  POSTAL_API_URL:
+  POSTAL_SERVER_API_KEY:
+  POSTAL_FROM_EMAIL:
+  OPENWA_ENABLED:
+  OPENWA_BASE_URL:
+  OPENWA_API_KEY:
+  OPENWA_SESSION_ID:
+  OPENWA_DEFAULT_COUNTRY_CODE:
+  SLACK_ENABLED:
+  SLACK_BOT_TOKEN:
+  SLACK_DEFAULT_CHANNEL:
+  SLACK_OPS_CHANNEL:
+  SLACK_BOOKING_CHANNEL:
+  # Push notifications (services/push_providers.py): Expo for phones, Web Push (VAPID) for browsers.
+  EXPO_ACCESS_TOKEN:
+  VAPID_PUBLIC_KEY:
+  VAPID_PRIVATE_KEY:
+  VAPID_SUBJECT:
+  FIREBASE_ENABLED:
+  FIREBASE_API_KEY:
+  FIREBASE_AUTH_DOMAIN:
+  FIREBASE_PROJECT_ID:
+  FIREBASE_MESSAGING_SENDER_ID:
+  FIREBASE_APP_ID:
+  FIREBASE_VAPID_KEY:
+  FIREBASE_SERVER_KEY:
+  FIREBASE_SERVICE_ACCOUNT_JSON:
+  POSTHOG_ENABLED:
+  POSTHOG_API_KEY:
+  POSTHOG_HOST:
+  APILAYER_ENABLED:
+  APILAYER_API_KEY:
+  # Platform identity shown in mail and on the site.
+  BRAND_NAME:
+  PARENT_COMPANY:
+  SUPPORT_EMAIL:
+  SUPPORT_PHONE:
+  COMPANY_ADDRESS:
+  COPYRIGHT_TEXT:
+  LOGO_URL:
+  FAVICON_URL:
+  # Database pool, PgBouncer sidecar, API limits (#221: per IP and per account), /metrics allowlist.
+  DB_POOL_SIZE:
+  DB_MAX_OVERFLOW:
+  USE_PGBOUNCER:
+  RATE_LIMIT_API_PER_IP_PER_MINUTE:
+  RATE_LIMIT_API_PER_ACCOUNT_PER_MINUTE:
+  METRICS_ALLOWED_NETWORKS:
+
 services:
+  postgres:
+    profiles: ["dev"]
+
+  pgbouncer:
+    profiles: ["dev"]
+
   backend:
     env_file: []
     environment:
-      DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL to a real Postgres database}
-      APP_ENV: production
-      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:?Set ALLOWED_ORIGINS to explicit FQDN allowlist}
-      OTP_HASH_SECRET: ${OTP_HASH_SECRET:?Set OTP_HASH_SECRET from vault}
-      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
-      ALERTMANAGER_WEBHOOK_SECRET: ${ALERTMANAGER_WEBHOOK_SECRET:?Set ALERTMANAGER_WEBHOOK_SECRET from vault}
-      SENTRY_DSN: ${SENTRY_DSN:?Set SENTRY_DSN from vault}
+      <<: *app-env
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
       interval: 10s
@@ -31,6 +183,30 @@ services:
         condition: on-failure
         delay: 5s
         max_attempts: 3
+    # Reached only through the web container's nginx (/api), never directly,
+    # so a client cannot bypass the proxy that sets the trusted client address.
+    ports: !reset []
+    # Not service_healthy: the first signature download takes minutes, and the
+    # API should serve everything else meanwhile (uploads fail closed until then).
+    depends_on: !override
+      clamav:
+        condition: service_started
+
+  # Periodic jobs on a timer (outbox incl. BLOOD_SOS, erasure). Same secrets as
+  # backend: it delivers messages and erases accounts. Keeps `restart: unless-stopped`.
+  worker:
+    env_file: []
+    environment:
+      <<: *app-env
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+      replicas: 1
+    depends_on: !override
+      backend:
+        condition: service_healthy
 
   frontend:
     depends_on:
@@ -39,19 +215,23 @@ services:
     build:
       args:
         VITE_API_BASE_URL: /api
-        VITE_SENTRY_DSN: ${SENTRY_DSN}
+        # Browser DSN; falls back to the backend project's DSN. Empty = Sentry off.
+        VITE_SENTRY_DSN: ${VITE_SENTRY_DSN:-${SENTRY_DSN:-}}
         VITE_APP_VERSION: ${APP_VERSION:-latest}
+        VITE_PUBLIC_SITE_URL: ${VITE_PUBLIC_SITE_URL:-}
     deploy:
       resources:
         limits:
           cpus: '0.5'
           memory: 512M
-      replicas: 2
+      # One replica: a fixed host port cannot be bound twice outside Swarm.
+      replicas: 1
 
   otel-collector:
     env_file: []
     environment:
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+    ports: !reset []
     volumes:
       - ./deploy/otel-collector-config-prod.yaml:/etc/otel/config.yaml
     deploy:
@@ -69,10 +249,11 @@ services:
       - "--storage.tsdb.retention.time=30d"
       - "--storage.tsdb.retention.size=10GB"
       - "--web.enable-lifecycle"
-      - "--web.enable-admin-api"
+    ports: !reset []
     volumes:
       - ./deploy/prometheus.yml:/etc/prometheus/prometheus.yml
       - ./deploy/alerts.yml:/etc/prometheus/alerts.yml
+      - ./deploy/slo-alerts.yml:/etc/prometheus/slo-alerts.yml
       - prometheus-data:/prometheus
     deploy:
       resources:
@@ -87,10 +268,6 @@ services:
     volumes:
       - ./deploy/tempo-config.yaml:/etc/tempo.yaml
       - tempo-data:/var/tempo
-    ports:
-      - "3200:3200"
-      - "4317:4317"
-      - "4318:4318"
     networks:
       - studentkare
     deploy:
@@ -106,8 +283,7 @@ services:
     volumes:
       - ./deploy/loki-config-prod.yaml:/etc/loki/local-config.yaml
       - loki-data:/loki
-    ports:
-      - "3100:3100"
+    ports: !reset []
     networks:
       - studentkare
     deploy:
@@ -142,13 +318,13 @@ services:
       - ./deploy/grafana/provisioning:/etc/grafana/provisioning
       - ./deploy/grafana/dashboards:/var/lib/grafana/dashboards
       - grafana-data:/var/lib/grafana
-    ports:
-      - "3001:3000"
+    ports: !override
+      - "127.0.0.1:3001:3000"
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:?Set GRAFANA_ADMIN_PASSWORD from vault}
       - GF_USERS_ALLOW_SIGN_UP=false
       - GF_AUTH_ANONYMOUS_ENABLED=false
-      - GF_SERVER_ROOT_URL=https://monitoring.studentkare.in
+      - GF_SERVER_ROOT_URL=https://monitoring.${APP_DOMAIN:-studentkare.co}
       - GF_SERVER_SERVE_FROM_SUB_PATH=true
     networks:
       - studentkare
@@ -168,8 +344,12 @@ services:
     restart: unless-stopped
     volumes:
       - ./deploy/alertmanager-prod.yml:/etc/alertmanager/alertmanager.yml
-    ports:
-      - "9093:9093"
+    # alertmanager-prod.yml reads the Slack webhook from this file
+    # (slack_api_url_file); Alertmanager never expands ${...} in its config.
+    secrets:
+      - source: slack_webhook_url
+        target: /etc/alertmanager-secrets/slack_webhook_url
+    ports: !reset []
     networks:
       - studentkare
     deploy:
@@ -184,8 +364,6 @@ services:
     restart: unless-stopped
     volumes:
       - ./deploy/blackbox-config.yml:/etc/blackbox_exporter/config.yml
-    ports:
-      - "9115:9115"
     networks:
       - studentkare
     deploy:
@@ -194,8 +372,81 @@ services:
           cpus: '0.25'
           memory: 128M
 
+  # Virus scanner for uploads (prescriptions, return photos, documents). clamd
+  # listens on 3310 for the backend's INSTREAM scans; freshclam runs in the same
+  # container and refreshes signatures FRESHCLAM_CHECKS times a day. Signatures
+  # persist in clamav-db so a restart does not re-download them.
+  clamav:
+    image: clamav/clamav:1.4.3
+    container_name: studentkare-clamav
+    restart: unless-stopped
+    environment:
+      CLAMAV_NO_FRESHCLAMD: "false"
+      CLAMAV_NO_CLAMD: "false"
+      FRESHCLAM_CHECKS: ${FRESHCLAM_CHECKS:-12}
+    volumes:
+      - clamav-db:/var/lib/clamav
+    networks:
+      - studentkare
+    healthcheck:
+      # Ships with the image: PINGs clamd on its socket.
+      test: ["CMD", "clamdcheck.sh"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 300s
+    deploy:
+      resources:
+        # clamd holds the signature set in memory (~1.2 GB) and briefly
+        # needs about twice that while reloading after an update.
+        limits:
+          cpus: '1'
+          memory: 3G
+        reservations:
+          memory: 1536M
+
+  # Nightly logical backup of DATABASE_URL (docs/guides/backups.md): pg_dump to the
+  # pg-backups volume, kept BACKUP_RETENTION_DAYS, and copied to S3-compatible
+  # storage when BACKUP_S3_URI is set. Restore drill: scripts/ops/restore-check.sh
+  # (also in this image as `restore-check`). Healthy while the last good backup is
+  # under 26 hours old.
+  backup:
+    build:
+      context: .
+      dockerfile: deploy/backup/Dockerfile
+    container_name: studentkare-backup
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: ${BACKUP_DATABASE_URL:-${DATABASE_URL:?Set DATABASE_URL to a real Postgres database}}
+      BACKUP_INTERVAL_SECONDS: ${BACKUP_INTERVAL_SECONDS:-86400}
+      BACKUP_RETENTION_DAYS: ${BACKUP_RETENTION_DAYS:-14}
+      BACKUP_S3_URI: ${BACKUP_S3_URI:-}
+      BACKUP_S3_ENDPOINT_URL: ${BACKUP_S3_ENDPOINT_URL:-}
+      AWS_ACCESS_KEY_ID: ${BACKUP_AWS_ACCESS_KEY_ID:-}
+      AWS_SECRET_ACCESS_KEY: ${BACKUP_AWS_SECRET_ACCESS_KEY:-}
+      AWS_DEFAULT_REGION: ${BACKUP_AWS_REGION:-ap-south-1}
+    volumes:
+      - pg-backups:/backups
+    networks:
+      - studentkare
+    healthcheck:
+      test: ["CMD-SHELL", "test -n \"$$(find /backups/last-success -mmin -1560 2>/dev/null)\""]
+      interval: 10m
+      timeout: 10s
+      retries: 1
+      start_period: 30m
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+
   # External database (managed by cloud provider)
   # No local Postgres container - use managed PostgreSQL (RDS, CloudSQL, etc.)
+
+secrets:
+  slack_webhook_url:
+    environment: SLACK_WEBHOOK_URL
 
 networks:
   studentkare:
@@ -207,3 +458,5 @@ volumes:
   loki-data:
   tempo-data:
   grafana-data:
+  clamav-db:
+  pg-backups:

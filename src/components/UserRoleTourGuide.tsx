@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { View, Text, TouchableOpacity } from "react-native";
-import { useTheme } from "../theme/theme";
+import { useTheme } from "../theme/tokens/theme";
 import { Card } from "./Card";
 import { Badge } from "./Badge";
 import { Compass, User, Stethoscope, Building2, FileCheck, ShieldAlert, ArrowRight } from "lucide-react";
-import { assertRule } from "../ai/constitution";
+import { assertRule } from "../ai/core/constitution";
 
 export interface PersonaGuide {
   id: "STUDENT" | "CLINICIAN" | "INSTITUTION" | "CLAIMS" | "SUPER_ADMIN";
@@ -38,9 +38,9 @@ export const UserRoleTourGuide: React.FC<UserRoleTourGuideProps> = ({ onNavigate
       primaryGoals: [
         "Store health vault records with end-to-end encryption",
         "1-tap 108 lockscreen emergency SOS with blood group dispatch",
-        "Granular DPDP Act 2023 consent management & ABDM FHIR export",
+        "Granular DPDP Act 2023 consent management & FHIR export",
       ],
-      keyRulesEnforced: ["Rule-A (No Prescriptive AI)", "Rule-C (Zero Training)", "Rule-D (ABDM Consent)"],
+      keyRulesEnforced: ["Rule-A (No Prescriptive AI)", "Rule-C (Zero Training)", "Rule-D (Consent Strictness)"],
     },
     {
       id: "CLINICIAN",
@@ -77,7 +77,7 @@ export const UserRoleTourGuide: React.FC<UserRoleTourGuideProps> = ({ onNavigate
       primaryGoals: [
         "Drools automated insurance claim pre-authorization engine",
         "Bounding-box document provenance & Rule-K5 NME deduction",
-        "NHCX / ABDM FHIR ClaimResponse gateway integration",
+        "NHCX FHIR ClaimResponse gateway integration",
       ],
       keyRulesEnforced: ["Rule-K1 (Role Isolation)", "Rule-K2 (Human Adjudicator)", "Rule-K4 (Bounding Box)"],
     },
@@ -127,7 +127,7 @@ export const UserRoleTourGuide: React.FC<UserRoleTourGuideProps> = ({ onNavigate
                 border: `1px solid ${active ? tokens.action : tokens.rule}`,
               }}
             >
-              <Text style={{ fontSize: 12, fontWeight: "800", color: active ? "#ffffff" : tokens.text }}>
+              <Text style={{ fontSize: 12, fontWeight: "800", color: active ? tokens.onAction : tokens.text }}>
                 {p.title}
               </Text>
             </TouchableOpacity>
@@ -170,10 +170,10 @@ export const UserRoleTourGuide: React.FC<UserRoleTourGuideProps> = ({ onNavigate
           gap: 8,
         }}
       >
-        <Text style={{ color: "#ffffff", fontWeight: "800", fontSize: 13, fontFamily: typography.fontFamily }}>
+        <Text style={{ color: tokens.onAction, fontWeight: "800", fontSize: 13, fontFamily: typography.fontFamily }}>
           Launch {current.title} Screen & Experience Persona Flow
         </Text>
-        <ArrowRight size={16} color="#ffffff" />
+        <ArrowRight size={16} color={tokens.onAction} />
       </TouchableOpacity>
     </Card>
   );

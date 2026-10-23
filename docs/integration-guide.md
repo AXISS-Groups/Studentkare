@@ -62,8 +62,8 @@ Admin: `GET /api/ops/integration-health`, `POST /api/ops/jobs/{key}/run` ("Check
 
 | Variable | Purpose |
 |---|---|
-| `PAYMENT_PROVIDER` | e.g. `razorpay`, `stripe`, `cashfree`. Presence enables checkout. |
-| `PAYMENT_WEBHOOK_SECRET` | HMAC-SHA256 secret used to verify `x-webhook-signature`. |
+| `PAYMENT_PROVIDER` | `mock` (dev/test default; refused in production) or `razorpay` (production default, needs the `RAZORPAY_*` keys). See `docs/billing-payments.md`. |
+| `PAYMENT_WEBHOOK_SECRET` | Mock provider only: HMAC-SHA256 secret for its `x-webhook-signature` webhook. Razorpay uses `RAZORPAY_WEBHOOK_SECRET`. |
 
 Endpoints:
 - `POST /api/orders/{id}/payment` — returns `configured: true` + `CREATED` when a
@@ -80,11 +80,11 @@ Tests: `backend/tests/test_payments.py`.
 
 ## 5. Insurer eligibility & claims
 
-**Contract is complete; activate by configuring an insurer integration.**
+**Not implemented: an insurer/TPA client still has to be written before this can be activated.**
 
 | Variable | Purpose |
 |---|---|
-| `INSURER_PROVIDER` | e.g. `tpa`, `insurer`. Presence enables eligibility checks and claim submission. |
+| `INSURER_PROVIDER` | Reserved. No insurer client is implemented yet, so this variable currently changes nothing: eligibility and claim submission always report `UNAVAILABLE`. |
 
 Endpoints:
 - `GET /api/insurance/eligibility?policyId=` — returns `UNAVAILABLE` (unconfigured)
@@ -96,27 +96,31 @@ Endpoints:
 Wire a real eligibility/claims API into the two endpoints; the review-queue and
 claim lifecycle are already persisted. Tests: `backend/tests/test_insurer.py`.
 
-## 5. Live teleconsultation (WebRTC)
+## 5. Live teleconsultation (LiveKit)
 
-**Client + signalling contract are complete; activate by deploying a signalling server.**
+**Audio/video runs on a LiveKit server (self-hosted or LiveKit Cloud).** Full
+setup, the join window and the token rules: [video-consults.md](video-consults.md).
 
 | Variable | Purpose |
 |---|---|
-| `RTC_SIGNALLING_URL` | WebSocket/HTTP signalling server endpoint. Presence enables `liveMedia`. |
-| `RTC_ICE_SERVERS` | JSON array of `RTCIceServer` (e.g. TURN). Falls back to a public STUN server. |
+| `LIVEKIT_URL` | `wss://` address browsers connect to (`ws://` only in development/testing). |
+| `LIVEKIT_API_KEY` | API key id; the token issuer. |
+| `LIVEKIT_API_SECRET` | Signs join tokens. Never leaves the server. |
+
+All three or none: without them no call can be started, `liveMedia` is `false`
+and `POST /api/consultation/{id}/media-token` is `503 MEDIA_UNAVAILABLE`.
 
 Endpoints:
-- `POST /api/consultation/{id}/join` — student joins (confirmed appointment only).
-- `POST /api/consultation/{id}/join-provider` — provider joins (scoped to their appointment).
-- `POST /api/consultation/{id}/signal` — store a WebRTC offer/answer.
-- `GET /api/consultation/{id}/signal` — fetch the peer's offer/answer.
-- `GET /api/consultation/{id}/state` — `liveMedia` is `true` only when a session is
-  IN_PROGRESS **and** `RTC_SIGNALLING_URL` is set.
+- `POST /api/consultation/{id}/join` — student checks in (confirmed appointment only).
+- `POST /api/consultation/{id}/join-provider` — provider records the start (their appointment only).
+- `POST /api/consultation/{id}/media-token` — short-lived LiveKit join token for the
+  booking student or the assigned NMC doctor, CONFIRMED and inside the join window.
+- `GET /api/consultation/{id}/state` — `liveMedia` is `true` when LiveKit is configured.
 
-The frontend (`VideoConsultationDialog`, `ProviderConsultationDialog`) creates a peer
-connection and relays the offer/answer when `liveMedia` is true. Deploy the signalling
-server to relay SDP/ICE between the two peers (e.g. Socket.IO + a TURN server for NAT
-traversal). Tests: `backend/tests/test_consultation.py`, `src/lib/webrtc.test.ts`.
+The old single-offer `/signal` endpoints (one stored SDP, no ICE, no media) were
+removed. Tests: `backend/tests/test_consultation.py`,
+`backend/tests/test_consultation_media.py`,
+`src/components/health/__tests__/ConsultationHonesty.test.tsx`.
 
 ## 6. Native health integrations (HealthKit / Health Connect)
 
@@ -137,13 +141,10 @@ bridge is present. Tests: `src/lib/nativeHealth.test.ts`.
 
 ## 7. Pharmacy prescription review & substitution
 
-**Requires a licensed review workflow (external).** The document intake assistant
-(`rx_extractor_ai_agent.py`) now only returns items that genuinely appear in the
-prescription text, marking dosage/frequency as `unknown` and `needs_review`. A real
-pharmacist review + authorized-substitution console must be connected to that output;
-Rx ordering currently fails closed (`requires_prescription` items return 409).
-
-Tests: `backend/tests/test_security_fixes.py` (no invented fields).
+**Requires a licensed review workflow (external).** Prescriptions are reviewed in the
+pharmacist queue (`/v1/pharmacy/rx-reviews`); the prescriber decides substitutions.
+The shop no longer reads prescription text (the `/rx/extract-ai` catalogue matcher was
+removed under Rule L), and shop checkout refuses `requires_prescription` items (409).
 
 ## 8. Scheduled operations
 
@@ -178,7 +179,7 @@ FIREBASE_MESSAGING_SENDER_ID, FIREBASE_APP_ID, FIREBASE_VAPID_KEY, FIREBASE_SERV
 LLM_ENABLED, LLM_PROVIDER, LLM_API_KEY, LLM_MODEL,
 PAYMENT_PROVIDER, PAYMENT_WEBHOOK_SECRET,
 INSURER_PROVIDER,
-RTC_SIGNALLING_URL, RTC_ICE_SERVERS,
+LIVEKIT_URL, LIVEKIT_API_KEY, LIVEKIT_API_SECRET,
 TWOFA_ENFORCED_ROLES, TWOFA_ISSUER
 ```
 
@@ -188,8 +189,8 @@ TWOFA_ENFORCED_ROLES, TWOFA_ISSUER
 - `GET /api/ops/integration-health` reports real reachability (no fake "online").
 - Payments: `POST /api/orders/{id}/payment` returns `CREATED`; unsigned webhook → 401;
   signed `payment.settled` → order `PAID`.
-- Teleconsult: join → join-provider → `liveMedia` true when `RTC_SIGNALLING_URL` set;
-  offer/answer relayed via `/signal`.
+- Teleconsult: `liveMedia` true when the three `LIVEKIT_*` values are set; both parties
+  of a confirmed consult get a `media-token` inside the join window and see each other.
 - Native health: Devices screen shows "Available" only when a bridge is injected.
 - Pharmacy: Rx extraction never invents doctor/dosage/date.
 - `npm run build`, `npm run lint`, `npm test`, `pytest` all pass.
@@ -231,7 +232,7 @@ external resources that cannot be provisioned from code alone:
 |---|---|
 | Payments (F087) | A real payment provider credential + signed webhook receiver. |
 | Pharmacy review (F085) | A licensed review/substitution workflow. |
-| Live WebRTC media (F068) | A deployed signalling server (`RTC_SIGNALLING_URL`) + TURN relays. |
+| Live video consults (F068) | A LiveKit server (self-hosted or Cloud) with TURN reachable from campus networks. |
 | Native pedometer/OS sync (F094) | A native app bridge (React Native / Expo target). |
 
 Each has its contract, honest-state handling, scaffolding, and tests in place and

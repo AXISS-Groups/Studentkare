@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
-import { useTheme } from '../theme/theme';
+import { useTheme } from '../theme/tokens/theme';
+import { color } from '@/design-system/theme';
 import { Card } from './Card';
 import { Badge } from './Badge';
 import { Network, Send, CheckCircle2, RefreshCw, FileCode } from 'lucide-react';
-import { assertRule } from '../ai/constitution';
+import { assertRule } from '../ai/core/constitution';
 
 export const NhcxExchangeConnectorProxy: React.FC = () => {
   const { tokens, radius, typography } = useTheme();
@@ -84,8 +85,8 @@ export const NhcxExchangeConnectorProxy: React.FC = () => {
         </TouchableOpacity>
 
         {inspectingJson && (
-          <View style={{ backgroundColor: '#111827', borderRadius: 8, padding: 10, marginTop: 10 }}>
-            <Text style={{ fontSize: 10, color: '#10b981', fontFamily: typography.fontMono }}>
+          <View style={{ backgroundColor: color.brandNavy, borderRadius: 8, padding: 10, marginTop: 10 }}>
+            <Text style={{ fontSize: 10, color: color.onHeroPositive, fontFamily: typography.fontMono }}>
               {sampleNhcxFhirBundle}
             </Text>
           </View>
@@ -107,13 +108,13 @@ export const NhcxExchangeConnectorProxy: React.FC = () => {
         }}
       >
         {transmitting ? (
-          <RefreshCw size={18} color="#ffffff" />
+          <RefreshCw size={18} color={tokens.onAction} />
         ) : transmitted ? (
-          <CheckCircle2 size={18} color="#ffffff" />
+          <CheckCircle2 size={18} color={tokens.onAction} />
         ) : (
-          <Send size={18} color="#ffffff" />
+          <Send size={18} color={tokens.onAction} />
         )}
-        <Text style={{ color: '#ffffff', fontWeight: '800', fontSize: 13, fontFamily: typography.fontFamily }}>
+        <Text style={{ color: tokens.onAction, fontWeight: '800', fontSize: 13, fontFamily: typography.fontFamily }}>
           {transmitting
             ? 'Transmitting Payload to NHCX Gateway...'
             : transmitted

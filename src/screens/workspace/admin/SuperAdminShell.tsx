@@ -1,12 +1,14 @@
 import React, { ReactNode, useEffect, useRef, useState } from 'react';
-import { Bell, LogOut, Menu, Moon, ShieldAlert, X } from 'lucide-react';
-import { EmergencyHelplinesDialog } from '../../../components/interface/InterfaceBar';
-import type { AccountRole } from '../../../data/workflowTypes';
-import { canAccessRoute, RoutePath } from '../../../lib/workflowRouting';
-import { useTheme } from '../../../theme/theme';
-import { StudentKareLogo, StudentKareShield } from '../../../components/StudentKareLogo';
+import { Icon } from '../../../design-system/icons';
+import { ConsoleBrand, ConsoleNav, ConsoleSidebarLink } from '../../../design-system/console-shell/ConsoleShell';
+import type { ConsoleNavGroup } from '../../../design-system/console-shell/ConsoleShell';
+import type { AccountRole } from '../../../data/types/workflowTypes';
+import { canAccessRoute, RoutePath } from '../../../lib/utils/workflowRouting';
+import { useTheme } from '../../../theme/tokens/theme';
 import { FormError } from '../../../components/interface/WorkflowUI';
 import { SUPER_ADMIN_NAVIGATION } from './superAdminNavigation';
+import { useT } from '../../../i18n';
+import { TeamBadge } from '../../../features/team-accounts/TeamBadge';
 import './super-admin-shell.css';
 
 interface SuperAdminShellProps {
@@ -24,7 +26,7 @@ export function SuperAdminShell({ route, role, onNavigate, onSignOut, signingOut
   const [drawerOpen, setDrawerOpen] = useState(false);
   const menuButton = useRef<HTMLButtonElement>(null);
   const { mode, setTheme } = useTheme();
-  const [sosOpen, setSosOpen] = useState(false);
+  const t = useT();
 
   useEffect(() => {
     if (!drawerOpen) return;
@@ -37,61 +39,54 @@ export function SuperAdminShell({ route, role, onNavigate, onSignOut, signingOut
 
   const go = (path: RoutePath) => { setDrawerOpen(false); onNavigate(path); };
 
+  const groups: ConsoleNavGroup[] = SUPER_ADMIN_NAVIGATION.map(group => ({
+    id: group.title,
+    title: t(group.titleKey),
+    items: group.items.map(({ label, labelKey, icon, route: target, activeFor }) => ({
+      id: label,
+      label: t(labelKey),
+      icon,
+      current: route === target || (activeFor?.includes(route) ?? false),
+      onSelect: target && canAccessRoute(target, role) ? () => go(target) : undefined,
+    })),
+  }));
+
   return <div className="sk-admin-shell">
     <header className="sk-admin-mobilebar">
-      <StudentKareLogo size={26} darkVariant showStrapline={false} />
-      <button ref={menuButton} type="button" className="sk-admin-menu-button" aria-label={drawerOpen ? 'Close super admin navigation' : 'Open super admin navigation'} aria-expanded={drawerOpen} aria-controls="sk-admin-sidebar" onClick={() => setDrawerOpen(!drawerOpen)}>
-        {drawerOpen ? <X size={22} aria-hidden="true" /> : <Menu size={22} aria-hidden="true" />}
+      <ConsoleBrand size={28} />
+      <button ref={menuButton} type="button" className="sk-admin-menu-button" aria-label={drawerOpen ? t('admin.shell.closeNav') : t('admin.shell.openNav')} aria-expanded={drawerOpen} aria-controls="sk-admin-sidebar" onClick={() => setDrawerOpen(!drawerOpen)}>
+        <Icon name={drawerOpen ? 'x' : 'menu'} size={22} />
       </button>
     </header>
 
-    {drawerOpen && <button type="button" className="sk-admin-backdrop" aria-label="Close super admin navigation" onClick={() => setDrawerOpen(false)} />}
+    {drawerOpen && <button type="button" className="sk-admin-backdrop" aria-label={t('admin.shell.closeNav')} onClick={() => setDrawerOpen(false)} />}
 
     <aside id="sk-admin-sidebar" className={`sk-admin-sidebar${drawerOpen ? ' is-open' : ''}`}>
       <div className="sk-admin-brand">
-        <StudentKareShield size={44} id="skAdminShield" />
-        <span className="sk-admin-wordmark"><strong>Student <em>Kare</em></strong><span>SUPER ADMIN</span></span>
+        <ConsoleBrand role={t('admin.shell.wordmark')} />
       </div>
 
-      <nav aria-label="Super admin navigation">
-        {SUPER_ADMIN_NAVIGATION.map(group => <div key={group.title} className="sk-admin-group">
-          <h2 className="sk-admin-group-title">{group.title}</h2>
-          <ul>
-            {group.items.map(({ label, icon: Icon, route: target, activeFor }) => <li key={label}>
-              {target && canAccessRoute(target, role)
-                ? <button type="button" className="sk-admin-link" aria-current={route === target || activeFor?.includes(route) ? 'page' : undefined} onClick={() => go(target)}>
-                  <Icon size={16} aria-hidden="true" /><span>{label}</span>
-                </button>
-                : <span className="sk-admin-link is-unavailable" aria-disabled="true">
-                  <Icon size={16} aria-hidden="true" /><span>{label}</span><small>Not available yet</small>
-                </span>}
-            </li>)}
-          </ul>
-        </div>)}
-      </nav>
+      <ConsoleNav label={t('admin.shell.nav')} groups={groups} />
 
       <div className="sk-admin-sidebar-footer">
         <FormError message={signOutError} />
-        <button type="button" className="sk-admin-link" disabled={signingOut} onClick={onSignOut}><LogOut size={16} aria-hidden="true" /><span>{signingOut ? 'Signing out…' : 'Sign out'}</span></button>
+        <ConsoleSidebarLink icon="log-out" label={signingOut ? t('admin.shell.signingOut') : t('admin.shell.signOut')} disabled={signingOut} onClick={onSignOut} />
       </div>
     </aside>
 
     <main className="sk-admin-main">
       {/* The app-wide theme setting (ThemeProvider); it applies everywhere, not only here. */}
       <div className="sk-admin-topbar">
+        <TeamBadge />
         {/* Alerts opens the real activity feed; the shared notification centre shows demo data. */}
         <button type="button" className="sk-admin-top-action" onClick={() => go('admin/activity')}>
-          <Bell size={18} aria-hidden="true" /><span>Alerts</span>
+          <Icon name="bell" size={18} /><span>{t('admin.shell.alerts')}</span>
         </button>
-        <button type="button" className="sk-admin-top-action sk-admin-sos" onClick={() => setSosOpen(true)}>
-          <ShieldAlert size={18} aria-hidden="true" /><span>SOS</span>
-        </button>
-        <button type="button" className="sk-admin-theme-toggle" aria-label="Dark mode" aria-pressed={mode === 'dark'} title={mode === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'} onClick={() => setTheme(mode === 'dark' ? 'light' : 'dark')}>
-          <Moon size={20} aria-hidden="true" fill={mode === 'dark' ? 'currentColor' : 'none'} />
+        <button type="button" className="sk-admin-theme-toggle" aria-label={t('admin.shell.darkMode')} aria-pressed={mode === 'dark'} title={mode === 'dark' ? t('admin.shell.toLight') : t('admin.shell.toDark')} onClick={() => setTheme(mode === 'dark' ? 'light' : 'dark')}>
+          <Icon name={mode === 'dark' ? 'moon' : 'sun'} size={20} />
         </button>
       </div>
       {children}
     </main>
-    {sosOpen && <EmergencyHelplinesDialog onClose={() => setSosOpen(false)} />}
   </div>;
 }

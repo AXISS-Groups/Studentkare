@@ -1,14 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
-import { displayDate } from '../../../data/workflowTypes';
-import type { OpsFeedEvent } from '../../../data/workflowTypes';
+import { displayDate } from '../../../data/types/workflowTypes';
+import type { OpsFeedEvent } from '../../../data/types/workflowTypes';
 
 // Behaviour of Super Admin → Operations & SOS → Activity. Only the HTTP layer is mocked,
 // keyed by request path, so these tests hold for any implementation of the screen.
 const apiAnswers: Record<string, () => Promise<unknown>> = {};
 const apiRequest = vi.fn((path: string, _init?: RequestInit) => apiAnswers[path]?.() ?? new Promise(() => undefined));
 
-vi.mock('../../../data/http', async importOriginal => ({ ...(await importOriginal<typeof import('../../../data/http')>()), apiRequest: (path: string, init?: RequestInit) => apiRequest(path, init) }));
+vi.mock('../../../data/services/http', async importOriginal => ({ ...(await importOriginal<typeof import('../../../data/services/http')>()), apiRequest: (path: string, init?: RequestInit) => apiRequest(path, init) }));
 
 import { ActivityFeedView as Subject } from '../../../features/admin/views/ActivityFeedView';
 
@@ -42,15 +42,15 @@ describe('Activity', () => {
     expect(screen.getAllByRole('status').map(node => node.textContent)).toEqual(['Loading your information…', 'Loading your information…']);
     expect(paths()).toEqual([OUTSTANDING, COUNTS]);
     const sos = (await screen.findByRole('heading', { name: 'SOS raised on campus' })).closest('article') as HTMLElement;
-    expect(sos).toHaveTextContent('SAFETY · Sos raised');
+    expect(sos).toHaveTextContent('Safety · Sos raised');
     expect(sos).toHaveTextContent(`${displayDate(new Date(1790000000 * 1000).toISOString())} · by student`);
-    expect(within(sos).getByText('CRITICAL')).toHaveClass('wf-status', 'status-declined');
+    expect(within(sos).getByText('Critical')).toHaveClass('wf-status', 'status-declined');
     expect(within(sos).getByRole('button', { name: 'Mark handled: SOS raised on campus' })).toBeEnabled();
     const waiting = screen.getByRole('heading', { name: 'Prescription waiting' }).closest('article') as HTMLElement;
-    expect(within(waiting).getByText('ATTENTION')).toHaveClass('status-requested');
+    expect(within(waiting).getByText('Attention')).toHaveClass('status-requested');
     expect(waiting).not.toHaveTextContent(' · by ');
     const delivered = screen.getByRole('heading', { name: 'Order delivered' }).closest('article') as HTMLElement;
-    expect(within(delivered).getByText('INFO')).toHaveClass('status-accepted');
+    expect(within(delivered).getByText('Info')).toHaveClass('status-accepted');
     expect(delivered).toHaveTextContent('Handled');
     expect(within(delivered).queryByRole('button')).toBeNull();
     expect(screen.getByText(/1 critical event needs attention\./)).toBeInTheDocument();

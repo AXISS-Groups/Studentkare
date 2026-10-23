@@ -1,4 +1,4 @@
-import { assertRule } from '../constitution';
+import { assertRule } from '../core/constitution';
 import { formatKAnonymityCount } from '../../types/admin';
 import { DepartmentAgent, DepartmentTaskResult } from './types';
 

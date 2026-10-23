@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from '@/core/navigation';
-import { useAuth } from '@/data/AuthContext';
-import { homeForRole } from '@/lib/workflowRouting';
+import { useAuth } from '@/data/contexts/AuthContext';
+import { homeForRole } from '@/lib/utils/workflowRouting';
 import { PermissionsView } from '../views/PermissionsView';
 
 /**
@@ -15,6 +15,9 @@ export function PermissionsScreen(): React.ReactElement {
 
   return (
     <PermissionsView
+      onBack={() => {
+        void navigate('/setup/activity');
+      }}
       onDone={() => {
         // The route needs a session, so a user is expected here. If the
         // session went away mid-screen, sign-in is the right place to land.

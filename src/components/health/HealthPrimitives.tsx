@@ -1,6 +1,8 @@
 import React, { useId } from 'react';
 import { Activity, ArrowUpRight, HeartPulse, Moon, Footprints } from 'lucide-react';
-import { getMetricSeries, healthMetrics, MetricId } from '../../data/healthExperience';
+import { getMetricSeries, healthMetrics, MetricId } from '../../data/datasets/healthExperience';
+import { useT } from '@/i18n';
+import { color as tokenColor } from '@/design-system/theme';
 import '../../theme/health-experience.css';
 
 export const metricIcons = { heart: HeartPulse, oxygen: Activity, sleep: Moon, steps: Footprints };
@@ -31,26 +33,29 @@ export function TrendChart({ values, color, label, compact = false, activeIndex 
 }
 
 export function MetricCards({ selected, onSelect }: { selected?: MetricId; onSelect?: (id: MetricId) => void }) {
+  const t = useT();
   return (
     <div className="health-metric-grid">
       {healthMetrics.map((metric, index) => {
         const Icon = metricIcons[metric.id];
         const values = getMetricSeries(metric.id, 7).map(sample => sample.value);
+        const series = tokenColor[metric.color];
         const content = <>
-          <div className="health-row"><span className="health-icon" style={{ color: metric.color, background: `${metric.color}12` }}><Icon size={19} /></span>{onSelect && <ArrowUpRight size={15} className="health-muted" />}</div>
+          <div className="health-row"><span className="health-icon" style={{ color: series, background: `color-mix(in srgb, ${series} 7%, transparent)` }} aria-hidden="true"><Icon size={19} /></span>{onSelect && <ArrowUpRight size={15} className="health-muted" aria-hidden="true" />}</div>
           <span className="health-metric-label">{metric.label}</span>
           <div className="health-metric-value">{values[values.length - 1].toLocaleString('en-IN')} <span>{metric.unit}</span></div>
-          <TrendChart values={values} color={metric.color} label={`Sample ${metric.label} for 7 days`} compact />
-          <span className="health-small health-muted">Sample · 7-day trend</span>
+          <TrendChart values={values} color={series} label={t('assist.health.sampleLabel', { label: metric.label })} compact />
+          <span className="health-small health-muted">{t('assist.health.sampleTrend')}</span>
         </>;
         const style = { '--enter-delay': `${index * 65}ms` } as React.CSSProperties;
-        return onSelect ? <button key={metric.id} style={style} className={`health-card health-metric health-enter ${selected === metric.id ? 'is-selected' : ''}`} onClick={() => onSelect(metric.id)} aria-pressed={selected === metric.id}>{content}</button>
+        return onSelect ? <button type="button" key={metric.id} style={style} className={`health-card health-metric health-enter ${selected === metric.id ? 'is-selected' : ''}`} onClick={() => onSelect(metric.id)} aria-pressed={selected === metric.id}>{content}</button>
           : <div key={metric.id} style={style} className="health-card health-metric health-enter">{content}</div>;
       })}
     </div>
   );
 }
 
-export function DemoNote({ children = 'Interactive demo · sample health and policy data' }: { children?: React.ReactNode }) {
-  return <span className="health-demo"><span aria-hidden="true" />{children}</span>;
+export function DemoNote({ children }: { children?: React.ReactNode }) {
+  const t = useT();
+  return <span className="health-demo"><span aria-hidden="true" />{children ?? t('assist.health.demoNote')}</span>;
 }

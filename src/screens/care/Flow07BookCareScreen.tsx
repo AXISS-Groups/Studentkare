@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
-import { useTheme } from '../../theme/theme';
+import { useTheme } from '../../theme/tokens/theme';
 import { useFabricStore, useStudentStore } from '../../store/AppStores';
 import { Card } from '../../components/Card';
 import { Badge } from '../../components/Badge';
@@ -37,12 +37,12 @@ const Flow07BookCareScreenUnwrapped: React.FC = () => {
         <Badge label="FLOW 07 · CARE DELIVERY & TELECONSULT" variant="mono" />
         <Text style={[styles.title, { color: tokens.text }]}>Book Care & Diagnostics</Text>
         <Text style={[styles.sub, { color: tokens.text2 }]}>
-          Instant doctor teleconsults, NABL-certified home blood collections, and confidential campus
+          Instant doctor teleconsults, home blood collections, and confidential campus
           mental health counselling.
         </Text>
 
         {/* Category Tabs */}
-        <View style={styles.tabRow}>
+        <View style={[styles.tabRow, { backgroundColor: tokens.surface2 }]}>
           <TouchableOpacity
             onPress={() => setServiceType('TELECONSULT')}
             style={[
@@ -53,11 +53,11 @@ const Flow07BookCareScreenUnwrapped: React.FC = () => {
               },
             ]}
           >
-            <Stethoscope size={16} color={serviceType === 'TELECONSULT' ? '#ffffff' : tokens.text2} />
+            <Stethoscope size={16} color={serviceType === 'TELECONSULT' ? tokens.onAction : tokens.text2} />
             <Text
               style={[
                 styles.tabText,
-                { color: serviceType === 'TELECONSULT' ? '#ffffff' : tokens.text2 },
+                { color: serviceType === 'TELECONSULT' ? tokens.onAction : tokens.text2 },
               ]}
             >
               Doctor Consult
@@ -74,11 +74,11 @@ const Flow07BookCareScreenUnwrapped: React.FC = () => {
               },
             ]}
           >
-            <Home size={16} color={serviceType === 'HOME_LAB' ? '#ffffff' : tokens.text2} />
+            <Home size={16} color={serviceType === 'HOME_LAB' ? tokens.onAction : tokens.text2} />
             <Text
               style={[
                 styles.tabText,
-                { color: serviceType === 'HOME_LAB' ? '#ffffff' : tokens.text2 },
+                { color: serviceType === 'HOME_LAB' ? tokens.onAction : tokens.text2 },
               ]}
             >
               Home Lab Test
@@ -95,11 +95,11 @@ const Flow07BookCareScreenUnwrapped: React.FC = () => {
               },
             ]}
           >
-            <HeartHandshake size={16} color={serviceType === 'COUNSELLOR' ? '#ffffff' : tokens.text2} />
+            <HeartHandshake size={16} color={serviceType === 'COUNSELLOR' ? tokens.onAction : tokens.text2} />
             <Text
               style={[
                 styles.tabText,
-                { color: serviceType === 'COUNSELLOR' ? '#ffffff' : tokens.text2 },
+                { color: serviceType === 'COUNSELLOR' ? tokens.onAction : tokens.text2 },
               ]}
             >
               Mental Health
@@ -167,7 +167,7 @@ const Flow07BookCareScreenUnwrapped: React.FC = () => {
                     Complete Blood Count (CBC) with ESR
                   </Text>
                   <Text style={[styles.careMeta, { color: tokens.text2 }]}>
-                    NABL Lab · Sample collection at campus hostel
+                    Partner Lab · Sample collection at campus hostel
                   </Text>
                 </View>
                 <Text style={[styles.priceTag, { color: tokens.action }]}>₹350</Text>
@@ -269,7 +269,6 @@ const styles = StyleSheet.create({
   },
   tabRow: {
     flexDirection: 'row',
-    backgroundColor: 'rgba(0,0,0,0.05)',
     padding: 4,
     borderRadius: 10,
     gap: 6,

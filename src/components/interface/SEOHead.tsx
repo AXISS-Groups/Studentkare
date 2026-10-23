@@ -1,87 +1,53 @@
 import { useEffect } from 'react';
 import { useLocation } from '@/core/navigation';
+import { useT } from '@/i18n';
 
-export interface RouteMetaData {
-  title: string;
-  description: string;
+/** `seo` names the `shopweb.seo.<seo>.title` / `.description` copy; keywords stay English for crawlers. */
+interface RouteMeta {
+  seo: 'home' | 'campuses' | 'clinicians' | 'partnerships' | 'labTests' | 'shop' | 'care' | 'pricing' | 'privacy' | 'terms' | 'lifeshare' | 'blog' | 'news';
   keywords?: string;
   canonicalPath?: string;
 }
 
-const PUBLIC_SEO_CONFIG: Record<string, RouteMetaData> = {
-  '/': {
-    title: 'Studentkare — A health record you own, from campus onwards',
-    description: 'Keep your reports, prescriptions and documents in one place that belongs to you, and share them with a clinician only when you choose to.',
-    keywords: 'student health records, campus healthcare, personal health record, health vault',
-  },
-  '/landing': {
-    title: 'Studentkare — A health record you own, from campus onwards',
-    description: 'Keep your reports, prescriptions and documents in one place that belongs to you, and share them with a clinician only when you choose to.',
-    keywords: 'student health records, campus healthcare, personal health record, health vault',
-    canonicalPath: '/',
-  },
-  '/campuses': {
-    title: 'Studentkare for campuses — the operational picture, not the records',
-    description: 'Students hold their own records. A campus confirms enrolment and runs health camps, and cannot reach a student\'s results.',
-    keywords: 'campus health administration, student health camps, DPDP data fiduciary',
-  },
-  '/clinicians': {
-    title: 'Studentkare for clinicians — a queue sorted by severity',
-    description: 'A share is the authorisation, not your role. A student shares specific documents for a period they choose, and every access is audited.',
-    keywords: 'clinician portal, consent-based record access, campus clinic sessions',
-  },
-  '/partnerships': {
-    title: 'Studentkare partnerships — no sponsored placement to sell',
-    description: 'Provider search sorts by whether you serve the student\'s pincode, then by name. Never by what you pay.',
-    keywords: 'healthcare partnerships, lab pharmacy clinic partners, no paid placement',
-  },
-  '/lab-tests': {
-    title: 'Studentkare lab tests — the result reaches you first',
-    description: 'Published lab tests with their prices. A report lands in your vault, and you decide whether a clinician sees it.',
-    keywords: 'campus lab tests, student blood test, hostel sample collection',
-  },
-  '/shop': {
-    title: 'Studentkare Shop — Campus Health Store & Verified Care Services',
-    description: 'Browse campus health supplies, OTC care essentials, emergency kits, and verified provider services on Studentkare Shop.',
-    keywords: 'student health store, campus healthcare, OTC medicine, health records, studentkare shop',
-  },
-  '/care': {
-    title: 'Studentkare Care — Consultations & Health Provider Network',
-    description: 'Request verified health care services, OPD consultations, lab tests, and campus medical support on Studentkare Care.',
-    keywords: 'campus doctor consultation, OPD booking, student health clinic, care navigator, ayush health',
-  },
-  '/pricing': {
-    title: 'Studentkare Pricing — Transparent Campus Healthcare Plans',
-    description: 'Explore transparent pricing plans for student health records, campus clinic integrations, and provider care subscriptions.',
-    keywords: 'student health pricing, campus care plans, health subscription, transparent medical cost',
-  },
-  '/privacy': {
-    title: 'Studentkare privacy — what we can tell you so far',
-    description: 'Our privacy notice is not published yet. This page says so, lists what has to exist before it can be written, and describes what the code does today.',
-    keywords: 'health data privacy, consent, student health record privacy',
-  },
-  '/terms': {
-    title: 'Studentkare Terms of Service — Campus Health Platform Guidelines',
-    description: 'Terms of service and campus healthcare platform guidelines for Studentkare users and verified care providers.',
-    keywords: 'studentkare terms, campus health terms of service, healthcare platform agreement',
-  },
-  '/lifeshare': {
-    title: 'Studentkare LifeShare — emergency numbers and blood compatibility',
-    description: 'Who to call in an emergency, and which blood groups can give to which. Studentkare cannot see what any hospital has in stock.',
-    keywords: 'emergency helpline India, blood group compatibility, campus emergency',
-  },
+/*
+ * /shop, /care and /terms used to promise "verified" providers and care
+ * services. Nothing checks a provider against any register (see the comment
+ * on PricingScreen), so the copy now says "published" instead.
+ */
+const PUBLIC_SEO_CONFIG: Record<string, RouteMeta> = {
+  '/': { seo: 'home', keywords: 'student health records, campus healthcare, personal health record, health vault' },
+  '/landing': { seo: 'home', keywords: 'student health records, campus healthcare, personal health record, health vault', canonicalPath: '/' },
+  '/campuses': { seo: 'campuses', keywords: 'campus health administration, student health camps, DPDP data fiduciary' },
+  '/clinicians': { seo: 'clinicians', keywords: 'clinician portal, consent-based record access, campus clinic sessions' },
+  '/partnerships': { seo: 'partnerships', keywords: 'healthcare partnerships, lab pharmacy clinic partners, no paid placement' },
+  '/lab-tests': { seo: 'labTests', keywords: 'campus lab tests, student blood test, hostel sample collection' },
+  '/shop': { seo: 'shop', keywords: 'student health store, campus healthcare, OTC medicine, studentkare shop' },
+  '/care': { seo: 'care', keywords: 'campus doctor consultation, OPD booking, student health clinic, care navigator, ayush health' },
+  '/pricing': { seo: 'pricing', keywords: 'student health pricing, campus care plans, health subscription' },
+  '/privacy': { seo: 'privacy', keywords: 'health data privacy, consent, student health record privacy' },
+  '/terms': { seo: 'terms', keywords: 'studentkare terms, campus health terms of service, healthcare platform agreement' },
+  '/lifeshare': { seo: 'lifeshare', keywords: 'emergency helpline India, blood group compatibility, campus emergency' },
+  '/blog': { seo: 'blog', keywords: 'student health tips, campus wellbeing, clinician reviewed health advice' },
+  '/news': { seo: 'news', keywords: 'studentkare news, campus health news, studentkare product updates' },
 };
 
 const DEFAULT_BASE_URL = 'https://studentkare.co';
+const POST_PAGE = /^\/(blog|news)\/[^/]+$/;
 
 export function SEOHead() {
+  const t = useT();
   const location = useLocation();
   const rawPath = location.pathname.replace(/\/$/, '') || '/';
 
   useEffect(() => {
-    const routeConfig = PUBLIC_SEO_CONFIG[rawPath] || {
-      title: 'Studentkare — Personal Health & Care Workspace',
-      description: 'Your authenticated personal health records, measurements, and campus care services in one secure workspace.',
+    // A post page (/blog/:slug, /news/:slug) writes its own title, image and JSON-LD (features/newsroom).
+    if (POST_PAGE.test(rawPath)) return;
+    const meta = PUBLIC_SEO_CONFIG[rawPath];
+    const seo = meta?.seo ?? 'default';
+    const routeConfig = {
+      title: t(`shopweb.seo.${seo}.title`),
+      description: t(`shopweb.seo.${seo}.description`),
+      keywords: meta?.keywords,
     };
 
     // 1. Title
@@ -123,7 +89,7 @@ export function SEOHead() {
     setMeta('name', 'twitter:title', routeConfig.title);
     setMeta('name', 'twitter:description', routeConfig.description);
     setMeta('name', 'twitter:url', canonicalUrl);
-  }, [rawPath]);
+  }, [rawPath, t]);
 
   return null;
 }

@@ -1,9 +1,19 @@
 #!/usr/bin/env node
 
 /**
- * Module Generator CLI (P62)
- * Usage: node scripts/gen-module.js M19 scanners operational ops
- * Scaffolds standard P58 module vertical slice in src/modules/
+ * Feature scaffolder.
+ * Usage: npm run gen:module -- <domain> [Name]
+ *   npm run gen:module -- referrals            -> src/features/referrals/, ReferralsViewModel
+ *   npm run gen:module -- lab-orders LabOrder  -> src/features/lab-orders/, LabOrderViewModel
+ *
+ * Generates the live pattern (see src/core/store/ViewModel.ts): a MobX ViewModel that
+ * implements `ViewModel`, loads through an injected requester so tests never touch the
+ * network, and starts empty (never sample data). It deliberately does not generate a
+ * view: screens are built from the design canvas brief with tokens, i18n keys and the
+ * design-system icons (CLAUDE.md), which a template cannot do correctly.
+ *
+ * It used to scaffold into src/modules/, a parallel architecture the app never ran
+ * (audit TD-06).
  */
 
 import fs from 'fs';
@@ -11,238 +21,119 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const rootDir = path.resolve(__dirname, '..');
+const rootDir = path.resolve(path.dirname(__filename), '..');
 
-const args = process.argv.slice(2);
-const moduleId = args[0] || 'M19';
-const moduleName = (args[1] || 'sample').toLowerCase();
-const dataClass = args[2] || 'operational';
-const owner = args[3] || 'platform';
+const domain = (process.argv[2] || '').trim().toLowerCase();
+if (!/^[a-z][a-z0-9-]*$/.test(domain)) {
+  console.error('Usage: npm run gen:module -- <domain> [Name]   (domain: lowercase letters, digits, dashes)');
+  process.exit(2);
+}
+const name = (process.argv[3] || domain.split('-').map((p) => p[0].toUpperCase() + p.slice(1)).join('')).trim();
+if (!/^[A-Z][A-Za-z0-9]*$/.test(name)) {
+  console.error('Name must be PascalCase, e.g. LabOrder');
+  process.exit(2);
+}
 
-const folderName = `m${moduleId.replace(/^M/i, '').padStart(2, '0')}-${moduleName}`;
-const modulePath = path.join(rootDir, 'src', 'modules', folderName);
-
-if (fs.existsSync(modulePath)) {
-  console.error(`[gen-module Error] Module folder already exists at ${modulePath}`);
+const featureDir = path.join(rootDir, 'src', 'features', domain);
+const vm = `${name}ViewModel`;
+const vmPath = path.join(featureDir, 'viewmodel', `${vm}.ts`);
+if (fs.existsSync(vmPath)) {
+  console.error(`${path.relative(rootDir, vmPath)} already exists.`);
   process.exit(1);
 }
 
-const PascalName = moduleName.charAt(0).toUpperCase() + moduleName.slice(1);
-
-console.log(`Generating module ${moduleId} (${moduleName}) in ${modulePath}...`);
-
-// Helper to create directory
-const mkdir = (dir) => fs.mkdirSync(path.join(modulePath, dir), { recursive: true });
-
-// Create subdirectories
-mkdir('domain');
-mkdir('data');
-mkdir('state');
-mkdir('viewmodel');
-mkdir('view');
-mkdir('__tests__');
-
-// 1. module.config.ts
-fs.writeFileSync(
-  path.join(modulePath, 'module.config.ts'),
-`import { defineModule } from '../../core/modules/moduleManifest';
-
-export default defineModule({
-  id: '${moduleId.toUpperCase()}',
-  name: '${moduleName}',
-  owner: '${owner}',
-  phase: 1,
-  dataClass: '${dataClass}',
-  capabilities: [],
-  dependsOn: [],
-  routes: ['/${moduleName}'],
-  emits: ['${moduleName}.updated'],
-  consumes: [],
-});
-`
-);
-
-// 2. domain/entities.ts
-fs.writeFileSync(
-  path.join(modulePath, 'domain', 'entities.ts'),
-`export interface ${PascalName}Entity {
-  id: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
-`
-);
-
-// 3. domain/errors.ts
-fs.writeFileSync(
-  path.join(modulePath, 'domain', 'errors.ts'),
-`export class ${PascalName}DomainError extends Error {
-  constructor(message: string, public readonly code: string = '${moduleName.toUpperCase()}_ERROR') {
-    super(message);
-    this.name = '${PascalName}DomainError';
-  }
-}
-`
-);
-
-// 4. data/<name>.repository.ts
-fs.writeFileSync(
-  path.join(modulePath, 'data', `${moduleName}.repository.ts`),
-`import { ${PascalName}Entity } from '../domain/entities';
-
-export interface I${PascalName}Repository {
-  fetchItems(): Promise<${PascalName}Entity[]>;
-}
-
-export class ${PascalName}Repository implements I${PascalName}Repository {
-  async fetchItems(): Promise<${PascalName}Entity[]> {
-    return [
-      { id: '${moduleName}_1', createdAt: new Date(), updatedAt: new Date() }
-    ];
-  }
-}
-`
-);
-
-// 5. state/<name>.store.ts
-fs.writeFileSync(
-  path.join(modulePath, 'state', `${moduleName}.store.ts`),
-`import { createModuleStore } from '../../../core/state/moduleStore';
-import { ${PascalName}Entity } from '../domain/entities';
-
-export interface ${PascalName}State {
-  status: 'idle' | 'loading' | 'ready' | 'error';
-  items: ${PascalName}Entity[];
-  error?: string;
-}
-
-export const ${moduleName}Store = createModuleStore<${PascalName}State>({
-  status: 'idle',
-  items: [],
-});
-`
-);
-
-// 6. viewmodel/use<PascalName>ViewModel.ts
-fs.writeFileSync(
-  path.join(modulePath, 'viewmodel', `use${PascalName}ViewModel.ts`),
-`import { useCallback } from 'react';
-import { useModuleStore } from '../../../core/state/moduleStore';
-import { ${moduleName}Store } from '../state/${moduleName}.store';
-import { ${PascalName}Repository } from '../data/${moduleName}.repository';
-
-const repository = new ${PascalName}Repository();
-
-export function use${PascalName}ViewModel() {
-  const state = useModuleStore(${moduleName}Store);
-
-  const loadData = useCallback(async () => {
-    ${moduleName}Store.set({ status: 'loading' });
-    try {
-      const items = await repository.fetchItems();
-      ${moduleName}Store.set({ status: 'ready', items });
-    } catch (err) {
-      ${moduleName}Store.set({ status: 'error', error: String(err) });
-    }
-  }, []);
-
-  return {
-    state,
-    actions: { loadData },
-  };
-}
-`
-);
-
-// 7. view/<PascalName>Screen.tsx
-fs.writeFileSync(
-  path.join(modulePath, 'view', `${PascalName}Screen.tsx`),
-`import React, { useEffect } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { use${PascalName}ViewModel } from '../viewmodel/use${PascalName}ViewModel';
-
-export const ${PascalName}Screen: React.FC = () => {
-  const { state, actions } = use${PascalName}ViewModel();
-
-  useEffect(() => {
-    actions.loadData();
-  }, [actions]);
-
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Module ${moduleId}: ${PascalName}</Text>
-      <Text style={styles.status}>Status: {state.status}</Text>
-      <Text style={styles.itemCount}>Items: {state.items.length}</Text>
-    </View>
-  );
+const write = (rel, body) => {
+  const file = path.join(featureDir, rel);
+  if (fs.existsSync(file)) return console.log(`kept      ${path.relative(rootDir, file)} (already exists)`);
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  fs.writeFileSync(file, body);
+  console.log(`created   ${path.relative(rootDir, file)}`);
 };
 
-const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, justifyContent: 'center', alignItems: 'center' },
-  title: { fontSize: 20, fontWeight: 'bold', marginBottom: 8 },
-  status: { fontSize: 14, color: '#666' },
-  itemCount: { fontSize: 14, marginTop: 4 },
-});
-`
-);
+write(`viewmodel/${vm}.ts`, `import { makeAutoObservable, runInAction } from 'mobx';
+import { apiRequest } from '@/data/http';
+import type { ViewModel } from '@/core/store/ViewModel';
 
-// 8. index.ts
-fs.writeFileSync(
-  path.join(modulePath, 'index.ts'),
-`/**
- * Public API for ${moduleId} (${moduleName}) Module
- * P58 Rule: Cross-module imports MUST go through this index.ts only.
+/** One item as the API returns it. Replace with the real response shape. */
+export interface ${name}Item {
+  id: string;
+}
+
+type Requester = typeof apiRequest;
+
+/**
+ * ${name}.
+ *
+ * Starts empty and fills from the server; on failure it says so (\`loadFailed\`)
+ * rather than showing anything invented.
  */
+export class ${vm} implements ViewModel {
+  items: ${name}Item[] | null = null;
+  loadFailed = false;
+  private disposed = false;
 
-export * from './domain/entities';
-export * from './domain/errors';
-export { use${PascalName}ViewModel } from './viewmodel/use${PascalName}ViewModel';
-export { ${PascalName}Screen } from './view/${PascalName}Screen';
-export { default as moduleConfig } from './module.config';
-`
-);
+  constructor(private readonly request: Requester = apiRequest) {
+    makeAutoObservable<${vm}, 'disposed' | 'request'>(this, { disposed: false, request: false }, { autoBind: true });
+  }
 
-// 9. README.md
-fs.writeFileSync(
-  path.join(modulePath, 'README.md'),
-`# Module ${moduleId} — ${PascalName}
+  get loading(): boolean {
+    return this.items === null && !this.loadFailed;
+  }
 
-**Owner:** ${owner}  
-**Data Class:** ${dataClass}  
+  async load(): Promise<void> {
+    this.loadFailed = false;
+    try {
+      const items = await this.request<${name}Item[]>('/api/${domain}');
+      if (!this.disposed) runInAction(() => { this.items = items; });
+    } catch {
+      if (!this.disposed) runInAction(() => { this.loadFailed = true; });
+    }
+  }
 
-## Purpose
-Vertical slice module providing ${moduleName} capabilities following P58 Module Contract.
+  reset(): void {
+    this.items = null;
+    this.loadFailed = false;
+  }
 
-## Layers
-- \`domain/\`: Pure domain entities and errors.
-- \`data/\`: Repository and data mappers.
-- \`state/\`: Light observable store (\`useSyncExternalStore\`).
-- \`viewmodel/\`: ViewModel hook exposing state & actions.
-- \`view/\`: React / React Native presentation component.
-`
-);
+  dispose(): void {
+    this.disposed = true;
+  }
+}
+`);
 
-// 10. __tests__/<name>.test.ts
-fs.writeFileSync(
-  path.join(modulePath, '__tests__', `${moduleName}.test.ts`),
-`import { describe, it, expect } from 'vitest';
-import config from '../module.config';
-import { ${PascalName}Repository } from '../data/${moduleName}.repository';
+write(`viewmodel/__tests__/${vm}.test.ts`, `import { describe, expect, it, vi } from 'vitest';
+import { ${vm} } from '../${vm}';
 
-describe('${PascalName} Module (${moduleId})', () => {
-  it('has valid manifest configuration', () => {
-    expect(config.id).toBe('${moduleId.toUpperCase()}');
-    expect(config.dataClass).toBe('${dataClass}');
+describe('${vm}', () => {
+  it('starts loading and shows nothing invented', () => {
+    const vm = new ${vm}(vi.fn());
+    expect(vm.loading).toBe(true);
+    expect(vm.items).toBeNull();
   });
 
-  it('fetches items from repository', async () => {
-    const repo = new ${PascalName}Repository();
-    const items = await repo.fetchItems();
-    expect(items.length).toBeGreaterThan(0);
+  it('fills from the server', async () => {
+    const vm = new ${vm}(vi.fn().mockResolvedValue([{ id: 'a' }]));
+    await vm.load();
+    expect(vm.items).toEqual([{ id: 'a' }]);
+    expect(vm.loadFailed).toBe(false);
+  });
+
+  it('says so when the server fails', async () => {
+    const vm = new ${vm}(vi.fn().mockRejectedValue(new Error('offline')));
+    await vm.load();
+    expect(vm.items).toBeNull();
+    expect(vm.loadFailed).toBe(true);
   });
 });
-`
-);
+`);
 
-console.log(`Successfully generated module ${moduleId} (${moduleName})!`);
+console.log(`
+Next steps for ${domain}:
+  1. Point ${vm}.load() at the real endpoint and replace ${name}Item with its response shape.
+  2. Build the view in src/features/${domain}/views/ from the canvas brief
+     (design/screens/briefs/<Screen>.md): tokens only, i18n keys in src/i18n/areas/, icons
+     via <Icon>/<Icon3d>/<Glyph>. Tier 1 screens need a named reviewer first (CLAUDE.md).
+  3. Register the route in the right feature module.ts with its role guard.
+  4. Map the screen in design/screens/implementation-map.json and run
+     node scripts/icons/check-icons.mjs --screen <Screen>.
+`);

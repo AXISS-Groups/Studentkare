@@ -9,12 +9,17 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from typing import List, Optional
 
-from core.db import db
 from services.integration_config import INTEGRATIONS_DB, LiveSetting
 
 logger = logging.getLogger(__name__)
 
 APP_DOMAIN = LiveSetting("app_domain", "studentkare.co")
+
+
+def _masked(address: str) -> str:
+    """'a•••@domain' — enough to tell deliveries apart, never the address (guardrail 9)."""
+    local, _, domain = (address or "").partition("@")
+    return f"{local[:1]}•••@{domain}" if domain else "•••"
 
 
 def _plain_text(html: str) -> str:
@@ -39,105 +44,40 @@ def get_postal_config() -> Optional[dict]:
     }
 
 
-async def _get_postal_from_db() -> Optional[dict]:
-    """Fetch Postal config from SuperAdmin integrations (INTEGRATIONS_DB) or installed_tools in the database."""
-    # 1) Check live INTEGRATIONS_DB (SuperAdmin UI settings)
-    try:
-        postal_cfg = INTEGRATIONS_DB.get("postal", {})
-        api_url = (postal_cfg.get("api_url") or "").strip().rstrip("/")
-        server_api_key = (postal_cfg.get("server_api_key") or "").strip()
-        if api_url and server_api_key:
-            return {
-                "api_url": api_url,
-                "server_api_key": server_api_key,
-                "from_email": (postal_cfg.get("from_email") or "").strip()
-                              or "Studentkare Support <noreply@studentkare.co>",
-            }
-    except Exception as e:
-        logger.warning("Failed to check INTEGRATIONS_DB for Postal config: %s", e)
+# Provider settings come from the super-admin integrations store (INTEGRATIONS_DB,
+# persisted in Postgres) and, for Postal, the environment. An older MongoDB
+# fallback was removed: no deployment runs MongoDB, so it either failed silently or
+# crashed the send before any other provider was tried (audit TD-48).
 
-    # 2) Check installed_tools in MongoDB (superadmin settings UI fallback)
-    try:
-        config = await db.installed_tools.find_one({
-            "tool_id": "postal",
-            "status": {"$in": ["connected", "mock_connected"]}
-        })
-        if config:
-            creds = config.get("credentials") or config.get("config") or {}
-            api_url = (creds.get("api_url") or "").strip().rstrip("/")
-            server_api_key = (creds.get("server_api_key") or "").strip()
-            if api_url and server_api_key:
-                return {
-                    "api_url": api_url,
-                    "server_api_key": server_api_key,
-                    "from_email": (creds.get("from_email") or "").strip()
-                                  or "Studentkare Support <noreply@studentkare.co>",
-                }
-    except Exception as e:
-        logger.warning("Failed to fetch Postal config from DB: %s", e)
-        return None
+async def _get_postal_from_db() -> Optional[dict]:
+    """Postal config saved from the super-admin integrations screen, if complete."""
+    postal_cfg = INTEGRATIONS_DB.get("postal", {}) or {}
+    api_url = (postal_cfg.get("api_url") or "").strip().rstrip("/")
+    server_api_key = (postal_cfg.get("server_api_key") or "").strip()
+    if api_url and server_api_key:
+        return {
+            "api_url": api_url,
+            "server_api_key": server_api_key,
+            "from_email": (postal_cfg.get("from_email") or "").strip()
+                          or "Studentkare Support <noreply@studentkare.co>",
+        }
     return None
 
 
 async def get_gmail_config():
-    """Fetch Gmail integration config from INTEGRATIONS_DB, installed_tools, or settings collection."""
-    # 1) Check INTEGRATIONS_DB (superadmin Tools UI)
-    try:
-        gmail_cfg = INTEGRATIONS_DB.get("gmail", {})
-        if gmail_cfg.get("enabled") and (gmail_cfg.get("smtp_user") or gmail_cfg.get("client_id")):
-            return {
-                "tool_id": "gmail",
-                "status": "connected",
-                "credentials": gmail_cfg,
-            }
-    except Exception as e:
-        logger.warning("Failed to check INTEGRATIONS_DB for Gmail config: %s", e)
-
-    # 2) Check installed_tools (superadmin Tools UI)
-    config = await db.installed_tools.find_one({
-        "tool_id": "gmail",
-        "status": {"$in": ["connected", "mock_connected"]}
-    })
-    if config:
-        return config
-
-    # 3) Fallback: check settings collection (flat SMTP fields from admin settings)
-    settings = await db.settings.find_one({"id": "global"})
-    if settings and settings.get("email_provider") == "gmail":
-        smtp_user = settings.get("smtp_user") or ""
-        smtp_pass = settings.get("smtp_password") or ""
-        if smtp_user and smtp_pass:
-            return {
-                "tool_id": "gmail",
-                "status": "connected",
-                "credentials": {
-                    "smtp_user": smtp_user,
-                    "app_password": smtp_pass,
-                    "smtp_host": settings.get("smtp_host", "smtp.gmail.com"),
-                    "smtp_port": settings.get("smtp_port", "587"),
-                },
-            }
+    """Gmail SMTP config saved from the super-admin integrations screen, if enabled."""
+    gmail_cfg = INTEGRATIONS_DB.get("gmail", {}) or {}
+    if gmail_cfg.get("enabled") and (gmail_cfg.get("smtp_user") or gmail_cfg.get("client_id")):
+        return {"tool_id": "gmail", "status": "connected", "credentials": gmail_cfg}
     return None
 
 
 async def get_sendgrid_config():
-    """Fetch SendGrid integration config from INTEGRATIONS_DB or installed_tools."""
-    try:
-        sg_cfg = INTEGRATIONS_DB.get("sendgrid", {})
-        if sg_cfg.get("enabled") and sg_cfg.get("api_key"):
-            return {
-                "tool_id": "sendgrid",
-                "status": "connected",
-                "credentials": sg_cfg,
-            }
-    except Exception as e:
-        logger.warning("Failed to check INTEGRATIONS_DB for SendGrid config: %s", e)
-
-    config = await db.installed_tools.find_one({
-        "tool_id": "sendgrid",
-        "status": {"$in": ["connected", "mock_connected"]}
-    })
-    return config
+    """SendGrid config saved from the super-admin integrations screen, if enabled."""
+    sg_cfg = INTEGRATIONS_DB.get("sendgrid", {}) or {}
+    if sg_cfg.get("enabled") and sg_cfg.get("api_key"):
+        return {"tool_id": "sendgrid", "status": "connected", "credentials": sg_cfg}
+    return None
 
 
 def _sendgrid_default_from():
@@ -163,7 +103,7 @@ async def generate_pdf_from_html(html: str) -> Optional[bytes]:
             await browser.close()
             return pdf_bytes
     except Exception as e:
-        print(f"[WARN] PDF generation failed: {e}")
+        logger.warning("PDF generation failed: %s", type(e).__name__)
         return None
 
 
@@ -183,14 +123,13 @@ async def send_email(
       3. Gmail SMTP (marketplace credentials)
 
     Returns True on success, False if no provider is configured or sending fails.
-    A failed delivery is never silently swallowed — it is logged at WARN/ERROR
-    and recorded in the `email_failures` collection for admin visibility.
+    A failed delivery is never silently swallowed: it is logged at WARNING with a
+    masked recipient (never the address itself).
     """
     from core.email_quality import allow_send
     ok, why = await allow_send(to_email)
     if not ok:
-        print(f"[WARN] Skipping send to {to_email}: {why}")
-        await _record_failure(to_email, subject, why)
+        await _record_failure(to_email, subject, f"blocked by quality gate: {why}")
         return False
 
     postal = await _get_postal_from_db()
@@ -213,23 +152,13 @@ async def send_email(
         if ok:
             return True
 
-    print(f"[WARN] No email provider configured. Cannot send email to {to_email}.")
-    await _record_failure(to_email, subject, "No email provider configured")
+    await _record_failure(to_email, subject, "no email provider configured or every provider failed")
     return False
 
 
 async def _record_failure(to_email: str, subject: str, reason: str):
-    """Persist a failed delivery so silent drops are visible to admins."""
-    try:
-        from datetime import datetime, timezone
-        await db.email_failures.insert_one({
-            "email": to_email,
-            "subject": subject[:200],
-            "reason": reason[:500],
-            "created_at": datetime.now(timezone.utc),
-        })
-    except Exception as e:
-        print(f"[WARN] Could not persist email failure: {e}")
+    """Log a failed delivery so drops are visible. The recipient is masked."""
+    logger.warning("email not sent to %s (%s): %s", _masked(to_email), subject[:80], reason[:300])
 
 
 async def _send_via_postal(
@@ -288,14 +217,12 @@ async def _send_via_postal(
                 json=payload,
             )
             if r.status_code in (200, 201):
-                print(f"[INFO] Postal: sent email to {to_email}")
+                logger.info("Postal: sent email to %s", _masked(to_email))
                 return True
-            print(f"[ERROR] Postal send failed to {to_email}: HTTP {r.status_code} {r.text[:300]}")
-            await _record_failure(to_email, subject, f"Postal HTTP {r.status_code} {r.text[:200]}")
+            await _record_failure(to_email, subject, f"Postal HTTP {r.status_code}")
             return False
     except Exception as e:
-        print(f"[ERROR] Postal send exception to {to_email}: {e}")
-        await _record_failure(to_email, subject, f"Postal exception: {e}")
+        await _record_failure(to_email, subject, f"Postal error: {type(e).__name__}")
         return False
 
 
@@ -340,13 +267,12 @@ async def _send_via_sendgrid(
                 json=payload,
             )
             if r.status_code in (200, 201, 202):
-                print(f"[INFO] SendGrid: sent email to {to_email}")
+                logger.info("SendGrid: sent email to %s", _masked(to_email))
                 return True
-            print(f"[ERROR] SendGrid send failed to {to_email}: HTTP {r.status_code} {r.text[:300]}")
+            await _record_failure(to_email, subject, f"SendGrid HTTP {r.status_code}")
             return False
     except Exception as e:
-        print(f"[ERROR] SendGrid send exception to {to_email}: {e}")
-        await _record_failure(to_email, subject, f"SendGrid exception: {e}")
+        await _record_failure(to_email, subject, f"SendGrid error: {type(e).__name__}")
         return False
 
 
@@ -361,7 +287,6 @@ async def _send_via_gmail(
     app_password = creds.get("app_password") or creds.get("client_secret")
 
     if not sender_email or not app_password:
-        print(f"[WARN] Gmail credentials missing. Cannot send email to {to_email}.")
         await _record_failure(to_email, subject, "Gmail credentials missing")
         return False
 
@@ -400,11 +325,10 @@ async def _send_via_gmail(
         server.login(sender_email, app_password)
         server.sendmail(sender_email, to_email, msg.as_string())
         server.close()
-        print(f"[INFO] Gmail: successfully sent email to {to_email}")
+        logger.info("Gmail: sent email to %s", _masked(to_email))
         return True
     except Exception as e:
-        print(f"[ERROR] Gmail send failed to {to_email}: {e}")
-        await _record_failure(to_email, subject, f"Gmail exception: {e}")
+        await _record_failure(to_email, subject, f"Gmail error: {type(e).__name__}")
         return False
 
 

@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { View, Text, TouchableOpacity } from "react-native";
-import { useTheme } from "../theme/theme";
+import { useTheme } from "../theme/tokens/theme";
 import { Card } from "./Card";
 import { Badge } from "./Badge";
 import { Utensils } from "lucide-react";
-import { assertRule } from "../ai/constitution";
+import { assertRule } from "../ai/core/constitution";
 
 export interface MessMenuItem {
   id: string;
@@ -75,7 +75,7 @@ export const HostelMessAllergenRadar: React.FC = () => {
                 border: `1px solid ${active ? tokens.action : tokens.rule}`,
               }}
             >
-              <Text style={{ fontSize: 12, fontWeight: "800", color: active ? "#ffffff" : tokens.text }}>
+              <Text style={{ fontSize: 12, fontWeight: "800", color: active ? tokens.onAction : tokens.text }}>
                 {meal} MENU
               </Text>
             </TouchableOpacity>

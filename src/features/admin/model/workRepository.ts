@@ -1,4 +1,4 @@
-import { apiRequest } from '@/data/http';
+import { apiRequest } from '@/data/services/http';
 import type { AppointmentTransition, AppointmentList, FollowUpList, WorkRequestPage, WorkRequestQuery, WorkRequestTransition } from './types';
 
 /** Requests, appointments and follow-ups assigned to staff. The only place that knows the /work endpoints. */

@@ -1,811 +1,326 @@
 # Studentkare Backend — Architecture Guide
 
-> Single-file reference for anyone working on the backend. Read this before touching
-> any service or agent module. Last verified: September 2026.
+> Reference for anyone working on the backend. Every statement here was checked
+> against the code on 2026-10-17 (base `ad01230`). Where something is imported by
+> nothing the running app loads, it says so. If you change what runs, change this file.
 
 ---
 
 ## 1. Overview
 
-Studentkare is a student-owned health records platform for Indian college campuses.
-The backend is a **FastAPI + SQLAlchemy (PostgreSQL prod / SQLite dev)** monolith
-serving both the React web app and a future React Native mobile app.
+A **FastAPI + SQLAlchemy 2.0** monolith on **PostgreSQL**, serving the React web app
+and the Expo app. `app/main.py` refuses to start without a `postgresql://` `DATABASE_URL`
+unless `APP_ENV=testing` (the test suite runs on SQLite; see §8).
 
-**What it does today**: Auth, health data CRUD, document management, pharmacy catalog
-and ordering, lab appointment booking, teleconsultation sessions, insurance claims,
-medication tracking, blood donor SOS matching, and operational admin.
+**What runs:** OTP sign-in with server sessions, persisted two-step sign-in, DPDP consent
+at signup, health records and documents, the pharmacy catalogue and orders (as requests;
+see payments below), appointments, prescriptions, dispensing, lab orders with doctor
+review before release, encounter notes, campus and SOS workflows, erasure, the rotating
+check-in pass, Agent Ayush (extractive; optional model rephrasing, §6), and a durable job scheduler (§7).
 
-**What it does NOT do today**: No real LLM/AI calls. No background processing.
-No real-time messaging. No ABDM integration. All "AI agents" are deterministic
-stubs or regex-based extractors.
+**What does not run:**
 
-### Tech Stack
+- **No LLM call unless `OLLAMA_URL` is set.** The only model path is
+  `services/llm_gateway.py` (the AI constitution: Rule-A mandate, prompt guardrail,
+  output sanitising, fail-closed). Its only caller is Agent Ayush's stage 5, which may
+  ask the model to rephrase retrieved passages; unset, Ayush answers extractively.
+- **Order payments go through a provider.** `services/payment_gateway.py` holds the
+  `PaymentProvider` interface (mock for dev/test, refused in production; Razorpay
+  otherwise) and `services/payments.py` the flow: provider order for the server total,
+  signature + provider-fetched verify, signed webhook as source of truth, expiry of
+  unpaid stock, idempotent refunds. Razorpay without keys reports `UNAVAILABLE`. The
+  Student Plus subscription (`/api/billing/subscription/*`) shares the Razorpay client
+  (`services/razorpay_client.py`) and calls it only when the keys are set, else 503.
+- **No video.** `/api/consultation/*` keeps a waiting room and stores one WebRTC
+  offer/answer on the session row; there is no media relay and every payload says
+  `liveMedia: false`.
+- **No ABDM / ABHA.** `services/abdm_gateway.py` exists; nothing imports it.
+- **No M18.** Clinician prediction / risk stratification must be a separate service
+  with its own Postgres role (AGENTS.md guardrail 5). Nothing in this repo implements
+  it; the in-app decision support was deleted (`c7efe3a`).
+- **No Rule L Postgres grants.** AGENTS.md guardrail 4 says the commerce firewall is
+  enforced at Postgres grants. No migration contains a `GRANT` or `REVOKE`; the app
+  connects with one role.
+
+### Tech stack (from `config/requirements.txt`)
 
 | Layer | Technology |
 |-------|-----------|
-| Framework | FastAPI 0.111 + Pydantic 2.8 |
-| ORM | SQLAlchemy 2.0 (mapped_column style) |
-| Database | PostgreSQL 15 (prod) / SQLite (dev) |
-| Auth | Session cookie (`sacare_session`), HMAC-signed OTP, CSRF token |
-| Background | APScheduler 3.10 (5 periodic jobs, serial, single-process) |
-| Payments | Razorpay (prod-ready), Stripe (stubbed) |
-| Notifications | Outbox pattern (`care_outbox_events`), Postal email (stubbed) |
-| Python | 3.11 |
-| Tests | pytest (52 test files) |
+| Framework | FastAPI 0.141.1, Pydantic 2.13.5, uvicorn 0.52.4 |
+| ORM / DB | SQLAlchemy 2.0, psycopg 3, Alembic; Postgres 16 in `docker-compose.yml` |
+| Auth | `sacare_session` HTTP-only cookie, HMAC-hashed OTP, `X-CSRF-Token`, TOTP (PyJWT only in the legacy `core/deps.py` / `core/security.py`) |
+| Background | `services/workflow_scheduler.py` (DB-polled, 8 jobs) |
+| Python | 3.11 (`Dockerfile`, CI) |
+| Tests | pytest, 85 `tests/test_*.py` files |
 
 ---
 
-## 2. Directory Structure
+## 2. Directory structure
 
 ```
 backend/
-├── app/
-│   └── main.py                 # FastAPI app, lifespan, CORS, middleware, router mounts
-├── core/
-│   ├── workflow_models.py       # ALL SQLAlchemy models (~504 lines, 35 tables)
-│   ├── medication_catalog.py    # Medication name catalog for Rx extraction
-│   ├── code_sentinel_portfolio.py  # Code Sentinel product portfolio + governance tiers
-│   └── (32 more utility modules)
-├── services/
-│   ├── workflow_api.py          # MAIN ROUTER (~2347 lines, ~110 endpoints)
-│   ├── workflow_auth.py         # Auth: OTP, session cookie, RBAC guards
-│   ├── workflow_scheduler.py    # Durable background job runner (DB-polling)
-│   ├── db_sql.py                # SQLAlchemy engine, SessionLocal, Base
-│   ├── llm_gateway.py           # httpx.Client → Ollama (the ONLY blocking call)
-│   ├── integrations.py          # Firebase, OpenWA, Postal email integration endpoints
-│   ├── billing.py               # Billing/pricing endpoints
-│   ├── member_profile_api.py    # Student profile management
-│   ├── preventive_care.py       # Preventive care recommendations
-│   ├── apilayer.py              # Numverify, Weatherstack, etc. proxy
-│   ├── otp_delivery.py          # OTP dispatch (console/Email/SMS)
-│   ├── notification_worker.py   # In-memory demo notification worker
-│   ├── payment_gateway.py       # Razorpay/Stripe payment processing
-│   ├── pharmacy_review.py       # Prescription review workflow
-│   ├── document_intake.py       # Document processing pipeline
-│   ├── knowledge.py             # Knowledge source management
-│   ├── clinical_assist.py       # Clinical decision support (stubbed)
-│   ├── movement_sync.py         # Health data sync with wearables
-│   ├── n8n_dispatch.py          # n8n workflow dispatch (stubbed)
-│   ├── rag_vector_store.py      # RAG vector store (demo, no embeddings)
-│   ├── universal_rag_engine.py  # RAG engine (template-based, no retrieval)
-│   ├── security_scanner.py      # ClamAV virus scanner integration
-│   ├── code_sentinel_scanner.py # Code Sentinel security scanner
-│   ├── ai_client.py             # AI client wrapper (in-memory demo state)
-│   ├── agent_eval.py            # Agent evaluation harness
-│   ├── abdm_gateway.py          # ABDM gateway (stubbed, no real API calls)
-│   ├── repository.py            # Generic repository pattern
-│   ├── profile_service.py       # Profile management service
-│   ├── stores.py                # In-memory stores for demo state
-│   ├── twofa_store.py           # Two-factor auth store
-│   ├── agent_scheduler.py       # Multi-agent recurring cycle (disconnected)
-│   ├── job_runner.py            # APScheduler-based job runner (disconnected)
-│   ├── integration_config.py    # Integration settings persistence
-│   ├── demo_seed.py             # Demo data seeder
-│   ├── seed.py                  # Production seed data
-│   ├── migrations.py            # Alembic migration runner
-│   └── slack_notifier.py        # Slack ops alert integration
-├── agents/                      # ← This is services/agents/
-│   ├── __init__.py              # Re-exports 7 agent singletons
-│   ├── blood_emergency_agent.py
-│   ├── medication_adherence_loop_agent.py
-│   ├── triage_council_agent.py
-│   ├── rx_extractor_ai_agent.py
-│   ├── soap_notes_agent.py
-│   ├── hitl_approval_agent.py
-│   ├── medical_guard.py
-│   ├── (23 more — see Section 6)
-│   └── ...
-├── scripts/
-│   └── workflow_worker.py       # CLI to run workflow_scheduler in finite passes
-├── config/
-│   ├── requirements.txt         # Production dependencies
-│   ├── requirements-dev.txt     # Dev/test dependencies (inherits requirements.txt)
-│   ├── .env.example             # Environment variable reference
-│   └── .env.workflow.example    # Workflow-specific env vars
-├── alembic/                     # Alembic migration framework
-│   ├── env.py
-│   ├── script.py.mako
-│   └── versions/
-├── migrations/                  # Raw SQL migrations (alternative to Alembic)
-│   ├── studentkare_schema.sql
-│   └── cdci_medication_schema.sql
-├── tests/                       # pytest test suite (52 files)
-├── Dockerfile                   # Python 3.11-slim, uvicorn
-├── alembic.ini
-└── .dockerignore
+├── app/main.py            FastAPI app, lifespan, middleware, router mounts
+├── core/                  models (workflow_models, billing_models, preventive_models,
+│                          models_sql), crypto, rate limiter, telemetry, sentry, guardrails
+├── services/              routers and services (52 modules); agents/ holds 30 agent modules
+├── alembic/versions/      21 migrations, one head (e5a7b3c90d14)
+├── migrations/            raw SQL schemas kept for reference; not applied by the app
+├── scripts/               workflow_worker.py, provision_account.py, seed_catalog.py, seed_demo.py
+├── config/                requirements*.txt, alembic.ini, pyproject.toml, .env examples
+└── tests/                 pytest suite
 ```
 
 ---
 
-## 3. Build & Run
-
-### Prerequisites
-
-- Python 3.11
-- PostgreSQL 15 (prod) or SQLite (dev, zero-config)
-- Node 18+ (for the frontend, separate)
-
-### Local Development
+## 3. Build and run
 
 ```bash
 cd backend
-
-# Create virtualenv
-python3.11 -m venv .venv
-source .venv/bin/activate
-
-# Install dependencies
+python3.11 -m venv .venv && source .venv/bin/activate
 pip install -r config/requirements-dev.txt
-
-# Start the server (SQLite auto-created, no config needed)
+export DATABASE_URL=postgresql://studentkare:studentkare@localhost:5432/studentkare
+export OTP_HASH_SECRET=...            # required unless APP_ENV is development/testing
 PYTHONPATH=. uvicorn app.main:app --reload --port 8000
 ```
 
-The app auto-creates `studentkare.db` if no `DATABASE_URL` is set.
-Demo accounts are seeded automatically in development mode.
+`scripts/start-dev-backend.py` (repo root) wraps this for local development.
 
-### Demo Logins
+- **Schema.** `APP_ENV=production`: the lifespan runs `services.migrations.run_migrations()`
+  (Alembic to head) and never calls `create_all`. Any other `APP_ENV`: `create_all_tables()`.
+- **Demo accounts** (`services/demo_seed.py`) need `APP_ENV=development|testing` **and**
+  `SEED_DEMO_DATA=true`. The fixed demo code additionally needs `DEV_OTP_CONSOLE=true`
+  (default `false`). Identifiers are listed in `DEMO_IDENTIFIERS`.
+- **Docker:** `cp .env.dev.example .env && docker compose up --build` (postgres,
+  pgbouncer, backend, frontend and the monitoring stack).
 
-| Role | Phone | OTP |
-|------|-------|-----|
-| Super Admin | `9000000000` | `222222` |
-| Staff | `9000000001` | `333333` |
-| Student | `9000000002` | `444444` |
-| Campus Admin | `9000000003` | `555555` |
-| Provider | `9000000004` | `666666` |
-| Insurer | `9000000005` | `777777` |
+### Environment variables (read by the code)
 
-### Docker
+| Variable | Default | Purpose |
+|----------|---------|---------|
+| `DATABASE_URL` | none | Postgres URL; required outside `APP_ENV=testing` |
+| `APP_ENV` | `development` in `app/main.py` | `production` runs migrations and the production guard |
+| `OTP_HASH_SECRET` | falls back to `JWT_SECRET` | OTP hashing; startup fails without one outside dev/test |
+| `ALLOWED_ORIGINS` | localhost:3000, :4173 | CORS allow-list |
+| `SEED_DEMO_DATA` / `DEV_OTP_CONSOLE` | `false` / `false` | demo accounts / console OTP, dev and test only |
+| `PASS_SIGNING_SECRET` | none | signs the rotating check-in pass; required outside dev/test |
+| `TWO_FACTOR_ENCRYPTION_KEY` | none | Fernet key sealing TOTP secrets; without it, set-up returns 503 outside dev/test |
+| `TWOFA_ENFORCED_ROLES` | `SUPER_ADMIN` | roles held to 2FA set-up before any other route |
+| `RAZORPAY_KEY_ID` / `RAZORPAY_KEY_SECRET` | none | Student Plus subscription checkout and order payments |
+| `PAYMENT_PROVIDER` | `mock` in dev/test, `razorpay` in production | order payments; `mock` refuses to start in production |
+| `EMBEDDING_PROVIDER` | `local` | only `local` is implemented (hashed character n-grams) |
+| `RATE_LIMIT_API_PER_ACCOUNT_PER_MINUTE` | unset (registry: 300) | per-session API budget; pins `platform.api_rate_per_account_per_minute` |
+| `RATE_LIMIT_API_PER_IP_PER_MINUTE` | unset (registry: 3000) | per-IP API ceiling; pins `platform.api_rate_per_ip_per_minute` |
+| `SENTRY_DSN` | none | Sentry, off without it |
+
+`OLLAMA_URL` (unset = no model), `LLM_MODEL` (default `llama3.1:8b`),
+`LLM_TIMEOUT_SECONDS` (8) and `LLM_RETRY_AFTER_SECONDS` (30, cool-off after a failed
+call) are read by `llm_gateway.py` at call time (§6).
+
+---
+
+## 4. Request lifecycle and auth
+
+### Middleware (outermost first, from `app.user_middleware`)
+
+1. `response_headers` — `X-Content-Type-Options: nosniff`, `Cache-Control: no-store`
+2. `ActivityTelemetryMiddleware` — non-PHI per-route counters (`care_activity_counters`)
+3. `GlobalRateLimitMiddleware` — per-IP sliding window, in memory, per process
+4. `BodyLimitMiddleware` — 12 MB request limit
+5. `CORSMiddleware`
+
+Because CORS is innermost, a 429 from the rate limiter or a 413 from the body limit
+carries no CORS headers. Exception handlers turn `SQLAlchemyError` into 503 and anything
+else into 500. `core/middleware.py` (`register_security_middleware`) is not wired.
+
+### Auth (`services/workflow_auth.py`)
+
+- OTP send/verify → `sacare_session` HTTP-only cookie (hashed in `care_sessions`) plus a
+  CSRF token that mutating requests must echo in `X-CSRF-Token`.
+- Signup requires the current consent version and all required purposes; the account
+  and its `care_consent_records` row are written in one transaction.
+- Two-step sign-in is persisted (`care_two_factor`, `care_two_factor_pending`; secrets
+  sealed with Fernet). Accounts in `TWOFA_ENFORCED_ROLES` without 2FA get a held session:
+  only 2FA set-up and sign-out answer (`deny_until_two_factor`).
+- Remembered devices (`care_remembered_devices`) change what the sign-in screen offers;
+  they never create a session without a code.
+- Roles: `STUDENT`, `CAMPUS_ADMIN`, `VENDOR`, `NMC_DOCTOR`, `SUPER_ADMIN`. Gates:
+  `require_staff`, `require_super_admin`, `require_campus_admin`, `require_clinician`.
+- `core/deps.py` / `core/security.py` (JWT) are legacy; no mounted router uses them.
+- `tests/test_reachability.py` fails when a backend module is unreachable from the
+  entry points (`app.main`, the worker, the seed/provision scripts) and is not on its
+  allow-list with a reason, or when a `services/` router is defined but not mounted.
+
+---
+
+## 5. Routers (`app/main.py`)
+
+Operation counts are from the generated OpenAPI schema (289 operations on 259 paths).
+
+| Module | Prefix | Ops | Covers |
+|--------|--------|-----|--------|
+| `workflow_auth.py` | `/api/auth` | 13 | OTP, signup + consent, sessions, remembered devices |
+| `workflow_api.py` | `/api` | 138 | records, documents, catalogue, orders, appointments, consultation, encounters, blood, meds, ops, Ayush, v1 admin |
+| `clinical_api.py` | `/api` | 36 | prescriptions, dispensing, lab orders, lab review and release, crisis follow-up |
+| `student_requests.py` | `/api` | 19 | returns, hostel visits, refills |
+| `billing.py` | `/api/billing` | 16 | Student Plus subscription, enterprise contracts |
+| `preventive_care.py` | `/api/preventive` | 15 | providers, vaccines, preferences, report reviews |
+| `integrations.py` | `/api` | 12 | integration settings, platform assets, `/auth/2fa/*` |
+| `apilayer.py` | `/api/apilayer` | 12 | APILayer proxy, `SUPER_ADMIN` only |
+| `emergency_api.py` | `/api` | 9 | SOS alerts and deliveries, security contacts |
+| `member_profile_api.py` | `/api` | 6 | profile, check-in pass (`/identity`, `/identity/verify`) |
+| `erasure.py` | `/api` | 5 | DPDP account erasure and sealed archives |
+| `campus_departure.py` | `/api` | 3 | graduating / transferring / break |
+| `alerts.py` | `/api/alerts` | 2 | Alertmanager webhook |
+
+Plus `GET /api/health`, `GET /api/info`, `GET /api/persistence/status` in `main.py`.
+
+### Services the app does not load
+
+Checked by importing `app.main` and listing `sys.modules` (lazy imports inside handlers
+counted): `abdm_gateway` (kept for planned ABDM work). AGENTS.md guardrail 3 treats
+it as a bug to report, not a feature. `llm_gateway` is now loaded: it is the constitution
+module Agent Ayush calls for optional rephrasing. `ai_client`, `rag_vector_store` and
+`universal_rag_engine` were loaded by nothing and have been deleted, as were
+`claims_engine`, `n8n_dispatch`, `profile_service`, `repository`, `stores` and `seed`
+(no script, compose file, Dockerfile or CI job ran them either); `demo_seed` is a
+different module and is live.
+Every module left in `services/agents/` is loaded by the app (§6). The 20 agent modules
+nothing loaded (`accreditation_agent`, `agent_scheduler`, `ambassador_kit_agent`,
+`autopilot`, `career_copilot_agent`, `certificate_ai_agent`, `cicd_pr_evaluator_agent`,
+`code_health_agent`, `code_health_rules`, `daily_audit_agents`, `echo_profile_loop_agent`,
+`graph_rag_agent`, `hackathon_grader_agent`, `matchmaker_agent`, `newsletter_ai_agent`,
+`qa_agent`, `routing_agent`, `specialized`, `talent_scraper_ai_agent`, `voice_coach_agent`)
+were deleted with their tests, as was `services/job_runner.py`, their only other importer,
+which nothing loaded either.
+
+---
+
+## 6. AI
+
+### Agent Ayush (`services/agent_ayush.py`, `POST /api/agents/ayush/ask`)
+
+A seven-stage pipeline over approved knowledge only; it never reads the student's record.
+
+1. Crisis gate (`services/crisis_gate.py`) — fails closed, returns crisis resources
+2. Scope guard — refuses diagnosis, prescribing and dosage
+3. Personal-record refusal — questions about the student's own results go to a clinician
+4. Retrieval — `services/vector_store.py` over approved, reviewed sources
+5. Grounding check — no passage, no answer
+6. Generation — `compose_extractive()` quotes the top passage and names the others; it
+   is output-guarded first and is the fallback for everything below. With `OLLAMA_URL`
+   set, `generate()` asks the model, via `llm_gateway.invoke(rule_id="Rule-A")`, to
+   rephrase the retrieved passages only (prompt = question + passages; never the
+   student's name or record; neither prompt nor answer is logged). The rephrasing must
+   pass the output guard and `rephrasing_is_grounded()`: every sentence ≥ 75% supported
+   by the passages (`vector_store.support`, the retrieval overlap measure), no number
+   absent from them, a negation only where a source sentence has one, and `[n]`
+   citations that exist. Any failure, timeout, unreachable model, guardrail block or
+   rejection returns the extractive answer.
+7. Output guard, then the turn is recorded (`care_agent_turns`) for
+   `GET /api/ops/agents/ayush/quality`, with `generator` = `extractive`, `rephrased` or
+   `fallback:<reason>`; the quality report adds `generationBreakdown` and
+   `fallbackReasons`.
+
+Embeddings come from `services/embeddings.py`: a deterministic local embedder (hashed
+character 3/4-grams). It is not semantic, and `is_semantic()` says so.
+
+### Other agent modules still mounted
+
+Six modules from `services/agents/` load with the app (five imported by
+`workflow_api.py`; `phlebotomist_dispatch_agent` has no endpoint since `/lab/book-slot`
+was removed). None calls a model.
+
+| Endpoint | Module | What it returns |
+|----------|--------|-----------------|
+| `/api/blood/*` | `blood_emergency_agent` | donor matching; SOS queued as `BLOOD_SOS` outbox events |
+| `/api/meds/*` | `medication_adherence_loop_agent` | plans and dose logs in Postgres |
+| `/api/ops/approvals`, `/api/v1/ops/kill-switch` | `hitl_approval_agent`, `medical_guard` | approvals from a module-level list; kill switch is a process flag |
+
+Removed, because they gave any signed-in user fixed, clinical-looking output
+(clinician decision support belongs to M18, AGENTS.md guardrail 5): `POST
+/api/triage/council-eval`, `POST /api/records/generate-soap`, `POST
+/api/ai/voice-prescription`, `POST /api/v1/agents/mesh-triage` and `GET
+/api/v1/agents/system-log` (hardcoded counters), with their modules
+`triage_council_agent`, `soap_notes_agent`, `swarm` and `ai_observability`. They now
+answer 404.
+
+`POST /api/ai/medication-lookup` searches the medicine master (`care_medicines`, see
+`services/medicine_master.py`) by name or salt, as text only: no match returns
+`{"status": "NO_MATCH"}`, never a stand-in medicine, and there is no image recognition
+(an `imageFileName` field is refused with 422). It returns only master facts
+(composition, form, pack, manufacturer, schedule); the old hardcoded "mock" drug table,
+its invented advisor approvals and Jan Aushadhi prices are gone. It has no web caller
+since the unrouted `StudentDashboardScreen` and its modals were deleted.
+
+**Medicine master.** `care_medicines` + `care_medicine_ingredients` (commerce plane)
+hold each medicine's salts and strengths, dosage form, pack, manufacturer and Indian
+schedule (OTC | H | H1 | X); `requires_prescription` is derived from the schedule.
+`care_catalog.medicine_id` links a product listing to it. `GET /api/catalog?query=`
+also matches salts. `GET /api/catalog/{id}/alternatives` returns same salts + strengths
++ form listings, cheapest first, for OTC listings only; a prescription-schedule
+listing gets none on that route. `GET /api/work/catalog/{id}/alternatives` returns all
+of them to pharmacy partners and prescribers. Super admins manage records with
+`/api/ops/medicines` and link listings with `PUT /api/ops/catalog/{id}/medicine`. Demo
+medicines exist only in the dev seed (`services/demo_medicines.py`).
+
+---
+
+## 7. Background jobs (`services/workflow_scheduler.py`)
+
+Eight allow-listed jobs in `PERIODIC_JOBS`, default interval 7,200 s:
+
+| Key | Handler | Interval |
+|-----|---------|----------|
+| `integration_health` | probe configured integrations | 2 h |
+| `reminder_reconcile` | process `care_outbox_events` (OpenWA / email) | 2 h |
+| `document_intake_reconcile` | pending / failed intake | 2 h |
+| `knowledge_freshness` | expire stale knowledge sources | 2 h |
+| `care_followup` | overdue care requests | 2 h |
+| `slack_selftest` | Slack channel self-test and digest | 1 h |
+| `campus_departures` | complete departures whose date has arrived | 2 h |
+| `account_erasure` | erase accounts past the 7-day window, destroy expired archives | 2 h |
+
+**When they run:** once at app start-up (`lifespan` → `ensure_scheduled_jobs`,
+`run_due_jobs`), on `POST /api/ops/jobs/{key}/run` (super admin), or via
+`python -m scripts.workflow_worker --once | --max-cycles N`. There is no in-process
+timer and no worker service in `docker-compose*.yml`, so without a cron or worker
+calling the CLI, due jobs wait for the next restart. Runs are recorded in
+`care_agent_runs`.
+
+---
+
+## 8. Data and migrations
+
+- 88 tables in `Base.metadata` (`care_*` plus legacy `tenants`, `app_users`,
+  `audit_logs`, `break_glass_sessions`, `department_states`, `code_health_findings`,
+  `agent_runs` from `core/models_sql.py`).
+- Production applies Alembic migrations only; development uses `create_all_tables()`,
+  which also adds `care_catalog.image_id` / `image_mime` by hand.
+- **Known drift:** no migration adds `care_catalog.image_id` / `image_mime`, so a
+  database built only from migrations lacks columns the model selects. `alembic check`
+  also reports two index differences (`care_programmes`, `care_substitution_requests`).
+- **Tests** default to SQLite (`tests/conftest.py`) and most build their own in-memory
+  engines. CI's `backend-postgres` job migrates an empty Postgres 15 to head, runs a
+  report-only `alembic check`, then runs the suite with `DATABASE_URL` on that server and
+  `REQUIRE_POSTGRES=1`, so the Postgres-only tests fail instead of skipping.
 
 ```bash
-# From repo root
-docker compose up backend frontend
-```
-
-### Environment Variables
-
-| Variable | Required | Default | Purpose |
-|----------|----------|---------|---------|
-| `DATABASE_URL` | Prod only | SQLite fallback | PostgreSQL connection string |
-| `JWT_SECRET` | Prod only | auto-generated | Legacy JWT signing (dead code) |
-| `OTP_HASH_SECRET` | Prod only | falls back to JWT_SECRET | HMAC OTP hashing |
-| `ALLOWED_ORIGINS` | No | localhost:3000,4173 | CORS origins |
-| `APP_ENV` | No | `development` | `production` enables startup guards |
-| `OLLAMA_URL` | No | `http://localhost:11434` | Ollama LLM endpoint |
-| `LLM_MODEL` | No | `llama3.1:8b` | Model for LLM calls |
-| `EMBED_MODEL` | No | `nomic-embed-text` | Embedding model |
-| `ABDM_BASE_URL` | No | sandbox URL | ABDM gateway |
-| `APILAYER_API_KEY` | No | — | APILayer service key |
-| `FERNET_KEY` | No | — | Field-level encryption key |
-| `RATE_LIMIT_LOGIN_PER_MINUTE` | No | 5 | Login rate limit |
-| `RATE_LIMIT_API_PER_MINUTE` | No | 100 | Global per-IP HTTP rate limit (60s window) |
-
-### Testing
-
-```bash
-PYTHONPATH=backend backend/.venv/bin/pytest
-```
-
-### Linting
-
-```bash
-ruff check backend
+cd backend && PYTHONPATH=.:app:.. pytest tests/ -q     # SQLite
+ruff check .
 ```
 
 ---
 
-## 4. Request Lifecycle & Auth
-
-### Auth Flow
-
-```
-Request → workflow_auth.py
-  ├─ Cookie "sacare_session" present?
-  │   ├─ Yes → SHA-256 hash → lookup care_sessions → check expires_at
-  │   │        → inject Account into request state
-  │   └─ No  → 401 Unauthorized
-  ├─ CSRF check (POST/PUT/PATCH/DELETE)
-  │   └─ X-CSRF-Token header must match session's csrf_token
-  └─ Role check (require_super_admin / require_staff / require_campus_admin)
-       └─ Account.role must match required role
-```
-
-### Two Auth Stacks (Important)
-
-| Stack | Location | Status |
-|-------|----------|--------|
-| Legacy JWT/MongoDB | `core/deps.py` | **DEAD CODE** — imported by nothing active |
-| Active Session Cookie | `services/workflow_auth.py` | **ACTIVE** — used by all endpoints |
-
-**Always use `services/workflow_auth.py`**. The `authenticated_user` dependency
-is the standard way to get the current user. `workflow_db()` provides the
-SQLAlchemy session.
-
-### Middleware Stack
-
-Outermost first (Starlette: last `add_middleware` / `@app.middleware` runs first):
-
-1. **response_headers** — `X-Content-Type-Options: nosniff`, `Cache-Control: no-store` (`@app.middleware("http")` in `main.py`)
-2. **CORS** — configured via `ALLOWED_ORIGINS`; wraps rate limiter so 429s still get CORS headers
-3. **GlobalRateLimitMiddleware** — per-IP sliding window (`RATE_LIMIT_API_PER_MINUTE`, default 100/60s); skips `/api/health`, `/api/info`, docs; returns 429 + `Retry-After`. In-memory, per process (not a distributed botnet defense)
-4. **ActivityTelemetryMiddleware** — non-PHI request telemetry
-5. **BodyLimitMiddleware** — 12 MB max request body
-6. **Error handlers** — SQLAlchemy errors → 503, unhandled → 500, both send Slack alerts (non-PHI)
-
-`core/middleware.py` (`register_security_middleware`) exists but is **not** wired in `main.py` today.
-
-Per-route **user-ID** AI limits (5/15/30/min on Tier-1 endpoints) are **not** in this stack yet — see gap F12.
-
----
-
-## 5. Services Layer
-
-Every file in `services/` with its role and whether it's mounted as a router.
-
-### Mounted Routers (in `app/main.py`)
-
-| File | Prefix | Purpose |
-|------|--------|---------|
-| `workflow_api.py` | `/api` | **Main router** — 110+ endpoints, everything health/ops/pharmacy |
-| `workflow_auth.py` | `/api/auth` | Auth: OTP send/verify, session management, demo logins |
-| `member_profile_api.py` | `/api` | Student profile CRUD |
-| `preventive_care.py` | `/api/preventive` | Preventive care recommendations |
-| `integrations.py` | `/api` | Firebase, OpenWA, Postal integration endpoints |
-| `billing.py` | `/api/billing` | Billing/pricing endpoints |
-| `apilayer.py` | `/api/apilayer` | APILayer proxy (Numverify, Weatherstack, etc.) |
-
-### Core Infrastructure (not routers)
-
-| File | Purpose |
-|------|---------|
-| `db_sql.py` | SQLAlchemy engine, `SessionLocal`, `Base`, `create_all_tables()` |
-| `workflow_scheduler.py` | Durable background job runner (DB-polling, 5 jobs, 2h cadence) |
-| `llm_gateway.py` | httpx.Client → Ollama (only truly blocking call, 60s timeout) |
-| `otp_delivery.py` | OTP dispatch via console/email/SMS |
-| `integration_config.py` | Integration settings persistence (PostHog, OpenWA, Postal, Firebase) |
-| `notification_worker.py` | In-memory demo notification worker (not connected to DB outbox) |
-| `payment_gateway.py` | Razorpay/Stripe payment processing |
-| `pharmacy_review.py` | Prescription review workflow |
-| `document_intake.py` | Document processing pipeline |
-| `knowledge.py` | Knowledge source management |
-| `clinical_assist.py` | Clinical decision support (stubbed) |
-| `movement_sync.py` | Health data sync with wearables |
-| `n8n_dispatch.py` | n8n workflow dispatch (stubbed) |
-| `rag_vector_store.py` | RAG vector store (demo, no real embeddings) |
-| `universal_rag_engine.py` | RAG engine (template-based, no real retrieval) |
-| `security_scanner.py` | ClamAV virus scanner integration |
-| `code_sentinel_scanner.py` | Code Sentinel security scanner |
-| `ai_client.py` | AI client wrapper (in-memory demo state) |
-| `agent_eval.py` | Agent evaluation harness |
-| `abdm_gateway.py` | ABDM gateway (stubbed) |
-| `repository.py` | Generic repository pattern |
-| `profile_service.py` | Profile management service |
-| `stores.py` | In-memory stores for demo state |
-| `twofa_store.py` | Two-factor auth store |
-| `agent_scheduler.py` | Multi-agent recurring cycle (disconnected — nobody calls `.start()`) |
-| `job_runner.py` | APScheduler-based job runner (disconnected — nobody calls `.start()`) |
-| `demo_seed.py` | Demo data seeder |
-| `seed.py` | Production seed data |
-| `migrations.py` | Alembic migration runner |
-| `slack_notifier.py` | Slack ops alert integration |
-
----
-
-## 6. Agents Inventory
-
-All agents live in `services/agents/`. This section documents every one with an
-honest verdict: **what it claims to do vs what it actually does**.
-
-### The Hard Truth
-
-> **No agent calls an LLM. No agent makes an HTTP request. No agent scrapes a URL.**
-> Despite names like "AI Agent", "LLM", "BioLLM", every single agent is a
-> pure-Python deterministic function. The codebase has zero LLM integration.
-
-### Agent Summary
-
-| # | Agent | Verdict | Mounted |
-|---|-------|---------|---------|
-| 1 | `blood_emergency_agent` | Real logic, in-memory | Yes |
-| 2 | `medication_adherence_loop_agent` | Real persistence (SQLAlchemy) | Yes |
-| 3 | `hitl_approval_agent` | Real state machine | Yes |
-| 4 | `medical_guard` | Real policy engine | Yes (indirect) |
-| 5 | `rx_extractor_ai_agent` | Real regex logic | Yes |
-| 6 | `triage_council_agent` | Deterministic stub | Yes |
-| 7 | `soap_notes_agent` | Deterministic stub | Yes |
-| 8 | `phlebotomist_dispatch_agent` | Stub with logic | Yes |
-| 9 | `ai_observability` | Stub (hardcoded counters) | Yes |
-| 10 | `swarm` | Deterministic simulation | Yes (indirect) |
-| 11–30 | *(20 more agents)* | All deterministic stubs | No |
-
-### Detailed Agent Catalog
-
-#### 1. Blood Emergency Agent — `blood_emergency_agent.py`
-
-**Claimed**: Blood donor matching and SOS broadcast.
-**Actual**: Real consent-aware donor filtering with in-memory registry. Matches
-by blood group (O- universal donor priority). No actual messaging/WhatsApp/SMS dispatch.
-**Mounted at**: `POST /blood/register-donor`, `GET /blood/donors`, `POST /blood/sos-request`
-**What's needed to make it real**: Connect `trigger_sos_broadcast()` to actual messaging
-via `outbox_events` → notification delivery (Celery worker). This is TICKET-SCALE-104 scope.
-
-#### 2. Medication Adherence Loop Agent — `medication_adherence_loop_agent.py`
-
-**Claimed**: Medication adherence tracking and loop monitoring.
-**Actual**: Real SQLAlchemy persistence. `add_plan()`, `log_dose_taken()` (idempotent),
-`get_user_schedule()` with completion rate calculation. BUT the "loop" doesn't run —
-`loop_status: "MONITORING"` is a static string, `last_loop_check` is always "now".
-No background process scans for missed doses.
-**Mounted at**: `GET/POST /meds/schedule`, `POST /meds/plans`, `POST /meds/log-dose`
-**What's needed**: A Celery Beat task that periodically scans `care_medication_plans`
-against `care_medication_doses` and enqueues reminders for missed doses. This is TICKET-SCALE-104 scope.
-
-#### 3. HITL Approval Agent — `hitl_approval_agent.py`
-
-**Claimed**: High-stakes action approval with zero-trust gate.
-**Actual**: Real state machine over an in-memory registry. Enforces medical guard policy.
-Logs decisions to append-only JSONL file at `logs/medical_audit.jsonl`.
-**Mounted at**: `GET /ops/approvals`, `POST /ops/approve-action`
-**Limitation**: In-memory registry — lost on restart. Should use DB table.
-
-#### 4. Medical Guard — `medical_guard.py`
-
-**Claimed**: Zero-trust safety gate for clinical actions.
-**Actual**: Real policy engine. Risk classifies actions (LOW/MEDIUM/HIGH/CRITICAL),
-enforces scoped permissions, supports emergency kill switch, tamper-evident JSONL audit.
-**Used by**: `hitl_approval_agent` and `swarm_engine` (indirectly)
-**Limitation**: Kill switch state is in-memory. Should use DB.
-
-#### 5. Rx Extractor AI Agent — `rx_extractor_ai_agent.py`
-
-**Claimed**: AI-powered prescription extraction.
-**Actual**: Real regex-based logic. Detects doctor names, dates, and matches medication
-names against a catalog with word-level provenance spans. Marks unmatched fields as
-"honest unknowns" — no fabricated data. Pure regex, no LLM.
-**Mounted at**: `POST /rx/extract-ai`
-**What's needed to make it real**: Replace regex with LLM-based extraction via
-`llm_gateway.py`. Keep provenance spans. Add confidence scores from model output.
-
-#### 6. Triage Council Agent — `triage_council_agent.py`
-
-**Claimed**: Multi-doctor clinical triage council with AI opinions.
-**Actual**: Keyword matching (fever, headache, stress, etc.) → canned physician,
-mental-health, and pharmacist opinions with fixed trust scores (95.8%). No real
-clinical reasoning. Always reaches consensus.
-**Mounted at**: `POST /triage/council-eval`
-**What's needed**: Replace with LLM-powered triage. Use `llm_gateway.py` for each
-"doctor" persona. Add real disagreement handling. Add clinician review routing
-for HIGH/CRITICAL cases.
-
-#### 7. SOAP Notes Agent — `soap_notes_agent.py`
-
-**Claimed**: AI-generated SOAP clinical notes.
-**Actual**: Returns fixed vitals (120/80, 98.2°F, etc.) and canned assessment
-regardless of input. Only the Subjective field incorporates raw notes.
-**Mounted at**: `POST /records/generate-soap`
-**What's needed**: Replace with LLM-powered generation via `llm_gateway.py`.
-Validate output schema. Add clinician review before finalization.
-
-#### 8. Phlebotomist Dispatch Agent — `phlebotomist_dispatch_agent.py`
-
-**Claimed**: AI-optimized phlebotomist assignment.
-**Actual**: Picks least-loaded from a hardcoded 3-person pool. Generates random
-kit code. No real geolocation, scheduling, or optimization.
-**Mounted at**: `POST /lab/book-slot`
-**What's needed**: Real phlebotomist registry in DB. Real scheduling logic.
-Optional: LLM for route optimization.
-
-#### 9. AI Observability — `ai_observability.py`
-
-**Claimed**: Real-time agent telemetry dashboard.
-**Actual**: Hardcoded counters (18,420 requests, 3.1M tokens) and a canned log
-buffer. Pure in-memory demo state.
-**Mounted at**: `GET /agents/live-status` (indirectly via workflow_api)
-**What's needed**: Real metrics collection from agent runs. Use `AiTask` table
-for run tracking. Export to OpenTelemetry or similar.
-
-#### 10. Swarm — `swarm.py`
-
-**Claimed**: MetaGPT-style multi-agent swarm with clinical mesh triage.
-**Actual**: Deterministic orchestration. Real helper-discovery logic and real
-inter-agent handoff trails, but every "agent" is a text stub. Logs to
-`ai_observability`.
-**Mounted at**: `POST /v1/agents/mesh-triage` (indirectly)
-**What's needed**: Retire from connected mode. Use one bounded executor with
-real tools (per audit recommendation).
-
-#### 11–30. The Remaining Stubs
-
-| Agent | Claimed Purpose | Actual | What It Returns |
-|-------|----------------|--------|-----------------|
-| `accreditation_agent` | NAAC/NIRF dossier | 4 hardcoded metrics | Same NAAC statement always |
-| `agent_scheduler` | Recurring agent cycle | Orchestrates other stubs | Not connected to any runner |
-| `ambassador_kit_agent` | Campus ambassador kit | Template string builder | Same 3 social posts always |
-| `autopilot` | AutoGPT goal decomposition | 3 hardcoded steps | Status: "completed" always |
-| `career_copilot_agent` | ATS resume scoring | 15-word keyword match | Same mock interview question |
-| `certificate_ai_agent` | Certificate verification | Always "VERIFIED_AUTHENTIC" | Fixed trust score 0.95 |
-| `cicd_pr_evaluator_agent` | CI/CD health scout | Regex secret detection (real) | Hardcoded reports for rest |
-| `code_health_agent` | Code health scanner | Real AST scanning | MongoDB persistence (real) |
-| `code_health_rules.py` | AST rule engine | Real Python AST walking | Local filesystem reads |
-| `daily_audit_agents` | 24h audit swarm | Fixed counts always | 60 tests, 1254 DAU, 0.08% |
-| `echo_profile_loop_agent` | ECHO profile nudge | Real MongoDB queries | Send functions are stubs |
-| `graph_rag_agent` | Knowledge graph | 5 hardcoded nodes/edges | Label filtering only |
-| `hackathon_grader_agent` | Hackathon grading | Same 4 rubric items | 91/100 always |
-| `matchmaker_agent` | Mentor matching | 2 hardcoded candidates | Same email template |
-| `newsletter_ai_agent` | Newsletter synthesis | Same HTML/spam score | 1.2 spam score always |
-| `qa_agent` | QA health check | 100% health always | 0 failures always |
-| `specialized.py` | Ops audit agents | Hardcoded findings lists | Same results always |
-| `talent_scraper_ai_agent` | GitHub/LinkedIn parsing | URL parsing only | Fixed skill lists |
-| `voice_coach_agent` | Transcript analysis | Real WPM/filler detection | Honest, no external calls |
-
----
-
-## 7. Data Models
-
-All models live in `core/workflow_models.py` (504 lines, 35 tables).
-Prefix: `care_*`.
-
-### Identity & Auth
-
-| Table | Model | Purpose |
-|-------|-------|---------|
-| `care_accounts` | `Account` | User accounts (student/staff/admin/provider/insurer) |
-| `care_sessions` | `Session` | HTTP-only session tokens (hashed) |
-| `care_otp_challenges` | `OtpChallenge` | OTP verification state |
-| `care_signup_grants` | `SignupGrant` | Registration flow grants |
-| `care_rate_buckets` | `RateBucket` | Rate limiting counters |
-| `care_campus_verifications` | `CampusVerification` | Student campus affiliation verification |
-| `care_deletion_requests` | `DeletionRequest` | Account/data deletion requests |
-
-### Health Data
-
-| Table | Model | Purpose |
-|-------|-------|---------|
-| `care_readings` | `Reading` | Health metrics (BP, weight, glucose, etc.) |
-| `care_documents` | `Document` | Uploaded health documents (binary content) |
-| `care_preferences` | `Preference` | User exercise/task preferences |
-| `care_exercise_sessions` | `ExerciseSession` | Workout session logs |
-| `care_medication_plans` | `MedicationPlan` | Account-owned medication plans |
-| `care_medication_doses` | `MedicationDose` | Logged dose occurrences (idempotent) |
-| `care_notification_preferences` | `NotificationPreference` | User notification settings |
-
-### Commerce
-
-| Table | Model | Purpose |
-|-------|-------|---------|
-| `care_catalog` | `CatalogEntry` | Pharmacy product catalog |
-| `care_orders` | `Order` | Order records |
-| `care_payments` | `Payment` | Payment transactions |
-| `care_order_lines` | `OrderLine` | Individual order items |
-
-### Insurance
-
-| Table | Model | Purpose |
-|-------|-------|---------|
-| `care_policies` | `Policy` | Insurance policy records |
-| `care_claim_requests` | `ClaimRequest` | User-submitted claims |
-| `care_reviewed_benefits` | `ReviewedBenefit` | Reviewed insurance benefits |
-
-### Operations
-
-| Table | Model | Purpose |
-|-------|-------|---------|
-| `care_scheduled_jobs` | `ScheduledJob` | Durable background job schedules |
-| `care_agent_runs` | `AgentRun` | Background job execution records |
-| `care_outbox_events` | `OutboxEvent` | Durable notification dispatch queue |
-| `care_workflow_audit` | `WorkflowAudit` | Audit trail for all operations |
-| `care_followup_tasks` | `FollowUpTask` | Staff follow-up tasks |
-| `care_system_settings` | `SystemSetting` | Runtime configuration store |
-| `care_support_requests` | `SupportRequest` | User support tickets |
-
-### Scheduling & Teleconsultation
-
-| Table | Model | Purpose |
-|-------|-------|---------|
-| `care_availability_slots` | `AvailabilitySlot` | Bookable provider time slots |
-| `care_appointments` | `Appointment` | Confirmed appointments |
-| `care_consultation_sessions` | `ConsultationSession` | Teleconsultation sessions |
-
-### Clinical
-
-| Table | Model | Purpose |
-|-------|-------|---------|
-| `care_record_shares` | `RecordShare` | Time-limited clinician access grants |
-| `care_document_intake` | `DocumentIntake` | Document processing queue |
-| `care_intake_review_items` | `IntakeReviewItem` | Extracted fields needing human review |
-| `care_encounter_notes` | `EncounterNote` | Clinician-authored encounter notes |
-| `care_knowledge_sources` | `KnowledgeSource` | Approved knowledge entries |
-
-### Campus Health
-
-| Table | Model | Purpose |
-|-------|-------|---------|
-| `care_health_camps` | `HealthCamp` | Health camp events |
-| `care_health_camp_stations` | `HealthCampStation` | Stations within camps |
-| `care_camp_attendances` | `CampAttendance` | Student camp participation |
-
-### Content
-
-| Table | Model | Purpose |
-|-------|-------|---------|
-| `care_home_content` | `HomeContent` | Landing page marketing copy |
-| `care_articles` | `Article` | Health articles/content |
-
----
-
-## 8. Background Workers
-
-### What Runs Today
-
-**Only one worker exists**: `workflow_scheduler.py` + `scripts/workflow_worker.py`.
-
-```
-┌──────────────────────────────────────────────────────┐
-│  workflow_scheduler (DB-polling, serial)             │
-│                                                      │
-│  Cadence: every 2 hours (7200 seconds)               │
-│  Jobs (5 allowlisted):                               │
-│  1. integration_health — Service health monitor      │
-│  2. reminder_reconcile — Notification reconciliation │
-│  3. document_intake_reconcile — Failed intake retry  │
-│  4. knowledge_freshness — Knowledge source expiry    │
-│  5. care_followup — Overdue care request detection   │
-│                                                      │
-│  Runs on app startup (lifespan) + finite CLI passes  │
-│  Single-worker, no concurrency, no retry             │
-└──────────────────────────────────────────────────────┘
-```
-
-**On app startup** (`app/main.py:64-73`):
-1. `ensure_scheduled_jobs(db)` — creates missing `care_scheduled_jobs` rows
-2. `workflow_scheduler.run_due_jobs(db)` — runs any jobs past their `next_run_at`
-
-**CLI worker** (`scripts/workflow_worker.py`):
-- Runs N passes of `run_due_jobs`, then exits
-- Usage: `PYTHONPATH=backend python scripts/workflow_worker.py --passes 10`
-
-### What Doesn't Run
-
-| Module | Status |
-|--------|--------|
-| `agent_scheduler.py` | Has `start()` method but nobody calls it |
-| `job_runner.py` | APScheduler-based runner, not imported by app |
-| `notification_worker.py` | In-memory demo, not connected to DB outbox |
-| `n8n_dispatch.py` | Stubbed, no actual webhook dispatch |
-
-### What's Planned (TICKET-SCALE-104)
-
-Celery + Redis cluster to:
-1. **Adherence loop** — periodic scan of medication plans vs doses, enqueue reminders
-2. **Blood SOS** — async broadcast to matching donors via outbox
-3. **Generic AI task queue** — any future LLM call offloaded from request thread
-4. **Graceful fallback** — inline execution when Redis unavailable
-
----
-
-## 9. Frontend Integration
-
-### How the React App Calls the Backend
-
-The frontend uses `src/data/http.ts` with a 20-second `AbortController` timeout.
-Every API call goes through `apiRequest()` which:
-- Sends credentials (`credentials: "include"`) for session cookie
-- Includes `X-CSRF-Token` header for mutations
-- Returns parsed JSON or throws on non-ok responses
-
-### Key Frontend→Backend Touchpoints
-
-| Frontend Component | Backend Endpoint | Agent Used |
-|-------------------|-----------------|------------|
-| `CampusBloodDonorWidget` | `POST /blood/sos-request` | `blood_emergency_agent` |
-| `MedicationTrackerWidget` | `GET /meds/schedule` | `medication_adherence_loop_agent` |
-| `MedicationPanel` | `POST /meds/plans`, `POST /meds/log-dose` | `medication_adherence_loop_agent` |
-| `TriageCouncilModal` | `POST /triage/council-eval` | `triage_council_agent` |
-| `SOAPNotesGeneratorModal` | `POST /records/generate-soap` | `soap_notes_agent` |
-| `PrescriptionUploaderModal` | `POST /rx/extract-ai` | `rx_extractor_ai_agent` |
-| `AIVoicePrescriptionModal` | `POST /ai/voice-prescription` | llm_gateway (60s timeout) |
-| `AIMedicationAndXrayScannerModal` | `POST /ai/xray-diagnostic-scan` | llm_gateway (60s timeout) |
-
-### Timeout Risk
-
-The 20s frontend timeout will fail on any LLM call (60s in `llm_gateway.py`).
-This is a known issue (audit F02). Offloading to Celery workers with async
-polling solves this.
-
----
-
-## 10. Observability Architecture
-
-### Stack Overview
-
-| Component | Technology | Purpose |
-|---|---|---|
-| **Metrics** | Prometheus + Prometheus Client (Python) | Time-series metrics, alerting |
-| **Logs** | Loki + Promtail | Centralized log aggregation |
-| **Traces** | Tempo + OpenTelemetry | Distributed tracing |
-| **Dashboards** | Grafana | Visualization, alerting UI |
-| **Alerting** | Alertmanager + Slack | Alert routing, deduplication |
-| **Synthetic** | Blackbox Exporter | Uptime, latency probes |
-| **Errors** | Sentry (SaaS) | Exception tracking, context |
-
-### Data Flow
-
-```
-┌─────────────┐     ┌──────────────┐     ┌─────────────┐
-│  Backend    │────▶│  OTel        │────▶│  Tempo      │
-│  (FastAPI)  │     │  Collector   │     │  (Traces)   │
-└─────────────┘     └──────────────┘     └─────────────┘
-       │                    │                    │
-       ▼                    ▼                    ▼
-┌─────────────┐     ┌──────────────┐     ┌─────────────┐
-│  Prometheus │     │  Prometheus  │     │  Grafana    │
-│  (Metrics)  │◀───▶│  (Metrics)   │────▶│  (Dashboards)│
-└─────────────┘     └──────────────┘     └─────────────┘
-       │                    │
-       ▼                    ▼
-┌─────────────┐     ┌──────────────┐
-│  Alertmgr   │     │  Loki        │
-│  (Alerts)   │     │  (Logs)      │
-└─────────────┘     └──────────────┘
-       │                    │
-       ▼                    ▼
-┌─────────────┐     ┌──────────────┐
-│  Slack      │     │  Grafana     │
-│  (Ops)      │     │  (Logs)      │
-└─────────────┘     └─────────────┘
-```
-
-### Instrumentation
-
-#### Backend (FastAPI)
-- **OpenTelemetry Auto-instrumentation**: FastAPI, SQLAlchemy, HTTPX, psycopg
-- **Custom Metrics** (`core/telemetry.py`):
-  - `http_requests_total` (Counter): method, route, status_class
-  - `http_request_duration_seconds` (Histogram): method, route
-  - `http_requests_in_flight` (Gauge)
-  - `db_pool_checked_out/idle/overflow` (Gauge)
-  - `db_query_duration_seconds` (Histogram): operation
-  - `slack_alerts_total` (Counter): kind, result
-  - `guardrail_violations_total` (Counter)
-  - `activity_telemetry_errors_total` (Counter)
-- **Structured Logging**: JSON format via `logging_middleware.py`
-- **Sentry Integration**: `core/sentry.py` with PHI scrubbing
-
-#### Frontend (React)
-- **Sentry Browser SDK**: `@sentry/react` + `@sentry/browser`
-- **ErrorBoundary**: Captures React render errors → `captureSentryException()`
-- **PHI Scrubbing**: Client-side `beforeSend` hook mirrors backend PHI keywords
-
-### Key Metrics
-
-| Metric | Type | Labels | SLO |
-|---|---|---|---|
-| `http_requests_total` | Counter | method, route, status_class | - |
-| `http_request_duration_seconds` | Histogram | method, route | p99 < 2s |
-| `http_requests_in_flight` | Gauge | - | < 100 |
-| `db_pool_checked_out` | Gauge | - | < 80% pool |
-| `db_query_duration_seconds` | Histogram | operation | p99 < 1s |
-| `slack_alerts_total` | Counter | kind, result | - |
-| `guardrail_violations_total` | Counter | - | = 0 |
-| `activity_telemetry_errors_total` | Counter | - | = 0 |
-| `probe_success` | Gauge | instance, module | = 1 |
-| `probe_http_duration_seconds` | Histogram | phase, instance | connect < 2s |
-
-### Alerting Rules (Tiered)
-
-| Tier | Severity | Examples | Response |
-|---|---|---|---|
-| **1** | Critical | SLO burn rate high, Guardrail violation, Synthetic down | Page on-call (< 15 min) |
-| **2** | Warning | Elevated error rate, Latency SLO warning, Error budget > 50% | Notify on-call (< 30 min) |
-| **3** | Info | Service up/down, Config changes | Log only |
-
-### SLO Definitions
-
-| SLO | Target | Measurement |
-|---|---|---|
-| **Availability** | 99.9% | `1 - (5xx / total requests) > 0.999` (30d window) |
-| **Latency** | p99 < 2s | `histogram_quantile(0.99, http_request_duration_seconds) < 2` |
-| **Latency** | p95 < 1s | `histogram_quantile(0.95, http_request_duration_seconds) < 1` |
-| **DB Pool** | < 85% | `db_pool_checked_out / (checked_out + idle) < 0.85` |
-| **Guardrails** | Zero | `guardrail_violations_total == 0` |
-| **Synthetic** | 100% | `probe_success == 1` for all endpoints |
-
-### PHI Protection in Observability
-
-- **No PHI in Metrics**: Labels only from route template (no path params, query strings, user IDs)
-- **No PHI in Logs**: JSON structured logs with allowlisted fields only (`core/logging_middleware.py`)
-- **No PHI in Traces**: Span attributes filtered; `before_send` hooks in Sentry (both backend + frontend)
-- **Sentry PHI Scrubbing**: Mirrors `services/slack_notifier.PHI_KEYWORDS` (diagnosis, prescription, hiv, cancer, mental health, therapy, blood test result, aadhaar, abha, patient)
-- **Blocklisted Routes**: `/emergency`, `/crisis`, `/t4_sensitive`, `/helpline`, `/consent_capture` excluded from analytics
-
-### Deployment
-
-#### Docker Compose (Dev)
-```bash
-docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
-# Services: backend, frontend, postgres, otel-collector, prometheus, loki, promtail, grafana, alertmanager, blackbox, tempo
-```
-
-#### Kubernetes (Helm)
-```bash
-helm install studentkare ./deploy/helm/studentkare \
-  -f deploy/helm/studentkare/values/production.yaml \
-  --namespace studentkare --create-namespace
-```
-
-### Runbooks
-
-- **Observability Runbook**: `docs/runbooks/OBSERVABILITY.md`
-- **Incident Response**: `docs/runbooks/INCIDENT_RESPONSE.md`
-- **Disaster Recovery**: `docs/runbooks/DISASTER_RECOVERY.md`
-
----
-
-## 11. Known Gaps & Forward Plan
-
-### From the Audit (Sept 2026)
-
-| ID | Gap | Status |
-|----|-----|--------|
-| F01 | Hardcoded compliance assertions in agents | Open |
-| F02 | LLM calls block request thread (60s timeout) | Open |
-| F03 | No real LLM integration anywhere | Open |
-| F04 | In-memory state lost on restart (HITL, medical guard) | Open |
-| F05 | No ABDM integration | Open |
-| F06 | No real messaging (WhatsApp/SMS) | Open |
-| F07 | Dead code (core/deps.py, legacy JWT) | Open |
-| F08 | 19 agents are hardcoded stubs | Open |
-| F09 | No background task processing | Open |
-| F10 | No real RAG/embeddings | Open |
-| F11 | No observability/metrics | Open |
-| F12 | No per-user rate limiting on AI endpoints (global IP shield only) | Open |
-| F13 | Notification worker not connected to outbox | Open |
-| F14 | No real prescription review | Open |
-| F15 | Agent scheduler disconnected | Open |
-| F16 | Documentation overstates capabilities | This file fixes it |
-
-### What to Build Next (Priority Order)
-
-1. **Celery + Redis infrastructure** — Add `celery[redis]`, create `celery_app.py`,
-   add `docker-compose` services, add `AiTask` model for task tracking.
-
-2. **Adherence loop worker** — Celery Beat task scanning medication plans vs doses,
-   enqueuing reminders via `care_outbox_events`. Replace the static `loop_status`.
-
-3. **Blood SOS worker** — Async broadcast to matching donors. Replace in-memory
-   registry with DB-backed consent tracking.
-
-4. **LLM integration** — Connect `llm_gateway.py` to real Ollama calls. Start with
-   `rx_extractor_ai_agent` (simplest, has provenance). Then `triage_council_agent`.
-
-5. **Outbox delivery worker** — Connect `notification_worker.py` to real email/SMS.
-   Process `care_outbox_events` rows.
-
-6. **Agent state migration** — Move HITL registry and medical guard kill switch
-   from in-memory to DB tables.
-
-7. **Retire dead code** — Remove `core/deps.py`, legacy JWT imports, disconnected
-   `agent_scheduler.py` and `job_runner.py`.
-
----
-
-## Appendix: Endpoint Count by Category
-
-| Category | Endpoints | Router Prefix |
-|----------|-----------|---------------|
-| Health data CRUD | ~15 | `/health/*` |
-| Documents & intake | ~6 | `/intake/*`, `/health/documents/*` |
-| Records & sharing | ~6 | `/records/*` |
-| Insurance | ~6 | `/insurance/*`, `/health/policies` |
-| Pharmacy & catalog | ~12 | `/catalog/*`, `/ops/catalog`, `/inventory/*` |
-| Orders & payments | ~10 | `/orders/*`, `/payments/*`, `/cart/*` |
-| Appointments & scheduling | ~8 | `/appointments/*`, `/ops/slots` |
-| Blood donors & SOS | ~3 | `/blood/*` |
-| Medications | ~4 | `/meds/*` |
-| Triage & SOAP | ~2 | `/triage/*`, `/records/generate-soap` |
-| Operations (admin) | ~15 | `/ops/*` |
-| AI endpoints | ~5 | `/ai/*` |
-| V1 endpoints | ~12 | `/v1/*` |
-| Campus & camps | ~8 | `/campus/*`, `/camps/*` |
-| Support | ~3 | `/support` |
-| **Total** | **~110** | |
+## 9. Observability
+
+- Prometheus metrics in `core/telemetry.py`: `http_requests_total`,
+  `http_request_duration_seconds`, `http_requests_in_flight`, `db_pool_checked_out` /
+  `_idle` / `_overflow`, `db_query_duration_seconds`, `slack_alerts_total`,
+  `guardrail_violations_total`, `activity_telemetry_errors_total`; mounted at `/metrics`.
+- OpenTelemetry instrumentors (FastAPI, HTTPX, psycopg, SQLAlchemy) load only if their
+  packages are installed; they are not in `config/requirements.txt`.
+- Sentry via `core/sentry.py` when `SENTRY_DSN` is set. `core/logging_middleware.py` is
+  not wired.
+- Compose defines Prometheus, Loki, Promtail, Grafana, Alertmanager, Tempo (prod
+  override), the OTel collector and Blackbox (prod override). Alert rules:
+  `deploy/alerts.yml`. Helm chart: `deploy/helm/studentkare`. Runbooks: `docs/runbooks/`.

@@ -1,92 +1,100 @@
 import React, { useEffect, useId, useState } from 'react';
 import { actionBound, computed, makeObservable, observable, runInAction } from 'mobx';
 import { observer } from 'mobx-react-lite';
-import { isDev } from '@/core/env';
-import { EmptyStateView, ErrorStateView, SkButton, Skeleton, StatusPill, Timeline, Toast } from '@/design-system';
-import type { TimelineEntry } from '@/design-system';
-import { navigate } from '@/lib/workflowRouting';
-import type { RoutePath } from '@/lib/workflowRouting';
+import { ConfirmDialog, Drawer, SkButton, SkSkeleton as Skeleton, StatusPill, SkToast as Toast, useOnline } from '@/design-system';
+import { useT } from '@/i18n';
+import { navigate } from '@/lib/utils/workflowRouting';
+import type { RoutePath } from '@/lib/utils/workflowRouting';
 import { ClinicianConsoleFrame } from '../shared/ClinicianConsoleFrame';
+import { ClinicianEmptyState, ClinicianErrorState } from '../shared/ClinicianStates';
 import { LoadableViewModel } from '../shared/LoadableViewModel';
-import type { Loadable } from '../shared/LoadableViewModel';
+import { OfflineNote } from '../shared/OfflineNote';
+import { dateOnly, slotLabel } from '../shared/clinicalData';
+import type { CareAppointment, T } from '../shared/clinicalData';
+import { handOff, takeHandoff } from '../shared/handoff';
 import { REVIEW_ROUTES } from '../shared/reviewRoutes';
+import { SOAP_KEYS, SOAP_MAX, SignedElsewhere, encounterApiSource } from './encounterModel';
+import type { EncounterData, EncounterNoteApi, EncounterSource, Soap, SoapKey } from './encounterModel';
 import './encounter-note.css';
 
+export { SOAP_KEYS } from './encounterModel';
+export type { Soap, SoapKey } from './encounterModel';
+
+const BLANK: Soap = { subjective: '', objective: '', assessment: '', plan: '' };
+
 /**
- * EncounterNote (design page 5). SOAP note beside one timeline — not four tabs.
- * TIER 1 (clinical record): awaiting a named design reviewer and clinical sign-off.
+ * EncounterNote (design page 5). Tier 1, approved by Krishna Chintakayala on
+ * 2026-10-21. One note at a time, beside the timeline. The text lives only in
+ * this view model: never in browser storage, never logged.
  */
-
-export const SOAP_KEYS = ['subjective', 'objective', 'assessment', 'plan'] as const;
-export type SoapKey = typeof SOAP_KEYS[number];
-export type Soap = Record<SoapKey, string>;
-
-export interface EncounterData {
-  noteId: string;
-  patientName: string;
-  /** "Video consult · today, 4:30 PM · 12 minutes" */
-  context: string;
-  soap: Soap;
-  signed: boolean;
-  timeline: TimelineEntry[];
-}
-
-export interface EncounterSource extends Loadable<EncounterData> {
-  save?: (noteId: string, soap: Soap) => Promise<void>;
-  /** Signing writes to the student's vault and to the ledger. */
-  sign?: (noteId: string, soap: Soap) => Promise<void>;
-}
-
-export function encounterSample(): EncounterData {
-  return {
-    noteId: 'n-sample',
-    patientName: 'Priya N.',
-    context: 'Video consult · today, 4:30 PM · 12 minutes',
-    signed: false,
-    soap: {
-      subjective: 'Sore throat and fever since last night. No cough or breathlessness. Reports one disturbed night, has been taking fluids. Lives in hostel; two blockmates unwell this week.',
-      objective: 'Temp 38.4°C, pulse 96, SpO₂ 98% on room air. Pharynx erythematous, no exudate. Cervical nodes mildly tender. Chest clear on video assessment.',
-      assessment: 'Likely viral pharyngitis. No red flags for streptococcal infection on Centor criteria. Low threshold to reassess if fever persists beyond 72 hours.',
-      plan: 'Symptomatic management, fluids and rest. Advised to return or escalate if breathing changes, fever persists past 72 hours, or swallowing becomes difficult. Follow-up task set for 3 days.',
-    },
-    timeline: [
-      { id: 't1', title: 'This consult', tag: 'NOW', meta: 'Video · 12 minutes · note in draft', when: 'Today, 4:30 PM', tone: 'live' },
-      { id: 't2', title: 'Vitamin D Test released', tag: 'LOW', meta: '11 ng/mL against a 30–100 reference range', when: '20 Sep 2026', tone: 'attention' },
-      { id: 't3', title: 'Shared 2 records with you', meta: 'Consent granted for 14 days, expires 04 Oct', when: '21 Sep 2026', tone: 'plain' },
-      { id: 't4', title: 'Complete Blood Count', tag: 'NORMAL', meta: 'All 21 parameters within range', when: '04 Aug 2026', tone: 'positive' },
-      { id: 't5', title: 'Prescription — Vitamin D3 60K', tag: 'ACTIVE', meta: 'Weekly, 8 weeks · dispensed 03 Aug', when: '02 Aug 2026', tone: 'plain' },
-      { id: 't6', title: 'Campus health check-in', meta: 'Annual intake screening, no findings', when: '14 Jul 2026', tone: 'plain' },
-      { id: 't7', title: 'Consent window begins', meta: 'Nothing before this date is readable', when: '—', tone: 'edge' },
-    ],
-  };
-}
-
-export const sampleEncounterSource: EncounterSource = { load: async () => encounterSample(), save: async () => undefined, sign: async () => undefined };
-const unconnectedEncounterSource: EncounterSource = { load: async () => null };
-
 export class EncounterNoteViewModel extends LoadableViewModel<EncounterData> {
-  soap: Soap = { subjective: '', objective: '', assessment: '', plan: '' };
+  selectedId: string | null = null;
+  soap: Soap = { ...BLANK };
   signed = false;
   saving = false;
   signing = false;
+  creating = false;
   dirty = false;
+  confirmingSign = false;
+  newOpen = false;
+  newAppointmentId = '';
+  online = true;
 
-  constructor(private readonly source: EncounterSource) {
+  constructor(private readonly source: EncounterSource, private readonly t: T, preferred: { encounterId?: string; appointmentId?: string } | null = null) {
     super(source);
+    this.preferred = preferred;
     makeObservable<EncounterNoteViewModel, 'afterLoad'>(this, {
-      soap: observable, signed: observable, saving: observable, signing: observable, dirty: observable,
-      missing: computed, canSign: computed, edit: actionBound, afterLoad: actionBound,
+      selectedId: observable, soap: observable, signed: observable, saving: observable, signing: observable, creating: observable,
+      dirty: observable, confirmingSign: observable, newOpen: observable, newAppointmentId: observable, online: observable,
+      note: computed, missing: computed, canSign: computed, canSave: computed, appointment: computed, patientName: computed,
+      edit: actionBound, afterLoad: actionBound, select: actionBound, askSign: actionBound, cancelSign: actionBound,
+      openNew: actionBound, closeNew: actionBound, chooseAppointment: actionBound, setOnline: actionBound,
     });
   }
 
-  protected isEmpty(): boolean {
-    return false;
+  private preferred: { encounterId?: string; appointmentId?: string } | null;
+
+  /** No note at all is the empty state: nothing to show, one next step. */
+  protected isEmpty(data: EncounterData): boolean {
+    return data.notes.length === 0;
   }
 
   protected afterLoad(data: EncounterData): void {
-    this.soap = { ...data.soap };
-    this.signed = data.signed;
+    const want = this.preferred;
+    this.preferred = null;
+    const byId = want?.encounterId ? data.notes.find((n) => n.id === want.encounterId) : undefined;
+    const byAppt = want?.appointmentId ? data.notes.find((n) => n.appointmentId === want.appointmentId) : undefined;
+    const keep = this.selectedId ? data.notes.find((n) => n.id === this.selectedId) : undefined;
+    const draft = data.notes.find((n) => n.status === 'DRAFT');
+    const chosen = byId ?? byAppt ?? keep ?? draft ?? data.notes[0];
+    this.applyNote(chosen ?? null);
+    // From the consult room: no note for that appointment yet, so offer to start one.
+    if (want?.appointmentId && !byId && !byAppt && data.appointments.some((a) => a.id === want.appointmentId)) {
+      this.newAppointmentId = want.appointmentId;
+      this.newOpen = true;
+    }
+  }
+
+  private applyNote(note: EncounterNoteApi | null): void {
+    this.selectedId = note?.id ?? null;
+    this.soap = note ? { subjective: note.subjective, objective: note.objective, assessment: note.assessment, plan: note.plan } : { ...BLANK };
+    this.signed = note?.status === 'FINAL';
     this.dirty = false;
+  }
+
+  get note(): EncounterNoteApi | null {
+    return this.data?.notes.find((n) => n.id === this.selectedId) ?? null;
+  }
+
+  get appointment(): CareAppointment | null {
+    const note = this.note;
+    return note ? this.data?.appointments.find((a) => a.id === note.appointmentId) ?? null : null;
+  }
+
+  get patientName(): string {
+    const note = this.note;
+    if (!note) return '';
+    return this.appointment?.customer ?? this.data?.appointments.find((a) => a.patientId === note.patientId)?.customer ?? '';
   }
 
   /** Sections still empty; signing waits for all four. */
@@ -94,120 +102,269 @@ export class EncounterNoteViewModel extends LoadableViewModel<EncounterData> {
     return SOAP_KEYS.filter((key) => this.soap[key].trim().length === 0);
   }
 
+  get canSave(): boolean {
+    return !!this.note && !this.signed && !this.saving && !this.signing && this.online && typeof this.source.save === 'function';
+  }
+
+  /** All four sections written, online, not already signed, and a way to sign. Fails closed otherwise. */
   get canSign(): boolean {
-    return !this.signed && this.missing.length === 0 && !this.signing && !this.saving && typeof this.source.sign === 'function';
+    return !!this.note && !this.signed && this.missing.length === 0 && !this.signing && !this.saving && this.online
+      && typeof this.source.sign === 'function' && typeof this.source.save === 'function';
+  }
+
+  setOnline(online: boolean): void { this.online = online; }
+
+  select(id: string): void {
+    if (this.dirty) {
+      this.say(this.t('clinNote.toast.unsavedSwitch'));
+      return;
+    }
+    this.applyNote(this.data?.notes.find((n) => n.id === id) ?? null);
   }
 
   edit(key: SoapKey, text: string): void {
-    if (this.signed) return;
-    this.soap = { ...this.soap, [key]: text };
+    if (this.signed || !this.note) return;
+    this.soap = { ...this.soap, [key]: text.slice(0, SOAP_MAX) };
     this.dirty = true;
+  }
+
+  openNew(): void { this.newOpen = true; }
+  closeNew(): void { if (!this.creating) this.newOpen = false; }
+  chooseAppointment(id: string): void { this.newAppointmentId = id; }
+
+  async create(): Promise<void> {
+    const create = this.source.create;
+    const appointmentId = this.newAppointmentId;
+    if (!create || !appointmentId || this.creating || !this.online) return;
+    this.creating = true;
+    try {
+      const id = await create(appointmentId);
+      runInAction(() => { this.creating = false; this.newOpen = false; this.newAppointmentId = ''; this.selectedId = id; this.dirty = false; });
+      await this.load();
+      runInAction(() => this.say(this.t('clinNote.toast.created')));
+    } catch {
+      runInAction(() => { this.creating = false; this.say(this.t('clinNote.toast.createFailed')); });
+    }
   }
 
   async saveDraft(): Promise<void> {
     const save = this.source.save;
-    const id = this.data?.noteId;
-    if (!save || !id || this.signed || this.saving) return;
+    const id = this.note?.id;
+    if (!save || !id || !this.canSave) return;
     this.saving = true;
     try {
       await save(id, this.soap);
-      runInAction(() => { this.saving = false; this.dirty = false; this.say('Draft saved. Only you can see it until you sign.'); });
-    } catch {
-      runInAction(() => { this.saving = false; this.say('Couldn’t save the draft. Your text is still here — try again.'); });
+      runInAction(() => {
+        this.saving = false;
+        this.dirty = false;
+        this.patchNote(id, { ...this.soap });
+        this.say(this.t('clinNote.toast.saved'));
+      });
+    } catch (reason) {
+      runInAction(() => { this.saving = false; this.say(this.t(reason instanceof SignedElsewhere ? 'clinNote.toast.signedElsewhere' : 'clinNote.toast.saveFailed')); });
     }
   }
 
-  /** Resolves true once signed; the note is read-only from then on. */
+  askSign(): void { if (this.canSign) this.confirmingSign = true; }
+  cancelSign(): void { if (!this.signing) this.confirmingSign = false; }
+
+  private patchNote(id: string, fields: Partial<EncounterNoteApi>): void {
+    if (!this.data) return;
+    this.data = { ...this.data, notes: this.data.notes.map((n) => (n.id === id ? { ...n, ...fields } : n)) };
+  }
+
+  /**
+   * Saves what is on screen, then signs. Resolves true only when this sign
+   * went through; a failed save never signs, and a note already signed
+   * elsewhere is shown as signed with what the server holds.
+   */
   async sign(): Promise<boolean> {
+    const save = this.source.save;
     const sign = this.source.sign;
-    const id = this.data?.noteId;
-    if (!sign || !id || !this.canSign) return false;
+    const id = this.note?.id;
+    if (!save || !sign || !id || !this.canSign) return false;
     this.signing = true;
     try {
-      await sign(id, this.soap);
-      runInAction(() => { this.signing = false; this.signed = true; this.dirty = false; this.say('Note signed · written to the student’s vault and the ledger'); });
-      return true;
-    } catch {
-      runInAction(() => { this.signing = false; this.say('Couldn’t sign the note. It is still a draft — nothing was written.'); });
+      if (this.dirty) await save(id, this.soap);
+      const outcome = await sign(id);
+      runInAction(() => {
+        this.signing = false;
+        this.confirmingSign = false;
+        this.dirty = false;
+        if (outcome === 'signed') {
+          this.signed = true;
+          this.patchNote(id, { ...this.soap, status: 'FINAL' });
+          this.say(this.t('clinNote.toast.signed'));
+        } else {
+          this.say(this.t('clinNote.toast.alreadySigned'));
+        }
+      });
+      if (outcome === 'already-signed') await this.load();
+      return outcome === 'signed';
+    } catch (reason) {
+      runInAction(() => { this.signing = false; this.confirmingSign = false; this.say(this.t(reason instanceof SignedElsewhere ? 'clinNote.toast.signedElsewhere' : 'clinNote.toast.signFailed')); });
+      if (reason instanceof SignedElsewhere) await this.load();
       return false;
     }
   }
 }
 
-const LABEL: Record<SoapKey, string> = { subjective: 'Subjective', objective: 'Objective', assessment: 'Assessment', plan: 'Plan' };
+const LABEL: Record<SoapKey, 'clinNote.subjective' | 'clinNote.objective' | 'clinNote.assessment' | 'clinNote.plan'> = {
+  subjective: 'clinNote.subjective', objective: 'clinNote.objective', assessment: 'clinNote.assessment', plan: 'clinNote.plan',
+};
 
 export const EncounterNoteView = observer(function EncounterNoteView({ viewModel, onNavigate }: { viewModel: EncounterNoteViewModel; onNavigate: (route: RoutePath) => void }): React.ReactElement {
+  const t = useT();
+  const pickerId = useId();
   const { status, data } = viewModel;
   let body: React.ReactNode;
   if (status === 'loading') {
-    body = <div className="en-grid" aria-busy="true" aria-label="Loading the encounter note"><div className="en-note"><Skeleton width={260} height={34} />{SOAP_KEYS.map((k) => <Skeleton key={k} height={110} />)}</div><div className="en-side"><Skeleton height={420} /></div></div>;
+    body = <div className="en-grid" aria-busy="true" aria-label={t('clinNote.loading')}><div className="en-note"><Skeleton width={260} height={34} />{SOAP_KEYS.map((k) => <Skeleton key={k} height={110} />)}</div><div className="en-side"><Skeleton height={420} /></div></div>;
   } else if (status === 'error') {
-    body = <ErrorStateView title="Couldn’t load the note" onRetry={() => { void viewModel.load(); }} onHelp={() => onNavigate('support')} reference="Ref ENCOUNTER · EncounterNote" />;
-  } else if (status === 'unconnected' || !data) {
-    body = <EmptyStateView title="Encounter notes aren’t connected here yet." body="This new screen is awaiting clinical sign-off. Until then this page shows nothing rather than a guess." action={{ label: 'Back to Today', onClick: () => onNavigate('clinician') }} />;
+    body = <ClinicianErrorState title={t('clinNote.errorTitle')} reference={t('clinNote.reference')} onRetry={() => { void viewModel.load(); }} onHelp={() => onNavigate('support')} />;
+  } else if (status === 'unconnected' || status === 'empty' || !data || !viewModel.note) {
+    body = <ClinicianEmptyState title={t('clinNote.emptyTitle')} body={t('clinNote.emptyBody')} action={viewModel.online ? { label: t('clinNote.new'), onSelect: viewModel.openNew } : undefined} />;
   } else {
-    const prescribe = REVIEW_ROUTES.prescribe();
+    const note = viewModel.note;
+    const appt = viewModel.appointment;
+    const name = viewModel.patientName || t('clinNote.nameUnknown');
+    const context = appt ? t('clinNote.context', { when: slotLabel(appt.slotStart) }) : t('clinNote.contextCreated', { date: dateOnly(note.createdAt) });
     body = (
       <div className="en-grid">
         <div className="en-note">
           <div className="en-head sk-fade">
             <div className="en-head__titles">
-              <span className="en-eyebrow">ENCOUNTER NOTE · {viewModel.signed ? 'SIGNED' : 'DRAFT'}</span>
-              <h1 className="en-title">{data.patientName}</h1>
-              <p className="en-context">{data.context}</p>
+              <span className="en-eyebrow">{t(viewModel.signed ? 'clinNote.eyebrowSigned' : 'clinNote.eyebrowDraft')}</span>
+              <h1 className="en-title">{name}</h1>
+              <p className="en-context">{context}</p>
             </div>
-            <StatusPill tone={viewModel.signed ? 'positive' : 'attention'} dot>{viewModel.signed ? 'Signed' : 'Unsigned'}</StatusPill>
+            <StatusPill tone={viewModel.signed ? 'positive' : 'attention'} dot>{t(viewModel.signed ? 'clinNote.signed' : 'clinNote.unsigned')}</StatusPill>
+          </div>
+          <OfflineNote online={viewModel.online} loadedAt={viewModel.loadedAt} />
+          <div className="en-picker">
+            <label htmlFor={pickerId} className="en-picker__label">{t('clinNote.yourNotes')}</label>
+            <select id={pickerId} className="en-picker__select" value={note.id} onChange={(e) => viewModel.select(e.target.value)}>
+              {data.notes.map((n) => {
+                const who = data.appointments.find((a) => a.patientId === n.patientId)?.customer ?? t('clinNote.nameUnknown');
+                return <option key={n.id} value={n.id}>{t(n.status === 'FINAL' ? 'clinNote.optionSigned' : 'clinNote.optionDraft', { name: who, date: dateOnly(n.createdAt) })}</option>;
+              })}
+            </select>
+            <SkButton variant="secondary" onClick={viewModel.openNew} disabled={!viewModel.online}>{t('clinNote.new')}</SkButton>
           </div>
           {SOAP_KEYS.map((key, index) => <SoapSection key={key} sectionKey={key} index={index} viewModel={viewModel} />)}
           <div className="en-foot">
             {!viewModel.signed ? (
               <>
-                <SkButton className="en-sign" busy={viewModel.signing} disabled={!viewModel.canSign} onClick={() => { void viewModel.sign().then((ok) => { if (ok && prescribe) onNavigate(prescribe); }); }} aria-describedby="en-sign-note">
-                  Sign &amp; prescribe
+                <SkButton className="en-sign" busy={viewModel.signing} disabled={!viewModel.canSign} onClick={viewModel.askSign} aria-describedby="en-sign-note">
+                  {t('clinNote.signPrescribe')}
                 </SkButton>
-                <SkButton variant="secondary" busy={viewModel.saving} disabled={viewModel.signing} onClick={() => { void viewModel.saveDraft(); }}>Save draft</SkButton>
+                <SkButton variant="secondary" busy={viewModel.saving} disabled={!viewModel.canSave || !viewModel.dirty} onClick={() => { void viewModel.saveDraft(); }}>{t('clinNote.saveDraft')}</SkButton>
               </>
             ) : null}
             <p id="en-sign-note" className="en-foot__note">
-              {viewModel.missing.length > 0 && !viewModel.signed
-                ? `Fill in ${viewModel.missing.map((k) => LABEL[k].toLowerCase()).join(', ')} to sign.`
-                : 'Signing writes to the student’s vault and to the ledger.'}
+              {viewModel.signed
+                ? t('clinNote.signedNote')
+                : viewModel.missing.length > 0
+                  ? t('clinNote.fillIn', { sections: viewModel.missing.map((k) => t(LABEL[k]).toLowerCase()).join(', ') })
+                  : t('clinNote.signingWrites')}
             </p>
           </div>
         </div>
         <aside className="en-side" aria-labelledby="en-timeline-title">
-          <h2 id="en-timeline-title" className="en-eyebrow">ONE TIMELINE, NOT FOUR TABS</h2>
-          <Timeline label={`${data.patientName}’s timeline within the consent window`} entries={data.timeline} />
-          <p className="en-side__foot">Readings, prescriptions, lab orders and notes on one axis. Anything outside the consent window is absent, not greyed.</p>
+          <h2 id="en-timeline-title" className="en-eyebrow">{t('clinNote.timelineTitle')}</h2>
+          {/* No clinician-side, consent-filtered timeline endpoint exists yet: the
+              panel says so instead of assembling one in the browser. */}
+          <p className="en-side__empty" role="status">{t('clinNote.timelineUnconnected')}</p>
+          <p className="en-side__foot">{t('clinNote.timelineFoot')}</p>
         </aside>
       </div>
     );
   }
-  return <>{body}<Toast message={viewModel.toast} onDone={viewModel.clearToast} /></>;
+  return (
+    <>
+      {body}
+      <SignDialog viewModel={viewModel} onNavigate={onNavigate} />
+      <NewNoteDrawer viewModel={viewModel} />
+      <Toast message={viewModel.toast} onDone={viewModel.clearToast} />
+    </>
+  );
 });
 
 const SoapSection = observer(function SoapSection({ sectionKey, index, viewModel }: { sectionKey: SoapKey; index: number; viewModel: EncounterNoteViewModel }): React.ReactElement {
+  const t = useT();
   const id = useId();
   return (
     <div className="en-section sk-rise" style={{ '--sk-stagger': index + 1 } as React.CSSProperties}>
-      <label className="en-section__label" htmlFor={id}>{LABEL[sectionKey].toUpperCase()}</label>
+      <label className="en-section__label" htmlFor={id}>{t(LABEL[sectionKey]).toUpperCase()}</label>
       <textarea
         id={id}
         className="en-section__text"
         rows={3}
+        maxLength={SOAP_MAX}
         value={viewModel.soap[sectionKey]}
-        readOnly={viewModel.signed}
+        readOnly={viewModel.signed || !viewModel.online}
         onChange={(e) => viewModel.edit(sectionKey, e.target.value)}
       />
     </div>
   );
 });
 
-export function EncounterNoteScreen({ source }: { source?: EncounterSource }): React.ReactElement {
-  const [viewModel] = useState(() => new EncounterNoteViewModel(source ?? (isDev() ? sampleEncounterSource : unconnectedEncounterSource)));
-  useEffect(() => { void viewModel.load(); }, [viewModel]);
+const SignDialog = observer(function SignDialog({ viewModel, onNavigate }: { viewModel: EncounterNoteViewModel; onNavigate: (route: RoutePath) => void }): React.ReactElement {
+  const t = useT();
+  const note = viewModel.note;
   return (
-    <ClinicianConsoleFrame current="encounter-note" context="Encounter note" reviewPending>
+    <ConfirmDialog
+      open={viewModel.confirmingSign}
+      title={t('clinNote.signTitle')}
+      body={t('clinNote.signBody')}
+      confirmLabel={t('clinNote.signPrescribe')}
+      cancelLabel={t('clinNote.keepEditing')}
+      busy={viewModel.signing}
+      onCancel={viewModel.cancelSign}
+      onConfirm={() => {
+        void viewModel.sign().then((ok) => {
+          if (ok && note) {
+            handOff({ patientId: note.patientId, encounterId: note.id });
+            onNavigate(REVIEW_ROUTES.prescribe());
+          }
+        });
+      }}
+    />
+  );
+});
+
+const NewNoteDrawer = observer(function NewNoteDrawer({ viewModel }: { viewModel: EncounterNoteViewModel }): React.ReactElement | null {
+  const t = useT();
+  const selectId = useId();
+  if (!viewModel.newOpen) return null;
+  const appointments = viewModel.data?.appointments ?? [];
+  return (
+    <Drawer open title={t('clinNote.new')} busy={viewModel.creating} onClose={viewModel.closeNew}>
+      <p className="en-drawer__intro">{t('clinNote.newIntro')}</p>
+      {appointments.length === 0 ? (
+        <p className="en-drawer__none" role="status">{t('clinNote.noAppointments')}</p>
+      ) : (
+        <>
+          <label htmlFor={selectId} className="en-picker__label">{t('clinNote.appointment')}</label>
+          <select id={selectId} className="en-picker__select" value={viewModel.newAppointmentId} onChange={(e) => viewModel.chooseAppointment(e.target.value)} data-autofocus>
+            <option value="">{t('clinNote.chooseAppointment')}</option>
+            {appointments.map((a) => <option key={a.id} value={a.id}>{t(a.status === 'COMPLETED' ? 'clinNote.apptCompleted' : 'clinNote.apptConfirmed', { name: a.customer, when: slotLabel(a.slotStart) })}</option>)}
+          </select>
+        </>
+      )}
+      <SkButton busy={viewModel.creating} disabled={!viewModel.newAppointmentId || !viewModel.online} onClick={() => { void viewModel.create(); }}>{t('clinNote.start')}</SkButton>
+    </Drawer>
+  );
+});
+
+export function EncounterNoteScreen({ source }: { source?: EncounterSource }): React.ReactElement {
+  const t = useT();
+  const online = useOnline();
+  const [viewModel] = useState(() => new EncounterNoteViewModel(source ?? encounterApiSource(), t, takeHandoff()));
+  useEffect(() => { void viewModel.load(); }, [viewModel]);
+  useEffect(() => { viewModel.setOnline(online); }, [viewModel, online]);
+  return (
+    <ClinicianConsoleFrame current="encounter-note" context={t('clinNote.title')}>
       <EncounterNoteView viewModel={viewModel} onNavigate={navigate} />
     </ClinicianConsoleFrame>
   );

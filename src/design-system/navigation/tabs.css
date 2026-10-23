@@ -9,7 +9,7 @@
   cursor: pointer; white-space: nowrap;
   transition: background var(--sk-duration-fast) linear, color var(--sk-duration-fast) linear;
 }
-.sk-tabs--pill .sk-tab.is-selected { background: var(--sk-color-nav-current); color: var(--sk-color-on-nav-current); }
+.sk-tabs--pill .sk-tab.is-selected { background: var(--sk-color-action); color: var(--sk-color-on-action); }
 
 .sk-tabs--chip { gap: 7px; }
 .sk-tabs--chip .sk-tab { min-height: 36px; padding: 0 var(--sk-space-12); border: 1px solid var(--sk-color-rule); background: var(--sk-color-surface); color: var(--sk-color-text); }

@@ -21,6 +21,11 @@ receivers:
     webhook_configs:
       - url: 'http://backend:8000/api/alerts/webhook'
         send_resolved: true
+        # The backend accepts basic auth whose password is ALERTMANAGER_WEBHOOK_SECRET.
+        # Alertmanager does not expand ${...} in its config, so the value below is
+        # sent literally. That is fine in development, where the backend accepts
+        # requests while the secret is unset. Anywhere else, put the real secret in a
+        # file and use `password_file:`.
         http_config:
           basic_auth:
             username: 'alertmanager'

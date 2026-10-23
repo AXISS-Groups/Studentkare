@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { View, Text, TouchableOpacity } from "react-native";
-import { useTheme } from "../theme/theme";
+import { useTheme } from "../theme/tokens/theme";
 import { Card } from "./Card";
 import { Badge } from "./Badge";
 import { Camera, CheckCircle2, RefreshCw } from "lucide-react";
-import { assertRule } from "../ai/constitution";
+import { assertRule } from "../ai/core/constitution";
 
 export const CameraSensorHealthSuite: React.FC = () => {
   const { tokens, radius, typography } = useTheme();
@@ -67,7 +67,7 @@ export const CameraSensorHealthSuite: React.FC = () => {
                 border: `1px solid ${active ? tokens.action : tokens.rule}`,
               }}
             >
-              <Text style={{ fontSize: 11, fontWeight: "800", color: active ? "#ffffff" : tokens.text }}>
+              <Text style={{ fontSize: 11, fontWeight: "800", color: active ? tokens.onAction : tokens.text }}>
                 {tab.label}
               </Text>
             </TouchableOpacity>
@@ -111,8 +111,8 @@ export const CameraSensorHealthSuite: React.FC = () => {
           gap: 8,
         }}
       >
-        {isScanning ? <RefreshCw size={18} color="#ffffff" /> : <Camera size={18} color="#ffffff" />}
-        <Text style={{ color: "#ffffff", fontWeight: "800", fontSize: 13, fontFamily: typography.fontFamily }}>
+        {isScanning ? <RefreshCw size={18} color={tokens.onAction} /> : <Camera size={18} color={tokens.onAction} />}
+        <Text style={{ color: tokens.onAction, fontWeight: "800", fontSize: 13, fontFamily: typography.fontFamily }}>
           {isScanning ? "Processing Camera & Sensor Signal..." : `Run On-Device ${activeTab} Camera Scan`}
         </Text>
       </TouchableOpacity>

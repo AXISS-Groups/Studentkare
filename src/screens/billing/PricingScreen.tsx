@@ -1,10 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { Building, ChevronDown, Crown, Gift, Globe, GraduationCap, Rocket, ShoppingBag, Sparkles, UserRound, Users } from 'lucide-react';
-import { getPlans, openSubscriptionCheckout, PlanCatalog } from '../../data/billing';
-import { useAuth } from '../../data/AuthContext';
-import { apiRequest } from '../../data/http';
-import { navigate } from '../../lib/workflowRouting';
-import { posthogCapture } from '../../lib/posthog';
+import { Building, ChevronDown, Crown, Gift, Globe, GraduationCap, Rocket, ShoppingBag, UserRound, Users } from 'lucide-react';
+import { useT } from '@/i18n';
+import type { MessageKey } from '@/i18n';
+import { pressable } from '@/lib/a11y/pressable';
+import { getPlans, openSubscriptionCheckout, PlanCatalog } from '../../data/datasets/billing';
+import { planPackageLabels, planPriceLabel } from '../../data/datasets/billingPrices';
+import { useAuth } from '../../data/contexts/AuthContext';
+import { apiRequest } from '../../data/services/http';
+import { navigate } from '../../lib/utils/workflowRouting';
+import { posthogCapture } from '../../lib/analytics/posthog';
 import { DataState, FormError, useMutation } from '../../components/interface/WorkflowUI';
 import { ShopDialog } from '../../components/marketplace/ShopDialog';
 import { StudentKareShield } from '../../components/StudentKareLogo';
@@ -12,26 +16,49 @@ import { EmergencyBar } from '../../components/health/EmergencyBar';
 import '../../theme/marketplace.css';
 import '../../theme/workflows.css';
 
-const PRICING_FAQS = [
-  {
-    q: 'Is Studentkare free for university students?',
-    a: 'Yes. Health records, the digital health card, the emergency helpline directory and the marketplace catalogue are free. Emergency numbers work without an account at all.',
-  },
-  {
-    q: 'What is included in the Student Plus membership?',
-    a: 'Student Plus (₹99/month) is proposed, not live. What it will include is still being decided, and this page will list it once it is. A pharmacist already verifies every prescription before anything is dispensed, on every plan including the free one — that is not a paid feature.',
-  },
-  {
-    q: 'How do campus and institutional contracts work?',
-    a: 'Campus administrators can confirm student enrolment and run health camps today. Aggregate reporting does not exist yet: there is no endpoint that returns cohort data to a campus, so we do not offer a dashboard we have not built.',
-  },
-  {
-    q: 'Can I cancel my Student Plus plan anytime?',
-    a: 'Yes, you can cancel your Student Plus subscription at any time with one click from your Account Billing settings. Your benefits remain active until the end of your billing cycle.',
-  },
-];
+/**
+ * FAQ copy lives in the shopweb catalogue. The Student Plus answer used to say
+ * "a pharmacist already verifies every prescription before anything is
+ * dispensed" — nothing in the system does that (see ShopFront), so it is gone.
+ */
+const PRICING_FAQS = ['faq1', 'faq2', 'faq3', 'faq4'] as const;
+
+type CardTone = 'action' | 'info' | 'attention';
+const TONE: Record<CardTone, string> = { action: 'var(--sk-color-action)', info: 'var(--sk-color-info)', attention: 'var(--sk-color-attention)' };
+
+/**
+ * Group and campus tiers are a commercial proposal (labelled PROPOSED on the
+ * card and in the disclaimer). Their figures are the proposal's, not a
+ * server price list; nothing here sells them.
+ */
+const GROUP_PLANS = [
+  { id: 'friends', Icon: Users, tone: 'action' },
+  { id: 'hostel', Icon: Building, tone: 'action' },
+  { id: 'department', Icon: GraduationCap, tone: 'action' },
+  { id: 'campus', Icon: Globe, tone: 'action' },
+  { id: 'startup', Icon: Rocket, tone: 'attention' },
+] as const satisfies readonly { id: string; Icon: React.ElementType; tone: CardTone }[];
+
+type PlanCopyId = 'free' | 'gift' | 'market' | typeof GROUP_PLANS[number]['id'];
+const planKey = (id: PlanCopyId, part: 'title' | 'price' | 'desc'): MessageKey => `shopweb.pricing.${id}.${part}`;
+
+function PlanCard({ title, price, desc, Icon, tone, proposed, onActivate }: {
+  title: string; price: string; desc: string; Icon: React.ElementType; tone: CardTone; proposed?: string; onActivate: () => void;
+}) {
+  return <div className="cm-card" {...pressable(onActivate)}>
+    <div className="cm-card-header">
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <Icon size={17} aria-hidden="true" style={{ color: TONE[tone], flexShrink: 0 }} />
+        <span className="cm-card-title">{title}</span>
+      </div>
+      {proposed && <span className="cm-proposed-badge">{proposed}</span>}
+    </div>
+    <p className="cm-card-desc"><strong>{price}</strong> — {desc}</p>
+  </div>;
+}
 
 export function PricingScreen() {
+  const t = useT();
   const { user } = useAuth();
   const [catalog, setCatalog] = useState<PlanCatalog | null>(null);
   const [error, setError] = useState('');
@@ -55,14 +82,14 @@ export function PricingScreen() {
 
   const upgrade = async (publicKey: string, subscriptionId: string, amountPaise: number) => {
     await openSubscriptionCheckout({ key: publicKey, subscriptionId, amountPaise, name: user?.fullName || '', email: user?.email || '', phone: user?.phone || '' });
-    setNotice('Payment received. Your membership will activate shortly.');
-    setResult({ message: 'Thank you. Your Student Plus membership is activating.' });
+    setNotice(t('shopweb.pricing.paymentReceived'));
+    setResult({ message: t('shopweb.pricing.activating') });
   };
 
   const handleStudentPlus = () => {
     trackPlanSelect('PREMIUM', () => {
       if (!user) { navigate('signup', 'billing'); return; }
-      if (!catalog?.checkoutAvailable) { setResult({ message: 'Online payments are not configured yet. Our team will assist you.' }); return; }
+      if (!catalog?.checkoutAvailable) { setResult({ message: t('shopweb.pricing.notConfigured') }); return; }
       checkout.run(async () => {
         const start = await apiRequest<{ subscriptionId: string; publicKey: string; amountPaise: number }>('/billing/subscription/checkout', { method: 'POST', body: JSON.stringify({ planId: 'STUDENT_PLUS' }) });
         await upgrade(start.publicKey, start.subscriptionId, start.amountPaise);
@@ -75,25 +102,31 @@ export function PricingScreen() {
     posthogCapture('institutional_inquiry_submitted', '/pricing', { organization: form.organization, seats: form.seats });
     inquiryMutation.run(() => apiRequest('/billing/inquiries', { method: 'POST', body: JSON.stringify(form) }).then(() => {
       setInquiry(false); setForm({ organization: '', contactName: '', email: '', seats: 1000, message: '', consent: false });
-      setResult({ message: 'Thanks. An institutional specialist will reach out shortly.' });
+      setResult({ message: t('shopweb.pricing.inquirySent') });
     }));
   };
+
+  // Plan prices are the server's plan list (settings registry), never a figure typed into this page.
+  const plusPlan = catalog?.plans.find(plan => plan.id === 'STUDENT_PLUS');
+  const plusPrice = plusPlan && typeof plusPlan.price === 'number' ? t('shopweb.plans.amountPerMonth', { price: planPriceLabel(plusPlan, t) }) : t('shopweb.pricing.premium.priceUnavailable');
+  const plusPackages = plusPlan ? planPackageLabels(plusPlan, t) : [];
+  const plusPackageMonths = plusPlan?.packages?.[0]?.months;
+  const premiumPlan = catalog?.plans.find(plan => plan.id === 'PREMIUM');
+  const premiumPrice = premiumPlan && typeof premiumPlan.price === 'number' ? t('shopweb.plans.amountPerMonth', { price: planPriceLabel(premiumPlan, t) }) : t('shopweb.pricing.premium.priceUnavailable');
 
   return <div className="wf-pricing-page wf-pricing">
     <div className="cm-pricing-wrapper">
       {/* Navigation logo */}
       <header className="cm-top-bar" style={{ justifyContent: 'flex-end' }}>
-        <button className="shop-logo-button" onClick={() => navigate('shop')} aria-label="Studentkare home" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
-          <StudentKareShield size={38} />
+        <button type="button" className="shop-logo-button" onClick={() => navigate('shop')} aria-label={t('shopweb.homeLabel')} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, minWidth: 44, minHeight: 44 }}>
+          <StudentKareShield size={38} alt="" />
         </button>
       </header>
 
       {/* Hero title section */}
       <div className="cm-header-section">
-        <h1 className="cm-header-title">Plans and pricing</h1>
-        <p className="cm-header-subtitle">
-          Two routes to the same product: an institution buys seats for a cohort, or a student subscribes directly.
-        </p>
+        <h1 className="cm-header-title">{t('shopweb.pricing.title')}</h1>
+        <p className="cm-header-subtitle">{t('shopweb.pricing.subtitle')}</p>
       </div>
 
       {/* Emergency bar */}
@@ -101,119 +134,46 @@ export function PricingScreen() {
 
       <DataState loading={!catalog && !error} error={error} retry={load}>
         {/* 2 Column Plan Matrix: User & Campus */}
-        <div className="cm-columns-grid" aria-label="Commercial Model Plans">
+        <div className="cm-columns-grid" role="group" aria-label={t('shopweb.pricing.plansLabel')}>
           {/* Column 1: User subscription */}
           <div className="cm-column">
-            <div className="cm-column-pill">User subscription</div>
-            
-            <div className="cm-card" onClick={() => user ? navigate('health') : navigate('signup')} role="button" tabIndex={0}>
+            <div className="cm-column-pill">{t('shopweb.pricing.userColumn')}</div>
+
+            <PlanCard title={t(planKey('free', 'title'))} price={t(planKey('free', 'price'))} desc={t(planKey('free', 'desc'))} Icon={UserRound} tone="action" onActivate={() => user ? navigate('health') : navigate('signup')} />
+
+            {/* No "MOST POPULAR" badge: nothing measures popularity, and this plan's own card said it was not live. */}
+            <div className="cm-card cm-card-featured" {...pressable(handleStudentPlus)}>
               <div className="cm-card-header">
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <UserRound size={17} style={{ color: '#2563eb', flexShrink: 0 }} />
-                  <span className="cm-card-title">FREE</span>
+                  <Crown size={17} aria-hidden="true" style={{ color: TONE.info, flexShrink: 0 }} />
+                  <span className="cm-card-title" style={{ color: TONE.info }}>{t('shopweb.pricing.premium.title')}</span>
                 </div>
               </div>
-              <p className="cm-card-desc"><strong>₹0</strong> — basic records, limited measurements, browse providers</p>
+              <p className="cm-card-desc"><strong>{plusPrice}</strong> — {catalog?.checkoutAvailable ? t('shopweb.pricing.premium.live') : t('shopweb.pricing.premium.notLive')}</p>
+              {plusPackages.map(label => <p key={label} className="cm-card-desc"><strong>{label}</strong></p>)}
+              {plusPackageMonths !== undefined && <p className="cm-card-desc">{t('shopweb.plans.packageOffline', { months: plusPackageMonths })}</p>}
             </div>
 
-            <div className="cm-card cm-card-featured" onClick={handleStudentPlus} role="button" tabIndex={0}>
-              <div className="cm-card-header">
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <Crown size={17} style={{ color: '#7c3aed', flexShrink: 0 }} />
-                  <span className="cm-card-title" style={{ color: '#7c3aed' }}>PREMIUM</span>
-                </div>
-                <span className="cm-popular-badge"><Sparkles size={11} style={{ marginRight: 4 }} /> MOST POPULAR</span>
-              </div>
-              <p className="cm-card-desc"><strong>₹99–199 / month</strong> — proposed pricing, not yet live</p>
-            </div>
+            {/* Premium has a starting price only; it is not sold online, so its card explains rather than checks out. */}
+            {premiumPlan && <PlanCard title={t('shopweb.pricing.premiumTier.title')} price={premiumPrice} desc={t('shopweb.pricing.premiumTier.desc')} Icon={Crown} tone="attention" onActivate={() => setResult({ message: t('shopweb.pricing.premiumTier.notAvailable') })} />}
 
-            <div className="cm-card" onClick={handleStudentPlus} role="button" tabIndex={0}>
-              <div className="cm-card-header">
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <Gift size={17} style={{ color: '#db2777', flexShrink: 0 }} />
-                  <span className="cm-card-title">GIFT A FRIEND</span>
-                </div>
-                <span className="cm-proposed-badge">PROPOSED</span>
-              </div>
-              <p className="cm-card-desc"><strong>₹99 one-time</strong> — gift a month of Premium to another verified student</p>
-            </div>
+            {/* Gifting is proposed. It used to start the viewer's own Student Plus checkout. */}
+            <PlanCard title={t(planKey('gift', 'title'))} price={t(planKey('gift', 'price'))} desc={t(planKey('gift', 'desc'))} Icon={Gift} tone="attention" proposed={t('shopweb.pricing.proposed')} onActivate={() => setResult({ message: t('shopweb.pricing.gift.notAvailable') })} />
 
-            <div className="cm-card" onClick={() => navigate('shop')} role="button" tabIndex={0}>
-              <div className="cm-card-header">
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <ShoppingBag size={17} style={{ color: '#2563eb', flexShrink: 0 }} />
-                  <span className="cm-card-title">CARE MARKETPLACE</span>
-                </div>
-              </div>
-              <p className="cm-card-desc"><strong>Pay-per-use</strong> — lab tests, medicine, teleconsult, home visits</p>
-            </div>
+            <PlanCard title={t(planKey('market', 'title'))} price={t(planKey('market', 'price'))} desc={t(planKey('market', 'desc'))} Icon={ShoppingBag} tone="action" onActivate={() => navigate('shop')} />
           </div>
 
           {/* Column 2: Group & campus */}
           <div className="cm-column">
-            <div className="cm-column-pill">Group & campus</div>
-
-            <div className="cm-card" onClick={() => setInquiry(true)} role="button" tabIndex={0}>
-              <div className="cm-card-header">
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <Users size={17} style={{ color: '#2563eb', flexShrink: 0 }} />
-                  <span className="cm-card-title">FRIENDS GROUP · 25+</span>
-                </div>
-                <span className="cm-proposed-badge">PROPOSED</span>
-              </div>
-              <p className="cm-card-desc"><strong>₹69 / member / month</strong> — minimum 25 verified students, one payer or split</p>
-            </div>
-
-            <div className="cm-card" onClick={() => setInquiry(true)} role="button" tabIndex={0}>
-              <div className="cm-card-header">
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <Building size={17} style={{ color: '#2563eb', flexShrink: 0 }} />
-                  <span className="cm-card-title">HOSTEL GROUP</span>
-                </div>
-                <span className="cm-proposed-badge">PROPOSED</span>
-              </div>
-              <p className="cm-card-desc"><strong>₹59 / member / month</strong> — minimum 50 residents, warden-coordinated</p>
-            </div>
-
-            <div className="cm-card" onClick={() => setInquiry(true)} role="button" tabIndex={0}>
-              <div className="cm-card-header">
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <GraduationCap size={17} style={{ color: '#2563eb', flexShrink: 0 }} />
-                  <span className="cm-card-title">DEPARTMENT GROUP</span>
-                </div>
-                <span className="cm-proposed-badge">PROPOSED</span>
-              </div>
-              <p className="cm-card-desc"><strong>₹59 / member / month</strong> — minimum 100 students, billed to the department</p>
-            </div>
-
-            <div className="cm-card" onClick={() => setInquiry(true)} role="button" tabIndex={0}>
-              <div className="cm-card-header">
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <Globe size={17} style={{ color: '#2563eb', flexShrink: 0 }} />
-                  <span className="cm-card-title">CAMPUS TO CAMPUS</span>
-                </div>
-                <span className="cm-proposed-badge">PROPOSED</span>
-              </div>
-              <p className="cm-card-desc"><strong>₹0 to join</strong> — a partner campus introduces another; credit on the referred contract</p>
-            </div>
-
-            <div className="cm-card" onClick={() => setInquiry(true)} role="button" tabIndex={0}>
-              <div className="cm-card-header">
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <Rocket size={17} style={{ color: '#d97706', flexShrink: 0 }} />
-                  <span className="cm-card-title">STUDENT STARTUP</span>
-                </div>
-                <span className="cm-proposed-badge">PROPOSED</span>
-              </div>
-              <p className="cm-card-desc"><strong>₹0–2,000 / month</strong> — team plan for student ventures, up to 10 members</p>
-            </div>
+            <div className="cm-column-pill">{t('shopweb.pricing.groupColumn')}</div>
+            {GROUP_PLANS.map(plan => <PlanCard key={plan.id} title={t(planKey(plan.id, 'title'))} price={t(planKey(plan.id, 'price'))} desc={t(planKey(plan.id, 'desc'))} Icon={plan.Icon} tone={plan.tone} proposed={t('shopweb.pricing.proposed')} onActivate={() => setInquiry(true)} />)}
           </div>
         </div>
       </DataState>
 
       {/* Governance Disclaimer Banner */}
       <div className="cm-disclaimer-box">
-        Group and campus pricing is proposed, not contracted, and must be tested against delivery cost before it is quoted. Whoever pays funds access only — a hostel, department or gifting friend never sees a member's record.
+        {t('shopweb.pricing.disclaimer')}
       </div>
 
       {/*
@@ -239,17 +199,17 @@ export function PricingScreen() {
 
       {/* FAQ Section */}
       <section className="wf-pricing-faq">
-        <h2>Frequently asked questions</h2>
+        <h2>{t('shopweb.pricing.faqTitle')}</h2>
         <div className="wf-faq-grid">
           {PRICING_FAQS.map((faq, index) => {
             const isOpen = openFaq === index;
             return (
-              <div key={faq.q} className={`wf-faq-item ${isOpen ? 'is-open' : ''}`}>
-                <button type="button" className="wf-faq-question" onClick={() => setOpenFaq(isOpen ? null : index)}>
-                  <span>{faq.q}</span>
-                  <ChevronDown size={18} style={{ transform: isOpen ? 'rotate(180deg)' : 'none', transition: 'transform 200ms ease' }} />
+              <div key={faq} className={`wf-faq-item ${isOpen ? 'is-open' : ''}`}>
+                <button type="button" className="wf-faq-question" aria-expanded={isOpen} onClick={() => setOpenFaq(isOpen ? null : index)}>
+                  <span>{t(`shopweb.pricing.${faq}.q`)}</span>
+                  <ChevronDown size={18} aria-hidden="true" style={{ transform: isOpen ? 'rotate(180deg)' : 'none', transition: 'transform 200ms ease' }} />
                 </button>
-                {isOpen && <p className="wf-faq-answer">{faq.a}</p>}
+                {isOpen && <p className="wf-faq-answer">{t(`shopweb.pricing.${faq}.a`)}</p>}
               </div>
             );
           })}
@@ -259,21 +219,21 @@ export function PricingScreen() {
       <FormError message={checkout.error || inquiryMutation.error} />
       {notice && <div className="wf-notice" role="status">{notice}</div>}
 
-      {result && <ShopDialog title="Plan request" onClose={() => setResult(null)}><p>{result.message}</p><button className="shop-button shop-primary" onClick={() => setResult(null)}>Done</button></ShopDialog>}
+      {result && <ShopDialog title={t('shopweb.pricing.planRequest')} onClose={() => setResult(null)}><p>{result.message}</p><button type="button" className="shop-button shop-primary" onClick={() => setResult(null)}>{t('common.done')}</button></ShopDialog>}
 
-      {inquiry && <ShopDialog title="Institutional inquiry" onClose={() => setInquiry(false)}>
+      {inquiry && <ShopDialog title={t('shopweb.pricing.inquiryTitle')} onClose={() => setInquiry(false)}>
         <form className="wf-form" onSubmit={event => { event.preventDefault(); submitInquiry(); }}>
-          <label className="wf-field">Organization<input aria-label="Organization" value={form.organization} onChange={e => setForm({ ...form, organization: e.target.value })} required minLength={2} /></label>
-          <label className="wf-field">Contact name<input aria-label="Contact name" value={form.contactName} onChange={e => setForm({ ...form, contactName: e.target.value })} /></label>
-          <label className="wf-field">Work email<input type="email" aria-label="Work email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} required /></label>
-          <label className="wf-field">Students / seats<input type="number" aria-label="Students or seats" value={form.seats} min={1} onChange={e => setForm({ ...form, seats: Number(e.target.value) })} /></label>
-          <label className="wf-field">What do you need?<textarea aria-label="What do you need" value={form.message} onChange={e => setForm({ ...form, message: e.target.value })} rows={4} /></label>
-          <label className="wf-checkbox"><input type="checkbox" checked={form.consent} onChange={e => setForm({ ...form, consent: e.target.checked })} required /> I agree to be contacted about Studentkare plans.</label>
-          <button className="shop-button shop-primary" type="submit" disabled={inquiryMutation.busy}>{inquiryMutation.busy ? 'Submitting…' : 'Submit inquiry'}</button>
+          <label className="wf-field">{t('shopweb.pricing.organization')}<input value={form.organization} onChange={e => setForm({ ...form, organization: e.target.value })} required minLength={2} /></label>
+          <label className="wf-field">{t('shopweb.pricing.contactName')}<input value={form.contactName} onChange={e => setForm({ ...form, contactName: e.target.value })} /></label>
+          <label className="wf-field">{t('shopweb.pricing.email')}<input type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} required /></label>
+          <label className="wf-field">{t('shopweb.pricing.seats')}<input type="number" value={form.seats} min={1} onChange={e => setForm({ ...form, seats: Number(e.target.value) })} /></label>
+          <label className="wf-field">{t('shopweb.pricing.need')}<textarea value={form.message} onChange={e => setForm({ ...form, message: e.target.value })} rows={4} /></label>
+          <label className="wf-checkbox"><input type="checkbox" checked={form.consent} onChange={e => setForm({ ...form, consent: e.target.checked })} required /> {t('shopweb.pricing.consent')}</label>
+          <button className="shop-button shop-primary" type="submit" disabled={inquiryMutation.busy}>{inquiryMutation.busy ? t('shopweb.pricing.submitting') : t('shopweb.pricing.submit')}</button>
         </form>
       </ShopDialog>}
 
-      <footer className="wf-pricing-note">Plans shown here govern access and benefits. Clinical services are separately arranged with providers. For institutions, a signed agreement and recorded payment activate seats.</footer>
+      <footer className="wf-pricing-note">{t('shopweb.pricing.footer')}</footer>
     </div>
   </div>;
 }

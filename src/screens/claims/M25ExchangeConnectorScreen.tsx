@@ -2,7 +2,7 @@ import { observer } from 'mobx-react-lite';
 import { NhcxExchangeConnectorProxy } from '../../components/NhcxExchangeConnectorProxy';
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
-import { useTheme } from '../../theme/theme';
+import { useTheme } from '../../theme/tokens/theme';
 import { useClaimsStore } from '../../store/AppStores';
 import { Card } from '../../components/Card';
 import { Badge } from '../../components/Badge';
@@ -63,7 +63,7 @@ const M25ExchangeConnectorScreenUnwrapped: React.FC = () => {
         </View>
         <Text style={[styles.title, { color: tokens.text }]}>National Health Claims Exchange Connector</Text>
         <Text style={[styles.sub, { color: tokens.text2 }]}>
-          Transmit FHIR R4 ClaimResponse packages to NHCX (NHA) & OpenHCX protocols using ABDM NRCES profiles.
+          Transmit FHIR R4 ClaimResponse packages to NHCX (NHA) & OpenHCX protocols using NRCES profiles.
         </Text>
       </View>
 
@@ -78,7 +78,7 @@ const M25ExchangeConnectorScreenUnwrapped: React.FC = () => {
           </View>
 
           <View style={[styles.codeBox, { backgroundColor: tokens.ink, borderRadius: radius.md }]}>
-            <Text style={[styles.jsonText, { color: '#b1a6f6', fontFamily: typography.fontMono }]}>
+            <Text style={[styles.jsonText, { color: tokens.surface, fontFamily: typography.fontMono }]}>
               {JSON.stringify(fhirClaimPayload, null, 2)}
             </Text>
           </View>
@@ -89,7 +89,7 @@ const M25ExchangeConnectorScreenUnwrapped: React.FC = () => {
                 label="Transmit to OpenHCX Gateway"
                 onPress={handleTransmit}
                 size="lg"
-                icon={<Send size={16} color="#ffffff" />}
+                icon={<Send size={16} color={tokens.onAction} />}
               />
             ) : (
               <View style={[styles.successBanner, { backgroundColor: tokens.positiveBg }]}>

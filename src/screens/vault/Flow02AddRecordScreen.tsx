@@ -1,13 +1,13 @@
 import { observer } from 'mobx-react-lite';
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
-import { useTheme } from '../../theme/theme';
+import { useTheme } from '../../theme/tokens/theme';
 import { useRecordsStore } from '../../store/AppStores';
 import { Button } from '../../components/Button';
 import { Card } from '../../components/Card';
 import { Badge } from '../../components/Badge';
 import { ProvenancePointer } from '../../components/ProvenancePointer';
-import { simulateDocumentOcrExtraction } from '../../ai/documentExtractor';
+import { simulateDocumentOcrExtraction } from '../../ai/engines/documentExtractor';
 import { HealthRecord, FHIRObservation } from '../../types';
 import { Scan, FileCheck, CheckCircle2, FileText, Shield } from 'lucide-react';
 
@@ -113,7 +113,7 @@ const Flow02AddRecordScreenUnwrapped: React.FC<Flow02Props> = ({ onRecordSaved }
 
         {step === 'PREVIEW' && extractedData && (
           <Card variant="surface">
-            <View style={styles.previewHeader}>
+            <View style={[styles.previewHeader, { borderBottomColor: tokens.ruleSoft }]}>
               <View>
                 <Text style={[styles.docTitle, { color: tokens.text }]}>{extractedData.title}</Text>
                 <Text style={[styles.docMeta, { color: tokens.text2 }]}>
@@ -201,7 +201,7 @@ const Flow02AddRecordScreenUnwrapped: React.FC<Flow02Props> = ({ onRecordSaved }
                 label="Save & Index into FHIR Vault (+50 Pts)"
                 onPress={handleSaveToVault}
                 size="lg"
-                icon={<CheckCircle2 size={16} color="#ffffff" />}
+                icon={<CheckCircle2 size={16} color={tokens.onAction} />}
               />
               <Button
                 label="Scan Another Document"
@@ -299,7 +299,6 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     paddingBottom: 14,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(0,0,0,0.06)',
     marginBottom: 16,
   },
   docTitle: {

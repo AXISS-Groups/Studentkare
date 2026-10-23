@@ -4,8 +4,10 @@
 global:
   environment: production
   cluster: studentkare-prod
-  domain: studentkare.in
-  monitoringDomain: monitoring.studentkare.in
+  # The one app domain: ingress host, CORS origins, APP_DOMAIN and APP_BASE_URL
+  # (email/invite links) all follow it. monitoringDomain is Grafana's root URL.
+  domain: studentkare.co
+  monitoringDomain: monitoring.studentkare.co
   imagePullSecrets:
     - name: registry-credentials
 
@@ -32,9 +34,11 @@ backend:
   enabled: true
   replicaCount: 3
   image:
-    repository: studentkare/backend
-    tag: "latest"
-    pullPolicy: Always
+    # Pushed by .github/workflows/release.yml. No default tag: pass the commit you
+    # deploy, e.g. --set backend.image.tag=sha-<12-char commit> (audit TD-22).
+    repository: ghcr.io/axiss-groups/studentkare-backend
+    tag: ""
+    pullPolicy: IfNotPresent
   resources:
     limits:
       cpu: "2"
@@ -46,7 +50,7 @@ backend:
     enabled: true
     image:
       repository: edoburu/pgbouncer
-      tag: "latest"
+      tag: "v1.25.2-p0"  # pinned; was "latest" (bump deliberately, same as compose)
       pullPolicy: IfNotPresent
     port: 6432
     poolMode: transaction
@@ -55,12 +59,139 @@ backend:
   env:
     APP_ENV: production
     OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector:4317"
-  # Secrets (populated from Vault/SealedSecrets)
+    # "mock" refuses to start in production (no real money moves).
+    PAYMENT_PROVIDER: razorpay
+    # Video consults (docs/video-consults.md). wss:// only; empty = calls off.
+    LIVEKIT_URL: ""
+    # Agent Ayush (docs/guides/ayush-operations.md). In-cluster Ollama only; empty = quotes + keyword.
+    OLLAMA_URL: ""
+    LLM_MODEL: ""
+    EMBEDDING_PROVIDER: local
+    EMBEDDING_MODEL: ""
+    EMBEDDING_OLLAMA_URL: ""
+    AYUSH_HELP_PACK_AUTOLOAD: "true"
+    # Every key below goes into the studentkare-backend-config ConfigMap when it is
+    # non-empty; "" leaves the variable unset so the code's default applies.
+    # scripts/ops/check-env-passthrough.py keeps this list complete. The app
+    # domain and APP_BASE_URL come from global.domain (override APP_BASE_URL here).
+    # Integration keys are fallbacks: Admin › Integrations wins.
+    ALLOWED_ORIGINS: ""          # default https://<global.domain>
+    FORWARDED_ALLOW_IPS: ""      # default the RFC 1918 ranges (ingress pod network)
+    APP_BASE_URL: ""             # default https://<global.domain>; links in email and invites
+    RULE_L_REQUIRE_GRANTS: "1"
+    LLM_TIMEOUT_SECONDS: ""
+    # Payments: Student Plus plan id (create it in Razorpay); unpaid-order hold minutes (default 30).
+    RAZORPAY_PLUS_PLAN_ID: ""
+    RAZORPAY_BASE_URL: ""
+    PAYMENT_HOLD_MINUTES: ""
+    # ABDM gateway. Empty = not configured; a sandbox URL is refused in production.
+    ABDM_BASE_URL: ""
+    ABDM_CLIENT_ID: ""
+    ABDM_FACILITY_ID: ""
+    ABDM_HFR_ENABLED: ""
+    ABDM_HFR_REGISTRY_URL: ""
+    ABDM_HFR_CLIENT_ID: ""
+    # Upload virus scanner and medicine-photo OCR.
+    CLAMAV_HOST: ""
+    CLAMAV_PORT: ""
+    CLAMAV_STRICT: ""
+    MEDICINE_OCR_ENABLED: "false"    # tesseract is in the image; stays off until the plan sign-off
+    MEDICINE_OCR_TESSERACT: ""
+    # Agent Ayush tuning.
+    LLM_ENABLED: ""
+    LLM_PROVIDER: ""
+    LLM_RETRY_AFTER_SECONDS: ""
+    EMBEDDING_TIMEOUT_SECONDS: ""
+    # Sign-in codes and 2FA.
+    OTP_CHANNEL: ""
+    OTP_LENGTH: ""
+    OTP_TTL_SECONDS: ""
+    OTP_MAX_ATTEMPTS: ""
+    TWOFA_ENFORCED_ROLES: ""
+    TWOFA_ISSUER: ""
+    # Delivery channels (secrets are under backend.secrets).
+    SMTP_HOST: ""
+    SMTP_PORT: ""
+    SMTP_TLS: ""
+    SMTP_FROM: ""
+    SMTP_USERNAME: ""
+    DEFAULT_FROM_EMAIL: ""
+    POSTAL_ENABLED: ""
+    POSTAL_API_URL: ""
+    POSTAL_FROM_EMAIL: ""
+    OPENWA_ENABLED: ""
+    OPENWA_BASE_URL: ""
+    OPENWA_SESSION_ID: ""
+    OPENWA_DEFAULT_COUNTRY_CODE: ""
+    SLACK_ENABLED: ""
+    SLACK_DEFAULT_CHANNEL: ""
+    SLACK_OPS_CHANNEL: ""
+    SLACK_BOOKING_CHANNEL: ""
+    # Web Push (services/push_providers.py): the VAPID public key (also served to browsers)
+    # and the contact the push services see (mailto: or https://).
+    VAPID_PUBLIC_KEY: ""
+    VAPID_SUBJECT: ""
+    FIREBASE_ENABLED: ""
+    FIREBASE_API_KEY: ""         # Firebase web config key (public by design)
+    FIREBASE_AUTH_DOMAIN: ""
+    FIREBASE_PROJECT_ID: ""
+    FIREBASE_MESSAGING_SENDER_ID: ""
+    FIREBASE_APP_ID: ""
+    FIREBASE_VAPID_KEY: ""
+    POSTHOG_ENABLED: ""
+    POSTHOG_HOST: ""
+    APILAYER_ENABLED: ""
+    # Platform identity shown in mail and on the site.
+    BRAND_NAME: ""
+    PARENT_COMPANY: ""
+    SUPPORT_EMAIL: ""
+    SUPPORT_PHONE: ""
+    COMPANY_ADDRESS: ""
+    COPYRIGHT_TEXT: ""
+    LOGO_URL: ""
+    FAVICON_URL: ""
+    # Database pool, API limits (#221: per IP and per account), /metrics allowlist.
+    DB_POOL_SIZE: ""
+    DB_MAX_OVERFLOW: ""
+    RATE_LIMIT_API_PER_IP_PER_MINUTE: ""
+    RATE_LIMIT_API_PER_ACCOUNT_PER_MINUTE: ""
+    METRICS_ALLOWED_NETWORKS: ""
+  # Secrets (populated from Vault/SealedSecrets). A key left "" is not written to
+  # the Secret, and the env var stays unset (secretKeyRef is optional).
   secrets:
     DATABASE_URL: ""
     OTP_HASH_SECRET: ""
     SENTRY_DSN: ""
-    ALERTMANAGER_WEBHOOK_SECRET: ""
+    ALERTMANAGER_WEBHOOK_SECRET: ""   # required; the chart refuses to render without it
+    # Fail-closed feature keys (backend and worker). Empty = feature off,
+    # reported at startup. Fernet keys:
+    #   python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+    TWO_FACTOR_ENCRYPTION_KEY: ""     # Fernet; enforced roles cannot finish 2FA without it
+    PASS_SIGNING_SECRET: ""           # openssl rand -hex 32; check-in passes
+    DPDP_ARCHIVE_KEY: ""              # Fernet; DPDP erasure archives
+    DPDP_ARCHIVE_RETENTION_DAYS: ""   # whole days; confirm with legal counsel
+    INTEGRATIONS_ENCRYPTION_KEY: ""   # Fernet; seals provider secrets
+    # Razorpay (docs/billing-payments.md). Empty = online payment off, said so in the app.
+    RAZORPAY_KEY_ID: ""               # public key id (rzp_live_...); sent to the browser checkout
+    RAZORPAY_KEY_SECRET: ""           # API secret; never leaves the server
+    RAZORPAY_WEBHOOK_SECRET: ""       # Dashboard → Webhooks secret (X-Razorpay-Signature)
+    # LiveKit (docs/video-consults.md). Empty = no video consult can be started, said so in the app.
+    LIVEKIT_API_KEY: ""               # API key id (the token issuer)
+    LIVEKIT_API_SECRET: ""            # signs join tokens; never leaves the server
+    PAYMENT_WEBHOOK_SECRET: ""        # HMAC secret for the generic signed payment webhook
+    ABDM_CLIENT_SECRET: ""            # ABDM gateway client secret
+    ABDM_HFR_CLIENT_SECRET: ""        # ABDM Health Facility Registry client secret
+    LLM_API_KEY: ""                   # only for a non-Ollama provider (Rule-C: on-prem by default)
+    SMTP_PASSWORD: ""
+    POSTAL_SERVER_API_KEY: ""
+    OPENWA_API_KEY: ""
+    SLACK_BOT_TOKEN: ""
+    EXPO_ACCESS_TOKEN: ""             # Expo access token (enhanced push security on); empty = no phone push
+    VAPID_PRIVATE_KEY: ""             # npx web-push generate-vapid-keys; empty = no browser push
+    FIREBASE_SERVER_KEY: ""
+    FIREBASE_SERVICE_ACCOUNT_JSON: ""
+    POSTHOG_API_KEY: ""
+    APILAYER_API_KEY: ""
   service:
     type: ClusterIP
     port: 8000
@@ -69,14 +200,83 @@ backend:
     initialDelaySeconds: 30
     periodSeconds: 10
 
+# Upload virus scanner (templates/05-clamav.yaml). The backend scans every upload
+# over clamd INSTREAM and refuses prescriptions while it is unreachable, so keep it
+# enabled. backend.env.CLAMAV_HOST defaults to this Service ("clamav").
+clamav:
+  enabled: true
+  replicaCount: 2
+  image:
+    repository: clamav/clamav
+    tag: "1.4.3"
+    pullPolicy: IfNotPresent
+  port: 3310
+  freshclamChecksPerDay: 12
+  # clamd keeps signatures in memory (~1.2 GB) and about doubles while reloading.
+  resources:
+    limits:
+      cpu: "1"
+      memory: 3Gi
+    requests:
+      cpu: 250m
+      memory: 1536Mi
+  signatureStorage:
+    sizeLimit: 2Gi
+
+# Nightly logical Postgres backup (templates/06-backup.yaml, docs/guides/backups.md):
+# pg_dump of DATABASE_URL onto the studentkare-backups PVC, kept retentionDays, and
+# copied to S3-compatible storage when s3Uri is set. Image from release.yml; its tag
+# defaults to backend.image.tag (same commit). Restore drill: restore-check in the image.
+backup:
+  enabled: true
+  schedule: "30 20 * * *"   # 20:30 UTC = 02:00 IST
+  retentionDays: 14
+  image:
+    repository: ghcr.io/axiss-groups/studentkare-backup
+    tag: ""                 # "" = backend.image.tag
+    pullPolicy: IfNotPresent
+  s3Uri: ""                 # e.g. s3://studentkare-backups/postgres
+  s3EndpointUrl: ""         # S3-compatible endpoint (MinIO, R2, ...); "" = AWS
+  awsRegion: ap-south-1
+  secrets:
+    AWS_ACCESS_KEY_ID: ""
+    AWS_SECRET_ACCESS_KEY: ""
+  persistence:
+    size: 50Gi
+    storageClass: fast-ssd
+  resources:
+    limits:
+      cpu: "1"
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+# Scheduled-jobs worker (templates/04-worker.yaml): backend image, same secrets.
+# Required for outbox delivery (SOS) and erasures to happen on a timer.
+worker:
+  enabled: true
+  replicaCount: 1  # more is safe (per-job lease), not needed
+  pollSeconds: 15
+  terminationGracePeriodSeconds: 120
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 256Mi
+
 # Frontend Configuration
 frontend:
   enabled: true
   replicaCount: 3
   image:
-    repository: studentkare/frontend
-    tag: "latest"
-    pullPolicy: Always
+    # Pushed by .github/workflows/release.yml. No default tag: pass the commit you
+    # deploy, e.g. --set frontend.image.tag=sha-<12-char commit> (audit TD-22).
+    repository: ghcr.io/axiss-groups/studentkare-frontend
+    tag: ""
+    pullPolicy: IfNotPresent
   buildArgs:
     VITE_API_BASE_URL: "/api"
   resources:
@@ -92,7 +292,8 @@ frontend:
   ingress:
     enabled: true
     className: nginx
-    host: studentkare.in
+    limitRps: 100   # per client address; see deploy/nginx.conf
+    host: ""          # "" = global.domain
     tls:
       enabled: true
       secretName: studentkare-tls
@@ -174,7 +375,8 @@ prometheus:
         environment: production
         cluster: studentkare-prod
     rule_files:
-      - "/etc/prometheus/rules/*.yml"
+      # templates/03-monitoring.yaml mounts the prometheus-rules ConfigMap here.
+      - "/etc/prometheus-rules/*.yml"
     scrape_configs:
       - job_name: 'studentkare-backend'
         kubernetes_sd_configs:
@@ -314,7 +516,7 @@ grafana:
     security:
       admin_user: admin
     server:
-      root_url: https://monitoring.studentkare.in
+      root_url: ""    # "" = https://<global.monitoringDomain>
     users:
       allow_sign_up: false
     auth:
@@ -337,16 +539,16 @@ grafana:
       default:
         studentkare-api-overview:
           json: |
-            {{ .Files.Get "dashboards/api-overview.json" | indent 10 }}
+            {{ .Files.Get "files/dashboards/api-overview.json" | indent 10 }}
         studentkare-db-connections:
           json: |
-            {{ .Files.Get "dashboards/db-connections.json" | indent 10 }}
+            {{ .Files.Get "files/dashboards/db-connections.json" | indent 10 }}
         studentkare-error-tracking:
           json: |
-            {{ .Files.Get "dashboards/error-tracking.json" | indent 10 }}
+            {{ .Files.Get "files/dashboards/error-tracking.json" | indent 10 }}
         studentkare-business-ops:
           json: |
-            {{ .Files.Get "dashboards/business-ops.json" | indent 10 }}
+            {{ .Files.Get "files/dashboards/business-ops.json" | indent 10 }}
 
 # Alertmanager
 alertmanager:
@@ -368,7 +570,9 @@ alertmanager:
   config:
     global:
       resolve_timeout: 5m
-      slack_api_url: "" # From secret
+      # The Slack incoming-webhook URL. Written to studentkare-secrets as
+      # SLACK_WEBHOOK_URL and mounted for slack_api_url_file; required.
+      slack_api_url: ""
     route:
       group_by: ['alertname', 'severity', 'service']
       group_wait: 30s

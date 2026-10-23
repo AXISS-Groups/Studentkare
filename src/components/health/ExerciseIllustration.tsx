@@ -1,5 +1,5 @@
 import React, { useId } from 'react';
-import type { ExercisePose } from '../../data/exerciseLibrary';
+import type { ExercisePose } from '../../data/datasets/exerciseLibrary';
 
 type Point = [number, number];
 interface PosePoints { head: Point; hip: Point; leftArm: Point[]; rightArm: Point[]; leftLeg: Point[]; rightLeg: Point[] }
@@ -19,7 +19,7 @@ const poses: Record<ExercisePose, PosePoints> = {
   breathe: { head: [125, 65], hip: [125, 146], leftArm: [[111, 93], [94, 125], [113, 141]], rightArm: [[140, 93], [158, 125], [137, 141]], leftLeg: [[119, 146], [77, 183], [127, 196]], rightLeg: [[133, 146], [173, 183], [125, 196]] },
 };
 
-export function ExerciseIllustration({ pose, color = '#9682b8', label, active = false }: {
+export function ExerciseIllustration({ pose, color = 'var(--sk-color-art-tint-2)', label, active = false }: {
   pose: ExercisePose; color?: string; label: string; active?: boolean;
 }) {
   const id = useId().replace(/:/g, '');
@@ -32,20 +32,20 @@ export function ExerciseIllustration({ pose, color = '#9682b8', label, active = 
     <circle className="exercise-pose-halo" cx="125" cy="125" r="85" fill={color} opacity=".07" />
     <ellipse cx="126" cy="216" rx="94" ry="7" fill={color} opacity=".12" />
     <rect x="41" y="211" width="174" height="4" rx="2" fill={color} opacity=".15" />
-    {seated && <g fill="none" stroke="#b5b0ab" strokeWidth="5" strokeLinecap="round"><path d="M88 90v66h77M91 157v48m69-48v48" /></g>}
-    {chair && <g fill="none" stroke="#b5b0ab" strokeWidth="5" strokeLinecap="round"><path d={pose === 'calf' ? 'M165 99h30v65h-39m8 0v44m28-44v44' : 'M64 105v58h61m-59 0v44m55-44v44'} /></g>}
-    {['wall', 'stretch', 'side', 'balance'].includes(pose) && <path d="M200 50v160" stroke="#c2bab0" strokeWidth="5" strokeLinecap="round" />}
+    {seated && <g fill="none" stroke="var(--sk-color-illustration-indigo-soft)" strokeWidth="5" strokeLinecap="round"><path d="M88 90v66h77M91 157v48m69-48v48" /></g>}
+    {chair && <g fill="none" stroke="var(--sk-color-illustration-indigo-soft)" strokeWidth="5" strokeLinecap="round"><path d={pose === 'calf' ? 'M165 99h30v65h-39m8 0v44m28-44v44' : 'M64 105v58h61m-59 0v44m55-44v44'} /></g>}
+    {['wall', 'stretch', 'side', 'balance'].includes(pose) && <path d="M200 50v160" stroke="var(--sk-color-illustration-indigo-soft)" strokeWidth="5" strokeLinecap="round" />}
     <g className="exercise-pose-person">
-      <path d={legPath(points.leftLeg)} fill="none" stroke="#55516d" strokeWidth="15" strokeLinecap="round" strokeLinejoin="round" />
-      <path d={legPath(points.rightLeg)} fill="none" stroke="#6d6784" strokeWidth="15" strokeLinecap="round" strokeLinejoin="round" />
-      {[points.leftLeg, points.rightLeg].map((line, index) => <path key={index} d={`M${line[2][0] - 4} ${line[2][1]}h14`} stroke="#eeeae4" strokeWidth="9" strokeLinecap="round" />)}
+      <path d={legPath(points.leftLeg)} fill="none" stroke="var(--sk-color-illustration-ink)" strokeWidth="15" strokeLinecap="round" strokeLinejoin="round" />
+      <path d={legPath(points.rightLeg)} fill="none" stroke="var(--sk-color-illustration-indigo-deep)" strokeWidth="15" strokeLinecap="round" strokeLinejoin="round" />
+      {[points.leftLeg, points.rightLeg].map((line, index) => <path key={index} d={`M${line[2][0] - 4} ${line[2][1]}h14`} stroke="var(--sk-color-illustration-highlight)" strokeWidth="9" strokeLinecap="round" />)}
       <path d={`M${points.head[0] - 13} ${points.head[1] + 28}Q${points.head[0]} ${points.head[1] + 19} ${points.head[0] + 15} ${points.head[1] + 28}L${points.hip[0] + 15} ${points.hip[1] + 5}Q${points.hip[0]} ${points.hip[1] + 12} ${points.hip[0] - 15} ${points.hip[1] + 5}Z`} fill={`url(#${id})`} />
-      <path d={legPath(points.leftArm)} fill="none" stroke="#d6a58c" strokeWidth="10" strokeLinecap="round" strokeLinejoin="round" />
-      <path d={legPath(points.rightArm)} fill="none" stroke="#e2b39a" strokeWidth="10" strokeLinecap="round" strokeLinejoin="round" />
-      <path d={`M${points.head[0]} ${points.head[1] + 13}v13`} stroke="#ddb097" strokeWidth="12" />
-      <circle cx={points.head[0]} cy={points.head[1]} r="18" fill="#e2b39a" />
-      <path d={`M${points.head[0] - 18} ${points.head[1] + 1}C${points.head[0] - 25} ${points.head[1] - 31} ${points.head[0] + 27} ${points.head[1] - 27} ${points.head[0] + 18} ${points.head[1] + 2}Q${points.head[0] + 7} ${points.head[1] - 2} ${points.head[0]} ${points.head[1] - 14}Q${points.head[0] - 7} ${points.head[1] - 2} ${points.head[0] - 18} ${points.head[1] + 1}`} fill="#464054" />
-      <path d={`M${points.head[0] - 5} ${points.head[1] + 9}q5 4 10 0`} stroke="#b37f70" strokeWidth="2" fill="none" strokeLinecap="round" />
+      <path d={legPath(points.leftArm)} fill="none" stroke="var(--sk-color-illustration-peach)" strokeWidth="10" strokeLinecap="round" strokeLinejoin="round" />
+      <path d={legPath(points.rightArm)} fill="none" stroke="var(--sk-color-illustration-peach)" strokeWidth="10" strokeLinecap="round" strokeLinejoin="round" />
+      <path d={`M${points.head[0]} ${points.head[1] + 13}v13`} stroke="var(--sk-color-illustration-peach)" strokeWidth="12" />
+      <circle cx={points.head[0]} cy={points.head[1]} r="18" fill="var(--sk-color-illustration-peach)" />
+      <path d={`M${points.head[0] - 18} ${points.head[1] + 1}C${points.head[0] - 25} ${points.head[1] - 31} ${points.head[0] + 27} ${points.head[1] - 27} ${points.head[0] + 18} ${points.head[1] + 2}Q${points.head[0] + 7} ${points.head[1] - 2} ${points.head[0]} ${points.head[1] - 14}Q${points.head[0] - 7} ${points.head[1] - 2} ${points.head[0] - 18} ${points.head[1] + 1}`} fill="var(--sk-color-illustration-ink)" />
+      <path d={`M${points.head[0] - 5} ${points.head[1] + 9}q5 4 10 0`} stroke="var(--sk-color-illustration-rose-deep)" strokeWidth="2" fill="none" strokeLinecap="round" />
     </g>
   </svg>;
 }

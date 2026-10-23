@@ -26,8 +26,22 @@ export const authModule: FeatureModule = {
       load: () => import('./screens/AccountReadyScreen').then((m) => ({ default: m.AccountReadyScreen })),
     },
     {
+      // The student's optional passcode: after sign-up, from Sign-in & security, and after "forgot passcode".
+      path: '/set-passcode',
+      access: (role) => role === 'STUDENT',
+      load: () => import('./screens/SetPasscodeScreen').then((m) => ({ default: m.SetPasscodeScreen })),
+    },
+    {
       path: '/profile-setup',
       load: () => import('./screens/ProfileSetupScreen').then((m) => ({ default: m.ProfileSetupScreen })),
+    },
+    {
+      path: '/setup/goal',
+      load: () => import('./screens/SetupGoalScreen').then((m) => ({ default: m.SetupGoalScreen })),
+    },
+    {
+      path: '/setup/activity',
+      load: () => import('./screens/SetupActivityScreen').then((m) => ({ default: m.SetupActivityScreen })),
     },
     {
       path: '/permissions',
@@ -44,28 +58,21 @@ export const authModule: FeatureModule = {
       load: () => import('./views/LostPhoneView').then((m) => ({ default: m.LostPhoneView })),
     },
     {
-      path: '/verify',
-      load: () => import('./views/IdentityVerifyView').then((m) => ({ default: m.IdentityVerifyView })),
+      // Staff and admin sign-in (canvas AdminSignIn): its own frame, same OTP endpoints with audience STAFF.
+      path: '/staff-sign-in',
+      public: true,
+      load: () => import('./views/AdminSignInView').then((m) => ({ default: m.AdminSignInScreen })),
+    },
+    {
+      // A partner college's invite (B2B, plan tier1-auth-password-2026-10-22 b): the link is /claim#token=….
+      path: '/claim',
+      public: true,
+      load: () => import('./screens/ClaimInviteScreen').then((m) => ({ default: m.ClaimInviteScreen })),
     },
     {
       path: '/verify-gate',
       public: true,
       load: () => import('./views/VerifyGateView').then((m) => ({ default: m.VerifyGateView })),
-    },
-    {
-      path: '/guardian-consent',
-      public: true,
-      load: () => import('./views/GuardianConsentView').then((m) => ({ default: m.GuardianConsentView })),
-    },
-    {
-      path: '/guardian-approve',
-      public: true,
-      load: () => import('./views/GuardianConsentView').then((m) => ({ default: m.GuardianConsentView })),
-    },
-    {
-      path: '/onboarding',
-      public: true,
-      load: () => import('@/screens/auth/StudentOnboardingWizard').then((m) => ({ default: m.StudentOnboardingWizard })),
     },
   ],
 };

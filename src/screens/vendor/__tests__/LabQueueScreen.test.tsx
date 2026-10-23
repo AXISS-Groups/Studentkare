@@ -1,9 +1,9 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, within } from '@testing-library/react';
 import { LabQueueScreen } from '../LabQueueScreen';
 
-vi.mock('@/data/AuthContext', () => ({
+vi.mock('@/data/contexts/AuthContext', () => ({
   useAuth: () => ({
     user: {
       id: 'demo-lab',
@@ -15,7 +15,7 @@ vi.mock('@/data/AuthContext', () => ({
   }),
 }));
 
-vi.mock('@/lib/workflowRouting', () => ({
+vi.mock('@/lib/utils/workflowRouting', () => ({
   navigate: vi.fn(),
   homeForRole: vi.fn((role: string) => (role === 'SUPER_ADMIN' ? 'admin' : role === 'VENDOR' ? 'vendor' : 'health')),
 }));
@@ -32,11 +32,13 @@ describe('LabQueueScreen', () => {
   it('renders title, eyebrow, and top stats', () => {
     render(<LabQueueScreen />);
     expect(screen.getByRole('heading', { level: 1, name: 'Sample queue' })).toBeInTheDocument();
-    expect(screen.getByText(/BOOKED → COLLECTED → TRANSIT → ANALYSED → RELEASED/i)).toBeInTheDocument();
+    expect(screen.getByText('BOOKED → COLLECTED → IN TRANSIT → ANALYSED → RELEASED')).toBeInTheDocument();
     expect(screen.getByText('CRITICAL WAITING')).toBeInTheDocument();
     expect(screen.getByText('OVER TRANSIT WINDOW')).toBeInTheDocument();
     expect(screen.getByText('REDO RATE, 30 DAYS')).toBeInTheDocument();
-    expect(screen.getByText('2.1%')).toBeInTheDocument();
+    // No redo data source exists, so no rate is invented.
+    expect(screen.queryByText('2.1%')).not.toBeInTheDocument();
+    expect(screen.getByText('Not tracked yet')).toBeInTheDocument();
   });
 
   it('renders all 5 pipeline columns', () => {
@@ -71,20 +73,26 @@ describe('LabQueueScreen', () => {
     const criticalCard = screen.getByLabelText(/SMP-77412/i);
     fireEvent.click(criticalCard);
 
-    expect(screen.getByRole('dialog', { name: /SMP-77412 · Potassium 6.8/i })).toBeInTheDocument();
+    expect(screen.getByRole('dialog', { name: 'SMP-77412 · Renal panel' })).toBeInTheDocument();
     expect(screen.getByText(/CRITICAL VALUE — INTERRUPTS THE QUEUE/i)).toBeInTheDocument();
-    expect(screen.getByText(/Call Dr. Ananya Reddy/i)).toBeInTheDocument();
+    expect(within(screen.getByRole('dialog')).getByText('Aarav S. · K+ 6.8 mmol/L')).toBeInTheDocument();
+    expect(screen.getByText(/Call the ordering clinician/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Ananya Reddy/i)).not.toBeInTheDocument();
   });
 
   it('releases critical value immediately upon clicking release button', () => {
     render(<LabQueueScreen />);
-    const criticalBtn = screen.getByRole('button', { name: /View critical waiting escalation/i });
+    const criticalBtn = screen.getByRole('button', { name: /View critical values waiting/i });
     fireEvent.click(criticalBtn);
 
-    const releaseBtn = screen.getByRole('button', { name: /Release critical value now/i });
+    const releaseBtn = screen.getByRole('button', { name: /Mark critical value released/i });
     fireEvent.click(releaseBtn);
 
-    expect(screen.getByText(/Critical value SMP-77412 released/i)).toBeInTheDocument();
+    // Nothing is sent from this screen, and the toast must say so.
+    const toast = screen.getByRole('status');
+    expect(toast).toHaveTextContent(/SMP-77412 marked released on this screen only/i);
+    expect(toast).toHaveTextContent(/Nothing was sent/i);
+    expect(screen.queryByText(/alerted immediately/i)).not.toBeInTheDocument();
   });
 
   it('opens sample detail modal and advances stage', () => {
@@ -96,7 +104,7 @@ describe('LabQueueScreen', () => {
     const advanceBtn = screen.getByRole('button', { name: /Advance to next stage/i });
     fireEvent.click(advanceBtn);
 
-    expect(screen.getByText(/Sample moved to IN TRANSIT/i)).toBeInTheDocument();
+    expect(screen.getByText(/Moved to IN TRANSIT on this screen only — not saved/i)).toBeInTheDocument();
   });
 
   it('books a new walk-in sample', () => {
@@ -104,14 +112,25 @@ describe('LabQueueScreen', () => {
     const bookBtn = screen.getByRole('button', { name: /Book walk-in sample/i });
     fireEvent.click(bookBtn);
 
-    expect(screen.getByRole('dialog', { name: /Register Diagnostic Sample/i })).toBeInTheDocument();
+    expect(screen.getByRole('dialog', { name: /Register a walk-in sample/i })).toBeInTheDocument();
 
     const nameInput = screen.getByPlaceholderText(/e.g. Rohith Verma/i);
     fireEvent.change(nameInput, { target: { value: 'Siddharth Rao' } });
+    fireEvent.change(screen.getByLabelText(/Hostel \/ collection point/i), { target: { value: 'Block B Lobby' } });
 
-    fireEvent.click(screen.getByRole('button', { name: /Book Sample Intake/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Add to queue/i }));
 
-    expect(screen.getByText(/Walk-in diagnostic appointment booked for Siddharth Rao/i)).toBeInTheDocument();
+    expect(screen.getByText(/Walk-in added for Siddharth Rao on this screen only — not saved/i)).toBeInTheDocument();
     expect(screen.getByText(/Siddharth Rao · Block B Lobby/i)).toBeInTheDocument();
+  });
+});
+
+describe('LabQueueScreen — critical drawer with no critical values', () => {
+  it('says nothing is waiting instead of showing a made-up critical result', () => {
+    render(<LabQueueScreen initialSamples={[]} />);
+    fireEvent.click(screen.getByRole('button', { name: /View critical values waiting/i }));
+    expect(screen.getByRole('dialog', { name: 'No critical values waiting' })).toBeInTheDocument();
+    expect(screen.queryByText(/SMP-77412/)).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Mark critical value released/i })).not.toBeInTheDocument();
   });
 });

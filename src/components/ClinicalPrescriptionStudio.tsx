@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { View, Text, TouchableOpacity, TextInput } from "react-native";
-import { useTheme } from "../theme/theme";
+import { useTheme } from "../theme/tokens/theme";
 import { Card } from "./Card";
 import { Badge } from "./Badge";
 import { Stethoscope, Send, CheckCircle2 } from "lucide-react";
-import { assertRule } from "../ai/constitution";
+import { assertRule } from "../ai/core/constitution";
 
 export interface PrescriptionLine {
   id: string;
@@ -95,8 +95,8 @@ export const ClinicalPrescriptionStudio: React.FC = () => {
           gap: 8,
         }}
       >
-        {dispatched ? <CheckCircle2 size={18} color="#ffffff" /> : <Send size={18} color="#ffffff" />}
-        <Text style={{ color: "#ffffff", fontWeight: "800", fontSize: 13, fontFamily: typography.fontFamily }}>
+        {dispatched ? <CheckCircle2 size={18} color={tokens.onAction} /> : <Send size={18} color={tokens.onAction} />}
+        <Text style={{ color: tokens.onAction, fontWeight: "800", fontSize: 13, fontFamily: typography.fontFamily }}>
           {dispatched ? "✓ E-Prescription Digitally Signed & Sent to Hostel Pharmacy!" : "Sign & Dispatch E-Prescription to Student & Hostel Pharmacy"}
         </Text>
       </TouchableOpacity>

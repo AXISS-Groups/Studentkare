@@ -1,15 +1,15 @@
 import { Suspense } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
-import type { FollowUpTask, StaffAppointment, WorkRequest } from '../../../data/workflowTypes';
-import { displayDate, money } from '../../../data/workflowTypes';
+import type { FollowUpTask, StaffAppointment, WorkRequest } from '../../../data/types/workflowTypes';
+import { displayDate, money } from '../../../data/types/workflowTypes';
 
 // Behaviour of Super Admin → Operations & SOS → Provider requests (/admin/requests).
 // Only the HTTP layer is mocked, keyed by request path, so these tests hold for any
 // implementation of the screen.
 const apiAnswers: Record<string, (init?: RequestInit) => Promise<unknown>> = {};
 const apiRequest = vi.fn((path: string, init?: RequestInit) => apiAnswers[path]?.(init) ?? new Promise(() => undefined));
-vi.mock('../../../data/http', async importOriginal => ({ ...(await importOriginal<typeof import('../../../data/http')>()), apiRequest: (path: string, init?: RequestInit) => apiRequest(path, init) }));
+vi.mock('../../../data/services/http', async importOriginal => ({ ...(await importOriginal<typeof import('../../../data/services/http')>()), apiRequest: (path: string, init?: RequestInit) => apiRequest(path, init) }));
 
 import { superAdminScreen } from '../admin/SuperAdminScreens';
 
@@ -337,11 +337,12 @@ describe('Appointments', () => {
     expect(screen.getByRole('button', { name: 'No-show' })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Join consultation' })).toBeEnabled();
     fireEvent.click(screen.getByRole('button', { name: 'Join consultation' }));
-    expect(screen.getByRole('heading', { name: 'Consultation' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Consultation check-in' })).toBeInTheDocument();
     expect(screen.getByText('With Patient b')).toBeInTheDocument();
     expect(callsTo(`/consultation/${confirmed.id}/state`)).toHaveLength(1);
-    fireEvent.click(screen.getByRole('button', { name: 'Leave' }));
-    expect(screen.queryByRole('heading', { name: 'Consultation' })).toBeNull();
+    // The consultation dialog (care area) now closes with Close rather than Leave.
+    fireEvent.click(screen.getAllByRole('button', { name: 'Close' })[0]);
+    expect(screen.queryByRole('heading', { name: 'Consultation check-in' })).toBeNull();
   });
 
   it('closes the consultation when another tab is opened', async () => {
@@ -352,7 +353,7 @@ describe('Appointments', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Join consultation' }));
     fireEvent.click(tab('Follow-ups'));
     fireEvent.click(tab('Appointments'));
-    expect(screen.queryByRole('heading', { name: 'Consultation' })).toBeNull();
+    expect(screen.queryByRole('heading', { name: 'Consultation check-in' })).toBeNull();
   });
 
   it('shows loading, empty and error states, and Try again reloads only the appointments', async () => {

@@ -1,132 +1,128 @@
 import React from 'react';
-import { AlertTriangle, ArrowRight } from 'lucide-react';
-import './landing.css';
+import { useT } from '@/i18n';
+import type { MessageKey } from '@/i18n';
+import { CanvasImage } from '@/design-system/art';
+import { PublicAudienceHeader, PublicSitePage } from '@/design-system/public-site';
+import { LwHeading, LwNote, LwRulesPanel } from './landingWebKit';
+import './landingWeb.css';
+
+type Flag = 'HH' | 'LL' | 'H' | 'N';
+
+const CARDS = ['critical', 'timeline', 'prescribing', 'substitution', 'reviews', 'assistant'] as const;
+
+const ACCESS: ReadonlyArray<{ label: MessageKey; on: boolean }> = [
+  { label: 'landing.clinician.access.shared', on: true },
+  { label: 'landing.clinician.access.why', on: true },
+  { label: 'landing.clinician.access.tracker', on: true },
+  { label: 'landing.clinician.access.log', on: true },
+  { label: 'landing.clinician.access.noRelationship', on: false },
+  { label: 'landing.clinician.access.outsideWindow', on: false },
+  { label: 'landing.clinician.access.shop', on: false },
+];
 
 /**
- * For clinicians (design page 3, `LandingClinician`, Tier 3).
+ * For clinicians (design board LandingClinician). The queue is an
+ * illustration and is labelled as one.
  *
- * Two of the design's three headline claims are real and worth keeping:
- *
- * - "A queue sorted by severity, not by arrival." /work/critical-results exists
- *   and the clinical inbox is built around it.
- * - "The share is the authorisation. Not your role." True, and enforced: the
- *   report-review queue requires an owner-granted document share that has not
- *   expired, and every access is audited. Being a clinician opens nothing.
- *
- * Three are not, and are left off:
- *
- * - "NMC-verified", "Verified against the NMC register, not a form", "your
- *   registration number ... is printed on every prescription you issue here."
- *   No registration number is stored anywhere and nothing is checked against
- *   any register. `NMC_DOCTOR` is a role an administrator sets. Printing
- *   "NMC-verified" on a recruitment page would be a compliance assertion with
- *   nothing computing it — Guardrail 6 — and it is the claim a clinician would
- *   most reasonably rely on when deciding we are serious.
- * - "90% of every consult is yours" and "Published commission". The design does
- *   specify 10% consistently, here and on ClinicianEarnings, but nothing in the
- *   repo configures a rate, so /work/earnings reports gross only. A percentage
- *   of someone's fee is not a number to hardcode into marketing ahead of the
- *   system that pays it.
- * - "Apply to practise". There is no application endpoint, so the button would
- *   submit nowhere. It points at sign-in instead and says what is missing.
+ * Left out of the board, because nothing proves them: "90% of every fee" and
+ * the hero art that prints it (no commission rate is configured), "Published
+ * commission", "NMC-verified" and "verified against the register" (nothing
+ * checks a registration yet). The gap note says what is missing.
  */
 export function LandingClinicianView(): React.ReactElement {
-  return (
-    <main className="sk-landing">
-      <section className="sk-landing__hero">
-        <span className="sk-landing__eyebrow">FOR CLINICIANS</span>
-        <h1 className="sk-landing__title">A queue sorted by severity, not by arrival.</h1>
-        <p className="sk-landing__lede">
-          A potassium of 6.8 does not sit behind forty routine results. You see what needs you first,
-          with the reference range beside the value and the consent that makes it readable stated on
-          the row.
-        </p>
-        <div className="sk-landing__actions">
-          <a className="sk-landing__cta" href="/login">
-            Sign in
-            <ArrowRight size={16} aria-hidden="true" />
-          </a>
-        </div>
-      </section>
+  const t = useT();
 
-      <section className="sk-landing__section" aria-labelledby="sk-clin-access">
-        <h2 className="sk-landing__heading" id="sk-clin-access">
-          The share is the authorisation. Not your role.
-        </h2>
-        <p className="sk-landing__footer-note">
-          Being a clinician here does not open anyone's record. A student shares specific documents
-          for a number of days they choose; you see exactly those, and every open is written to an
-          audit trail.
-        </p>
-        <div className="sk-landing__boundary">
-          <ul className="sk-landing__boundary-list">
-            <li className="sk-landing__boundary-item">
-              <span className="sk-landing__boundary-tag">Enforced</span>
-              <p className="sk-landing__promise-body">
-                A report reaches your review queue only with a current, owner-granted share. An
-                expired or revoked share removes it.
-              </p>
-            </li>
-            <li className="sk-landing__boundary-item">
-              <span className="sk-landing__boundary-tag">Enforced</span>
-              <p className="sk-landing__promise-body">
-                Your chronic tracker shows only students who agreed to a care programme with you, by
-                room and initials rather than by name.
-              </p>
-            </li>
-            <li className="sk-landing__boundary-item">
-              <span className="sk-landing__boundary-tag">Enforced</span>
-              <p className="sk-landing__promise-body">
-                A student can end a share or leave a programme without asking you, and without it
-                being reported to their campus.
-              </p>
-            </li>
+  // Example rows only. Test names and units are not translated.
+  const queue: { flag: Flag; name: string; meta: string; value: string; urgent: boolean }[] = [
+    { flag: 'HH', name: 'Potassium 6.8 mmol/L', meta: t('landing.clinician.queue.released', { minutes: 11 }), value: t('landing.clinician.queue.ref', { range: '3.5–5.1' }), urgent: true },
+    { flag: 'LL', name: 'Haemoglobin 7.1 g/dL', meta: t('landing.clinician.queue.released', { minutes: 38 }), value: t('landing.clinician.queue.ref', { range: '12.0–15.5' }), urgent: true },
+    { flag: 'H', name: 'TSH 9.4 mIU/L', meta: t('landing.clinician.queue.acknowledged', { hours: 2 }), value: t('landing.clinician.queue.ref', { range: '0.4–4.0' }), urgent: false },
+    { flag: 'N', name: 'Complete Blood Count', meta: t('landing.clinician.queue.allInRange', { count: 21 }), value: t('landing.clinician.queue.inRange'), urgent: false },
+  ];
+
+  return (
+    <PublicSitePage
+      header={<PublicAudienceHeader current="clinicians" cta={{ label: 'landing.plans.signIn', href: '/login' }} />}
+      art="primary"
+      footerNote={t('landing.campus.footer.building')}
+    >
+      <section className="lw-hero-soft lw-hero-soft--warm" aria-label={t('landing.campus.nav.forClinicians')}>
+        <div className="lw-hero-soft__copy">
+          <span className="lw-eyebrow">{t('landing.clinician.eyebrow')}</span>
+          <p className="lw-hero-soft__title">{t('landing.clinician.banner.title')}</p>
+          <ul className="lw-chips lw-chips--light">
+            <li className="lw-chip">{t('landing.clinician.chip.listing')}</li>
+            <li className="lw-chip">{t('landing.clinician.chip.fees')}</li>
+            <li className="lw-chip">{t('landing.clinician.chip.queue')}</li>
           </ul>
         </div>
       </section>
 
-      <div className="sk-landing__gap" role="note">
-        <span className="sk-landing__gap-icon">
-          <AlertTriangle size={18} aria-hidden="true" />
-        </span>
-        <div>
-          <p className="sk-landing__gap-title">Two things we are not claiming yet.</p>
-          <p className="sk-landing__gap-body">
-            <strong>Registration checking.</strong> We do not yet verify a registration number
-            against the NMC register — the clinician role is granted by an administrator. Until that
-            check is built we will not describe anyone here as verified, including on a prescription.
-          </p>
-          <p className="sk-landing__gap-body">
-            <strong>What you are paid.</strong> Earnings currently report gross consult fees only.
-            No commission rate is configured, so no share is published on this page. When one is set
-            it will appear on every line of your statement.
-          </p>
+      <section className="lw-intro lw-intro--wide" aria-labelledby="lw-clinician-title">
+        <div className="lw-intro__copy">
+          <span className="lw-eyebrow">{t('landing.clinician.eyebrow')}</span>
+          <h1 className="lw-h1 lw-h1--xl" id="lw-clinician-title">{t('landing.clinician.title')}</h1>
+          <p className="lw-lede lw-lede--lg">{t('landing.clinician.lede')}</p>
+          <div className="lw-actions">
+            <a className="lw-btn lw-btn--primary lw-btn--lg" href="/login">{t('landing.clinician.ctaQueue')}</a>
+            <a className="lw-btn lw-btn--secondary lw-btn--lg" href="/login">{t('landing.clinician.ctaTimeline')}</a>
+          </div>
         </div>
-      </div>
-
-      <section className="sk-landing__section" aria-labelledby="sk-clin-apply">
-        <h2 className="sk-landing__heading" id="sk-clin-apply">
-          Joining
-        </h2>
-        <p className="sk-landing__footer-note">
-          There is no application form here yet. If you already have an account, sign in; otherwise
-          the campus that invited you can arrange access while the application flow and the
-          registration check are built.
-        </p>
+        <div className="lw-intro__side">
+          <span className="lw-panel__meta lw-today__title">{t('landing.clinician.queue.eyebrow')}</span>
+          <ul className="lw-queue">
+            {queue.map((q) => (
+              <li key={q.name} className="lw-queue__row">
+                <span className={`lw-queue__flag lw-queue__flag--${q.flag === 'N' ? 'ok' : q.flag === 'H' ? 'watch' : 'urgent'}`}>{q.flag}</span>
+                <span className="lw-queue__text">
+                  <span className="lw-queue__name">{q.name}</span>
+                  <span className="lw-queue__meta">{q.meta}</span>
+                </span>
+                <span className={`lw-queue__value${q.urgent ? ' lw-queue__value--urgent' : ''}`}>{q.value}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
       </section>
 
-      <footer className="sk-landing__footer">
-        <p className="sk-landing__footer-note">
-          Studentkare is still being built, and this page lists what is missing on purpose.
-        </p>
-        <nav className="sk-landing__footer-links" aria-label="Studentkare">
-          <a href="/">For students</a>
-          <a href="/campuses">For campuses</a>
-          <a href="/privacy">Privacy</a>
-          <a href="/terms">Terms</a>
-          <a href="/login">Sign in</a>
-        </nav>
-      </footer>
-    </main>
+      <section className="lw-section" aria-labelledby="lw-clinician-cards">
+        <LwHeading id="lw-clinician-cards" eyebrow={t('landing.clinician.cards.eyebrow')} title={t('landing.clinician.cards.title')} />
+        <ul className="lw-grid lw-grid--3">
+          {CARDS.map((c) => (
+            <li key={c} className="lw-panel lw-job">
+              <span className="lw-panel__meta">{t(`landing.clinician.card.${c}Eyebrow` as MessageKey)}</span>
+              <span className="lw-job__title">{t(`landing.clinician.card.${c}Title` as MessageKey)}</span>
+              <span className="lw-panel__body">{t(`landing.clinician.card.${c}Body` as MessageKey)}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <LwRulesPanel
+        eyebrow={t('landing.clinician.access.eyebrow')}
+        title={t('landing.clinician.access.title')}
+        lede={t('landing.clinician.access.body')}
+        rules={ACCESS.map((a) => ({ label: t(a.label), tone: a.on ? 'yes' : 'no', tag: t(a.on ? 'landing.clinician.access.tagYouSee' : 'landing.clinician.access.tagNever') }))}
+      />
+
+      <div className="lw-section lw-section--tight">
+        <LwNote icon="alert-circle-3" tone="attention">
+          <strong className="lw-note__title">{t('landing.clinician.gap.title')}</strong>{' '}
+          <strong>{t('landing.clinician.gap.regTitle')}</strong> {t('landing.clinician.gap.regBody')}{' '}
+          <strong>{t('landing.clinician.gap.payTitle')}</strong> {t('landing.clinician.gap.payBody')} {t('landing.clinician.joining.body')}
+        </LwNote>
+      </div>
+
+      <section className="lw-start" aria-labelledby="lw-clinician-cta">
+        <CanvasImage name="a-friendly-doctor-waving-hello-b859fc.png" className="lw-recruit__art" />
+        <div className="lw-start__copy">
+          <h2 className="lw-h2 lw-h2--lg" id="lw-clinician-cta">{t('landing.clinician.cta.title')}</h2>
+          <p className="lw-lede">{t('landing.clinician.cta.body')}</p>
+        </div>
+        <div className="lw-start__cta">
+          <a className="lw-btn lw-btn--primary lw-btn--lg" href="/login">{t('landing.plans.signIn')}</a>
+        </div>
+      </section>
+    </PublicSitePage>
   );
 }

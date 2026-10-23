@@ -2,13 +2,16 @@ import { describe, expect, it, vi } from 'vitest';
 import React from 'react';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { SplashView } from '../SplashView';
-import { AFTERNOON_ENDS, MORNING_ENDS, greeting, timeOfDay } from '../timeOfDay';
+import { AFTERNOON_ENDS, MORNING_ENDS, MORNING_STARTS, greeting, timeOfDay } from '../timeOfDay';
 
 const at = (hour: number) => new Date(2026, 8, 26, hour, 0, 0);
 
 describe('greeting by the clock', () => {
   it('splits the day at the named boundaries', () => {
-    expect(timeOfDay(at(0))).toBe('morning');
+    // The Main board: night belongs to the evening care circle until 5 am.
+    expect(timeOfDay(at(0))).toBe('evening');
+    expect(timeOfDay(at(MORNING_STARTS - 1))).toBe('evening');
+    expect(timeOfDay(at(MORNING_STARTS))).toBe('morning');
     expect(timeOfDay(at(MORNING_ENDS - 1))).toBe('morning');
     expect(timeOfDay(at(MORNING_ENDS))).toBe('afternoon');
     expect(timeOfDay(at(AFTERNOON_ENDS - 1))).toBe('afternoon');
@@ -77,17 +80,59 @@ describe('what the splash must not claim', () => {
 });
 
 describe('accessibility', () => {
-  it('names every control and hides every decorative icon', () => {
+  it('names every control, describes the main picture and hides the decoration', () => {
     const { container } = render(<SplashView onStart={vi.fn()} onSignIn={vi.fn()} now={at(9)} />);
     for (const control of [...screen.getAllByRole('button'), ...screen.getAllByRole('link')]) {
       expect(control).toHaveAccessibleName();
     }
-    // The stage is decoration with no information in it.
-    expect(container.querySelector('.sk-splash__stage')).toHaveAttribute('aria-hidden', 'true');
+    expect(screen.getByRole('img', { name: /doctor waving hello/i })).toBeInTheDocument();
+    // The satellites around it carry no information.
+    for (const img of container.querySelectorAll('.sk-splash__satellite')) {
+      expect(img).toHaveAttribute('aria-hidden', 'true');
+    }
+    // Icons are drawn with the design-system icon set, never text symbols.
+    expect(container.textContent).not.toMatch(/[☀🌤🌙🔒🗂🧪🩺→]/u);
   });
 
   it('has exactly one first-level heading', () => {
     render(<SplashView onStart={vi.fn()} onSignIn={vi.fn()} now={at(9)} />);
     expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
+  });
+});
+
+describe('the three parts of the day (Main · SplashPulse · SplashVault)', () => {
+  const draw = (hour: number) => render(<SplashView onStart={vi.fn()} onSignIn={vi.fn()} now={at(hour)} />);
+
+  it('morning is the doctor hello', () => {
+    const { container } = draw(8);
+    expect(container.querySelector('[data-part]')).toHaveAttribute('data-part', 'morning');
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('A little care.');
+    expect(container.querySelector('[data-icon="sun"]')).not.toBeNull();
+  });
+
+  it('afternoon is the heartbeat, with what Student Kare covers', () => {
+    const { container } = draw(14);
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Care that keeps');
+    const chips = screen.getByRole('list', { name: /what student kare covers/i });
+    expect(chips).toHaveTextContent('Doctors');
+    expect(chips).toHaveTextContent('Lab tests');
+    expect(chips).toHaveTextContent('Records');
+    for (const name of ['stethoscope', 'flask', 'file']) expect(container.querySelector(`[data-icon="${name}"]`)).not.toBeNull();
+    expect(container.querySelector('[data-icon="illustration:illustration-heartbeat-line"]')).not.toBeNull();
+  });
+
+  it('evening is the care circle, private by default and nothing about ABHA', () => {
+    const { container } = draw(21);
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Everything for your');
+    expect(screen.getByText('Private by default')).toBeInTheDocument();
+    expect(container.querySelector('[data-icon="moon"]')).not.toBeNull();
+    expect(container.querySelector('[data-icon="lock"]')).not.toBeNull();
+    expect(container.textContent).not.toMatch(/ABHA/);
+  });
+
+  it('a single-variant board draws without the greeting', () => {
+    render(<SplashView onStart={vi.fn()} onSignIn={vi.fn()} variant="afternoon" greeting={false} now={at(9)} />);
+    expect(screen.queryByText(/^Good /)).toBeNull();
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Care that keeps');
   });
 });

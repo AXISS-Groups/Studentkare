@@ -1,12 +1,12 @@
 import { observer } from 'mobx-react-lite';
 import React, { useState } from "react";
 import { View, Text, TouchableOpacity } from "react-native";
-import { useTheme } from "../theme/theme";
+import { useTheme } from "../theme/tokens/theme";
 import { Card } from "./Card";
 import { Badge } from "./Badge";
 import { QrCode, Download, CheckCircle2 } from "lucide-react";
 import { useStudentStore } from "../store/AppStores";
-import { assertRule } from "../ai/constitution";
+import { assertRule } from "../ai/core/constitution";
 
 const OfflineEmergencyPassLockerUnwrapped: React.FC = () => {
   const { tokens, radius, typography } = useTheme();
@@ -75,8 +75,8 @@ const OfflineEmergencyPassLockerUnwrapped: React.FC = () => {
           gap: 8,
         }}
       >
-        {downloaded ? <CheckCircle2 size={18} color="#ffffff" /> : <Download size={18} color="#ffffff" />}
-        <Text style={{ color: "#ffffff", fontWeight: "800", fontSize: 13, fontFamily: typography.fontFamily }}>
+        {downloaded ? <CheckCircle2 size={18} color={tokens.onAction} /> : <Download size={18} color={tokens.onAction} />}
+        <Text style={{ color: tokens.onAction, fontWeight: "800", fontSize: 13, fontFamily: typography.fontFamily }}>
           {downloaded ? "✓ Offline Pass Saved to Device Lockscreen Wallet!" : "Save Pass to Apple Wallet / Google Pay Wallet (.pkpass)"}
         </Text>
       </TouchableOpacity>

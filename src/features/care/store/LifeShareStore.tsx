@@ -3,7 +3,7 @@ import {
   HospitalResourceNode,
   LifeShareTransferRequest,
   getCompatibleDonorTypes,
-} from '../../../data/lifeshareData';
+} from '../../../data/datasets/lifeshareData';
 
 /**
  * Hospital resource availability, for when something can report it.

@@ -65,3 +65,6 @@ def test_agent_status_is_derived_not_fabricated(harness):
     # Derived from the durable schedule, never hard-coded 'ACTIVE_ONLINE'.
     assert integration["status"] in ("OPERATIONAL", "FAILED", "SCHEDULED", "PAUSED")
     assert integration["intervalSeconds"] == 7200
+    # Top level is read from the schedule too: the outbox cadence, the real last run.
+    assert res.json()["intervalSeconds"] == scheduler_module.JOB_INTERVAL_OVERRIDES["reminder_reconcile"]
+    assert res.json()["lastRunAt"] == integration["lastRunAt"]

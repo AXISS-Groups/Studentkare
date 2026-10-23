@@ -39,14 +39,15 @@ export const landingModule: FeatureModule = {
     {
       path: '/lab-tests',
       public: true,
+      // A signed-in student gets Mobile 2.0 Lab tests in the workspace; everyone else the public page.
       load: () =>
-        import('./views/LandingLabTestsView').then((m) => ({ default: m.LandingLabTestsView })),
+        import('@/features/m2store/screens/LabTestsScreen').then((m) => ({ default: m.LabTestsScreen })),
     },
     {
       path: '/consult',
       public: true,
-      load: () =>
-        import('./views/LandingConsultView').then((m) => ({ default: m.LandingConsultView })),
+      // A signed-in student books in the workspace; everyone else the public page.
+      load: () => import('./screens/ConsultScreen').then((m) => ({ default: m.ConsultScreen })),
     },
     {
       path: '/wellness',
@@ -95,6 +96,18 @@ export const landingModule: FeatureModule = {
       public: true,
       load: () =>
         import('./views/LandingLabListView').then((m) => ({ default: m.LandingLabListView })),
+    },
+    {
+      path: '/campuses/apply',
+      public: true,
+      load: () =>
+        import('@/features/campus/apply/CampusApplyScreen').then((m) => ({ default: m.CampusApplyScreen })),
+    },
+    {
+      path: '/partnerships/apply',
+      public: true,
+      load: () =>
+        import('@/features/partner/apply/PartnerApplyScreen').then((m) => ({ default: m.PartnerApplyScreen })),
     },
     {
       path: '/clinicians/apply',

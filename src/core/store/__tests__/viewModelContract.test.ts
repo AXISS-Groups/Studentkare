@@ -12,34 +12,22 @@ import { isObservable } from 'mobx';
  */
 
 // Several fetch on construction. Keep the network out of it.
-vi.mock('@/data/http', () => ({ apiRequest: vi.fn().mockRejectedValue(new Error('offline')) }));
+vi.mock('@/data/services/http', () => ({ apiRequest: vi.fn().mockRejectedValue(new Error('offline')) }));
 
 import { AppointmentBookingViewModel } from '@/features/appointments/viewmodel/AppointmentBookingViewModel';
-import { CartCheckoutViewModel } from '@/features/checkout/viewmodel/CartCheckoutViewModel';
 import { DigitalIdViewModel } from '@/features/digital_id/viewmodel/DigitalIdViewModel';
 import { EmergencySosViewModel } from '@/features/emergency/viewmodel/EmergencySosViewModel';
 import { HealthVaultViewModel } from '@/features/vault/viewmodel/HealthVaultViewModel';
-import { IncidentTriageViewModel } from '@/features/incidents/viewmodel/IncidentTriageViewModel';
-import { LifeShareViewModel } from '@/features/lifeshare/viewmodel/LifeShareViewModel';
 import { MarketplaceViewModel } from '@/features/marketplace/viewmodel/MarketplaceViewModel';
-import { MedicalScannerViewModel } from '@/features/scanners/viewmodel/MedicalScannerViewModel';
 import { NotificationViewModel } from '@/features/notifications/viewmodel/NotificationViewModel';
-import { TeleconsultViewModel } from '@/features/teleconsult/viewmodel/TeleconsultViewModel';
-import { RewardsViewModel } from '@/modules/m20-rewards/viewmodel/RewardsViewModel';
 
 const VIEW_MODELS = [
   ['AppointmentBooking', () => new AppointmentBookingViewModel()],
-  ['CartCheckout', () => new CartCheckoutViewModel()],
   ['DigitalId', () => new DigitalIdViewModel()],
   ['EmergencySos', () => new EmergencySosViewModel()],
   ['HealthVault', () => new HealthVaultViewModel()],
-  ['IncidentTriage', () => new IncidentTriageViewModel()],
-  ['LifeShare', () => new LifeShareViewModel()],
   ['Marketplace', () => new MarketplaceViewModel()],
-  ['MedicalScanner', () => new MedicalScannerViewModel()],
   ['Notification', () => new NotificationViewModel()],
-  ['Teleconsult', () => new TeleconsultViewModel()],
-  ['Rewards', () => new RewardsViewModel()],
 ] as const;
 
 describe.each(VIEW_MODELS)('%s ViewModel', (_name, build) => {

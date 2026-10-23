@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { describeNativeSupport, WebNativeHealthAdapter } from '../nativeHealth';
+import { describeNativeSupport, WebNativeHealthAdapter } from '../platform/nativeHealth';
 
 
 describe('native health adapter', () => {

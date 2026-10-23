@@ -23,7 +23,7 @@
   padding: 0; border: 0; background: transparent; text-align: left;
   font-family: inherit; color: inherit; cursor: pointer; border-radius: var(--sk-radius-lg);
 }
-.cq-card__avatar.sk-avatar { width: 48px; height: 48px; font-size: 15px; background: var(--sk-color-surface-3); color: var(--sk-color-nav-current); }
+.cq-card__avatar.sk-avatar { width: 48px; height: 48px; font-size: 15px; background: var(--sk-color-surface-3); color: var(--sk-color-action); }
 .cq-card__avatar.sk-avatar.is-muted { background: var(--sk-color-neutral-bg); color: var(--sk-color-text-3); }
 .cq-card__text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
 .cq-card__top { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; }
@@ -33,7 +33,7 @@
 .cq-card__side { flex: none; display: flex; flex-direction: column; align-items: flex-end; gap: 9px; }
 .cq-card__time { font-size: 12px; font-weight: 700; color: var(--sk-color-text-3); white-space: nowrap; }
 .sk-btn.cq-card__cta { height: var(--sk-size-touch-target); padding: 0 18px; border-radius: var(--sk-radius-full); font-size: 13px; font-weight: 700; white-space: nowrap; }
-.sk-btn--primary.cq-card__cta { background: var(--sk-color-nav-current); color: var(--sk-color-on-nav-current); }
+.sk-btn--primary.cq-card__cta { background: var(--sk-color-action); color: var(--sk-color-on-action); }
 .sk-btn--secondary.cq-card__cta { border-color: var(--sk-color-rule-soft); }
 
 /* ---- right column ---- */
@@ -92,3 +92,8 @@
   .cq-card { flex-direction: column; align-items: stretch; gap: var(--sk-space-12); padding: var(--sk-space-16); }
   .cq-card__side { flex-direction: row; align-items: center; justify-content: space-between; }
 }
+
+/* Nobody in the queue yet: one message where the cards would be (QueueBlank). */
+.cq-blank { display: flex; flex-direction: column; gap: var(--sk-space-6); padding: var(--sk-space-40) var(--sk-space-20); border: 1px dashed var(--sk-color-rule-strong); border-radius: var(--sk-radius-lg); background: var(--sk-color-surface); text-align: center; align-self: start; }
+.cq-blank strong { font-size: 14px; font-weight: 800; color: var(--sk-color-text); }
+.cq-blank span { font-size: 12.5px; line-height: 1.55; font-weight: 500; color: var(--sk-color-text-3); }

@@ -1,4 +1,4 @@
-import type { AuditEvent, FollowUpTask, LiveCatalogItem, RequestStatus, StaffAccount, StaffAppointment, WorkRequest } from '@/data/workflowTypes';
+import type { AuditEvent, FollowUpTask, LiveCatalogItem, PartnerKind, RequestStatus, StaffAccount, StaffAppointment, WorkRequest } from '@/data/types/workflowTypes';
 import type { ContractRecord, EnterpriseInquiry } from '@/data/datasets/billing';
 
 /** GET /ops/audit — one page of audit events and the total across all pages. */
@@ -7,14 +7,15 @@ export interface AuditPage { items: AuditEvent[]; total: number }
 /** GET /ops/agents/ayush/quality — Agent Ayush's recorded turns, summarised. Rates are 0–1. */
 export interface AyushQuality { turns: number; groundedRate: number; answerRate: number; refusalBreakdown: Record<string, number>; avgLatencyMs: number; avgTopScore: number }
 
-/** One OCR-extracted field the reader wasn't sure of. Confidence is 0–1. */
-export interface ReviewItem { id: string; intakeId: string; field: string; value: string; confidence: number; documentId: string }
+/**
+ * GET /ops/intake/review — one uploaded document's intake, operational state only.
+ * A super admin never sees what the document says: no title, no document id, no
+ * extracted field or value. `kind` is the document category; times are Unix seconds.
+ */
+export interface IntakeQueueItem { id: string; kind: string; status: string; createdAt: number | null; processedAt: number | null }
 
-/** GET /ops/intake/review — fields waiting for a person, across documents. */
-export interface IntakeQueue { items: ReviewItem[] }
-
-/** A person's decision on one field: confirm it (with the value to keep) or reject it. */
-export interface FieldDecision { approved: boolean; correctedValue: string }
+/** GET /ops/intake/review */
+export interface IntakeQueue { items: IntakeQueueItem[] }
 
 /** A knowledge source Agent Ayush may quote. expiresAt is in Unix seconds. */
 export interface KnowledgeSource { id: string; title: string; category: string; version: number; author: string; reviewed: boolean; expiresAt: number | null }
@@ -24,6 +25,35 @@ export interface KnowledgeSources { items: KnowledgeSource[] }
 
 /** GET /ops/knowledge/index-status — what the retrieval index holds. `missing` lists approved source ids not indexed. */
 export interface IndexStatus { approvedSources: number; indexedSources: number; chunks: number; embedder: string; semantic: boolean; missing: string[]; mismatchedEmbedder: number }
+
+/** GET /ops/agents/ayush/health (backend/services/ayush_health.py) — can Ayush answer, and if not, why. */
+export interface AyushHealth {
+  status: 'ok' | 'attention' | 'down';
+  published: number;
+  indexed: number;
+  missing: number;
+  stale: number;
+  chunks: number;
+  helpPack: { articles: number; published: number };
+  retrieval: {
+    mode: 'keyword' | 'semantic' | 'degraded';
+    embedder: string;
+    requestedProvider: string;
+    model: string;
+    misconfigured: '' | 'unsupported-provider' | 'missing-url';
+    fallbackPassages: number;
+    reachable?: boolean | null;
+    modelPulled?: boolean | null;
+  };
+  answers: {
+    mode: 'quotes' | 'rephrased';
+    model: string;
+    reachable: boolean | null;
+    modelPulled: boolean | null;
+    recent: { rephrased: number; quoted: number; fellBack: number };
+  };
+  lastError: { where: string; error: string; at: number } | null;
+}
 
 /** POST /ops/knowledge — a source to publish. */
 export interface NewKnowledgeSource { title: string; category: string; content: string; author: string; expiresInDays: number }
@@ -59,7 +89,8 @@ export interface AccountPage { items: StaffAccount[]; total: number }
 export interface AccountListQuery { limit: number; offset: number; query: string; role: string }
 
 /** POST /ops/accounts — a staff account to provision. The holder verifies the contact at sign-in. */
-export interface NewStaffAccount { fullName: string; identifier: string; channel: string; role: string }
+/** `university` is required by the server for a CAMPUS_ADMIN or COUNSELLOR: it is the campus they act for. */
+export interface NewStaffAccount { fullName: string; identifier: string; channel: string; role: string; partnerKind?: PartnerKind; university?: string; registrationNumber?: string }
 
 /** GET /ops/accounts with no filters — every account, for choosing a provider. */
 export interface AccountList { items: StaffAccount[] }
@@ -115,3 +146,44 @@ export type StatusTone = 'positive' | 'attention' | 'danger' | 'neutral';
 
 /** An Overview status line: what it says and how it is coloured. */
 export interface StatusReading { status: string; tone: StatusTone }
+
+/**
+ * GET /work/lab-reviews, as a super admin reads it: a held lab report nobody can
+ * review yet. The server sends no results, notes or patient, only what an admin
+ * needs to pick a doctor. waitingSeconds is the time since the lab filed it.
+ */
+export interface UnassignedLabReview { id: string; testPanel: string[]; criticalFlag: boolean; waitingSeconds: number }
+
+/** GET /work/lab-reviews (super admin) */
+export interface UnassignedLabReviews { items: UnassignedLabReview[]; total: number }
+
+/** A doctor a held report can be assigned to: an active NMC_DOCTOR account, by name only. */
+export interface ReviewerChoice { id: string; fullName: string }
+
+/** Outbox states the delivery job (workflow_scheduler._process_outbox) uses, in the order the filter offers them. */
+export const OUTBOX_STATUSES = ['PENDING', 'SENDING', 'SENT', 'FAILED', 'SUPPRESSED'] as const;
+
+/**
+ * One outbox message as the console may show it, from GET /v1/admin/notifications/outbox
+ * (the durable care_outbox_events table). The server never sends the payload; the
+ * recipient and any contact inside the error arrive already masked. Times are epoch seconds.
+ */
+export interface OutboxMessage {
+  id: string;
+  eventType: string;
+  /** WHATSAPP, EMAIL, IN_APP for a notice that only reaches the student's inbox, or '' when no route exists. */
+  channel: string;
+  status: string;
+  attempts: number;
+  maxAttempts: number;
+  recipientMasked: string;
+  createdAt: number | null;
+  sentAt: number | null;
+  lastError: string | null;
+}
+
+/** POST /v1/admin/notifications/outbox/process: what one run of the delivery job reported. */
+export interface OutboxRun { processed: number; delivered: number; inApp: number; failed: number; deferred: number; pending: number }
+
+/** POST /v1/admin/notifications/outbox/requeue: SUCCESS, or NOT_FOUND when the message has gone. */
+export interface OutboxRequeueResult { status: string }

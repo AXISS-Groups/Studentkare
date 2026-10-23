@@ -1,25 +1,23 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
+import { REVIEW_ROUTES } from '../reviewRoutes';
+import { CLINICIAN_NAV } from '@/design-system/clinician-shell/clinicianNav';
 
-describe('review-pending routes', () => {
-  it('keeps production on the live screen (or nothing) until sign-off', async () => {
-    vi.resetModules();
-    vi.doMock('@/core/env', () => ({ isDev: () => false }));
-    const { REVIEW_ROUTES } = await import('../reviewRoutes');
-    expect(REVIEW_ROUTES.criticalResults()).toBe('clinical-review');
-    expect(REVIEW_ROUTES.reportReviews()).toBe('report-reviews');
-    expect(REVIEW_ROUTES.encounterNote()).toBe('clinical-notes');
-    expect(REVIEW_ROUTES.prescribe()).toBeNull();
-    expect(REVIEW_ROUTES.inbox()).toBeNull();
-    expect(REVIEW_ROUTES.consultRoom()).toBeNull();
-    vi.doUnmock('@/core/env');
+describe('doctor clinical routes (Tier 1, approved 2026-10-21)', () => {
+  it('opens the canvas screens in every build', () => {
+    expect(REVIEW_ROUTES.criticalResults()).toBe('clinician/critical-results');
+    expect(REVIEW_ROUTES.reportReviews()).toBe('clinician/report-reviews');
+    expect(REVIEW_ROUTES.encounterNote()).toBe('clinician/encounter-note');
+    expect(REVIEW_ROUTES.prescribe()).toBe('clinician/prescribe');
+    expect(REVIEW_ROUTES.inbox()).toBe('clinician/inbox');
+    expect(REVIEW_ROUTES.consultRoom()).toBe('clinician/consult-room');
   });
 
-  it('opens the preview screens in development', async () => {
-    vi.resetModules();
-    vi.doMock('@/core/env', () => ({ isDev: () => true }));
-    const { REVIEW_ROUTES } = await import('../reviewRoutes');
-    expect(REVIEW_ROUTES.criticalResults()).toBe('clinician/critical-results');
-    expect(REVIEW_ROUTES.prescribe()).toBe('clinician/prescribe');
-    vi.doUnmock('@/core/env');
+  it('points the sidebar at the same screens, with no preview-only route left', () => {
+    const items = CLINICIAN_NAV.flatMap((group) => group.items);
+    const route = (id: string) => items.find((item) => item.id === id)?.route;
+    expect(route('critical-results')).toBe('clinician/critical-results');
+    expect(route('report-reviews')).toBe('clinician/report-reviews');
+    expect(route('encounter-note')).toBe('clinician/encounter-note');
+    expect(items.some((item) => item.previewRoute)).toBe(false);
   });
 });

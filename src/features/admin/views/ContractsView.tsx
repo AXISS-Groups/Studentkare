@@ -1,55 +1,105 @@
 import React, { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import { ArrowRight, Plus, ShieldCheck } from 'lucide-react';
-import { navigate } from '@/lib/workflowRouting';
-import { DataState, Field, FormError, SubmitButton } from '@/components/interface/WorkflowUI';
-import { displayDate } from '@/data/workflowTypes';
+import { DataTable, Drawer, FormField, SkButton } from '@/design-system';
+import type { DataTableRow } from '@/design-system';
+import { navigate } from '@/lib/utils/workflowRouting';
+import { displayDate } from '@/data/types/workflowTypes';
+import { AdminError, AdminLoading } from '@/screens/workspace/admin/AdminPage';
+import { useT } from '@/i18n';
+import type { MessageKey } from '@/i18n';
 import { contractsRepository } from '../model/contractsRepository';
 import { INQUIRY_STATUSES } from '../model/types';
 import { ContractsViewModel } from '../viewmodels/ContractsViewModel';
 
-/** Super Admin → Organisations → Inquiries & contracts. */
+/** Words for each inquiry status; the option values stay the codes the server expects. */
+const INQUIRY_STATUS_LABEL: Record<(typeof INQUIRY_STATUSES)[number], MessageKey> = {
+  NEW: 'admin.contracts.statusNEW',
+  CONTACTED: 'admin.contracts.statusCONTACTED',
+  QUALIFIED: 'admin.contracts.statusQUALIFIED',
+  CLOSED: 'admin.contracts.statusCLOSED',
+};
+
+/**
+ * Super Admin > Organisations > Inquiries & contracts: enterprise inquiries (status can
+ * be moved on) and contracts, from the billing API; a new contract is drafted in a
+ * drawer. Same data and actions as before, on the design system's tables.
+ */
 export const ContractsView = observer(function ContractsView() {
+  const t = useT();
   const [vm] = useState(() => new ContractsViewModel(contractsRepository));
   useEffect(() => { void vm.load(); return vm.dispose; }, [vm]);
-  // Whether the contract form is shown is presentation state.
-  const [showContract, setShowContract] = useState(false);
+  // Whether the contract form is open is presentation state.
+  const [drafting, setDrafting] = useState(false);
   const { inquiries, contracts, form: contract } = vm;
 
-  return <div className="wf-panel">
-    <div className="wf-panel-heading">
-      <div><span className="care-eyebrow">BILLING & INSTITUTIONAL</span><h2>Inquiries and contracts.</h2><p>Review institutional inquiries, then create and activate signed contracts with recorded payments.</p></div>
-      <div className="wf-row-actions"><button className="health-text-button" onClick={() => navigate('pricing')}><ShieldCheck size={15} />View public plans <ArrowRight size={15} /></button><button className="health-button" onClick={() => setShowContract(true)}><Plus size={15} />New contract</button></div>
-    </div>
-    <FormError message={vm.actionError} />
-    <DataState loading={vm.loading} error={vm.error} retry={() => void vm.load()}>
-      <div className="wf-card"><h3>Institutional inquiries</h3>
-        {!inquiries.length ? <p className="wf-fineprint">No inquiries yet.</p> : <ul className="wf-billing-receipts">{inquiries.map(inquiry => <li key={inquiry.id}>
-          <span><strong>{inquiry.organization}</strong><small>{inquiry.contactName} · {inquiry.email} · {inquiry.seats} seats · {inquiry.planId} · {displayDate(inquiry.createdAt)}</small>{inquiry.message && <small>{inquiry.message}</small>}</span>
-          <select aria-label={`Inquiry status ${inquiry.organization}`} value={inquiry.status} onChange={e => void vm.setInquiryStatus(inquiry.id, e.target.value)}>
-            {INQUIRY_STATUSES.map(status => <option key={status} value={status}>{status}</option>)}
-          </select>
-        </li>)}</ul>}
-      </div>
-      <div className="wf-card"><h3>Active contracts</h3>
-        {!contracts.length ? <p className="wf-fineprint">No contracts yet. Create one after signing.</p> : <ul className="wf-billing-receipts">{contracts.map(contract => <li key={contract.id}>
-          <span><strong>{contract.organization}</strong><small>{contract.planId} · {contract.seats} seats · {contract.assigned.length} assigned · {displayDate(contract.periodStart)} → {displayDate(contract.periodEnd)}</small></span>
-          <span className={`wf-status ${contract.status === 'ACTIVE' ? 'status-completed' : ''}`}>{contract.status}</span>
-        </li>)}</ul>}
-      </div>
-    </DataState>
+  const loading = vm.loading && !inquiries.length && !contracts.length;
 
-    {showContract && <div className="wf-card">
-      <h3>Create a contract</h3>
-      <form className="wf-form" onSubmit={e => { e.preventDefault(); void vm.createContract().then(created => { if (created) setShowContract(false); }); }}>
-        <Field label="Organization"><input value={contract.organization} onChange={e => vm.setField('organization', e.target.value)} required /></Field>
-        <Field label="Plan"><select value={contract.planId} onChange={e => vm.setField('planId', e.target.value)}><option value="CAMPUS">Campus</option><option value="ENTERPRISE">Enterprise</option></select></Field>
-        <Field label="Manager email"><input type="email" value={contract.managerEmail} onChange={e => vm.setField('managerEmail', e.target.value)} required /></Field>
-        <Field label="Seats"><input type="number" min={1} value={contract.seats} onChange={e => vm.setField('seats', Number(e.target.value))} /></Field>
-        <Field label="Annual amount (paise)"><input type="number" min={0} value={contract.annualAmountPaise} onChange={e => vm.setField('annualAmountPaise', Number(e.target.value))} /></Field>
-        <Field label="Signed reference"><input value={contract.signedReference} onChange={e => vm.setField('signedReference', e.target.value)} /></Field>
-        <SubmitButton busy={vm.acting}>Create contract</SubmitButton>
+  const inquiryRows: DataTableRow[] = inquiries.map(inquiry => ({
+    id: inquiry.id,
+    cells: [
+      { text: inquiry.organization, sub: inquiry.message || undefined, weight: 'strong' },
+      { text: inquiry.contactName, sub: inquiry.email },
+      { text: t('admin.contracts.seats', { count: inquiry.seats }) },
+      { text: inquiry.planId, mono: true },
+      { text: displayDate(inquiry.createdAt), weight: 'muted' },
+      {
+        node: <select className="sk-board-select" aria-label={t('admin.contracts.inquiryStatus', { organization: inquiry.organization })} value={inquiry.status} disabled={vm.acting} onChange={event => void vm.setInquiryStatus(inquiry.id, event.target.value)}>
+          {INQUIRY_STATUSES.map(status => <option key={status} value={status}>{t(INQUIRY_STATUS_LABEL[status])}</option>)}
+        </select>,
+      },
+    ],
+  }));
+  const contractRows: DataTableRow[] = contracts.map(row => ({
+    id: row.id,
+    cells: [
+      { text: row.organization, weight: 'strong' },
+      { text: row.planId, mono: true },
+      { text: t('admin.contracts.seats', { count: row.seats }), sub: t('admin.contracts.assigned', { count: row.assigned.length }) },
+      { text: t('adminBoard.contracts.period', { start: displayDate(row.periodStart), end: displayDate(row.periodEnd) }), weight: 'muted' },
+      { pill: { label: row.status, tone: row.status === 'ACTIVE' ? 'positive' : 'neutral' } },
+    ],
+  }));
+
+  return <div className="sk-ctp-panel">
+    <div className="sk-board-actions">
+      <SkButton variant="secondary" onClick={() => navigate('pricing')}>{t('admin.contracts.viewPlans')}</SkButton>
+      <SkButton onClick={() => setDrafting(true)}>{t('admin.contracts.new')}</SkButton>
+    </div>
+    {!drafting && vm.actionError ? <p className="sk-board-error" role="alert">{vm.actionError}</p> : null}
+    {loading ? <AdminLoading label={t('adminBoard.contracts.loading')} />
+      : vm.error ? <AdminError title={t('adminBoard.contracts.error')} message={vm.error} onRetry={() => void vm.load()} />
+        : <>
+    <DataTable
+      title={t('admin.contracts.inquiries')}
+      caption={t('admin.contracts.inquiries')}
+      columns={[{ label: t('admin.col.organisation') }, { label: t('adminBoard.contracts.colContact') }, { label: t('adminBoard.contracts.colSeats') }, { label: t('admin.col.plan') }, { label: t('adminBoard.contracts.colReceived') }, { label: t('admin.col.state') }]}
+      rows={inquiryRows}
+      emptyMessage={{ title: t('admin.contracts.noInquiries'), body: t('adminBoard.contracts.noInquiriesBody') }}
+    />
+    <DataTable
+      title={t('admin.contracts.active')}
+      caption={t('admin.contracts.active')}
+      columns={[{ label: t('admin.col.organisation') }, { label: t('admin.col.plan') }, { label: t('adminBoard.contracts.colSeats') }, { label: t('adminBoard.contracts.colPeriod') }, { label: t('admin.col.state') }]}
+      rows={contractRows}
+      emptyMessage={{ title: t('admin.contracts.noContracts'), body: t('adminBoard.contracts.noContractsBody') }}
+    />
+    </>}
+    {drafting ? <Drawer open title={t('admin.contracts.createTitle')} busy={vm.acting} onClose={() => setDrafting(false)}>
+      <form className="sk-board-form" onSubmit={event => { event.preventDefault(); void vm.createContract().then(created => { if (created) setDrafting(false); }); }}>
+        {vm.actionError ? <p className="sk-board-error" role="alert">{vm.actionError}</p> : null}
+        <FormField label={t('admin.contracts.organization')}><input value={contract.organization} onChange={event => vm.setField('organization', event.target.value)} required /></FormField>
+        <FormField label={t('admin.col.plan')}>
+          <select value={contract.planId} onChange={event => vm.setField('planId', event.target.value)}>
+            <option value="CAMPUS">{t('admin.contracts.planCampus')}</option>
+            <option value="ENTERPRISE">{t('admin.contracts.planEnterprise')}</option>
+          </select>
+        </FormField>
+        <FormField label={t('admin.contracts.managerEmail')}><input type="email" value={contract.managerEmail} onChange={event => vm.setField('managerEmail', event.target.value)} required /></FormField>
+        <FormField label={t('admin.contracts.seatsField')}><input type="number" min={1} value={contract.seats} onChange={event => vm.setField('seats', Number(event.target.value))} /></FormField>
+        <FormField label={t('admin.contracts.amount')}><input type="number" min={0} value={contract.annualAmountPaise} onChange={event => vm.setField('annualAmountPaise', Number(event.target.value))} /></FormField>
+        <FormField label={t('admin.contracts.reference')}><input value={contract.signedReference} onChange={event => vm.setField('signedReference', event.target.value)} /></FormField>
+        <SkButton type="submit" busy={vm.acting}>{t('admin.contracts.createSubmit')}</SkButton>
       </form>
-    </div>}
+    </Drawer> : null}
   </div>;
 });

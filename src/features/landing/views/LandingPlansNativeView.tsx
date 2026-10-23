@@ -1,5 +1,8 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { Text, View, StyleSheet } from 'react-native';
+import { useT } from '@/i18n';
+import { planPackageLabels, planPriceLabel } from '@/data/datasets/billingPrices';
+import { usePlanCatalog } from './planCatalog';
 import {
   Actions,
   BoundaryList,
@@ -7,6 +10,7 @@ import {
   Hero,
   Meta,
   Page,
+  Paragraph,
   PrimaryAction,
   PromiseCard,
   SecondaryAction,
@@ -17,98 +21,89 @@ import type { LandingDestinations } from './landingNativeKit';
 import { skTokens } from '@/theme/tokens/generated/skTokens';
 
 const { radius, space } = skTokens;
+const { size } = skTokens.font;
 
 interface LandingPlansNativeViewProps {
   destinations: LandingDestinations;
 }
 
-const PLANS = [
-  {
-    name: 'Free Student Plan',
-    price: '₹0',
-    cadence: 'Always free for students',
-    description: 'Your campus roll ID unlocks your portable health vault. Diagnostic tests and doctor consults are paid per use.',
-    features: [
-      'Encrypted student-owned medical records vault',
-      'One-tap time-limited doctor share passes',
-      'Crisis helpline integration',
-      'Full FHIR R4 medical record export',
-    ],
-  },
-  {
-    name: 'Care Plus Plan',
-    price: '₹199',
-    cadence: 'per month · Cancel anytime',
-    description: 'For students managing regular courses of care, sports rehabilitation, or chronic medical conditions.',
-    features: [
-      'Dedicated clinician continuity per semester',
-      'Automated prescription refill tracking',
-      'Discounted campus camp and lab diagnostic pricing',
-      'Priority 24/7 tele-triage access',
-    ],
-  },
-];
-
-const FIREWALL_BOUNDARIES = [
-  { tag: 'RULE L', body: 'Clinical records never touch advertising or commerce surfaces' },
-  { tag: 'RULE L', body: 'Payment or institutional subsidy confers zero clinical record visibility to campus' },
-  { tag: 'RULE L', body: 'No gamification, health score streaks, or commercial marketing' },
-  { tag: 'DPDP ACT', body: 'Append-only consent logs with immediate revocation rights' },
-];
-
+/**
+ * Plans, React Native.
+ *
+ * Same data path as the web page (planCatalog.ts): names, prices and packages
+ * only from `GET /billing/plans`; while it loads, or if it cannot be read or
+ * one plan is malformed, no price is shown at all. Layout parity with the web
+ * board is a follow-up; this screen lists the plans plainly.
+ */
 export const LandingPlansNativeView: React.FC<LandingPlansNativeViewProps> = function LandingPlansNativeView({
   destinations: to,
 }) {
+  const t = useT();
+  const { state, reload } = usePlanCatalog();
+  const boundaries = [
+    { tag: t('landing.plans.native.tagNever'), body: t('landing.plans.native.ruleAds') },
+    { tag: t('landing.plans.native.tagNever'), body: t('landing.plans.native.rulePayment') },
+    { tag: t('landing.plans.native.tagNever'), body: t('landing.plans.native.ruleGames') },
+    { tag: t('landing.plans.native.tagYourChoice'), body: t('landing.plans.native.ruleConsent') },
+  ];
   return (
     <Page>
       <Hero
-        eyebrow="TRANSPARENT PLANS"
-        title="Predictable health pricing. No hidden fees."
-        lede="Studentkare is funded by straightforward student subscriptions and campus partnerships. Your personal health records are never for sale."
+        eyebrow={t('landing.plans.banner.eyebrow')}
+        title={t('landing.plans.h1')}
+        lede={t('landing.plans.intro')}
       >
         <Actions>
-          {to.signUp ? <PrimaryAction title="Create free account" onPress={to.signUp} /> : null}
-          {to.consult ? <SecondaryAction title="Explore consultations" onPress={to.consult} /> : null}
+          {to.signUp ? <PrimaryAction title={t('landing.plans.native.createFree')} onPress={to.signUp} /> : null}
+          {to.consult ? <SecondaryAction title={t('landing.plans.native.exploreConsults')} onPress={to.consult} /> : null}
         </Actions>
-        <Meta>Clear pricing in INR. Export your medical documents at any time at zero charge.</Meta>
+        <Meta>{t('landing.plans.native.meta')}</Meta>
       </Hero>
 
-      <Section title="Available plans">
-        {PLANS.map((plan) => (
-          <View key={plan.name} style={styles.planCard}>
-            <View style={styles.planHeader}>
-              <Text style={styles.planTitle}>{plan.name}</Text>
-              <View style={styles.priceRow}>
-                <Text style={styles.priceText}>{plan.price}</Text>
-                <Text style={styles.cadenceText}>{plan.cadence}</Text>
-              </View>
-            </View>
-            <Text style={styles.planDesc}>{plan.description}</Text>
-            <View style={styles.featuresList}>
-              {plan.features.map((f) => (
-                <Text key={f} style={styles.featureItem}>✓ {f}</Text>
-              ))}
-            </View>
+      <Section title={t('landing.plans.nav.plans')}>
+        {state.status === 'loading' ? (
+          <View accessibilityRole="progressbar" accessibilityLabel={t('landing.plans.loading')}>
+            <Meta>{t('landing.plans.loading')}</Meta>
           </View>
-        ))}
+        ) : null}
+        {state.status === 'error' ? (
+          <View style={styles.planCard} accessibilityRole="alert">
+            <Text style={styles.planName}>{t('landing.plans.loadFailedTitle')}</Text>
+            <Paragraph>{t('landing.plans.loadFailedBody')}</Paragraph>
+            <PrimaryAction title={t('common.tryAgain')} onPress={reload} />
+            <Meta>{t('landing.plans.errorRef')}</Meta>
+          </View>
+        ) : null}
+        {state.status === 'ready' && state.plans.length === 0 ? <Paragraph>{t('landing.plans.empty')}</Paragraph> : null}
+        {state.status === 'ready' ? state.plans.map((plan) => (
+          <View key={plan.id} style={styles.planCard}>
+            <Text style={styles.planName} accessibilityRole="header">{plan.name}</Text>
+            <Text style={styles.planPrice}>{planPriceLabel(plan, t)} <Text style={styles.planPeriod}>{plan.period}</Text></Text>
+            {planPackageLabels(plan, t).map((label) => <Meta key={label}>{label}</Meta>)}
+            <Paragraph>{plan.description}</Paragraph>
+            {plan.benefits.length > 0
+              ? plan.benefits.map((b) => <Meta key={b}>{b}</Meta>)
+              : <Meta>{t('landing.plans.benefitsPending')}</Meta>}
+          </View>
+        )) : null}
       </Section>
 
-      <Section title="How we make money: The Rule L Firewall">
+      <Section title={t('landing.plans.footer.howWeMakeMoney')}>
         <PromiseCard
-          title="Clinical data is firewalled from commerce"
-          body="Under constitutional Rule L, diagnostic reports, vital stats, and prescriptions are strictly segregated from payment data. Advertisers cannot purchase ads, and paying an institutional subscription does not grant your university access to your medical vault."
+          title={t('landing.plans.native.firewallTitle')}
+          body={t('landing.plans.native.firewallBody')}
         />
-        <BoundaryList items={FIREWALL_BOUNDARIES} />
+        <BoundaryList items={boundaries} />
       </Section>
 
       <Footer
-        note="Plans are designed to be accessible to all students. Stored records remain yours even if you downgrade or cancel."
+        note={t('landing.plans.native.footerNote')}
         links={[
-          { title: 'For students', onPress: to.students },
-          { title: 'Care programmes', onPress: to.programs },
-          { title: 'Lab tests', onPress: to.labTests },
-          { title: 'Wellness training', onPress: to.wellness },
-          { title: 'Sign in', onPress: to.signIn },
+          { title: t('landing.campus.nav.forStudents'), onPress: to.students },
+          { title: t('landing.plans.native.programmes'), onPress: to.programs },
+          { title: t('landing.plans.nav.labTests'), onPress: to.labTests },
+          { title: t('landing.plans.footer.wellness'), onPress: to.wellness },
+          { title: t('landing.plans.signIn'), onPress: to.signIn },
         ]}
       />
     </Page>
@@ -124,43 +119,7 @@ const styles = StyleSheet.create({
     borderColor: color.ruleSoft,
     gap: space.s10,
   },
-  planHeader: {
-    gap: space.s4,
-  },
-  planTitle: {
-    fontSize: skTokens.font.size.titleSm,
-    fontWeight: '800',
-    color: color.text,
-  },
-  priceRow: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    gap: space.s6,
-  },
-  priceText: {
-    fontSize: skTokens.font.size.title,
-    fontWeight: '800',
-    color: color.action,
-  },
-  cadenceText: {
-    fontSize: skTokens.font.size.caption,
-    color: color.text2,
-  },
-  planDesc: {
-    fontSize: skTokens.font.size.bodySm,
-    color: color.text2,
-    lineHeight: 20,
-  },
-  featuresList: {
-    marginTop: space.s6,
-    gap: space.s4,
-    borderTopWidth: 1,
-    borderTopColor: color.ruleSoft,
-    paddingTop: space.s8,
-  },
-  featureItem: {
-    fontSize: skTokens.font.size.caption,
-    color: color.text,
-    fontWeight: '600',
-  },
+  planName: { fontSize: size.titleSm, fontWeight: '800', color: color.text },
+  planPrice: { fontSize: size.heading, fontWeight: '800', color: color.text },
+  planPeriod: { fontSize: size.bodySm, fontWeight: '700', color: color.text3 },
 });

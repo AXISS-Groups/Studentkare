@@ -10,7 +10,7 @@ vi.mock('@/data/contexts/AuthContext', () => ({
   }),
 }));
 
-vi.mock('@/data/AuthContext', () => ({
+vi.mock('@/data/contexts/AuthContext', () => ({
   useAuth: () => ({
     user: null,
     logout: vi.fn(),
@@ -22,7 +22,7 @@ vi.mock('@/core/navigation', () => ({
   useLocation: () => ({ pathname: '/handover' }),
 }));
 
-vi.mock('@/lib/workflowRouting', () => ({
+vi.mock('@/lib/utils/workflowRouting', () => ({
   navigate: vi.fn(),
   homeForRole: vi.fn(() => 'vendor'),
   canAccessRoute: vi.fn(() => true),
@@ -36,7 +36,8 @@ describe('WorkspaceScreen vendor routing', () => {
 
   it('renders VendorSubstitutionScreen when route is substitutions even with unauthenticated session', async () => {
     render(<WorkspaceScreen route="substitutions" />);
-    expect(await screen.findByRole('heading', { level: 1, name: 'Substitutions' })).toBeInTheDocument();
+    // WP-15: the page reads the live dispenses; with no session that read fails closed into its error state.
+    expect(await screen.findByRole('heading', { level: 1, name: /substitutions/i })).toBeInTheDocument();
   });
 
   it('renders VendorReorderScreen when route is reorder even with unauthenticated session', async () => {
@@ -51,7 +52,8 @@ describe('WorkspaceScreen vendor routing', () => {
 
   it('renders VendorConsoleScreen when route is console or performance even with unauthenticated session', async () => {
     render(<WorkspaceScreen route="console" />);
-    expect(await screen.findByRole('heading', { level: 1, name: 'Fulfilment queue' })).toBeInTheDocument();
+    // Signed out, the queue can't be read: the page says so rather than showing sample orders.
+    expect(await screen.findByRole('heading', { level: 1, name: /fulfilment queue/i })).toBeInTheDocument();
   });
 
   it('renders VendorSettlementScreen when route is settlement even with unauthenticated session', async () => {

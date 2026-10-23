@@ -2,7 +2,7 @@ import { observer } from 'mobx-react-lite';
 import { ProviderPanelOrchestrator } from '../../components/ProviderPanelOrchestrator';
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
-import { useTheme } from '../../theme/theme';
+import { useTheme } from '../../theme/tokens/theme';
 import { useFabricViewModel } from '../../features/care/viewmodel/useFabricViewModel';
 import { Card } from '../../components/Card';
 import { Badge } from '../../components/Badge';
@@ -91,7 +91,7 @@ const M20OrchestratorScreenUnwrapped: React.FC = () => {
               </View>
 
               {/* Routing & Settlement Split */}
-              <View style={styles.bottomMetaRow}>
+              <View style={[styles.bottomMetaRow, { borderTopColor: tokens.ruleSoft }]}>
                 <View style={styles.provInfo}>
                   <Text style={[styles.metaLabel, { color: tokens.text3 }]}>Assigned Provider (SLA Ranked):</Text>
                   <Text style={[styles.provName, { color: tokens.text }]}>
@@ -114,7 +114,7 @@ const M20OrchestratorScreenUnwrapped: React.FC = () => {
                     label={`Advance State to "${nextState.toUpperCase()}"`}
                     onPress={() => vm.advance(order)}
                     size="sm"
-                    iconRight={<ArrowRight size={14} color="#ffffff" />}
+                    iconRight={<ArrowRight size={14} color={tokens.onAction} />}
                   />
                 </View>
               )}
@@ -201,7 +201,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: 12,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(0,0,0,0.06)',
     paddingTop: 12,
   },
   provInfo: {

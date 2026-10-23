@@ -1,6 +1,7 @@
 import React, { useId } from 'react';
 import { View, TextInput, Text, StyleSheet, ViewStyle, TextStyle } from 'react-native';
-import { useTheme } from '../theme/theme';
+import { useTheme } from '../theme/tokens/theme';
+import { useT } from '@/i18n';
 
 export interface InputProps {
   label?: string;
@@ -44,8 +45,9 @@ export const Input: React.FC<InputProps> = ({
   accessibilityLabel,
 }) => {
   const { tokens, radius, spacing, typography } = useTheme();
+  const t = useT();
   const isEditable = editable && !disabled;
-  const accLabel = accessibilityLabel || label || placeholder || 'Text input';
+  const accLabel = accessibilityLabel || label || placeholder || t('shopweb.input.fallback');
   const helperId = useId();
 
   return (

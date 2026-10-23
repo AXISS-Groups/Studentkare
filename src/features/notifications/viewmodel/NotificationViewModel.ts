@@ -1,5 +1,6 @@
 import { makeAutoObservable, runInAction } from 'mobx';
-import { apiRequest } from '@/data/http';
+import type { Said } from '@/i18n';
+import { apiRequest } from '@/data/services/http';
 import type { ViewModel } from '@/core/store/ViewModel';
 import { CrossPlatformStorage } from '@/core/storage/CrossPlatformStorage';
 
@@ -7,6 +8,8 @@ export type NotificationCategory = 'EMERGENCY' | 'MEDICATION' | 'APPOINTMENT' | 
 
 export interface NotificationItem {
   id: string;
+  /** The server's event name (e.g. `appointment_reminder`), for wording and the board's icon. */
+  eventType?: string;
   category: NotificationCategory;
   title: string;
   body: string;
@@ -18,7 +21,59 @@ export interface NotificationItem {
 
 export type NotificationFilter = 'all' | 'unread' | 'emergency';
 
-const STORAGE_CACHE_KEY = 'studentkare_notifications_cache_v1';
+/** The Notifications board's tabs (canvas: All, Care, Orders, Records). */
+export type NotificationTab = 'all' | 'care' | 'orders' | 'records';
+
+/** Which board tab an event belongs to; 'all' when it fits none (safety and account messages). */
+export function tabOf(eventType: string): Exclude<NotificationTab, 'all'> | null {
+  const type = eventType.toLowerCase();
+  if (/(order|return|refund|deliver|dispatch|payment|handover)/.test(type)) return 'orders';
+  if (/(document|record|report|share|consent|lab_|result)/.test(type)) return 'records';
+  if (/(medication|refill|appointment|encounter|consult|camp|reminder|prescription|visit)/.test(type)) return 'care';
+  return null;
+}
+
+/**
+ * Earlier builds cached notification text on the device under this key.
+ * Summaries can describe health events ("Your SOS has been closed"), and
+ * guardrail 9 keeps PHI out of client-side storage, so the cache is gone and
+ * any copy left behind is deleted on start.
+ */
+const LEGACY_CACHE_KEY = 'studentkare_notifications_cache_v1';
+
+/** One row of GET /api/notifications (backend/services/workflow_api.py notification_inbox). */
+export interface InboxEvent {
+  id: string;
+  eventType: string;
+  payload: Record<string, unknown> | null;
+  status: string;
+  createdAt: number;
+  sentAt: number | null;
+  readAt: number | null;
+}
+
+function categoryOf(eventType: string): NotificationCategory {
+  const type = eventType.toLowerCase();
+  if (type.startsWith('sos_') || type.includes('crisis')) return 'EMERGENCY';
+  if (type.includes('medication') || type.includes('refill')) return 'MEDICATION';
+  if (type.includes('appointment') || type.includes('camp_slot')) return 'APPOINTMENT';
+  return 'SYSTEM';
+}
+
+/** Same wording as the web inbox: the server's summary, else the event name. */
+export function toNotificationItem(event: InboxEvent): NotificationItem {
+  const label = event.eventType.replace(/_/g, ' ');
+  const summary = typeof event.payload?.summary === 'string' ? event.payload.summary : '';
+  return {
+    id: event.id,
+    eventType: event.eventType,
+    category: categoryOf(event.eventType),
+    title: label,
+    body: summary || label,
+    timestamp: event.createdAt * 1000,
+    read: event.readAt !== null,
+  };
+}
 
 /**
  * MVVM ViewModel for Real-Time Campus Notifications & Emergency Sync.
@@ -29,13 +84,15 @@ const STORAGE_CACHE_KEY = 'studentkare_notifications_cache_v1';
 export class NotificationViewModel implements ViewModel {
   items: NotificationItem[] = [];
   loading = false;
-  error: string | null = null;
+  error: Said | null = null;
   filter: NotificationFilter = 'all';
+  tab: NotificationTab = 'all';
   isConnected = true;
 
   constructor() {
     makeAutoObservable(this, {}, { autoBind: true });
-    this.initFromCache();
+    void CrossPlatformStorage.remove(LEGACY_CACHE_KEY);
+    void this.fetchNotifications();
   }
 
   get unreadCount(): number {
@@ -58,29 +115,28 @@ export class NotificationViewModel implements ViewModel {
     }
   }
 
-  private async initFromCache(): Promise<void> {
-    const cached = await CrossPlatformStorage.get<NotificationItem[]>(STORAGE_CACHE_KEY, []);
-    if (cached.length > 0) {
-      runInAction(() => {
-        this.items = cached;
-      });
-    }
-    await this.fetchNotifications();
+  /** The board's list: the chosen tab, newest first as the server sends them. */
+  get tabItems(): NotificationItem[] {
+    if (this.tab === 'all') return this.items;
+    return this.items.filter(item => tabOf(item.eventType ?? '') === this.tab);
+  }
+
+  setTab(tab: NotificationTab): void {
+    this.tab = tab;
   }
 
   async fetchNotifications(): Promise<void> {
     this.loading = true;
     this.error = null;
     try {
-      const response = await apiRequest<{ notifications: NotificationItem[] }>('/notifications');
+      const response = await apiRequest<{ items: InboxEvent[] }>('/notifications');
       runInAction(() => {
-        this.items = response.notifications || [];
+        this.items = response.items.map(toNotificationItem);
         this.loading = false;
       });
-      await CrossPlatformStorage.set(STORAGE_CACHE_KEY, this.items);
     } catch (err: unknown) {
       runInAction(() => {
-        this.error = err instanceof Error ? err.message : 'Failed to synchronize notifications.';
+        this.error = err instanceof Error && err.message ? { raw: err.message } : { key: 'notif.failedBody' };
         this.loading = false;
       });
     }
@@ -94,38 +150,25 @@ export class NotificationViewModel implements ViewModel {
     const item = this.items.find(i => i.id === id);
     if (!item || item.read) return;
 
-    // Optimistic update
     item.read = true;
-    await CrossPlatformStorage.set(STORAGE_CACHE_KEY, this.items);
-
     try {
-      await apiRequest(`/notifications/${encodeURIComponent(id)}/read`, { method: 'PATCH' });
-    } catch (err) {
-      console.warn('[NotificationViewModel] Mark read sync error:', err);
+      await apiRequest(`/notifications/${encodeURIComponent(id)}/read`, { method: 'POST' });
+    } catch {
+      // The server still has it unread, so the screen must too.
+      runInAction(() => { item.read = false; this.error = { key: 'notif.markFailed' }; });
     }
   }
 
   async markAllAsRead(): Promise<void> {
-    if (this.items.length === 0) return;
-
-    // Optimistic update
-    this.items.forEach(item => {
-      item.read = true;
-    });
-    await CrossPlatformStorage.set(STORAGE_CACHE_KEY, this.items);
-
-    try {
-      await apiRequest('/notifications/read-all', { method: 'POST' });
-    } catch (err) {
-      console.warn('[NotificationViewModel] Mark all read sync error:', err);
-    }
+    // The backend has no bulk endpoint; mark each unread one (the inbox holds at most 100).
+    const unread = this.items.filter(item => !item.read);
+    await Promise.all(unread.map(item => this.markAsRead(item.id)));
   }
 
   pushRealtimeNotification(notification: NotificationItem): void {
     const exists = this.items.some(i => i.id === notification.id);
     if (!exists) {
       this.items.unshift(notification);
-      CrossPlatformStorage.set(STORAGE_CACHE_KEY, this.items);
     }
   }
 
@@ -138,6 +181,7 @@ export class NotificationViewModel implements ViewModel {
     this.loading = false;
     this.error = null;
     this.filter = 'all';
+    this.tab = 'all';
   }
 
   dispose(): void {

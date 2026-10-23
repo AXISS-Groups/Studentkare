@@ -53,16 +53,22 @@ INTEGRATIONS_DB: dict = {
         "max_attempts": int(os.getenv("OTP_MAX_ATTEMPTS", "5")),
     },
     "twofa": {
-        "enforced_roles": [r for r in os.getenv("TWOFA_ENFORCED_ROLES", "SUPER_ADMIN").split(",") if r],
+        # Counsellors see crisis students' names and contacts, so they are held to 2FA by default too.
+        "enforced_roles": [r for r in os.getenv("TWOFA_ENFORCED_ROLES", "SUPER_ADMIN,COUNSELLOR").split(",") if r],
         "issuer": os.getenv("TWOFA_ISSUER", "StudentKare"),
     },
     "platform": {
         "app_domain": os.getenv("APP_DOMAIN", "studentkare.co"),
         "brand_name": os.getenv("BRAND_NAME", "StudentKare"),
         "support_email": os.getenv("SUPPORT_EMAIL", f"support@{os.getenv('APP_DOMAIN', 'studentkare.co')}"),
-        "company_address": os.getenv("COMPANY_ADDRESS", "Plot 42, Knowledge Park, HITEC City, Hyderabad, Telangana 500081"),
-        "copyright_text": os.getenv("COPYRIGHT_TEXT", "© 2026 StudentKare. All rights reserved."),
-        "support_phone": os.getenv("SUPPORT_PHONE", "+91 80080 00000"),
+        # No made-up defaults (audit L8): unset means nothing is shown.
+        "company_address": os.getenv("COMPANY_ADDRESS", ""),
+        "copyright_text": os.getenv("COPYRIGHT_TEXT", "© StudentKare. All rights reserved."),
+        # The group the product belongs to, shown beside the copyright in
+        # outbound mail and messages. Override with PARENT_COMPANY (or the
+        # SuperAdmin integration settings) rather than editing a template.
+        "parent_company": os.getenv("PARENT_COMPANY", "Axiss Groups"),
+        "support_phone": os.getenv("SUPPORT_PHONE", ""),
         "logo_url": os.getenv("LOGO_URL", ""),
         "favicon_url": os.getenv("FAVICON_URL", ""),
     },
@@ -71,6 +77,24 @@ INTEGRATIONS_DB: dict = {
         "provider": os.getenv("LLM_PROVIDER", "openai"),
         "api_key": os.getenv("LLM_API_KEY", os.getenv("EMERGENT_LLM_KEY", "")),
         "model": os.getenv("LLM_MODEL", "llama3.1:8b"),
+    },
+    # India's Health Facility Registry (ABDM HFR), for the care directory. Nothing
+    # reads from it until a super admin sets credentials here, and even then the
+    # connector says plainly that live lookups are not built (services/hfr_registry.py).
+    "abdm_hfr": {
+        "enabled": os.getenv("ABDM_HFR_ENABLED", "false").lower() == "true",
+        "registry_url": os.getenv("ABDM_HFR_REGISTRY_URL", ""),
+        "client_id": os.getenv("ABDM_HFR_CLIENT_ID", ""),
+        "client_secret": os.getenv("ABDM_HFR_CLIENT_SECRET", ""),
+    },
+    # Reading the printed text on a photo of a medicine strip or box (Medicine
+    # information, plan tier1-medicine-info-2026-10-22, D-MI-10). Tesseract on our
+    # own server, no third party. Off until the AI-constitution owner and the DPO
+    # sign; the screen says so (services/medicine_ocr.py).
+    "medicine_ocr": {
+        "enabled": os.getenv("MEDICINE_OCR_ENABLED", "false").lower() == "true",
+        "engine": "tesseract",
+        "binary": os.getenv("MEDICINE_OCR_TESSERACT", "tesseract"),
     },
     "apilayer": {
         "enabled": os.getenv("APILAYER_ENABLED", "false").lower() == "true",
@@ -161,24 +185,36 @@ def save_to_db(provider: str):
                 row.updated_at = time.time()
             db.commit()
     except Exception as e:
+        from services.integration_secret_vault import VaultKeyMissing
+        if isinstance(e, VaultKeyMissing):
+            raise  # never fall back to plaintext in production (audit M4)
         print(f"[CONFIG] Could not persist {provider} to database: {e}", flush=True)
 
 
 def mask_secret(value: str) -> str:
+    """Enough to tell two keys apart, never enough to use one: the last two characters of a long value."""
     if not value:
         return ""
     s = str(value)
-    if len(s) <= 4:
+    if len(s) < 12:
         return "••••"
-    return f"{s[:2]}••••••{s[-2:]}"
+    return f"••••••{s[-2:]}"
+
+
+def is_secret_field(name: str) -> bool:
+    return any(h in name for h in SECRET_HINTS)
 
 
 def sanitize(provider: str) -> dict:
+    """The admin view of a provider's config. A secret leaves the server only
+    as ``<field>_masked``; the value itself is never sent to the browser."""
     out: dict = {}
     for k, v in INTEGRATIONS_DB.get(provider, {}).items():
-        out[k] = v
-        if isinstance(v, str) and any(h in k for h in SECRET_HINTS):
-            out[f"{k}_masked"] = mask_secret(v)
+        if is_secret_field(k):
+            out[f"{k}_masked"] = mask_secret(v) if isinstance(v, str) else ("••••" if v else "")
+            out[f"{k}_set"] = bool(v)
+        else:
+            out[k] = v
     return out
 
 
@@ -215,9 +251,5 @@ def public_config() -> dict:
             "supportPhone": INTEGRATIONS_DB["platform"].get("support_phone", ""),
             "logoUrl": INTEGRATIONS_DB["platform"].get("logo_url", ""),
             "faviconUrl": INTEGRATIONS_DB["platform"].get("favicon_url", ""),
-        },
-        "rtc": {
-            "signallingUrl": os.getenv("RTC_SIGNALLING_URL", ""),
-            "iceServers": os.getenv("RTC_ICE_SERVERS", ""),
         },
     }

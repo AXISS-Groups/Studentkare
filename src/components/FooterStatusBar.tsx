@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import { useTheme } from '../theme/theme';
+import { useTheme } from '../theme/tokens/theme';
 import { StudentKareLogo } from './StudentKareLogo';
 import {
-  Check,
   X,
 } from 'lucide-react';
 
@@ -47,8 +46,8 @@ export const FooterStatusBar: React.FC<{ compact?: boolean }> = ({ compact = fal
       {compact ? <footer className="care-compact-footer"><StudentKareLogo size={25} showStrapline={false} /><span>A little care. Every part of your day.</span><button onClick={() => setModalOpen(true)}>Privacy & preferences</button><small>Studentkare · {new Date().getFullYear()}</small></footer> : <footer
         style={{
           width: '100%',
-          backgroundColor: '#09081a',
-          color: '#ffffff',
+          backgroundColor: 'var(--sk-color-hero-bg)',
+          color: 'var(--sk-color-on-hero)',
           padding: '56px 40px 24px',
           borderTop: '1px solid rgba(255, 255, 255, 0.08)',
           boxSizing: 'border-box',
@@ -73,7 +72,7 @@ export const FooterStatusBar: React.FC<{ compact?: boolean }> = ({ compact = fal
               <div style={{ marginBottom: 14 }}>
                 <StudentKareLogo size={30} showStrapline={false} />
               </div>
-              <div style={{ fontSize: 13, color: 'rgba(255, 255, 255, 0.65)', lineHeight: 1.5, maxWidth: 280, marginBottom: 20 }}>
+              <div style={{ fontSize: 13, color: 'var(--sk-color-on-hero-2)', lineHeight: 1.5, maxWidth: 280, marginBottom: 20 }}>
                 Verified student health & digital telemetry network across Indian campuses.
               </div>
               
@@ -95,7 +94,7 @@ export const FooterStatusBar: React.FC<{ compact?: boolean }> = ({ compact = fal
                       borderRadius: 10,
                       backgroundColor: 'rgba(255, 255, 255, 0.06)',
                       border: '1px solid rgba(255, 255, 255, 0.1)',
-                      color: 'rgba(255, 255, 255, 0.8)',
+                      color: 'var(--sk-color-on-hero-2)',
                       display: 'grid',
                       placeItems: 'center',
                       textDecoration: 'none',
@@ -110,70 +109,54 @@ export const FooterStatusBar: React.FC<{ compact?: boolean }> = ({ compact = fal
 
             {/* Column 2: Platform Services */}
             <div style={{ flex: '1 1 160px', minWidth: 150 }}>
-              <div style={{ fontSize: 11, fontWeight: 800, color: 'rgba(255, 255, 255, 0.4)', letterSpacing: 1.2, fontFamily: typography.fontMono, marginBottom: 16 }}>
+              <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--sk-color-on-hero-label)', letterSpacing: 1.2, fontFamily: typography.fontMono, marginBottom: 16 }}>
                 PLATFORM SERVICES
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12, fontSize: 13 }}>
-                <a href="#vault" style={{ color: 'rgba(255, 255, 255, 0.8)', textDecoration: 'none' }}>Health Vault & OCR</a>
-                <a href="#camps" style={{ color: 'rgba(255, 255, 255, 0.8)', textDecoration: 'none' }}>5-Station Health Camps</a>
-                <a href="#emergency" style={{ color: 'rgba(255, 255, 255, 0.8)', textDecoration: 'none' }}>108 Emergency Smart ID</a>
-                <a href="#hostel" style={{ color: 'rgba(255, 255, 255, 0.8)', textDecoration: 'none' }}>Hostel & OPD Queue Suite</a>
-                <a href="#arc" style={{ color: 'rgba(255, 255, 255, 0.8)', textDecoration: 'none' }}>ARC-AGI Reasoning Engine</a>
+                <a href="#vault" style={{ color: 'var(--sk-color-on-hero-2)', textDecoration: 'none' }}>Health Vault & OCR</a>
+                <a href="#camps" style={{ color: 'var(--sk-color-on-hero-2)', textDecoration: 'none' }}>5-Station Health Camps</a>
+                <a href="#emergency" style={{ color: 'var(--sk-color-on-hero-2)', textDecoration: 'none' }}>108 Emergency Smart ID</a>
+                <a href="#hostel" style={{ color: 'var(--sk-color-on-hero-2)', textDecoration: 'none' }}>Hostel & OPD Queue Suite</a>
+                <a href="#arc" style={{ color: 'var(--sk-color-on-hero-2)', textDecoration: 'none' }}>ARC-AGI Reasoning Engine</a>
               </div>
             </div>
 
             {/* Column 3: Solutions */}
             <div style={{ flex: '1 1 160px', minWidth: 150 }}>
-              <div style={{ fontSize: 11, fontWeight: 800, color: 'rgba(255, 255, 255, 0.4)', letterSpacing: 1.2, fontFamily: typography.fontMono, marginBottom: 16 }}>
+              <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--sk-color-on-hero-label)', letterSpacing: 1.2, fontFamily: typography.fontMono, marginBottom: 16 }}>
                 SOLUTIONS
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12, fontSize: 13 }}>
-                <a href="#campuses" style={{ color: 'rgba(255, 255, 255, 0.8)', textDecoration: 'none' }}>University Campuses</a>
-                <a href="#emr" style={{ color: 'rgba(255, 255, 255, 0.8)', textDecoration: 'none' }}>Clinician EMR Fabric</a>
-                <a href="#labs" style={{ color: 'rgba(255, 255, 255, 0.8)', textDecoration: 'none' }}>NABL Partner Labs</a>
-                <a href="#claims" style={{ color: 'rgba(255, 255, 255, 0.8)', textDecoration: 'none' }}>Claims Intelligence</a>
+                <a href="#campuses" style={{ color: 'var(--sk-color-on-hero-2)', textDecoration: 'none' }}>University Campuses</a>
+                <a href="#emr" style={{ color: 'var(--sk-color-on-hero-2)', textDecoration: 'none' }}>Clinician EMR Fabric</a>
+                <a href="#labs" style={{ color: 'var(--sk-color-on-hero-2)', textDecoration: 'none' }}>Partner Labs</a>
+                <a href="#claims" style={{ color: 'var(--sk-color-on-hero-2)', textDecoration: 'none' }}>Claims Intelligence</a>
               </div>
             </div>
 
             {/* Column 4: Resources */}
             <div style={{ flex: '1 1 160px', minWidth: 150 }}>
-              <div style={{ fontSize: 11, fontWeight: 800, color: 'rgba(255, 255, 255, 0.4)', letterSpacing: 1.2, fontFamily: typography.fontMono, marginBottom: 16 }}>
+              <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--sk-color-on-hero-label)', letterSpacing: 1.2, fontFamily: typography.fontMono, marginBottom: 16 }}>
                 RESOURCES
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12, fontSize: 13 }}>
-                <a href="#camps" style={{ color: 'rgba(255, 255, 255, 0.8)', textDecoration: 'none' }}>Kare Health Events</a>
-                <a href="#verify" style={{ color: 'rgba(255, 255, 255, 0.8)', textDecoration: 'none' }}>Verify Health Certificate</a>
-                <a href="#blog" style={{ color: 'rgba(255, 255, 255, 0.8)', textDecoration: 'none' }}>Telemetry Blog</a>
-                <a href="#help" style={{ color: 'rgba(255, 255, 255, 0.8)', textDecoration: 'none' }}>Help Center & FAQs</a>
-                <a href="#community" style={{ color: 'rgba(255, 255, 255, 0.8)', textDecoration: 'none' }}>Student Community</a>
+                <a href="#camps" style={{ color: 'var(--sk-color-on-hero-2)', textDecoration: 'none' }}>Kare Health Events</a>
+                <a href="#verify" style={{ color: 'var(--sk-color-on-hero-2)', textDecoration: 'none' }}>Verify Health Certificate</a>
+                <a href="#blog" style={{ color: 'var(--sk-color-on-hero-2)', textDecoration: 'none' }}>Telemetry Blog</a>
+                <a href="#help" style={{ color: 'var(--sk-color-on-hero-2)', textDecoration: 'none' }}>Help Center & FAQs</a>
+                <a href="#community" style={{ color: 'var(--sk-color-on-hero-2)', textDecoration: 'none' }}>Student Community</a>
               </div>
             </div>
 
             {/* Column 5: Governance & Compliance */}
             <div style={{ flex: '1.2 1 180px', minWidth: 170 }}>
-              <div style={{ fontSize: 11, fontWeight: 800, color: 'rgba(255, 255, 255, 0.4)', letterSpacing: 1.2, fontFamily: typography.fontMono, marginBottom: 16 }}>
+              <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--sk-color-on-hero-label)', letterSpacing: 1.2, fontFamily: typography.fontMono, marginBottom: 16 }}>
                 GOVERNANCE & COMPLIANCE
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14, fontSize: 12 }}>
-                <div>
-                  <div style={{ color: '#00ffaa', fontWeight: 800, display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <Check size={14} /> DPDP Act 2023
-                  </div>
-                  <div style={{ fontSize: 11, color: 'rgba(255, 255, 255, 0.45)', marginLeft: 20 }}>India - data principal rights</div>
-                </div>
-
-                <div>
-                  <div style={{ color: '#00ffaa', fontWeight: 800, display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <Check size={14} /> ABDM M1–M3
-                  </div>
-                  <div style={{ fontSize: 11, color: 'rgba(255, 255, 255, 0.45)', marginLeft: 20 }}>NHA - certified HIU/HIP</div>
-                </div>
-
-                <div>
-                  <div style={{ color: '#00ffaa', fontWeight: 800, display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <Check size={14} /> SOC 2 Type II
-                  </div>
-                  <div style={{ fontSize: 11, color: 'rgba(255, 255, 255, 0.45)', marginLeft: 20 }}>Audited controls, annual</div>
+                {/* No certification or audit is claimed here: none is evidenced (AGENTS.md guardrail 6). */}
+                <div style={{ fontSize: 11, color: 'var(--sk-color-on-hero-2)' }}>
+                  Your rights as a data principal under India's DPDP Act: see our privacy notice.
                 </div>
 
                 <div style={{ color: tokens.action, fontWeight: 700, fontSize: 12, cursor: 'pointer', marginTop: 4 }}>
@@ -199,16 +182,16 @@ export const FooterStatusBar: React.FC<{ compact?: boolean }> = ({ compact = fal
             }}
           >
             <div>
-              <div style={{ fontSize: 18, fontWeight: 900, color: '#ffffff', marginBottom: 4 }}>
+              <div style={{ fontSize: 18, fontWeight: 900, color: 'var(--sk-color-on-hero)', marginBottom: 4 }}>
                 One email a month. Nothing else.
               </div>
-              <div style={{ fontSize: 13, color: 'rgba(255, 255, 255, 0.65)' }}>
+              <div style={{ fontSize: 13, color: 'var(--sk-color-on-hero-2)' }}>
                 New health camp dates, lab offers and campus wellness drops — no noise.
               </div>
             </div>
 
             {subscribed ? (
-              <div style={{ backgroundColor: 'rgba(0, 255, 170, 0.12)', border: '1px solid #00ffaa', borderRadius: 12, padding: '10px 20px', color: '#00ffaa', fontWeight: 800, fontSize: 13 }}>
+              <div style={{ backgroundColor: 'rgba(0, 255, 170, 0.12)', border: '1px solid var(--sk-color-on-hero-positive)', borderRadius: 12, padding: '10px 20px', color: 'var(--sk-color-on-hero-positive)', fontWeight: 800, fontSize: 13 }}>
                 Subscribed! You will receive 1 email/month max. ✓
               </div>
             ) : (
@@ -224,7 +207,7 @@ export const FooterStatusBar: React.FC<{ compact?: boolean }> = ({ compact = fal
                     border: '1px solid rgba(255, 255, 255, 0.15)',
                     borderRadius: 12,
                     padding: '10px 16px',
-                    color: '#ffffff',
+                    color: 'var(--sk-color-on-hero)',
                     fontSize: 13,
                     outline: 'none',
                     width: 220,
@@ -235,7 +218,7 @@ export const FooterStatusBar: React.FC<{ compact?: boolean }> = ({ compact = fal
                   type="submit"
                   style={{
                     backgroundColor: tokens.action,
-                    color: '#ffffff',
+                    color: tokens.onAction,
                     border: 'none',
                     borderRadius: 12,
                     padding: '10px 22px',
@@ -264,16 +247,16 @@ export const FooterStatusBar: React.FC<{ compact?: boolean }> = ({ compact = fal
             }}
           >
             <div>
-              <div style={{ fontSize: 28, fontWeight: 900, color: '#c084fc', letterSpacing: -0.8 }}>
+              <div style={{ fontSize: 28, fontWeight: 900, color: 'var(--sk-color-on-hero-label)', letterSpacing: -0.8 }}>
                 #studentkare
               </div>
-              <div style={{ fontSize: 13, color: 'rgba(255, 255, 255, 0.65)', marginTop: 4 }}>
-                Built with love for student health care <span style={{ color: '#a855f7' }}>💜</span> across whole campus
+              <div style={{ fontSize: 13, color: 'var(--sk-color-on-hero-2)', marginTop: 4 }}>
+                Built with love for student health care <span style={{ color: 'var(--sk-color-on-hero-label)' }}>💜</span> across whole campus
               </div>
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-              <span style={{ fontSize: 12, color: 'rgba(255, 255, 255, 0.55)' }}>
+              <span style={{ fontSize: 12, color: 'var(--sk-color-on-hero-2)' }}>
                 All rights reserved @ Student Kare 2026
               </span>
 
@@ -285,7 +268,7 @@ export const FooterStatusBar: React.FC<{ compact?: boolean }> = ({ compact = fal
                   alignItems: 'center',
                   gap: 7,
                   backgroundColor: 'rgba(0, 255, 170, 0.08)',
-                  color: '#00ffaa',
+                  color: 'var(--sk-color-on-hero-positive)',
                   border: '1px solid rgba(0, 255, 170, 0.35)',
                   borderRadius: 9999,
                   padding: '5px 14px',
@@ -300,8 +283,8 @@ export const FooterStatusBar: React.FC<{ compact?: boolean }> = ({ compact = fal
                     width: 7,
                     height: 7,
                     borderRadius: 4,
-                    backgroundColor: '#00ffaa',
-                    boxShadow: '0 0 8px #00ffaa',
+                    backgroundColor: 'var(--sk-color-on-hero-positive)',
+                    boxShadow: '0 0 8px var(--sk-color-on-hero-positive)',
                   }}
                 />
                 <span>Analytics ({analyticsCount})</span>
@@ -342,7 +325,7 @@ export const FooterStatusBar: React.FC<{ compact?: boolean }> = ({ compact = fal
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
               <div>
                 <div style={{ color: tokens.positive, fontSize: 11, fontWeight: 800, fontFamily: typography.fontMono, marginBottom: 4 }}>
-                  DPDP ACT 2023 & ABDM PRIVACY GUARANTEE
+                  DPDP ACT 2023 PRIVACY GUARANTEE
                 </div>
                 <div style={{ fontSize: 20, fontWeight: 900, color: tokens.text, letterSpacing: -0.5 }}>
                   Privacy & Governance Center
@@ -404,7 +387,7 @@ export const FooterStatusBar: React.FC<{ compact?: boolean }> = ({ compact = fal
                 padding: '12px 20px',
                 borderRadius: 12,
                 backgroundColor: tokens.action,
-                color: '#ffffff',
+                color: tokens.onAction,
                 fontWeight: 800,
                 fontSize: 13.5,
                 border: 'none',

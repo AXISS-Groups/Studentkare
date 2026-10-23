@@ -1,8 +1,9 @@
 import React from 'react';
 import { CalendarDays, Info, Users } from 'lucide-react';
-import { useApiResource } from '../../hooks/useApiResource';
+import { useApiResource } from '../../hooks/api/useApiResource';
 import { DataState, EmptyState } from '../../components/interface/WorkflowUI';
 import { rupees, sittingWhen } from '../wellbeing/WellnessTrainingScreen';
+import { useT } from '@/i18n';
 import '../../theme/workflows.css';
 
 interface Sitting {
@@ -43,6 +44,7 @@ interface WellnessSession {
  * against, and the endpoint does not return one to anybody.
  */
 export function WellnessWorkshopsScreen(): React.ReactElement {
+  const t = useT();
   const timetable = useApiResource<WellnessSession[]>('/wellness/timetable');
   const sessions = timetable.data ?? [];
 
@@ -57,20 +59,17 @@ export function WellnessWorkshopsScreen(): React.ReactElement {
     <>
       <div className="wf-panel-heading">
         <div>
-          <span className="care-eyebrow">CAMPUS WELLNESS</span>
-          <h2>Wellness sessions on your campus</h2>
-          <p>
-            What your students can see and book right now, with how many spots have gone. Publishing
-            a session and scheduling its sittings is done from the catalogue.
-          </p>
+          <span className="care-eyebrow">{t('campus.wellness.eyebrow')}</span>
+          <h2>{t('campus.wellness.title')}</h2>
+          <p>{t('campus.wellness.lead')}</p>
         </div>
       </div>
 
       <DataState {...timetable} retry={timetable.reload}>
         {sessions.length === 0 ? (
           <EmptyState
-            title="No wellness sessions are published."
-            description="Publish a session in the catalogue and schedule its sittings, and both this page and your students' timetable fill in."
+            title={t('campus.wellness.emptyTitle')}
+            description={t('campus.wellness.emptyBody')}
           />
         ) : (
           <>
@@ -80,14 +79,14 @@ export function WellnessWorkshopsScreen(): React.ReactElement {
                   <CalendarDays size={24} aria-hidden="true" />
                 </span>
                 <h3>{sessions.length}</h3>
-                <p>Sessions published</p>
+                <p>{t('campus.wellness.statSessions')}</p>
               </article>
               <article className="wf-card">
                 <span className="wf-record-icon">
                   <CalendarDays size={24} aria-hidden="true" />
                 </span>
                 <h3>{sittings.length}</h3>
-                <p>Sittings in the next two weeks</p>
+                <p>{t('campus.wellness.statSittings')}</p>
               </article>
               <article className="wf-card">
                 <span className="wf-record-icon">
@@ -96,7 +95,7 @@ export function WellnessWorkshopsScreen(): React.ReactElement {
                 <h3>
                   {taken} / {spots}
                 </h3>
-                <p>Spots taken</p>
+                <p>{t('campus.wellness.statSpots')}</p>
               </article>
             </div>
 
@@ -112,15 +111,15 @@ export function WellnessWorkshopsScreen(): React.ReactElement {
                 </div>
 
                 {session.sittings.length === 0 ? (
-                  <p className="wf-form-message">No sittings scheduled in the next two weeks.</p>
+                  <p className="wf-form-message">{t('campus.wellness.noSittings')}</p>
                 ) : (
                   <div className="wf-table-scroll">
                     <table>
                       <thead>
                         <tr>
-                          <th scope="col">When</th>
-                          <th scope="col">Taken</th>
-                          <th scope="col">Capacity</th>
+                          <th scope="col">{t('campus.wellness.col.when')}</th>
+                          <th scope="col">{t('campus.wellness.col.taken')}</th>
+                          <th scope="col">{t('campus.wellness.col.capacity')}</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -140,10 +139,7 @@ export function WellnessWorkshopsScreen(): React.ReactElement {
 
             <div className="wf-notice wf-section-gap" role="note">
               <Info size={18} aria-hidden="true" />
-              <span>
-                You see how many spots have gone, never who took them. A student attending a
-                wellbeing session is not something their university is told about.
-              </span>
+              <span>{t('campus.wellness.privacyNote')}</span>
             </div>
           </>
         )}

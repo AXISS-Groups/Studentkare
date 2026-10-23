@@ -28,13 +28,13 @@
 .web-pass-card {
   padding: 26px;
   border-radius: 28px;
-  background: linear-gradient(160deg, #EEF2FF 0%, #FFFFFF 60%);
-  border: 1px solid var(--sk-color-rule, #DAE2FD);
+  background: linear-gradient(160deg, var(--sk-color-surface-3) 0%, var(--sk-color-surface) 60%);
+  border: 1px solid var(--sk-color-rule);
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 20px;
-  box-shadow: 0 12px 36px rgba(19, 27, 46, 0.06);
+  box-shadow: 0 12px 36px color-mix(in srgb, var(--sk-color-illustration-ink) 6%, transparent);
 }
 
 .web-pass-user-row {
@@ -55,14 +55,14 @@
   width: 100%;
   height: 100%;
   border-radius: 999px;
-  background: linear-gradient(140deg, #818CF8, #3525CD);
+  background: linear-gradient(140deg, var(--sk-color-hero-bg-top), var(--sk-color-hero-bg));
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 19px;
   font-weight: 800;
-  color: #FFFFFF;
-  box-shadow: 0 0 0 3px #FFFFFF, 0 0 0 5px #6EE7B7;
+  color: var(--sk-color-on-hero);
+  box-shadow: 0 0 0 3px var(--sk-color-surface), 0 0 0 5px var(--sk-color-positive-rule);
 }
 
 .web-pass-verified-badge {
@@ -72,8 +72,8 @@
   width: 20px;
   height: 20px;
   border-radius: 999px;
-  background: #10B981;
-  border: 2px solid #FFFFFF;
+  background: var(--sk-color-positive-fill);
+  border: 2px solid var(--sk-color-surface);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -88,19 +88,19 @@
 .web-pass-user-name {
   font-size: 19px;
   font-weight: 800;
-  color: var(--sk-color-text, #131B2E);
+  color: var(--sk-color-text);
 }
 
 .web-pass-user-sub {
   font-size: 12.5px;
   font-weight: 600;
-  color: var(--sk-color-text-2, #464555);
+  color: var(--sk-color-text-2);
 }
 
 .web-pass-user-verified {
   font-size: 12px;
   font-weight: 800;
-  color: var(--sk-color-positive, #047857);
+  color: var(--sk-color-positive);
 }
 
 /* Scannable Pass QR Box */
@@ -111,11 +111,21 @@
   padding: 14px;
   box-sizing: border-box;
   border-radius: 20px;
-  background: #FFFFFF;
-  box-shadow: 0 10px 30px rgba(19, 27, 46, 0.12);
+  background: var(--sk-color-surface);
+  box-shadow: 0 10px 30px color-mix(in srgb, var(--sk-color-illustration-ink) 12%, transparent);
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* Holding a QR, the plate is the QR's quiet zone: fixed white in both themes, and the pass
+   code printed on it is fixed dark ink. The empty and stale states follow the theme. */
+.web-pass-qr-box:has(> img, > [role='img']) {
+  background: var(--sk-color-qr-background);
+}
+
+.web-pass-qr-box:has(> img, > [role='img']) .web-pass-instructions {
+  color: var(--sk-color-qr-foreground);
 }
 
 .web-pass-qr-grid {
@@ -131,7 +141,7 @@
 }
 
 .web-pass-qr-cell.is-dark {
-  background: #131B2E;
+  background: var(--sk-color-qr-foreground);
   border-radius: 1.5px;
 }
 
@@ -143,24 +153,24 @@
   width: 48px;
   height: 48px;
   border-radius: 12px;
-  background: #FFFFFF;
+  background: var(--sk-color-qr-background);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--sk-color-illustration-ink) 15%, transparent);
 }
 
 .web-pass-qr-center-inner {
   width: 38px;
   height: 38px;
   border-radius: 10px;
-  background: linear-gradient(140deg, #818CF8, #3525CD);
+  background: linear-gradient(140deg, var(--sk-color-hero-bg-top), var(--sk-color-hero-bg));
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 13px;
   font-weight: 800;
-  color: #FFFFFF;
+  color: var(--sk-color-on-hero);
 }
 
 /* Timer and Code Footer */
@@ -189,14 +199,14 @@
   font-size: 26px;
   font-weight: 700;
   letter-spacing: 3px;
-  color: var(--sk-color-text, #131B2E);
+  color: var(--sk-color-text);
 }
 
 .web-pass-instructions {
   font-size: 12.5px;
   line-height: 1.5;
   font-weight: 600;
-  color: var(--sk-color-text-2, #464555);
+  color: var(--sk-color-text-2);
   text-align: center;
 }
 
@@ -219,14 +229,14 @@
   gap: 14px;
   padding: 14px 16px;
   border-radius: 16px;
-  background: #FFFFFF;
-  border: 1px solid var(--sk-color-rule-soft, #EEF2FF);
-  box-shadow: 0 2px 8px rgba(19, 27, 46, 0.03);
+  background: var(--sk-color-surface);
+  border: 1px solid var(--sk-color-rule-soft);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--sk-color-illustration-ink) 3%, transparent);
 }
 
 .web-pass-history-item.is-reported {
-  border-color: #FECDD3;
-  background: #FFF1F2;
+  border-color: var(--sk-color-danger-rule);
+  background: var(--sk-color-danger-bg);
 }
 
 .web-pass-history-icon {
@@ -234,13 +244,13 @@
   height: 42px;
   border-radius: 12px;
   flex-shrink: 0;
-  background: #EEF2FF;
+  background: var(--sk-color-surface-3);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 13px;
   font-weight: 800;
-  color: #3525CD;
+  color: var(--sk-color-action);
 }
 
 .web-pass-history-info {
@@ -254,13 +264,13 @@
 .web-pass-history-provider {
   font-size: 14.5px;
   font-weight: 800;
-  color: var(--sk-color-text, #131B2E);
+  color: var(--sk-color-text);
 }
 
 .web-pass-history-meta {
   font-size: 12.5px;
   font-weight: 600;
-  color: var(--sk-color-text-2, #464555);
+  color: var(--sk-color-text-2);
 }
 
 .web-pass-history-status {
@@ -277,14 +287,14 @@
   font-size: 12px;
   font-weight: 800;
   cursor: pointer;
-  border: 1px solid #FECDD3;
-  background: #FFFFFF;
-  color: #BE123C;
+  border: 1px solid var(--sk-color-danger-rule);
+  background: var(--sk-color-surface);
+  color: var(--sk-color-danger);
   transition: all 0.15s ease;
 }
 
 .web-pass-report-btn:hover {
-  background: #FFF1F2;
+  background: var(--sk-color-danger-bg);
 }
 
 .web-pass-report-btn:disabled {
@@ -309,12 +319,12 @@
 .web-pass-security-tile {
   padding: 16px;
   border-radius: 16px;
-  background: #FFFFFF;
-  border: 1px solid var(--sk-color-rule-soft, #EEF2FF);
+  background: var(--sk-color-surface);
+  border: 1px solid var(--sk-color-rule-soft);
   font-size: 13px;
   line-height: 1.5;
   font-weight: 500;
-  color: var(--sk-color-text, #131B2E);
+  color: var(--sk-color-text);
 }
 
 .web-pass-security-tile strong {
@@ -329,7 +339,7 @@
   position: fixed;
   inset: 0;
   z-index: 100;
-  background: rgba(8, 10, 24, 0.55);
+  background: var(--sk-color-scrim);
   backdrop-filter: blur(2px);
   display: flex;
   align-items: center;
@@ -342,8 +352,8 @@
   max-width: 480px;
   padding: 28px;
   border-radius: 24px;
-  box-shadow: 0 30px 80px rgba(19, 27, 46, 0.35);
-  background: #FFFFFF;
+  box-shadow: 0 30px 80px color-mix(in srgb, var(--sk-color-illustration-ink) 35%, transparent);
+  background: var(--sk-color-surface);
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -358,9 +368,25 @@
   z-index: 110;
   padding: 12px 20px;
   border-radius: 14px;
-  background: #131B2E;
-  color: #FFFFFF;
+  background: var(--sk-color-brand-navy);
+  color: var(--sk-color-on-hero);
   font-size: 13.5px;
   font-weight: 700;
-  box-shadow: 0 16px 40px rgba(19, 27, 46, 0.3);
+  box-shadow: 0 16px 40px color-mix(in srgb, var(--sk-color-illustration-ink) 30%, transparent);
+}
+
+.web-pass-title {
+  margin: 0;
+  font-size: var(--sk-text-heading);
+  font-weight: 800;
+  color: var(--sk-color-text);
+}
+
+.web-pass-eyebrow {
+  margin: 0 0 var(--sk-space-8);
+  font-size: var(--sk-text-caption);
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--sk-color-text-2);
 }

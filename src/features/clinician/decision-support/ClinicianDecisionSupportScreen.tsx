@@ -1,35 +1,44 @@
-import React from 'react';
+import React, { useMemo } from 'react';
+import { useT } from '@/i18n';
 import { ConsoleTableScreen } from '../shared/ConsoleTableScreen';
 import { sampleInDevelopment } from '../shared/consoleTable';
 import type { ConsoleTableConfig, ConsoleTableData, ConsoleTableSource } from '../shared/consoleTable';
 import { cell, pill, strong } from '../shared/cells';
+import type { T } from '../shared/clinicalData';
 
 /**
- * ClinicianAi — decision support (design page 5, Tier 3). Suggests, never acts.
+ * ClinicianAi — decision support (design page 5, Tier 1, approved
+ * 2026-10-21). Suggests, never acts.
  *
  * This screen only displays suggestions. Any real feed must come from the M18
  * clinician service over its own connection (AGENTS.md guardrail 5) and every
  * model call behind it must pass through the AI constitution (guardrail 3).
- * Until that feed exists, production shows the not-connected state.
+ * A critical-value flag must come from the deterministic critical-result
+ * rule, never from a model. Until that feed exists, production shows the
+ * not-connected state, and there is no "act on it" control at all.
  */
-export const decisionSupportConfig: ConsoleTableConfig = {
-  title: 'Decision support',
-  subtitle: 'Isolated from the vault and from commerce · suggests, never acts',
-  caption: 'Decision-support suggestions, what each is based on, its source, and what it cannot do',
-  columns: [
-    { label: 'Suggestion' },
-    { label: 'Based on', width: '200px' },
-    { label: 'Confidence', width: '160px' },
-    { label: 'What it cannot do', width: '160px', align: 'end' },
-  ],
-  footnote:
-    'It reads what you are looking at and nothing else — no vault access, no purchase history, no other student’s record. It cannot order, prescribe or message anyone. The fourth row matters most: when the input is too thin, it says so instead of producing a plausible differential.',
-  empty: { title: 'No suggestions today.', body: 'Suggestions appear here only for what you are looking at in a consult, each with its source.' },
-  unconnected: { title: 'Decision support isn’t connected yet.', body: 'Suggestions will appear here once the clinician service is connected. Until then this page shows nothing rather than a guess.' },
-  errorTitle: 'Couldn’t load decision support',
-  reference: 'Ref CDSS · ClinicianAi',
-};
+export function decisionSupportConfig(t: T): ConsoleTableConfig {
+  return {
+    title: t('clinAi.title'),
+    subtitle: t('clinAi.subtitle'),
+    caption: t('clinAi.caption'),
+    columns: [
+      { label: t('clinAi.col.suggestion') },
+      { label: t('clinAi.col.basedOn'), width: '200px' },
+      { label: t('clinAi.col.confidence'), width: '160px' },
+      { label: t('clinAi.col.cannot'), width: '170px', align: 'end' },
+    ],
+    footnote: t('clinAi.footnote'),
+    empty: { title: t('clinAi.emptyTitle'), body: t('clinAi.emptyBody') },
+    emptyIcon: 'stetho-alt--p4',
+    unconnected: { title: t('clinAi.unconnectedTitle'), body: t('clinAi.unconnectedBody') },
+    errorTitle: t('clinAi.errorTitle'),
+    reference: t('clinAi.reference'),
+    statLabels: [t('clinAi.stat.today'), t('clinAi.stat.declined'), t('clinAi.stat.actions'), t('clinAi.stat.sourced')],
+  };
+}
 
+/* Development demo only (demoDataEnabled): the design's rows, never in production builds. */
 export function decisionSupportSample(): ConsoleTableData {
   return {
     badge: { label: 'Advisory only', tone: 'action' },
@@ -49,5 +58,7 @@ export function decisionSupportSample(): ConsoleTableData {
 }
 
 export function ClinicianDecisionSupportScreen({ source }: { source?: ConsoleTableSource }): React.ReactElement {
-  return <ConsoleTableScreen navId="decision-support" config={decisionSupportConfig} source={source ?? sampleInDevelopment(decisionSupportSample)} />;
+  const t = useT();
+  const config = useMemo(() => decisionSupportConfig(t), [t]);
+  return <ConsoleTableScreen navId="decision-support" config={config} source={source ?? sampleInDevelopment(decisionSupportSample)} />;
 }

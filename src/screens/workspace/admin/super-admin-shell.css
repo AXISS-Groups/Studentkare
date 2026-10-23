@@ -1,7 +1,9 @@
 /* SK-014 — Super Admin shell (design: 07-super-admin/SuperAdminConsole).
    Tokens only. Scoped under .sk-admin-shell so the older global element rules
    (.wf-application h2, .health-experience button, …) cannot restyle it.
-   The sidebar uses the sidebar tokens (slate, lilac ink) from the design. */
+   The sidebar uses the sidebar tokens (navy, white current-page pill); the brand
+   and the rows are the shared console pieces
+   (src/design-system/console-shell/console-shell.css). */
 
 .sk-admin-shell {
   display: grid;
@@ -38,105 +40,9 @@
   gap: var(--sk-space-12);
   padding: var(--sk-space-4) var(--sk-space-8) var(--sk-space-16);
 }
-.sk-admin-shell .sk-admin-wordmark {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sk-space-2);
-}
-.sk-admin-shell .sk-admin-wordmark strong {
-  font-size: var(--sk-text-title);
-  font-weight: 800;
-  letter-spacing: -0.5px;
-  line-height: 1.2;
-  color: var(--sk-color-sidebar-ink);
-}
-.sk-admin-shell .sk-admin-wordmark em {
-  font-family: inherit;
-  font-style: normal;
-  font-weight: inherit;
-}
-.sk-admin-shell .sk-admin-wordmark span {
-  font-size: var(--sk-text-body-sm);
-  font-weight: 700;
-  letter-spacing: 0.7px;
-  color: var(--sk-color-sidebar-ink-2);
-}
-.sk-admin-shell .sk-admin-group + .sk-admin-group {
-  margin-top: var(--sk-space-8);
-}
-.sk-admin-shell .sk-admin-group-title {
-  margin: 0;
-  padding: var(--sk-space-4) var(--sk-space-12) var(--sk-space-2);
-  font-size: var(--sk-text-caption);
-  font-weight: 800;
-  letter-spacing: 1.2px;
-  line-height: 1.5;
-  text-transform: uppercase;
-  color: var(--sk-color-sidebar-ink-3);
-}
-.sk-admin-shell .sk-admin-sidebar ul {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-.sk-admin-shell .sk-admin-link {
-  display: flex;
-  align-items: center;
-  gap: var(--sk-space-12);
-  width: 100%;
-  min-height: var(--sk-size-touch-target);
-  padding: 0 var(--sk-space-12);
-  border: 0;
-  border-radius: var(--sk-radius-md);
-  background: transparent;
-  color: var(--sk-color-sidebar-ink-2);
-  font-family: inherit;
-  font-size: var(--sk-text-body-sm);
-  font-weight: 600;
-  line-height: 1.3;
-  text-align: left;
-  cursor: pointer;
-  transition: background-color var(--sk-duration-fast) var(--sk-ease-standard);
-}
-.sk-admin-shell button.sk-admin-link:hover {
-  background: color-mix(in srgb, var(--sk-color-sidebar-active) 30%, transparent);
-  color: var(--sk-color-sidebar-ink);
-}
-.sk-admin-shell button.sk-admin-link:focus-visible,
 .sk-admin-shell .sk-admin-menu-button:focus-visible {
   outline: 3px solid var(--sk-color-focus);
   outline-offset: 3px;
-}
-.sk-admin-shell .sk-admin-link[aria-current="page"] {
-  background: var(--sk-color-sidebar-active);
-  color: var(--sk-color-sidebar-ink);
-  font-weight: 700;
-}
-.sk-admin-shell .sk-admin-link:disabled {
-  cursor: progress;
-}
-.sk-admin-shell .sk-admin-link svg {
-  flex-shrink: 0;
-}
-.sk-admin-shell .sk-admin-link > span {
-  flex: 1 1 auto;
-  min-width: 0;
-}
-
-/* No screen yet: in its designed place, visibly unavailable, never interactive. */
-.sk-admin-shell .sk-admin-link.is-unavailable {
-  color: var(--sk-color-sidebar-ink-3);
-  cursor: not-allowed;
-}
-.sk-admin-shell .sk-admin-link.is-unavailable > svg,
-.sk-admin-shell .sk-admin-link.is-unavailable > span {
-  opacity: 0.6;
-}
-.sk-admin-shell .sk-admin-link.is-unavailable > small {
-  flex-shrink: 0;
-  font-size: var(--sk-text-caption);
-  font-weight: 700;
-  color: var(--sk-color-sidebar-ink-3);
 }
 
 .sk-admin-shell .sk-admin-sidebar-footer {
@@ -148,7 +54,7 @@
   border-top: 1px solid color-mix(in srgb, var(--sk-color-sidebar-ink-3) 35%, transparent);
 }
 
-/* Top right of the page: Alerts, SOS and the theme toggle */
+/* Top right of the page: Alerts and the theme toggle */
 .sk-admin-shell .sk-admin-topbar {
   display: flex;
   align-items: center;
@@ -168,7 +74,7 @@
     right: var(--sk-space-40);
     margin: 0;
   }
-  .sk-admin-shell .sk-admin-main:has(.sk-ops-console, .sk-admin-page) :is(.sk-ops-header, .sk-admin-page-header) {
+  .sk-admin-shell .sk-admin-main:has(.sk-ops-console, .sk-admin-page) :is(.sk-ops-header, .sk-admin-page-header, .sk-admin-page .sk-ctp-head) {
     padding-right: 340px;
   }
 }
@@ -190,15 +96,6 @@
 }
 .sk-admin-shell .sk-admin-top-action:hover {
   background: var(--sk-color-surface-2);
-}
-.sk-admin-shell .sk-admin-top-action.sk-admin-sos {
-  border-color: var(--sk-color-danger);
-  background: var(--sk-color-danger-bg);
-  color: var(--sk-color-danger);
-}
-.sk-admin-shell .sk-admin-top-action.sk-admin-sos:hover {
-  background: var(--sk-color-danger-bg);
-  border-color: var(--sk-color-danger-fill);
 }
 .sk-admin-shell .sk-admin-top-action:focus-visible {
   outline: 3px solid var(--sk-color-focus);
@@ -309,7 +206,6 @@
 
 @media (prefers-reduced-motion: reduce) {
   .sk-admin-shell .sk-admin-main > .care-page-enter { animation: none; }
-  .sk-admin-shell .sk-admin-link,
   .sk-admin-shell .sk-admin-sidebar,
   .sk-admin-shell .sk-admin-theme-toggle,
   .sk-admin-shell .sk-admin-top-action {

@@ -1,8 +1,8 @@
 import React from 'react';
 import { Navigate, useLocation, useRoutePath } from '@/core/navigation';
 import { AuthenticatedFlowScreen } from './AuthenticatedFlowScreen';
-import { asRoutePath, canAccessRoute, homeForRole } from '@/lib/workflowRouting';
-import { useAuth } from '@/data/AuthContext';
+import { asRoutePath, canAccessRoute, homeForRole } from '@/lib/utils/workflowRouting';
+import { useAuth } from '@/data/contexts/AuthContext';
 import { readReturnPath } from '@/core/routing/returnPath';
 
 export function AuthRouteScreen() {

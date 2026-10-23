@@ -3,7 +3,7 @@
 .preventive-hero h2 { font-size: clamp(26px,3vw,40px); letter-spacing: -.035em; line-height: 1.15; max-width: 680px; margin: 12px 0; }
 .preventive-hero p { max-width: 640px; color: var(--text-2); line-height: 1.7; }
 .preventive-sections { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 28px; }
-.preventive-sections [aria-current="page"] { background: var(--action); color: #fff; border-color: var(--action); }
+.preventive-sections [aria-current="page"] { background: var(--action); color: var(--sk-color-on-action); border-color: var(--action); }
 .preventive-filter { display: grid; grid-template-columns: 2fr 1fr 1.5fr auto; align-items: end; gap: 16px; }
 .preventive-filter .wf-field { min-width: 0; margin: 0; }
 .preventive-filter input, .preventive-filter select { width: 100%; min-width: 0; }

@@ -26,10 +26,26 @@ describe('ComprehensiveHealthCalculators Component Suite', () => {
 
     // Switch to Vision & Screen
     fireEvent.click(screen.getByText(/Vision & Screen/i));
-    expect(screen.getAllByText(/ASTHENOPIA RISK INDEX/i)[0]).toBeInTheDocument();
+    expect(screen.getAllByText(/EYE STRAIN CHECK/i)[0]).toBeInTheDocument();
 
     // Switch to Hydration
     fireEvent.click(screen.getByText(/Hydration/i));
-    expect(screen.getAllByText(/RECOMMENDED DAILY FLUID/i)[0]).toBeInTheDocument();
+    expect(screen.getAllByText(/ESTIMATED DAILY FLUID/i)[0]).toBeInTheDocument();
+  });
+
+  it('never labels a single blood-pressure reading as a diagnosis', () => {
+    render(<ThemeProvider><ComprehensiveHealthCalculators /></ThemeProvider>);
+    fireEvent.click(screen.getByText(/Cardio & Vitals/i));
+    fireEvent.change(screen.getByLabelText(/Systolic blood pressure/i), { target: { value: '150' } });
+    const text = document.body.textContent ?? '';
+    expect(text).toMatch(/Well above the usual range/);
+    expect(text).not.toMatch(/hypertension|stage 2/i);
+    expect(text).toMatch(/call 112/i);
+  });
+
+  it('makes no ICMR attribution it cannot back', () => {
+    render(<ThemeProvider><ComprehensiveHealthCalculators /></ThemeProvider>);
+    fireEvent.click(screen.getByText(/Hydration/i));
+    expect(document.body.textContent).not.toMatch(/ICMR/);
   });
 });

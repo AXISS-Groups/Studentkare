@@ -27,7 +27,10 @@ export function ExerciseProvider({ children }: { children: ReactNode }) {
   const [savedIds, setSavedIds] = useState<string[]>([]);
   const [answers, setAnswers] = useState<Record<string, boolean>>({});
   const [sessions, setSessions] = useState<SessionRecord[]>([]);
-  const [loading, setLoading] = useState(Boolean(user));
+  // Saved exercises and session history are the student's own movement data (/health/*): no
+  // other role loads them on every page (live-run audit #8).
+  const student = user?.role === 'STUDENT';
+  const [loading, setLoading] = useState(student);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [sessionError, setSessionError] = useState('');
@@ -41,7 +44,7 @@ export function ExerciseProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => { alive.current = true; return () => { alive.current = false; }; }, []);
   useEffect(() => {
-    if (!user) { setLoading(false); return; }
+    if (!user || !student) { setLoading(false); return; }
     const controller = new AbortController();
     setLoading(true); setError('');
     Promise.all([
@@ -52,7 +55,7 @@ export function ExerciseProvider({ children }: { children: ReactNode }) {
     }).catch(reason => { if (!controller.signal.aborted) setError(reason.message); })
       .finally(() => { if (!controller.signal.aborted) setLoading(false); });
     return () => controller.abort();
-  }, [user?.id, version]);
+  }, [user?.id, student, version]);
 
   const toggleSaved = (id: string) => {
     if (!user || loading || savingPreferences.current) return;

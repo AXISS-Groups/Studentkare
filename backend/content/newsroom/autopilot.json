@@ -1,0 +1,56 @@
+{
+  "_about": "The content autopilot's allow-list of sources and the fixed words it puts around what it writes (services/newsroom_autopilot.py). Feed addresses and on/off are settings (autopilot.source.<id>.url / .enabled); a feed address must stay on the source's hosts. 'verified' says what was checked from the network and when; empty means no public RSS or Atom feed was found yet.",
+  "sources": [
+    {
+      "id": "cdsco_alerts",
+      "publisher": "Central Drugs Standard Control Organisation",
+      "hosts": ["cdsco.gov.in", "www.cdsco.gov.in"],
+      "verified": ""
+    },
+    {
+      "id": "icmr",
+      "publisher": "Indian Council of Medical Research",
+      "hosts": ["icmr.gov.in", "www.icmr.gov.in"],
+      "verified": ""
+    },
+    {
+      "id": "mohfw",
+      "publisher": "Ministry of Health and Family Welfare",
+      "hosts": ["mohfw.gov.in", "www.mohfw.gov.in"],
+      "verified": ""
+    },
+    {
+      "id": "pib_releases",
+      "publisher": "Press Information Bureau, Government of India",
+      "hosts": ["pib.gov.in", "www.pib.gov.in"],
+      "verified": "2026-10-23: RSS 2.0, 20 items; titles and links only, no dates or summaries, so nothing can be summarised from it"
+    },
+    {
+      "id": "ugc_notices",
+      "publisher": "University Grants Commission",
+      "hosts": ["ugc.gov.in", "www.ugc.gov.in"],
+      "verified": ""
+    },
+    {
+      "id": "who_news",
+      "publisher": "World Health Organization",
+      "hosts": ["www.who.int"],
+      "verified": "2026-10-23: RSS 2.0, 20 items with dates and summaries"
+    }
+  ],
+  "copy": {
+    "newsCoverAlt": "Campus news cover with the StudentKare shield",
+    "blogTipCoverAlt": "Health tip cover with the StudentKare shield",
+    "roundupCoverAlt": "Story cover with the StudentKare shield",
+    "tipSourcesTitle": "From approved sources",
+    "tipNotAdvice": "General information, not advice for you. If you are unwell, talk to a doctor. In an emergency, call 112.",
+    "roundupTitle": "This week in the StudentKare app",
+    "roundupSummary": "What changed in the app this week, from our What's new posts.",
+    "roundupHeading": "What's new this week",
+    "roundupCta": "Read all updates",
+    "samplePrefix": "Sample: ",
+    "tagAuto": "auto",
+    "tagNews": "health news",
+    "tagRoundup": "whats new"
+  }
+}

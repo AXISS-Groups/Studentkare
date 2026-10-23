@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="340" height="310" viewBox="0 0 340 310" aria-hidden="true"><defs><radialGradient id="sk8dae340" cx="35%" cy="30%" r="80%"><stop offset="0" stop-color="#B8F7DA"></stop><stop offset=".55" stop-color="#34D399"></stop><stop offset="1" stop-color="#047857"></stop></radialGradient><radialGradient id="sk8dae341" cx="38%" cy="30%" r="78%"><stop offset="0" stop-color="#F7BE94"></stop><stop offset=".55" stop-color="#DC8F62"></stop><stop offset="1" stop-color="#A45A34"></stop></radialGradient>
+<radialGradient id="sk8dae342" cx="35%" cy="25%" r="85%"><stop offset="0" stop-color="#8B93FF"></stop><stop offset=".5" stop-color="#4F46E5"></stop><stop offset="1" stop-color="#2A1F9E"></stop></radialGradient>
+<radialGradient id="sk8dae343" cx="40%" cy="25%" r="80%"><stop offset="0" stop-color="#4A4E66"></stop><stop offset=".45" stop-color="#1D2033"></stop><stop offset="1" stop-color="#0B0C14"></stop></radialGradient>
+<radialGradient id="sk8dae344" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#1E1B4B" stop-opacity=".28"></stop><stop offset="1" stop-color="#1E1B4B" stop-opacity="0"></stop></radialGradient>
+<linearGradient id="sk8dae345" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF" stop-opacity=".75"></stop><stop offset="1" stop-color="#FFFFFF" stop-opacity="0"></stop></linearGradient>
+<linearGradient id="sk8dae346" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4B4F73"></stop><stop offset=".35" stop-color="#1E1B4B"></stop><stop offset="1" stop-color="#0B0A24"></stop></linearGradient>
+<linearGradient id="sk8dae347" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8B93FF"></stop><stop offset=".45" stop-color="#4F46E5"></stop><stop offset="1" stop-color="#241A8F"></stop></linearGradient>
+<linearGradient id="sk8dae348" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFFFF" stop-opacity=".55"></stop><stop offset=".45" stop-color="#FFFFFF" stop-opacity="0"></stop></linearGradient>
+<linearGradient id="sk8dae349" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"></stop><stop offset="1" stop-color="#EEF1FF"></stop></linearGradient>
+<linearGradient id="sk8dae3410" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F4F5FF"></stop><stop offset="1" stop-color="#DDE3FF"></stop></linearGradient>
+<linearGradient id="sk8dae3411" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#8B93FF"></stop><stop offset="1" stop-color="#3525CD"></stop></linearGradient>
+<linearGradient id="sk8dae3412" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6366F1" stop-opacity=".35"></stop><stop offset="1" stop-color="#6366F1" stop-opacity="0"></stop></linearGradient>
+</defs>
+<ellipse cx="170" cy="300" rx="150" ry="12" fill="url(#sk8dae344)"></ellipse>
+<g transform="rotate(-6 110 170)">
+<rect x="34" y="28" width="164" height="300" rx="30" fill="url(#sk8dae346)"></rect>
+<rect x="40" y="33" width="152" height="290" rx="25" fill="none" stroke="#FFFFFF" stroke-opacity=".18" stroke-width="1.5"></rect>
+<rect x="44" y="40" width="144" height="280" rx="22" fill="url(#sk8dae349)"></rect>
+<rect x="92" y="47" width="48" height="11" rx="5.5" fill="#0B0A24"></rect>
+<rect x="56" y="70" width="84" height="10" rx="5" fill="#131B2E"></rect><rect x="56" y="86" width="56" height="7" rx="3.5" fill="#C7C4D8"></rect>
+<rect x="56" y="104" width="120" height="34" rx="12" fill="url(#sk8dae342)"></rect><rect x="66" y="116" width="54" height="9" rx="4.5" fill="#FFFFFF" opacity=".9"></rect>
+<rect x="56" y="148" width="56" height="50" rx="12" fill="#EEF2FF"></rect><rect x="120" y="148" width="56" height="50" rx="12" fill="#ECFDF5"></rect>
+<path d="M64 184l10-9 9 6 16-14" stroke="#3525CD" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"></path>
+<circle cx="148" cy="173" r="13" fill="url(#sk8dae340)"></circle>
+<path d="M141 173l5 5 9-10" stroke="#047857" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"></path>
+<rect x="56" y="210" width="120" height="9" rx="4.5" fill="#E4E7FB"></rect><rect x="56" y="227" width="90" height="9" rx="4.5" fill="#E4E7FB"></rect>
+<rect x="44" y="40" width="144" height="280" rx="22" fill="url(#sk8dae348)"></rect>
+</g>
+<g transform="rotate(5 240 180)">
+<rect x="160" y="62" width="164" height="270" rx="30" fill="url(#sk8dae347)"></rect>
+<rect x="166" y="67" width="152" height="260" rx="25" fill="none" stroke="#FFFFFF" stroke-opacity=".3" stroke-width="1.5"></rect>
+<rect x="170" y="74" width="144" height="252" rx="22" fill="url(#sk8dae3410)"></rect>
+<text x="184" y="104" font-family="Plus Jakarta Sans, sans-serif" font-size="12" font-weight="800" fill="#1E1B4B">Vitamin D &amp; B12</text>
+<text x="184" y="120" font-family="Plus Jakarta Sans, sans-serif" font-size="9" font-weight="600" fill="#464555">Reviewed by a clinician</text>
+<rect x="182" y="132" width="120" height="74" rx="14" fill="#FFFFFF"></rect>
+<path d="M190 190l18-14 16 8 20-20 20 6 22-16V200H190z" fill="url(#sk8dae3412)"></path>
+<path d="M190 190l18-14 16 8 20-20 20 6 22-16" stroke="url(#sk8dae3411)" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"></path>
+<circle cx="286" cy="154" r="4.5" fill="#FFFFFF" stroke="#3525CD" stroke-width="2.5"></circle>
+<rect x="182" y="216" width="120" height="30" rx="15" fill="url(#sk8dae342)"></rect>
+<rect x="190" y="219" width="104" height="9" rx="4.5" fill="#FFFFFF" opacity=".22"></rect>
+<text x="242" y="235" text-anchor="middle" font-family="Plus Jakarta Sans, sans-serif" font-size="10.5" font-weight="800" fill="#FFFFFF">Open report</text>
+<rect x="182" y="256" width="56" height="46" rx="12" fill="#FFFFFF"></rect><rect x="246" y="256" width="56" height="46" rx="12" fill="#FFFFFF"></rect>
+<rect x="190" y="270" width="32" height="7" rx="3.5" fill="#FDBA74"></rect><rect x="254" y="270" width="32" height="7" rx="3.5" fill="#6EE7B7"></rect>
+<rect x="190" y="284" width="22" height="6" rx="3" fill="#E4E7FB"></rect><rect x="254" y="284" width="22" height="6" rx="3" fill="#E4E7FB"></rect>
+<rect x="170" y="74" width="144" height="252" rx="22" fill="url(#sk8dae348)"></rect>
+</g>
+<g transform="translate(288 26)"><circle r="20" fill="url(#sk8dae340)"></circle><path d="M-8 0l5 5 10-11" stroke="#FFFFFF" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"></path><ellipse cx="-7" cy="-9" rx="6" ry="3.5" fill="#FFFFFF" opacity=".55" transform="rotate(-30 -7 -9)"></ellipse></g>
+</svg>

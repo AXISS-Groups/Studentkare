@@ -2,17 +2,21 @@
  *
  * Kept pure and separate so the boundaries can be tested without a fake clock
  * in a component, and so the greeting can be translated on its own later.
+ *
+ * The boundaries are the Main board's: morning 5 am–noon (doctor hello),
+ * afternoon noon–6 pm (heartbeat), evening and night (care circle).
  */
 
 export type TimeOfDay = 'morning' | 'afternoon' | 'evening';
 
+export const MORNING_STARTS = 5;
 export const MORNING_ENDS = 12;
-export const AFTERNOON_ENDS = 17;
+export const AFTERNOON_ENDS = 18;
 
 export function timeOfDay(at: Date = new Date()): TimeOfDay {
   const hour = at.getHours();
-  if (hour < MORNING_ENDS) return 'morning';
-  if (hour < AFTERNOON_ENDS) return 'afternoon';
+  if (hour >= MORNING_STARTS && hour < MORNING_ENDS) return 'morning';
+  if (hour >= MORNING_ENDS && hour < AFTERNOON_ENDS) return 'afternoon';
   return 'evening';
 }
 

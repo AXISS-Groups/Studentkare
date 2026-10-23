@@ -33,8 +33,8 @@ export function PrescriptionRefillRequestModal({ onClose, onRefillRequested }: R
       </div>
 
       {submittedId ? (
-        <div style={{ textAlign: 'center', padding: 24, background: 'rgba(16, 185, 129, 0.05)', border: '1px solid #10b981', borderRadius: 12 }}>
-          <CheckCircle2 size={44} color="#10b981" style={{ margin: '0 auto 8px' }} />
+        <div style={{ textAlign: 'center', padding: 24, background: 'rgba(16, 185, 129, 0.05)', border: '1px solid var(--sk-color-positive-fill)', borderRadius: 12 }}>
+          <CheckCircle2 size={44} color="var(--sk-color-positive-fill)" style={{ margin: '0 auto 8px' }} />
           <h3 style={{ fontSize: 18 }}>Refill Request Sent to Prescribing Doctor!</h3>
           <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '4px 0 16px' }}>
             Request ID: <code>{submittedId}</code> · Dr. V. Prasad will review and digitally re-sign.

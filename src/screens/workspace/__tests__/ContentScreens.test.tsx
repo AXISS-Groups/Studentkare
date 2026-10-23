@@ -6,10 +6,10 @@ const apiAnswers: Record<string, () => Promise<unknown>> = {};
 const apiRequest = vi.fn((path: string, _init?: { method?: string; body?: string; signal?: AbortSignal }) => apiAnswers[path]?.() ?? Promise.resolve({}));
 
 // Both content screens load through their repositories; using the hook again would fail here.
-vi.mock('../../../hooks/useApiResource', () => ({
+vi.mock('../../../hooks/api/useApiResource', () => ({
   useApiResource: () => { throw new Error('Content screens load through their repositories, not useApiResource.'); },
 }));
-vi.mock('../../../data/http', async importOriginal => ({ ...(await importOriginal<typeof import('../../../data/http')>()), apiRequest: (path: string, init?: { method?: string; body?: string; signal?: AbortSignal }) => apiRequest(path, init) }));
+vi.mock('../../../data/services/http', async importOriginal => ({ ...(await importOriginal<typeof import('../../../data/services/http')>()), apiRequest: (path: string, init?: { method?: string; body?: string; signal?: AbortSignal }) => apiRequest(path, init) }));
 
 import { IntakeView } from '../../../features/admin/views/IntakeView';
 import { KnowledgeView } from '../../../features/admin/views/KnowledgeView';
@@ -21,73 +21,52 @@ beforeEach(() => {
 
 describe('Intake & OCR', () => {
   const QUEUE = '/ops/intake/review';
-  const field = (id: string, intakeId: string, name: string, value: string, confidence: number) => ({ id, intakeId, field: name, value, confidence, documentId: `doc-${intakeId}-0000` });
-  const queue = { items: [field('f1', 'i1', 'report_date', '22/09/2026', 0.98), field('f2', 'i1', 'wbc_count', '11,900', 0.68), field('f3', 'i2', 'patient_name', 'sample', 0.64)] };
+  const intake = (id: string, kind: string, status: string, processedAt: number | null = null) => ({ id, kind, status, createdAt: 1_760_000_000, processedAt });
+  const queue = { items: [intake('int_a1', 'LAB', 'DRAFT'), intake('int_b2', 'PRESCRIPTION', 'FAILED', 1_760_000_100), intake('int_c3', 'SCAN', 'QUEUED')] };
   const queueRequests = () => apiRequest.mock.calls.filter(([path]) => path === QUEUE);
 
-  it('groups the queue by document and shows the waiting count in the header', async () => {
+  it('lists each open intake with its kind, state and times, and the count in the header', async () => {
     apiAnswers[QUEUE] = () => Promise.resolve(queue);
     render(<IntakeView />);
-    expect(screen.getByText('Loading the intake queue…')).toBeInTheDocument();
-    expect(await screen.findByText('3 fields waiting')).toBeInTheDocument();
+    expect(screen.getByRole('status', { name: 'Loading the intake queue…' })).toBeInTheDocument();
+    expect(await screen.findByText('3 open')).toBeInTheDocument();
     expect(queueRequests()).toHaveLength(1);
-    const list = screen.getByRole('region', { name: /Needs a human · 2/ });
-    expect(within(list).getAllByRole('button')).toHaveLength(2);
-    expect(within(list).getAllByRole('button')[0]).toHaveTextContent('Lowest confidence 68%');
+    const table = screen.getByRole('table', { name: 'Intake & OCR' });
+    const rows = within(table).getAllByRole('row').slice(1);
+    expect(rows).toHaveLength(3);
+    expect(rows[0]).toHaveTextContent('int_a1');
+    expect(rows[0]).toHaveTextContent('Lab report');
+    expect(rows[0]).toHaveTextContent('Waiting for review');
+    expect(rows[1]).toHaveTextContent('Reading failed');
+    // An unknown kind falls back to its readable code, never a guess.
+    expect(rows[2]).toHaveTextContent('Scan');
+    expect(screen.getByText(/never shows a title, a value or the document itself/)).toBeInTheDocument();
   });
 
-  it('shows the selected document’s fields with their confidence, and no preview it cannot load', async () => {
+  it('offers no extracted fields, no original and no confirm or reject', async () => {
     apiAnswers[QUEUE] = () => Promise.resolve(queue);
     render(<IntakeView />);
-    const fields = await screen.findByRole('region', { name: 'Extracted fields' });
-    expect(within(fields).getByLabelText(/Wbc count/)).toHaveValue('11,900');
-    expect(within(fields).getByText('68%')).toBeInTheDocument();
-    expect(screen.getByRole('region', { name: 'Original' })).toHaveTextContent('No preview.');
-    expect(screen.queryByRole('button', { name: /ask the lab/i })).toBeNull();
-  });
-
-  it('confirms every field of the document, with corrections, through the existing review endpoint', async () => {
-    apiAnswers[QUEUE] = () => Promise.resolve(queue);
-    render(<IntakeView />);
-    fireEvent.change(await screen.findByLabelText(/Wbc count/), { target: { value: '11,800' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Confirm fields' }));
-    await waitFor(() => expect(queueRequests()).toHaveLength(2));
-    expect(apiRequest).toHaveBeenCalledWith('/ops/intake/review/f1', { method: 'PATCH', body: JSON.stringify({ approved: true, correctedValue: '22/09/2026' }) });
-    expect(apiRequest).toHaveBeenCalledWith('/ops/intake/review/f2', { method: 'PATCH', body: JSON.stringify({ approved: true, correctedValue: '11,800' }) });
-    expect(apiRequest).not.toHaveBeenCalledWith('/ops/intake/review/f3', expect.anything());
-  });
-
-  it('rejects the document’s fields', async () => {
-    apiAnswers[QUEUE] = () => Promise.resolve(queue);
-    render(<IntakeView />);
-    fireEvent.click((await screen.findAllByRole('button', { pressed: false }))[0]);
-    fireEvent.click(screen.getByRole('button', { name: 'Reject' }));
-    await waitFor(() => expect(apiRequest).toHaveBeenCalledWith('/ops/intake/review/f3', { method: 'PATCH', body: JSON.stringify({ approved: false, correctedValue: '' }) }));
-  });
-
-  it('keeps the edits and shows the error when a decision fails', async () => {
-    apiAnswers[QUEUE] = () => Promise.resolve(queue);
-    apiAnswers['/ops/intake/review/f1'] = () => Promise.reject(new Error('Review service unavailable'));
-    render(<IntakeView />);
-    fireEvent.change(await screen.findByLabelText(/Wbc count/), { target: { value: '11,800' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Confirm fields' }));
-    expect(await screen.findByRole('alert')).toHaveTextContent('Review service unavailable');
-    expect(screen.getByLabelText(/Wbc count/)).toHaveValue('11,800');
-    expect(queueRequests()).toHaveLength(1);
-    expect(apiRequest).not.toHaveBeenCalledWith('/ops/intake/review/f2', expect.anything());
+    await screen.findByText('3 open');
+    expect(screen.queryByRole('region', { name: 'Extracted fields' })).toBeNull();
+    expect(screen.queryByRole('region', { name: 'Original' })).toBeNull();
+    expect(screen.queryByRole('textbox')).toBeNull();
+    expect(screen.queryByRole('button', { name: /confirm|reject/i })).toBeNull();
+    expect(apiRequest.mock.calls.every(([path, init]) => path === QUEUE && !init?.method)).toBe(true);
   });
 
   it('shows empty and error states, and Retry requests the queue again', async () => {
     apiAnswers[QUEUE] = () => Promise.resolve({ items: [] });
     const { unmount } = render(<IntakeView />);
     expect(await screen.findByText('Nothing waiting for a person.')).toBeInTheDocument();
-    expect(screen.queryByText(/waiting$/)).toBeNull();
+    expect(screen.queryByText(/open$/)).toBeNull();
+    expect(screen.getByRole('button', { name: 'Back to overview' })).toBeInTheDocument();
     unmount();
     apiRequest.mockClear();
     apiAnswers[QUEUE] = () => Promise.reject(new Error('Network error'));
     render(<IntakeView />);
     const alert = await screen.findByRole('alert');
-    expect(alert).toHaveTextContent('Couldn’t load the intake queue');
+    expect(alert).toHaveTextContent('Couldn’t load intake & OCR');
+    expect(alert).toHaveTextContent('Ref ERR-503 · AdminIntake');
     expect(alert).toHaveTextContent('Network error');
     fireEvent.click(within(alert).getByRole('button', { name: /try again/i }));
     await waitFor(() => expect(queueRequests()).toHaveLength(2));
@@ -105,6 +84,14 @@ describe('Knowledge base', () => {
     { id: 's4', title: 'Draft note', category: 'general', version: 1, author: 'Clinical team', reviewed: false, expiresAt: null },
   ] };
   const index = { approvedSources: 2, indexedSources: 1, chunks: 48, embedder: 'hash-ngram', semantic: false, missing: ['s2'], mismatchedEmbedder: 0 };
+  const HEALTH = '/ops/agents/ayush/health';
+  const healthy = {
+    status: 'ok', published: 2, indexed: 2, missing: 0, stale: 0, chunks: 48, helpPack: { articles: 17, published: 17 },
+    retrieval: { mode: 'keyword', embedder: 'local-hashing-v1', requestedProvider: 'local', model: '', misconfigured: '', fallbackPassages: 0 },
+    answers: { mode: 'quotes', model: '', reachable: null, modelPulled: null, recent: { rephrased: 0, quoted: 4, fellBack: 0 } },
+    lastError: null,
+  };
+  beforeEach(() => { apiAnswers[HEALTH] = () => Promise.resolve(healthy); });
   const requestsTo = (path: string) => apiRequest.mock.calls.filter(([called]) => called === path);
   // jsdom has no modal dialogs: open and close the element the way a browser does, so its
   // contents are reachable by role.
@@ -113,14 +100,43 @@ describe('Knowledge base', () => {
     HTMLDialogElement.prototype.close = function close(this: HTMLDialogElement) { this.removeAttribute('open'); };
   };
 
+  it('shows Ayush health in plain words, and says so when Ayush cannot answer', async () => {
+    apiAnswers[SOURCES] = () => Promise.resolve(sources);
+    apiAnswers[INDEX] = () => Promise.resolve(index);
+    apiAnswers[HEALTH] = () => Promise.resolve({
+      status: 'down', published: 0, indexed: 0, missing: 0, stale: 0, chunks: 0, helpPack: { articles: 17, published: 0 },
+      retrieval: { mode: 'keyword', embedder: 'local-hashing-v1', requestedProvider: 'ollama', model: '', misconfigured: 'missing-url', fallbackPassages: 0 },
+      answers: { mode: 'rephrased', model: 'llama3.1:8b', reachable: false, modelPulled: null, recent: { rephrased: 0, quoted: 0, fellBack: 2 } },
+      lastError: { where: 'generation', error: 'ConnectError', at: now },
+    });
+    render(<KnowledgeView />);
+    const card = await screen.findByRole('region', { name: 'Ayush health' });
+    expect(await within(card).findByText('Not answering')).toBeInTheDocument();
+    expect(within(card).getByRole('alert')).toHaveTextContent('Ayush can’t answer anything yet');
+    expect(card).toHaveTextContent('EMBEDDING_PROVIDER is set to “ollama”');
+    expect(card).toHaveTextContent('Keyword matching (no semantic model on)');
+    expect(card).toHaveTextContent('Rephrased by the on-prem model · llama3.1:8b');
+    expect(card).toHaveTextContent('Not reachable · answers fall back to quotes');
+    expect(card).toHaveTextContent('ConnectError while rephrasing an answer');
+  });
+
+  it('shows an unreadable health report as an error in its own card', async () => {
+    apiAnswers[HEALTH] = () => Promise.resolve({});
+    apiAnswers[SOURCES] = () => Promise.resolve(sources);
+    apiAnswers[INDEX] = () => Promise.resolve(index);
+    render(<KnowledgeView />);
+    const card = await screen.findByRole('region', { name: 'Ayush health' });
+    expect(await within(card).findByRole('alert')).toHaveTextContent('Couldn’t check Ayush');
+    expect(await screen.findByText('48 chunks indexed')).toBeInTheDocument();
+  });
+
   it('lists sources with their real state and shows the indexed chunk count', async () => {
     apiAnswers[SOURCES] = () => Promise.resolve(sources);
     apiAnswers[INDEX] = () => Promise.resolve(index);
     render(<KnowledgeView />);
-    expect(screen.getByText('Loading sources…')).toBeInTheDocument();
-    expect(screen.getByText('Checking the index…')).toBeInTheDocument();
+    expect(screen.getByRole('status', { name: 'Loading sources…' })).toBeInTheDocument();
     expect(await screen.findByText('48 chunks indexed')).toBeInTheDocument();
-    expect(apiRequest.mock.calls.map(([path]) => path)).toEqual([SOURCES, INDEX]);
+    expect(apiRequest.mock.calls.map(([path]) => path)).toEqual([SOURCES, INDEX, HEALTH]);
     const list = await screen.findByRole('region', { name: 'Sources Ayush may quote' });
     await within(list).findByText('Understanding your CBC report');
     expect(within(list).getByText('Understanding your CBC report').closest('li')).toHaveTextContent('Live');
@@ -136,7 +152,7 @@ describe('Knowledge base', () => {
     apiAnswers[SOURCES] = () => Promise.resolve(sources);
     apiAnswers[INDEX] = () => Promise.resolve(index);
     render(<KnowledgeView />);
-    const panel = screen.getByRole('region', { name: 'Search index' });
+    const panel = await screen.findByRole('region', { name: 'Search index' });
     await within(panel).findByText('Approved sources indexed');
     expect(panel).toHaveTextContent('1 of 2');
     expect(panel).toHaveTextContent('Keyword · hash-ngram');
@@ -146,7 +162,7 @@ describe('Knowledge base', () => {
     await waitFor(() => expect(requestsTo(INDEX)).toHaveLength(2));
     expect(requestsTo(SOURCES)).toHaveLength(2);
     const order = apiRequest.mock.calls.map(([path]) => path);
-    expect(order.slice(order.indexOf('/ops/knowledge/reindex') + 1)).toEqual([INDEX, SOURCES]);
+    expect(order.slice(order.indexOf('/ops/knowledge/reindex') + 1)).toEqual([INDEX, SOURCES, HEALTH]);
   });
 
   it('shows a failed rebuild in the index panel and keeps the index', async () => {
@@ -154,21 +170,21 @@ describe('Knowledge base', () => {
     apiAnswers[INDEX] = () => Promise.resolve(index);
     apiAnswers['/ops/knowledge/reindex'] = () => Promise.reject(new Error('Index busy'));
     render(<KnowledgeView />);
-    const panel = screen.getByRole('region', { name: 'Search index' });
+    const panel = await screen.findByRole('region', { name: 'Search index' });
     fireEvent.click(await within(panel).findByRole('button', { name: 'Rebuild index' }));
     expect(await within(panel).findByRole('alert')).toHaveTextContent('Index busy');
     expect(panel).toHaveTextContent('1 of 2');
     expect(requestsTo(INDEX)).toHaveLength(1);
   });
 
-  it('keeps Test a question as an empty section, without asking the real agent', async () => {
+  it('keeps Test a question disabled, without asking the real agent', async () => {
     apiAnswers[SOURCES] = () => Promise.resolve(sources);
     apiAnswers[INDEX] = () => Promise.resolve(index);
     render(<KnowledgeView />);
     await screen.findByText('48 chunks indexed');
     const test = screen.getByRole('region', { name: 'Test a question' });
-    expect(test).toHaveTextContent('No retrieval preview.');
-    expect(within(test).queryByRole('textbox')).toBeNull();
+    expect(test).toHaveTextContent(/once a preview endpoint is connected/);
+    expect(within(test).getByRole('searchbox')).toBeDisabled();
     expect(apiRequest).not.toHaveBeenCalledWith(expect.stringContaining('/agents/ayush/ask'), expect.anything());
   });
 
@@ -205,7 +221,7 @@ describe('Knowledge base', () => {
     expect(apiRequest).toHaveBeenCalledWith('/ops/knowledge', { method: 'POST', body: JSON.stringify({ title: 'Hand hygiene', category: 'general', content: 'Wash hands for twenty seconds.', author: 'Clinical team', expiresInDays: 30 }) });
     await waitFor(() => expect(requestsTo(INDEX)).toHaveLength(2));
     const order = apiRequest.mock.calls.map(([path]) => path);
-    expect(order.slice(order.indexOf('/ops/knowledge') + 1)).toEqual([SOURCES, INDEX]);
+    expect(order.slice(order.indexOf('/ops/knowledge') + 1)).toEqual([SOURCES, INDEX, HEALTH]);
   });
 
   it('keeps the publish form open with the error when publishing fails, and a new form starts clean', async () => {
@@ -222,7 +238,7 @@ describe('Knowledge base', () => {
     expect(await screen.findByText('Title already used')).toBeInTheDocument();
     expect(screen.getByLabelText('Title')).toHaveValue('Hand hygiene');
     expect(requestsTo(SOURCES)).toHaveLength(1);
-    fireEvent.click(screen.getByRole('button', { name: 'Close dialog' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Close' }));
     fireEvent.click(screen.getByRole('button', { name: 'Add source' }));
     expect(screen.getByLabelText('Title')).toHaveValue('');
     expect(screen.queryByText('Title already used')).toBeNull();

@@ -5,57 +5,45 @@ import pytest
 from test_workflow_api import harness, register
 
 from services.agents.hitl_approval_agent import hitl_approval_agent
-from services.agents.soap_notes_agent import soap_notes_agent
-from services.agents.triage_council_agent import triage_council_agent
 
 
-def test_triage_council_agent():
-    res = triage_council_agent.evaluate_symptoms(
-        symptoms_text="Experiencing study fatigue and headache after evening lectures.",
-        student_name="Demo Student",
-    )
-    assert res.case_id != ""
-    assert res.clinical_trust_score > 90.0
-    assert "Open-BioLLM" in res.biollm_reasoning_model
-    assert "Dr. A. K. Sen, MD" in res.physician_opinion.doctor_name
-    assert "Tele-Mental Health Specialist" in res.mental_health_opinion.doctor_role
-    assert "Clinical Pharmacist" in res.pharmacist_opinion.doctor_role
+def test_hitl_queue_holds_nothing_invented():
+    # No agent holds actions yet, so there is nothing to approve — and approving
+    # an id that was never held is refused, not recorded.
+    assert hitl_approval_agent.get_pending_actions() == []
+    assert hitl_approval_agent.approve_action("act_02", "Dr. Test")["status"] == "NOT_FOUND"
 
 
-def test_soap_notes_agent():
-    res = soap_notes_agent.generate_soap_note(
-        raw_notes="Patient complains of headache and mild evening fever (99.2 F) following late-night study sessions.",
-        patient_name="Demo Student",
-        doctor_name="Dr. A. K. Sen, MD",
-    )
-    assert res.note_id != ""
-    assert "Patient presents with" in res.subjective
-    assert "Vitals" in res.objective
-    assert "Clinical Impression" in res.assessment
-    assert "1. Hydration" in res.plan
-
-
-def test_hitl_approval_agent():
-    actions = hitl_approval_agent.get_pending_actions()
-    assert len(actions) > 0
-
-    app_res = hitl_approval_agent.approve_action(actions[0].id, "Dr. A. K. Sen, MD")
-    assert app_res["status"] == "SUCCESS"
-    assert app_res["action_id"] == actions[0].id
+def test_hitl_approves_a_held_action_once(monkeypatch):
+    import importlib
+    module = importlib.import_module("services.agents.hitl_approval_agent")
+    held = module.PendingAction(id="act_x", action_type="PRESCRIPTION_APPROVAL", title="Held", patient_name="",
+                                requested_by="agent", summary="", risk_level="MEDIUM",
+                                status="PENDING_DOCTOR_APPROVAL", created_at="")
+    monkeypatch.setattr(module, "PENDING_ACTIONS_REGISTRY", [held])
+    assert hitl_approval_agent.approve_action("act_x", "Dr. Test")["status"] == "SUCCESS"
+    assert hitl_approval_agent.approve_action("act_x", "Dr. Test")["status"] == "NOT_PENDING"
 
 
 def test_camera_scan_and_mental_game_endpoints(harness):
-    client, _, codes = harness
+    client, factory, codes = harness
+    # The lookup reads the medicine master; there is no hardcoded drug table.
+    import time
+
+    from core import workflow_models as M
+    from core.medicine_composition import composition_key
+    with factory() as db:
+        db.add(M.Medicine(id="m-cipro", name="Ciplox 500", composition_key=composition_key([("Ciprofloxacin", 500, "mg")]),
+                          dosage_form="TABLET", pack="Strip of 10 tablets", manufacturer="Test Pharma", schedule="H",
+                          requires_prescription=True, active=True, created_at=time.time(), updated_at=time.time()))
+        db.add(M.MedicineIngredient(id="m-cipro-0", medicine_id="m-cipro", position=0, salt="Ciprofloxacin",
+                                    salt_key="ciprofloxacin", strength_value=500, strength_unit="mg"))
+        db.commit()
     user, headers = register(client, codes, identifier="sensor.test@example.test")
 
-    # Test Camera Scan endpoint — optical rPPG capture contract & pulse estimation
-    res_scan = client.post('/api/health/camera-scan', json={
-        'captured': True, 'kind': 'photo', 'deviceLabel': 'Test Camera'
-    }, headers=headers)
-    assert res_scan.status_code == 200
-    assert res_scan.json()['status'] == 'SUCCESS'
-    assert 'captured=true' in res_scan.json()['summary']
-    assert 'record_id' in res_scan.json()
+    # The camera-scan endpoint is gone: it filed a 'Vitals & Optical Scan'
+    # record with no image in it. Photos go to /health/documents.
+    assert client.post('/api/health/camera-scan', json={'captured': True}, headers=headers).status_code in (404, 405)
 
     # Test Mental Health Game endpoint — no fixed mood/score, no client-chosen reward
     res_game = client.post('/api/health/mental-game', json={
@@ -78,30 +66,40 @@ def test_camera_scan_and_mental_game_endpoints(harness):
     assert res_med.status_code == 200
     assert res_med.json()['status'] == 'SUCCESS'
     assert 'Ciplox 500' in res_med.json()['medicine']
-    assert 'Ciprofloxacin' in res_med.json()['activeMolecule']
-    assert 'Antibiotic' in res_med.json()['category']
+    assert res_med.json()['activeMolecule'] == 'Ciprofloxacin 500 mg'
+    assert res_med.json()['schedule'] == 'H'
+    assert res_med.json()['prescriptionRequired'] is True
+    # Only master facts: no invented monograph, indication or price.
+    assert not {'indications', 'studentkarePrice', 'janAushadhiAlternative'} & set(res_med.json())
 
-    # Test Medication Pill/Prescription Image Scan
+    # No match is an honest empty result, never a stand-in medicine.
+    res_none = client.post('/api/ai/medication-lookup', json={'query': 'zzqx unknown'}, headers=headers)
+    assert res_none.status_code == 200
+    assert res_none.json() == {'status': 'NO_MATCH', 'query': 'zzqx unknown'}
+
+    # There is no image recognition: a file name is refused, not "scanned".
     res_img = client.post('/api/ai/medication-lookup', json={'query': '', 'imageFileName': 'azithral_strip_scan.jpg'}, headers=headers)
-    assert res_img.status_code == 200
-    assert res_img.json()['status'] == 'SUCCESS'
-    assert 'Azithral 500' in res_img.json()['medicine']
-    assert 'Azithromycin' in res_img.json()['activeMolecule']
-
-    # Test AI Voice Prescription endpoint
-    res_voice = client.post('/api/ai/voice-prescription', json={
-        'dictatedText': 'Patient has mild fever 100F and headache. Prescribe Dolo 650mg 1 tab thrice daily.',
-        'doctorName': 'Dr. A. K. Sen, MD'
-    }, headers=headers)
-    assert res_voice.status_code == 200
-    assert res_voice.json()['status'] == 'SUCCESS'
-    assert len(res_voice.json()['parsedItems']) >= 2
-    assert 'AI Voice Prescription' in res_voice.json()['summary']
+    assert res_img.status_code == 422
 
 
-
-
-
+@pytest.mark.parametrize(("method", "path"), [
+    ("post", "/api/triage/council-eval"),
+    ("post", "/api/records/generate-soap"),
+    ("post", "/api/ai/voice-prescription"),
+    ("post", "/api/v1/agents/mesh-triage"),
+    ("get", "/api/v1/agents/system-log"),
+])
+def test_fixed_clinical_output_endpoints_are_gone(harness, method, path):
+    # These returned canned triage opinions, fixed vitals, keyword-picked
+    # medicines and hardcoded telemetry to any signed-in user. Clinician
+    # decision support belongs to M18, not this app (AGENTS.md guardrail 5).
+    client, _, codes = harness
+    _user, headers = register(client, codes, identifier="gone.endpoint@example.test")
+    if method == "post":
+        response = client.post(path, json={}, headers=headers)
+    else:
+        response = client.get(path, headers=headers)
+    assert response.status_code == 404
 
 
 @pytest.mark.skip(

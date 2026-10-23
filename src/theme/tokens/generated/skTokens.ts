@@ -14,17 +14,17 @@ export const skTokens = {
       "text": "#131B2E",
       "text2": "#464555",
       "text3": "#6B6980",
-      "brandNavy": "#1E1B4B",
-      "sidebar": "#283044",
-      "sidebarActive": "#4F46E5",
+      "brandNavy": "#0C0494",
+      "sidebar": "#0C0494",
+      "sidebarActive": "#FFFFFF",
       "sidebarInk": "#FFFFFF",
       "sidebarInk2": "#C3C0FF",
       "sidebarInk3": "#A9A5E0",
-      "action": "#3525CD",
-      "actionHover": "#2A1DB0",
+      "action": "#0C0494",
+      "actionHover": "#1D10D6",
       "onAction": "#FFFFFF",
       "actionSoft": "#DAE2FD",
-      "focus": "#4F46E5",
+      "focus": "#6C68F0",
       "positive": "#047857",
       "positiveFill": "#10B981",
       "positiveBg": "#ECFDF5",
@@ -42,17 +42,119 @@ export const skTokens = {
       "selectedRule": "#818CF8",
       "skeleton": "#ECEEF8",
       "skeletonShine": "#F7F8FD",
-      "navBg": "#283044",
+      "navBg": "#0C0494",
       "navText": "#C3C0FF",
       "navLabel": "#A9A5E0",
-      "navCurrent": "#4F46E5",
-      "onNavCurrent": "#FFFFFF",
-      "heroBg": "#1E1B4B",
-      "heroBgTop": "#312E81",
+      "navCurrent": "#FFFFFF",
+      "onNavCurrent": "#0C0494",
+      "heroBg": "#0C0494",
+      "heroBgTop": "#0C0494",
+      "heroCurrent": "#FFFFFF",
+      "onHeroCurrent": "#0C0494",
       "onHero": "#FFFFFF",
       "onHero2": "#C7D2FE",
       "onHeroLabel": "#A5B4FC",
-      "onHeroPositive": "#6EE7B7"
+      "onHeroPositive": "#6EE7B7",
+      "onHeroAttention": "#FCD34D",
+      "onHeroVeil": "#FFFFFF1A",
+      "onHeroTrack": "#FFFFFF33",
+      "onHeroRule": "#FFFFFF1F",
+      "onAction2": "#FFFFFFBF",
+      "navDanger": "#FDA4AF",
+      "actionHighlight": "#FFFFFF3D",
+      "scrim": "#0B10208C",
+      "scrimStrong": "#0B1020B8",
+      "chartCategorical1": "#3B2FC9",
+      "chartCategorical2": "#C2780A",
+      "chartCategorical3": "#1F8A70",
+      "chartCategorical4": "#8A1550",
+      "chartCategorical5": "#3A86C8",
+      "chartCategorical6": "#5E2E0F",
+      "chartCategorical7": "#7E2E9E",
+      "chartCategorical8": "#5A6E00",
+      "illustrationIndigoSoft": "#C7D2FE",
+      "illustrationIndigo": "#4F46E5",
+      "illustrationIndigoDeep": "#0C0494",
+      "illustrationMintSoft": "#B8F7DA",
+      "illustrationMint": "#34D399",
+      "illustrationMintDeep": "#047857",
+      "illustrationGoldSoft": "#FFE39A",
+      "illustrationGold": "#F5B83D",
+      "illustrationGoldDeep": "#C98512",
+      "illustrationPeachSoft": "#FFE0C2",
+      "illustrationPeach": "#FDBA74",
+      "illustrationPeachDeep": "#EA7A2E",
+      "illustrationRoseSoft": "#FFE4E6",
+      "illustrationRose": "#F49AA8",
+      "illustrationRoseDeep": "#C4566B",
+      "illustrationSkySoft": "#E0F2FE",
+      "illustrationSky": "#38BDF8",
+      "illustrationSkyDeep": "#0284C7",
+      "illustrationInk": "#1E1B4B",
+      "illustrationInkLight": "#EEF2FF",
+      "illustrationHighlight": "#FFFFFF",
+      "artTint1": "#6C7CBD",
+      "artTint2": "#8F7DC4",
+      "artTint3": "#BD8B9E",
+      "artTint4": "#C88781",
+      "artTint5": "#DFA061",
+      "artTint6": "#B6A06F",
+      "artTint7": "#8FB8A8",
+      "artTint8": "#6FA2AA",
+      "decor1": "#E8A317",
+      "decor2": "#10B981",
+      "decor3": "#6366F1",
+      "decor4": "#F97316",
+      "decor5": "#EC4899",
+      "paper": "#FFFDF7",
+      "paperRule": "#E2D9BF",
+      "paperInk": "#1E3A5F",
+      "paperInk2": "#475569",
+      "qrForeground": "#000000",
+      "qrBackground": "#FFFFFF",
+      "cameraBg": "#0B1020",
+      "cameraAccent": "#818CF8",
+      "onCamera": "#C7D2FE",
+      "brandNavyLight": "#2B20C9",
+      "ayushOrbGlint": "#A5F3FC",
+      "serviceIndigo": "#6D5BFF",
+      "serviceViolet": "#A78BFA",
+      "serviceVioletDeep": "#6D28D9",
+      "serviceVioletSoft": "#EDE9FE",
+      "serviceVioletInk": "#6D28D9",
+      "serviceVioletShade": "#4C1D95",
+      "serviceBlue": "#60A5FA",
+      "serviceBlueDeep": "#1D4ED8",
+      "serviceBlueSoft": "#DBEAFE",
+      "serviceBlueInk": "#1D4ED8",
+      "serviceSky": "#38BDF8",
+      "serviceSkyDeep": "#0369A1",
+      "serviceSkySoft": "#E0F2FE",
+      "serviceSkyInk": "#0369A1",
+      "serviceTeal": "#14B8A6",
+      "serviceTealDeep": "#0F766E",
+      "serviceTealSoft": "#CCFBF1",
+      "serviceTealInk": "#0F766E",
+      "serviceGreen": "#34D399",
+      "serviceGreenDeep": "#047857",
+      "serviceGreenSoft": "#D1FAE5",
+      "serviceGreenInk": "#047857",
+      "serviceGreenShade": "#065F46",
+      "serviceAmber": "#FBBF24",
+      "serviceAmberDeep": "#B45309",
+      "serviceAmberSoft": "#FEF3C7",
+      "serviceAmberInk": "#B45309",
+      "serviceAmberShade": "#92400E",
+      "serviceOrange": "#FB923C",
+      "serviceOrangeDeep": "#C2410C",
+      "serviceOrangeSoft": "#FFEDD5",
+      "serviceOrangeInk": "#C2410C",
+      "serviceOrangeShade": "#9A3412",
+      "serviceRose": "#F472B6",
+      "serviceRoseDeep": "#BE185D",
+      "serviceRoseSoft": "#FCE7F3",
+      "serviceRoseInk": "#BE185D",
+      "serviceRoseShade": "#9D174D"
     },
     "dark": {
       "canvas": "#0E1428",
@@ -65,17 +167,17 @@ export const skTokens = {
       "text": "#EEF2FF",
       "text2": "#BCC7E2",
       "text3": "#A5B1CE",
-      "brandNavy": "#0B1020",
-      "sidebar": "#1A2033",
-      "sidebarActive": "#4F46E5",
-      "sidebarInk": "#EEF2FF",
+      "brandNavy": "#0C0494",
+      "sidebar": "#0C0494",
+      "sidebarActive": "#FFFFFF",
+      "sidebarInk": "#FFFFFF",
       "sidebarInk2": "#C3C0FF",
       "sidebarInk3": "#A9A5E0",
       "action": "#A5B4FC",
       "actionHover": "#C7D2FE",
       "onAction": "#131B2E",
       "actionSoft": "#2E3862",
-      "focus": "#A5B4FC",
+      "focus": "#7F7BF5",
       "positive": "#6EE7B7",
       "positiveFill": "#10B981",
       "positiveBg": "#0F2E26",
@@ -93,22 +195,124 @@ export const skTokens = {
       "selectedRule": "#818CF8",
       "skeleton": "#202A48",
       "skeletonShine": "#2E3862",
-      "navBg": "#0B1020",
+      "navBg": "#0C0494",
       "navText": "#C3C0FF",
       "navLabel": "#A9A5E0",
-      "navCurrent": "#4F46E5",
-      "onNavCurrent": "#FFFFFF",
-      "heroBg": "#1E1B4B",
-      "heroBgTop": "#312E81",
+      "navCurrent": "#FFFFFF",
+      "onNavCurrent": "#0C0494",
+      "heroBg": "#0C0494",
+      "heroBgTop": "#0C0494",
+      "heroCurrent": "#FFFFFF",
+      "onHeroCurrent": "#0C0494",
       "onHero": "#FFFFFF",
       "onHero2": "#C7D2FE",
       "onHeroLabel": "#A5B4FC",
-      "onHeroPositive": "#6EE7B7"
+      "onHeroPositive": "#6EE7B7",
+      "onHeroAttention": "#FCD34D",
+      "onHeroVeil": "#FFFFFF1A",
+      "onHeroTrack": "#FFFFFF33",
+      "onHeroRule": "#FFFFFF1F",
+      "onAction2": "#131B2EC7",
+      "navDanger": "#FDA4AF",
+      "actionHighlight": "#FFFFFF59",
+      "scrim": "#02040CA6",
+      "scrimStrong": "#02040CCC",
+      "chartCategorical1": "#A5B4FC",
+      "chartCategorical2": "#F5A524",
+      "chartCategorical3": "#2BC48F",
+      "chartCategorical4": "#F27AA8",
+      "chartCategorical5": "#7FE0F5",
+      "chartCategorical6": "#EDCF8E",
+      "chartCategorical7": "#C77DEB",
+      "chartCategorical8": "#9CC95A",
+      "illustrationIndigoSoft": "#232464",
+      "illustrationIndigo": "#453FC9",
+      "illustrationIndigoDeep": "#0C0494",
+      "illustrationMintSoft": "#1A514C",
+      "illustrationMint": "#2EB688",
+      "illustrationMintDeep": "#047857",
+      "illustrationGoldSoft": "#58482F",
+      "illustrationGold": "#D29F3A",
+      "illustrationGoldDeep": "#C98512",
+      "illustrationPeachSoft": "#5A4940",
+      "illustrationPeach": "#D9A169",
+      "illustrationPeachDeep": "#EA7A2E",
+      "illustrationRoseSoft": "#583F51",
+      "illustrationRose": "#D28695",
+      "illustrationRoseDeep": "#C4566B",
+      "illustrationSkySoft": "#1B4A6B",
+      "illustrationSky": "#32A4D9",
+      "illustrationSkyDeep": "#0284C7",
+      "illustrationInk": "#1E1B4B",
+      "illustrationInkLight": "#D5DAF0",
+      "illustrationHighlight": "#DCE2F5",
+      "artTint1": "#57659C",
+      "artTint2": "#7366A2",
+      "artTint3": "#977184",
+      "artTint4": "#9F6E6D",
+      "artTint5": "#B18154",
+      "artTint6": "#91815F",
+      "artTint7": "#73948C",
+      "artTint8": "#5A838D",
+      "decor1": "#E4C049",
+      "decor2": "#30C08E",
+      "decor3": "#96A4E7",
+      "decor4": "#E5A96C",
+      "decor5": "#E299C3",
+      "paper": "#F3EFE3",
+      "paperRule": "#D6CCAE",
+      "paperInk": "#1E3A5F",
+      "paperInk2": "#475569",
+      "qrForeground": "#000000",
+      "qrBackground": "#FFFFFF",
+      "cameraBg": "#0B1020",
+      "cameraAccent": "#818CF8",
+      "onCamera": "#C7D2FE",
+      "brandNavyLight": "#2B20C9",
+      "ayushOrbGlint": "#A5F3FC",
+      "serviceIndigo": "#6D5BFF",
+      "serviceViolet": "#A78BFA",
+      "serviceVioletDeep": "#6D28D9",
+      "serviceVioletSoft": "#2E2458",
+      "serviceVioletInk": "#C4B5FD",
+      "serviceVioletShade": "#4C1D95",
+      "serviceBlue": "#60A5FA",
+      "serviceBlueDeep": "#1D4ED8",
+      "serviceBlueSoft": "#1B2E5C",
+      "serviceBlueInk": "#93C5FD",
+      "serviceSky": "#38BDF8",
+      "serviceSkyDeep": "#0369A1",
+      "serviceSkySoft": "#12384F",
+      "serviceSkyInk": "#7DD3FC",
+      "serviceTeal": "#14B8A6",
+      "serviceTealDeep": "#0F766E",
+      "serviceTealSoft": "#10403D",
+      "serviceTealInk": "#5EEAD4",
+      "serviceGreen": "#34D399",
+      "serviceGreenDeep": "#047857",
+      "serviceGreenSoft": "#12402F",
+      "serviceGreenInk": "#6EE7B7",
+      "serviceGreenShade": "#065F46",
+      "serviceAmber": "#FBBF24",
+      "serviceAmberDeep": "#B45309",
+      "serviceAmberSoft": "#3D2E10",
+      "serviceAmberInk": "#FCD34D",
+      "serviceAmberShade": "#92400E",
+      "serviceOrange": "#FB923C",
+      "serviceOrangeDeep": "#C2410C",
+      "serviceOrangeSoft": "#43260F",
+      "serviceOrangeInk": "#FDBA74",
+      "serviceOrangeShade": "#9A3412",
+      "serviceRose": "#F472B6",
+      "serviceRoseDeep": "#BE185D",
+      "serviceRoseSoft": "#45192F",
+      "serviceRoseInk": "#F9A8D4",
+      "serviceRoseShade": "#9D174D"
     }
   },
   "font": {
     "family": {
-      "sans": "\"Plus Jakarta Sans\", Manrope, system-ui, sans-serif",
+      "sans": "\"Plus Jakarta Sans\", \"Noto Sans Telugu\", \"Noto Sans Devanagari\", Manrope, system-ui, sans-serif",
       "serif": "Georgia, serif",
       "mono": "\"IBM Plex Mono\", ui-monospace, monospace",
       "telugu": "\"Noto Sans Telugu\", \"Plus Jakarta Sans\", sans-serif",
@@ -161,11 +365,22 @@ export const skTokens = {
     "touchTarget": 44,
     "control": 50,
     "controlLg": 54,
+    "navIcon": 20,
     "phoneWidth": 390,
+    "phoneFrameMax": 430,
+    "panelMax": 640,
     "webContentMax": 1440,
-    "webSidebar": 260
+    "webSidebar": 260,
+    "animInline": 16,
+    "animIcon": 24,
+    "animMark": 48,
+    "animTile": 72,
+    "animSceneSm": 160,
+    "animScene": 240,
+    "animSceneLg": 320
   },
   "shadow": {
+    "hairline": "0px 1px 4px 0px #13192E14",
     "card": "0px 8px 24px 0px #13192E14",
     "float": "0px 14px 30px 0px #13192E26",
     "sheet": "0px -20px 50px 0px #13192E40"
@@ -174,12 +389,21 @@ export const skTokens = {
     "duration": {
       "fast": 160,
       "base": 320,
-      "sheet": 420
+      "sheet": 420,
+      "toast": 4000,
+      "spinnerDelay": 400,
+      "carousel": 4200,
+      "ambient": 4000,
+      "orbit": 12000
     },
     "easing": {
       "standard": "cubic-bezier(0.16, 1, 0.3, 1)",
       "sheet": "cubic-bezier(0.2, 0.8, 0.3, 1)"
     }
+  },
+  "contrastMinimum": {
+    "text": 4.5,
+    "nonText": 3
   },
   "contrastPairs": [
     {
@@ -328,6 +552,36 @@ export const skTokens = {
       "min": 4.5
     },
     {
+      "fg": "onHero",
+      "bg": "heroBg",
+      "min": 4.5
+    },
+    {
+      "fg": "onHero2",
+      "bg": "heroBg",
+      "min": 4.5
+    },
+    {
+      "fg": "onHeroLabel",
+      "bg": "heroBg",
+      "min": 4.5
+    },
+    {
+      "fg": "onHeroPositive",
+      "bg": "heroBg",
+      "min": 4.5
+    },
+    {
+      "fg": "heroCurrent",
+      "bg": "heroBg",
+      "min": 3
+    },
+    {
+      "fg": "onHeroCurrent",
+      "bg": "heroCurrent",
+      "min": 4.5
+    },
+    {
       "fg": "sidebarInk",
       "bg": "sidebar",
       "min": 4.5
@@ -343,8 +597,353 @@ export const skTokens = {
       "min": 4.5
     },
     {
-      "fg": "sidebarInk",
+      "fg": "onNavCurrent",
       "bg": "sidebarActive",
+      "min": 4.5
+    },
+    {
+      "fg": "onAction",
+      "bg": "actionHover",
+      "min": 4.5
+    },
+    {
+      "fg": "action",
+      "bg": "canvas",
+      "min": 4.5
+    },
+    {
+      "fg": "action",
+      "bg": "actionSoft",
+      "min": 4.5
+    },
+    {
+      "fg": "navCurrent",
+      "bg": "navBg",
+      "min": 3
+    },
+    {
+      "fg": "sidebarActive",
+      "bg": "sidebar",
+      "min": 3
+    },
+    {
+      "fg": "focus",
+      "bg": "canvas",
+      "min": 3
+    },
+    {
+      "fg": "focus",
+      "bg": "navBg",
+      "min": 3
+    },
+    {
+      "fg": "focus",
+      "bg": "sidebar",
+      "min": 3
+    },
+    {
+      "fg": "focus",
+      "bg": "brandNavy",
+      "min": 3
+    },
+    {
+      "fg": "focus",
+      "bg": "heroBg",
+      "min": 3
+    },
+    {
+      "fg": "sidebarInk",
+      "bg": "brandNavy",
+      "min": 4.5
+    },
+    {
+      "fg": "sidebarInk2",
+      "bg": "brandNavy",
+      "min": 4.5
+    },
+    {
+      "fg": "sidebarInk3",
+      "bg": "brandNavy",
+      "min": 4.5
+    },
+    {
+      "fg": "onHero",
+      "bg": "brandNavy",
+      "min": 4.5
+    },
+    {
+      "fg": "onHero2",
+      "bg": "brandNavy",
+      "min": 4.5
+    },
+    {
+      "fg": "focus",
+      "bg": "navCurrent",
+      "min": 3
+    },
+    {
+      "fg": "focus",
+      "bg": "sidebarActive",
+      "min": 3
+    },
+    {
+      "fg": "onHeroAttention",
+      "bg": "heroBg",
+      "min": 4.5
+    },
+    {
+      "fg": "onHeroAttention",
+      "bg": "brandNavy",
+      "min": 4.5
+    },
+    {
+      "fg": "navDanger",
+      "bg": "navBg",
+      "min": 4.5
+    },
+    {
+      "fg": "navDanger",
+      "bg": "sidebar",
+      "min": 4.5
+    },
+    {
+      "fg": "navDanger",
+      "bg": "brandNavy",
+      "min": 4.5
+    },
+    {
+      "fg": "paperInk",
+      "bg": "paper",
+      "min": 4.5
+    },
+    {
+      "fg": "paperInk2",
+      "bg": "paper",
+      "min": 4.5
+    },
+    {
+      "fg": "qrForeground",
+      "bg": "qrBackground",
+      "min": 4.5
+    },
+    {
+      "fg": "chartCategorical1",
+      "bg": "canvas",
+      "min": 3
+    },
+    {
+      "fg": "chartCategorical2",
+      "bg": "canvas",
+      "min": 3
+    },
+    {
+      "fg": "chartCategorical3",
+      "bg": "canvas",
+      "min": 3
+    },
+    {
+      "fg": "chartCategorical4",
+      "bg": "canvas",
+      "min": 3
+    },
+    {
+      "fg": "chartCategorical5",
+      "bg": "canvas",
+      "min": 3
+    },
+    {
+      "fg": "chartCategorical6",
+      "bg": "canvas",
+      "min": 3
+    },
+    {
+      "fg": "chartCategorical7",
+      "bg": "canvas",
+      "min": 3
+    },
+    {
+      "fg": "chartCategorical8",
+      "bg": "canvas",
+      "min": 3
+    },
+    {
+      "fg": "chartCategorical1",
+      "bg": "surface",
+      "min": 3
+    },
+    {
+      "fg": "chartCategorical2",
+      "bg": "surface",
+      "min": 3
+    },
+    {
+      "fg": "chartCategorical3",
+      "bg": "surface",
+      "min": 3
+    },
+    {
+      "fg": "chartCategorical4",
+      "bg": "surface",
+      "min": 3
+    },
+    {
+      "fg": "chartCategorical5",
+      "bg": "surface",
+      "min": 3
+    },
+    {
+      "fg": "chartCategorical6",
+      "bg": "surface",
+      "min": 3
+    },
+    {
+      "fg": "chartCategorical7",
+      "bg": "surface",
+      "min": 3
+    },
+    {
+      "fg": "chartCategorical8",
+      "bg": "surface",
+      "min": 3
+    },
+    {
+      "fg": "navText",
+      "bg": "sidebar",
+      "min": 4.5
+    },
+    {
+      "fg": "dangerFill",
+      "bg": "sidebar",
+      "min": 3
+    },
+    {
+      "fg": "onCamera",
+      "bg": "cameraBg",
+      "min": 4.5
+    },
+    {
+      "fg": "onHero",
+      "bg": "cameraBg",
+      "min": 4.5
+    },
+    {
+      "fg": "cameraAccent",
+      "bg": "cameraBg",
+      "min": 3
+    },
+    {
+      "fg": "serviceVioletInk",
+      "bg": "serviceVioletSoft",
+      "min": 4.5
+    },
+    {
+      "fg": "onHero",
+      "bg": "serviceVioletDeep",
+      "min": 4.5
+    },
+    {
+      "fg": "serviceBlueInk",
+      "bg": "serviceBlueSoft",
+      "min": 4.5
+    },
+    {
+      "fg": "onHero",
+      "bg": "serviceBlueDeep",
+      "min": 4.5
+    },
+    {
+      "fg": "serviceSkyInk",
+      "bg": "serviceSkySoft",
+      "min": 4.5
+    },
+    {
+      "fg": "onHero",
+      "bg": "serviceSkyDeep",
+      "min": 4.5
+    },
+    {
+      "fg": "serviceTealInk",
+      "bg": "serviceTealSoft",
+      "min": 4.5
+    },
+    {
+      "fg": "onHero",
+      "bg": "serviceTealDeep",
+      "min": 4.5
+    },
+    {
+      "fg": "serviceGreenInk",
+      "bg": "serviceGreenSoft",
+      "min": 4.5
+    },
+    {
+      "fg": "onHero",
+      "bg": "serviceGreenDeep",
+      "min": 4.5
+    },
+    {
+      "fg": "serviceAmberInk",
+      "bg": "serviceAmberSoft",
+      "min": 4.5
+    },
+    {
+      "fg": "onHero",
+      "bg": "serviceAmberDeep",
+      "min": 4.5
+    },
+    {
+      "fg": "serviceOrangeInk",
+      "bg": "serviceOrangeSoft",
+      "min": 4.5
+    },
+    {
+      "fg": "onHero",
+      "bg": "serviceOrangeDeep",
+      "min": 4.5
+    },
+    {
+      "fg": "serviceRoseInk",
+      "bg": "serviceRoseSoft",
+      "min": 4.5
+    },
+    {
+      "fg": "onHero",
+      "bg": "serviceRoseDeep",
+      "min": 4.5
+    },
+    {
+      "fg": "onHero",
+      "bg": "brandNavyLight",
+      "min": 4.5
+    },
+    {
+      "fg": "onHero",
+      "bg": "serviceIndigo",
+      "min": 3
+    },
+    {
+      "fg": "onHero",
+      "bg": "serviceVioletShade",
+      "min": 4.5
+    },
+    {
+      "fg": "onHero",
+      "bg": "serviceAmberShade",
+      "min": 4.5
+    },
+    {
+      "fg": "onHero",
+      "bg": "serviceOrangeShade",
+      "min": 4.5
+    },
+    {
+      "fg": "onHero",
+      "bg": "serviceRoseShade",
+      "min": 4.5
+    },
+    {
+      "fg": "onHero",
+      "bg": "serviceGreenShade",
       "min": 4.5
     }
   ]

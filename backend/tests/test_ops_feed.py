@@ -7,7 +7,14 @@ as importantly, what each role must *not* see.
 """
 import time
 
-from test_clinical_fulfilment import make_document, make_provider, make_staff
+from test_clinical_fulfilment import (
+    counter_verified,
+    make_document,
+    make_provider,
+    make_staff,
+    put_in_care,
+    quote_and_pay,
+)
 from test_workflow_api import harness, login, register  # noqa: F401 — pytest fixtures
 
 from core import workflow_models as M
@@ -81,6 +88,7 @@ def test_clinic_events_reach_the_super_admin_feed(harness):
     make_staff(factory, "doc", "NMC_DOCTOR", "doc@example.test")
     make_staff(factory, "admin", "SUPER_ADMIN", "admin@example.test")
     doc_headers = login(client, codes, "doc@example.test")
+    put_in_care(factory, "doc", patient["id"])
     client.post("/api/prescriptions", json={
         "patientId": patient["id"],
         "items": [{"genericName": "Paracetamol", "quantity": 10}],
@@ -102,6 +110,7 @@ def test_a_vendor_never_sees_clinical_events(harness):
     make_staff(factory, "doc", "NMC_DOCTOR", "doc@example.test")
     make_staff(factory, "vendor-a", "VENDOR", "vendor-a@example.test")
     doc_headers = login(client, codes, "doc@example.test")
+    put_in_care(factory, "doc", patient["id"])
     client.post("/api/prescriptions", json={
         "patientId": patient["id"], "items": [{"genericName": "Paracetamol", "quantity": 10}],
     }, headers=doc_headers)
@@ -123,6 +132,7 @@ def test_the_summary_never_carries_clinical_detail(harness):
     make_staff(factory, "doc", "NMC_DOCTOR", "doc@example.test")
     make_staff(factory, "admin", "SUPER_ADMIN", "admin@example.test")
     doc_headers = login(client, codes, "doc@example.test")
+    put_in_care(factory, "doc", patient["id"])
     client.post("/api/prescriptions", json={
         "patientId": patient["id"], "advice": "Take after food",
         "items": [{"genericName": "Azithromycin", "brandName": "Azithral", "quantity": 3}],
@@ -200,6 +210,7 @@ def prepare_dispense(client, factory, codes, substitution_allowed=True):
     make_staff(factory, "pharm", "VENDOR", "pharm@example.test")
     make_provider(factory, "ph-1", "pharm", "PHARMACY", pincode="500001")
     doc_headers = login(client, codes, "doc@example.test")
+    put_in_care(factory, "doc", patient["id"])
     prescription = client.post("/api/prescriptions", json={
         "patientId": patient["id"],
         "items": [{"genericName": "Azithromycin", "quantity": 3, "scheduleClass": "H1",
@@ -249,8 +260,10 @@ def test_prescriber_approves_a_substitution_and_the_dispense_resumes(harness):
     assert decided.json()["status"] == "APPROVED"
 
     pharm_headers = login(client, codes, "pharm@example.test")
-    resumed = client.patch(f"/api/dispenses/{dispense['id']}", json={"status": "ACCEPTED"}, headers=pharm_headers)
-    assert resumed.status_code == 200
+    # Back at RX_VERIFIED: the pharmacy prices it, the student pays, and it is accepted.
+    assert client.get("/api/work/dispenses", headers=pharm_headers).json()["items"][0]["status"] == "RX_VERIFIED"
+    pharm_headers, _student = quote_and_pay(client, codes, dispense["id"], pharm_headers, "sub-pt@example.test")
+    assert client.get("/api/work/dispenses", headers=pharm_headers).json()["items"][0]["status"] == "ACCEPTED"
 
 
 def test_no_substitution_item_cannot_be_proposed_against(harness):
@@ -287,17 +300,22 @@ def run_to_critical(client, factory, codes):
     make_staff(factory, "labco", "VENDOR", "labco@example.test")
     make_staff(factory, "doc", "NMC_DOCTOR", "doc@example.test")
     make_provider(factory, "lab-1", "labco", "LAB", pincode="500001")
-    make_document(factory, "rep-1", patient["id"])
+    # The doctor reviewing a result must be caring for the student.
+    put_in_care(factory, "doc", patient["id"])
     order = client.post("/api/lab-orders", json={"labId": "lab-1", "testPanel": ["Electrolytes"]},
                         headers=headers).json()
+    client.post("/api/auth/logout", headers=headers)
     lab_headers = login(client, codes, "labco@example.test")
+    counter_verified(factory, order["id"])  # the lab checked the pass at its counter
     for payload in [{"status": "ASSIGNED", "collectorName": "P. Rao"},
                     {"status": "SAMPLE_COLLECTED", "sampleId": "SMP-9"},
-                    {"status": "RECEIVED_AT_LAB"}, {"status": "IN_ANALYSIS"},
-                    {"status": "REPORT_READY", "reportDocumentId": "rep-1", "criticalFlag": True,
-                     "criticalNote": "Potassium 6.8"}]:
+                    {"status": "RECEIVED_AT_LAB"}, {"status": "IN_ANALYSIS"}]:
         step = client.patch(f"/api/lab-orders/{order['id']}", json=payload, headers=lab_headers)
         assert step.status_code == 200, step.text
+    filed = client.post(f"/api/work/lab-orders/{order['id']}/report",
+                        files={"file": ("r.pdf", b"%PDF-1.4 x", "application/pdf")},
+                        data={"criticalFlag": "true", "criticalNote": "Potassium 6.8"}, headers=lab_headers)
+    assert filed.status_code == 200, filed.text
     return order, lab_headers
 
 
@@ -336,6 +354,7 @@ def test_rejected_sample_can_be_recollected_without_losing_the_booking(harness):
     make_provider(factory, "lab-1", "labco", "LAB", pincode="500001")
     order = client.post("/api/lab-orders", json={"labId": "lab-1", "testPanel": ["CBC"]}, headers=headers).json()
     lab_headers = login(client, codes, "labco@example.test")
+    counter_verified(factory, order["id"])  # the lab checked the pass at its counter
     client.patch(f"/api/lab-orders/{order['id']}", json={"status": "ASSIGNED", "collectorName": "P. Rao"},
                  headers=lab_headers)
     client.patch(f"/api/lab-orders/{order['id']}", json={"status": "SAMPLE_COLLECTED", "sampleId": "SMP-1"},
@@ -362,27 +381,12 @@ def test_rejected_sample_can_be_recollected_without_losing_the_booking(harness):
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# Fix 4 — the report document must be real, and the patient's
+# Fix 4 — a lab can't attach an existing document as the report
 # ══════════════════════════════════════════════════════════════════════════════
 
-def test_report_document_must_exist(harness):
-    client, factory, codes = harness
-    patient, headers = register(client, codes, "doc-pt@example.test")
-    make_staff(factory, "labco", "VENDOR", "labco@example.test")
-    make_provider(factory, "lab-1", "labco", "LAB", pincode="500001")
-    order = client.post("/api/lab-orders", json={"labId": "lab-1", "testPanel": ["CBC"]}, headers=headers).json()
-    lab_headers = login(client, codes, "labco@example.test")
-    for payload in [{"status": "ASSIGNED", "collectorName": "P. Rao"},
-                    {"status": "SAMPLE_COLLECTED", "sampleId": "SMP-1"},
-                    {"status": "RECEIVED_AT_LAB"}, {"status": "IN_ANALYSIS"}]:
-        client.patch(f"/api/lab-orders/{order['id']}", json=payload, headers=lab_headers)
-
-    assert client.patch(f"/api/lab-orders/{order['id']}",
-                        json={"status": "REPORT_READY", "reportDocumentId": "not-a-real-document"},
-                        headers=lab_headers).status_code == 404
-
-
-def test_report_document_belonging_to_another_account_is_refused(harness):
+def test_a_lab_cannot_attach_any_existing_document_as_the_report(harness):
+    """Attaching a document by id used to be how a report was filed; a lab could
+    name another student's record. Reports are now uploaded and held for review."""
     client, factory, codes = harness
     patient, headers = register(client, codes, "doc-own@example.test")
     make_staff(factory, "stranger", "STUDENT", "stranger@example.test", "Someone Else")
@@ -391,14 +395,18 @@ def test_report_document_belonging_to_another_account_is_refused(harness):
     make_document(factory, "theirs", "stranger")
     order = client.post("/api/lab-orders", json={"labId": "lab-1", "testPanel": ["CBC"]}, headers=headers).json()
     lab_headers = login(client, codes, "labco@example.test")
+    counter_verified(factory, order["id"])  # the lab checked the pass at its counter
     for payload in [{"status": "ASSIGNED", "collectorName": "P. Rao"},
                     {"status": "SAMPLE_COLLECTED", "sampleId": "SMP-1"},
                     {"status": "RECEIVED_AT_LAB"}, {"status": "IN_ANALYSIS"}]:
         client.patch(f"/api/lab-orders/{order['id']}", json=payload, headers=lab_headers)
 
-    leaked = client.patch(f"/api/lab-orders/{order['id']}",
-                          json={"status": "REPORT_READY", "reportDocumentId": "theirs"}, headers=lab_headers)
-    assert leaked.status_code == 403
+    for document_id in ("theirs", "not-a-real-document"):
+        attached = client.patch(f"/api/lab-orders/{order['id']}",
+                                json={"status": "REPORT_READY", "reportDocumentId": document_id}, headers=lab_headers)
+        assert attached.status_code == 409
+    with factory() as db:
+        assert db.get(M.LabOrder, order["id"]).report_document_id == ""
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -412,6 +420,7 @@ def test_dispense_creates_a_row_per_prescribed_item(harness):
     make_staff(factory, "pharm", "VENDOR", "pharm@example.test")
     make_provider(factory, "ph-1", "pharm", "PHARMACY", pincode="500001")
     doc_headers = login(client, codes, "doc@example.test")
+    put_in_care(factory, "doc", patient["id"])
     prescription = client.post("/api/prescriptions", json={
         "patientId": patient["id"],
         "items": [{"genericName": "Azithromycin", "quantity": 3},
@@ -431,11 +440,16 @@ def test_dispense_creates_a_row_per_prescribed_item(harness):
 
 def test_partially_accepted_is_a_reachable_state(harness):
     client, factory, codes = harness
-    _prescription, dispense, pharm_headers = prepare_dispense(client, factory, codes)
-    partial = client.patch(f"/api/dispenses/{dispense['id']}", json={"status": "PARTIALLY_ACCEPTED"},
+    prescription, dispense, pharm_headers = prepare_dispense(client, factory, codes)
+    # Never by hand: a quote that supplies part of the prescription, once paid.
+    by_hand = client.patch(f"/api/dispenses/{dispense['id']}", json={"status": "PARTIALLY_ACCEPTED"},
                            headers=pharm_headers)
-    assert partial.status_code == 200
-    assert "PACKED" in partial.json()["nextStates"]
+    assert by_hand.status_code == 409
+    pharm_headers, _student = quote_and_pay(client, codes, dispense["id"], pharm_headers, "sub-pt@example.test",
+                                            quantities={prescription["items"][0]["id"]: 2})
+    partial = client.get("/api/work/dispenses", headers=pharm_headers).json()["items"][0]
+    assert partial["status"] == "PARTIALLY_ACCEPTED"
+    assert "PACKED" in partial["nextStates"]
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -451,6 +465,7 @@ def test_student_is_told_when_a_prescription_is_issued(harness):
     patient, _ = register(client, codes, "notify-rx@example.test")
     make_staff(factory, "doc", "NMC_DOCTOR", "doc@example.test")
     doc_headers = login(client, codes, "doc@example.test")
+    put_in_care(factory, "doc", patient["id"])
     client.post("/api/prescriptions", json={
         "patientId": patient["id"], "items": [{"genericName": "Paracetamol", "quantity": 10}],
     }, headers=doc_headers)
@@ -464,12 +479,12 @@ def test_student_is_told_when_a_prescription_is_issued(harness):
 def test_student_is_told_at_the_dispense_milestones_that_matter(harness):
     client, factory, codes = harness
     _prescription, dispense, pharm_headers = prepare_dispense(client, factory, codes)
-    for payload in [{"status": "ACCEPTED"}, {"status": "PACKED"},
-                    {"status": "OUT_FOR_DELIVERY"}, {"status": "DELIVERED"}]:
-        client.patch(f"/api/dispenses/{dispense['id']}", json=payload, headers=pharm_headers)
+    pharm_headers, student = quote_and_pay(client, codes, dispense["id"], pharm_headers, "sub-pt@example.test")
+    for payload in [{"status": "PACKED"}, {"status": "OUT_FOR_DELIVERY"}, {"status": "DELIVERED"}]:
+        assert client.patch(f"/api/dispenses/{dispense['id']}", json=payload, headers=pharm_headers).status_code == 200
 
-    patient_headers = login(client, codes, "sub-pt@example.test")
-    kinds = [e["eventType"] for e in inbox(client, patient_headers)]
+    student_client, patient_headers = student
+    kinds = [e["eventType"] for e in inbox(student_client, patient_headers)]
     assert "DISPENSE_RX_VERIFIED" in kinds
     assert "DISPENSE_OUT_FOR_DELIVERY" in kinds
     assert "DISPENSE_DELIVERED" in kinds
@@ -483,20 +498,28 @@ def test_student_is_told_when_their_report_is_released(harness):
     patient, headers = register(client, codes, "notify-lab@example.test")
     make_staff(factory, "labco", "VENDOR", "labco@example.test")
     make_provider(factory, "lab-1", "labco", "LAB", pincode="500001")
-    make_document(factory, "rep-9", patient["id"])
+    make_staff(factory, "doc", "NMC_DOCTOR", "doc@example.test")
+    put_in_care(factory, "doc", patient["id"])
     order = client.post("/api/lab-orders", json={"labId": "lab-1", "testPanel": ["CBC"]}, headers=headers).json()
+    client.post("/api/auth/logout", headers=headers)
     lab_headers = login(client, codes, "labco@example.test")
+    counter_verified(factory, order["id"])  # the lab checked the pass at its counter
     for payload in [{"status": "ASSIGNED", "collectorName": "P. Rao"},
                     {"status": "SAMPLE_COLLECTED", "sampleId": "SMP-3"},
-                    {"status": "RECEIVED_AT_LAB"}, {"status": "IN_ANALYSIS"},
-                    {"status": "REPORT_READY", "reportDocumentId": "rep-9"},
-                    {"status": "REPORT_RELEASED"}]:
+                    {"status": "RECEIVED_AT_LAB"}, {"status": "IN_ANALYSIS"}]:
         client.patch(f"/api/lab-orders/{order['id']}", json=payload, headers=lab_headers)
+    client.post(f"/api/work/lab-orders/{order['id']}/report",
+                files={"file": ("r.pdf", b"%PDF-1.4 x", "application/pdf")}, headers=lab_headers)
+    client.post("/api/auth/logout", headers=lab_headers)
+    doc_headers = login(client, codes, "doc@example.test")
+    assert client.post(f"/api/work/lab-reviews/{order['id']}/release", json={"note": "All normal."},
+                       headers=doc_headers).status_code == 200
+    client.post("/api/auth/logout", headers=doc_headers)
 
     patient_headers = login(client, codes, "notify-lab@example.test")
     summaries = " ".join(e["payload"]["summary"] for e in inbox(client, patient_headers))
     assert "sample has been collected" in summaries
-    assert "report is ready" in summaries
+    assert "A doctor has reviewed your lab report" in summaries
 
 
 def test_a_rejected_sample_tells_the_student_why(harness):
@@ -506,6 +529,7 @@ def test_a_rejected_sample_tells_the_student_why(harness):
     make_provider(factory, "lab-1", "labco", "LAB", pincode="500001")
     order = client.post("/api/lab-orders", json={"labId": "lab-1", "testPanel": ["CBC"]}, headers=headers).json()
     lab_headers = login(client, codes, "labco@example.test")
+    counter_verified(factory, order["id"])  # the lab checked the pass at its counter
     client.patch(f"/api/lab-orders/{order['id']}", json={"status": "ASSIGNED", "collectorName": "P. Rao"}, headers=lab_headers)
     client.patch(f"/api/lab-orders/{order['id']}", json={"status": "SAMPLE_COLLECTED", "sampleId": "S1"}, headers=lab_headers)
     client.patch(f"/api/lab-orders/{order['id']}",
@@ -520,13 +544,13 @@ def test_notifications_are_idempotent(harness):
     """A retried transition must not notify the student twice."""
     client, factory, codes = harness
     _prescription, dispense, pharm_headers = prepare_dispense(client, factory, codes)
-    client.patch(f"/api/dispenses/{dispense['id']}", json={"status": "ACCEPTED"}, headers=pharm_headers)
-    client.patch(f"/api/dispenses/{dispense['id']}", json={"status": "PACKED"}, headers=pharm_headers)
+    pharm_headers, student = quote_and_pay(client, codes, dispense["id"], pharm_headers, "sub-pt@example.test")
+    assert client.patch(f"/api/dispenses/{dispense['id']}", json={"status": "PACKED"}, headers=pharm_headers).status_code == 200
     for _ in range(3):
         client.patch(f"/api/dispenses/{dispense['id']}", json={"status": "OUT_FOR_DELIVERY"}, headers=pharm_headers)
 
-    patient_headers = login(client, codes, "sub-pt@example.test")
-    kinds = [e["eventType"] for e in inbox(client, patient_headers)]
+    student_client, patient_headers = student
+    kinds = [e["eventType"] for e in inbox(student_client, patient_headers)]
     assert kinds.count("DISPENSE_OUT_FOR_DELIVERY") == 1
 
 
@@ -575,6 +599,8 @@ MUST_PUBLISH = {
     "/campus/verification": "a campus affiliation being submitted",
     "/ops/campus/{account_id}": "a campus affiliation being decided",
     "/ops/accounts": "a staff account, and therefore privilege, being granted",
+    "/ops/accounts/{account_id}/partner-kind": "which partner dashboard, and therefore which tools, an account gets",
+    "/ops/accounts/{account_id}/2fa/reset": "a super admin removing someone's second factor",
     "/records/shares": "a student granting a clinician access",
     "/records/shares/{share_id}/revoke": "a student withdrawing that access",
     "/records/deletion-request": "a statutory erasure request",
@@ -595,7 +621,8 @@ MUST_PUBLISH = {
     # Safety releases and emergencies.
     "/ops/approve-action": "a human releasing a held AI action",
     "/blood/sos-request": "an emergency blood broadcast",
-    "/v1/pharmacy/rx-reviews/approve": "a pharmacist releasing a reviewed prescription",
+    # /v1/pharmacy/rx-reviews/{id}/approve and /reject delegate to this handler.
+    "/dispenses/{dispense_id}": "a pharmacist verifying or rejecting a prescription",
 }
 
 # Deliberately silent. These are a person's own routine activity, and routing them

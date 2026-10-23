@@ -1,0 +1,58 @@
+{
+  "cli": {
+    "version": ">= 13.0.0",
+    "appVersionSource": "local"
+  },
+  "build": {
+    "base": {
+      "node": "20.19.4",
+      "env": {
+        "EXPO_PUBLIC_API_BASE_URL": "https://api.studentkare.co/api",
+        "EXPO_PUBLIC_SITE_URL": "https://studentkare.co"
+      }
+    },
+    "development": {
+      "extends": "base",
+      "developmentClient": true,
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_APP_ENV": "development"
+      },
+      "android": {
+        "buildType": "apk"
+      },
+      "ios": {
+        "simulator": false
+      }
+    },
+    "preview": {
+      "extends": "base",
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_APP_ENV": "preview"
+      },
+      "android": {
+        "buildType": "apk"
+      }
+    },
+    "production": {
+      "extends": "base",
+      "distribution": "store",
+      "env": {
+        "EXPO_PUBLIC_APP_ENV": "production"
+      },
+      "android": {
+        "buildType": "app-bundle"
+      }
+    }
+  },
+  "submit": {
+    "production": {
+      "android": {
+        "track": "internal",
+        "releaseStatus": "draft"
+      },
+      "ios": {}
+    }
+  }
+}

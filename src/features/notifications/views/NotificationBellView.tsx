@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Bell, CheckCheck, AlertTriangle, ShieldCheck, Pill, Calendar, RefreshCw, X } from 'lucide-react';
 import type { NotificationViewModel, NotificationCategory } from '../viewmodel/NotificationViewModel';
+import { say, useT } from '@/i18n';
 import './notifications.css';
 
 interface NotificationBellViewProps {
@@ -28,6 +29,7 @@ const CategoryIcon: React.FC<{ category: NotificationCategory }> = ({ category }
  * Binds reactively to `NotificationViewModel` using MobX `observer`.
  */
 export const NotificationBellView: React.FC<NotificationBellViewProps> = observer(({ viewModel }) => {
+  const t = useT();
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -111,14 +113,14 @@ export const NotificationBellView: React.FC<NotificationBellViewProps> = observe
           {viewModel.error && (
             <div className="notif-error-banner">
               <AlertTriangle size={14} />
-              <span>{viewModel.error}</span>
+              <span>{say(t, viewModel.error)}</span>
             </div>
           )}
 
           <div className="notif-list-scroll">
             {viewModel.filteredItems.length === 0 ? (
               <div className="notif-empty-state">
-                <ShieldCheck size={28} color="#94a3b8" />
+                <ShieldCheck size={28} color="var(--sk-color-text-3)" />
                 <p>No notifications in this view.</p>
               </div>
             ) : (

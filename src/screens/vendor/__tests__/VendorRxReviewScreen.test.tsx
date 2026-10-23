@@ -1,220 +1,125 @@
 import React from 'react';
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { VendorRxReviewScreen } from '../VendorRxReviewScreen';
+import type { RxReview, RxReviewQueue } from '@/features/partner/work/pharmacyWork';
 
-vi.mock('@/data/AuthContext', () => ({
-  useAuth: () => ({
-    user: {
-      id: 'demo-pharmacy',
-      fullName: 'MedPlus Bachupally',
-      role: 'VENDOR',
-      email: 'pharmacy@studentkare.test',
-    },
-    logout: vi.fn(),
-  }),
+/** WP-15 VendorRxReview (Tier 1, approved 2026-10-21): fixtures only. */
+
+vi.mock('@/data/contexts/AuthContext', () => ({ useAuth: () => ({ user: { id: 'ph-1', fullName: 'MedPlus Bachupally', role: 'VENDOR', partnerKind: 'PHARMACY' } }) }));
+vi.mock('@/lib/utils/workflowRouting', () => ({ navigate: vi.fn() }));
+const approveRx = vi.fn();
+const rejectRx = vi.fn();
+const rxUploadLink = vi.fn();
+vi.mock('@/features/partner/work/pharmacyWork', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/features/partner/work/pharmacyWork')>()),
+  approveRx: (...args: unknown[]) => approveRx(...args),
+  rejectRx: (...args: unknown[]) => rejectRx(...args),
+  rxUploadLink: (...args: unknown[]) => rxUploadLink(...args),
 }));
 
-vi.mock('@/lib/workflowRouting', () => ({
-  navigate: vi.fn(),
-  homeForRole: vi.fn((role: string) => (role === 'SUPER_ADMIN' ? 'admin' : role === 'VENDOR' ? 'vendor' : 'health')),
-}));
+const now = Date.now() / 1000;
+const review = (over: Partial<RxReview> = {}): RxReview => ({
+  dispenseId: 'disp-2231', receivedAt: now - 180, prescriberRegNo: 'TSMC 45122', issuedAt: now - 86400, validUntil: now + 86400 * 20, expired: false,
+  items: [
+    { id: 'l1', genericName: 'Cetirizine', brandName: '', strength: '10 mg', form: 'tablet', dose: '1 tablet', frequency: 'once daily', quantity: 5, scheduleClass: 'OTC', registerRequired: false, substitutionAllowed: true },
+    { id: 'l2', genericName: 'Budesonide', brandName: '', strength: '200 mcg', form: 'inhaler', dose: '1 puff', frequency: 'twice daily', quantity: 1, scheduleClass: 'H', registerRequired: true, substitutionAllowed: false },
+  ],
+  ...over,
+});
+const queue = (over: Partial<RxReviewQueue> = {}): RxReviewQueue => ({ reviews: [review()], total: 1, uploads: [], uploadsTotal: 0, ...over });
+const twoFactorOn = async () => ({ enabled: true });
+const setOnline = (value: boolean) => Object.defineProperty(window.navigator, 'onLine', { value, configurable: true });
 
-describe('VendorRxReviewScreen', () => {
-  it('renders heading, subtitle, and pharmacist on duty badge', () => {
-    render(<VendorRxReviewScreen />);
-    expect(screen.getByRole('heading', { level: 1, name: 'Rx review' })).toBeInTheDocument();
-    expect(
-      screen.getByText(/Human sign-off before any prescription item is packed/i)
-    ).toBeInTheDocument();
-    expect(screen.getByText(/Pharmacist on duty · R. Kumar, Reg. 11873/i)).toBeInTheDocument();
+const CHECKS = ['Doctor registration verified', 'Prescription date valid', 'Patient matches order', 'Allergy check', 'Schedule H items logged'];
+
+beforeEach(() => { approveRx.mockReset(); rejectRx.mockReset(); rxUploadLink.mockReset(); setOnline(true); });
+afterEach(() => setOnline(true));
+
+describe('VendorRxReview', () => {
+  it('approve stays disabled until every check, every line and the pharmacist’s name are done', async () => {
+    approveRx.mockResolvedValue({});
+    const source = vi.fn(async () => queue());
+    render(<VendorRxReviewScreen source={source} twoFactorSource={twoFactorOn} />);
+    const approve = await screen.findByRole('button', { name: 'Approve and pack' });
+    expect(approve).toBeDisabled();
+    for (const name of CHECKS) fireEvent.click(screen.getByRole('checkbox', { name: new RegExp(name) }));
+    expect(approve).toBeDisabled();
+    for (const box of screen.getAllByRole('checkbox', { name: 'Matches the prescription as written' })) fireEvent.click(box);
+    expect(approve).toBeDisabled();
+    fireEvent.change(screen.getByLabelText(/Verifying pharmacist’s name/), { target: { value: 'R. Kumar' } });
+    expect(approve).toBeEnabled();
+    fireEvent.click(approve);
+    await waitFor(() => expect(approveRx).toHaveBeenCalledWith('review', 'disp-2231', 'R. Kumar', {
+      prescriberRegistration: true, prescriptionDate: true, patientMatches: true, allergyChecked: true, scheduleLogged: true,
+    }));
+    await waitFor(() => expect(source).toHaveBeenCalledTimes(2));
   });
 
-  it('renders queue items and initial prescription document', () => {
-    render(<VendorRxReviewScreen />);
-    expect(screen.getByText(/WAITING FOR A PHARMACIST · 4/i)).toBeInTheDocument();
-    expect(screen.getByText('RX-2231')).toBeInTheDocument();
-    expect(screen.getByText('RX-2229')).toBeInTheDocument();
-    expect(screen.getByText('RX-2226')).toBeInTheDocument();
-    expect(screen.getByText('RX-2220')).toBeInTheDocument();
-
-    // Doctor information on slip
-    expect(screen.getByText('Dr. K. Rao, MBBS')).toBeInTheDocument();
-    expect(screen.getByText(/Reg. TSMC 45122 · Sai Clinic, Nizampet · 22\/09\/2026/i)).toBeInTheDocument();
+  it('never shows the student’s allergy record; the allergy check is asked in person', async () => {
+    render(<VendorRxReviewScreen source={async () => queue()} twoFactorSource={twoFactorOn} />);
+    expect(await screen.findByText(/their allergy record isn’t shared with pharmacies/)).toBeInTheDocument();
   });
 
-  it('switches active prescription when clicking a queue item', () => {
-    render(<VendorRxReviewScreen />);
-    const rx2229Btn = screen.getByText('RX-2229');
-    fireEvent.click(rx2229Btn);
-
-    expect(screen.getByText('Dr. Ananya Reddy, MD')).toBeInTheDocument();
-    expect(screen.getByText(/Care Hospital, Kukatpally/i)).toBeInTheDocument();
+  it('an expired prescription cannot be approved', async () => {
+    render(<VendorRxReviewScreen source={async () => queue({ reviews: [review({ expired: true })] })} twoFactorSource={twoFactorOn} />);
+    expect(await screen.findByRole('alert')).toHaveTextContent(/has expired/);
+    for (const name of CHECKS) fireEvent.click(screen.getByRole('checkbox', { name: new RegExp(name) }));
+    for (const box of screen.getAllByRole('checkbox', { name: 'Matches the prescription as written' })) fireEvent.click(box);
+    fireEvent.change(screen.getByLabelText(/Verifying pharmacist’s name/), { target: { value: 'R. Kumar' } });
+    expect(screen.getByRole('button', { name: 'Approve and pack' })).toBeDisabled();
   });
 
-  it('toggles checklist items and enables approve button only when all checks pass', () => {
-    render(<VendorRxReviewScreen />);
-    const approveBtn = screen.getByRole('button', { name: /Approve and pack/i });
-    expect(approveBtn).toBeDisabled();
-
-    // Toggle the remaining unchecked items
-    const patientCheck = screen.getByRole('checkbox', { name: /Patient matches order/i });
-    const allergyCheck = screen.getByRole('checkbox', { name: /Allergy check/i });
-    const schedCheck = screen.getByRole('checkbox', { name: /Schedule H items logged/i });
-
-    fireEvent.click(patientCheck);
-    fireEvent.click(allergyCheck);
-    fireEvent.click(schedCheck);
-
-    expect(approveBtn).not.toBeDisabled();
+  it('rejects with the reason the student sees', async () => {
+    rejectRx.mockResolvedValue({});
+    render(<VendorRxReviewScreen source={async () => queue()} twoFactorSource={twoFactorOn} />);
+    fireEvent.click(await screen.findByRole('button', { name: 'Reject' }));
+    fireEvent.change(screen.getByLabelText(/Reason for rejecting/), { target: { value: 'Date unreadable' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Confirm rejection' }));
+    await waitFor(() => expect(rejectRx).toHaveBeenCalledWith('review', 'disp-2231', 'Date unreadable'));
   });
 
-  it('approves prescription when clicking approve and pack', () => {
-    render(<VendorRxReviewScreen />);
-    // Check all boxes
-    fireEvent.click(screen.getByRole('checkbox', { name: /Patient matches order/i }));
-    fireEvent.click(screen.getByRole('checkbox', { name: /Allergy check/i }));
-    fireEvent.click(screen.getByRole('checkbox', { name: /Schedule H items logged/i }));
-
-    const approveBtn = screen.getByRole('button', { name: /Approve and pack/i });
-    fireEvent.click(approveBtn);
-
-    expect(screen.getByText(/RX-2231 approved · sent to packing/i)).toBeInTheDocument();
+  it('an uploaded prescription opens only through the server’s short-lived link; OCR is not connected', async () => {
+    rxUploadLink.mockResolvedValue({ url: '/api/v1/pharmacy/rx-uploads/up-1/file?token=abc', expiresAt: now + 120 });
+    const open = vi.spyOn(window, 'open').mockReturnValue(null);
+    render(<VendorRxReviewScreen source={async () => queue({ reviews: [], total: 0, uploads: [{ reviewId: 'up-1', receivedAt: now - 60, mimeType: 'image/jpeg', source: 'UPLOAD' }], uploadsTotal: 1 })} twoFactorSource={twoFactorOn} />);
+    expect(await screen.findByText(/Reading items off an uploaded image isn’t connected yet/)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Open the prescription' }));
+    await waitFor(() => expect(rxUploadLink).toHaveBeenCalledWith('up-1'));
+    await waitFor(() => expect(open).toHaveBeenCalledWith(expect.stringContaining('/api/v1/pharmacy/rx-uploads/up-1/file?token=abc'), '_blank', 'noopener,noreferrer'));
+    open.mockRestore();
   });
 
-  it('handles ask the doctor and rejection flows', () => {
-    render(<VendorRxReviewScreen />);
-    const clarifyBtn = screen.getByRole('button', { name: /Ask the doctor/i });
-    fireEvent.click(clarifyBtn);
-    expect(screen.getByText(/Question sent to Dr\. K\. Rao.*order on hold/i)).toBeInTheDocument();
-
-    const rejectBtn = screen.getByRole('button', { name: /Reject/i });
-    fireEvent.click(rejectBtn);
-    expect(screen.getByText(/RX-2231 rejected · student told why/i)).toBeInTheDocument();
+  it('"Ask the doctor" is not offered (no endpoint), and 2FA shows only when the server says so', async () => {
+    const { unmount } = render(<VendorRxReviewScreen source={async () => queue()} twoFactorSource={twoFactorOn} />);
+    expect(await screen.findByText('2FA on')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /ask the doctor/i })).toBeNull();
+    unmount();
+    render(<VendorRxReviewScreen source={async () => queue()} twoFactorSource={async () => ({ enabled: false })} />);
+    await screen.findByRole('button', { name: 'Approve and pack' });
+    expect(screen.queryByText('2FA on')).toBeNull();
   });
 
-  it('supports cross navigation via sidebar buttons', () => {
-    const onNavigate = vi.fn();
-    render(<VendorRxReviewScreen onNavigate={onNavigate} />);
-
-    const handoverBtn = screen.getByRole('button', { name: /OTP handover/i });
-    fireEvent.click(handoverBtn);
-    expect(onNavigate).toHaveBeenCalledWith('handover');
-
-    const staffBtn = screen.getByRole('button', { name: /Staff & roles/i });
-    fireEvent.click(staffBtn);
-    expect(onNavigate).toHaveBeenCalledWith('partner-staff');
+  it('offline: nothing can be approved or rejected', async () => {
+    setOnline(false);
+    render(<VendorRxReviewScreen source={async () => queue()} twoFactorSource={twoFactorOn} />);
+    expect(await screen.findByRole('button', { name: 'Reject' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Approve and pack' })).toBeDisabled();
   });
 
-  it('allows reloading prescriptions when all prescriptions are rejected', () => {
-    render(<VendorRxReviewScreen />);
-
-    // Reject all 4 prescriptions in the queue
-    for (let i = 0; i < 4; i++) {
-      const rejectBtn = screen.getByRole('button', { name: /Reject/i });
-      fireEvent.click(rejectBtn);
-    }
-
-    // Now empty state is displayed
-    expect(screen.getByText(/No prescriptions waiting for a pharmacist/i)).toBeInTheDocument();
-    expect(screen.getByText(/Session decisions/i)).toBeInTheDocument();
-
-    // Click "Reload demo prescriptions"
-    const reloadBtn = screen.getByRole('button', { name: /Reload demo prescriptions/i });
-    fireEvent.click(reloadBtn);
-
-    // Queue is restored!
-    expect(screen.getByText(/WAITING FOR A PHARMACIST · 4/i)).toBeInTheDocument();
-    expect(screen.getByText('RX-2231')).toBeInTheDocument();
+  it('empty and error states', async () => {
+    const { unmount } = render(<VendorRxReviewScreen source={async () => queue({ reviews: [], total: 0 })} twoFactorSource={twoFactorOn} />);
+    expect(await screen.findByText('No prescriptions waiting for a pharmacist.')).toBeInTheDocument();
+    unmount();
+    render(<VendorRxReviewScreen source={async () => { throw new Error('down'); }} twoFactorSource={twoFactorOn} />);
+    expect(await screen.findByText('Ref RX-REVIEW · VendorRxReview')).toBeInTheDocument();
   });
 
-  it('allows reopening a rejected prescription from the empty state session decisions list', () => {
-    render(<VendorRxReviewScreen />);
-
-    // Reject all 4 prescriptions
-    for (let i = 0; i < 4; i++) {
-      const rejectBtn = screen.getByRole('button', { name: /Reject/i });
-      fireEvent.click(rejectBtn);
-    }
-
-    // Session decisions list shows Reopen buttons
-    const reopenButtons = screen.getAllByRole('button', { name: /Reopen/i });
-    expect(reopenButtons.length).toBeGreaterThan(0);
-
-    // Reopen the first one
-    fireEvent.click(reopenButtons[0]);
-
-    // Active queue is now 1!
-    expect(screen.getByText(/WAITING FOR A PHARMACIST · 1/i)).toBeInTheDocument();
-  });
-
-  it('allows simulating an incoming prescription from the empty state', () => {
-    render(<VendorRxReviewScreen />);
-
-    // Reject all 4 prescriptions
-    for (let i = 0; i < 4; i++) {
-      const rejectBtn = screen.getByRole('button', { name: /Reject/i });
-      fireEvent.click(rejectBtn);
-    }
-
-    // Click Simulate incoming Rx
-    const simBtn = screen.getByRole('button', { name: /Simulate incoming Rx/i });
-    fireEvent.click(simBtn);
-
-    // Active queue now has the new incoming prescription!
-    expect(screen.getByText(/WAITING FOR A PHARMACIST · 1/i)).toBeInTheDocument();
-    expect(screen.getAllByText(/Augmentin 625/i).length).toBeGreaterThan(0);
-  });
-
-  it('filters prescriptions in the queue using search input', () => {
-    render(<VendorRxReviewScreen />);
-    const searchInput = screen.getByRole('searchbox', { name: /Search/i });
-
-    // Type a specific medication name
-    fireEvent.change(searchInput, { target: { value: 'Azithromycin' } });
-
-    expect(screen.getByText('RX-2229')).toBeInTheDocument();
-    expect(screen.queryByText('RX-2231')).not.toBeInTheDocument();
-    expect(screen.queryByText('RX-2226')).not.toBeInTheDocument();
-
-    // Clear search
-    fireEvent.change(searchInput, { target: { value: '' } });
-    expect(screen.getByText('RX-2231')).toBeInTheDocument();
-  });
-
-  it('switches between Waiting and Processed queue tabs', () => {
-    render(<VendorRxReviewScreen />);
-
-    // Reject one prescription
-    const rejectBtn = screen.getByRole('button', { name: /Reject/i });
-    fireEvent.click(rejectBtn);
-
-    // Switch to Processed tab
-    const processedTab = screen.getByRole('tab', { name: /Processed \(1\)/i });
-    fireEvent.click(processedTab);
-
-    expect(screen.getByText(/✗ Rejected/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Reopen/i })).toBeInTheDocument();
-
-    // Switch back to Waiting tab
-    const waitingTab = screen.getByRole('tab', { name: /Waiting \(3\)/i });
-    fireEvent.click(waitingTab);
-
-    expect(screen.getByText(/WAITING FOR A PHARMACIST · 3/i)).toBeInTheDocument();
-  });
-
-  it('renders different view states (Loading, Empty, Error, Data) without needing a preview toolbar', () => {
-    const { rerender } = render(<VendorRxReviewScreen initialViewState="loading" />);
-    expect(screen.getByLabelText(/Loading Rx review/i)).toBeInTheDocument();
-
-    rerender(<VendorRxReviewScreen initialViewState="error" />);
-    expect(screen.getByText(/Couldn’t load rx review/i)).toBeInTheDocument();
-
-    rerender(<VendorRxReviewScreen initialViewState="empty" />);
-    expect(screen.getByText(/No prescriptions waiting for a pharmacist/i)).toBeInTheDocument();
-
-    rerender(<VendorRxReviewScreen initialViewState="data" />);
-    expect(screen.getByRole('heading', { level: 1, name: 'Rx review' })).toBeInTheDocument();
+  it('searches the queue by Rx, medicine or doctor', async () => {
+    render(<VendorRxReviewScreen source={async () => queue({ reviews: [review(), review({ dispenseId: 'disp-9999', prescriberRegNo: 'NMC-X', items: [{ ...review().items[0], id: 'z', genericName: 'Azithromycin' }] })], total: 2 })} twoFactorSource={twoFactorOn} />);
+    const list = await screen.findByRole('list', { name: 'Prescription queue' });
+    expect(within(list).getAllByRole('button')).toHaveLength(2);
+    fireEvent.change(screen.getByRole('searchbox', { name: 'Search by Rx, medicine or doctor' }), { target: { value: 'azithro' } });
+    expect(within(screen.getByRole('list', { name: 'Prescription queue' })).getAllByRole('button')).toHaveLength(1);
   });
 });
-

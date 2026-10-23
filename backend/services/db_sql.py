@@ -21,11 +21,13 @@ from urllib.parse import urlsplit, urlunsplit
 from sqlalchemy import create_engine, pool
 from sqlalchemy.orm import Session, declarative_base, sessionmaker
 
+from core.app_env import is_testing
+
 logger = logging.getLogger(__name__)
 
 DATABASE_URL = os.environ.get("DATABASE_URL")
 if not DATABASE_URL:
-    if os.environ.get("APP_ENV") == "testing":
+    if is_testing():
         DATABASE_URL = "sqlite:///./studentkare_test.db"
     else:
         raise RuntimeError(
@@ -33,7 +35,7 @@ if not DATABASE_URL:
             "postgresql://<USER>:<PASSWORD>@<HOST>:5432/<DB>?sslmode=require"
         )
 if not DATABASE_URL.startswith(("postgresql://", "postgresql+psycopg://", "postgresql+psycopg2://")):
-    if os.environ.get("APP_ENV") == "testing" and DATABASE_URL.startswith("sqlite"):
+    if is_testing() and DATABASE_URL.startswith("sqlite"):
         pass
     else:
         raise RuntimeError(
@@ -57,6 +59,16 @@ if USE_PGBOUNCER:
             parsed_url.fragment,
         )
     )
+def _bounded_int(name: str, default: int, low: int, high: int) -> int:
+    """An integer setting clamped to [low, high]; unset or malformed means the default."""
+    try:
+        value = int(os.getenv(name, "") or default)
+    except ValueError:
+        logger.warning("%s is not a whole number; using %s", name, default)
+        return default
+    return min(max(value, low), high)
+
+
 _connect_args = {}
 _engine_kwargs = {
     "pool_pre_ping": True,
@@ -65,10 +77,20 @@ _engine_kwargs = {
 if DATABASE_URL.startswith("sqlite"):
     _connect_args["check_same_thread"] = False
 else:
-    # PostgreSQL / Production Hardening
-    # When using an external connection pooler like PgBouncer (transaction mode),
-    # we MUST disable SQLAlchemy's internal pool to prevent double-pooling and starvation.
-    _engine_kwargs["poolclass"] = pool.NullPool
+    # Pool per environment (audit TD-21). Behind PgBouncer (transaction mode)
+    # SQLAlchemy must not pool as well, or the two pools starve each other.
+    # Straight to Postgres, a small in-process pool saves a TCP+TLS handshake and
+    # a backend fork per request. Rule L's SET LOCAL ROLE ends with the
+    # transaction, so a pooled connection never carries the commerce role.
+    if USE_PGBOUNCER:
+        _engine_kwargs["poolclass"] = pool.NullPool
+    else:
+        _engine_kwargs.update(
+            pool_size=_bounded_int("DB_POOL_SIZE", 5, 1, 50),
+            max_overflow=_bounded_int("DB_MAX_OVERFLOW", 5, 0, 50),
+            pool_recycle=1800,
+            pool_timeout=10,
+        )
 
     # Enforce SSL/TLS if not specified, except for internal dokploy-postgres and local/testing instances
     if "sslmode" not in DATABASE_URL.lower():
@@ -76,7 +98,7 @@ else:
             "dokploy-postgres" in DATABASE_URL
             or "localhost" in DATABASE_URL
             or "127.0.0.1" in DATABASE_URL
-            or os.environ.get("APP_ENV") == "testing"
+            or is_testing()
         ):
             ssl_mode = "disable"
         else:
@@ -131,7 +153,36 @@ def create_all_tables() -> None:
                     conn.execute(text("ALTER TABLE care_catalog ADD COLUMN image_id VARCHAR(80)"))
                 if "image_mime" not in columns:
                     conn.execute(text("ALTER TABLE care_catalog ADD COLUMN image_mime VARCHAR(40)"))
+                if "medicine_id" not in columns:
+                    conn.execute(text("ALTER TABLE care_catalog ADD COLUMN medicine_id VARCHAR REFERENCES care_medicines(id)"))
                 conn.commit()
+        if "care_accounts" in inspector.get_table_names():
+            columns = [c["name"] for c in inspector.get_columns("care_accounts")]
+            if "partner_kind" not in columns:
+                with engine.connect() as conn:
+                    conn.execute(text("ALTER TABLE care_accounts ADD COLUMN partner_kind VARCHAR(12) NOT NULL DEFAULT ''"))
+                    conn.commit()
+            if "is_team_account" not in columns:
+                with engine.connect() as conn:
+                    conn.execute(text("ALTER TABLE care_accounts ADD COLUMN is_team_account BOOLEAN NOT NULL DEFAULT FALSE"))
+                    conn.commit()
+        if "care_scheduled_jobs" in inspector.get_table_names():
+            columns = [c["name"] for c in inspector.get_columns("care_scheduled_jobs")]
+            with engine.connect() as conn:
+                if "lease_owner" not in columns:
+                    conn.execute(text(
+                        "ALTER TABLE care_scheduled_jobs ADD COLUMN lease_owner VARCHAR(80) NOT NULL DEFAULT ''"))
+                if "lease_expires_at" not in columns:
+                    conn.execute(text(
+                        "ALTER TABLE care_scheduled_jobs ADD COLUMN lease_expires_at FLOAT NOT NULL DEFAULT 0"))
+                conn.commit()
+        if "care_outbox_events" in inspector.get_table_names():
+            columns = [c["name"] for c in inspector.get_columns("care_outbox_events")]
+            if "next_attempt_at" not in columns:
+                with engine.connect() as conn:
+                    conn.execute(text(
+                        "ALTER TABLE care_outbox_events ADD COLUMN next_attempt_at FLOAT NOT NULL DEFAULT 0"))
+                    conn.commit()
     except Exception as exc:
         logger.warning(f"Schema migration check skipped/failed: {exc}")
 

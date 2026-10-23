@@ -1,8 +1,9 @@
 import React, { ReactNode } from 'react';
 import { View, Text, StyleSheet, Modal as RNModal, TouchableOpacity, ScrollView } from 'react-native';
-import { useTheme } from '../theme/theme';
+import { useTheme } from '../theme/tokens/theme';
 import { X } from 'lucide-react';
-import { useInterface } from '../theme/InterfaceProvider';
+import { useInterface } from '../theme/providers/InterfaceProvider';
+import { useT } from '@/i18n';
 
 export interface ModalProps {
   visible: boolean;
@@ -15,6 +16,7 @@ export interface ModalProps {
 export const Modal: React.FC<ModalProps> = ({ visible, onClose, title, subtitle, children }) => {
   const { tokens, radius, shadows } = useTheme();
   const { reducedMotion } = useInterface();
+  const t = useT();
 
   return (
     <RNModal visible={visible} transparent animationType={reducedMotion ? 'none' : 'fade'} onRequestClose={onClose}>
@@ -38,11 +40,11 @@ export const Modal: React.FC<ModalProps> = ({ visible, onClose, title, subtitle,
             </View>
             <TouchableOpacity
               onPress={onClose}
-              accessibilityLabel={`Close ${title} modal`}
+              accessibilityLabel={t('shopweb.modal.close', { title })}
               accessibilityRole="button"
               style={[styles.closeBtn, { backgroundColor: tokens.surface2 }]}
             >
-              <X size={18} color={tokens.text2} />
+              <X size={18} color={tokens.text2} aria-hidden="true" />
             </TouchableOpacity>
           </View>
           <ScrollView contentContainerStyle={styles.content}>{children}</ScrollView>
@@ -83,9 +85,9 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   closeBtn: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
     marginLeft: 12,

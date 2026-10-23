@@ -141,49 +141,9 @@ export const authApi = {
         return await res.json();
       }
     } catch (e) {
-      // Fallback
+      // Fail closed: no invented accounts are returned when the server is unreachable.
     }
-
-    return {
-      description: 'Studentkare Role-Based Test Login Credentials',
-      credentials: [
-        {
-          role: 'SUPER_ADMIN',
-          name: 'Dr. Vikram Sarabhai',
-          phone: '9999999999',
-          email: 'super.admin@studentkare.co',
-          notes: 'Full access to Super Admin Console, Break-Glass Protocol, Constitution Rules & AI Ops Control',
-        },
-        {
-          role: 'COSIGNER_ADMIN',
-          name: 'Prof. Rajesh Sharma',
-          phone: '9999999998',
-          email: 'cosigner.admin@studentkare.co',
-          notes: 'Co-signing Admin for Dual-Auth Emergency Access & Restricted Pool Sign-off (Rule K8)',
-        },
-        {
-          role: 'CAMPUS_ADMIN',
-          name: 'Dr. Sunita Rao',
-          phone: '9876500001',
-          email: 'health.admin@osmania.ac.in',
-          notes: 'Campus Health Administrator for Osmania University',
-        },
-        {
-          role: 'NMC_DOCTOR',
-          name: 'Dr. Ananya Rao, MD',
-          phone: '9876500002',
-          email: 'dr.ananya.rao@studentkare.co',
-          notes: 'NMC Registered Clinician for Teleconsult & Prescription Sign-off',
-        },
-        {
-          role: 'STUDENT',
-          name: 'Arjun Mehta',
-          phone: '9876543210',
-          email: 'arjun.m@osmania.ac.in',
-          notes: 'Student PHR Record Holder & Teleconsult Pass User',
-        },
-      ],
-    };
+    throw new Error('Test login credentials are unavailable.');
   },
 };
 
@@ -195,16 +155,9 @@ export const adminApi = {
       });
       if (res.ok) return await res.json();
     } catch (e) {
-      // Offline fallback
+      // Fail closed: never report an invented operational status or counts.
     }
-    return {
-      systemStatus: 'OPERATIONAL',
-      totalStudents: 128450,
-      activeSessions: 42,
-      totalTenants: 42,
-      abdmSyncCount: 412980,
-      kAnonymityFloor: 20,
-    };
+    throw new Error('Platform telemetry is unavailable.');
   },
 
   async requestBreakGlass(
@@ -389,56 +342,18 @@ export const twoFactorApi = {
   },
 };
 
-const getToken = (): string | undefined => {
-  try {
-    return (localStorage.getItem('sacare_token') as string | null) || undefined;
-  } catch {
-    return undefined;
-  }
-};
+// Sessions are the HttpOnly cookie plus CSRF token (src/data/services/http.ts). A
+// bearer token is sent only when a caller passes one; it is never read from
+// client storage (AGENTS.md guardrail 9, audit TD-42).
 
 export const aiApi = {
-  async chat(messages: { role: string; content: string }[], token?: string): Promise<{ reply: string; engine: string }> {
-    try {
-      const res = await fetch(`${API_BASE_URL}/agents/llm/chat`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token || getToken() ? { Authorization: `Bearer ${token || getToken()}` } : {}),
-        },
-        body: JSON.stringify({ messages }),
-      });
-      if (res.ok) return await res.json();
-    } catch (e) {
-      // offline
-    }
-    return { reply: '', engine: 'offline' };
-  },
-
-  async ragQuery(query: string, topK = 2, token?: string): Promise<any> {
-    try {
-      const res = await fetch(`${API_BASE_URL}/rag/query`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token || getToken() ? { Authorization: `Bearer ${token || getToken()}` } : {}),
-        },
-        body: JSON.stringify({ query, topK }),
-      });
-      if (res.ok) return await res.json();
-    } catch (e) {
-      // offline
-    }
-    return null;
-  },
-
   async dispatchN8n(webhook: string, payload: Record<string, unknown>, token?: string): Promise<any> {
     try {
       const res = await fetch(`${API_BASE_URL}/automation/n8n/dispatch`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          ...(token || getToken() ? { Authorization: `Bearer ${token || getToken()}` } : {}),
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify({ webhook, payload }),
       });
@@ -452,7 +367,7 @@ export const aiApi = {
   async schedulerStatus(token?: string): Promise<any> {
     try {
       const res = await fetch(`${API_BASE_URL}/automation/scheduler/status`, {
-        headers: token || getToken() ? { Authorization: `Bearer ${token || getToken()}` } : {},
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
       if (res.ok) return await res.json();
     } catch (e) {
@@ -465,7 +380,7 @@ export const aiApi = {
     try {
       const res = await fetch(`${API_BASE_URL}/automation/scheduler/start`, {
         method: 'POST',
-        headers: token || getToken() ? { Authorization: `Bearer ${token || getToken()}` } : {},
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
       if (res.ok) return await res.json();
     } catch (e) {
@@ -478,7 +393,7 @@ export const aiApi = {
     try {
       const res = await fetch(`${API_BASE_URL}/automation/scheduler/stop`, {
         method: 'POST',
-        headers: token || getToken() ? { Authorization: `Bearer ${token || getToken()}` } : {},
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
       if (res.ok) return await res.json();
     } catch (e) {
@@ -490,7 +405,7 @@ export const aiApi = {
   async abdmStatus(token?: string): Promise<any> {
     try {
       const res = await fetch(`${API_BASE_URL}/abdm/status`, {
-        headers: token || getToken() ? { Authorization: `Bearer ${token || getToken()}` } : {},
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
       if (res.ok) return await res.json();
     } catch (e) {
@@ -501,74 +416,8 @@ export const aiApi = {
 };
 
 const withAuth = (token?: string): HeadersInit => ({
-  ...(token || getToken() ? { Authorization: `Bearer ${token || getToken()}` } : {}),
+  ...(token ? { Authorization: `Bearer ${token}` } : {}),
 });
-
-export interface TeleconsultDoctorDto {
-  id: string;
-  name: string;
-  specialty: string;
-  councilRef: string;
-  campusStation: string;
-  experienceYears: number;
-  rating: number;
-  consultationFee: string;
-  status: string;
-}
-
-export interface PharmacyMedicationDto {
-  id: string;
-  brandName: string;
-  activeMolecule: string;
-  category: string;
-  price: number;
-  prescriptionRequired: boolean;
-  deliveryTimeMins: number;
-  stockCount: number;
-}
-
-export interface DiagnosticLabTestDto {
-  id: string;
-  testName: string;
-  category: string;
-  vendorName: string;
-  price: number;
-  turnaroundHours: number;
-  samplePickup: string;
-}
-
-export const teleconsultApi = {
-  async getDoctors(q?: string): Promise<{ total: number; items: TeleconsultDoctorDto[] } | null> {
-    try {
-      const url = `${API_BASE_URL}/teleconsult/doctors${q ? `?q=${encodeURIComponent(q)}` : ''}`;
-      const res = await fetch(url, { headers: withAuth() });
-      if (res.ok) return await res.json();
-    } catch {
-      return null;
-    }
-    return null;
-  },
-  async getMedications(q?: string): Promise<{ total: number; items: PharmacyMedicationDto[] } | null> {
-    try {
-      const url = `${API_BASE_URL}/teleconsult/medications${q ? `?q=${encodeURIComponent(q)}` : ''}`;
-      const res = await fetch(url, { headers: withAuth() });
-      if (res.ok) return await res.json();
-    } catch {
-      return null;
-    }
-    return null;
-  },
-  async getDiagnostics(q?: string): Promise<{ total: number; items: DiagnosticLabTestDto[] } | null> {
-    try {
-      const url = `${API_BASE_URL}/teleconsult/diagnostics${q ? `?q=${encodeURIComponent(q)}` : ''}`;
-      const res = await fetch(url, { headers: withAuth() });
-      if (res.ok) return await res.json();
-    } catch {
-      return null;
-    }
-    return null;
-  },
-};
 
 export const agentApi = {
   async runTriageLoop(
@@ -610,19 +459,6 @@ export const agentApi = {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...withAuth() },
         body: JSON.stringify({ claim }),
-      });
-      if (res.ok) return await res.json();
-    } catch {
-      return null;
-    }
-    return null;
-  },
-  async clinicalAssist(vitals: Record<string, unknown>, historyText: string) {
-    try {
-      const res = await fetch(`${API_BASE_URL}/clinician/assist`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...withAuth() },
-        body: JSON.stringify({ vitals, historyText }),
       });
       if (res.ok) return await res.json();
     } catch {

@@ -39,7 +39,7 @@ def test_unknown_manual_job_does_not_create_schedule_or_run(factory, key):
 
 
 def test_manual_run_persists_summary_and_timestamps_in_new_session(factory, monkeypatch):
-    ticks = iter([100.0, 101.0, 110.0])
+    ticks = iter([100.0, 100.5, 101.0, 110.0])  # create, lease claim, start, finish
     monkeypatch.setattr(scheduler, "now", lambda: next(ticks))
     with factory() as db:
         result = scheduler.workflow_scheduler.run_job_now(db, "reminder_reconcile")
@@ -125,14 +125,17 @@ def test_outbox_never_fakes_delivery_and_preserves_inbox(factory, monkeypatch, c
         db.get(M.OutboxEvent, event_id).attempts = attempts
         db.get(M.OutboxEvent, event_id).read_at = 123.0
         db.commit()
-        for _ in range(2):
+        # An event with no route fails at once (visible, requeueable) rather than
+        # holding a batch slot forever; a second pass does not pick it again.
+        for expected_failed in (1, 0):
             result = scheduler.workflow_scheduler.run_job_now(db, "reminder_reconcile")
-            assert result["status"] == "BLOCKED"
+            assert result["status"] == ("BLOCKED" if expected_failed else "SUCCESS")
             assert result["summary"]["outbox"]["delivered"] == 0
+            assert result["summary"]["outbox"]["failed"] == expected_failed
             assert result["summary"]["outbox"]["messaging_available"] is True
     with factory() as db:
         event = db.get(M.OutboxEvent, event_id)
-        assert event.status == "PENDING"
+        assert event.status == "FAILED"
         assert event.attempts == attempts
         assert event.sent_at == 0
         assert event.read_at == 123.0
@@ -147,7 +150,60 @@ def test_outbox_batch_cannot_exceed_25(factory):
         db.commit()
         result = scheduler._process_outbox(db, max_batch=1000)
         assert result["pending"] == 25
-        assert result["delivered"] == result["failed"] == 0
+        assert result["delivered"] == 0
+        # No route for these: they fail rather than sit in the next batch.
+        assert result["failed"] == 25
+
+
+def test_backlog_cannot_starve_a_blood_sos(factory, monkeypatch):
+    sent = []
+    monkeypatch.setattr(scheduler, "_deliver_event", lambda event: (
+        sent.append(event.id) or {"status": "sent"} if event.event_type == "BLOOD_SOS"
+        else {"status": "skipped", "reason": f"unhandled_event_type:{event.event_type}"}))
+    with factory() as db:
+        db.add_all([M.OutboxEvent(id=f"stuck-{i:02d}", event_type="appointment_reminder", dedupe_key=f"stuck-{i}",
+                                  status="PENDING", created_at=float(i)) for i in range(40)])
+        db.add(M.OutboxEvent(id="sos", event_type="BLOOD_SOS", dedupe_key="sos", status="PENDING", created_at=1000.0,
+                             payload={"phone": "+91 90000 00000", "text": "Need O-"}))
+        db.commit()
+        result = scheduler._process_outbox(db)
+        # The SOS is newest but goes first, in the very next pass.
+        assert sent == ["sos"]
+        assert result["delivered"] == 1 and result["failed"] == 24
+        assert db.get(M.OutboxEvent, "sos").status == "SENT"
+        # The rest drain over the next passes instead of blocking forever.
+        scheduler._process_outbox(db)
+        assert db.scalar(select(func.count()).select_from(M.OutboxEvent).where(M.OutboxEvent.status == "PENDING")) == 0
+
+
+def test_urgent_events_are_picked_before_older_ones(factory, monkeypatch):
+    order = []
+    monkeypatch.setattr(scheduler, "_deliver_event", lambda event: order.append(event.id) or {"status": "sent"})
+    with factory() as db:
+        db.add(M.OutboxEvent(id="old", event_type="GENERIC_NOTIFICATION", dedupe_key="old", created_at=1.0))
+        db.add(M.OutboxEvent(id="ack", event_type="SOS_ACKNOWLEDGED", dedupe_key="ack", created_at=5.0))
+        db.add(M.OutboxEvent(id="crisis", event_type="CRISIS_ALERT", dedupe_key="crisis", created_at=3.0))
+        db.commit()
+        scheduler._process_outbox(db, max_batch=2)
+        assert order == ["crisis", "ack"]
+        assert db.get(M.OutboxEvent, "old").status == "PENDING"
+
+
+def test_quiet_hours_never_hold_an_urgent_event(factory, monkeypatch):
+    sent = []
+    monkeypatch.setattr(scheduler, "_deliver_event", lambda event: sent.append(event.id) or {"status": "sent"})
+    monkeypatch.setattr(scheduler, "in_quiet_hours", lambda *args: True)
+    with factory() as db:
+        db.add(M.Account(id="quiet", identifier="quiet@example.test", channel="EMAIL", full_name="Q",
+                         role="STUDENT", active=True, profile={}, created_at=0.0))
+        db.add(M.NotificationPreference(account_id="quiet", quiet_start="00:00", quiet_end="23:59"))
+        db.add_all([M.OutboxEvent(id=f"held-{i:02d}", event_type="GENERIC_NOTIFICATION", account_id="quiet",
+                                  dedupe_key=f"held-{i}", created_at=float(i)) for i in range(30)])
+        db.add(M.OutboxEvent(id="sos", event_type="SOS_RESOLVED", account_id="quiet", dedupe_key="sos", created_at=99.0))
+        db.commit()
+        result = scheduler._process_outbox(db)
+        assert sent == ["sos"]
+        assert result["deferred"] == 24
 
 
 @pytest.mark.parametrize("batch", [0, -1, True, 1.5])
@@ -257,7 +313,8 @@ def test_knowledge_counts_only_active_reviewed_sources(factory):
         ])
         db.commit()
         result = scheduler.knowledge_freshness_check(db)
-        assert result["summary"] == {"sources": 1, "expired": 1, "expiring_soon": 0}
+        assert result["summary"] == {"sources": 1, "expired": 1, "expiring_soon": 0,
+                                     "index_updated": 0, "index_removed": 0}
 
 
 def test_followups_are_bounded_and_progress_past_existing_tasks(factory):

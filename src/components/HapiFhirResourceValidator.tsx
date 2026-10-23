@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { View, Text, TouchableOpacity } from "react-native";
-import { useTheme } from "../theme/theme";
+import { useTheme } from "../theme/tokens/theme";
 import { Card } from "./Card";
 import { Badge } from "./Badge";
 import { FileCode, CheckCircle2, RefreshCw } from "lucide-react";
-import { assertRule } from "../ai/constitution";
+import { assertRule } from "../ai/core/constitution";
 
 export const HapiFhirResourceValidator: React.FC = () => {
   const { tokens, radius, typography } = useTheme();
@@ -58,14 +58,14 @@ export const HapiFhirResourceValidator: React.FC = () => {
         <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
           <FileCode size={22} color={tokens.action} />
           <Text style={{ fontSize: 16, fontWeight: "800", color: tokens.text, fontFamily: typography.fontFamily }}>
-            HAPI FHIR R4 Open Source Validation Engine (ABDM Native)
+            HAPI FHIR R4 Open Source Validation Engine
           </Text>
         </View>
         <Badge label="OPEN SOURCE HAPI FHIR v6.8" variant="positive" />
       </View>
 
       <Text style={{ fontSize: 12, color: tokens.text2, marginBottom: 14 }}>
-        Open-source HL7 FHIR R4 resource validator engine powered by HAPI FHIR & Medplum SDK. Enforces NRCES India profile standards for ABDM gateway payloads.
+        Open-source HL7 FHIR R4 resource validator engine powered by HAPI FHIR & Medplum SDK. Enforces NRCES India profile standards.
       </Text>
 
       {/* Resource Selector */}
@@ -84,7 +84,7 @@ export const HapiFhirResourceValidator: React.FC = () => {
                 border: `1px solid ${active ? tokens.action : tokens.rule}`,
               }}
             >
-              <Text style={{ fontSize: 11, fontWeight: "800", color: active ? "#ffffff" : tokens.text }}>
+              <Text style={{ fontSize: 11, fontWeight: "800", color: active ? tokens.onAction : tokens.text }}>
                 FHIR {res}
               </Text>
             </TouchableOpacity>
@@ -112,8 +112,8 @@ export const HapiFhirResourceValidator: React.FC = () => {
           gap: 6,
         }}
       >
-        {isValidating ? <RefreshCw size={16} color="#ffffff" /> : <CheckCircle2 size={16} color="#ffffff" />}
-        <Text style={{ color: "#ffffff", fontWeight: "800", fontSize: 12, fontFamily: typography.fontFamily }}>
+        {isValidating ? <RefreshCw size={16} color={tokens.onAction} /> : <CheckCircle2 size={16} color={tokens.onAction} />}
+        <Text style={{ color: tokens.onAction, fontWeight: "800", fontSize: 12, fontFamily: typography.fontFamily }}>
           {isValidating ? "Validating against NRCES Profiles..." : "✓ HAPI FHIR Profile Validation Passed (0 Schema Errors)"}
         </Text>
       </TouchableOpacity>

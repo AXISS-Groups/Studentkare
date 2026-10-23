@@ -1,80 +1,70 @@
-import React from 'react';
-import { ShieldAlert, ArrowRight, X } from 'lucide-react';
-import './auth-form.css';
+import React, { useEffect, useRef } from 'react';
+import { useNavigate } from '@/core/navigation';
+import { usePhoneFrame } from '@/design-system/navigation/usePhoneFrame';
+import { CrisisLinks } from '@/design-system';
+import { VerifyGateRoute } from './VerifyGateCard';
+import './verify-gate.css';
 
 interface VerifyGateViewProps {
+  /** Not now. Defaults to Discover (the board's HomeDiscover). */
   onClose?: () => void;
-  serviceName?: string;
 }
 
-export function VerifyGateView({ onClose, serviceName = 'this clinical service' }: VerifyGateViewProps): React.ReactElement {
+const FOCUSABLE = 'a[href], button:not([disabled]), [role="button"], [role="link"], [tabindex]:not([tabindex="-1"])';
+
+/**
+ * /verify-gate on the web (canvas VerifyGate at phone width: a bottom sheet;
+ * WebVerifyGate wider: a centred dialog). Tier 1, approved 2026-10-21.
+ *
+ * A modal over a strong scrim (`scrim-strong`, never an rgba literal): focus
+ * moves in, Tab stays in, Esc is "Not now". The card is VerifyGateCard, shared
+ * with the Expo screen.
+ */
+export function VerifyGateView({ onClose }: VerifyGateViewProps): React.ReactElement {
+  const go = useNavigate();
+  const phone = usePhoneFrame();
+  const dialog = useRef<HTMLDivElement>(null);
+  const close = onClose ?? (() => go('/health'));
+
+  useEffect(() => {
+    const node = dialog.current;
+    if (!node) return undefined;
+    const first = node.querySelector<HTMLElement>(FOCUSABLE);
+    (first ?? node).focus();
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') { event.preventDefault(); close(); return; }
+      if (event.key !== 'Tab') return;
+      const items = Array.from(node.querySelectorAll<HTMLElement>(FOCUSABLE));
+      if (items.length === 0) return;
+      const head = items[0];
+      const tail = items[items.length - 1];
+      if (event.shiftKey && document.activeElement === head) { event.preventDefault(); tail.focus(); }
+      else if (!event.shiftKey && document.activeElement === tail) { event.preventDefault(); head.focus(); }
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  });
+
   return (
-    <div style={{ minHeight: '100vh', background: 'rgba(19, 27, 46, 0.65)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', boxSizing: 'border-box' }}>
-      <div style={{ width: '100%', maxWidth: '520px', background: '#FFFFFF', borderRadius: '24px', padding: '36px', boxShadow: '0 24px 60px rgba(0,0,0,0.25)', display: 'flex', flexDirection: 'column', gap: '20px', position: 'relative' }}>
-        {onClose && (
-          <button
-            type="button"
-            aria-label="Close"
-            onClick={onClose}
-            style={{ position: 'absolute', top: '20px', right: '20px', border: 0, background: 'transparent', cursor: 'pointer', color: '#6B6980' }}
-          >
-            <X size={20} />
-          </button>
-        )}
-
-        <div style={{ width: '56px', height: '56px', borderRadius: '16px', background: '#EEF2FF', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#3525CD' }}>
-          <ShieldAlert size={28} />
-        </div>
-
-        <div>
-          <span style={{ fontSize: '11.5px', fontWeight: 800, letterSpacing: '1.2px', color: '#4F46E5' }}>VERIFICATION REQUIRED</span>
-          <h1 style={{ margin: '6px 0 8px', fontSize: '26px', fontWeight: 800, color: '#131B2E', letterSpacing: '-0.6px' }}>
-            Verify your identity to proceed
-          </h1>
-          <p style={{ margin: 0, fontSize: '14.5px', lineHeight: 1.6, color: '#464555' }}>
-            Under clinical governance regulations and campus safety rules, access to {serviceName} requires a verified campus student profile.
-          </p>
-        </div>
-
-        <div style={{ padding: '16px', borderRadius: '14px', background: '#F8FAFC', border: '1px solid #EEF2FF', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <span style={{ fontSize: '13px', fontWeight: 700, color: '#131B2E' }}>What is needed (takes ~2 minutes):</span>
-          <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '13px', color: '#464555', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-            <li>Campus student email verification</li>
-            <li>College roll number or ID photo</li>
-            <li>Selfie liveness check</li>
-          </ul>
-        </div>
-
-        <div style={{ display: 'flex', gap: '12px', marginTop: '6px' }}>
-          {onClose && (
-            <button
-              type="button"
-              onClick={onClose}
-              style={{ flex: 1, height: '50px', borderRadius: '13px', border: '1px solid #DAE2FD', background: '#FFFFFF', fontSize: '14.5px', fontWeight: 700, color: '#464555', cursor: 'pointer' }}
-            >
-              Not now
-            </button>
-          )}
-          <a
-            href="/verify"
-            style={{
-              flex: 2,
-              height: '50px',
-              borderRadius: '13px',
-              background: '#3525CD',
-              color: '#FFFFFF',
-              fontSize: '14.5px',
-              fontWeight: 800,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px',
-              textDecoration: 'none',
-            }}
-          >
-            Start verification <ArrowRight size={16} />
-          </a>
-        </div>
+    <div className={`sk-gate${phone ? ' sk-gate--sheet' : ''}`}>
+      <div className="sk-gate__scrim" aria-hidden="true" onClick={close} />
+      <div ref={dialog} className="sk-gate__dialog" role="dialog" aria-modal="true" aria-labelledby="verify-gate-title" tabIndex={-1}>
+        {phone ? <span className="sk-gate__grip" aria-hidden="true" /> : null}
+        <VerifyGateRoute
+          wide={!phone}
+          links={{
+            finish: () => go('/verify'),
+            notNow: close,
+            always: {
+              crisis: () => go('/crisis'),
+              sos: () => go('/sos'),
+              emergencyCard: () => go('/emergency-card'),
+              help: () => go('/support'),
+            },
+          }}
+        />
+        {/* 112 and Tele-MANAS one tap away inside the gate too (DESIGN.md §2.4), not only behind "Crisis support". */}
+        <div className="sk-gate__crisis"><CrisisLinks titleKey="crisis.noVerify" testID="crisis-links" /></div>
       </div>
     </div>
   );

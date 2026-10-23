@@ -1,6 +1,9 @@
 global:
   resolve_timeout: 5m
-  slack_api_url: ${SLACK_WEBHOOK_URL:?Set SLACK_WEBHOOK_URL from vault}
+  # Alertmanager does not expand environment variables, so the webhook URL is
+  # read from a file: a compose secret (docker-compose.prod.yml, from
+  # SLACK_WEBHOOK_URL) or the studentkare-secrets key (Helm) mounted here.
+  slack_api_url_file: /etc/alertmanager-secrets/slack_webhook_url
 
 route:
   group_by: ['alertname', 'severity', 'service']

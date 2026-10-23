@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { AccountRole, OpsFeed, OpsFeedEvent, StaffAccount } from '@/data/workflowTypes';
+import type { AccountRole, OpsFeed, OpsFeedEvent, StaffAccount } from '@/data/types/workflowTypes';
 import type { AccountsRepository } from '../../model/accountsRepository';
 import type { OpsRepository } from '../../model/opsRepository';
 import type { AccountListQuery, AccountPage } from '../../model/types';
@@ -7,7 +7,7 @@ import { appAccess, clinicalAccess, ROLE_ROWS } from '../../model/accessRules';
 import { AccountsListViewModel } from '../AccountsListViewModel';
 import { AccountsOverviewViewModel } from '../AccountsOverviewViewModel';
 
-const TOTALS: Record<AccountRole, number> = { STUDENT: 900, NMC_DOCTOR: 40, VENDOR: 12, CAMPUS_ADMIN: 6, SUPER_ADMIN: 2 };
+const TOTALS: Record<AccountRole, number> = { STUDENT: 900, NMC_DOCTOR: 40, VENDOR: 12, CAMPUS_ADMIN: 6, COUNSELLOR: 0, SUPER_ADMIN: 2, LAB_COLLECTOR: 2 };
 const settle = async () => { for (let i = 0; i < 8; i += 1) await Promise.resolve(); };
 const account = (id: string): StaffAccount => ({ id, fullName: id, identifier: `${id}@example.test`, role: 'VENDOR', active: true });
 const feedEvent = (id: string, kind: string): OpsFeedEvent => ({ id, kind, domain: 'ACCOUNT', severity: 'INFO', actorId: '', actorRole: '', subjectId: '', providerId: '', resourceType: '', resourceId: '', summary: id, createdAt: 1, acknowledgedAt: null, acknowledgedBy: '' });
@@ -19,6 +19,9 @@ function accounts(overrides: Partial<AccountsRepository> = {}): AccountsReposito
     list: vi.fn().mockResolvedValue({ items: [account('a1')], total: 40 }),
     listAll: vi.fn().mockResolvedValue({ items: [account('a1')] }),
     create: vi.fn().mockResolvedValue({}),
+    setPartnerKind: vi.fn().mockResolvedValue({}),
+    setCampus: vi.fn().mockResolvedValue({}),
+    resetTwoFactor: vi.fn().mockResolvedValue({}),
     ...overrides,
   };
 }
@@ -37,12 +40,14 @@ describe('account access rules', () => {
       ['NMC_DOCTOR', { label: 'Consented records only', tone: 'is-positive' }],
       ['VENDOR', { label: 'Permission policy unavailable', tone: 'is-attention' }],
       ['CAMPUS_ADMIN', { label: 'No clinical access', tone: 'is-positive' }],
+      ['COUNSELLOR', { label: 'Permission policy unavailable', tone: 'is-attention' }],
       ['SUPER_ADMIN', { label: 'No clinical access', tone: 'is-positive' }],
+      ['LAB_COLLECTOR', { label: 'Permission policy unavailable', tone: 'is-attention' }],
     ]);
   });
 
   it('names the workspace each role is sent to after sign-in', () => {
-    expect(ROLE_ROWS.map(([role]) => appAccess(role))).toEqual(['Student portal', 'Clinical workspace', 'Vendor workspace', 'Campus administration', 'Platform administration']);
+    expect(ROLE_ROWS.map(([role]) => appAccess(role))).toEqual(['Student portal', 'Clinical workspace', 'Vendor workspace', 'Campus administration', 'Counsellor queue', 'Platform administration', 'Staff app (sample collection)']);
   });
 });
 
@@ -52,19 +57,22 @@ describe('AccountsOverviewViewModel', () => {
     const vm = new AccountsOverviewViewModel(repo, ops());
     expect(vm.loading).toBe(true);
     vm.load();
-    expect(vi.mocked(repo.countByRole).mock.calls.map(([role]) => role)).toEqual(['STUDENT', 'NMC_DOCTOR', 'VENDOR', 'CAMPUS_ADMIN', 'SUPER_ADMIN']);
+    expect(vi.mocked(repo.countByRole).mock.calls.map(([role]) => role)).toEqual(['STUDENT', 'NMC_DOCTOR', 'VENDOR', 'CAMPUS_ADMIN', 'COUNSELLOR', 'SUPER_ADMIN', 'LAB_COLLECTOR']);
     expect(vi.mocked(repo.countByRole).mock.calls.every(([, signal]) => signal instanceof AbortSignal)).toBe(true);
     await settle();
     expect(vm.loading).toBe(false);
     expect(vm.error).toBeNull();
-    expect(vm.total).toBe(960);
-    expect(vm.roleCount).toBe(5);
+    // Every role the server signs in, lab collectors too: the same total as the overview (live-run audit #15).
+    expect(vm.total).toBe(962);
+    expect(vm.roleCount).toBe(7);
     expect(vm.roleRows.map(row => [row.role, row.count, row.access.label, row.app])).toEqual([
       ['STUDENT', 900, 'Own record only', 'Student portal'],
       ['NMC_DOCTOR', 40, 'Consented records only', 'Clinical workspace'],
       ['VENDOR', 12, 'Permission policy unavailable', 'Vendor workspace'],
       ['CAMPUS_ADMIN', 6, 'No clinical access', 'Campus administration'],
+      ['COUNSELLOR', 0, 'Permission policy unavailable', 'Counsellor queue'],
       ['SUPER_ADMIN', 2, 'No clinical access', 'Platform administration'],
+      ['LAB_COLLECTOR', 2, 'Permission policy unavailable', 'Staff app (sample collection)'],
     ]);
   });
 
@@ -96,9 +104,9 @@ describe('AccountsOverviewViewModel', () => {
     vm.load();
     expect(vm.loading).toBe(true);
     await settle();
-    expect(countByRole).toHaveBeenCalledTimes(10);
+    expect(countByRole).toHaveBeenCalledTimes(14);
     expect(vm.error).toBeNull();
-    expect(vm.total).toBe(960);
+    expect(vm.total).toBe(962);
   });
 
   it('loads recent changes on request, keeping only staff accounts created', async () => {
@@ -155,7 +163,7 @@ describe('AccountsOverviewViewModel', () => {
     await settle();
     expect(vm.countOf('NMC_DOCTOR')).toBe(0);
     vm.load();
-    expect(countByRole).toHaveBeenCalledTimes(8);
+    expect(countByRole).toHaveBeenCalledTimes(10);
   });
 });
 
@@ -218,12 +226,56 @@ describe('AccountsListViewModel', () => {
     vm.setIdentifier('+919800000000');
     vm.setRole('NMC_DOCTOR');
     vm.setChannel('WHATSAPP');
+    vm.setRegistrationNumber(' TSMC-12345 ');
     expect(await vm.create()).toBe(true);
     const sent = vi.mocked(repo.create).mock.calls[0][0];
-    expect(sent).toEqual({ fullName: 'Dr Meera Iyer', identifier: '+919800000000', channel: 'WHATSAPP', role: 'NMC_DOCTOR' });
-    expect(Object.keys(sent)).toEqual(['fullName', 'identifier', 'channel', 'role']);
-    expect([vm.fullName, vm.identifier, vm.role, vm.channel]).toEqual(['', '', 'NMC_DOCTOR', 'WHATSAPP']);
+    // A doctor is created with their NMC registration number (audit M1).
+    expect(sent).toEqual({ fullName: 'Dr Meera Iyer', identifier: '+919800000000', channel: 'WHATSAPP', role: 'NMC_DOCTOR', registrationNumber: 'TSMC-12345' });
+    expect(Object.keys(sent)).toEqual(['fullName', 'identifier', 'channel', 'role', 'registrationNumber']);
+    expect([vm.fullName, vm.identifier, vm.role, vm.channel, vm.registrationNumber]).toEqual(['', '', 'NMC_DOCTOR', 'WHATSAPP', '']);
     expect(repo.list).toHaveBeenCalledTimes(2);
+  });
+
+  it('will not create a partner without a partner type, and has no default type', async () => {
+    const repo = accounts();
+    const vm = new AccountsListViewModel(repo);
+    expect([vm.role, vm.partnerKind]).toEqual(['VENDOR', '']);
+    vm.setFullName('MedPlus Bachupally');
+    vm.setIdentifier('medplus@example.test');
+    expect(await vm.create()).toBe(false);
+    expect(vm.createError).toMatch(/partner type/i);
+    expect(repo.create).not.toHaveBeenCalled();
+  });
+
+  it('sends the chosen partner type with a partner account, then clears it for the next one', async () => {
+    const repo = accounts();
+    const vm = new AccountsListViewModel(repo);
+    vm.setFullName('Vijaya Diagnostics');
+    vm.setIdentifier('vijaya@example.test');
+    vm.setPartnerKind('LAB');
+    expect(await vm.create()).toBe(true);
+    expect(vi.mocked(repo.create).mock.calls[0][0]).toEqual({ fullName: 'Vijaya Diagnostics', identifier: 'vijaya@example.test', channel: 'EMAIL', role: 'VENDOR', partnerKind: 'LAB' });
+    expect(vm.partnerKind).toBe('');
+  });
+
+  it('drops the partner type when the role is not a partner', () => {
+    const vm = new AccountsListViewModel(accounts());
+    vm.setPartnerKind('CLINIC');
+    vm.setRole('CAMPUS_ADMIN');
+    expect(vm.partnerKind).toBe('');
+  });
+
+  it('changes an existing partner\u2019s type and reloads the list; a failure is kept to show', async () => {
+    const setPartnerKind = vi.fn().mockResolvedValueOnce({}).mockRejectedValueOnce(new Error('Only partner accounts have a partner type.'));
+    const repo = accounts({ setPartnerKind });
+    const vm = new AccountsListViewModel(repo);
+    await vm.load();
+    expect(await vm.changePartnerKind('a1', 'WELLNESS')).toBe(true);
+    expect(setPartnerKind).toHaveBeenCalledWith('a1', 'WELLNESS');
+    expect(repo.list).toHaveBeenCalledTimes(2);
+    expect(await vm.changePartnerKind('a1', 'LAB')).toBe(false);
+    expect(vm.kindError).toBe('Only partner accounts have a partner type.');
+    expect(vm.updatingKindFor).toBe('');
   });
 
   it('keeps the form and the error when creating fails, with a generic fallback, cleared on the next attempt', async () => {
@@ -231,6 +283,7 @@ describe('AccountsListViewModel', () => {
     const repo = accounts({ create });
     const vm = new AccountsListViewModel(repo);
     vm.setFullName('Asha Rao');
+    vm.setPartnerKind('PHARMACY');
     expect(await vm.create()).toBe(false);
     expect(vm.createError).toBe('Already registered');
     expect(vm.fullName).toBe('Asha Rao');
@@ -245,6 +298,7 @@ describe('AccountsListViewModel', () => {
     let release!: () => void;
     const create = vi.fn(() => new Promise<unknown>(resolve => { release = () => resolve({}); }));
     const vm = new AccountsListViewModel(accounts({ create }));
+    vm.setPartnerKind('LAB');
     const first = vm.create();
     expect(vm.creating).toBe(true);
     expect(await vm.create()).toBe(false);
@@ -269,6 +323,7 @@ describe('AccountsListViewModel', () => {
     await settle();
     expect(vm.data?.items.map(item => item.id)).toEqual(['new']);
     vm.setFullName('Asha');
+    vm.setPartnerKind('PHARMACY');
     const creating = vm.create();
     vm.dispose();
     release();
@@ -277,5 +332,68 @@ describe('AccountsListViewModel', () => {
     expect(list).toHaveBeenCalledTimes(2);
     void vm.load();
     expect(list).toHaveBeenCalledTimes(3);
+  });
+});
+
+describe('AccountsListViewModel campus scope', () => {
+  it('sends the campus only for a campus administrator, and sets a campus', async () => {
+    const repo = accounts();
+    const vm = new AccountsListViewModel(repo);
+    vm.setFullName('Gate Admin'); vm.setIdentifier('ga@x.test'); vm.setRole('CAMPUS_ADMIN'); vm.setUniversity(' IIT Hyderabad ');
+    await vm.create();
+    expect(repo.create).toHaveBeenCalledWith(expect.objectContaining({ role: 'CAMPUS_ADMIN', university: 'IIT Hyderabad' }));
+    vm.setRole('VENDOR'); vm.setPartnerKind('PHARMACY'); vm.setFullName('Pharm'); vm.setIdentifier('p@x.test');
+    await vm.create();
+    expect(repo.create).toHaveBeenLastCalledWith(expect.not.objectContaining({ university: expect.anything() }));
+    expect(await vm.setCampus('a1', ' BITS Pilani ')).toBe(true);
+    expect(repo.setCampus).toHaveBeenCalledWith('a1', 'BITS Pilani');
+  });
+
+  it('sends the campus for a counsellor too: their crisis queue is scoped to it', async () => {
+    const repo = accounts();
+    const vm = new AccountsListViewModel(repo);
+    vm.setFullName('Neha Kulkarni'); vm.setIdentifier('neha@x.test'); vm.setRole('COUNSELLOR'); vm.setUniversity(' VNR VJIET ');
+    await vm.create();
+    expect(repo.create).toHaveBeenCalledWith(expect.objectContaining({ role: 'COUNSELLOR', university: 'VNR VJIET' }));
+  });
+});
+
+describe('AccountsListViewModel two-step reset', () => {
+  it('sends nothing without a 10–500 character reason, then resets with the tidied reason', async () => {
+    const repo = accounts();
+    const vm = new AccountsListViewModel(repo);
+    vm.askResetTwoFactor(account('a1'));
+    vm.setResetReason('   too  short   ');
+    expect(await vm.confirmResetTwoFactor()).toBe(false);
+    expect(vm.resetReasonInvalid).toBe(true);
+    vm.setResetReason('x'.repeat(501));
+    expect(await vm.confirmResetTwoFactor()).toBe(false);
+    expect(repo.resetTwoFactor).not.toHaveBeenCalled();
+
+    vm.setResetReason('  Lost phone,\n confirmed on a call ');
+    expect(vm.resetReasonInvalid).toBe(false);
+    expect(await vm.confirmResetTwoFactor()).toBe(true);
+    expect(repo.resetTwoFactor).toHaveBeenCalledWith('a1', 'Lost phone, confirmed on a call');
+    expect(vm.resetTarget).toBeNull();
+    expect(vm.resetDoneFor).toBe('a1');
+  });
+
+  it('keeps the dialog and the reason on a refusal, and cannot be cancelled mid-request', async () => {
+    let fail: (reason: Error) => void = () => undefined;
+    const repo = accounts({ resetTwoFactor: vi.fn(() => new Promise((_resolve, reject) => { fail = reject; })) });
+    const vm = new AccountsListViewModel(repo);
+    vm.askResetTwoFactor(account('a1'));
+    vm.setResetReason('Lost phone, confirmed on a call');
+    const pending = vm.confirmResetTwoFactor();
+    expect(vm.resetting).toBe(true);
+    vm.cancelResetTwoFactor();
+    expect(vm.resetTarget?.id).toBe('a1');
+    fail(new Error('This account has no two-step sign-in to reset.'));
+    expect(await pending).toBe(false);
+    expect(vm.resetError).toBe('This account has no two-step sign-in to reset.');
+    expect(vm.resetReason).toBe('Lost phone, confirmed on a call');
+    expect(vm.resetDoneFor).toBe('');
+    vm.cancelResetTwoFactor();
+    expect(vm.resetTarget).toBeNull();
   });
 });

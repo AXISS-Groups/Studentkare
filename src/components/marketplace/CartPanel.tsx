@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { ArrowLeft, ArrowRight, Check, MapPin, Minus, Plus, ShoppingBag, Tag, Trash2 } from 'lucide-react';
-import { useMarketplace } from '../../data/MarketplaceStore';
-import { calculateCart } from '../../data/marketplaceCart';
-import { formatRupees } from '../../data/healthExperience';
+import { useMarketplace } from '../../data/contexts/MarketplaceStore';
+import { calculateCart } from '../../data/datasets/marketplaceCart';
+import { formatRupees } from '../../data/datasets/healthExperience';
 import { ProductArtwork } from './ProductArtwork';
 
 export interface DemoOrder {

@@ -1,0 +1,36 @@
+{
+  "_comment": "Read by scripts/ops/check-env-passthrough.py. Every environment variable the backend or the web build reads must reach production through docker-compose.prod.yml AND the Helm chart, unless it is listed here with the reason it must not (or need not) be set in production. Keep entries sorted. nativeBuildTime: variables the Expo app or app.config.ts read at EAS build time; they never reach the servers, so each says where it is set.",
+  "backendExempt": {
+    "APP_VERSION": "Baked into the image by release.yml (build arg), reported by /api/info.",
+    "DEV_OTP_CONSOLE": "Development/staging only: prints OTPs to the log. Must stay unset in production.",
+    "EMERGENT_LLM_KEY": "Legacy alias read only when LLM_API_KEY is unset; LLM_API_KEY is passed through.",
+    "GIT_COMMIT": "Baked into the image by release.yml (build arg), reported by /api/info.",
+    "JWT_SECRET": "Legacy fallback for OTP_HASH_SECRET, which production requires.",
+    "PAYMENT_ALLOW_MOCK_IN_PRODUCTION": "Lets the mock gateway run in production (moves no money). Must never be set on a public deployment.",
+    "PAYMENT_MOCK_SIGNING_KEY": "Mock payment gateway only; production refuses PAYMENT_PROVIDER=mock.",
+    "SCHEDULER_IN_PROCESS": "Production runs the separate worker; enabling this in the API replicas would double-run jobs.",
+    "SEED_DEMO_DATA": "Demo seeding is refused unless APP_ENV is development/testing.",
+    "SEED_SCENARIOS": "Staging seeding script only; refused unless APP_ENV=testing."
+  },
+  "backendDynamicReads": {
+    "services/integration_config.py:platform_value": "Reads os.getenv(name.upper()) for platform settings; every such name is also read literally in INTEGRATIONS_DB['platform'], which this check covers."
+  },
+  "frontendExempt": {
+    "VITE_ALLOW_OFFLINE_AUTH": "Dev server only (gated on import.meta.env.DEV); never in a production build.",
+    "VITE_DEMO_DATA": "Dev server only (gated on import.meta.env.DEV); never in a production build."
+  },
+  "nativeBuildTime": {
+    "EAS_PROJECT_ID": "EAS environment variable (docs: eas env:create); app.config.ts extra.eas.projectId.",
+    "EXPO_OWNER": "EAS environment variable; app.config.ts owner.",
+    "EXPO_PUBLIC_API_BASE_URL": "eas.json build.base.env (https://api.studentkare.co/api); CI Expo job sets it too.",
+    "EXPO_PUBLIC_APP_ENV": "eas.json per profile (development / preview / production); the native Sentry environment.",
+    "EXPO_PUBLIC_SENTRY_DSN": "EAS environment variable; native crash reporting is off without it.",
+    "EXPO_PUBLIC_SITE_URL": "eas.json build.base.env (https://studentkare.co).",
+    "SENTRY_ORG": "EAS environment variable; enables the Sentry source-map upload plugin with SENTRY_PROJECT.",
+    "SENTRY_PROJECT": "EAS environment variable; see SENTRY_ORG.",
+    "SENTRY_URL": "EAS environment variable, optional (default https://sentry.io/)."
+  },
+  "retired": {
+    "RATE_LIMIT_API_PER_MINUTE": "Ignored since #221; use RATE_LIMIT_API_PER_IP_PER_MINUTE / RATE_LIMIT_API_PER_ACCOUNT_PER_MINUTE."
+  }
+}

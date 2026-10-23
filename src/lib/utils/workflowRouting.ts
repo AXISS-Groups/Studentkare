@@ -1,26 +1,23 @@
-import type { AccountRole } from '../../data/workflowTypes';
+import type { AccountRole } from '../../data/types/workflowTypes';
+import { routePaths } from './routes/routePaths';
+import { publicRoutes } from './routes/publicRoutes';
+import { routePrefixRoles, routeRoles } from './routes/routeRoles';
 
-export const routePaths = ['landing', 'campuses', 'clinicians', 'clinicians/apply', 'partnerships', 'lab-tests', 'privacy', 'terms', 'shop', 'care', 'checkout', 'pricing', 'login', 'signup', 'welcome', 'logged-out', 'profile-setup', 'permissions', 'account-ready', 'billing', 'health', 'profile', 'digital-id', 'records', 'insurance', 'orders', 'appointments', 'medications', 'health-camp', 'notifications', 'care-navigator', 'preventive-care', 'report-reviews', 'earnings', 'chronic', 'support', 'movement', 'wellness', 'campus-wellness', 'devices', 'clinical-notes', 'lifeshare', 'medical-incident', 'meo', 'admin', 'admin/billing', 'admin/catalog', 'admin/accounts', 'admin/requests', 'admin/support', 'admin/audit', 'admin/integrations', 'admin/telemetry', 'admin/knowledge', 'admin/intake', 'admin/preventive', 'admin/activity', 'admin/ops', 'admin/surveillance', 'admin/flags', 'admin/organisations', 'admin/sentinel', 'admin/tokens', 'admin/verification', 'admin/partners', 'admin/plans', 'admin/ledger', 'admin/templates', 'admin/rule-l', 'admin/consent-policy', 'admin/break-glass-log', 'admin/checkins', 'admin/handover', 'admin/ai-governance', 'admin/erasure', 'admin/api-keys', 'admin/case', 'admin/price-fix', 'vendor', 'clinician', 'clinician/queue', 'clinician/lab-orders', 'clinician/referrals', 'clinician/renewals', 'clinician/patients', 'clinician/ayush', 'clinician/decision-support', 'clinician/schedule', 'clinician/inbox', 'clinician/consult-room', 'clinician/critical-results', 'clinician/report-reviews', 'clinician/encounter-note', 'clinician/prescribe', 'campus', 'campus-access-requests', 'campus-break-glass', 'prescriptions', 'ayush', 'clinical-review', 'dispensing', 'dispense-register', 'vendor-dispense-register', 'lab-queue', 'vendor-lab-queue', 'verify', 'catalogue', 'run-sheet', 'lab-collection', 'cold-chain', 'lab-cold-chain', 'returns', 'vendor-returns', 'handover', 'vendor-handover', 'substitutions', 'vendor-substitutions', 'reorder', 'vendor-reorder', 'camp-intake', 'vendor-camp-intake', 'settlement', 'settlements', 'vendor-settlement', 'performance', 'vendor-console', 'console', 'rx-review', 'vendor-rx-review', 'staff', 'partner-staff', 'vendor-staff', 'staff-roles', 'emergency-card', 'pass'] as const;
+// The route lists live in ./routes/, one entry per line, so parallel branches don't collide.
+export { routePaths, publicRoutes };
 export type RoutePath = typeof routePaths[number];
-export const publicRoutes: RoutePath[] = ['landing', 'campuses', 'clinicians', 'clinicians/apply', 'partnerships', 'lab-tests', 'privacy', 'terms', 'shop', 'care', 'pricing', 'login', 'signup', 'welcome', 'logged-out', 'handover', 'vendor-handover', 'substitutions', 'vendor-substitutions', 'reorder', 'vendor-reorder', 'camp-intake', 'vendor-camp-intake', 'lab-queue', 'vendor-lab-queue', 'dispensing', 'dispense-register', 'vendor-dispense-register', 'settlement', 'settlements', 'vendor-settlement', 'performance', 'vendor-console', 'console', 'rx-review', 'vendor-rx-review', 'staff', 'partner-staff', 'vendor-staff', 'staff-roles'];
 export const isRoutePath = (value: string): value is RoutePath => routePaths.includes(value as RoutePath);
 export const asRoutePath = (value: string): RoutePath => (isRoutePath(value) ? value : ('shop' as RoutePath));
-export const homeForRole = (role: AccountRole): RoutePath => role === 'SUPER_ADMIN' ? 'admin' : role === 'VENDOR' ? 'vendor' : role === 'NMC_DOCTOR' ? 'clinician' : role === 'CAMPUS_ADMIN' ? 'campus' : 'health';
+export const homeForRole = (role: AccountRole): RoutePath => role === 'SUPER_ADMIN' ? 'admin' : role === 'VENDOR' ? 'vendor' : role === 'NMC_DOCTOR' ? 'clinician' : role === 'CAMPUS_ADMIN' ? 'campus' : role === 'COUNSELLOR' ? 'counsellor' : role === 'LAB_COLLECTOR' ? 'staff-collect' : 'health';
 export function canAccessRoute(route: RoutePath, role: AccountRole | null) {
   if (publicRoutes.includes(route)) return true;
   if (!role) return false;
+  // Every /admin… page is the super admin's, whatever ./routes/routeRoles.ts says.
   if (route.startsWith('admin')) return role === 'SUPER_ADMIN';
-  if (route === 'vendor') return role === 'VENDOR';
-  if (route === 'clinician' || route.startsWith('clinician/')) return role === 'NMC_DOCTOR';
-  if (route === 'clinical-notes') return role === 'NMC_DOCTOR' || role === 'SUPER_ADMIN';
-  if (route === 'report-reviews') return role === 'NMC_DOCTOR';
-  if (route === 'earnings') return role === 'NMC_DOCTOR';
-  if (route === 'chronic') return role === 'NMC_DOCTOR';
-  if (route === 'campus-wellness') return role === 'CAMPUS_ADMIN' || role === 'SUPER_ADMIN';
-  if (route === 'clinical-review') return role === 'NMC_DOCTOR' || role === 'SUPER_ADMIN';
-  if (route === 'dispensing' || route === 'dispense-register' || route === 'vendor-dispense-register' || route === 'lab-queue' || route === 'vendor-lab-queue' || route === 'verify' || route === 'catalogue' || route === 'run-sheet' || route === 'lab-collection' || route === 'cold-chain' || route === 'lab-cold-chain' || route === 'returns' || route === 'vendor-returns' || route === 'handover' || route === 'vendor-handover' || route === 'substitutions' || route === 'vendor-substitutions' || route === 'reorder' || route === 'vendor-reorder' || route === 'camp-intake' || route === 'vendor-camp-intake' || route === 'settlement' || route === 'settlements' || route === 'vendor-settlement' || route === 'performance' || route === 'vendor-console' || route === 'console' || route === 'rx-review' || route === 'vendor-rx-review' || route === 'staff' || route === 'partner-staff' || route === 'vendor-staff' || route === 'staff-roles') return role === 'VENDOR' || role === 'SUPER_ADMIN';
-  if (route === 'campus' || route === 'campus-access-requests' || route === 'campus-break-glass') return role === 'CAMPUS_ADMIN' || role === 'STUDENT' || role === 'SUPER_ADMIN';
-  return true;
+  const roles = Object.prototype.hasOwnProperty.call(routeRoles, route)
+    ? routeRoles[route]
+    : routePrefixRoles.find(([prefix]) => route.startsWith(prefix))?.[1];
+  return roles ? roles.includes(role) : true;
 }
 export function readRoute() {
   const hashRaw = window.location.hash.replace(/^#\/?/, '');

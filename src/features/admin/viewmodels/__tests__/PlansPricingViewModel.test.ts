@@ -3,6 +3,10 @@ import type { BillingPlan, PlanCatalog } from '@/data/datasets/billing';
 import type { PlansRepository } from '../../model/contractsRepository';
 import { planPrice, planPriceWithPeriod } from '../../model/format';
 import { PlansPricingViewModel } from '../PlansPricingViewModel';
+import { translate } from '@/i18n';
+import type { MessageKey, Vars } from '@/i18n';
+
+const t = (key: MessageKey, vars?: Vars) => translate('en', key, vars);
 
 const plan = (id: BillingPlan['id'], overrides: Partial<BillingPlan> = {}): BillingPlan => ({ id, name: id, price: 'Free', period: 'forever', audience: 'student', benefits: [], description: '', ...overrides });
 const catalog = (ids: BillingPlan['id'][], checkoutAvailable = false): PlanCatalog => ({ plans: ids.map(id => plan(id)), checkoutAvailable, publicKey: '' });
@@ -144,9 +148,14 @@ describe('PlansPricingViewModel', () => {
 
 describe('plan price rules (format.ts)', () => {
   it('formats a rupee price, and shows a word price as given', () => {
-    expect(planPrice(plan('STUDENT_PLUS', { price: 1499, period: 'per year' }))).toBe('₹1,499');
-    expect(planPrice(plan('FREE', { price: 'Free' }))).toBe('Free');
-    expect(planPriceWithPeriod(plan('STUDENT_PLUS', { price: 1499, period: 'per year' }))).toBe('₹1,499 per year');
-    expect(planPriceWithPeriod(plan('ENTERPRISE', { price: 'Custom', period: 'per year' }))).toBe('Custom');
+    expect(planPrice(plan('STUDENT_PLUS', { price: 1499, period: 'per year' }), t)).toBe('₹1,499');
+    expect(planPrice(plan('FREE', { price: 'Free' }), t)).toBe('Free');
+    expect(planPriceWithPeriod(plan('STUDENT_PLUS', { price: 1499, period: 'per year' }), t)).toBe('₹1,499 per year');
+    expect(planPriceWithPeriod(plan('ENTERPRISE', { price: 'Custom', period: 'per year' }), t)).toBe('Custom');
+  });
+
+  it('shows a starting price as "from"', () => {
+    expect(planPrice(plan('PREMIUM', { price: 499, priceFrom: true, period: 'per month' }), t)).toBe('from ₹499');
+    expect(planPriceWithPeriod(plan('PREMIUM', { price: 499, priceFrom: true, period: 'per month' }), t)).toBe('from ₹499 per month');
   });
 });

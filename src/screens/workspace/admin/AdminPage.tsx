@@ -1,20 +1,20 @@
-import React, { KeyboardEvent, ReactNode, useRef } from 'react';
-import { AlertCircle, RefreshCw } from 'lucide-react';
-import { navigate, RoutePath } from '../../../lib/workflowRouting';
+import React, { KeyboardEvent, ReactNode, useId, useRef } from 'react';
+import { ConsolePageHeader, DataTable } from '@/design-system';
+import { Icon } from '@/design-system/icons';
+import { navigate, RoutePath } from '../../../lib/utils/workflowRouting';
+import { useT } from '../../../i18n';
+import type { MessageKey } from '../../../i18n';
 import './admin-screens.css';
 import './admin-legacy.css';
 
-/** Page frame shared by the Super Admin screens (design: 07-super-admin/*). */
-export function AdminPage({ eyebrow, title, description, status, children }: { eyebrow?: string; title: string; description: string; status?: ReactNode; children: ReactNode }) {
-  return <div className="sk-admin-page">
-    <header className="sk-admin-page-header">
-      <div className="sk-admin-page-heading">
-        {eyebrow && <p className="sk-admin-eyebrow">{eyebrow}</p>}
-        <h2>{title}</h2>
-        <p>{description}</p>
-      </div>
-      {status && <div className="sk-admin-page-status">{status}</div>}
-    </header>
+/**
+ * Page frame shared by the Super Admin screens (design: 07-super-admin/*). The
+ * title block is the design system's console page header (the board's h1), so
+ * these pages and every other console board read the same.
+ */
+export function AdminPage({ eyebrow, title, description, status, children }: { eyebrow?: string; title: string; description?: string; status?: ReactNode; children: ReactNode }) {
+  return <div className="sk-ds sk-admin-page">
+    <ConsolePageHeader eyebrow={eyebrow} title={title} subtitle={description} actions={status} />
     {children}
   </div>;
 }
@@ -38,13 +38,14 @@ export const unreportedStats = (labels: string[] = []): AdminStat[] => labels.ma
 
 /** `columns={5}` keeps five tiles on one row on wide screens; narrower screens still wrap. */
 export function AdminStats({ stats, label, plain = false, columns = 4 }: { stats: AdminStat[]; label: string; plain?: boolean; columns?: 4 | 5 }) {
+  const t = useT();
   return <div className={`sk-admin-tiles${plain ? ' is-plain' : ''}${columns === 5 ? ' is-five' : ''}`} role="group" aria-label={label}>
     {stats.map(stat => {
       const known = stat.value !== undefined && stat.value !== null;
       return <article key={stat.label} className={`sk-admin-tile${known ? '' : ' is-unreported'}`}>
         <h3 className="sk-admin-eyebrow">{stat.label}</h3>
         <strong>{known ? stat.value : '—'}</strong>
-        <p>{known ? stat.meta ?? '' : 'Not reported · no data source yet'}</p>
+        <p>{known ? stat.meta ?? '' : t('admin.stat.unreported')}</p>
       </article>;
     })}
   </div>;
@@ -64,33 +65,35 @@ export function AdminLoading({ label }: { label: string }) {
 }
 
 export function AdminError({ title, message, onRetry }: { title: string; message: string; onRetry: () => void }) {
+  const t = useT();
   return <div className="sk-admin-error" role="alert">
-    <AlertCircle size={22} aria-hidden="true" />
-    <div><strong>{title}</strong><p>This is on our side, not yours — nothing was lost.</p>{message && <p className="sk-admin-fineprint">{message}</p>}</div>
-    <button type="button" className="sk-admin-button" onClick={onRetry}><RefreshCw size={15} aria-hidden="true" />Try again</button>
+    <Icon name="alert-triangle" size={22} />
+    <div><strong>{title}</strong><p>{t('admin.error.ourSide')}</p>{message && <p className="sk-admin-fineprint">{message}</p>}</div>
+    <button type="button" className="sk-admin-button" onClick={onRetry}><Icon name="refresh" size={15} />{t('common.tryAgain')}</button>
   </div>;
 }
 
 /**
- * A designed table with no data source behind it yet. The column headings come
- * from the approved design; the body says plainly that nothing is connected,
- * rather than that nothing needs attention.
+ * A designed table with no data source behind it yet: the design system's
+ * console table with the approved column headings and, in place of rows, a plain
+ * statement that nothing is connected rather than that nothing needs attention.
+ * `subject` arrives already translated.
  */
 export function NotConnectedTable({ caption, columns, subject, emptyTitle }: { caption: string; columns: string[]; subject: string; emptyTitle?: string }) {
-  return <div className="sk-admin-card sk-admin-table-card">
-    <table className="sk-admin-table">
-      <caption className="sk-admin-visually-hidden">{caption}</caption>
-      <thead><tr>{columns.map(column => <th key={column} scope="col">{column}</th>)}</tr></thead>
-      <tbody><tr><td colSpan={columns.length}>
-        <AdminEmpty title={emptyTitle ?? `No ${subject} yet.`} description={`${subject.charAt(0).toUpperCase()}${subject.slice(1)} will appear here once the data source is connected. No sample data is shown.`} />
-      </td></tr></tbody>
-    </table>
-  </div>;
+  const t = useT();
+  const description = t('admin.table.notConnectedBody', { subject });
+  return <DataTable
+    caption={caption}
+    columns={columns.map(label => ({ label }))}
+    rows={[]}
+    emptyMessage={{ title: emptyTitle ?? t('admin.table.notConnectedTitle', { subject }), body: `${description.charAt(0).toUpperCase()}${description.slice(1)}` }}
+  />;
 }
 
 /** A section of a screen whose data source isn't connected yet. */
 export function AdminEmptySection({ title, description, emptyTitle, emptyDescription }: { title: string; description: string; emptyTitle: string; emptyDescription: string }) {
-  const id = `sk-admin-section-${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
+  // useId, not the title: a translated (non-Latin) title would give every section the same id.
+  const id = `sk-admin-section-${useId().replace(/:/g, '')}`;
   return <section className="sk-admin-card" aria-labelledby={id}>
     <h3 id={id} className="sk-admin-eyebrow">{title}</h3>
     <p className="sk-admin-section-description">{description}</p>
@@ -103,13 +106,15 @@ export function LegacyPanel({ children }: { children: ReactNode }) {
   return <div className="sk-admin-legacy">{children}</div>;
 }
 
-export interface AdminTab { route: RoutePath; label: string }
+/** `label` is a message key, so the tab reads in the current language. */
+export interface AdminTab { route: RoutePath; label: MessageKey }
 
 /**
  * Tabs whose selection is the URL, so each tab keeps its own address and the
  * routing system stays the only source of truth. Arrow keys move between tabs.
  */
 export function AdminTabs({ label, tabs, current }: { label: string; tabs: AdminTab[]; current: RoutePath }) {
+  const t = useT();
   const refs = useRef<(HTMLButtonElement | null)[]>([]);
   const move = (event: KeyboardEvent<HTMLButtonElement>, index: number) => {
     const next = event.key === 'ArrowRight' ? index + 1 : event.key === 'ArrowLeft' ? index - 1 : event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 : null;
@@ -122,15 +127,16 @@ export function AdminTabs({ label, tabs, current }: { label: string; tabs: Admin
   return <div className="sk-admin-tabs" role="tablist" aria-label={label}>
     {tabs.map((tab, index) => {
       const selected = tab.route === current;
-      return <button key={tab.route} ref={element => { refs.current[index] = element; }} type="button" role="tab" id={`sk-admin-tab-${tab.route.replace(/\//g, '-')}`} aria-selected={selected} aria-controls="sk-admin-tabpanel" tabIndex={selected ? 0 : -1} onClick={() => navigate(tab.route)} onKeyDown={event => move(event, index)}>{tab.label}</button>;
+      return <button key={tab.route} ref={element => { refs.current[index] = element; }} type="button" role="tab" id={`sk-admin-tab-${tab.route.replace(/\//g, '-')}`} aria-selected={selected} aria-controls="sk-admin-tabpanel" tabIndex={selected ? 0 : -1} onClick={() => navigate(tab.route)} onKeyDown={event => move(event, index)}>{t(tab.label)}</button>;
     })}
   </div>;
 }
 
 /** A canonical screen made of route-backed tabs. */
 export function AdminTabbedPage({ eyebrow, title, description, status, tabs, current, children }: { eyebrow?: string; title: string; description: string; status?: ReactNode; tabs: AdminTab[]; current: RoutePath; children: ReactNode }) {
+  const t = useT();
   return <AdminPage eyebrow={eyebrow} title={title} description={description} status={status}>
-    <AdminTabs label={`${title} sections`} tabs={tabs} current={current} />
+    <AdminTabs label={t('admin.tabs.sections', { title })} tabs={tabs} current={current} />
     <div id="sk-admin-tabpanel" role="tabpanel" aria-labelledby={`sk-admin-tab-${current.replace(/\//g, '-')}`} className="sk-admin-tabpanel">{children}</div>
   </AdminPage>;
 }

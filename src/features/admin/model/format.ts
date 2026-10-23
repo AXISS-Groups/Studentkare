@@ -1,7 +1,9 @@
 // Display formatting and display rules shared by the Super Admin screens. Pure functions, no React.
 
-import type { IntegrationCheck, IntegrationHealth, OpsFeedEvent, OpsSeverity } from '@/data/workflowTypes';
+import type { IntegrationCheck, IntegrationHealth, OpsFeedEvent, OpsSeverity } from '@/data/types/workflowTypes';
 import type { BillingPlan } from '@/data/datasets/billing';
+import { planPriceLabel } from '@/data/datasets/billingPrices';
+import type { MessageKey, Vars } from '@/i18n';
 import type { AuditPage, IndexStatus, KnowledgeSource, MetricValue, OpsFeedCounts, SourceState, StatusReading, StatusTone } from './types';
 
 export const readable = (value: string) => value.replace(/_/g, ' ').toLowerCase().replace(/^./, character => character.toUpperCase());
@@ -20,9 +22,6 @@ const OUTCOME_LABEL: Record<string, string> = {
 
 /** Where an Agent Ayush turn ended, in words. Unknown outcomes fall back to their readable code. */
 export const outcomeLabel = (outcome: string) => OUTCOME_LABEL[outcome] ?? readable(outcome);
-
-/** Tag tone for an OCR confidence: sure at 90% and above, attention from 70%, otherwise danger. */
-export const confidenceTone = (confidence: number) => confidence >= 0.9 ? 'is-positive' : confidence >= 0.7 ? 'is-attention' : 'is-danger';
 
 /** A knowledge source's state for Ayush: expired sources are hidden, unreviewed ones wait, approved ones need indexing. */
 export function sourceState(source: KnowledgeSource, missing: Set<string>, now: number): { label: string; tone: string } {
@@ -96,8 +95,10 @@ export const openSafetyStatus = (counts: SourceState<OpsFeedCounts>): StatusRead
   });
 
 // ── Plans & pricing ──────────────────────────────────────────────────────────
-/** A plan's price: a number in rupees is formatted (₹1,499); a word such as “Free” is shown as given. */
-export const planPrice = (plan: BillingPlan) => typeof plan.price === 'number' ? `₹${count(plan.price)}` : plan.price;
+type Translate = (key: MessageKey, vars?: Vars) => string;
+
+/** A plan's price: a number in rupees is formatted (₹1,499, or "from ₹499" for a starting price); a word such as “Free” is shown as given. */
+export const planPrice = (plan: BillingPlan, t: Translate) => planPriceLabel(plan, t);
 
 /** A plan's price with its period for a numeric price (₹1,499 per year); a word price stands alone. */
-export const planPriceWithPeriod = (plan: BillingPlan) => typeof plan.price === 'number' ? `₹${count(plan.price)} ${plan.period}` : plan.price;
+export const planPriceWithPeriod = (plan: BillingPlan, t: Translate) => typeof plan.price === 'number' ? `${planPriceLabel(plan, t)} ${plan.period}` : plan.price;

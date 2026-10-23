@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
-import { useTheme } from '../../theme/theme';
+import { useTheme } from '../../theme/tokens/theme';
 import { useStudentStore } from '../../store/AppStores';
 import { Card } from '../../components/Card';
 import { Badge } from '../../components/Badge';
@@ -93,7 +93,7 @@ const Flow10LearnScreenUnwrapped: React.FC = () => {
                           },
                         ]}
                       >
-                        <Text style={{ color: selectedAnswer === oIdx ? '#ffffff' : tokens.text, fontSize: 13 }}>
+                        <Text style={{ color: selectedAnswer === oIdx ? tokens.onAction : tokens.text, fontSize: 13 }}>
                           {opt}
                         </Text>
                       </TouchableOpacity>

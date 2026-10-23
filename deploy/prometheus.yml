@@ -49,9 +49,10 @@ scrape_configs:
       module: [http_2xx]
     static_configs:
       - targets:
-          - https://api.studentkare.in/api/health
-          - https://api.studentkare.in/metrics
-          - https://studentkare.in/
+          # Prometheus does not expand env vars: keep in step with APP_DOMAIN.
+          # The API is served under /api on the app domain (deploy/nginx.conf).
+          - https://studentkare.co/api/health
+          - https://studentkare.co/
     relabel_configs:
       - source_labels: [__address__]
         target_label: __param_target
@@ -66,7 +67,7 @@ scrape_configs:
       module: [grpc]
     static_configs:
       - targets:
-          - api.studentkare.in:443
+          - studentkare.co:443
     relabel_configs:
       - source_labels: [__address__]
         target_label: __param_target

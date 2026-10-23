@@ -1,0 +1,47 @@
+/* Inline validation (board Feedback). Tokens only. */
+
+@keyframes skFieldShake {
+  0%, 100% { transform: none; }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(5px); }
+  60% { transform: translateX(-3px); }
+  80% { transform: translateX(2px); }
+}
+
+.sk-field { display: flex; flex-direction: column; gap: 7px; min-width: 0; font-family: var(--sk-font-sans); }
+.sk-field__label { font-size: 12.5px; font-weight: 700; color: var(--sk-color-text); }
+.sk-field__control {
+  display: flex; align-items: center; gap: 10px;
+  min-height: var(--sk-size-control); box-sizing: border-box; padding: 0 14px;
+  border-radius: 13px; background: var(--sk-color-surface);
+  /* rule-strong: a field outline is a control boundary and needs 3:1 (WCAG 1.4.11). */
+  border: 1px solid var(--sk-color-rule-strong);
+}
+.sk-field__control:focus-within { border-color: var(--sk-color-action); outline: 3px solid var(--sk-color-focus); outline-offset: 3px; }
+.sk-field .sk-field__control :is(input, select, textarea) {
+  flex: 1 1 auto; min-width: 0; min-height: 0; height: auto; margin: 0; padding: 12px 0;
+  border: 0; border-radius: 0; background: transparent; box-shadow: none; outline: none;
+  font-family: inherit; font-size: 14px; font-weight: 500; color: var(--sk-color-text);
+}
+/* The ring is drawn on the control (focus-within) so it wraps the mark too;
+   the app shell's !important input ring would draw a second box inside it. */
+.sk-field .sk-field__control :is(input, select, textarea):focus-visible { outline: none !important; }
+.sk-field .sk-field__control :is(input, textarea)::placeholder { color: var(--sk-color-text-3); opacity: 1; }
+.sk-field__mark { flex-shrink: 0; }
+.sk-field__note { font-size: 12px; line-height: 1.5; font-weight: 500; color: var(--sk-color-text-2); }
+
+.sk-field[data-status='invalid'] .sk-field__control {
+  border: 2px solid var(--sk-color-danger-fill); padding: 0 13px;
+  animation: skFieldShake 450ms var(--sk-ease-standard) both;
+}
+.sk-field[data-status='invalid'] .sk-field__mark { color: var(--sk-color-danger-fill); }
+.sk-field[data-status='invalid'] .sk-field__note { font-weight: 600; color: var(--sk-color-danger); }
+.sk-field[data-status='valid'] .sk-field__control { border: 2px solid var(--sk-color-positive); padding: 0 13px; }
+.sk-field[data-status='valid'] .sk-field__mark { color: var(--sk-color-positive); }
+
+@media (max-width: 560px) {
+  .sk-field .sk-field__control :is(input, select, textarea) { font-size: 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sk-field[data-status='invalid'] .sk-field__control { animation: none; }
+}

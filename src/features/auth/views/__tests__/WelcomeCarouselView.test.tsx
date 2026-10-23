@@ -65,12 +65,12 @@ describe('each slide shows its own panel', () => {
     expect(screen.getByText('Crisis support')).toBeInTheDocument();
 
     fireEvent.click(forward());
-    expect(screen.getByText('Complete Blood Count')).toBeInTheDocument();
+    expect(screen.getByText('Lab reports')).toBeInTheDocument();
     expect(screen.queryByText('Crisis support')).toBeNull();
 
     fireEvent.click(forward());
-    expect(screen.getByText(/Ayush AI/i)).toBeInTheDocument();
-    expect(screen.queryByText('Complete Blood Count')).toBeNull();
+    expect(screen.getByText('Ask Ayush')).toBeInTheDocument();
+    expect(screen.queryByText('Lab reports')).toBeNull();
   });
 });
 
@@ -124,5 +124,34 @@ describe('accessibility', () => {
     for (const control of screen.getAllByRole('button')) {
       expect(control).toHaveAttribute('type', 'button');
     }
+  });
+});
+
+describe('honest illustrations', () => {
+  it('shows kinds of record, not a made-up student\'s results, and no "AI" label', () => {
+    render(<WelcomeCarouselView />);
+    fireEvent.click(forward());
+    expect(document.body.textContent).not.toMatch(/Complete Blood Count|Vitamin D3/i);
+    fireEvent.click(forward());
+    expect(document.body.textContent).not.toMatch(/Ayush AI|clinic slots|routes you to the right/i);
+  });
+
+  it('does not claim crisis support staffed on campus around the clock', () => {
+    render(<WelcomeCarouselView />);
+    expect(document.body.textContent).not.toMatch(/24×7 on campus/i);
+  });
+
+  it('claims no ABDM link and promises no doctor availability', () => {
+    render(<WelcomeCarouselView />);
+    fireEvent.click(forward());
+    expect(document.body.textContent).not.toMatch(/ABDM|ABHA/i);
+    fireEvent.click(forward());
+    expect(document.body.textContent).not.toMatch(/Dr\.\s|free in \d+\s*min|hold the slot/i);
+  });
+
+  it('claims no lab accreditation, because none is recorded for any lab partner', () => {
+    render(<WelcomeCarouselView />);
+    expect(screen.getByText('Lab tests')).toBeInTheDocument();
+    expect(document.body.textContent).not.toMatch(/NABL|accredited/i);
   });
 });

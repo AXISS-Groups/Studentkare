@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
-import { useTheme } from '../theme/theme';
+import { useTheme } from '../theme/tokens/theme';
 import { Card } from './Card';
 import { Badge } from './Badge';
 import { Radio } from 'lucide-react';
-import { assertRule } from '../ai/constitution';
+import { assertRule } from '../ai/core/constitution';
 
 export interface PincodeRoutingState {
   pincode: string;
@@ -94,7 +94,7 @@ export const ProviderPanelOrchestrator: React.FC = () => {
                 disabled={syncing}
                 style={{ backgroundColor: tokens.emergency, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 }}
               >
-                <Text style={{ fontSize: 11, fontWeight: '800', color: '#ffffff' }}>
+                <Text style={{ fontSize: 11, fontWeight: '800', color: tokens.onAction }}>
                   {syncing ? 'Recruiting...' : 'Recruit & Refresh'}
                 </Text>
               </TouchableOpacity>

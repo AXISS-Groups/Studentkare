@@ -2,10 +2,10 @@
   max-width: 840px;
   margin: 0 auto;
   padding: 24px;
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
+  background: var(--sk-color-surface);
+  border: 1px solid var(--sk-color-rule);
   border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.05);
+  box-shadow: var(--sk-shadow-card);
 }
 
 .appt-booking-header {
@@ -16,7 +16,7 @@
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 1px;
-  color: #4f46e5;
+  color: var(--sk-color-action);
   text-transform: uppercase;
 }
 
@@ -24,13 +24,13 @@
   margin: 4px 0 6px;
   font-size: 22px;
   font-weight: 750;
-  color: #0f172a;
+  color: var(--sk-color-text);
 }
 
 .appt-booking-header p {
   margin: 0;
   font-size: 13px;
-  color: #64748b;
+  color: var(--sk-color-text-3);
 }
 
 .appt-booking-grid {
@@ -44,15 +44,15 @@
   flex-direction: column;
   gap: 10px;
   padding: 16px;
-  background: #f8fafc;
-  border: 1px solid #f1f5f9;
+  background: var(--sk-color-surface-2);
+  border: 1px solid var(--sk-color-rule-soft);
   border-radius: 12px;
 }
 
 .appt-section-label {
   font-size: 13px;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--sk-color-text);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -66,8 +66,8 @@
 
 .appt-provider-card {
   padding: 12px 14px;
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
+  background: var(--sk-color-surface);
+  border: 1px solid var(--sk-color-rule);
   border-radius: 10px;
   cursor: pointer;
   transition: all 150ms ease;
@@ -77,27 +77,27 @@
 }
 
 .appt-provider-card:hover {
-  border-color: #a5b4fc;
+  border-color: var(--sk-color-rule);
 }
 
 .appt-provider-card.selected {
-  border-color: #4f46e5;
-  background: #eef2ff;
+  border-color: var(--sk-color-action);
+  background: var(--sk-color-surface-3);
 }
 
 .appt-provider-card strong {
   font-size: 14px;
-  color: #0f172a;
+  color: var(--sk-color-text);
 }
 
 .appt-provider-card small {
   font-size: 12px;
-  color: #64748b;
+  color: var(--sk-color-text-3);
 }
 
 .appt-station {
   font-size: 11px;
-  color: #475569;
+  color: var(--sk-color-text-2);
   display: flex;
   align-items: center;
   gap: 4px;
@@ -107,15 +107,15 @@
 .appt-date-input {
   padding: 10px 14px;
   font-size: 13px;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--sk-color-rule-strong);
   border-radius: 8px;
-  background: #ffffff;
-  color: #0f172a;
+  background: var(--sk-color-surface);
+  color: var(--sk-color-text);
   outline: none;
 }
 
 .appt-date-input:focus {
-  border-color: #4f46e5;
+  border-color: var(--sk-color-focus);
 }
 
 .appt-modality-selector {
@@ -128,7 +128,7 @@
 .appt-modality-selector span {
   font-size: 12px;
   font-weight: 600;
-  color: #475569;
+  color: var(--sk-color-text-2);
 }
 
 .appt-modality-pills {
@@ -142,17 +142,17 @@
   font-size: 12px;
   font-weight: 600;
   border-radius: 20px;
-  background: #ffffff;
-  border: 1px solid #cbd5e1;
-  color: #475569;
+  background: var(--sk-color-surface);
+  border: 1px solid var(--sk-color-rule);
+  color: var(--sk-color-text-2);
   cursor: pointer;
   transition: all 120ms;
 }
 
 .appt-modality-pill.active {
-  background: #4f46e5;
-  border-color: #4f46e5;
-  color: #ffffff;
+  background: var(--sk-color-action);
+  border-color: var(--sk-color-action);
+  color: var(--sk-color-on-action);
 }
 
 .appt-slots-grid {
@@ -166,27 +166,27 @@
   font-size: 12px;
   font-weight: 600;
   border-radius: 8px;
-  background: #ffffff;
-  border: 1px solid #cbd5e1;
-  color: #0f172a;
+  background: var(--sk-color-surface);
+  border: 1px solid var(--sk-color-rule);
+  color: var(--sk-color-text);
   cursor: pointer;
   transition: all 120ms;
 }
 
 .appt-slot-pill:hover:not(.disabled) {
-  border-color: #4f46e5;
+  border-color: var(--sk-color-action);
 }
 
 .appt-slot-pill.selected {
-  background: #4f46e5;
-  border-color: #4f46e5;
-  color: #ffffff;
+  background: var(--sk-color-action);
+  border-color: var(--sk-color-action);
+  color: var(--sk-color-on-action);
 }
 
 .appt-slot-pill.disabled {
-  background: #f1f5f9;
-  color: #94a3b8;
-  border-color: #e2e8f0;
+  background: var(--sk-color-surface-2);
+  color: var(--sk-color-text-3);
+  border-color: var(--sk-color-rule);
   cursor: not-allowed;
   text-decoration: line-through;
 }
@@ -195,17 +195,17 @@
   width: 100%;
   padding: 10px 12px;
   font-size: 13px;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--sk-color-rule-strong);
   border-radius: 8px;
-  background: #ffffff;
-  color: #0f172a;
+  background: var(--sk-color-surface);
+  color: var(--sk-color-text);
   outline: none;
   resize: vertical;
   box-sizing: border-box;
 }
 
 .appt-notes-textarea:focus {
-  border-color: #4f46e5;
+  border-color: var(--sk-color-focus);
 }
 
 .appt-btn {
@@ -223,22 +223,22 @@
 }
 
 .appt-btn-submit {
-  background: #4f46e5;
-  color: #ffffff;
+  background: var(--sk-color-action);
+  color: var(--sk-color-on-action);
 }
 
 .appt-btn-submit:hover:not(:disabled) {
-  background: #4338ca;
+  background: var(--sk-color-action-hover);
 }
 
 .appt-btn-submit:disabled {
-  background: #94a3b8;
+  background: var(--sk-color-rule-strong);
   cursor: not-allowed;
 }
 
 .appt-btn-primary {
-  background: #4f46e5;
-  color: #ffffff;
+  background: var(--sk-color-action);
+  color: var(--sk-color-on-action);
   margin-top: 16px;
 }
 
@@ -247,10 +247,10 @@
   align-items: center;
   gap: 8px;
   padding: 10px 14px;
-  background: #fee2e2;
-  border: 1px solid #fca5a5;
+  background: var(--sk-color-danger-bg);
+  border: 1px solid var(--sk-color-danger-rule);
   border-radius: 8px;
-  color: #b91c1c;
+  color: var(--sk-color-danger);
   font-size: 13px;
   margin-bottom: 16px;
 }
@@ -259,11 +259,11 @@
   max-width: 520px;
   margin: 40px auto;
   padding: 32px 24px;
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
+  background: var(--sk-color-surface);
+  border: 1px solid var(--sk-color-rule);
   border-radius: 20px;
   text-align: center;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--sk-shadow-float);
 }
 
 .appt-confirmation-icon {
@@ -273,13 +273,13 @@
 .appt-confirmation-card h2 {
   margin: 0 0 4px;
   font-size: 22px;
-  color: #0f172a;
+  color: var(--sk-color-text);
 }
 
 .appt-booking-id {
   font-size: 12px;
   font-weight: 700;
-  color: #64748b;
+  color: var(--sk-color-text-3);
   letter-spacing: 0.5px;
 }
 
@@ -289,7 +289,7 @@
   gap: 12px;
   margin: 20px 0;
   padding: 16px;
-  background: #f8fafc;
+  background: var(--sk-color-surface-2);
   border-radius: 12px;
   text-align: left;
 }
@@ -302,14 +302,14 @@
 
 .appt-confirmation-details strong {
   font-size: 11px;
-  color: #64748b;
+  color: var(--sk-color-text-3);
   text-transform: uppercase;
 }
 
 .appt-confirmation-details span {
   font-size: 14px;
   font-weight: 600;
-  color: #0f172a;
+  color: var(--sk-color-text);
 }
 
 .appt-status-tag {
@@ -317,8 +317,8 @@
   padding: 2px 8px;
   font-size: 11px !important;
   border-radius: 4px;
-  background: #dcfce7;
-  color: #15803d !important;
+  background: var(--sk-color-positive-bg);
+  color: var(--sk-color-positive) !important;
   font-weight: 700 !important;
   width: fit-content;
 }
@@ -328,6 +328,6 @@
   align-items: center;
   gap: 8px;
   font-size: 13px;
-  color: #64748b;
+  color: var(--sk-color-text-3);
   padding: 12px 0;
 }

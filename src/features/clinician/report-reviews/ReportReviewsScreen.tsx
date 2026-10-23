@@ -1,89 +1,49 @@
-import React, { useEffect, useId, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { actionBound, computed, makeObservable, observable, runInAction } from 'mobx';
 import { observer } from 'mobx-react-lite';
-import { isDev } from '@/core/env';
-import { Drawer, EmptyStateView, ErrorStateView, SkButton, Skeleton, StatRow, StatusPill, Tabs, Toast } from '@/design-system';
-import type { SkTone, Stat } from '@/design-system';
-import { navigate } from '@/lib/workflowRouting';
-import type { RoutePath } from '@/lib/workflowRouting';
+import { Drawer, FormField, SkButton, SkSkeleton as Skeleton, StatRow, StatusPill, Tabs, SkToast as Toast, useOnline } from '@/design-system';
+import type { Stat } from '@/design-system';
+import { Icon } from '@/design-system/icons';
+import { useT } from '@/i18n';
+import { navigate } from '@/lib/utils/workflowRouting';
+import type { RoutePath } from '@/lib/utils/workflowRouting';
 import { ClinicianConsoleFrame } from '../shared/ClinicianConsoleFrame';
+import { ClinicianEmptyState, ClinicianErrorState } from '../shared/ClinicianStates';
 import { LoadableViewModel } from '../shared/LoadableViewModel';
-import type { Loadable } from '../shared/LoadableViewModel';
+import { OfflineNote } from '../shared/OfflineNote';
+import { dateOnly, waitedFor } from '../shared/clinicalData';
+import type { T } from '../shared/clinicalData';
+import { REVIEW_LIMITS, reviewBody, reviewProblems, reviewsApiSource, sharedReportUrl } from './reviewsModel';
+import type { Decision, QueueReview, ReviewDraft, ReviewInvalid, ReviewsData, ReviewsSource } from './reviewsModel';
 import './report-reviews.css';
-
-/**
- * ReportReviews (design page 5). Student-requested: a clinician reads, not a
- * model. TIER 1: awaiting a named design reviewer and clinical sign-off.
- *
- * The loop is requested → assigned → reviewed → read by student; the fourth
- * step is the one that usually goes unmeasured, so it has its own tab.
- */
-
-export type ReviewStage = 1 | 2 | 3 | 4;
-export type ReviewUrgency = 'urgent' | 'soon' | 'routine';
-
-export interface ReportReview {
-  id: string;
-  patientName: string;
-  /** "Vitamin D Test · released 20 Sep" */
-  report: string;
-  /** The student's question, verbatim. */
-  question: string;
-  /** Your review, once written. */
-  reply?: string;
-  urgency: ReviewUrgency;
-  /** "4h left" / "40m left" / "Closed" */
-  due: string;
-  stage: ReviewStage;
-  /** "Read 3 days ago" etc., once read. */
-  stageText: string;
-}
-
-export interface ReviewsData {
-  stats: Stat[];
-  reviews: ReportReview[];
-}
-
-export interface ReviewsSource extends Loadable<ReviewsData> {
-  /** Sends the clinician's review to the student. Absent = cannot. */
-  submit?: (id: string, reply: string) => Promise<void>;
-}
-
-export function reviewsSample(): ReviewsData {
-  return {
-    stats: [
-      { label: 'Awaiting me', value: '3', meta: 'One inside 40 minutes', tone: 'danger' },
-      { label: 'Median to review', value: '5.2 hrs', meta: 'Against a 24-hour promise' },
-      { label: 'Reviewed, unread', value: '1', meta: 'The loop is still open', tone: 'danger' },
-      { label: 'Closed this week', value: '18', meta: 'Read and acknowledged' },
-    ],
-    reviews: [
-      { id: 'v1', patientName: 'Priya N.', report: 'Vitamin D Test · released 20 Sep', question: '“Is 11 low enough to worry about? I have been tired for weeks.”', urgency: 'soon', due: '4h left', stage: 2, stageText: 'Assigned to you' },
-      { id: 'v2', patientName: 'Aarav Sharma', report: 'Renal panel · released today', question: '“The app flagged something red. What does it mean?”', urgency: 'urgent', due: '40m left', stage: 2, stageText: 'Assigned to you' },
-      { id: 'v3', patientName: 'Meera Nair', report: 'Complete Blood Count · 18 Aug', question: '“My second sample — is this one usable?”', urgency: 'routine', due: '2d left', stage: 2, stageText: 'Assigned to you' },
-      { id: 'v4', patientName: 'Rohan Verma', report: 'Thyroid panel · 14 Sep', question: '“Should I be worried about my thyroid?”', reply: 'Mild subclinical picture, repeat in 8 weeks.', urgency: 'routine', due: 'Closed', stage: 3, stageText: 'Waiting to be read' },
-      { id: 'v5', patientName: 'Kavya Iyer', report: 'Lipid profile · 02 Sep', question: '“Is my cholesterol okay?”', reply: 'Within range, no action needed.', urgency: 'routine', due: 'Closed', stage: 4, stageText: 'Read 3 days ago' },
-    ],
-  };
-}
-
-export const sampleReviewsSource: ReviewsSource = { load: async () => reviewsSample(), submit: async () => undefined };
-const unconnectedReviewsSource: ReviewsSource = { load: async () => null };
 
 export type ReviewsTab = 'awaiting' | 'reviewed' | 'unread';
 
+const blankDraft = (): ReviewDraft => ({ decision: 'APPROVED', summary: '', questions: '', nextSteps: '', sources: [{ title: '', url: '' }] });
+
+/** "3F2A9C1B" — enough of the document id to tell two reports apart. */
+export const shortRef = (id: string): string => id.replace(/-/g, '').slice(0, 8).toUpperCase();
+
+/**
+ * ReportReviews (design page 5). Tier 1, approved by Krishna Chintakayala on
+ * 2026-10-21. The loop is requested, assigned, reviewed, read by student;
+ * there is no read receipt yet, so the fourth step is shown as unknown, never
+ * as "unread".
+ */
 export class ReportReviewsViewModel extends LoadableViewModel<ReviewsData> {
   tab: ReviewsTab = 'awaiting';
   openId: string | null = null;
-  draft = '';
+  draft: ReviewDraft = blankDraft();
   busy = false;
+  online = true;
 
-  constructor(private readonly source: ReviewsSource) {
+  constructor(private readonly source: ReviewsSource, private readonly t: T) {
     super(source);
     makeObservable(this, {
-      tab: observable, openId: observable, draft: observable, busy: observable,
-      visible: computed, open: computed, canSubmit: computed,
-      setTab: actionBound, openReview: actionBound, close: actionBound, setDraft: actionBound,
+      tab: observable, openId: observable, draft: observable, busy: observable, online: observable,
+      visible: computed, open: computed, problems: computed, canSubmit: computed,
+      setTab: actionBound, openReview: actionBound, close: actionBound, setDecision: actionBound, setField: actionBound,
+      setSource: actionBound, addSource: actionBound, removeSource: actionBound, setOnline: actionBound,
     });
   }
 
@@ -91,169 +51,237 @@ export class ReportReviewsViewModel extends LoadableViewModel<ReviewsData> {
     return data.reviews.length === 0;
   }
 
-  get visible(): ReportReview[] {
-    const all = this.data?.reviews ?? [];
-    if (this.tab === 'awaiting') {
-      const rank = { urgent: 0, soon: 1, routine: 2 } as const;
-      return all.filter((r) => r.stage <= 2).sort((a, b) => rank[a.urgency] - rank[b.urgency]);
-    }
-    if (this.tab === 'reviewed') return all.filter((r) => r.stage >= 3);
-    return all.filter((r) => r.stage === 3);
+  /** Oldest request first, as the server orders them. Only "Awaiting me" has a source. */
+  get visible(): QueueReview[] {
+    return this.tab === 'awaiting' ? this.data?.reviews ?? [] : [];
   }
 
-  get open(): ReportReview | null {
+  get open(): QueueReview | null {
     return this.data?.reviews.find((r) => r.id === this.openId) ?? null;
   }
 
-  /** A review is words from you: nothing is sent without them. */
-  get canSubmit(): boolean {
-    return !!this.open && this.open.stage <= 2 && this.draft.trim().length >= 10 && !this.busy && typeof this.source.submit === 'function';
+  get problems(): ReviewInvalid[] {
+    return reviewProblems(this.draft);
   }
 
+  /** A review is words from you: nothing is sent until every required part is there. */
+  get canSubmit(): boolean {
+    return !!this.open && this.problems.length === 0 && !this.busy && this.online && typeof this.source.submit === 'function';
+  }
+
+  setOnline(online: boolean): void { this.online = online; }
   setTab(tab: ReviewsTab): void { this.tab = tab; }
-  setDraft(text: string): void { this.draft = text; }
 
   openReview(id: string): void {
     this.openId = id;
-    this.draft = '';
+    this.draft = blankDraft();
   }
 
   close(): void {
     if (!this.busy) this.openId = null;
   }
 
+  setDecision(decision: Decision): void { this.draft = { ...this.draft, decision }; }
+  setField(field: 'summary' | 'questions' | 'nextSteps', value: string): void { this.draft = { ...this.draft, [field]: value }; }
+  setSource(index: number, field: 'title' | 'url', value: string): void {
+    this.draft = { ...this.draft, sources: this.draft.sources.map((s, i) => (i === index ? { ...s, [field]: value } : s)) };
+  }
+  addSource(): void {
+    if (this.draft.sources.length < REVIEW_LIMITS.sources) this.draft = { ...this.draft, sources: [...this.draft.sources, { title: '', url: '' }] };
+  }
+  removeSource(index: number): void {
+    if (this.draft.sources.length > 1) this.draft = { ...this.draft, sources: this.draft.sources.filter((_, i) => i !== index) };
+  }
+
   async submit(): Promise<void> {
     const review = this.open;
     const send = this.source.submit;
     if (!review || !send || !this.canSubmit) return;
-    const reply = this.draft.trim();
+    const decision = this.draft.decision;
     this.busy = true;
     try {
-      await send(review.id, reply);
+      const outcome = await send(review, reviewBody(review, this.draft));
       runInAction(() => {
-        if (this.data) {
-          this.data = { ...this.data, reviews: this.data.reviews.map((r) => (r.id === review.id ? { ...r, reply, stage: 3, due: 'Closed', stageText: 'Waiting to be read' } : r)) };
-        }
         this.busy = false;
-        this.openId = null;
-        this.say(`Review sent. ${review.patientName.split(' ')[0]} sees it in the app — it stays under “Unread by student” until they do.`);
+        if (outcome === 'saved') {
+          if (this.data) this.data = { reviews: this.data.reviews.filter((r) => r.id !== review.id), total: Math.max(0, this.data.total - 1) };
+          this.openId = null;
+          this.draft = blankDraft();
+          this.say(this.t(decision === 'APPROVED' ? 'clinReviews.toast.sent' : 'clinReviews.toast.declined'));
+        } else {
+          this.openId = null;
+          this.say(this.t('clinReviews.toast.stale'));
+        }
       });
+      if (outcome === 'stale') await this.load();
     } catch {
       runInAction(() => {
         this.busy = false;
-        this.say('Couldn’t send your review. Nothing was sent and your words are still here.');
+        this.say(this.t('clinReviews.toast.failed'));
       });
     }
   }
 }
 
-const TABS: { id: ReviewsTab; label: string }[] = [
-  { id: 'awaiting', label: 'Awaiting me' },
-  { id: 'reviewed', label: 'Reviewed' },
-  { id: 'unread', label: 'Unread by student' },
-];
-
-const URGENCY: Record<ReviewUrgency, { tag: string; tone: SkTone }> = {
-  urgent: { tag: 'Urgent', tone: 'danger' },
-  soon: { tag: 'New', tone: 'attention' },
-  routine: { tag: 'New', tone: 'action' },
-};
-
-const STAGES = ['Requested', 'Assigned', 'Reviewed', 'Read by student'];
+const STEP_KEYS = ['clinReviews.step.requested', 'clinReviews.step.assigned', 'clinReviews.step.reviewed', 'clinReviews.step.read'] as const;
 
 export const ReportReviewsView = observer(function ReportReviewsView({ viewModel, onNavigate }: { viewModel: ReportReviewsViewModel; onNavigate: (route: RoutePath) => void }): React.ReactElement {
+  const t = useT();
   const { status, data } = viewModel;
+  const tabs: { id: ReviewsTab; label: string }[] = [
+    { id: 'awaiting', label: t('clinReviews.tab.awaiting') },
+    { id: 'reviewed', label: t('clinReviews.tab.reviewed') },
+    { id: 'unread', label: t('clinReviews.tab.unread') },
+  ];
   let body: React.ReactNode;
   if (status === 'loading') {
-    body = <div className="rr-skeleton" aria-busy="true" aria-label="Loading report reviews"><Skeleton width={300} height={34} /><Skeleton height={70} />{Array.from({ length: 3 }, (_, i) => <Skeleton key={i} height={110} />)}</div>;
+    body = <div className="rr-skeleton" aria-busy="true" aria-label={t('clinReviews.loading')}><Skeleton width={300} height={34} /><Skeleton height={70} />{Array.from({ length: 3 }, (_, i) => <Skeleton key={i} height={110} />)}</div>;
   } else if (status === 'error') {
-    body = <ErrorStateView title="Couldn’t load report reviews" onRetry={() => { void viewModel.load(); }} onHelp={() => onNavigate('support')} reference="Ref REVIEWS · ReportReviews" />;
-  } else if (status === 'unconnected') {
-    body = <EmptyStateView title="Report reviews aren’t connected here yet." body="This new screen is awaiting clinical sign-off. Until then this page shows nothing rather than a guess." action={{ label: 'Back to Today', onClick: () => onNavigate('clinician') }} />;
-  } else if (status === 'empty' || !data) {
-    body = <EmptyStateView title="No reports waiting for you." body="When a student asks a doctor to read their report, it is assigned here with the time you have to answer." action={{ label: 'Back to Today', onClick: () => onNavigate('clinician') }} />;
+    body = <ClinicianErrorState title={t('clinReviews.errorTitle')} reference={t('clinReviews.reference')} onRetry={() => { void viewModel.load(); }} onHelp={() => onNavigate('support')} />;
+  } else if (status === 'unconnected' || status === 'empty' || !data) {
+    body = <ClinicianEmptyState title={t('clinReviews.emptyTitle')} body={t('clinReviews.emptyBody')} action={{ label: t('clinShared.backToday'), onSelect: () => onNavigate('clinician') }} />;
   } else {
+    const now = Date.now() / 1000;
+    const oldest = data.reviews.reduce((min, r) => Math.min(min, r.createdAt), now);
+    const stats: Stat[] = [
+      { label: t('clinReviews.stat.awaiting'), value: String(data.total), meta: t('clinReviews.stat.oldest', { time: waitedFor(now - oldest, t) }), tone: 'danger' },
+      { label: t('clinReviews.stat.median'), value: null, meta: t('clinReviews.stat.notReported') },
+      { label: t('clinReviews.stat.unread'), value: null, meta: t('clinReviews.stat.noReceipt') },
+      { label: t('clinReviews.stat.closed'), value: null, meta: t('clinReviews.stat.notReported') },
+    ];
     body = (
-      <>
+      <div className="rr-page">
         <div className="rr-head sk-fade">
           <div className="rr-head__titles">
-            <span className="rr-eyebrow">STUDENT-REQUESTED · A CLINICIAN READS, NOT A MODEL</span>
-            <h1 className="rr-title">Report reviews</h1>
+            <span className="rr-eyebrow">{t('clinReviews.eyebrow')}</span>
+            <h1 className="rr-title">{t('clinReviews.title')}</h1>
           </div>
-          <Tabs label="Show reviews" options={TABS} value={viewModel.tab} onChange={viewModel.setTab} controls="rr-list" />
+          <Tabs label={t('clinReviews.tabsLabel')} options={tabs} value={viewModel.tab} onChange={viewModel.setTab} controls="rr-list" />
         </div>
-        <StatRow stats={data.stats} variant="plain" />
-        <ul id="rr-list" className="rr-list" aria-label="Report reviews">
-          {viewModel.visible.map((review, index) => <ReviewRow key={review.id} review={review} index={index} onOpen={() => viewModel.openReview(review.id)} />)}
-        </ul>
-        {viewModel.visible.length === 0 ? <p className="rr-none" role="status">Nothing in this list right now.</p> : null}
-        <p className="rr-foot">Requested → assigned → reviewed → read by student. The fourth step is the one that usually goes unmeasured.</p>
+        <OfflineNote online={viewModel.online} loadedAt={viewModel.loadedAt} />
+        <StatRow stats={stats} variant="plain" />
+        {viewModel.tab === 'awaiting' ? (
+          <ul id="rr-list" className="rr-list" aria-label={t('clinReviews.listLabel')}>
+            {viewModel.visible.map((review, index) => <ReviewRow key={review.id} review={review} index={index} now={now} onOpen={() => viewModel.openReview(review.id)} />)}
+          </ul>
+        ) : (
+          <p id="rr-list" className="rr-none" role="status">{t(viewModel.tab === 'reviewed' ? 'clinReviews.reviewedUnconnected' : 'clinReviews.unreadUnconnected')}</p>
+        )}
+        <p className="rr-foot">
+          {t('clinReviews.footRequested')}<Icon name="arrow-right" size={12} />{t('clinReviews.footAssigned')}<Icon name="arrow-right" size={12} />{t('clinReviews.footReviewed')}<Icon name="arrow-right" size={12} />{t('clinReviews.footRead')}
+        </p>
         <ReviewDrawer viewModel={viewModel} />
-      </>
+      </div>
     );
   }
   return <>{body}<Toast message={viewModel.toast} onDone={viewModel.clearToast} /></>;
 });
 
-function ReviewRow({ review, index, onOpen }: { review: ReportReview; index: number; onOpen: () => void }): React.ReactElement {
-  const done = review.stage >= 3;
-  const u = URGENCY[review.urgency];
-  const tone = done ? 'positive' : u.tone;
+function ReviewRow({ review, index, now, onOpen }: { review: QueueReview; index: number; now: number; onOpen: () => void }): React.ReactElement {
+  const t = useT();
+  const ref = shortRef(review.documentId);
+  const stage = 2;
   return (
     <li className="rr-row sk-rise" style={{ '--sk-stagger': index } as React.CSSProperties}>
       <div className="rr-row__main">
         <span className="rr-row__top">
-          <span className="rr-row__name">{review.patientName}</span>
-          <StatusPill small tone={tone}>{done ? (review.stage === 4 ? 'Read' : 'Reviewed') : u.tag}</StatusPill>
+          <span className="rr-row__name">{t('clinReviews.reportRef', { id: ref })}</span>
+          <StatusPill small tone="action">{t('clinReviews.new')}</StatusPill>
         </span>
-        <span className="rr-row__report">{review.report}</span>
-        <span className="rr-row__ask">{done && review.reply ? `Reviewed: ${review.reply}` : review.question}</span>
-        <span className="rr-steps" role="img" aria-label={`Step ${review.stage} of 4: ${STAGES[review.stage - 1]}`}>
-          {STAGES.map((stage, i) => <span key={stage} className={`rr-step${i < review.stage ? ` is-done rr-step--${tone}` : ''}`} />)}
+        <span className="rr-row__report">{t('clinReviews.requestedOn', { date: dateOnly(review.createdAt) })}</span>
+        <span className="rr-row__ask">{t('clinReviews.asked')}</span>
+        <span className="rr-steps" role="img" aria-label={t('clinReviews.stepAria', { n: stage, step: t(STEP_KEYS[stage - 1]) })}>
+          {STEP_KEYS.map((key, i) => <span key={key} className={`rr-step${i < stage ? ' is-done rr-step--action' : ''}`} />)}
         </span>
       </div>
       <div className="rr-row__side">
-        <span className={`rr-row__due${review.urgency === 'urgent' && !done ? ' is-urgent' : ''}`}>{review.due}</span>
-        <SkButton variant={review.urgency === 'urgent' && !done ? 'danger' : 'secondary'} className="rr-cta" onClick={onOpen}>
-          {done ? 'Open' : review.urgency === 'urgent' ? 'Review now' : 'Review'}<span className="sk-visually-hidden"> {review.report} for {review.patientName}</span>
+        <span className="rr-row__due">{t('clinReviews.waiting', { time: waitedFor(now - review.createdAt, t) })}</span>
+        <SkButton variant="secondary" className="rr-cta" onClick={onOpen}>
+          {t('clinReviews.review')}<span className="sk-visually-hidden">{t('clinReviews.reviewFor', { id: ref })}</span>
         </SkButton>
-        <span className="rr-row__stage">{review.stageText}</span>
+        <span className="rr-row__stage">{t('clinReviews.assignedToYou')}</span>
       </div>
     </li>
   );
 }
 
+const PROBLEM_KEYS: Record<ReviewInvalid, 'assist.review.approvalNeeds' | 'clinReviews.problem.nextSteps' | 'clinReviews.problem.questions' | 'assist.review.sourceInvalid'> = {
+  summary: 'assist.review.approvalNeeds',
+  nextSteps: 'clinReviews.problem.nextSteps',
+  questions: 'clinReviews.problem.questions',
+  sources: 'assist.review.sourceInvalid',
+};
+
 const ReviewDrawer = observer(function ReviewDrawer({ viewModel }: { viewModel: ReportReviewsViewModel }): React.ReactElement | null {
-  const replyId = useId();
+  const t = useT();
   const review = viewModel.open;
   if (!review) return null;
-  const pending = review.stage <= 2;
+  const d = viewModel.draft;
+  const approve = d.decision === 'APPROVED';
+  const problems = viewModel.problems;
+  const touched = d.summary.trim() !== '' || d.nextSteps.trim() !== '' || d.sources.some((s) => s.title || s.url);
   return (
-    <Drawer open busy={viewModel.busy} onClose={viewModel.close} eyebrow={review.report.toUpperCase()} eyebrowTone={review.urgency === 'urgent' ? 'danger' : 'action'} title={review.patientName} subtitle={pending ? `${review.due} · ${review.stageText.toLowerCase()}` : review.stageText}>
+    <Drawer open busy={viewModel.busy} onClose={viewModel.close} eyebrow={t('clinReviews.reportRef', { id: shortRef(review.documentId) }).toUpperCase()} eyebrowTone="action" title={t('clinReviews.drawerTitle')} subtitle={t('clinReviews.drawerSub', { date: dateOnly(review.createdAt), version: review.version })}>
       <div className="rr-question">
-        <span className="rr-question__label">THEY ASKED</span>
-        <p>{review.question}</p>
+        <span className="rr-question__label">{t('clinReviews.theyAsked')}</span>
+        <p>{t('clinReviews.asked')}</p>
+        <a className="sk-link rr-open" href={sharedReportUrl(review.shareId)} target="_blank" rel="noopener noreferrer">{t('assist.review.openReport')}</a>
+        <small className="rr-small">{t('assist.review.openNote')}</small>
       </div>
-      {pending ? (
-        <>
-          <label className="rr-reply" htmlFor={replyId}>
-            <span className="rr-question__label">YOUR REVIEW — {review.patientName.split(' ')[0].toUpperCase()} READS THIS</span>
+      <fieldset className="rr-decision" disabled={viewModel.busy}>
+        <legend className="rr-question__label">{t('assist.review.decision')}</legend>
+        {(['APPROVED', 'REJECTED'] as const).map((value) => (
+          <label key={value} className={`rr-choice${d.decision === value ? ' is-on' : ''}`}>
+            <input type="radio" name="rr-decision" checked={d.decision === value} onChange={() => viewModel.setDecision(value)} />
+            {t(value === 'APPROVED' ? 'assist.review.approveOption' : 'assist.review.rejectOption')}
           </label>
-          <textarea id={replyId} className="rr-textarea" rows={6} value={viewModel.draft} onChange={(e) => viewModel.setDraft(e.target.value)} placeholder="What the result means for them, and what to do next — in plain words." data-autofocus />
-          <SkButton className="rr-send" busy={viewModel.busy} disabled={!viewModel.canSubmit} onClick={() => { void viewModel.submit(); }}>Send review</SkButton>
-        </>
+        ))}
+      </fieldset>
+      {approve ? (
+        <div className="rr-form">
+          <FormField label={t('assist.review.summary')} hint={t('assist.review.summaryHint')} status={touched && problems.includes('summary') ? 'invalid' : 'idle'} message={t(PROBLEM_KEYS.summary)}>
+            <textarea className="rr-textarea" rows={5} maxLength={REVIEW_LIMITS.summary} value={d.summary} onChange={(e) => viewModel.setField('summary', e.target.value)} data-autofocus />
+          </FormField>
+          <FormField label={t('assist.review.nextSteps')} hint={t('assist.review.nextStepsHint')} status={touched && problems.includes('nextSteps') ? 'invalid' : 'idle'} message={t(PROBLEM_KEYS.nextSteps, { lines: REVIEW_LIMITS.lines, chars: REVIEW_LIMITS.line })}>
+            <textarea className="rr-textarea" rows={4} value={d.nextSteps} onChange={(e) => viewModel.setField('nextSteps', e.target.value)} />
+          </FormField>
+          <FormField label={t('assist.review.questions')} hint={t('assist.review.questionsHint')} status={problems.includes('questions') ? 'invalid' : 'idle'} message={t(PROBLEM_KEYS.questions, { lines: REVIEW_LIMITS.lines, chars: REVIEW_LIMITS.line })}>
+            <textarea className="rr-textarea rr-textarea--short" rows={3} value={d.questions} onChange={(e) => viewModel.setField('questions', e.target.value)} />
+          </FormField>
+          <fieldset className="rr-sources">
+            <legend className="rr-question__label">{t('assist.review.sources')}</legend>
+            <small className="rr-small">{t('assist.review.sourcesHint')}</small>
+            {d.sources.map((s, i) => (
+              <div key={i} className="rr-source">
+                <FormField label={t('assist.review.sourceTitle', { n: i + 1 })}><input value={s.title} maxLength={REVIEW_LIMITS.title} onChange={(e) => viewModel.setSource(i, 'title', e.target.value)} /></FormField>
+                <FormField label={t('assist.review.sourceUrl', { n: i + 1 })}><input type="url" value={s.url} maxLength={REVIEW_LIMITS.url} onChange={(e) => viewModel.setSource(i, 'url', e.target.value)} /></FormField>
+                <SkButton variant="secondary" disabled={d.sources.length === 1} onClick={() => viewModel.removeSource(i)} aria-label={t('assist.review.removeSourceN', { n: i + 1 })}>{t('assist.review.removeSource')}</SkButton>
+              </div>
+            ))}
+            <SkButton variant="secondary" disabled={d.sources.length >= REVIEW_LIMITS.sources} onClick={viewModel.addSource}>{t('assist.review.addSource')}</SkButton>
+            {touched && problems.includes('sources') ? <small className="rr-small rr-small--invalid" role="alert">{t(PROBLEM_KEYS.sources)}</small> : null}
+          </fieldset>
+        </div>
       ) : (
-        <div className="rr-question"><span className="rr-question__label">YOUR REVIEW</span><p>{review.reply}</p></div>
+        <p className="rr-small">{t('assist.review.rejectNote')}</p>
       )}
+      <small className="rr-small">{t('assist.review.submitNote', { version: review.version })}</small>
+      {!viewModel.online ? <small className="rr-small" role="status">{t('clinShared.offlineWrite')}</small> : null}
+      <SkButton variant={approve ? 'primary' : 'secondary'} className="rr-send" busy={viewModel.busy} disabled={!viewModel.canSubmit} onClick={() => { void viewModel.submit(); }}>
+        {t(approve ? 'clinReviews.send' : 'assist.review.reject')}
+      </SkButton>
     </Drawer>
   );
 });
 
 export function ReportReviewsScreen({ source }: { source?: ReviewsSource }): React.ReactElement {
-  const [viewModel] = useState(() => new ReportReviewsViewModel(source ?? (isDev() ? sampleReviewsSource : unconnectedReviewsSource)));
+  const t = useT();
+  const online = useOnline();
+  const [viewModel] = useState(() => new ReportReviewsViewModel(source ?? reviewsApiSource(), t));
   useEffect(() => { void viewModel.load(); }, [viewModel]);
+  useEffect(() => { viewModel.setOnline(online); }, [viewModel, online]);
   return (
-    <ClinicianConsoleFrame current="report-reviews" context="Report reviews" reviewPending>
+    <ClinicianConsoleFrame current="report-reviews" context={t('clinReviews.title')}>
       <ReportReviewsView viewModel={viewModel} onNavigate={navigate} />
     </ClinicianConsoleFrame>
   );

@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import React from 'react';
 import { act, fireEvent, render, screen } from '@testing-library/react';
-import { apiRequest } from '@/data/http';
+import { apiRequest } from '@/data/services/http';
 import { AccountReadyView } from '../AccountReadyView';
 
-vi.mock('@/data/http', () => ({ apiRequest: vi.fn() }));
+vi.mock('@/data/services/http', () => ({ apiRequest: vi.fn() }));
 const mocked = vi.mocked(apiRequest);
 
 const onEnter = vi.fn();
@@ -41,6 +41,12 @@ describe('it does not claim a verification that has not happened', () => {
     const { container } = await open().then(() => ({ container: document.body }));
     expect(container.textContent).not.toMatch(/you'?re verified/i);
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/workspace is ready/i);
+  });
+
+  it('claims no lab accreditation, because none is recorded for any lab partner', async () => {
+    await open();
+    expect(screen.getByText(/lab tests with dorm sample pickup/i)).toBeInTheDocument();
+    expect(document.body.textContent).not.toMatch(/NABL|accredited/i);
   });
 
   it('says plainly that campus membership is not verified yet', async () => {
@@ -107,5 +113,22 @@ describe('accessibility', () => {
     for (const svg of container.querySelectorAll('svg')) {
       expect(svg).toHaveAttribute('aria-hidden', 'true');
     }
+  });
+});
+
+describe('the board (canvas AccountReady)', () => {
+  it('draws the tick, the shield, the unlocked rows with their icons and the way in', async () => {
+    await open({ status: 'PENDING', university: 'VNR VJIET', rollNumber: 'R1' }, { fullName: 'A', hostelBlock: 'North Dorm, Block B' });
+    for (const icon of ['check', 'shield-2', 'flask-2', 'stethoscope', 'arrow-right']) {
+      expect(document.querySelector(`[data-icon="${icon}"]`)).not.toBeNull();
+    }
+    expect(screen.getByText(/VNR VJIET · North Dorm, Block B/)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /enter studentkare/i }));
+    expect(onEnter).toHaveBeenCalled();
+  });
+
+  it('offers help only when there is somewhere to send the student', async () => {
+    await open();
+    expect(screen.queryByRole('button', { name: /need a hand/i })).toBeNull();
   });
 });

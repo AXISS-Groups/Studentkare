@@ -1,114 +1,99 @@
 import { makeAutoObservable, runInAction } from 'mobx';
+import { apiRequest } from '@/data/services/http';
 import type { ViewModel } from '@/core/store/ViewModel';
-import type { HealthRecord } from '@/types';
 
-export interface AbdmConsentRequest {
+/** GET /api/health/documents → items[]. */
+export interface VaultDocument {
   id: string;
-  requesterName: string;
-  purpose: string;
-  expiryDate: string;
-  dataTypes: string[];
-  status: 'PENDING' | 'GRANTED' | 'DENIED';
+  title: string;
+  category: string;
+  createdAt: number;
 }
 
+/** GET /api/records/shares → items[]: who can see which record, until when. */
+export interface RecordShare {
+  id: string;
+  clinician: string;
+  document: string;
+  grantedAt: number;
+  expiresAt: number;
+  revoked: boolean;
+  active: boolean;
+}
+
+/**
+ * Health records for the native app, on the same endpoints as the web vault:
+ * the student's own documents and the shares they have granted, each of which
+ * can be revoked (DESIGN.md §2.6).
+ *
+ * This replaces a ViewModel seeded with an invented blood count and ABDM
+ * consent requests, and a repository that PATCHed /vault/consent/{id} — a
+ * route that does not exist, because the backend has no incoming consent
+ * requests at all.
+ */
 export class HealthVaultViewModel implements ViewModel {
-  public abhaAddress = 'aarav.sharma@abdm';
-  public abhaNumber = '91-8829-1029-4401';
-  public isLinkedWithAbdm = true;
-  public isSyncing = false;
-  public syncMessage = '';
+  documents: VaultDocument[] | null = null;
+  shares: RecordShare[] | null = null;
+  loadFailed = false;
+  revokingId: string | null = null;
+  error: string | null = null;
+  private disposed = false;
 
-  public consentRequests: AbdmConsentRequest[] = [
-    {
-      id: 'cr-101',
-      title: 'IIT Bombay Campus Health Center',
-      requesterName: 'Dr. Ramesh Kumar (MO)',
-      purpose: 'Annual Health Camp Passport Verification',
-      expiryDate: '2026-12-31',
-      dataTypes: ['Lab Records', 'Prescriptions'],
-      status: 'GRANTED',
-    } as any,
-    {
-      id: 'cr-102',
-      title: 'Metropolis Healthcare Diagnostics',
-      requesterName: 'Metropolis Diagnostics Lab System',
-      purpose: 'Diagnostic Lab Test Ingestion',
-      expiryDate: '2026-10-15',
-      dataTypes: ['Diagnostic Reports'],
-      status: 'PENDING',
-    } as any,
-  ];
-
-  public storedRecords: HealthRecord[] = [
-    {
-      id: 'rec-01',
-      title: 'Complete Blood Count (CBC) & Dengue NS1',
-      category: 'LAB',
-      date: '2026-09-10',
-      facilityName: 'Metropolis Diagnostics',
-      doctorName: 'Dr. S. Nair',
-      sourceType: 'ABDM_PULL',
-      observations: [
-        { id: 'obs-1', code: '58410-2', display: 'Platelet Count', value: 210000, unit: '/µL', isAbnormal: false, confidenceScore: 98 },
-        { id: 'obs-2', code: '718-7', display: 'Hemoglobin', value: 14.5, unit: 'g/dL', isAbnormal: false, confidenceScore: 99 },
-      ],
-      confidenceGatePassed: true,
-      humanReviewRequired: false,
-      isCachedOffline: true,
-      syncStatus: 'SYNCED',
-    },
-    {
-      id: 'rec-02',
-      title: 'Outpatient Consultation & Rx',
-      category: 'PRESCRIPTION',
-      date: '2026-08-28',
-      facilityName: 'Campus Health Centre',
-      doctorName: 'Dr. Radhika Sen',
-      sourceType: 'SCAN',
-      observations: [],
-      confidenceGatePassed: true,
-      humanReviewRequired: false,
-      isCachedOffline: true,
-      syncStatus: 'SYNCED',
-    },
-  ];
-
-  constructor() {
-    makeAutoObservable(this, {}, { autoBind: true });
+  constructor(private readonly request: typeof apiRequest = apiRequest) {
+    makeAutoObservable<HealthVaultViewModel, 'disposed' | 'request'>(this, { disposed: false, request: false }, { autoBind: true });
   }
 
-  public syncAbdmRecords(): void {
-    this.isSyncing = true;
-    this.syncMessage = 'Connecting to ABDM Gateway & pulls FHIR bundles...';
+  get loading(): boolean {
+    return (this.documents === null || this.shares === null) && !this.loadFailed;
+  }
 
-    setTimeout(() => {
+  get activeShares(): RecordShare[] {
+    return (this.shares ?? []).filter((share) => share.active);
+  }
+
+  async load(): Promise<void> {
+    this.disposed = false;
+    this.loadFailed = false;
+    try {
+      const [docs, shares] = await Promise.all([
+        this.request<{ items: VaultDocument[] }>('/health/documents?limit=100'),
+        this.request<{ items: RecordShare[] }>('/records/shares'),
+      ]);
+      if (this.disposed) return;
+      runInAction(() => { this.documents = docs.items; this.shares = shares.items; });
+    } catch {
+      if (!this.disposed) runInAction(() => { this.loadFailed = true; });
+    }
+  }
+
+  /** Access ends only when the server says it has; until then the share stays listed as active. */
+  async revoke(shareId: string): Promise<void> {
+    if (this.revokingId) return;
+    this.revokingId = shareId;
+    this.error = null;
+    try {
+      await this.request(`/records/shares/${encodeURIComponent(shareId)}/revoke`, { method: 'POST' });
       runInAction(() => {
-        this.isSyncing = false;
-        this.syncMessage = 'Vault successfully synced with ABDM Health Repository (2 new records found).';
+        this.shares = (this.shares ?? []).map((share) => (share.id === shareId ? { ...share, revoked: true, active: false } : share));
+        this.revokingId = null;
       });
-    }, 1200);
-  }
-
-  public grantConsent(requestId: string): void {
-    const req = this.consentRequests.find((r) => r.id === requestId);
-    if (req) {
-      req.status = 'GRANTED';
+    } catch {
+      runInAction(() => {
+        this.error = 'Access wasn’t withdrawn. The clinician can still see this record — try again.';
+        this.revokingId = null;
+      });
     }
   }
 
-  public denyConsent(requestId: string): void {
-    const req = this.consentRequests.find((r) => r.id === requestId);
-    if (req) {
-      req.status = 'DENIED';
-    }
+  dispose(): void {
+    this.disposed = true;
   }
 
-  public reset(): void {
-    this.isSyncing = false;
-    this.syncMessage = '';
-  }
-
-  public dispose(): void {
-    // Cleanup if needed
+  reset(): void {
+    this.documents = null;
+    this.shares = null;
+    this.loadFailed = false;
+    this.error = null;
+    this.revokingId = null;
   }
 }

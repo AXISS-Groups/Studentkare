@@ -1,9 +1,11 @@
 import React, { ReactNode, useEffect, useId, useRef } from 'react';
 import { X } from 'lucide-react';
+import { useT } from '@/i18n';
 
 export function ShopDialog({ title, onClose, children, wide = false }: {
   title: string; onClose: () => void; children: ReactNode; wide?: boolean;
 }) {
+  const t = useT();
   const ref = useRef<HTMLDialogElement>(null);
   const titleId = useId();
   useEffect(() => {
@@ -20,7 +22,7 @@ export function ShopDialog({ title, onClose, children, wide = false }: {
   }, []);
 
   return <dialog ref={ref} className={`shop shop-dialog ${wide ? 'shop-dialog-wide' : ''}`} aria-labelledby={titleId} onCancel={onClose}>
-    <div className="shop-dialog-header"><h2 id={titleId}>{title}</h2><button className="shop-icon-button" onClick={onClose} aria-label="Close dialog"><X size={21} /></button></div>
+    <div className="shop-dialog-header"><h2 id={titleId}>{title}</h2><button type="button" className="shop-icon-button" onClick={onClose} aria-label={t('shopweb.dialog.close')}><X size={21} aria-hidden="true" /></button></div>
     <div className="shop-dialog-body">{children}</div>
   </dialog>;
 }

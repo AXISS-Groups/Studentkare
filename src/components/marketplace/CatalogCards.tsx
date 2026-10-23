@@ -1,7 +1,8 @@
 import React from 'react';
 import { Check, FlaskConical, Plus, Star, Truck } from 'lucide-react';
-import { CatalogItem, discountPercent } from '../../data/marketplaceCatalog';
-import { formatRupees } from '../../data/healthExperience';
+import { CatalogItem, discountPercent } from '../../data/datasets/marketplaceCatalog';
+import { color as tokenColor } from '@/design-system/theme';
+import { formatRupees } from '../../data/datasets/healthExperience';
 import { ProductArtwork } from './ProductArtwork';
 
 interface CardProps {
@@ -30,7 +31,7 @@ export function ProductCard({ item, quantity, onOpen, onAdd }: CardProps) {
 
 export function LabCard({ item, quantity, onOpen, onAdd }: CardProps) {
   return <article className="shop-lab-card">
-    <div className="shop-lab-top"><span className="shop-lab-icon" style={{ backgroundColor: `${item.color}1a`, color: item.color }}><FlaskConical size={22} /></span><span className="shop-discount">{discountPercent(item)}% OFF</span></div>
+    <div className="shop-lab-top"><span className="shop-lab-icon" style={{ backgroundColor: `color-mix(in srgb, ${tokenColor[item.color]} 10%, transparent)`, color: tokenColor[item.color] }}><FlaskConical size={22} /></span><span className="shop-discount">{discountPercent(item)}% OFF</span></div>
     <button className="shop-product-title" onClick={() => onOpen(item)}>{item.name}</button>
     <p className="shop-product-pack">Includes <strong>{item.tests} parameters</strong></p>
     <div className="shop-lab-meta"><span><Truck size={13} />Home collection preview</span><span><Check size={13} />Preparation details included</span></div>

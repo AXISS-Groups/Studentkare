@@ -9,8 +9,30 @@ from sqlalchemy import select
 from test_workflow_api import harness, login, register
 
 from core import billing_models as B
+from core import settings_registry as R
 from core import workflow_models as W
 from services import billing
+
+# Every price below is the settings registry's (AGENTS.md rule 11), never a literal.
+PLUS_KEY = billing.STUDENT_PLUS_MONTHLY_KEY
+
+
+def registry_paise(key):
+    return R.get_declaration(key).default * billing.PAISE_PER_RUPEE
+
+
+def store_override(factory, key, value):
+    with factory() as db:
+        db.merge(W.SettingOverride(key=key, value=value, updated_by="test", updated_at=time.time()))
+        db.commit()
+    R.reset_cache()
+
+
+@pytest.fixture(autouse=True)
+def _fresh_settings():
+    R.reset_cache()
+    yield
+    R.reset_cache()
 
 
 @pytest.fixture
@@ -20,13 +42,14 @@ def provider(monkeypatch):
         "RAZORPAY_WEBHOOK_SECRET": "test-webhook-secret", "RAZORPAY_PLUS_PLAN_ID": "plan_plus",
     }.items():
         monkeypatch.setenv(key, value)
-    state = {"calls": [], "subscription": None, "invoices": [], "refunded": 0}
+    state = {"calls": [], "subscription": None, "invoices": [], "refunded": 0,
+             "plan_amount": registry_paise(PLUS_KEY)}
 
     def request(method, path, body=None, params=None):
         state["calls"].append((method, path, body))
         if path == "/plans/plan_plus":
             return {"id": "plan_plus", "period": "monthly", "interval": 1,
-                    "item": {"amount": 9900, "currency": "INR"}}
+                    "item": {"amount": state["plan_amount"], "currency": "INR"}}
         if method == "POST" and path == "/subscriptions":
             state["subscription"] = {"id": "sub_test", "plan_id": "plan_plus", "status": "created",
                                      "quantity": 1, "notes": body["notes"], "current_start": None,
@@ -43,7 +66,7 @@ def provider(monkeypatch):
         if path.startswith("/payments/pay_"):
             payment_id = path.rsplit("/", 1)[-1]
             invoice = next(row for row in state["invoices"] if row["payment_id"] == payment_id)
-            return {"id": payment_id, "invoice_id": invoice["id"], "amount": 9900,
+            return {"id": payment_id, "invoice_id": invoice["id"], "amount": invoice["amount_paid"],
                     "currency": "INR", "status": "captured", "amount_refunded": state["refunded"]}
         raise AssertionError((method, path))
 
@@ -57,13 +80,14 @@ def start(client, headers):
     return response.json()
 
 
-def paid(provider, *, start_at=None, end_at=None, invoice_id="inv_test", payment_id="pay_test"):
+def paid(provider, *, start_at=None, end_at=None, invoice_id="inv_test", payment_id="pay_test", amount=None):
     now = int(time.time())
+    amount = provider["plan_amount"] if amount is None else amount
     first, last = start_at or now - 10, end_at or now + 86400 * 30
     provider["subscription"].update(status="active", current_start=first, current_end=last, paid_count=1)
     provider["invoices"].append({"id": invoice_id, "subscription_id": "sub_test", "payment_id": payment_id,
-                                  "status": "paid", "currency": "INR", "amount": 9900,
-                                  "amount_paid": 9900, "amount_due": 0, "billing_start": first,
+                                  "status": "paid", "currency": "INR", "amount": amount,
+                                  "amount_paid": amount, "amount_due": 0, "billing_start": first,
                                   "billing_end": last, "paid_at": now})
 
 
@@ -78,7 +102,7 @@ def test_public_plans_and_free_default_without_provider(harness, monkeypatch):
     client, _, codes = harness
     monkeypatch.delenv("RAZORPAY_KEY_SECRET", raising=False)
     plans = client.get("/api/billing/plans").json()
-    assert [p["id"] for p in plans["plans"]] == ["FREE", "STUDENT_PLUS", "CAMPUS", "ENTERPRISE"]
+    assert [p["id"] for p in plans["plans"]] == ["FREE", "STUDENT_PLUS", "PREMIUM", "CAMPUS", "ENTERPRISE"]
     assert plans["checkoutAvailable"] is False
     assert "secret" not in json.dumps(plans).lower()
     _, headers = register(client, codes)
@@ -124,7 +148,7 @@ def test_paid_invoice_activates_once_and_out_of_order_events_reconcile(harness, 
     assert webhook(client, event="subscription.authenticated", event_id="evt_old").status_code == 200
     account = client.get("/api/billing/me").json()
     assert account["effectivePlanId"] == "STUDENT_PLUS"
-    assert account["benefits"]["limit"] == 2
+    assert account["benefits"]["limit"] == R.get_declaration(billing.BENEFIT_LIMIT_KEY).default
     assert len(account["receipts"]) == 1
     with factory() as db:
         assert len(db.scalars(select(B.BillingReceipt)).all()) == 1
@@ -176,7 +200,7 @@ def test_refunded_payment_revokes_current_benefits(harness, provider):
     start(client, headers)
     paid(provider)
     webhook(client)
-    provider["refunded"] = 9900
+    provider["refunded"] = provider["plan_amount"]
     assert client.post("/api/billing/subscription/sync", headers=headers).status_code == 200
     assert client.get("/api/billing/me").json()["effectivePlanId"] == "FREE"
 
@@ -194,7 +218,65 @@ def test_paid_benefit_quota_is_persisted_and_cannot_be_bypassed(harness, provide
     assert client.post("/api/billing/benefit-requests", headers=headers, json=body).json()["id"] == first.json()["id"]
     assert client.post("/api/billing/benefit-requests", headers=headers, json={**body, "requestKey": "benefit-two"}).status_code == 201
     assert client.post("/api/billing/benefit-requests", headers=headers, json={**body, "requestKey": "benefit-three"}).status_code == 409
-    assert client.get("/api/billing/me").json()["benefits"]["used"] == 2
+    assert client.get("/api/billing/me").json()["benefits"]["used"] == R.get_declaration(billing.BENEFIT_LIMIT_KEY).default
+
+
+# --- plan prices come from the settings registry ---------------------------
+
+def test_plan_prices_are_the_registry_values(harness, monkeypatch):
+    client, _, _ = harness
+    monkeypatch.delenv("RAZORPAY_KEY_SECRET", raising=False)
+    plans = {p["id"]: p for p in client.get("/api/billing/plans").json()["plans"]}
+    default = lambda key: R.get_declaration(key).default  # noqa: E731
+    plus, premium = plans["STUDENT_PLUS"], plans["PREMIUM"]
+    assert (plus["price"], plus["priceFrom"]) == (default(PLUS_KEY), False)
+    assert plus["packages"] == [{"id": "QUARTER", "months": billing.QUARTER_PACKAGE_MONTHS,
+                                 "price": default(billing.STUDENT_PLUS_QUARTER_KEY)}]
+    # Premium is a starting price: the client must say "from".
+    assert (premium["price"], premium["priceFrom"]) == (default(billing.PREMIUM_FROM_KEY), True)
+    assert plans["CAMPUS"]["price"] == default(billing.CAMPUS_PRICE_KEY)
+    assert all(isinstance(p["priceFrom"], bool) and isinstance(p["packages"], list) for p in plans.values())
+
+
+def test_a_changed_registry_price_changes_what_the_api_returns(harness, provider):
+    client, factory, codes = harness
+    raised = R.get_declaration(PLUS_KEY).default + 50
+    store_override(factory, PLUS_KEY, raised)
+    store_override(factory, billing.PREMIUM_FROM_KEY, 599)
+    store_override(factory, billing.STUDENT_PLUS_QUARTER_KEY, 1999)
+    plans = {p["id"]: p for p in client.get("/api/billing/plans").json()["plans"]}
+    assert plans["STUDENT_PLUS"]["price"] == raised
+    assert plans["PREMIUM"]["price"] == 599
+    assert plans["STUDENT_PLUS"]["packages"][0]["price"] == 1999
+    # Checkout quotes the new price once the Razorpay plan charges exactly it.
+    provider["plan_amount"] = raised * billing.PAISE_PER_RUPEE
+    _, headers = register(client, codes)
+    assert start(client, headers)["amountPaise"] == raised * billing.PAISE_PER_RUPEE
+
+
+def test_checkout_refuses_when_the_razorpay_plan_charges_a_different_price(harness, provider):
+    client, factory, codes = harness
+    _, headers = register(client, codes)
+    provider["plan_amount"] = registry_paise(PLUS_KEY) - billing.PAISE_PER_RUPEE   # an old, stale plan
+    response = client.post("/api/billing/subscription/checkout", headers=headers, json={"planId": "STUDENT_PLUS"})
+    assert response.status_code == 503
+    assert not [c for c in provider["calls"] if c[:2] == ("POST", "/subscriptions")]
+    with factory() as db:
+        assert db.scalars(select(B.BillingSubscription)).all() == []
+
+
+def test_earlier_subscribers_on_the_old_price_keep_membership(harness, provider):
+    client, factory, codes = harness
+    _, headers = register(client, codes)
+    start(client, headers)
+    floor = registry_paise(billing.ENTITLING_RECEIPT_KEY)
+    assert floor < registry_paise(PLUS_KEY)
+    paid(provider, amount=floor)
+    webhook(client)
+    assert client.get("/api/billing/me").json()["effectivePlanId"] == "STUDENT_PLUS"
+    # Raising the floor to the current price ends the grace for them (fail closed).
+    store_override(factory, billing.ENTITLING_RECEIPT_KEY, R.get_declaration(PLUS_KEY).default)
+    assert client.get("/api/billing/me").json()["effectivePlanId"] == "FREE"
 
 
 def staff(harness):
@@ -254,6 +336,12 @@ def test_campus_requires_recorded_payment_and_seats_enforced(harness):
                        json={"email": "second-seat@example.test"}).status_code == 201
     assert client.post(f"/api/billing/contracts/{cid}/members", headers=manager_headers,
                        json={"email": "third-seat@example.test"}).status_code == 409
+    # Seat holders are listed by email. This read Account.email, which does not
+    # exist, so both calls failed once a seat was assigned.
+    seats = client.get(f"/api/billing/contracts/{cid}/members")
+    assert seats.status_code == 200, seats.text
+    assert [s["email"] for s in seats.json()["items"]] == [member["email"], "second-seat@example.test"]
+    assert client.get("/api/billing/contracts").json()["items"][0]["assigned"] == [member["email"], "second-seat@example.test"]
     login(client, codes, member["email"])
     assert client.get("/api/billing/me").json()["organizationPlan"]["planId"] == "CAMPUS"
     outsider_headers = login(client, codes, "outsider@example.test")

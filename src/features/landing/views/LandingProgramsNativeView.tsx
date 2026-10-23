@@ -15,6 +15,8 @@ import {
 } from './landingNativeKit';
 import type { LandingDestinations } from './landingNativeKit';
 import { skTokens } from '@/theme/tokens/generated/skTokens';
+import { useT } from '@/i18n';
+import type { MessageKey } from '@/i18n';
 
 const { radius, space } = skTokens;
 
@@ -22,93 +24,81 @@ interface LandingProgramsNativeViewProps {
   destinations: LandingDestinations;
 }
 
-const PROGRAMMES = [
-  {
-    name: 'Diabetes',
-    body: 'Type 1 and type 2 care for hostel life — fridge storage coordination, missed meals, and exam-week monitoring.',
-    points: ['HbA1c quarterly testing', 'Insulin or oral refills', 'Hypoglycemia emergency plan'],
-  },
-  {
-    name: 'Asthma & allergy',
-    body: 'Inhaler technique review, allergy triggers in shared hostel dorms, and an escalation plan for nighttime wheeze.',
-    points: ['Inhaler refills tracked', 'Peak-flow logging', 'Written action plan'],
-  },
-  {
-    name: 'Mental health',
-    body: 'Continuity of care with the same counsellor each session, crisis support always available, and privacy guaranteed.',
-    points: ['Consistent counsellor', 'Crisis line 1 tap away', 'Never shared with campus admin'],
-  },
-  {
-    name: 'PCOS & thyroid',
-    body: 'Cycles, hormonal wellness, and periodic lab panels without having to travel back home.',
-    points: ['Repeat panels scheduled', 'Campus clinical support', 'Private symptom diary'],
-  },
-];
-
-const INCLUDES = [
-  { title: 'One clinician who keeps the thread', body: 'Not whoever happens to be free. They understand your clinical history so you do not have to repeat it.' },
-  { title: 'Refills timed to your prescription', body: 'Calculated directly from when issued and course duration — no manual alarms needed.' },
-  { title: 'Tests scheduled, not remembered', body: 'Repeat diagnostic panels appear in preventive care when they become clinically due.' },
-  { title: 'A dose schedule for you', body: 'Tracked for your treating clinician. Never scored, never gamified, never shared with campus.' },
-];
-
+const PROGRAMMES = ['diabetes', 'asthma', 'mental', 'pcos'] as const;
+const INCLUDES = [1, 2, 3, 4] as const;
 const BOUNDARIES = [
-  { tag: 'CAN SEE', body: 'Your dedicated treating clinician reviewing your history' },
-  { tag: 'CAN SEE', body: 'Refills and diagnostic reminders appearing in your vault' },
-  { tag: 'CANNOT SEE', body: 'Your college administration or professors' },
-  { tag: 'NEVER DONE', body: 'Adherence scoring, streaks, or body metric gamification' },
-  { tag: 'NEVER DONE', body: 'Commercial advertising or selling of your clinical data' },
-];
+  { tag: 'canSee', n: 1 },
+  { tag: 'canSee', n: 2 },
+  { tag: 'cannotSee', n: 3 },
+  { tag: 'never', n: 4 },
+  { tag: 'never', n: 5 },
+] as const;
 
+/**
+ * Care programmes on the phone. There is no self-enrolment endpoint (a
+ * clinician enrols you), so the primary action leads to a consult rather than
+ * promising enrolment at sign-up.
+ */
 export const LandingProgramsNativeView: React.FC<LandingProgramsNativeViewProps> = function LandingProgramsNativeView({
   destinations: to,
 }) {
+  const t = useT();
   return (
     <Page>
       <Hero
-        eyebrow="CARE PROGRAMMES"
-        title="Long-term health without having to go home."
-        lede="Chronic conditions, mental wellness, and repeat care designed for university students. Keep seeing someone who knows your history."
+        eyebrow={t('landing.programs.eyebrow')}
+        title={t('landing.programs.nativeTitle')}
+        lede={t('landing.programs.nativeLede')}
       >
         <Actions>
-          {to.signUp ? <PrimaryAction title="Enrol in a programme" onPress={to.signUp} /> : null}
-          {to.consult ? <SecondaryAction title="Speak with a clinician" onPress={to.consult} /> : null}
+          {to.consult ? <PrimaryAction title={t('landing.programs.cta')} onPress={to.consult} /> : null}
+          {to.signUp ? <SecondaryAction title={t('landing.programs.createAccount')} onPress={to.signUp} /> : null}
         </Actions>
-        <Meta>Free enrolment. Consultations and prescribed tests priced per use at standard student rates.</Meta>
+        <Meta>{t('landing.programs.ctaNote')}</Meta>
       </Hero>
 
-      <Section title="Programmes we offer">
-        {PROGRAMMES.map((prog) => (
-          <View key={prog.name} style={styles.progCard}>
-            <Text style={styles.progTitle}>{prog.name}</Text>
-            <Text style={styles.progBody}>{prog.body}</Text>
+      <Section title={t('landing.programs.listTitle')}>
+        <Text style={styles.progBody}>{t('landing.programs.listNote')}</Text>
+        {PROGRAMMES.map((id) => (
+          <View key={id} style={styles.progCard}>
+            <Text style={styles.progTitle} accessibilityRole="header">{t(`landing.programs.prog.${id}.name` as MessageKey)}</Text>
+            <Text style={styles.progBody}>{t(`landing.programs.prog.${id}.body` as MessageKey)}</Text>
             <View style={styles.pointsList}>
-              {prog.points.map((pt) => (
-                <Text key={pt} style={styles.pointText}>• {pt}</Text>
+              {[1, 2, 3].map((n) => (
+                <Text key={n} style={styles.pointText}>• {t(`landing.programs.prog.${id}.p${n}` as MessageKey)}</Text>
               ))}
             </View>
           </View>
         ))}
       </Section>
 
-      <Section title="What every programme includes">
-        {INCLUDES.map((item) => (
-          <PromiseCard key={item.title} title={item.title} body={item.body} />
+      <Section title={t('landing.programs.includesHeading')}>
+        {INCLUDES.map((n) => (
+          <PromiseCard
+            key={n}
+            title={t(`landing.programs.include${n}Title` as MessageKey)}
+            body={t(`landing.programs.include${n}Body` as MessageKey)}
+          />
         ))}
       </Section>
 
-      <Section title="Rule L commerce &amp; privacy boundary">
-        <BoundaryList items={BOUNDARIES} />
+      <Section title={t('landing.programs.boundaryTitle')}>
+        <BoundaryList
+          items={BOUNDARIES.map((b) => ({
+            tag: t(`landing.programs.boundaryTag.${b.tag}` as MessageKey),
+            body: t(`landing.programs.boundary${b.n}` as MessageKey),
+          }))}
+        />
       </Section>
 
       <Footer
-        note="Studentkare care programmes do not replace your primary specialist at home. Records remain student-owned and exportable."
+        note={t('landing.programs.footerNote')}
         links={[
-          { title: 'For students', onPress: to.students },
-          { title: 'Plans & pricing', onPress: to.plans },
-          { title: 'Lab tests', onPress: to.labTests },
-          { title: 'Wellness training', onPress: to.wellness },
-          { title: 'Sign in', onPress: to.signIn },
+          { title: t('landing.subpage.link.students'), onPress: to.students },
+          { title: t('landing.subpage.link.plans'), onPress: to.plans },
+          { title: t('landing.subpage.link.labTests'), onPress: to.labTests },
+          { title: t('landing.subpage.link.wellness'), onPress: to.wellness },
+          { title: t('landing.subpage.signIn'), onPress: to.signIn },
         ]}
       />
     </Page>

@@ -94,3 +94,10 @@ __pycache__/
 
 # Duplicate of design/screens/ — see docs/SCREEN_PLAN.md section 1.1
 /studentkare-screens/
+storybook-static
+
+# Design build kit drop (already merged into design/, scripts/, src/)
+studentkare-build-kit/
+
+# Vite writes these next to the config while it starts; never commit them.
+vite.config.ts.timestamp-*
