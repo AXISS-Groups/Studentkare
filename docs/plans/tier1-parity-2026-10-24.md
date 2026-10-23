@@ -1,6 +1,6 @@
 # Tier 1 web ↔ mobile parity, phase 3: plans for approval (2026-10-24)
 
-**Named reviewer:** Krishna Chintakayala (founder). **Approved by:** _(name, date, per section or "approve all")_
+**Named reviewer:** Krishna Chintakayala (founder). **Approved by:** Krishna Chintakayala, 2026-10-24: "Approve all" for every section, with Q2, Q3 and Q4 as recommended. **Q1: not yet** — Krishna wants to see designs for the 16 screens without a Mobile 2.0 board before they are built; those sections wait for his sign-off on the designs. Sections whose screen has a board (SOS rule, My health incl. the Report insights card, Trends, Report upload, Ask Ayush, Ayush widget, Profile) may be built now.
 **Clinical lead:** sections 2–8 and 21 (clinical values, records, emergency card). **AI-constitution owner:** sections 9–10 (Ayush).
 **Status:** plan only. No code until the decision box of a section is ticked (DESIGN.md §5, CLAUDE.md).
 **Basis:** `docs/ux/web-mobile-parity-2026-10-23.md` (phase 3 list and the approved decisions of 23 Oct 2026), the shared responsive M2 pieces on `main` @ `693cdb29` (`src/design-system/m2`: `M2Responsive`, `useM2Layout`, `M2Grid`, `M2WideColumn`, `M2ListRow`, `M2EmptyState`, `M2Header` with `M2HeaderSos`, wide `GradientHeroCard` / `HeroCarousel` / `SoftTileGrid` / `M2SearchField` / `NotYetTile`), and the routing in `src/screens/workspace/WorkspaceScreen.tsx` (desktop `studentWebPage()` switch, lines ~330–390; shared switch ~398–456), `src/features/phoneKit/studentPhoneBoards.tsx` and `src/screens/workspace/PhoneBoards.tsx`.
