@@ -9,7 +9,7 @@ import { M2ConsultsView } from './M2ConsultsView';
  * phone width. "Book" opens the existing booking dialog with the
  * consultation already picked.
  */
-export function M2ConsultsRoute(): React.ReactElement {
+export function M2ConsultsRoute({ wide = false }: { wide?: boolean } = {}): React.ReactElement {
   const [vm] = useState(() => new ConsultsViewModel());
   const [booking, setBooking] = useState<string | null>(null);
   useEffect(() => {
@@ -18,7 +18,7 @@ export function M2ConsultsRoute(): React.ReactElement {
   }, [vm]);
   return (
     <>
-      <M2ConsultsView vm={vm} links={{ back: () => navigate('health'), book: (service) => setBooking(service.id), plus: () => navigate('billing') }} />
+      <M2ConsultsView wide={wide} vm={vm} links={{ back: () => navigate('health'), book: (service) => setBooking(service.id), plus: () => navigate('billing') }} />
       {booking ? (
         <BookAppointmentDialog initialItemId={booking} onClose={() => setBooking(null)} onDone={() => { setBooking(null); navigate('appointments'); }} />
       ) : null}

@@ -22,7 +22,7 @@ export { SOFT_TILE_COLUMNS } from './M2Parts';
 export { M2EmptyState, M2ListRow, M2ProductCard } from './M2Blocks';
 export type { M2EmptyStateProps, M2ListRowProps, M2ProductCardProps } from './M2Blocks';
 export { M2HeaderSos, M2SosProvider, useM2Sos } from './m2Sos';
-export { isWide, layoutFor, M2Grid, m2Gutter, M2Responsive, useM2Layout } from './m2Layout';
+export { isWide, layoutFor, M2Grid, m2Gutter, M2Responsive, M2WideColumn, useM2Layout } from './m2Layout';
 export type { M2GridProps, M2Layout } from './m2Layout';
 export { SERVICE_HUES, NAVY_STOPS, ORB_STOPS, heroStops, tileStops } from './servicePalette';
 export type { HueTokens, ServiceHue } from './servicePalette';

@@ -69,7 +69,7 @@ import { useEffectivePartnerKind } from '../vendor/partnerPreview';
 import type { AccountRole } from '../../data/types/workflowTypes';
 import { usePhoneFrame } from '@/design-system/navigation/usePhoneFrame';
 import { StudentPhoneFrame } from './StudentPhoneFrame';
-import { AccountDetailsPage, DataExportPage, NotificationsPage, phoneBoardFor, safetyBoardFor, YourCareWebPage } from './PhoneBoards';
+import { AccountDetailsPage, DataExportPage, InsurancePage, NotificationsPage, phoneBoardFor, safetyBoardFor, YourCareWebPage } from './PhoneBoards';
 import { MoreHubBoard } from '@/features/account/views/MoreHubBoard';
 import { SearchPage, studentPhoneBoard } from '@/features/phoneKit/studentPhoneBoards';
 import { EmergencyHelplinesDialog } from '../../components/interface/InterfaceBar';
@@ -82,6 +82,7 @@ const M2ReportUploadRoute = lazy(() => import('@/features/labResults/views/M2Rep
 const M2RemindersRoute = lazy(() => import('@/features/reminders/views/M2RemindersRoute').then(module => ({ default: module.M2RemindersRoute })));
 const M2RefillsRoute = lazy(() => import('@/features/refills/views/M2RefillsRoute').then(module => ({ default: module.M2RefillsRoute })));
 const M2WaterRoute = lazy(() => import('@/features/reminders/views/M2WaterRoute').then(module => ({ default: module.M2WaterRoute })));
+const M2VaccinesRoute = lazy(() => import('@/features/preventive/views/M2VaccinesRoute').then(module => ({ default: module.M2VaccinesRoute })));
 const M2CampsRoute = lazy(() => import('@/features/camp/views/M2CampsRoute').then(module => ({ default: module.M2CampsRoute })));
 const M2StepsRoute = lazy(() => import('@/features/steps/views/M2StepsRoute').then(module => ({ default: module.M2StepsRoute })));
 const M2LabsRoute = lazy(() => import('@/features/m2store/views/M2LabsRoute').then(module => ({ default: module.M2LabsRoute })));
@@ -131,7 +132,7 @@ const VendorRxReviewScreen = lazy(() => import('../vendor/VendorRxReviewScreen')
 const PartnerCampsScreen = lazy(() => import('@/features/partner/camps/PartnerCampsScreen').then(module => ({ default: module.PartnerCampsScreen })));
 const PartnerStaffScreen = lazy(() => import('../vendor/PartnerStaffScreen').then(module => ({ default: module.PartnerStaffScreen })));
 // Signed-in student web pages (canvas 3b, WP-08), drawn in the student web shell.
-const WebDashboardView = lazy(() => import('@/features/studentweb/views/WebDashboardView').then(module => ({ default: module.WebDashboardView })));
+const M2HomeRoute = lazy(() => import('@/features/m2store/views/M2HomeRoute').then(module => ({ default: module.M2HomeRoute })));
 const WebOrdersHub = lazy(() => import('@/features/studentweb/views/WebOrdersHub').then(module => ({ default: module.WebOrdersHub })));
 const WebReorderView = lazy(() => import('@/features/studentweb/views/WebReorderView').then(module => ({ default: module.WebReorderView })));
 const WebAccountView = lazy(() => import('@/features/studentweb/views/WebAccountView').then(module => ({ default: module.WebAccountView })));
@@ -342,7 +343,8 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
     if (route === 'report-insights') return <WebReportInsightsView />;
     if (phoneFrame) return null;
     switch (route) {
-      case 'health': return <WebDashboardView />;
+      // Home above phone width is Mobile 2.0 Home laid out wide (parity phase 2), as the phone draws it.
+      case 'health': return <M2HomeRoute wide />;
       case 'orders': return <WebOrdersHub />;
       // The one notifications inbox, opened from the bell: the phone's inbox in the page column.
       case 'notifications': return <NotificationsPage />;
@@ -359,9 +361,14 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
       case 'leave-campus': return <WebLeaveCampusRoute />;
       case 'delete-account': return <WebDeleteAccountRoute />;
       // Mobile 2.0 Lab tests: the student shell had no lab tests page (its nav item had no route).
-      case 'lab-tests': return <M2LabsRoute />;
+      case 'lab-tests': return <M2LabsRoute wide />;
       // Mobile 2.0 Doctor consults: the shell's "Doctors" link stays in the shell (it used to open the public marketplace).
-      case 'care': return <M2ConsultsRoute />;
+      case 'care': return <M2ConsultsRoute wide />;
+      // Parity phase 2: the Mobile 2.0 boards laid out wide above phone width, as the phone and the app draw them.
+      case 'health-camp': return <M2CampsRoute wide />;
+      case 'preventive-care': return <M2VaccinesRoute wide />;
+      // Mobile 2.0 Insurance; its Manage opens the full insurance panel under it.
+      case 'insurance': return <InsurancePage wide />;
       // Mobile 2.0 My health (Tier 1 plan: M2Insights replaces YourCare's overview), in the page column like Trends.
       case 'your-care': return <M2InsightsRoute />;
       // Find care near you (WebFindCare above phone width): the same board, two columns.

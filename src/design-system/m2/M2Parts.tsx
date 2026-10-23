@@ -134,7 +134,7 @@ export function SosButton({ label, spoken, onPress, testID = 'm2-sos' }: { label
 
 /**
  * A store board's header: the round back button, a small line over the title,
- * and its own controls. Wider than a phone it takes the web gutter and a
+ * and its own controls. Wider than a phone it sits in the page's own gutter, with a
  * larger title. `onBack` is optional so a navigation root draws no back
  * button. SOS is at the end of every header (founder decision, 23 Oct 2026):
  * by default it opens the shell's SOS (`M2SosProvider`); `sos` gives it its own
@@ -148,7 +148,8 @@ export function M2Header({ backLabel, onBack, eyebrow, title, trailing, sos, tes
 }) {
   const layout = useM2Layout();
   return (
-    <View style={[styles.header, { paddingHorizontal: m2Gutter(layout) }]} testID={testID}>
+    // Wider, the header sits in a page that already has its gutter (the web shell's column).
+    <View style={[styles.header, { paddingHorizontal: layout === 'phone' ? m2Gutter(layout) : 0 }]} testID={testID}>
       {onBack && backLabel ? <RoundButton icon="arrow-left" label={backLabel} onPress={onBack} testID={`${testID}-back`} /> : null}
       <View style={styles.grow}>
         {eyebrow ? <Text numberOfLines={1} style={styles.headerEyebrow}>{eyebrow}</Text> : null}

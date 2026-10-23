@@ -10,7 +10,7 @@ import { M2InsuranceView } from './M2InsuranceView';
  * the board (eligibility, removing a policy, the benefits guide), as the
  * ClaimsHub board did.
  */
-export function M2InsuranceRoute({ manage }: { manage?: () => void }): React.ReactElement {
+export function M2InsuranceRoute({ manage, wide = false }: { manage?: () => void; wide?: boolean }): React.ReactElement {
   const [vm] = useState(() => new InsuranceViewModel());
   const slot = usePhoneHeaderSlot();
   useEffect(() => {
@@ -18,7 +18,7 @@ export function M2InsuranceRoute({ manage }: { manage?: () => void }): React.Rea
     return () => vm.dispose();
   }, [vm]);
   return (
-    <M2InsuranceView vm={vm} links={{
+    <M2InsuranceView wide={wide} vm={vm} links={{
       back: () => navigate('health'),
       sos: () => (slot?.openSos ? slot.openSos() : navigate('sos')),
       manage,

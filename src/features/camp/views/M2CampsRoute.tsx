@@ -20,7 +20,7 @@ type Day = { state: 'loading' } | { state: 'error' } | { state: 'ready'; data: C
  * result first (canvas ResultCampBooked); "Open camp day" shows the camp day
  * (canvas CampDay) with the student's own check-in and stations, as before.
  */
-export const M2CampsRoute = observer(function M2CampsRoute(): React.ReactElement {
+export const M2CampsRoute = observer(function M2CampsRoute({ wide = false }: { wide?: boolean }): React.ReactElement {
   const t = useT();
   const { user } = useAuth();
   const [vm] = useState(() => new CampsBookingViewModel());
@@ -79,7 +79,7 @@ export const M2CampsRoute = observer(function M2CampsRoute(): React.ReactElement
   }
 
   return (
-    <M2CampsView vm={vm} links={{
+    <M2CampsView wide={wide} vm={vm} links={{
       back: () => navigate('health'),
       campDay: (campId) => setDayCampId(campId),
       verifyCampus: () => navigate('verify'),

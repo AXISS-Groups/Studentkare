@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { LiveCatalogItem, LiveOrder, OrderLine } from '@/data/types/workflowTypes';
-import { buyAgainBlock, buyAgainEntries, careSummary, filterOrders, isFirstTime, maxQuantity, orderRef, orderStatus, sortItems, trackProgress } from '../studentWebData';
+import { buyAgainBlock, buyAgainEntries, filterOrders, maxQuantity, orderRef, orderStatus, sortItems, trackProgress } from '../studentWebData';
 
 const line = (status: OrderLine['status'], extra: Partial<OrderLine> = {}): OrderLine => ({ id: Math.random().toString(36), itemId: 'i1', name: 'ORS sachets', kind: 'product', quantity: 1, pricePaise: 12000, status, ...extra });
 const order = (id: string, lines: OrderLine[], extra: Partial<LiveOrder> = {}): LiveOrder => ({ id, createdAt: 1_000, totalPaise: 12000, delivery: { mode: 'pickup', address: '', city: 'Hyderabad', pincode: '500090' }, requestedSlot: '', paymentStatus: 'PAID', lines, ...extra });
@@ -68,37 +68,3 @@ describe('catalogue helpers', () => {
   });
 });
 
-describe('Your Care summary', () => {
-  const now = new Date('2026-10-21T09:00:00Z');
-  const base = { now, orders: [], appointments: [], labOrders: [], shares: [], reportReadyDays: 14 };
-
-  it('is first-time when the student has nothing yet', () => {
-    expect(isFirstTime(careSummary(base))).toBe(true);
-  });
-
-  it('counts what needs doing from real records, and a ready report only as ready', () => {
-    const summary = careSummary({
-      ...base,
-      orders: [order('unpaid', [line('REQUESTED')], { paymentStatus: 'UNPAID' }), order('paid', [line('REQUESTED')])],
-      appointments: [
-        { id: 'next', slotStart: '2026-10-23T10:00:00Z', slotEnd: '', status: 'CONFIRMED' },
-        { id: 'gone', slotStart: '2026-10-01T10:00:00Z', slotEnd: '', status: 'CONFIRMED' },
-        { id: 'cancelled', slotStart: '2026-10-22T10:00:00Z', slotEnd: '', status: 'CANCELLED' },
-      ],
-      labOrders: [
-        { id: 'released', status: 'REPORT_RELEASED', slotStart: null, collectionMode: 'HOME', createdAt: 0, updatedAt: now.getTime() / 1000 - 86400, paymentStatus: 'PAID' },
-        { id: 'old', status: 'REPORT_RELEASED', slotStart: null, collectionMode: 'HOME', createdAt: 0, updatedAt: now.getTime() / 1000 - 30 * 86400, paymentStatus: 'PAID' },
-        { id: 'pending', status: 'IN_ANALYSIS', slotStart: null, collectionMode: 'HOME', createdAt: 0, updatedAt: 0, paymentStatus: 'PAID' },
-        { id: 'pickup', status: 'ASSIGNED', slotStart: '2026-10-26T03:00:00Z', collectionMode: 'HOME', createdAt: 0, updatedAt: 0, paymentStatus: 'PAID' },
-      ],
-      shares: [{ active: true }, { active: false }],
-    });
-    expect(summary.needs.map((n) => `${n.kind}:${n.id}`).sort()).toEqual(['payOrder:unpaid', 'reportReady:released']);
-    expect(summary.reportsPending).toBe(1);
-    expect(summary.nextConsult?.toISOString()).toBe('2026-10-23T10:00:00.000Z');
-    expect(summary.upcoming.map((u) => u.id)).toEqual(['next', 'pickup']);
-    expect(summary.recordsShared).toBe(1);
-    expect(summary.consultsBooked).toBe(2);
-    expect(isFirstTime(summary)).toBe(false);
-  });
-});

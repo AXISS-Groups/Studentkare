@@ -84,11 +84,11 @@ function DigitalIdPage(): React.ReactElement {
 }
 
 /** Mobile 2.0 Insurance (M2Insurance, replaces ClaimsHub); "Manage" opens the full insurance page under it. */
-function InsurancePage(): React.ReactElement {
+export function InsurancePage({ wide = false }: { wide?: boolean } = {}): React.ReactElement {
   const [open, openPanel] = usePanel();
   return (
     <>
-      <M2InsuranceRoute manage={openPanel} />
+      <M2InsuranceRoute manage={openPanel} wide={wide} />
       {open ? <WebPanel tab="insurance" /> : null}
     </>
   );
