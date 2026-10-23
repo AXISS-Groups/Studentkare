@@ -935,15 +935,24 @@ def _load(db=None) -> dict[str, Any]:
     Reads in a session of its own (on the caller's engine when one is given), so
     reporting an invalid row never commits or rolls back the caller's work. If the
     overrides cannot be read at all, every setting reads as its default.
+
+    An engine whose pool hands every session the same connection (in-memory
+    SQLite: StaticPool, SingletonThreadPool) has no second session to give:
+    closing one resets that shared connection and rolls back the caller's
+    uncommitted work. There the read runs in a SAVEPOINT on the caller's own
+    connection, so the promise above still holds.
     """
     from sqlalchemy import select
     from sqlalchemy.orm import Session
+    from sqlalchemy.pool import SingletonThreadPool, StaticPool
 
     from core import workflow_models as M
 
     values: dict[str, Any] = {}
     try:
-        if db is not None:
+        if db is not None and isinstance(getattr(db.get_bind(), "pool", None), (StaticPool, SingletonThreadPool)):
+            session = Session(bind=db.connection(), join_transaction_mode="create_savepoint")
+        elif db is not None:
             session = Session(bind=db.get_bind())
         else:
             from services.db_sql import SessionLocal
