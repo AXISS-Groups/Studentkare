@@ -29,8 +29,8 @@ export interface M2WaterLinks {
 
 const WEEK_BAR_HEIGHT = 96;
 
-export const M2WaterView = observer(function M2WaterView({ vm, reminders, online, links }: {
-  vm: WaterViewModel; reminders?: WaterRemindersViewModel; online: boolean; links: M2WaterLinks;
+export const M2WaterView = observer(function M2WaterView({ vm, reminders, online, links, wide = false }: {
+  vm: WaterViewModel; reminders?: WaterRemindersViewModel; online: boolean; links: M2WaterLinks; wide?: boolean;
 }) {
   const t = useT();
   const locale = dateLocale(useLanguage().lang);
@@ -51,13 +51,13 @@ export const M2WaterView = observer(function M2WaterView({ vm, reminders, online
   );
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content} testID="m2-water">
+    <ScrollView style={styles.screen} contentContainerStyle={[styles.content, wide ? styles.contentWide : null]} testID="m2-water">
       {header}
       {!online ? <View style={styles.gutter}><OfflineBanner message={t('m2r.water.offlineAction')} /></View> : null}
 
       <Rise style={styles.gutter}>
         {vm.today.phase === 'error' ? <CardError title={t('m2r.water.title')} onRetry={vm.load} testID="m2-water-today-error" /> : (
-          <Gradient colors={heroStops('sky')} angle={150} style={styles.hero} testID="m2-water-hero">
+          <Gradient colors={heroStops('sky')} angle={150} style={[styles.hero, wide ? styles.heroWide : null]} testID="m2-water-hero">
             {!today ? <Skeleton label={t('m2r.water.loading')} lines={['50%', '80%']} /> : (
               <>
                 <View accessible accessibilityLabel={t('m2r.water.ofGoal', { consumed: ml(today.consumedMl), goal: ml(today.goalMl) })}
@@ -176,12 +176,14 @@ function WeekBars({ days, goalMl, locale }: { days: readonly { date: string; con
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.canvas },
   content: { paddingBottom: M2_NAV_CLEARANCE, gap: space.s16, width: '100%', maxWidth: size.phoneFrameMax, alignSelf: 'center' },
+  contentWide: { maxWidth: size.webContentMax - size.webSidebar * 2, paddingBottom: space.s40 },
   grow: { flex: 1, minWidth: 0, gap: space.s2 },
   gutter: { paddingHorizontal: space.gutterPhone },
   header: { flexDirection: 'row', alignItems: 'center', gap: space.s12, paddingHorizontal: space.gutterPhone, paddingTop: space.s16 },
   eyebrow: { fontFamily: font.family.sans, fontSize: font.size.caption, fontWeight: fontWeight(font.weight.strong), color: color.text3 },
   title: { fontFamily: font.family.sans, fontSize: font.size.title, fontWeight: fontWeight(font.weight.heavy), letterSpacing: -0.5, color: color.text },
   hero: { borderRadius: 28, padding: space.s20, gap: space.s14 },
+  heroWide: { borderRadius: 32 },
   heroValue: { fontFamily: font.family.sans, fontSize: font.size.display, fontWeight: fontWeight(font.weight.heavy), letterSpacing: -0.8, color: color.onHero, fontVariant: ['tabular-nums'] },
   heroSub: { fontFamily: font.family.sans, fontSize: font.size.bodySm, fontWeight: fontWeight(font.weight.strong), color: color.onHero },
   heroActions: { flexDirection: 'row', flexWrap: 'wrap', gap: space.s8 },
