@@ -11,7 +11,7 @@
 Grants are re-applied (P23) so neither group role gets anything it should not.
 
 Revision ID: e7c3a9f1b204
-Revises: d8b2f4a6c135
+Revises: e7c3a9d5b241
 Create Date: 2026-10-23
 """
 import sqlalchemy as sa
@@ -19,7 +19,7 @@ import sqlalchemy as sa
 from alembic import op
 
 revision = "e7c3a9f1b204"
-down_revision = "d8b2f4a6c135"
+down_revision = "e7c3a9d5b241"
 branch_labels = None
 depends_on = None
 
