@@ -492,12 +492,10 @@ const styles = StyleSheet.create({
     ...webOnly({
       display: 'grid',
       gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
-      gap: `${space.s16}px`,
     }),
   },
   system: { width: '47%', flexGrow: 1, borderRadius: 24, padding: space.s14, gap: space.s10, backgroundColor: color.surface, ...shadowStyle(shadow.card) },
   systemWide: {
-    width: 'auto',
     flexBasis: '30%',
     flexGrow: 1,
     ...webOnly({
