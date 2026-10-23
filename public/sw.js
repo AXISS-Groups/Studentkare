@@ -48,6 +48,12 @@ self.addEventListener('fetch', (event) => {
       const copy = res.clone();
       caches.open(CACHE).then((cache) => cache.put(event.request, copy));
       return res;
+    }).catch(() => {
+      return caches.match('/') || new Response(JSON.stringify({ error: 'Service Unavailable' }), {
+        status: 503,
+        statusText: 'Service Unavailable',
+        headers: { 'Content-Type': 'application/json' },
+      });
     }))
   );
 });
