@@ -16,7 +16,12 @@ from test_workflow_api import harness, register  # noqa: F401 — pytest fixture
 
 from core import rule_l
 from core import workflow_models as M
-from services import refill_tracker, reorder, workflow_scheduler
+from services import refill_tracker, reorder, student_time, workflow_scheduler
+
+
+def _student_today() -> date:
+    """The student's calendar day (platform zone), which the server counts in; the test runner's date can differ near midnight."""
+    return student_time.local_today(student_time.default_zone())
 from services.commerce_session import commerce_db
 
 
@@ -75,7 +80,7 @@ def test_a_refill_from_a_past_order_takes_the_line_and_counts_its_packs(harness)
     client, factory, codes = harness
     _user, headers = register(client, codes, "rf1@example.test")
     order = ordered(client, headers, factory, quantity=2)
-    today = date.today()
+    today = _student_today()
     res = track_order(client, headers, order["id"], started=today, pack=10, per_dose=1, per_day=2)
     assert res.status_code == 201, res.text
     refill = res.json()["refill"]
@@ -120,7 +125,7 @@ def test_counts_and_dates_are_bounded_by_the_registry(harness):
     order = ordered(client, headers, factory)
     too_big = track_order(client, headers, order["id"], pack=100001)
     assert too_big.status_code == 422 and too_big.json()["detail"]["code"] == "PACK_SIZE_OUT_OF_RANGE"
-    future = track_order(client, headers, order["id"], started=date.today() + timedelta(days=2))
+    future = track_order(client, headers, order["id"], started=_student_today() + timedelta(days=2))
     assert future.status_code == 422 and future.json()["detail"]["code"] == "START_DATE_OUT_OF_RANGE"
     far = track_order(client, headers, order["id"], days_before=99)
     assert far.status_code == 422 and far.json()["detail"]["code"] == "REMIND_DAYS_OUT_OF_RANGE"
@@ -130,7 +135,7 @@ def test_still_have_some_restock_toggle_snooze_and_delete(harness):
     client, factory, codes = harness
     _user, headers = register(client, codes, "rf4@example.test")
     order = ordered(client, headers, factory, quantity=1)
-    today = date.today()
+    today = _student_today()
     refill = track_order(client, headers, order["id"], started=today, pack=10).json()["refill"]
     url = f"/api/refill-tracker/{refill['id']}"
 
@@ -155,7 +160,7 @@ def test_still_have_some_restock_toggle_snooze_and_delete(harness):
 def due_refill(client, headers, factory):
     """A pack of 10, one a day, started 8 days ago: runs out in 2 days, reminder (3 before) is due."""
     order = ordered(client, headers, factory, quantity=1)
-    res = track_order(client, headers, order["id"], started=date.today() - timedelta(days=8), pack=10)
+    res = track_order(client, headers, order["id"], started=_student_today() - timedelta(days=8), pack=10)
     assert res.status_code == 201, res.text
     return res.json()["refill"]
 
