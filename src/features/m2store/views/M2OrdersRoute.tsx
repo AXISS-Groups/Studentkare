@@ -38,6 +38,7 @@ export function M2OrdersRoute(): React.ReactElement {
     openEmergencyCard: () => navigate('emergency-card'),
     openPass: () => navigate('pass'),
     openCrisis: () => navigate('sos'),
+    refill: (order, item) => routerNavigate(`/health/refills?order=${encodeURIComponent(order)}&item=${encodeURIComponent(item)}`),
   };
   return <M2OrdersView vm={vm} links={links} focusId={orderId} />;
 }

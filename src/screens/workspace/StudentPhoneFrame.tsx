@@ -47,6 +47,7 @@ const HOME_STORE_ROUTES: ReadonlySet<RoutePath> = new Set<RoutePath>([
 const HEALTH_ROUTES: ReadonlySet<RoutePath> = new Set<RoutePath>([
   // keep-sorted start
   'health/medicines',
+  'health/refills',
   'health/report-upload',
   'health/steps',
   'health/trends',

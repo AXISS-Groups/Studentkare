@@ -134,6 +134,7 @@ export const routePaths = [
   'health',
   'health-camp',
   'health/medicines',
+  'health/refills',
   'health/report-upload',
   'health/steps',
   'health/trends',

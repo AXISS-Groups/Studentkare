@@ -1983,6 +1983,33 @@
       "src/screens/workspace/StudentPhoneFrame.tsx",
       "src/native/StudentTabBar.tsx"
     ],
+    "M2Refills": [
+      "src/features/refills/views/M2RefillsView.tsx",
+      "src/features/refills/views/M2RefillsRoute.tsx",
+      "src/features/refills/viewmodel/RefillsViewModel.ts",
+      "src/features/refills/viewmodel/refillMessages.ts",
+      "src/features/refills/data/refillsApi.ts",
+      "src/features/reminders/views/ReminderParts.tsx",
+      "src/native/M2RefillScreens.tsx",
+      "src/features/phoneKit/studentPhoneBoards.tsx",
+      "src/design-system/m2/M2Parts.tsx",
+      "src/design-system/m2/Gradient.tsx",
+      "src/design-system/m2/servicePalette.ts",
+      "src/screens/workspace/StudentPhoneFrame.tsx",
+      "src/native/StudentTabBar.tsx"
+    ],
+    "M2Reorder": [
+      "src/features/refills/views/M2ReorderView.tsx",
+      "src/features/refills/views/M2RefillsRoute.tsx",
+      "src/features/refills/viewmodel/ReorderViewModel.ts",
+      "src/features/refills/viewmodel/refillMessages.ts",
+      "src/features/refills/data/refillsApi.ts",
+      "src/features/payments/data/payMethodMemory.ts",
+      "src/features/payments/views/PayStepView.tsx",
+      "src/features/reminders/views/ReminderParts.tsx",
+      "src/native/M2RefillScreens.tsx",
+      "src/design-system/m2/M2Parts.tsx"
+    ],
     "SetPasscode": [
       "src/features/auth/screens/SetPasscodeScreen.tsx",
       "src/features/auth/views/SetPasscodeView.tsx",

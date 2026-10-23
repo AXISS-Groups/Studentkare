@@ -88,6 +88,8 @@ from services.named_super_admins import router as named_super_admins_router
 from services.newsroom import router as newsroom_router
 from services.otp_delivery import available_channels, whatsapp_status
 from services.preventive_care import router as preventive_router
+from services.refill_tracker import router as refill_tracker_router
+from services.reorder import router as reorder_router
 from services.rewards_api import router as rewards_router
 from services.rx_uploads import router as rx_uploads_router
 from services.settings_api import router as settings_router
@@ -366,6 +368,8 @@ app.include_router(emergency_router)
 app.include_router(care_directory_router)
 app.include_router(erasure_router)
 app.include_router(student_requests_router)
+app.include_router(refill_tracker_router)
+app.include_router(reorder_router)
 app.include_router(clinical_router)
 app.include_router(medicine_master_router)
 app.include_router(medicine_info_router)

@@ -38,6 +38,7 @@ import { payHi } from './areas/pay';
 import { phoneboardsHi } from './areas/phoneboards';
 import { phonestoreHi } from './areas/phonestore';
 import { privacyHi } from './areas/privacy';
+import { refillsHi } from './areas/refills';
 import { rewardsHi } from './areas/rewards';
 import { safetyHi } from './areas/safety';
 import { shopwebHi } from './areas/shopweb';
@@ -98,6 +99,7 @@ export const areasHi = {
   ...phoneboardsHi,
   ...phonestoreHi,
   ...privacyHi,
+  ...refillsHi,
   ...rewardsHi,
   ...safetyHi,
   ...shopwebHi,
