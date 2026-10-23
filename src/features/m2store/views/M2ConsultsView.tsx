@@ -6,6 +6,7 @@ import { CrisisLinks, ErrorState, Rise, Skeleton } from '@/design-system';
 import {
   Gradient, LiftCard, M2Card, M2Heading, M2SectionHead, M2_NAV_CLEARANCE, NotYetTile, RoundButton, SERVICE_HUES, SoftIcon, floatTransform, heroStops,
   m2Text, useAmbientMotion, useLift, useLoop, useOwnPhoneChrome,
+  M2HeaderSos,
 } from '@/design-system/m2';
 import type { PressState, ServiceHue } from '@/design-system/m2';
 import { color, focusRing, font, fontWeight, motion, radius, shadow, shadowStyle, size, space, webOnly } from '@/design-system/theme';
@@ -148,6 +149,7 @@ export const M2ConsultsView = observer(function M2ConsultsView({ vm, links }: { 
             {vm.openToday > 0 ? (
               <View style={styles.live} testID="m2-doc-open-today"><LiveDot /><Text style={styles.liveText}>{t(vm.openToday === 1 ? 'm2.doc.openTodayOne' : 'm2.doc.openToday', { count: vm.openToday })}</Text></View>
             ) : null}
+            <M2HeaderSos push />
           </View>
           <Wave />
           <M2Heading level={1} style={styles.heroTitle}>{t('m2.doc.title')}</M2Heading>

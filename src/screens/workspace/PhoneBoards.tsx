@@ -159,7 +159,7 @@ function AppointmentsPage(): React.ReactElement {
   );
 }
 
-function NotificationsPage(): React.ReactElement {
+export function NotificationsPage(): React.ReactElement {
   // The view model fetches when made and holds nothing that outlives the page.
   const [vm] = useState(() => new NotificationViewModel());
   return <NotificationNativeView viewModel={vm} links={{ settings: () => navigate('notification-settings') }} />;

@@ -53,6 +53,10 @@ export const studentshellEn = {
   'shell.alertsCount': 'Alerts, {count} unread',
   'shell.sos': 'SOS',
   'shell.sosLabel': 'SOS — emergency help and helplines',
+  'shell.search.label': 'Search medicines, lab tests and doctors',
+  'shell.search.placeholder': 'Search medicines, lab tests, doctors…',
+  'shell.item.notificationSettings': 'Notification settings',
+  'shell.crisis.aria': 'Help in a crisis',
 };
 
 export const studentshellTe: Record<keyof typeof studentshellEn, string> = {
@@ -104,6 +108,10 @@ export const studentshellTe: Record<keyof typeof studentshellEn, string> = {
   'shell.alertsCount': 'అలర్ట్‌లు, {count} చదవనివి',
   'shell.sos': 'SOS',
   'shell.sosLabel': 'SOS — అత్యవసర సహాయం మరియు హెల్ప్‌లైన్లు',
+  'shell.search.label': 'మందులు, ల్యాబ్ పరీక్షలు, డాక్టర్లను వెతకండి',
+  'shell.search.placeholder': 'మందులు, ల్యాబ్ పరీక్షలు, డాక్టర్లు…',
+  'shell.item.notificationSettings': 'నోటిఫికేషన్ సెట్టింగ్‌లు',
+  'shell.crisis.aria': 'సంక్షోభంలో సహాయం',
 };
 
 export const studentshellHi: Record<keyof typeof studentshellEn, string> = {
@@ -155,4 +163,8 @@ export const studentshellHi: Record<keyof typeof studentshellEn, string> = {
   'shell.alertsCount': 'अलर्ट, {count} अपठित',
   'shell.sos': 'SOS',
   'shell.sosLabel': 'SOS — आपातकालीन सहायता और हेल्पलाइन',
+  'shell.search.label': 'दवाइयाँ, लैब टेस्ट और डॉक्टर खोजें',
+  'shell.search.placeholder': 'दवाइयाँ, लैब टेस्ट, डॉक्टर…',
+  'shell.item.notificationSettings': 'नोटिफ़िकेशन सेटिंग्स',
+  'shell.crisis.aria': 'संकट में मदद',
 };

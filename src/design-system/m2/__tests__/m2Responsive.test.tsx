@@ -10,7 +10,7 @@ vi.mock('@/design-system/motion', async (importOriginal) => ({
 
 import { size } from '@/design-system/theme';
 import {
-  HeroCarousel, M2EmptyState, M2Grid, M2Header, M2ListRow, M2ProductCard, M2Responsive, NAVY_STOPS, ServiceRail, SoftTileGrid, layoutFor, useM2Layout,
+  HeroCarousel, M2EmptyState, M2Grid, M2Header, M2SosProvider, M2ListRow, M2ProductCard, M2Responsive, NAVY_STOPS, ServiceRail, SoftTileGrid, layoutFor, useM2Layout,
 } from '@/design-system/m2';
 import type { HeroSlide, M2Layout, ServiceTile } from '@/design-system/m2';
 import { axeViolations, describeViolations } from '@/test/axe';
@@ -106,14 +106,20 @@ describe('SoftTileGrid', () => {
 });
 
 describe('M2Header', () => {
-  it('draws no SOS unless asked (the founder decides whether every board carries it)', () => {
-    const sos = vi.fn();
-    at('phone', <M2Header backLabel="Back" onBack={vi.fn()} title="Lab tests" />);
+  it('carries SOS by default, opening the shell’s SOS (founder decision, 23 Oct 2026); none where the shell has its own', () => {
+    const shellSos = vi.fn();
+    render(<M2SosProvider value={shellSos}><M2Header backLabel="Back" onBack={vi.fn()} title="Lab tests" /></M2SosProvider>);
+    fireEvent.click(screen.getByRole('button', { name: 'SOS, get help now' }));
+    expect(shellSos).toHaveBeenCalled();
+    cleanup();
+    // The desktop shell provides none: its top bar carries SOS, so the board's header draws no second one.
+    at('desktop', <M2Header backLabel="Back" onBack={vi.fn()} title="Lab tests" />);
     expect(screen.queryByRole('button', { name: 'SOS, get help now' })).toBeNull();
     cleanup();
-    at('phone', <M2Header backLabel="Back" onBack={vi.fn()} title="Lab tests" sos={{ label: 'SOS', spoken: 'SOS, get help now', onPress: sos }} />);
+    const own = vi.fn();
+    at('phone', <M2Header backLabel="Back" onBack={vi.fn()} title="Orders" sos={{ label: 'SOS', spoken: 'SOS, get help now', onPress: own }} />);
     fireEvent.click(screen.getByRole('button', { name: 'SOS, get help now' }));
-    expect(sos).toHaveBeenCalled();
+    expect(own).toHaveBeenCalled();
   });
 
   it('draws no back button on a navigation root', () => {

@@ -6,6 +6,7 @@ import type { SkIconName } from '@/design-system/icons';
 import { Banner, Button, ErrorState, OfflineBanner, Rise, Skeleton, TextField } from '@/design-system';
 import {
   Gradient, LiftCard, M2Card, M2Heading, M2_NAV_CLEARANCE, RoundButton, heroStops, m2Text, tileStops, useOwnPhoneChrome, webAttrs,
+  M2HeaderSos,
 } from '@/design-system/m2';
 import type { PressState, ServiceHue } from '@/design-system/m2';
 import { color, focusRing, font, fontWeight, radius, shadow, shadowStyle, size, space } from '@/design-system/theme';
@@ -384,6 +385,7 @@ export const M2ReportUploadView = observer(function M2ReportUploadView({ vm, sou
           <Text numberOfLines={1} style={styles.eyebrow}>{t('m2v.up.eyebrow')}</Text>
           <M2Heading level={1} style={styles.title}>{t('m2v.up.title')}</M2Heading>
         </View>
+        <M2HeaderSos />
       </View>
       <View style={styles.gutter}><StepBar stage={vm.stage} /></View>
       {!online ? <View style={styles.gutter}><OfflineBanner message={t('m2v.up.offline')} /></View> : null}

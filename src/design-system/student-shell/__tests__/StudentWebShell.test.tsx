@@ -16,6 +16,7 @@ function renderShell(overrides: Partial<React.ComponentProps<typeof StudentWebSh
     onNavigate: vi.fn(),
     onSos: vi.fn(),
     onAlerts: vi.fn(),
+    onSearch: vi.fn(),
     onSignOut: vi.fn(),
     ...overrides,
   };
@@ -26,35 +27,39 @@ function renderShell(overrides: Partial<React.ComponentProps<typeof StudentWebSh
 const sidebarNav = () => screen.getAllByRole('navigation', { name: 'My Student Kare' })[0];
 
 describe('StudentWebShell', () => {
-  it('draws the canvas groups and items in order', () => {
+  it('draws the groups with each place once (founder decisions, 23 Oct 2026)', () => {
     renderShell();
     const nav = sidebarNav();
     const groups = within(nav).getAllByRole('group').filter((group) => group.getAttribute('aria-labelledby'));
     expect(groups.map((group) => group.getAttribute('aria-labelledby'))).toEqual(['sk-sshell-care', 'sk-sshell-services', 'sk-sshell-account']);
     expect(within(groups[0]).getAllByRole('button').map((button) => button.textContent)).toEqual([
-      'Your Care', 'Health vault', 'My lab tests', 'Report insights', 'Medicines today', 'Water', 'Emergency card', 'My check-in pass',
+      'Home', 'My health', 'Health vault', 'Report insights', 'Medicines today', 'Water', 'Emergency card', 'My check-in pass',
     ]);
     expect(within(groups[1]).getAllByRole('button').map((button) => button.textContent)).toEqual([
-      'Orders', 'Buy again', 'Ayush AI', 'My requests',
+      'Orders', 'Buy again', 'My requests',
     ]);
     expect(within(groups[2]).getAllByRole('button').map((button) => button.textContent)).toEqual([
-      'Account', 'Identity verification', 'Sign-in & security', 'Notifications', 'Plan & billing',
+      'Identity verification', 'Sign-in & security', 'Notification settings', 'Plan & billing',
     ]);
+    // Ayush is the floating bubble only; the account is the avatar and the account header.
+    expect(screen.queryByRole('button', { name: /Ayush/ })).toBeNull();
   });
 
   it('marks the current item from the route and navigates from built items', () => {
     const props = renderShell({ route: 'records' });
     const care = screen.getByRole('group', { name: 'My care' });
     expect(within(care).getByRole('button', { name: 'Health vault' })).toHaveAttribute('aria-current', 'page');
-    expect(within(care).getByRole('button', { name: 'Your Care' })).not.toHaveAttribute('aria-current');
+    expect(within(care).getByRole('button', { name: 'Home' })).not.toHaveAttribute('aria-current');
     fireEvent.click(within(sidebarNav()).getByRole('button', { name: 'Sign-in & security' }));
     expect(props.onNavigate).toHaveBeenCalledWith('security');
   });
 
-  it('opens My lab tests and Report insights (WP-09), which now have student pages', () => {
+  it('opens Home and My health with the phone’s routes, and Report insights (WP-09)', () => {
     const props = renderShell();
-    fireEvent.click(within(sidebarNav()).getByRole('button', { name: 'My lab tests' }));
-    expect(props.onNavigate).toHaveBeenCalledWith('my-lab-tests');
+    fireEvent.click(within(sidebarNav()).getByRole('button', { name: 'Home' }));
+    expect(props.onNavigate).toHaveBeenCalledWith('health');
+    fireEvent.click(within(sidebarNav()).getByRole('button', { name: 'My health' }));
+    expect(props.onNavigate).toHaveBeenCalledWith('your-care');
     fireEvent.click(within(sidebarNav()).getByRole('button', { name: 'Report insights' }));
     expect(props.onNavigate).toHaveBeenCalledWith('report-insights');
   });
@@ -72,9 +77,9 @@ describe('StudentWebShell', () => {
     expect(props.onNavigate).not.toHaveBeenCalledWith('reorder');
   });
 
-  it('opens the Notifications settings page from the sidebar (the inbox is Alerts)', () => {
+  it('opens the Notification settings page from the sidebar (the inbox is the bell)', () => {
     const props = renderShell();
-    fireEvent.click(within(sidebarNav()).getByRole('button', { name: 'Notifications' }));
+    fireEvent.click(within(sidebarNav()).getByRole('button', { name: 'Notification settings' }));
     expect(props.onNavigate).toHaveBeenCalledWith('notification-settings');
   });
 
@@ -99,22 +104,39 @@ describe('StudentWebShell', () => {
     expect(screen.getByRole('button', { name: 'Alerts' }).textContent).toBe('');
   });
 
-  it('takes the brand to the student home', () => {
+  it('takes the brand to Home (/health), the one home', () => {
     const props = renderShell();
     fireEvent.click(screen.getByRole('button', { name: 'Student Kare — Home' }));
-    expect(props.onNavigate).toHaveBeenCalledWith('home');
+    expect(props.onNavigate).toHaveBeenCalledWith('health');
   });
 
-  it('has the top nav, My orders, the cart with its count and the account button', () => {
+  it('has the store top nav, the one search box, the cart with its count and the account button; no My orders', () => {
     const props = renderShell({ route: 'shop' });
     const top = screen.getByRole('navigation', { name: 'Main' });
-    expect(within(top).getAllByRole('button').map((button) => button.textContent)).toEqual(['Shop', 'Lab tests', 'Doctors', 'Health vault', 'Ayush']);
+    expect(within(top).getAllByRole('button').map((button) => button.textContent)).toEqual(['Shop', 'Lab tests', 'Doctors']);
     expect(within(top).getByRole('button', { name: 'Shop' })).toHaveAttribute('aria-current', 'page');
+    expect(screen.queryByRole('button', { name: 'My orders' })).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Cart, 2 items' }));
     expect(props.onNavigate).toHaveBeenCalledWith('checkout');
-    fireEvent.click(screen.getByRole('button', { name: 'My orders' }));
-    expect(props.onNavigate).toHaveBeenCalledWith('orders');
     fireEvent.click(screen.getByRole('button', { name: /, my account$/ }));
+    expect(props.onNavigate).toHaveBeenCalledWith('profile');
+    const search = screen.getByRole('searchbox', { name: 'Search medicines, lab tests and doctors' });
+    fireEvent.change(search, { target: { value: ' vitamin d ' } });
+    fireEvent.submit(screen.getByRole('search', { name: 'Search medicines, lab tests and doctors' }));
+    expect(props.onSearch).toHaveBeenCalledWith('vitamin d');
+  });
+
+  it('draws one line of crisis help under every page, not the public footer', () => {
+    renderShell();
+    const crisis = screen.getByRole('contentinfo', { name: 'Help in a crisis' });
+    expect(crisis).toHaveTextContent('112');
+    expect(crisis).toHaveTextContent('14416');
+    expect(screen.queryByText(/Twice a month/i)).toBeNull();
+  });
+
+  it('opens the account from the account header', () => {
+    const props = renderShell();
+    fireEvent.click(screen.getByRole('button', { name: /Krishna C\./ }));
     expect(props.onNavigate).toHaveBeenCalledWith('profile');
   });
 
@@ -174,11 +196,14 @@ describe('student nav data', () => {
   });
 
   it('maps related routes to their sidebar item', () => {
-    expect(studentNavIdFor('health')).toBe('your-care');
-    expect(studentNavIdFor('your-care')).toBe('your-care');
-    expect(studentNavIdFor('digital-id')).toBe('account');
+    expect(studentNavIdFor('health')).toBe('home');
+    expect(studentNavIdFor('your-care')).toBe('my-health');
+    expect(studentNavIdFor('health/trends')).toBe('my-health');
+    expect(studentNavIdFor('my-lab-tests')).toBe('orders');
+    expect(studentNavIdFor('medications')).toBe('medicines');
     expect(studentNavIdFor('notification-settings')).toBe('notifications');
-    expect(studentNavIdFor('notifications')).toBe('notifications');
+    // The inbox is the bell's, not the settings item's.
+    expect(studentNavIdFor('notifications')).toBeNull();
     expect(studentNavIdFor('buy-again')).toBe('buy-again');
     expect(studentNavIdFor('shop')).toBeNull();
   });

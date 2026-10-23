@@ -3,7 +3,7 @@ import { PhoneHeader } from '@/design-system/navigation/PhoneHeader';
 import { BoardToolbar, PhoneHeaderSlotProvider } from '@/design-system/navigation/BoardHeader';
 import type { BoardHeaderConfig, PhoneHeaderSlot } from '@/design-system/navigation/BoardHeader';
 import type { PhoneHeaderAction } from '@/design-system/navigation/PhoneHeader';
-import { PillNav } from '@/design-system/m2';
+import { M2SosProvider, PillNav, RoundButton } from '@/design-system/m2';
 import type { PillNavKey } from '@/design-system/m2';
 import { useT } from '@/i18n';
 import { EmergencyHelplinesDialog } from '@/components/interface/InterfaceBar';
@@ -129,7 +129,7 @@ export function StudentPhoneFrame({ route, title, menu, menuPanel, ownBack = fal
   const discover = route === 'health';
   const actions: PhoneHeaderAction[] = [
     ...(discover ? [{ key: 'notifications', icon: 'bell-dome' as const, label: t('bar.notifications'), onPress: () => navigate('notifications') }] : []),
-    { key: 'menu', icon: 'menu', label: menu.open ? t('ws.closeNav') : t('ws.openNav'), onPress: menu.onToggle, expanded: menu.open, controls: menu.controls },
+    // No menu button: the More panel opens from Profile, Settings, as in the app (founder decision, 23 Oct 2026).
     { key: 'sos', icon: 'shield-2', label: t('bar.sos'), onPress: () => setSosOpen(true), tone: 'sos', showLabel: true },
   ];
   return (
@@ -144,8 +144,16 @@ export function StudentPhoneFrame({ route, title, menu, menuPanel, ownBack = fal
         />
         <BoardToolbar actions={board?.actions} trailing={board?.trailing} />
       </div>}
-      {menu.open ? <div style={menuWrap}>{menuPanel}</div> : null}
-      <main className="sk-phone-frame__main" style={bleed ? bleedMain : main}><PhoneHeaderSlotProvider value={slot}>{children}</PhoneHeaderSlotProvider></main>
+      {menu.open ? (
+        <div style={menuWrap}>
+          {/* Opened from Profile, Settings: its own close, since the header has no menu button. */}
+          <div style={menuClose}>
+            <RoundButton icon="x" label={t('ws.closeNav')} onPress={menu.onToggle} testID="more-close" />
+          </div>
+          {menuPanel}
+        </div>
+      ) : null}
+      <main className="sk-phone-frame__main" style={bleed ? bleedMain : main}><PhoneHeaderSlotProvider value={slot}><M2SosProvider value={slot.openSos ?? null}>{children}</M2SosProvider></PhoneHeaderSlotProvider></main>
       <div style={dock}>
         <PillNav current={current} onSelect={(key) => navigate(STUDENT_NAV_ROUTES[key])} />
       </div>
@@ -170,6 +178,8 @@ const top: React.CSSProperties = {
 
 /** A block box, so the panel spans the frame instead of shrinking to its content. */
 const menuWrap: React.CSSProperties = { display: 'block', width: '100%' };
+
+const menuClose: React.CSSProperties = { display: 'flex', justifyContent: 'flex-end', padding: 'var(--sk-space-12) var(--sk-space-gutter-phone) 0' };
 
 const main: React.CSSProperties = {
   flex: '1 0 auto',

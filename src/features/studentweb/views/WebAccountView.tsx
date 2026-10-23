@@ -13,7 +13,7 @@ import { ProfileForm } from '@/screens/workspace/MemberProfilePanel';
 import { initialsOf } from '@/design-system/student-shell/StudentWebShell';
 import { navigate } from '@/lib/utils/workflowRouting';
 import type { RoutePath } from '@/lib/utils/workflowRouting';
-import { ErrorPanel, LinkRow, LoadingRows, PageHead, Pill, StudentWebFooter, TrustBand } from './parts';
+import { ErrorPanel, LinkRow, LoadingRows, PageHead, Pill, TrustBand } from './parts';
 
 interface ContactRow { icon: SkIconName; label: MessageKey; value: string; action?: { label: MessageKey; onPress: () => void } }
 
@@ -161,8 +161,6 @@ export function WebAccountView() {
         <LinkRow icon="graduation-cap" title={t('sw.account.leaveTitle')} meta={t('sw.account.leaveMeta')} onPress={go('leave-campus')} />
         <LinkRow icon="trash" tone="danger" title={t('sw.account.deleteTitle')} meta={t('sw.account.deleteMeta')} onPress={go('delete-account')} />
       </div>
-
-      <StudentWebFooter />
 
       {data ? (
         <Drawer open={editing} title={t('sw.account.editTitle')} onClose={() => { setEditing(false); profile.reload(); }}>

@@ -430,7 +430,7 @@ function RootNavigator() {
       initialRouteName={held ? 'TwoFactorSetup' : signedIn ? 'Home' : 'Landing'}
       screenOptions={{ animation: 'none', headerTintColor: color.action }}
       layout={isStudent ? ({ state, navigation, children }) => (
-        <StudentShell currentRoute={state.routes[state.index]?.name ?? ''} navigate={(route) => navigation.navigate(route)}>
+        <StudentShell currentRoute={state.routes[state.index]?.name ?? ''} navigate={(route) => navigation.navigate(route)} onSos={() => navigation.navigate('Emergency')}>
           {children}
         </StudentShell>
       ) : undefined}

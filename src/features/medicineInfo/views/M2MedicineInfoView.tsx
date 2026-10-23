@@ -4,7 +4,7 @@ import { observer } from 'mobx-react-lite';
 import { Icon } from '@/design-system/icons';
 import type { SkIconName } from '@/design-system/icons';
 import { Button, CrisisLinks, ErrorState, Rise, Skeleton } from '@/design-system';
-import { Gradient, LiftCard, M2Card, M2Heading, M2SearchField, M2_NAV_CLEARANCE, RoundButton, heroStops, m2Text, useOwnPhoneChrome, webAttrs } from '@/design-system/m2';
+import { Gradient, LiftCard, M2Card, M2Heading, M2SearchField, M2_NAV_CLEARANCE, RoundButton, heroStops, m2Text, useOwnPhoneChrome, webAttrs, M2HeaderSos } from '@/design-system/m2';
 import type { PressState } from '@/design-system/m2';
 import { color, focusRing, font, fontWeight, radius, shadow, shadowStyle, size, space, webOnly } from '@/design-system/theme';
 import { money } from '@/data/types/workflowTypes';
@@ -429,6 +429,7 @@ export const M2MedicineInfoView = observer(function M2MedicineInfoView({ vm, lin
           <View style={styles.heroHead}>
             {links.back ? <RoundButton icon="arrow-left" label={t('mi.back')} onPress={links.back} onHero testID="mi-back" /> : null}
             <Text style={styles.heroEyebrow}>{t('mi.eyebrow')}</Text>
+            <M2HeaderSos push />
           </View>
           <M2Heading level={1} style={styles.heroTitle}>{t('mi.title')}</M2Heading>
           <Text style={styles.heroBody}>{t('mi.body')}</Text>

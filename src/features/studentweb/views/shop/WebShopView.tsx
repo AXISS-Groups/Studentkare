@@ -199,11 +199,14 @@ function ShopBrowse({ signedIn, filters, onFilter, onOpen, onBookLab }: {
 
   return (
     <div className="sk-sw-page sk-m2w" data-testid="m2w-shop">
-      <Rise>
-        <div className="sk-m2w-top">
-          <ShopSearch initial={filters.q} onSearch={(next) => onFilter({ q: next })} />
-        </div>
-      </Rise>
+      {/* Signed in, the shell's top bar has the one search box (founder decision, 23 Oct 2026); a visitor's shop keeps its own. */}
+      {signedIn ? null : (
+        <Rise>
+          <div className="sk-m2w-top">
+            <ShopSearch initial={filters.q} onSearch={(next) => onFilter({ q: next })} />
+          </div>
+        </Rise>
+      )}
       <Rise index={1}>
         <M2Responsive>
           <ServiceRail label={t('m2w.railLabel')} tiles={rail} current={filters.kind} testID="m2w-rail" />

@@ -3,7 +3,7 @@ import { Animated, Pressable, ScrollView, StyleSheet, Text, View } from 'react-n
 import { observer } from 'mobx-react-lite';
 import { Icon } from '@/design-system/icons';
 import { ErrorState, Rise, Skeleton } from '@/design-system';
-import { Gradient, M2Card, M2Heading, RoundButton, floatTransform, m2Text, useAmbientMotion, useLoop, useOwnPhoneChrome, webAttrs } from '@/design-system/m2';
+import { Gradient, M2Card, M2Heading, RoundButton, floatTransform, m2Text, useAmbientMotion, useLoop, useOwnPhoneChrome, webAttrs, M2HeaderSos } from '@/design-system/m2';
 import type { PressState } from '@/design-system/m2';
 import { color, focusRing, font, fontWeight, motion, radius, shadow, shadowStyle, size, space, webOnly } from '@/design-system/theme';
 import { discountPercent, money } from '@/data/types/workflowTypes';
@@ -75,6 +75,7 @@ export const M2ProductView = observer(function M2ProductView({ vm, cartCount, li
       <View style={styles.heroHead}>
         <RoundButton icon="arrow-left" label={t('m2.prod.back')} onPress={links.back} testID="m2-prod-back" />
         <RoundButton icon="cart" label={cartLabel} badge={cartCount || undefined} onPress={links.cart} testID="m2-prod-cart" />
+        <M2HeaderSos />
       </View>
       {item ? <Blister strength={strengthOf(vm.composition)} /> : null}
     </Gradient>

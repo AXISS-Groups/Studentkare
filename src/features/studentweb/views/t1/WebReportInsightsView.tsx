@@ -7,7 +7,7 @@ import { apiFileUrl } from '@/data/services/http';
 import { useLocation } from '@/core/navigation';
 import { navigate } from '@/lib/utils/workflowRouting';
 import { initialsOf } from '@/design-system/student-shell/StudentWebShell';
-import { EmptyPanel, ErrorPanel, LinkRow, LoadingRows, OfflinePanel, PageHead, Pill, StudentWebFooter } from '../parts';
+import { EmptyPanel, ErrorPanel, LinkRow, LoadingRows, OfflinePanel, PageHead, Pill } from '../parts';
 import type { StudentLabTest } from './WebMyLabTestsView';
 import { IconNote, dayDate } from './shared';
 import '../../studentweb.css';
@@ -129,7 +129,6 @@ export function WebReportInsightsView() {
         actions={<button type="button" className="sk-sw-btn sk-sw-btn--ghost" onClick={() => navigate('my-lab-tests')}>{t('swt.insights.allTests')}<Icon name="chevron-right" size={16} /></button>}
       />
       {body}
-      <StudentWebFooter />
     </div>
   );
 }
