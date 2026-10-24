@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Image, StyleSheet, Text, View } from 'react-native';
 import { Button, ErrorState, Skeleton, useOnline } from '@/design-system';
 import { Icon } from '@/design-system/icons';
 import {
-  Gradient, GlossTile, M2Card, M2Header, M2Heading, M2ListRow, M2Note, M2SectionHead, M2Timeline, M2TimerRing, M2WideColumn, M2_NAV_CLEARANCE, NAVY_STOPS, m2Text,
+  Gradient, GlossTile, M2Card, M2Header, M2Heading, M2ListRow, M2Note, M2SectionHead, M2Timeline, M2TimerRing, M2Screen, NAVY_STOPS, m2Text,
   useM2Layout, useOwnPhoneChrome, webAttrs,
 } from '@/design-system/m2';
 import type { M2TimelineItem } from '@/design-system/m2';
@@ -71,16 +71,23 @@ const STEPS: ReadonlyArray<{ key: string; icon: 'qr-code' | 'eye' | 'shield'; hu
  * the recent check-ins with "This wasn't me" — there is no check-in record
  * or report API, so history is an honest empty state (D6-8).
  */
-export function MyPassBoard({ identity: first, links, onRefresh, wide = false, art }: {
+export interface MyPassBoardProps {
   identity: MemberIdentity; links: MyPassLinks; onRefresh: () => Promise<MemberIdentity>;
   /** Laid out wide in the desktop web shell: the pass on the left, how check-in works on the right. */
   wide?: boolean;
   /** The clinic art beside "how it works" (canvas `a-small-clinic-building…png`), decorative. */
   art?: ArtSource;
-}): React.ReactElement {
+}
+
+export function MyPassBoard(props: MyPassBoardProps): React.ReactElement {
+  useOwnPhoneChrome();
+  return <M2Screen wide={props.wide} testID="my-pass"><PassBody {...props} /></M2Screen>;
+}
+
+/** Inside the container, so the layout read here is the board's own width. */
+function PassBody({ identity: first, links, onRefresh, art }: MyPassBoardProps): React.ReactElement {
   const t = useT();
   const online = useOnline();
-  useOwnPhoneChrome();
   const layout = useM2Layout();
   const desktop = layout === 'desktop';
   const [identity, setIdentity] = useState(first);
@@ -205,19 +212,11 @@ export function MyPassBoard({ identity: first, links, onRefresh, wide = false, a
     );
   }
 
-  if (wide) {
-    return (
-      <M2WideColumn testID="my-pass">
-        {header}
-        {body}
-      </M2WideColumn>
-    );
-  }
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content} testID="my-pass">
-      {header}
-      {body}
-    </ScrollView>
+    <>
+    {header}
+    {body}
+    </>
   );
 }
 
@@ -231,18 +230,15 @@ export function MyPassRoute({ links, wide = false, art }: { links: MyPassLinks; 
     ? <ErrorState title={t('sf.pass.failedTitle')} body={t('sf.pass.failedBody')} retryLabel={t('common.tryAgain')} onRetry={resource.reload} />
     : <Skeleton label={t('sf.pass.loading')} lines={['60%', '100%', '80%']} />;
   const header = <M2Header backLabel={t('common.back')} backIcon="chevron-left" onBack={links.back} title={t('pass.title')} testID="my-pass-header" />;
-  if (wide) return <M2WideColumn testID="my-pass">{header}{state}</M2WideColumn>;
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content} testID="my-pass">
+    <M2Screen wide={wide} testID="my-pass">
       {header}
-      <View style={styles.gutter}>{state}</View>
-    </ScrollView>
+      <View style={wide ? null : styles.gutter}>{state}</View>
+    </M2Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: color.canvas },
-  content: { paddingBottom: M2_NAV_CLEARANCE, gap: space.s16 },
   gutter: { paddingHorizontal: space.gutterPhone },
   stack: { gap: space.s14 },
   sub: { maxWidth: 760 },

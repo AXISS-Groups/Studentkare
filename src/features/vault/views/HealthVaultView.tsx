@@ -7,8 +7,8 @@ import { Button, Chip, ErrorState, OfflineBanner, Sheet, Skeleton, TextField } f
 import { Icon, Icon3d } from '@/design-system/icons';
 import type { SkIconName } from '@/design-system/icons';
 import {
-  GlossTile, HeroButton, M2Card, M2EmptyState, M2Grid, M2Header, M2HeroPanel, M2Heading, M2ListRow, M2Note, M2Pill, M2SearchField, M2StatCard, M2Table, M2Tabs, M2WideColumn,
-  M2_NAV_CLEARANCE, m2TableText, m2Text, useM2Layout, useOwnPhoneChrome, webAttrs,
+  GlossTile, HeroButton, M2Card, M2EmptyState, M2Grid, M2Header, M2HeroPanel, M2Heading, M2ListRow, M2Note, M2Pill, M2Screen, M2SearchField, M2StatCard, M2Table, M2Tabs,
+  m2TableText, m2Text, useM2Layout, useOwnPhoneChrome, webAttrs,
 } from '@/design-system/m2';
 import type { ServiceHue } from '@/design-system/m2';
 import { color, font, fontWeight, radius, space } from '@/design-system/theme';
@@ -87,9 +87,14 @@ type Filter = VaultCategory | 'ALL';
  * menu of the board is not in the icon manifest, so the row itself opens its
  * actions sheet on a phone; the desktop table shows them as buttons.
  */
-export const HealthVaultView = observer(function HealthVaultView({ viewModel: vm, online, links, tab, onTabChange, prescriptions, panels, art, wide = false, verified = true, locale }: HealthVaultViewProps) {
-  const t = useT();
+export const HealthVaultView = observer(function HealthVaultView(props: HealthVaultViewProps) {
   useOwnPhoneChrome();
+  return <M2Screen wide={props.wide} testID="health-vault"><VaultBody {...props} /></M2Screen>;
+});
+
+/** Inside the container, so the layout read here is the board's own width. */
+const VaultBody = observer(function VaultBody({ viewModel: vm, online, links, tab, onTabChange, prescriptions, panels, art, verified = true, locale }: HealthVaultViewProps) {
+  const t = useT();
   const layout = useM2Layout();
   const desktop = layout === 'desktop';
   const gutter = layout === 'phone' ? styles.gutter : null;
@@ -122,7 +127,7 @@ export const HealthVaultView = observer(function HealthVaultView({ viewModel: vm
     ...(panels?.family ? [{ key: 'family' as const, label: t('hub.tab.family') }] : []),
   ];
 
-  const header = <M2Header backLabel={t('m2.ask.back')} onBack={links.back} title={t('swt.vault.title')} eyebrow={desktop || !vm.documents ? undefined : t('swt.vault.sub', { count: vm.total })} testID="vault-header" />;
+  const header = <M2Header backLabel={t('m2.ask.back')} onBack={links.back} title={t('swt.vault.title')} eyebrow={desktop || !vm.documents ? undefined : vm.total > 0 ? t('swt.vault.sub', { count: vm.total }) : t('swt.vault.subEmpty')} testID="vault-header" />;
 
   const hero = (
     <M2HeroPanel
@@ -153,7 +158,7 @@ export const HealthVaultView = observer(function HealthVaultView({ viewModel: vm
           </M2Card>
         </M2Grid>
       ) : (
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={[styles.rail, gutter]} style={layout === 'phone' ? styles.railBleed : null}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={[styles.rail, gutter]}>
           {STAT_CARDS.map((card) => <StatFilter key={card.key} card={card} counts={counts} filter={filter} onFilter={setFilter} width={118} />)}
         </ScrollView>
       )}
@@ -187,16 +192,16 @@ export const HealthVaultView = observer(function HealthVaultView({ viewModel: vm
             rowKey={(doc) => doc.id}
             testID="vault-table"
             columns={[
-              { key: 'document', header: t('swt.vault.col.document'), flex: 2.4, cell: (doc) => (
+              { key: 'document', header: t('swt.vault.col.document'), flex: 2.2, cell: (doc) => (
                 <View style={styles.docCell}>
                   <GlossTile icon={KIND[vaultKindOf(doc.category)].icon} hue={KIND[vaultKindOf(doc.category)].hue} size={36} iconSize={17} />
                   <Text style={m2TableText.strong} numberOfLines={2}>{doc.title}</Text>
                 </View>
               ) },
-              { key: 'type', header: t('swt.vault.col.type'), cell: (doc) => <Text style={m2TableText.cell}>{t(KIND[vaultKindOf(doc.category)].label)}</Text> },
-              { key: 'date', header: t('swt.vault.col.date'), cell: (doc) => <Text style={m2TableText.mono}>{day(doc.createdAt)}</Text> },
-              { key: 'shared', header: t('swt.vault.col.shared'), cell: (doc) => <SharedPill count={vm.activeSharesOf(doc.id).length} /> },
-              { key: 'actions', header: t('swt.vault.col.actions'), align: 'right', flex: 2.2, cell: (doc) => (
+              { key: 'type', header: t('swt.vault.col.type'), flex: 0.9, cell: (doc) => <Text style={m2TableText.cell}>{t(KIND[vaultKindOf(doc.category)].label)}</Text> },
+              { key: 'date', header: t('swt.vault.col.date'), flex: 0.9, cell: (doc) => <Text style={m2TableText.mono}>{day(doc.createdAt)}</Text> },
+              { key: 'shared', header: t('swt.vault.col.shared'), flex: 0.9, cell: (doc) => <SharedPill count={vm.activeSharesOf(doc.id).length} /> },
+              { key: 'actions', header: t('swt.vault.col.actions'), align: 'right', flex: 3, cell: (doc) => (
                 <View style={styles.rowActions}>
                   {links.download ? <Button label={t('swt.vault.download')} variant="ghost" icon={<Icon name="download" size={15} color={color.action} strokeWidth={2.4} />} onPress={() => links.download?.(doc.id)} testID={`vault-download-${doc.id}`} /> : null}
                   {vm.activeSharesOf(doc.id).length
@@ -296,25 +301,12 @@ export const HealthVaultView = observer(function HealthVaultView({ viewModel: vm
     </>
   );
 
-  if (wide) {
-    return (
-      <M2WideColumn testID="health-vault">
-        {header}
-        {offline}
-        {vm.documents && items.length > 0 && tab === 'documents' ? hero : null}
-        {body}
-        {sheets}
-      </M2WideColumn>
-    );
-  }
   return (
     <>
-      <ScrollView style={styles.screen} contentContainerStyle={styles.content} testID="health-vault">
-        {header}
-        {offline}
-        {vm.documents && items.length > 0 && tab === 'documents' ? <View style={gutter}>{hero}</View> : null}
-        {body}
-      </ScrollView>
+      {header}
+      {offline}
+      {vm.documents && items.length > 0 && tab === 'documents' ? <View style={gutter}>{hero}</View> : null}
+      {body}
       {sheets}
     </>
   );
@@ -401,8 +393,6 @@ const RevokeSheet = observer(function RevokeSheet({ doc, vm, onClose }: { doc: V
 });
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: color.canvas },
-  content: { paddingBottom: M2_NAV_CLEARANCE, gap: space.s16 },
   gutter: { paddingHorizontal: space.gutterPhone },
   stack: { gap: space.s12 },
   rows: { gap: space.s8 },

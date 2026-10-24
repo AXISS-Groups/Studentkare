@@ -115,15 +115,17 @@ export interface M2HeroPanelProps {
   artNode?: React.ReactNode;
   /** Buttons under the words (Add a document, Export all). */
   actions?: React.ReactNode;
+  /** Keep the phone arrangement (art in the corner, phone title) even on a desktop: a hero in a narrow side column. */
+  compact?: boolean;
   children?: React.ReactNode;
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }
 
 /** The records boards' gradient hero: a section, not a link. */
-export function M2HeroPanel({ title, sub, eyebrow, icon, hue = 'indigo', art, artLabel, artNode: artGiven, actions, children, style, testID }: M2HeroPanelProps) {
+export function M2HeroPanel({ title, sub, eyebrow, icon, hue = 'indigo', art, artLabel, artNode: artGiven, actions, compact = false, children, style, testID }: M2HeroPanelProps) {
   const layout = useM2Layout();
-  const wide = isWide(layout);
+  const wide = isWide(layout) && !compact;
   const stops = hue === 'indigo' ? NAVY_STOPS : heroStops(hue);
   const artNode = artGiven ?? (art ? (
     <Image
@@ -140,11 +142,17 @@ export function M2HeroPanel({ title, sub, eyebrow, icon, hue = 'indigo', art, ar
     <Gradient colors={stops} style={[styles.hero, wide ? styles.heroWide : null, style]} testID={testID}>
       <View pointerEvents="none" style={styles.heroRingBig} />
       <View pointerEvents="none" style={styles.heroRingSmall} />
-      {!wide && artNode ? <View style={styles.heroArtCornerBox}>{artNode}</View> : null}
       <View style={styles.heroWords}>
-        {icon ? <View style={styles.glassTile}><Icon name={icon} size={24} color={color.onHero} strokeWidth={2.1} /></View> : null}
+        {!wide && (icon || artNode) ? (
+          // The phone board's top row: the glass tile on the left, the art on the right, the words under both (never overlapping).
+          <View style={[styles.heroTop, artNode ? styles.heroTopWithArt : null]}>
+            {icon ? <View style={styles.glassTile}><Icon name={icon} size={24} color={color.onHero} strokeWidth={2.1} /></View> : null}
+            {artNode ? <View style={styles.heroArtCornerBox}>{artNode}</View> : null}
+          </View>
+        ) : null}
+        {wide && icon ? <View style={styles.glassTile}><Icon name={icon} size={24} color={color.onHero} strokeWidth={2.1} /></View> : null}
         {eyebrow ? <Text style={styles.heroEyebrow}>{eyebrow}</Text> : null}
-        <M2Heading level={1} style={[styles.heroTitle, layout === 'desktop' ? styles.heroTitleDesktop : null]}>{title}</M2Heading>
+        <M2Heading level={1} style={[styles.heroTitle, wide && layout === 'desktop' ? styles.heroTitleDesktop : null]}>{title}</M2Heading>
         {sub ? <Text style={[styles.heroSub, wide ? styles.heroSubWide : null]}>{sub}</Text> : null}
         {children}
         {actions ? <View style={styles.heroActions}>{actions}</View> : null}
@@ -223,9 +231,11 @@ const styles = StyleSheet.create({
   heroRingBig: { position: 'absolute', right: -40, bottom: -60, width: 190, height: 190, borderRadius: radius.full, borderWidth: 26, borderColor: color.onHeroRule },
   heroRingSmall: { position: 'absolute', right: 40, top: -50, width: 120, height: 120, borderRadius: radius.full, backgroundColor: color.onHeroVeil },
   heroWords: { flex: 1, minWidth: 0, gap: space.s8 },
-  heroArtCornerBox: { position: 'absolute', right: space.s4, top: space.s4, width: 150, height: 120, alignItems: 'center', justifyContent: 'center' },
+  heroTop: { height: 56, flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' },
+  heroTopWithArt: { height: 110 },
+  heroArtCornerBox: { width: 150, height: 110, alignItems: 'flex-end', justifyContent: 'center', marginTop: -space.s8, marginRight: -space.s8 },
   heroArtSideBox: { width: 260, height: 200, alignItems: 'center', justifyContent: 'flex-end' },
-  heroArtPhone: { width: 150, height: 120 },
+  heroArtPhone: { width: 150, height: 110 },
   heroArtWide: { width: 260, height: 200 },
   glassTile: { width: 52, height: 52, borderRadius: radius.lg, alignItems: 'center', justifyContent: 'center', backgroundColor: color.onHeroVeil, borderWidth: 1, borderColor: color.onHeroRule, marginBottom: space.s8 },
   heroEyebrow: { fontFamily: font.family.sans, fontSize: font.size.caption, fontWeight: fontWeight(font.weight.heavy), letterSpacing: 1, textTransform: 'uppercase', color: color.onHeroLabel },

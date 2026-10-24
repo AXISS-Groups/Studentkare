@@ -27,6 +27,7 @@ export type { M2HeroPanelProps, M2NoteTone, M2PillTone, M2StatCardProps } from '
 export { M2Table, M2Tabs, M2Timeline, M2TimerRing, m2TableText } from './M2Structure';
 export type { M2Tab, M2TableColumn, M2TimelineItem } from './M2Structure';
 export { isWide, layoutFor, M2Grid, m2Gutter, M2Responsive, M2WideColumn, useM2Layout } from './m2Layout';
+export { M2Screen } from './M2Screen';
 export type { M2GridProps, M2Layout } from './m2Layout';
 export { SERVICE_HUES, NAVY_STOPS, ORB_STOPS, heroStops, tileStops } from './servicePalette';
 export type { HueTokens, ServiceHue } from './servicePalette';

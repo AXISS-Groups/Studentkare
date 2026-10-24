@@ -1,12 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { observer } from 'mobx-react-lite';
 import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
 import { Button, ErrorState, OfflineBanner, Rise, Skeleton, useOnline } from '@/design-system';
 import { AnimatedIllustration, Icon } from '@/design-system/icons';
 import {
-  GlossTile, M2Card, M2EmptyState, M2Header, M2HeroPanel, M2Heading, M2ListRow, M2Note, M2Timeline, M2WideColumn, M2_NAV_CLEARANCE, m2Text, useM2Layout, useOwnPhoneChrome,
+  GlossTile, M2Card, M2EmptyState, M2Header, M2HeroPanel, M2Heading, M2ListRow, M2Note, M2Timeline, M2Screen, m2Text, useM2Layout, useOwnPhoneChrome,
 } from '@/design-system/m2';
 import type { PressState } from '@/design-system/m2';
 import { color, focusRing, font, fontWeight, radius, size, space } from '@/design-system/theme';
@@ -42,14 +42,17 @@ const SECTIONS: Array<{ field: 'subjective' | 'objective' | 'assessment' | 'plan
  * data behind them, so they are not drawn (DESIGN.md §2.7). Nothing opens on
  * its own: a summary is read (and audited) only when the student picks it.
  */
-export const VisitSummaryView = observer(function VisitSummaryView({ viewModel: vm, links, wide = false }: {
-  viewModel: VisitSummaryViewModel;
-  links: VisitSummaryLinks;
-  wide?: boolean;
-}) {
+export interface VisitSummaryViewProps { viewModel: VisitSummaryViewModel; links: VisitSummaryLinks; wide?: boolean }
+
+export const VisitSummaryView = observer(function VisitSummaryView(props: VisitSummaryViewProps) {
+  useOwnPhoneChrome();
+  return <M2Screen wide={props.wide} testID="visit-summaries"><VisitsBody {...props} /></M2Screen>;
+});
+
+/** Inside the container, so the layout read here is the board's own width. */
+const VisitsBody = observer(function VisitsBody({ viewModel: vm, links, wide = false }: VisitSummaryViewProps) {
   const t = useT();
   const online = useOnline();
-  useOwnPhoneChrome();
   const layout = useM2Layout();
   const desktop = layout === 'desktop';
   const gutter = layout === 'phone' ? styles.gutter : null;
@@ -74,6 +77,7 @@ export const VisitSummaryView = observer(function VisitSummaryView({ viewModel: 
         title={t('care.visit.listTitle')}
         sub={t('care.visit.listLead')}
         artNode={<AnimatedIllustration name="scene-doctor-consult" size="sm" />}
+        compact
         testID="visit-summary-lead"
       />
       {vm.listPhase === 'loading' ? <Skeleton label={t('care.visit.loading')} lines={['60%', '100%', '100%']} /> : null}
@@ -130,21 +134,12 @@ export const VisitSummaryView = observer(function VisitSummaryView({ viewModel: 
     body = <View style={gutter}>{vm.selectedId ? detailNode : listNode}</View>;
   }
 
-  if (wide) {
-    return (
-      <M2WideColumn testID="visit-summaries">
-        {header}
-        {offline}
-        {body}
-      </M2WideColumn>
-    );
-  }
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content} testID="visit-summaries">
-      {header}
-      {offline}
-      {body}
-    </ScrollView>
+    <>
+    {header}
+    {offline}
+    {body}
+    </>
   );
 });
 
@@ -232,8 +227,6 @@ export const VisitSummaryRoute = observer(function VisitSummaryRoute({ links, wi
 });
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: color.canvas },
-  content: { paddingBottom: M2_NAV_CLEARANCE, gap: space.s16 },
   gutter: { paddingHorizontal: space.gutterPhone },
   stack: { gap: space.s12 },
   rows: { gap: space.s8 },

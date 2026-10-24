@@ -105,7 +105,7 @@ describe('VisitSummaryView', () => {
     expect(await screen.findByRole('link', { name: /Consult with Dr Rao/ })).toBeInTheDocument();
     expect(screen.getAllByRole('button', { name: 'SOS, get help now' })).toHaveLength(1);
     unmount();
-    render(<M2Responsive layout="desktop"><VisitSummaryView viewModel={vm} links={links} wide /></M2Responsive>);
+    render(<M2Responsive layout="desktop"><VisitSummaryView viewModel={vm} links={links} /></M2Responsive>);
     expect(screen.queryByRole('button', { name: 'SOS, get help now' })).toBeNull();
     // Nothing is read (and audited) until the student picks a visit.
     expect(screen.getByTestId('visit-summary-pick')).toBeInTheDocument();

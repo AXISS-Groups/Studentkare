@@ -56,7 +56,7 @@ describe('Check-in pass (§22)', () => {
     expect(screen.getAllByRole('button', { name: 'SOS, get help now' })).toHaveLength(1);
     expect(screen.queryByTestId('pass-steps')).toBeNull();
     cleanup();
-    const { container } = at('desktop', <MyPassBoard identity={identity()} links={links()} onRefresh={pending} wide />);
+    const { container } = at('desktop', <MyPassBoard identity={identity()} links={links()} onRefresh={pending} />);
     expect(screen.queryByRole('button', { name: 'SOS, get help now' })).toBeNull();
     expect(screen.getByTestId('pass-steps')).toBeInTheDocument();
     expect(screen.getByText(/Member ID SK-1/)).toBeInTheDocument();
@@ -69,7 +69,7 @@ describe('Check-in pass (§22)', () => {
   it('stale: the code is hidden at both layouts, with the attention note and a retry', () => {
     const stale = identity({ expiresAt: now() - 5, passWindow: [] });
     for (const layout of ['phone', 'desktop'] as const) {
-      at(layout, <MyPassBoard identity={stale} links={links()} onRefresh={pending} wide={layout === 'desktop'} />);
+      at(layout, <MyPassBoard identity={stale} links={links()} onRefresh={pending} />);
       expect(screen.queryByText('482 177')).toBeNull();
       expect(screen.queryByTestId('pass-qr')).toBeNull();
       expect(screen.getByTestId('pass-stale')).toHaveAttribute('role', 'status');
@@ -133,7 +133,7 @@ describe('Digital ID (§12)', () => {
     fireEvent.click(screen.getByTestId('digital-id-pass'));
     expect(links.pass).toHaveBeenCalled();
     cleanup();
-    const { container } = at('desktop', <DigitalIdNativeView viewModel={vm} links={{ ...links, passport: vi.fn() }} wide />);
+    const { container } = at('desktop', <DigitalIdNativeView viewModel={vm} links={{ ...links, passport: vi.fn() }} />);
     await settle();
     expect(screen.queryByRole('button', { name: 'SOS, get help now' })).toBeNull();
     expect(screen.getByTestId('digital-id-passport')).toBeInTheDocument();

@@ -87,7 +87,7 @@ export function DigitalIdPage({ wide = false }: { wide?: boolean } = {}): React.
   return (
     <>
       <DigitalIdRoute wide={wide} art={wide ? recordsArt.idVerified : undefined}
-        links={{ pass: () => navigate('pass'), abha: openAbha, insurance: () => navigate('insurance'), passport: wide ? openPassport : undefined }} />
+        links={{ back: wide ? undefined : () => navigate('profile'), pass: () => navigate('pass'), abha: openAbha, insurance: () => navigate('insurance'), passport: wide ? openPassport : undefined }} />
       {abha ? <div id="board-panel-abha"><Suspense fallback={<ScreenLoading />}><ABHALinkScreen /></Suspense></div> : null}
       {passport ? <div id="board-panel-passport"><Suspense fallback={<ScreenLoading />}><HealthPassportQRScreen /></Suspense></div> : null}
     </>

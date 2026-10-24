@@ -1,10 +1,10 @@
 import React, { useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useT } from '@/i18n';
 import { ErrorState, OfflineBanner, Rise, Skeleton } from '@/design-system';
 import { Icon } from '@/design-system/icons';
 import {
-  GlossTile, HeroButton, M2Card, M2EmptyState, M2Header, M2HeroPanel, M2Heading, M2ListRow, M2Note, M2SectionHead, M2Table, M2Tabs, M2WideColumn, M2_NAV_CLEARANCE,
+  GlossTile, HeroButton, M2Card, M2EmptyState, M2Header, M2HeroPanel, M2Heading, M2ListRow, M2Note, M2SectionHead, M2Table, M2Tabs, M2Screen,
   m2TableText, m2Text, useM2Layout, useOwnPhoneChrome, webAttrs,
 } from '@/design-system/m2';
 import type { PressState } from '@/design-system/m2';
@@ -60,9 +60,14 @@ export interface ReportInsightsViewProps {
  * (labs send a document, not data), an AI draft, a report-scoped Ayush, a
  * retest reminder. Nothing here links to a product (Rule L).
  */
-export function ReportInsightsView({ tests, loading, failed, online, onRetry, askedId, links, art, wide = false, locale }: ReportInsightsViewProps) {
-  const t = useT();
+export function ReportInsightsView(props: ReportInsightsViewProps) {
   useOwnPhoneChrome();
+  return <M2Screen wide={props.wide} testID="m2-report-insights"><InsightsBody {...props} /></M2Screen>;
+}
+
+/** Inside the container, so the layout read here is the board's own width. */
+function InsightsBody({ tests, loading, failed, online, onRetry, askedId, links, art, locale }: ReportInsightsViewProps) {
+  const t = useT();
   const layout = useM2Layout();
   const [tab, setTab] = useState<ReportInsightsTab>('summary');
   const [chosen, setChosen] = useState<string | null>(askedId);
@@ -130,8 +135,7 @@ export function ReportInsightsView({ tests, loading, failed, online, onRetry, as
         ) : null}
       </View>
     );
-    const side = (
-      <View style={styles.stack} testID="m2-ri-side">
+    const heroNode = (
         <M2HeroPanel
           eyebrow={t('swt.insights.sideLabel')}
           title={nameOf(report)}
@@ -145,6 +149,9 @@ export function ReportInsightsView({ tests, loading, failed, online, onRetry, as
         >
           {facts}
         </M2HeroPanel>
+    );
+    const restNode = (
+      <>
         <View>
           <M2SectionHead title={t('swt.insights.next')} />
           <View style={styles.stack}>
@@ -157,8 +164,9 @@ export function ReportInsightsView({ tests, loading, failed, online, onRetry, as
           <Text style={m2Text.link}>{t('swt.insights.allTests')}</Text>
           <Icon name="arrow-right" size={15} color={color.action} strokeWidth={2.6} />
         </Pressable>
-      </View>
+      </>
     );
+    const side = <View style={styles.stack} testID="m2-ri-side">{heroNode}{restNode}</View>;
     const historyTable = (
       <M2Card style={styles.card} testID="m2-ri-history">
         <M2Table<StudentLabTest>
@@ -200,7 +208,7 @@ export function ReportInsightsView({ tests, loading, failed, online, onRetry, as
     const panel = tab === 'summary'
       ? (layout === 'desktop'
         ? <View style={styles.columns}><View style={styles.main}>{summary}</View><View style={styles.aside}>{side}</View></View>
-        : <View style={[styles.stack, gutter]}>{side}{summary}</View>)
+        : <View style={[styles.stack, gutter]}>{heroNode}{summary}{restNode}</View>)
       : <View style={gutter}>{historyTable}</View>;
     body = (
       <>
@@ -213,27 +221,16 @@ export function ReportInsightsView({ tests, loading, failed, online, onRetry, as
   }
 
   const offline = !online ? <View style={gutter}><OfflineBanner message={t('m2v.offline')} /></View> : null;
-  if (wide) {
-    return (
-      <M2WideColumn testID="m2-report-insights">
-        {header}
-        {offline}
-        {body}
-      </M2WideColumn>
-    );
-  }
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content} testID="m2-report-insights">
-      {header}
-      {offline}
-      {body}
-    </ScrollView>
+    <>
+    {header}
+    {offline}
+    {body}
+    </>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: color.canvas },
-  content: { paddingBottom: M2_NAV_CLEARANCE, gap: space.s16 },
   gutter: { paddingHorizontal: space.gutterPhone },
   stack: { gap: space.s12 },
   columns: { flexDirection: 'row', alignItems: 'flex-start', gap: space.s24 },

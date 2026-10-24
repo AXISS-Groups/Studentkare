@@ -62,7 +62,7 @@ describe('Report insights', () => {
     const { container } = mount('desktop');
     expect(screen.queryByRole('button', { name: 'SOS, get help now' })).toBeNull();
     expect(screen.getByTestId('m2-ri-summary')).toBeInTheDocument();
-    expect(screen.getByTestId('m2-ri-side')).toBeInTheDocument();
+    expect(screen.getByTestId('m2-ri-report')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('tab', { name: 'History · 2' }));
     const table = screen.getByRole('table', { name: 'Your released lab reports' });
     expect(within(table).getAllByRole('row')).toHaveLength(3);

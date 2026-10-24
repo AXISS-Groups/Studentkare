@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
-import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Image, StyleSheet, Text, View } from 'react-native';
 import { observer } from 'mobx-react-lite';
 import { Button, ErrorState, Skeleton, useOnline } from '@/design-system';
 import { BrandLogo, Icon } from '@/design-system/icons';
 import {
-  Gradient, GlossTile, M2Card, M2Header, M2Heading, M2ListRow, M2Note, M2Pill, M2TimerRing, M2WideColumn, M2_NAV_CLEARANCE, NAVY_STOPS, heroStops, m2Text, useM2Layout,
+  Gradient, GlossTile, M2Card, M2Header, M2Heading, M2ListRow, M2Note, M2Pill, M2TimerRing, M2Screen, NAVY_STOPS, heroStops, m2Text, useM2Layout,
   useOwnPhoneChrome, webAttrs,
 } from '@/design-system/m2';
 import { color, font, fontWeight, radius, shadow, shadowStyle, space } from '@/design-system/theme';
@@ -73,17 +73,24 @@ const ERROR_KEY: Record<DigitalIdError, MessageKey> = { issue: 'id.issueFailed',
  * revoke controls are the view-model's (issue / revoke confirm unchanged); a
  * refresh that fails is said, never swallowed, and a stale code is hidden.
  */
-export const DigitalIdNativeView = observer(function DigitalIdNativeView({ viewModel: vm, links = {}, wide = false, art }: {
+export interface DigitalIdViewProps {
   viewModel: DigitalIdViewModel; links?: DigitalIdLinks;
   /** Laid out wide in the desktop web shell: the card left, the QR and its controls right, the privacy note beside them. */
   wide?: boolean;
   /** Desktop art (canvas `image-5aff5e.png`), decorative. */
   art?: ArtSource;
-}) {
+}
+
+export const DigitalIdNativeView = observer(function DigitalIdNativeView(props: DigitalIdViewProps) {
+  useOwnPhoneChrome();
+  return <M2Screen wide={props.wide} testID="digital-id"><IdBody {...props} /></M2Screen>;
+});
+
+/** Inside the container, so the layout read here is the board's own width. */
+const IdBody = observer(function IdBody({ viewModel: vm, links = {}, art }: DigitalIdViewProps) {
   const id = vm.identity;
   const t = useT();
   const online = useOnline();
-  useOwnPhoneChrome();
   const layout = useM2Layout();
   const desktop = layout === 'desktop';
   const policies = useApiResource<{ items: PolicyLine[] }>('/health/policies');
@@ -218,20 +225,12 @@ export const DigitalIdNativeView = observer(function DigitalIdNativeView({ viewM
     body = <View style={[styles.stack, gutter]}>{state}{card}{qrCard}{rows}{id ? privacy : null}</View>;
   }
 
-  if (wide) {
-    return (
-      <M2WideColumn testID="digital-id">
-        {header}
-        {desktop ? <View>{state}</View> : null}
-        {body}
-      </M2WideColumn>
-    );
-  }
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content} testID="digital-id">
-      {header}
-      {body}
-    </ScrollView>
+    <>
+    {header}
+    {desktop ? <View>{state}</View> : null}
+    {body}
+    </>
   );
 });
 
@@ -254,8 +253,6 @@ export function DigitalIdRoute({ links, wide = false, art }: { links?: DigitalId
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: color.canvas },
-  content: { paddingBottom: M2_NAV_CLEARANCE, gap: space.s16 },
   gutter: { paddingHorizontal: space.gutterPhone },
   stack: { gap: space.s14 },
   flex: { flex: 1, minWidth: 0, gap: space.s2 },
