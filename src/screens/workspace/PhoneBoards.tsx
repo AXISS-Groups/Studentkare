@@ -18,15 +18,20 @@ import { HelpCentreBoard } from '@/features/support/views/HelpCentreBoard';
 import { MovementBoard } from '@/features/movement/views/MovementBoard';
 import { useExerciseStore } from '@/data/contexts/ExerciseStore';
 import { IceContactsRoute } from '@/features/emergency/views/IceContactsBoard';
-import { MyPassRoute } from '@/features/digital_id/views/MyPassBoard';
+import { DeleteAccountRoute } from '@/features/account/views/DeleteAccountView';
 import { PlanBillingBoard } from '@/features/billing/views/PlanBillingBoard';
+import { ConsentInboxBoard } from '@/features/vault/views/ConsentInboxBoard';
+import { FamilyCircleBoard } from '@/features/vault/views/FamilyCircleBoard';
+import { recordsArt } from '@/features/vault/views/recordsArt';
 
 const ExerciseLibraryScreen = lazy(() => import('../wellbeing/ExerciseLibraryScreen').then((module) => ({ default: module.ExerciseLibraryScreen })));
 
 const MemberProfilePanel = lazy(() => import('./MemberProfilePanel').then((module) => ({ default: module.MemberProfilePanel })));
+const ABHALinkScreen = lazy(() => import('../digital_id/ABHALinkScreen').then((module) => ({ default: module.ABHALinkScreen as React.ComponentType })));
+const HealthPassportQRScreen = lazy(() => import('../digital_id/HealthPassportQRScreen').then((module) => ({ default: module.HealthPassportQRScreen })));
 
 /** The existing web form for a tab of the profile, opened under a board (edit details, link ABHA). */
-function WebPanel({ tab }: { tab: 'profile' | 'digital-id' | 'insurance' }): React.ReactElement {
+function WebPanel({ tab }: { tab: 'profile' | 'insurance' }): React.ReactElement {
   return <div id={`board-panel-${tab}`}><Suspense fallback={<ScreenLoading />}><MemberProfilePanel initialTab={tab} /></Suspense></div>;
 }
 
@@ -69,12 +74,21 @@ export function DataExportPage(): React.ReactElement {
   return <DataExportBoard links={{ save: saveExport, deleteAccount: () => navigate('delete-account') }} />;
 }
 
-function DigitalIdPage(): React.ReactElement {
+/**
+ * Digital ID at both widths (Tier 1 parity plan 2026-10-24 §12): the one view
+ * on `DigitalIdViewModel`; the ABHA link form and the desktop-only Health
+ * passport open as the existing screens under the board (not through the
+ * older `DigitalIdPanel`).
+ */
+export function DigitalIdPage({ wide = false }: { wide?: boolean } = {}): React.ReactElement {
   const [abha, openAbha] = usePanel();
+  const [passport, openPassport] = usePanel();
   return (
     <>
-      <DigitalIdRoute links={{ pass: () => navigate('pass'), abha: openAbha, insurance: () => navigate('insurance') }} />
-      {abha ? <WebPanel tab="digital-id" /> : null}
+      <DigitalIdRoute wide={wide} art={wide ? recordsArt.idVerified : undefined}
+        links={{ back: wide ? undefined : () => navigate('profile'), pass: () => navigate('pass'), abha: openAbha, insurance: () => navigate('insurance'), passport: wide ? openPassport : undefined }} />
+      {abha ? <div id="board-panel-abha"><Suspense fallback={<ScreenLoading />}><ABHALinkScreen /></Suspense></div> : null}
+      {passport ? <div id="board-panel-passport"><Suspense fallback={<ScreenLoading />}><HealthPassportQRScreen /></Suspense></div> : null}
     </>
   );
 }
@@ -175,7 +189,7 @@ export function PlanBillingPage(): React.ReactElement {
 export function safetyBoardFor(route: RoutePath): React.ReactElement | null {
   switch (route) {
     case 'ice-contacts': return <IceContactsRoute links={{}} />;
-    case 'pass': return <MyPassRoute links={{ digitalId: () => navigate('digital-id') }} />;
+    case 'delete-account': return <DeleteAccountRoute links={{ exportData: () => navigate('data-export'), crisis: () => navigate('crisis') }} />;
     case 'billing': return <PlanBillingPage />;
     default: return null;
   }
@@ -194,7 +208,6 @@ export function phoneBoardFor(route: RoutePath): React.ReactElement | null {
     case 'notifications': return <NotificationsPage />;
     case 'account': return <AccountDetailsPage />;
     case 'data-export': return <DataExportPage />;
-    case 'digital-id': return <DigitalIdPage />;
     case 'insurance': return <InsurancePage />;
     case 'support': return <HelpCentrePage />;
     case 'movement': return <MovementPage />;

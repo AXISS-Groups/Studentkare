@@ -36,6 +36,7 @@ import {
   VerifyGateScreen,
 } from './AuthScreens';
 import { HealthVaultRoute } from '@/features/vault/views/HealthVaultNativeView';
+import { nativePhoneArt } from './phoneArt';
 import { EmergencySosNativeView } from '@/modules/m04-emergency/view/EmergencySosNativeView';
 import { DigitalIdRoute as DigitalIdScreen } from '@/features/digital_id/views/DigitalIdNativeView';
 import { CartCheckoutNativeView } from '@/modules/m16-checkout/view/CartCheckoutNativeView';
@@ -175,7 +176,7 @@ function VaultRoute() {
   useFocusEffect(useCallback(() => setVisit((v) => v + 1), []));
   return (
     <SafeAreaView edges={['left', 'right', 'bottom']} style={{ flex: 1 }}>
-      <HealthVaultRoute key={visit} onCapture={() => navigate('CaptureRecord')} />
+      <HealthVaultRoute key={visit} onCapture={() => navigate('CaptureRecord')} art={{ hero: nativePhoneArt.vaultRecords, empty: nativePhoneArt.doctorOnScreen, rx: nativePhoneArt.rxPills }} />
     </SafeAreaView>
   );
 }

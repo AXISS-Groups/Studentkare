@@ -15,7 +15,7 @@ import { PrescribeView } from '@/screens/clinician/NMCDoctorEPrescriptionScreen'
 import { PrescribeViewModel } from '@/features/clinician/viewmodel/PrescribeViewModel';
 import { ShopNativeView } from '@/features/marketplace/views/ShopNativeView';
 import { ShopViewModel } from '@/features/marketplace/viewmodel/ShopViewModel';
-import { HealthVaultNativeView } from '@/features/vault/views/HealthVaultNativeView';
+import { HealthVaultView } from '@/features/vault/views/HealthVaultView';
 import { HealthVaultViewModel } from '@/features/vault/viewmodel/HealthVaultViewModel';
 import { AyushChatNativeView } from '@/features/chat/views/AyushChatNativeView';
 import { AyushViewModel } from '@/features/chat/viewmodel/AyushViewModel';
@@ -69,7 +69,7 @@ describe('screens built in the remediation pass are accessible', () => {
   it('health records', async () => {
     const vm = new HealthVaultViewModel(api({ '/health/documents': { items: [{ id: 'd', title: 'CBC', category: 'LAB', createdAt: 1 }] }, '/records/shares': { items: [] } }));
     await vm.load();
-    await expectAccessible(<HealthVaultNativeView viewModel={vm} />);
+    await expectAccessible(<HealthVaultView viewModel={vm} online tab="documents" onTabChange={() => undefined} links={{}} locale="en-IN" />);
   });
 
   it('Ask Ayush', async () => {
