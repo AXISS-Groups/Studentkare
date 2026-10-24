@@ -51,6 +51,7 @@ PERIODIC_JOBS = {
     "stock_alerts": "Tell students who asked that an item is back in stock",
     "push_dispatch": "Send due push notifications (phones and browsers) and scheduled announcements",
     "push_receipts": "Read phone push receipts; retire devices that are gone or unused",
+    "wallet_passes": "Keep emergency-card wallet passes up to date; send updates and removals",
 }
 
 # Per-job cadence overrides (seconds). Everything else uses DEFAULT_INTERVAL_SECONDS.
@@ -73,6 +74,9 @@ JOB_INTERVAL_OVERRIDES = {
     # Push carries the SOS answers too, so it keeps the outbox's cadence.
     "push_dispatch": 45,
     "push_receipts": 900,
+    # A changed emergency card reaches the wallet pass within minutes; a removal
+    # that failed is retried on the same beat. An idle pass is one indexed SELECT.
+    "wallet_passes": 300,
 }
 
 # Jobs that carry safety deliveries. They run first in every pass and again between
@@ -328,6 +332,9 @@ class WorkflowScheduler:
         if key == "push_receipts":
             from services.push_dispatch import check_receipts
             return check_receipts(db)
+        if key == "wallet_passes":
+            from services.wallet_passes import run_job as run_wallet_passes
+            return run_wallet_passes(db)
         raise UnknownJobError("Unknown job.")
 
 

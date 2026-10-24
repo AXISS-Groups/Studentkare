@@ -97,7 +97,7 @@ export function InsightsScreen(): React.ReactElement {
         addVaccineCard: () => navigate('CaptureRecord'),
         appointments: () => navigate('Appointments'),
         steps: () => navigate('Steps'),
-        emergencyCard: () => navigate('Emergency'),
+        emergencyCard: () => navigate('EmergencyCard'),
         pass: () => navigate('DigitalId'),
       }} />
     </Frame>
@@ -134,7 +134,7 @@ export function ProfileScreen(): React.ReactElement {
       <M2ProfileView vm={vm} links={{
         sos: () => navigate('Emergency'),
         settings: () => navigate('More'),
-        emergencyCard: () => navigate('Emergency'),
+        emergencyCard: () => navigate('EmergencyCard'),
         pass: () => navigate('DigitalId'),
         documents: () => navigate('Vault'),
         addDocument: () => navigate('ReportUpload'),

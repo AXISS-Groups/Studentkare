@@ -101,6 +101,7 @@ from services.student_invites import router as student_invites_router
 from services.student_passcode import router as student_passcode_router
 from services.student_requests import router as student_requests_router
 from services.team_accounts import router as team_accounts_router
+from services.wallet_passes import router as wallet_passes_router
 from services.wellness_api import router as wellness_router
 from services.workflow_api import router as workflow_router
 from services.workflow_auth import allowed_origins, require_super_admin, workflow_db
@@ -396,6 +397,7 @@ app.include_router(account_contacts_router)
 app.include_router(signup_contacts_router)
 app.include_router(student_invites_router)
 app.include_router(consent_ledger_router)
+app.include_router(wallet_passes_router)
 app.include_router(legal_documents_router)
 app.include_router(named_super_admins_router)
 app.include_router(apilayer_router, dependencies=[Depends(require_super_admin)])

@@ -75,6 +75,8 @@ TABLE_PLANES: dict[str, str] = {
     "care_wellness_goals": CLINICAL,              # setup answers: goal ("manage stress"), activity level
     "care_clinical_profiles": CLINICAL,           # typed blood group and allergies (moved out of care_accounts.profile)
     "care_consent_records": CLINICAL,
+    "care_wallet_passes": CLINICAL,               # emergency card in a phone wallet: which health fields a student chose
+    "care_wallet_registrations": CLINICAL,        # Apple device push tokens for those passes
     "care_policies": CLINICAL,                    # insurance
     "care_claim_requests": CLINICAL,              # names the service received
     "care_agent_turns": CLINICAL,                 # questions asked of the care agent

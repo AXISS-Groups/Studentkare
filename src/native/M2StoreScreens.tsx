@@ -145,7 +145,7 @@ export function OrdersScreen(): React.ReactElement {
         reports: () => navigate('Vault'),
         details: setOrderId,
         allOrders: () => setOrderId(null),
-        openEmergencyCard: () => navigate('Emergency'),
+        openEmergencyCard: () => navigate('EmergencyCard'),
         openPass: () => navigate('DigitalId'),
         openCrisis: () => navigate('Emergency'),
         refill: (order, item) => navigate('Refills', { orderId: order, itemId: item }),

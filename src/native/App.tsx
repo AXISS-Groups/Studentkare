@@ -86,6 +86,8 @@ import { AppointmentsBoard } from '@/features/appointments/views/AppointmentsBoa
 import { MoreHubBoard } from '@/features/account/views/MoreHubBoard';
 import { BoardScreen } from '@/design-system/board/BoardKit';
 import { LegalLinksNative } from '@/features/auth/views/LegalLinksNative';
+import { EmergencyCardRoute as EmergencyCardBoardRoute } from '@/features/emergency/views/EmergencyCardBoard';
+import { IceContactsRoute } from '@/features/emergency/views/IceContactsBoard';
 
 export type RootStackParamList = {
   // keep-sorted start
@@ -106,9 +108,11 @@ export type RootStackParamList = {
   DeleteAccount: undefined;
   DigitalId: undefined;
   Emergency: undefined;
+  EmergencyCard: undefined;
   FindCare: { segment?: 'hospitals' | 'pharmacies' | 'ambulance' | 'doctors'; placeId?: string } | undefined;
   Home: undefined;
   HostelVisit: undefined;
+  IceContacts: undefined;
   Insights: undefined;
   Insurance: undefined;
   LabList: undefined;
@@ -199,6 +203,34 @@ function EmergencyRoute() {
         back: () => navigation.goBack(),
         nearestHospitals: () => navigate('FindCare', { segment: 'hospitals' }),
       }} />
+    </BoardFrame>
+  );
+}
+
+/**
+ * The emergency card and its contacts on Expo (plan tier1-emergency-card-wallet-2026-10-24):
+ * the same phone boards as the web, so the student can add the card to the phone's
+ * wallet here. Call 112 stays on the card in every state.
+ */
+function EmergencyCardRoute() {
+  const navigate = useNavigate();
+  const navigation = useNavigation();
+  return (
+    <BoardFrame>
+      <EmergencyCardBoardRoute links={{
+        back: () => navigation.goBack(),
+        contacts: () => navigate('IceContacts'),
+        nearestHospitals: () => navigate('FindCare', { segment: 'hospitals' }),
+      }} />
+    </BoardFrame>
+  );
+}
+
+function IceContactsScreenRoute() {
+  const navigation = useNavigation();
+  return (
+    <BoardFrame>
+      <IceContactsRoute links={{ back: () => navigation.goBack() }} />
     </BoardFrame>
   );
 }
@@ -466,6 +498,8 @@ function RootNavigator() {
           <Stack.Screen name="Appointments" component={AppointmentsRoute} options={{ title: t('nav.appointments'), headerShown: false }} />
           <Stack.Screen name="BookAppointment" component={BookAppointmentRoute} options={{ title: t('care.appts.book') }} />
           <Stack.Screen name="DigitalId" component={DigitalIdRoute} options={{ title: t('onboard.nav.healthId'), headerShown: false }} />
+          <Stack.Screen name="EmergencyCard" component={EmergencyCardRoute} options={{ title: t('sf.card.title'), headerShown: false }} />
+          <Stack.Screen name="IceContacts" component={IceContactsScreenRoute} options={{ title: t('sf.card.contactsLink'), headerShown: false }} />
           <Stack.Screen name="Checkout" component={CheckoutRoute} options={{ title: t('onboard.nav.checkout') }} />
           <Stack.Screen name="Teleconsult" component={TeleconsultRoute} options={{ title: t('onboard.nav.videoConsult') }} />
           {/* A student gets Mobile 2.0 Ask Ayush (general mode); other roles keep the plain chat. */}

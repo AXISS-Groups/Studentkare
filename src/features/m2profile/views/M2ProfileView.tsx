@@ -192,13 +192,13 @@ export const M2ProfileView = observer(function M2ProfileView({ vm, links }: { vm
       <Rise index={2} style={styles.gutter}>
         <M2Heading style={[m2Text.section, styles.sectionTitle]}>{t('m2.prof.onCampus')}</M2Heading>
         <View style={styles.campus}>
-          <Pressable role="link" accessibilityRole="link" {...cardLabel(`${t('m2.prof.emergency')}. ${t('m2.prof.emergencyBody')}`)}
+          <Pressable role="link" accessibilityRole="link" {...cardLabel(`${t('m2.prof.emergency')}. ${t(vm.emergencyBody)}`)}
             onPress={links.emergencyCard} testID="m2-prof-emergency" style={(state: PressState) => [styles.emergency, lift(state)]}>
             <Shine />
             <View style={styles.emergencyIcon}><Icon name="plus-square" size={22} color={color.onDangerFill} /></View>
             <View style={styles.emergencyText}>
               <Text style={styles.emergencyTitle}>{t('m2.prof.emergency')}</Text>
-              <Text style={styles.emergencyBody}>{t('m2.prof.emergencyBody')}</Text>
+              <Text style={styles.emergencyBody}>{t(vm.emergencyBody)}</Text>
             </View>
           </Pressable>
           <View style={styles.campusSide}>

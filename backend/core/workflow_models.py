@@ -1929,6 +1929,52 @@ class ConsentRecord(Base):
     terms_version: Mapped[str] = mapped_column(String(40), default="", server_default="")
 
 
+WALLET_PLATFORMS = ("APPLE", "GOOGLE")
+WALLET_PASS_STATUSES = ("ACTIVE", "VOIDED")
+
+
+class WalletPass(Base):
+    """The student's emergency card as a phone-wallet pass (services/wallet_passes.py).
+
+    Plan docs/plans/tier1-emergency-card-wallet-2026-10-24.md. ``fields`` is what the
+    student switched on; the pass content is rebuilt from their records each time and
+    only its hash is kept, so no health value is copied here. ``serial`` is random.
+    """
+    __tablename__ = "care_wallet_passes"
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    account_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"), index=True)
+    platform: Mapped[str] = mapped_column(String(10))
+    serial: Mapped[str] = mapped_column(String(64), unique=True, index=True)
+    fields: Mapped[list] = mapped_column(JSON, default=list)
+    status: Mapped[str] = mapped_column(String(10), default="ACTIVE", index=True)
+    content_hash: Mapped[str] = mapped_column(String(64), default="")
+    created_at: Mapped[float] = mapped_column(Float)
+    updated_at: Mapped[float] = mapped_column(Float)
+    voided_at: Mapped[float] = mapped_column(Float, default=0.0)
+    # Why it was voided: REMOVED, CONSENT_WITHDRAWN, ACCOUNT_DELETION, LEFT_CAMPUS, REPLACED.
+    void_reason: Mapped[str] = mapped_column(String(24), default="")
+    # An update or void not yet delivered to the wallet (APNs / Google Wallet API).
+    push_pending: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
+    push_attempts: Mapped[int] = mapped_column(Integer, default=0)
+    pushed_at: Mapped[float] = mapped_column(Float, default=0.0)
+    # Google: the object is saved in someone's wallet (the API's hasUsers).
+    in_wallet: Mapped[bool] = mapped_column(Boolean, default=False)
+    # A single-use download link for the .pkpass (sha256 of the token) and its expiry.
+    download_token_hash: Mapped[str] = mapped_column(String(64), default="")
+    download_expires_at: Mapped[float] = mapped_column(Float, default=0.0)
+
+
+class WalletRegistration(Base):
+    """An Apple device that added a pass (PassKit web service). The push token is Apple's."""
+    __tablename__ = "care_wallet_registrations"
+    __table_args__ = (UniqueConstraint("pass_id", "device_library_id"),)
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    pass_id: Mapped[str] = mapped_column(ForeignKey("care_wallet_passes.id"), index=True)
+    device_library_id: Mapped[str] = mapped_column(String(128), index=True)
+    push_token: Mapped[str] = mapped_column(String(256))
+    created_at: Mapped[float] = mapped_column(Float)
+
+
 LEGAL_DOCUMENT_KINDS = ("PRIVACY_NOTICE", "TERMS", "GRIEVANCE_OFFICER")
 LEGAL_DOCUMENT_STATUSES = ("DRAFT", "PUBLISHED", "RETIRED")
 
