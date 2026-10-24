@@ -6,7 +6,8 @@ import type { SkIconName } from '@/design-system/icons';
 import { Button, OfflineBanner, RadioGroup, Rise, Sheet, Skeleton, useOnline } from '@/design-system';
 import {
   cardLabel,
-  Gradient, LiftCard, M2Card, M2Heading, M2_NAV_CLEARANCE, ProgressRing, SosButton, heroStops, m2Text, useAmbientMotion, useLift, useLoop, useOwnPhoneChrome,
+  Gradient, LiftCard, M2Card, M2Grid, M2Heading, M2HeaderSos, M2WideColumn, M2_NAV_CLEARANCE, ProgressRing, heroStops, m2Text, useAmbientMotion, useLift, useLoop,
+  useOwnPhoneChrome,
 } from '@/design-system/m2';
 import type { PressState, ServiceHue } from '@/design-system/m2';
 import { color, focusRing, font, fontWeight, motion, radius, shadow, shadowStyle, size, space, webOnly } from '@/design-system/theme';
@@ -30,7 +31,6 @@ import type { Plan, ProfileViewModel } from '../viewmodel/ProfileViewModel';
  * switch, because a switch that does nothing is a fake control.
  */
 export interface M2ProfileLinks {
-  sos: () => void;
   /** The More hub: account, requests, notifications, verification, plans… */
   settings: () => void;
   /** Change these details (name, hostel, emergency contact). */
@@ -105,7 +105,16 @@ function plusLine(plan: Plan, t: ReturnType<typeof useT>): string {
     : t('m2.prof.plusPrice', { price });
 }
 
-export const M2ProfileView = observer(function M2ProfileView({ vm, links }: { vm: ProfileViewModel; links: M2ProfileLinks }) {
+export const M2ProfileView = observer(function M2ProfileView({ vm, links, wide = false, accountDetails }: {
+  vm: ProfileViewModel; links: M2ProfileLinks;
+  /**
+   * Laid out wide in the desktop web shell (Tier 1 parity plan 2026-10-24 §11): hero full width, vitals beside
+   * On campus, the documents as a row of cards, the settings list beside `accountDetails`.
+   */
+  wide?: boolean;
+  /** The web's contact & identity card ("Account details"), drawn beside the settings on desktop. */
+  accountDetails?: React.ReactNode;
+}) {
   const t = useT();
   useOwnPhoneChrome();
   const online = useOnline();
@@ -123,14 +132,15 @@ export const M2ProfileView = observer(function M2ProfileView({ vm, links }: { vm
     { key: 'weight', label: t('m2.prof.weight'), value: vm.body.data?.weight ? `${vm.body.data.weight.value} ${vm.body.data.weight.unit}` : null, note: vm.body.data?.weight ? t('m2.prof.added', { date: shortDate(vm.body.data.weight.recordedAt) }) : '' },
   ];
 
-  return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content} testID="m2-profile">
+  const gutter = wide ? undefined : styles.gutter;
+  const hero = (
       <Rise>
-        <NavyHero>
+        <NavyHero style={wide ? styles.heroWide : undefined}>
           <View style={styles.headRow}>
             <M2Heading level={1} style={styles.title}>{t('m2.nav.profile')}</M2Heading>
             <View style={styles.headActions}>
-              <SosButton label={t('m2.sos')} spoken={t('m2.sosSpoken')} onPress={links.sos} testID="m2-prof-sos" />
+              {/* SOS is the shell's (parity plan §1): the phone frame's dialog, the app's Emergency screen; none on desktop. */}
+              <M2HeaderSos testID="m2-prof-sos" />
               <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('m2.prof.settings')} aria-label={t('m2.prof.settings')} onPress={links.settings}
                 testID="m2-prof-settings" style={({ focused }: PressState) => [styles.settings, focused ? focusRing : null]}>
                 <Icon name="settings" size={18} color={color.onHero} />
@@ -164,10 +174,12 @@ export const M2ProfileView = observer(function M2ProfileView({ vm, links }: { vm
           <Text style={styles.ringNote}>{t('m2.prof.ringNote')}</Text>
         </NavyHero>
       </Rise>
+  );
 
-      {!online ? <View style={styles.gutter}><OfflineBanner message={t('m2h.offline')} /></View> : null}
+  const offline = !online ? <View style={gutter}><OfflineBanner message={t('m2h.offline')} /></View> : null;
 
-      <Rise index={1} style={[styles.gutter, styles.vitals]}>
+  const vitalsRow = (
+      <Rise index={1} style={[gutter, styles.vitals]}>
         {vitals.map((v) => (
           <M2Card key={v.key} style={styles.vital} testID={`m2-prof-${v.key}`}>
             <Text style={styles.vitalLabel}>{v.label}</Text>
@@ -187,9 +199,11 @@ export const M2ProfileView = observer(function M2ProfileView({ vm, links }: { vm
           <Text style={styles.vitalNote}>{p?.bloodGroup ? t('m2.prof.typedByYou') : ' '}</Text>
         </M2Card>
       </Rise>
-      {vm.body.phase === 'error' ? <View style={styles.gutter}><CardError title={t('m2.prof.vitalsFailed')} onRetry={() => void vm.body.load()} testID="m2-prof-body-error" /></View> : null}
+  );
+  const vitalsError = vm.body.phase === 'error' ? <View style={gutter}><CardError title={t('m2.prof.vitalsFailed')} onRetry={() => void vm.body.load()} testID="m2-prof-body-error" /></View> : null;
 
-      <Rise index={2} style={styles.gutter}>
+  const campus = (
+      <Rise index={2} style={gutter}>
         <M2Heading style={[m2Text.section, styles.sectionTitle]}>{t('m2.prof.onCampus')}</M2Heading>
         <View style={styles.campus}>
           <Pressable role="link" accessibilityRole="link" {...cardLabel(`${t('m2.prof.emergency')}. ${t(vm.emergencyBody)}`)}
@@ -209,9 +223,28 @@ export const M2ProfileView = observer(function M2ProfileView({ vm, links }: { vm
           </View>
         </View>
       </Rise>
+  );
 
+  const docCards = vm.documents.data ? DOCUMENT_CARDS.map((d) => {
+    const s = DOC_STYLE[d.key];
+    const n = vm.documents.data ? countOf(vm.documents.data, d.category) : 0;
+    return (
+      <Pressable key={d.key} role="link" accessibilityRole="link" {...cardLabel(`${n} ${t(s.label)}`)} onPress={links.documents}
+        testID={`m2-prof-doc-${d.key}`} style={(state: PressState) => [styles.docPress, lift(state)]}>
+        <Gradient colors={heroStops(s.hue)} gloss style={[styles.doc, wide ? styles.docWide : null]}>
+          <View style={styles.docIcon}><Icon name={s.icon} size={20} color={color.onHero} /></View>
+          <View>
+            <Text style={styles.docCount}>{n}</Text>
+            <Text style={styles.docLabel}>{t(s.label)}</Text>
+          </View>
+        </Gradient>
+      </Pressable>
+    );
+  }) : null;
+
+  const documents = (
       <Rise index={3}>
-        <View style={[styles.gutter, styles.docsHead]}>
+        <View style={[gutter, styles.docsHead]}>
           <M2Heading style={m2Text.section}>{t('m2.prof.documents')}</M2Heading>
           {links.addDocument ? (
             <Pressable role="link" accessibilityRole="link" accessibilityLabel={t('m2.prof.addSpoken')} aria-label={t('m2.prof.addSpoken')} onPress={links.addDocument}
@@ -221,33 +254,19 @@ export const M2ProfileView = observer(function M2ProfileView({ vm, links }: { vm
             </Pressable>
           ) : null}
         </View>
-        {vm.documents.phase === 'loading' ? <View style={styles.gutter}><Skeleton label={t('m2.prof.docsLoading')} lines={['100%']} /></View> : null}
-        {vm.documents.phase === 'error' ? <View style={styles.gutter}><CardError title={t('m2.prof.documents')} onRetry={() => void vm.documents.load()} testID="m2-prof-docs-error" /></View> : null}
-        {vm.documents.data ? (
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.docRail} testID="m2-prof-docs">
-            {DOCUMENT_CARDS.map((d) => {
-              const s = DOC_STYLE[d.key];
-              const n = vm.documents.data ? countOf(vm.documents.data, d.category) : 0;
-              return (
-                <Pressable key={d.key} role="link" accessibilityRole="link" {...cardLabel(`${n} ${t(s.label)}`)} onPress={links.documents}
-                  testID={`m2-prof-doc-${d.key}`} style={(state: PressState) => [styles.docPress, lift(state)]}>
-                  <Gradient colors={heroStops(s.hue)} gloss style={styles.doc}>
-                    <View style={styles.docIcon}><Icon name={s.icon} size={20} color={color.onHero} /></View>
-                    <View>
-                      <Text style={styles.docCount}>{n}</Text>
-                      <Text style={styles.docLabel}>{t(s.label)}</Text>
-                    </View>
-                  </Gradient>
-                </Pressable>
-              );
-            })}
-          </ScrollView>
+        {vm.documents.phase === 'loading' ? <View style={gutter}><Skeleton label={t('m2.prof.docsLoading')} lines={['100%']} /></View> : null}
+        {vm.documents.phase === 'error' ? <View style={gutter}><CardError title={t('m2.prof.documents')} onRetry={() => void vm.documents.load()} testID="m2-prof-docs-error" /></View> : null}
+        {docCards && wide ? (
+          <M2Grid columns={{ tablet: 2, desktop: DOCUMENT_CARDS.length }} testID="m2-prof-docs">{docCards}</M2Grid>
+        ) : docCards ? (
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.docRail} testID="m2-prof-docs">{docCards}</ScrollView>
         ) : null}
-        {vm.documents.data ? <Text style={[m2Text.meta, styles.gutter, styles.docNote]}>{t('m2.prof.docsNote')}</Text> : null}
+        {vm.documents.data ? <Text style={[m2Text.meta, gutter, styles.docNote]}>{t('m2.prof.docsNote')}</Text> : null}
       </Rise>
+  );
 
-      {plus ? (
-        <Rise index={4} style={styles.gutter}>
+  const plusCard = plus ? (
+        <Rise index={4} style={gutter}>
           <LiftCard label={`${plus.name}. ${plusLine(plus, t)}`} onPress={links.plus} disabled={!links.plus} testID="m2-prof-plus" style={styles.plus}>
             <Gradient colors={heroStops('orange')} style={styles.plusIcon}><Icon name="star" size={24} color={color.onHero} /></Gradient>
             <View style={styles.rowText}>
@@ -257,9 +276,10 @@ export const M2ProfileView = observer(function M2ProfileView({ vm, links }: { vm
             {links.plus ? <View style={styles.view}><Text style={styles.viewText}>{t('m2.prof.view')}</Text></View> : null}
           </LiftCard>
         </Rise>
-      ) : null}
+  ) : null;
 
-      <Rise index={5} style={styles.gutter}>
+  const settings = (
+      <Rise index={5} style={gutter}>
         <M2Card style={styles.rows}>
           <Row icon="shield-2" fill={color.positiveBg} ink={color.positive} title={t('m2.prof.ayush')} meta={t('m2.notYet')} testID="m2-prof-ayush" />
           <Row icon="user-5" fill={color.surface3} ink={color.action} title={t('m2.prof.family')} meta={t('m2.prof.familyMeta')} testID="m2-prof-family" />
@@ -275,7 +295,9 @@ export const M2ProfileView = observer(function M2ProfileView({ vm, links }: { vm
           <Text style={styles.signOutText}>{t('home.signOut')}</Text>
         </Pressable>
       </Rise>
+  );
 
+  const languageSheet = (
       <Sheet visible={langOpen} title={t('m2.prof.language')} onClose={() => setLangOpen(false)} testID="m2-prof-language-sheet">
         <View style={styles.sheet}>
           <RadioGroup label={t('m2.prof.language')} value={lang} options={LANGS.map((l) => ({ value: l, label: LANGUAGE_NAMES[l] }))}
@@ -283,6 +305,38 @@ export const M2ProfileView = observer(function M2ProfileView({ vm, links }: { vm
           <Button label={t('phone.close')} variant="ghost" fullWidth onPress={() => setLangOpen(false)} />
         </View>
       </Sheet>
+  );
+
+  if (wide) {
+    return (
+      <M2WideColumn testID="m2-profile">
+        {hero}
+        {offline}
+        <M2Grid columns={{ tablet: 1, desktop: 2 }} testID="m2-prof-row-vitals">
+          <View style={styles.wideCell}>{vitalsRow}{vitalsError}</View>
+          {campus}
+        </M2Grid>
+        {documents}
+        {plusCard}
+        <M2Grid columns={{ tablet: 1, desktop: 2 }} testID="m2-prof-row-settings">
+          {settings}
+          {accountDetails}
+        </M2Grid>
+        {languageSheet}
+      </M2WideColumn>
+    );
+  }
+  return (
+    <ScrollView style={styles.screen} contentContainerStyle={styles.content} testID="m2-profile">
+      {hero}
+      {offline}
+      {vitalsRow}
+      {vitalsError}
+      {campus}
+      {documents}
+      {plusCard}
+      {settings}
+      {languageSheet}
     </ScrollView>
   );
 });
@@ -345,4 +399,7 @@ const styles = StyleSheet.create({
   signOut: { marginTop: space.s14, minHeight: 50, borderRadius: radius.full, alignItems: 'center', justifyContent: 'center', backgroundColor: color.surface3 },
   signOutText: { fontFamily: font.family.sans, fontSize: font.size.bodySm, fontWeight: fontWeight(font.weight.heavy), color: color.action },
   sheet: { gap: space.s12 },
+  heroWide: { borderRadius: 36, paddingHorizontal: space.s32 },
+  wideCell: { gap: space.s12 },
+  docWide: { width: '100%' },
 });

@@ -132,7 +132,6 @@ export function ProfileScreen(): React.ReactElement {
   return (
     <Frame>
       <M2ProfileView vm={vm} links={{
-        sos: () => navigate('Emergency'),
         settings: () => navigate('More'),
         emergencyCard: () => navigate('EmergencyCard'),
         pass: () => navigate('DigitalId'),
@@ -160,7 +159,7 @@ export function AskAyushScreen(): React.ReactElement {
   return (
     <Frame>
       <KeyboardAvoidingView style={styles.frame} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <M2AskAyushView vm={vm} links={{ back, sos: () => navigate('Emergency'), book: () => navigate('Consults') }} />
+        <M2AskAyushView vm={vm} links={{ back, book: () => navigate('Consults') }} />
       </KeyboardAvoidingView>
     </Frame>
   );

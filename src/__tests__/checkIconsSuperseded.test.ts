@@ -78,7 +78,7 @@ describe('check-icons: superseded boards', () => {
   it('the real map is consistent: every superseded board has a built successor and a recorded source', () => {
     const map = JSON.parse(readFileSync(resolve(process.cwd(), 'design/screens/implementation-map.json'), 'utf8'));
     const entries = Object.entries(map.superseded as Record<string, { by: string[]; source: string }>).filter(([k]) => !k.startsWith('_'));
-    expect(entries.map(([k]) => k).sort()).toEqual(['MyReports', 'ReportInsights', 'WebDashboard', 'WebHome', 'WebOrders']);
+    expect(entries.map(([k]) => k).sort()).toEqual(['MyReports', 'ReportInsights', 'WebAccount', 'WebAyush', 'WebDashboard', 'WebHome', 'WebOrders']);
     for (const [screen, entry] of entries) {
       expect(map.screens[screen], screen).toBeUndefined();
       expect(map.inProgress[screen], screen).toBeUndefined();

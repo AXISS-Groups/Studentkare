@@ -565,18 +565,6 @@
       "src/design-system/public-site/publicSiteNav.ts",
       "src/design-system/public-site/NewsletterBand.tsx"
     ],
-    "WebAyush": [
-      "src/features/studentweb/views/t1/WebAyushView.tsx",
-      "src/features/ayush/AyushAnswer.tsx",
-      "src/features/ayush/useAyushConversation.ts",
-      "src/features/ayush/ayush.css",
-      "src/design-system/student-shell/StudentWebShell.tsx",
-      "src/design-system/student-shell/studentNav.ts",
-      "src/design-system/overlays/ConfirmDialog.tsx",
-      "src/features/studentweb/views/parts.tsx",
-      "src/features/studentweb/views/t1/shared.tsx",
-      "src/features/studentweb/views/t1/t1web.css"
-    ],
     "WebConsultSummary": [],
     "WebEmergencyCard": [
       "src/features/studentweb/views/t1/WebEmergencyCardView.tsx",
@@ -676,17 +664,6 @@
       "src/features/studentweb/views/parts.tsx",
       "src/features/studentweb/data/useCatalogIndex.ts",
       "src/features/studentweb/data/studentWebData.ts",
-      "src/design-system/student-shell/StudentWebShell.tsx",
-      "src/design-system/student-shell/studentNav.ts",
-      "src/design-system/overlays/ConfirmDialog.tsx",
-      "src/design-system/public-site/PublicSiteFooter.tsx",
-      "src/design-system/public-site/NewsletterBand.tsx",
-      "src/design-system/public-site/publicSiteNav.ts"
-    ],
-    "WebAccount": [
-      "src/features/studentweb/views/WebAccountView.tsx",
-      "src/features/studentweb/views/parts.tsx",
-      "src/design-system/art/canvasAssets.ts",
       "src/design-system/student-shell/StudentWebShell.tsx",
       "src/design-system/student-shell/studentNav.ts",
       "src/design-system/overlays/ConfirmDialog.tsx",
@@ -1632,8 +1609,8 @@
     "StateScreens": [],
     "AyushWidget": [
       "src/features/ayush/AyushWidget.tsx",
-      "src/features/ayush/AyushAnswer.tsx",
-      "src/features/ayush/useAyushConversation.ts",
+      "src/features/chat/views/AyushThread.tsx",
+      "src/features/chat/viewmodel/AyushViewModel.ts",
       "src/features/ayush/ayush.css"
     ],
     "AyushSheet": [],
@@ -1883,6 +1860,7 @@
     ],
     "M2AskAyush": [
       "src/features/chat/views/M2AskAyushView.tsx",
+      "src/features/chat/views/AyushThread.tsx",
       "src/features/chat/views/M2AskAyushRoute.tsx",
       "src/features/chat/viewmodel/AyushViewModel.ts",
       "src/design-system/m2/PillNav.tsx",
@@ -1897,6 +1875,7 @@
     "M2Profile": [
       "src/features/m2profile/views/M2ProfileView.tsx",
       "src/features/m2profile/views/M2ProfileRoute.tsx",
+      "src/features/m2profile/views/AccountDetailsCard.tsx",
       "src/features/m2profile/viewmodel/ProfileViewModel.ts",
       "src/features/m2health/HealthParts.tsx",
       "src/features/m2health/resource.ts",
@@ -2225,6 +2204,20 @@
         "M2Orders"
       ],
       "source": "docs/ux/web-mobile-parity-2026-10-23.md#approved-decisions-23-oct-2026 (desktop Orders is Mobile 2.0 Orders laid out wide, parity phase 2)"
+    },
+    "WebAyush": {
+      "by": [
+        "M2AskAyush"
+      ],
+      "source": "docs/plans/tier1-parity-2026-10-24.md §9 (Q2: one Ask Ayush view; the side column is its desktop column)",
+      "redirects": {}
+    },
+    "WebAccount": {
+      "by": [
+        "M2Profile"
+      ],
+      "source": "docs/plans/tier1-parity-2026-10-24.md §11 (Q2: M2Profile wide with an Account details card replaces the Account page at /profile)",
+      "redirects": {}
     }
   },
   "retiredIcons": {
@@ -2232,15 +2225,6 @@
     "SearchEntry": {
       "icons": [
         "menu"
-      ],
-      "source": "docs/ux/web-mobile-parity-2026-10-23.md#approved-decisions-23-oct-2026"
-    },
-    "WebAccount": {
-      "icons": [
-        "bar-chart",
-        "flask",
-        "map-pin",
-        "sparkle"
       ],
       "source": "docs/ux/web-mobile-parity-2026-10-23.md#approved-decisions-23-oct-2026"
     },

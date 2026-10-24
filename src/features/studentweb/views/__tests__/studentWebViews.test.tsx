@@ -6,10 +6,8 @@ import { navigate } from '@/lib/utils/workflowRouting';
 import { BrowserRouter } from '@/core/navigation';
 import { LiveCartProvider, useLiveCart } from '@/data/contexts/LiveCartContext';
 import type { LiveCatalogItem, LiveOrder } from '@/data/types/workflowTypes';
-import { ThemeProvider } from '@/theme/tokens/theme';
 import { WebOrdersHub } from '../WebOrdersHub';
 import { WebReorderView } from '../WebReorderView';
-import { WebAccountView } from '../WebAccountView';
 import { WebNotificationsRoute } from '../WebNotificationsView';
 import { WebShopView } from '../shop/WebShopView';
 import { WebCheckoutView } from '../shop/WebCheckoutView';
@@ -99,26 +97,6 @@ describe('WebReorder — Buy again (the student page, not the partner /reorder)'
     expect(screen.getByRole('button', { name: /Campus store.*Not available yet/ })).toHaveAttribute('aria-disabled', 'true');
     expect(screen.getByText('Nothing to buy again yet')).toBeInTheDocument();
     expect(screen.getByText('Ratings aren’t open yet')).toBeInTheDocument();
-  });
-});
-
-describe('WebAccount', () => {
-  it('shows the account as stored, with no edit on the sign-in contact and ABHA as not available', async () => {
-    serve({
-      '/profile': { id: 'u1', fullName: 'Krishna Chintakayala', role: 'STUDENT', email: 'k@example.in', phone: '+91 98765 43210', dob: '2004-01-01', university: 'VNR VJIET', rollNumber: '', bloodGroup: '', ageVerified: true, isVerifiedStudent: true, emergencyContactName: '', emergencyContactPhone: '', emergencyContactRelation: '', allergies: [], chronicConditions: [], updatedAt: null },
-      '/identity': { campusStatus: 'VERIFIED' },
-      '/points/me': { balance: 240, redeemable: false },
-      '/notifications/preferences': { pushEnabled: true, emailEnabled: false, remindersEnabled: true },
-    });
-    render(<ThemeProvider><WebAccountView /></ThemeProvider>);
-    await settle();
-    expect(screen.getByRole('heading', { level: 1, name: 'Hi, Krishna' })).toBeInTheDocument();
-    expect(screen.getByText('+91 98765 43210')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /: Mobile number/ })).toBeNull();
-    expect(screen.getAllByText('Not available yet').length).toBeGreaterThan(0);
-    expect(screen.getByText('Kare points · 240')).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Add: Emergency contact' }));
-    expect(screen.getByRole('dialog', { name: 'Your details' })).toBeInTheDocument();
   });
 });
 
