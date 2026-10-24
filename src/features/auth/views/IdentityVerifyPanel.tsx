@@ -4,7 +4,10 @@ import { observer } from 'mobx-react-lite';
 import { Button, ErrorState, ProgressRing, Sheet, Skeleton } from '@/design-system';
 import { Icon, Illustration } from '@/design-system/icons';
 import type { SkIllustrationName } from '@/design-system/icons';
-import { color, focusRing, font, fontWeight, radius, size, space } from '@/design-system/theme';
+import { M2Callout, M2Card, M2Grid, M2Header, M2Heading, M2PageHero, M2Tile3d, M2WideColumn, m2Text, useOwnPhoneChrome } from '@/design-system/m2';
+import type { PressState } from '@/design-system/m2';
+import { BoardArt } from '@/design-system/board/BoardKit';
+import { color, focusRing, font, fontWeight, size, space } from '@/design-system/theme';
 import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
 import { IdentityVerifyViewModel } from '../viewmodel/IdentityVerifyViewModel';
@@ -46,6 +49,7 @@ type SheetId = IdentityCheckId | 'skip' | null;
  */
 export const IdentityVerifyPanel = observer(function IdentityVerifyPanel({ viewModel: vm, links, wide = false }: { viewModel: IdentityVerifyViewModel; links: IdentityVerifyLinks; wide?: boolean }) {
   const t = useT();
+  useOwnPhoneChrome();
   const [sheet, setSheet] = useState<SheetId>(null);
   const done = vm.remaining === 0 && vm.availableCount > 0 && !vm.loading && !vm.loadFailed;
   const ring = t('ident.verify.ring', { done: vm.verifiedCount, total: vm.availableCount });
@@ -70,96 +74,64 @@ export const IdentityVerifyPanel = observer(function IdentityVerifyPanel({ viewM
     />
   );
 
-  const crisis = (
-    <View style={styles.crisis} testID="verify-crisis">
-      <Icon name="phone-2" size={18} color={color.danger} />
-      <View style={styles.crisisWords}>
-        <Text style={styles.crisisText}>{t('ident.verify.crisis')}</Text>
-        <View style={styles.crisisLinks}>
-          <Pressable role="link" accessibilityRole="link" onPress={links.openCrisis} style={({ focused }: { pressed: boolean; focused?: boolean }) => [styles.inlineLink, focused ? focusRing : null]}>
-            <Text style={styles.crisisLink}>{t('ident.verify.getHelp')}</Text>
-          </Pressable>
-          <Pressable role="button" accessibilityRole="button" onPress={() => setSheet('skip')} style={({ focused }: { pressed: boolean; focused?: boolean }) => [styles.inlineLink, focused ? focusRing : null]}>
-            <Text style={styles.crisisLink}>{t('ident.verify.skip')}</Text>
-          </Pressable>
-        </View>
+  const skipLink = (
+    <Pressable role="button" accessibilityRole="button" onPress={() => setSheet('skip')} style={({ focused }: PressState) => [styles.inlineLink, styles.linkRow, focused ? focusRing : null]}>
+      <Text style={styles.link}>{t('ident.verify.skip')}</Text>
+      <Icon name="arrow-right" size={14} color={color.action} />
+    </Pressable>
+  );
+
+  // Progress: the ring (one accessible image, named "n of m checks verified") beside the words.
+  const progress = (
+    <M2Card style={styles.progress} testID="verify-progress">
+      <ProgressRing value={vm.verifiedCount} total={vm.availableCount} size={wide ? 84 : 72} label={ring} testID="verify-ring" />
+      <View style={styles.grow}>
+        <Text style={m2Text.cardTitle}>{ring}</Text>
       </View>
+      {wide ? <View style={styles.headCta}>{cta}</View> : null}
+    </M2Card>
+  );
+
+  const rows = !vm.loading ? (
+    <M2Grid columns={{ phone: 1, tablet: 2, desktop: 2 }} style={styles.rows}>
+      {vm.checks.map((check) => (
+        <View key={check.id}>
+          <IdentityCheckRow check={check} onPress={open(check.id)} testID={`check-${check.id}`}
+            art={wide ? <Illustration name={check.id === 'photo' ? WEB_FACE_ART : CHECK_ART[check.id]} size={40} /> : undefined} />
+        </View>
+      ))}
+    </M2Grid>
+  ) : null;
+
+  const who = (
+    <M2Card style={styles.card} testID="verify-who">
+      <M2Heading style={m2Text.section}>{t('ident.who.title')}</M2Heading>
+      <View style={styles.whoRow}>
+        <M2Tile3d icon="graduation-cap" hue="amber" size={36} />
+        <Text style={[m2Text.body, styles.grow]}><Text style={styles.strong}>{t('ident.who.college')}</Text>{t('ident.who.collegeSees')}</Text>
+      </View>
+      <View style={styles.whoRow}>
+        <M2Tile3d icon="lock" hue="indigo" size={36} />
+        <Text style={[m2Text.body, styles.grow]}><Text style={styles.strong}>{t('ident.who.partners')}</Text>{t('ident.who.partnersSee')}</Text>
+      </View>
+    </M2Card>
+  );
+
+  // Crisis help sits outside every state, including loading and errors (DESIGN.md §2.4).
+  const always = (
+    <M2Callout tone="positive" icon="phone-2" hue="green" title={t('ident.always.title')} body={wide ? t('ident.always.body') : t('ident.verify.crisis')} testID="verify-always-open"
+      action={{ label: t('ident.verify.getHelp'), onPress: links.openCrisis, testID: 'verify-get-help' }} />
+  );
+
+  const privacy = (
+    <View style={styles.privacy}>
+      <Illustration name="illustration-id-function" size={18} />
+      <Text style={styles.privacyText}>{t('ident.verify.privacy')}</Text>
     </View>
   );
 
-  return (
-    <ScrollView style={styles.screen} contentContainerStyle={[styles.content, wide ? styles.contentWide : null]}>
-      {!wide ? (
-        <Pressable
-          testID="verify-back"
-          role="button"
-          accessibilityRole="button"
-          accessibilityLabel={t('common.back')}
-          aria-label={t('common.back')}
-          onPress={links.back}
-          style={({ focused }: { pressed: boolean; focused?: boolean }) => [styles.back, focused ? focusRing : null]}
-        >
-          <Icon name="chevron-left" size={20} color={color.text} />
-        </Pressable>
-      ) : null}
-
-      <View style={styles.head}>
-        <ProgressRing value={vm.verifiedCount} total={vm.availableCount} size={wide ? 92 : 76} label={ring} testID="verify-ring" />
-        <View style={styles.headWords}>
-          <Text accessibilityRole="header" style={[styles.title, wide ? styles.titleWide : null]}>{t('verify.title')}</Text>
-          <Text style={styles.lead}>{t('ident.verify.lead')}</Text>
-          {wide ? (
-            <Pressable role="button" accessibilityRole="button" onPress={() => setSheet('skip')} style={({ focused }: { pressed: boolean; focused?: boolean }) => [styles.inlineLink, styles.linkRow, focused ? focusRing : null]}>
-              <Text style={styles.link}>{t('ident.verify.skip')}</Text>
-              <Icon name="arrow-right" size={14} color={color.action} />
-            </Pressable>
-          ) : null}
-        </View>
-        {wide ? <View style={styles.headCta}>{cta}</View> : null}
-      </View>
-
-      {vm.loading ? <Skeleton label={t('verify.loading')} lines={['90%', '90%', '90%', '90%']} /> : null}
-      {vm.loadFailed ? (
-        <ErrorState title={t('verify.loadFailedTitle')} body={t('verify.loadFailedBody')} retryLabel={t('common.tryAgain')} onRetry={() => void vm.load()} />
-      ) : null}
-
-      {!vm.loading ? (
-        <View style={[styles.rows, wide ? styles.rowsWide : null]} role="list">
-          {vm.checks.map((check) => (
-            <View key={check.id} style={wide ? styles.cellWide : null} role="listitem">
-              <IdentityCheckRow check={check} onPress={open(check.id)} testID={`check-${check.id}`} />
-            </View>
-          ))}
-        </View>
-      ) : null}
-
-      {wide ? (
-        <View style={styles.cards}>
-          <View style={[styles.card, styles.cardGrow]}>
-            <Text style={styles.eyebrow}>{t('ident.who.title')}</Text>
-            <Text style={styles.cardBody}><Text style={styles.strong}>{t('ident.who.college')}</Text>{t('ident.who.collegeSees')}</Text>
-            <Text style={styles.cardBody}><Text style={styles.strong}>{t('ident.who.partners')}</Text>{t('ident.who.partnersSee')}</Text>
-          </View>
-          <View style={[styles.card, styles.cardDanger, styles.cardGrow]} testID="verify-always-open">
-            <Text style={[styles.eyebrow, styles.eyebrowDanger]}>{t('ident.always.title')}</Text>
-            <Text style={styles.cardBody}>{t('ident.always.body')}</Text>
-            <View style={styles.cardAction}>
-              <Button variant="danger" label={t('ident.verify.getHelp')} onPress={links.openCrisis} />
-            </View>
-          </View>
-        </View>
-      ) : crisis}
-
-      {!wide ? (
-        <View style={styles.foot}>
-          <View style={styles.privacy}>
-            <Illustration name="illustration-id-function" size={18} />
-            <Text style={styles.privacyText}>{t('ident.verify.privacy')}</Text>
-          </View>
-          {cta}
-        </View>
-      ) : null}
-
+  const sheets = (
+    <>
       <Sheet visible={sheet === 'skip'} title={t('ident.skip.title')} onClose={() => setSheet(null)}>
         <Text style={styles.sheetBody}>{t('ident.skip.body')}</Text>
         <Button label={t('ident.close')} variant="secondary" fullWidth onPress={() => setSheet(null)} />
@@ -180,6 +152,61 @@ export const IdentityVerifyPanel = observer(function IdentityVerifyPanel({ viewM
         <Text style={styles.sheetBody}>{vm.campusVerified ? t('ident.campus.verifiedBody') : t('verify.campusOnWeb')}</Text>
         <Button label={t('ident.close')} variant="secondary" fullWidth onPress={() => setSheet(null)} />
       </Sheet>
+    </>
+  );
+
+  const states = (
+    <>
+      {vm.loading ? <M2Card style={styles.card}><Skeleton label={t('verify.loading')} lines={['90%', '90%', '90%', '90%']} /></M2Card> : null}
+      {vm.loadFailed ? (
+        <M2Card style={styles.card}><ErrorState title={t('verify.loadFailedTitle')} body={t('verify.loadFailedBody')} retryLabel={t('common.tryAgain')} onRetry={() => void vm.load()} /></M2Card>
+      ) : null}
+    </>
+  );
+
+  const hero = (
+    <M2PageHero hue="teal" icon="shield-check" title={wide ? t('verify.title') : undefined} body={t('ident.verify.lead')} testID="verify-hero"
+      art={<BoardArt name="image-31444f.png" width={220} height={150} />} artOnPhone={false} />
+  );
+
+  if (wide) {
+    return (
+      <M2WideColumn testID="verify-identity">
+        <M2Header backLabel={t('common.back')} onBack={links.back} title={t('verify.title')} testID="verify-header" />
+        {hero}
+        <M2Grid columns={{ desktop: 3, tablet: 1 }}>
+          <View style={styles.span2}>
+            {progress}
+            {states}
+            {rows}
+            {privacy}
+          </View>
+          <View style={styles.column}>
+            {who}
+            {always}
+            {skipLink}
+          </View>
+        </M2Grid>
+        {sheets}
+      </M2WideColumn>
+    );
+  }
+
+  return (
+    <ScrollView style={styles.screen} contentContainerStyle={styles.content} testID="verify-identity">
+      <M2Header backLabel={t('common.back')} onBack={links.back} title={t('verify.title')} testID="verify-back" />
+      <View style={[styles.gutter, styles.column]}>
+        {hero}
+        {progress}
+        {states}
+        {rows}
+        {who}
+        {always}
+        {skipLink}
+        {privacy}
+        {cta}
+      </View>
+      {sheets}
     </ScrollView>
   );
 });
@@ -194,45 +221,23 @@ export function IdentityVerifyRoute({ links, wide = false }: { links: IdentityVe
 }
 
 const styles = StyleSheet.create({
+  grow: { flex: 1, minWidth: 0, gap: space.s2 },
   screen: { flex: 1, backgroundColor: color.canvas },
-  content: { padding: space.gutterPhone, gap: space.s16, maxWidth: size.phoneWidth, width: '100%', alignSelf: 'center' },
-  contentWide: { maxWidth: size.webContentMax, padding: space.s32, alignSelf: 'stretch', gap: space.s20 },
-  back: {
-    width: size.touchTarget, height: size.touchTarget, borderRadius: radius.full, backgroundColor: color.surface,
-    alignItems: 'center', justifyContent: 'center',
-  },
-  head: { flexDirection: 'row', alignItems: 'center', gap: space.s16, flexWrap: 'wrap' },
-  headWords: { flex: 1, minWidth: 200, gap: space.s6 },
-  headCta: { minWidth: 240 },
-  title: { fontFamily: font.family.sans, fontSize: font.size.heading, fontWeight: fontWeight(font.weight.heavy), color: color.text },
-  titleWide: { fontSize: font.size.display },
-  lead: { fontFamily: font.family.sans, fontSize: font.size.bodySm, color: color.text2, lineHeight: font.size.bodySm * font.lineHeight.body },
+  content: { gap: space.s14, paddingBottom: space.s40 },
+  gutter: { paddingHorizontal: space.gutterPhone },
+  column: { gap: space.s14 },
+  span2: { gap: space.s14 },
+  card: { padding: space.s16, gap: space.s10 },
+  progress: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: space.s16, padding: space.s16 },
+  headCta: { minWidth: 220 },
   link: { fontFamily: font.family.sans, fontSize: font.size.bodySm, fontWeight: fontWeight(font.weight.heavy), color: color.action },
   inlineLink: { minHeight: size.touchTarget, justifyContent: 'center' },
   linkRow: { flexDirection: 'row', alignItems: 'center', gap: space.s4, alignSelf: 'flex-start' },
-  rows: { gap: space.s12 },
-  rowsWide: { flexDirection: 'row', flexWrap: 'wrap' },
-  cellWide: { flexGrow: 1, flexBasis: 420 },
-  crisis: {
-    flexDirection: 'row', gap: space.s10, padding: space.s14, borderRadius: radius.lg,
-    backgroundColor: color.dangerBg, borderWidth: 1, borderColor: color.dangerRule,
-  },
-  crisisWords: { flex: 1, gap: space.s2 },
-  crisisText: { fontFamily: font.family.sans, fontSize: font.size.bodySm, fontWeight: fontWeight(font.weight.strong), color: color.danger, lineHeight: font.size.bodySm * font.lineHeight.body },
-  crisisLinks: { flexDirection: 'row', flexWrap: 'wrap', columnGap: space.s16 },
-  crisisLink: { fontFamily: font.family.sans, fontSize: font.size.bodySm, fontWeight: fontWeight(font.weight.heavy), color: color.danger, textDecorationLine: 'underline' },
-  foot: { gap: space.s14, marginTop: space.s8 },
+  rows: {},
+  whoRow: { flexDirection: 'row', alignItems: 'center', gap: space.s10 },
+  strong: { fontWeight: fontWeight(font.weight.heavy), color: color.text },
   privacy: { flexDirection: 'row', gap: space.s8, alignItems: 'flex-start' },
   privacyText: { flex: 1, fontFamily: font.family.sans, fontSize: font.size.caption, color: color.text2, lineHeight: font.size.caption * font.lineHeight.body },
-  cards: { flexDirection: 'row', flexWrap: 'wrap', gap: space.s16 },
-  card: { padding: space.s20, borderRadius: radius.xl, backgroundColor: color.surface, borderWidth: 1, borderColor: color.ruleSoft, gap: space.s8 },
-  cardGrow: { flexGrow: 1, flexBasis: 420 },
-  cardDanger: { backgroundColor: color.dangerBg, borderColor: color.dangerRule },
-  cardAction: { alignItems: 'flex-start', marginTop: space.s6 },
-  eyebrow: { fontFamily: font.family.sans, fontSize: font.size.caption, fontWeight: fontWeight(font.weight.heavy), letterSpacing: 1, textTransform: 'uppercase', color: color.text2 },
-  eyebrowDanger: { color: color.danger },
-  cardBody: { fontFamily: font.family.sans, fontSize: font.size.bodySm, color: color.text, lineHeight: font.size.bodySm * font.lineHeight.body },
-  strong: { fontWeight: fontWeight(font.weight.heavy) },
   sheetArt: { alignItems: 'center', paddingVertical: space.s8 },
   sheetLead: { fontFamily: font.family.sans, fontSize: font.size.body, fontWeight: fontWeight(font.weight.heavy), color: color.text, textAlign: 'center' },
   sheetBody: { fontFamily: font.family.sans, fontSize: font.size.body, color: color.text2, lineHeight: font.size.body * font.lineHeight.body, marginBottom: space.s12 },

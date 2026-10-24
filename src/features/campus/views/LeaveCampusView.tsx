@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { say, useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
-import { StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { observer } from 'mobx-react-lite';
-import { Button, EmptyState, ErrorState, Note, Rise, Skeleton, TextField } from '@/design-system';
+import { Button, ErrorState, Note, OfflineBanner, Skeleton, TextField, useOnline } from '@/design-system';
 import { Icon } from '@/design-system/icons';
-import { BoardHeader } from '@/design-system/navigation/BoardHeader';
-import { BoardScreen, BoardSection, ChoiceCard, TextLink, boardText } from '@/design-system/board/BoardKit';
-import { color, font, fontWeight, radius, size, space } from '@/design-system/theme';
+import { ChoiceCard, TextLink } from '@/design-system/board/BoardKit';
+import {
+  M2Callout, M2Card, M2EdgeCard, M2EmptyState, M2Grid, M2Header, M2Heading, M2ListLine, M2PageHero, M2Tile3d, M2WideColumn, SERVICE_HUES, m2Text, useOwnPhoneChrome,
+} from '@/design-system/m2';
+import { color, space } from '@/design-system/theme';
 import { LeaveCampusViewModel } from '../viewmodel/LeaveCampusViewModel';
 import type { DepartureReason } from '../viewmodel/LeaveCampusViewModel';
 
@@ -16,164 +18,193 @@ export interface LeaveCampusLinks {
   /** Omitted where the platform has no plans screen; the link is then not drawn. */
   openPlans?: () => void;
   openSupport?: () => void;
+  /** Download my data (the desktop "Good to know" card); drawn only when given. */
+  openExport?: () => void;
   back?: () => void;
 }
 
 const REASONS: readonly DepartureReason[] = ['GRADUATING', 'TRANSFERRING', 'PAUSING'];
+/** What campus_departure.py leaves alone (records, shares, reminders, the account). */
+const STAYS: readonly MessageKey[] = ['leave.s1', 'leave.s2', 'leave.s3'];
 
 /**
- * Leaving campus (design page 2, LeaveCampus, Tier 2), one source for web and
- * native. Says what stays and what changes before anything is confirmed, and
- * only lists changes the backend actually makes. The view model (and the
- * campus-departure rules behind it) is unchanged; this is its board. The
- * board's personal-email field and plan picker are not drawn: the departure
- * request takes neither (plans are compared on Plan & billing).
+ * Leaving campus, one view at every width (design page 2 LeaveCampus, Tier 2;
+ * canvas 3b WebLeaveCampus, Tier 1, superseded; Tier 1 look T1LeaveCampus /
+ * Scheduled / Desktop, approved by Krishna Chintakayala 2026-10-24; plan
+ * tier1-parity-2026-10-24 §20), one source for web and native. Says what
+ * stays and what changes before anything is confirmed, and only lists changes
+ * the backend actually makes (campus_departure.py, D9-9). The view model and
+ * the departure rules behind it are unchanged; the effective date is the
+ * server's. Not drawn: the personal-email field (the request takes none), the
+ * plan picker (plans are compared on Plan & billing), "Care Circle", "Edu ID
+ * prices end" and "checks carry over" (nothing the backend does).
  */
-export const LeaveCampusView = observer(function LeaveCampusView({ viewModel: vm, links }: { viewModel: LeaveCampusViewModel; links: LeaveCampusLinks }) {
+export const LeaveCampusView = observer(function LeaveCampusView({ viewModel: vm, links, wide = false }: { viewModel: LeaveCampusViewModel; links: LeaveCampusLinks; wide?: boolean }) {
   const s = vm.state;
   const t = useT();
+  useOwnPhoneChrome();
+  const online = useOnline();
+  const title = s?.campus ? t('leave.titleNamed', { university: s.campus.university }) : t('leave.title');
 
-  return (
-    <BoardScreen testID="leave-campus">
-      <BoardHeader
-        title={s?.campus ? t('leave.titleNamed', { university: s.campus.university }) : t('leave.title')}
-        backIcon="chevron-left"
-        backLabel={t('common.back')}
-        onBack={links.back}
-      />
-      <Rise>
-        <Text style={boardText.body}>{t('leave.intro')}</Text>
-      </Rise>
+  const stays = (
+    <M2EdgeCard edge={SERVICE_HUES.green.deep} fill testID="leave-campus-stays">
+      <View style={styles.head}>
+        <M2Tile3d icon="check" hue="green" />
+        <M2Heading style={[m2Text.section, styles.grow]}>{t('leave.stays')}</M2Heading>
+      </View>
+      {STAYS.map((key) => <M2ListLine key={key} icon="check" ink={color.positive}>{t(key)}</M2ListLine>)}
+    </M2EdgeCard>
+  );
 
-      {vm.stage === 'loading' ? <Skeleton label={t('common.loading')} lines={['80%', '100%', '60%']} /> : null}
+  const changes = s ? (
+    <M2EdgeCard edge={SERVICE_HUES.orange.deep} fill testID="leave-campus-changes">
+      <View style={styles.head}>
+        <M2Tile3d icon="arrow-right" hue="orange" />
+        <M2Heading style={[m2Text.section, styles.grow]}>{t('leave.changes')}</M2Heading>
+      </View>
+      <M2ListLine icon="arrow-right" ink={color.attention}>{t('leave.c1', { college: s.campus?.university ?? t('leave.yourCollege') })}</M2ListLine>
+      <M2ListLine icon="arrow-right" ink={color.attention}>{t('leave.c2')}</M2ListLine>
+      {s.collegePlan ? <M2ListLine icon="arrow-right" ink={color.attention}>{t('leave.c3', { org: s.collegePlan.organization })}</M2ListLine> : null}
+      <M2ListLine icon="arrow-right" ink={color.attention}>{t('swt.leave.cPass')}</M2ListLine>
+      {vm.reason ? <Text style={m2Text.meta}>{vm.reason === 'PAUSING' ? t('leave.effectToday') : t('leave.effectChosen')}</Text> : null}
+    </M2EdgeCard>
+  ) : null;
 
-      {vm.stage === 'failed' ? (
-        <ErrorState title={t('del.failedTitle')} body={t('del.failedBody')} retryLabel={t('common.tryAgain')} onRetry={() => void vm.load()} />
-      ) : null}
-
-      {vm.stage === 'notLinked' ? (
-        <EmptyState
-          title={t('leave.notLinkedTitle')}
-          body={t('leave.notLinkedBody')}
-          action={{ label: t('leave.seeRecords'), onPress: links.openRecords }}
-        />
-      ) : null}
-
-      {vm.stage === 'scheduled' && s?.departure ? (
-        <View style={styles.done} testID="leave-campus-scheduled">
-          <View style={styles.doneMark}><Icon name="check" size={size.navIcon + space.s8} color={color.positive} strokeWidth={2.6} /></View>
-          <Text accessibilityRole="header" style={styles.doneTitle}>{t('leave.scheduledTitle', { date: s.departure.effectiveOn })}</Text>
-          <Text style={[boardText.body, styles.center]}>{t('leave.scheduledBody')}</Text>
-          <Button label={t('leave.seeRecords')} fullWidth onPress={links.openRecords} />
-          <Button label={t('leave.undo')} variant="secondary" fullWidth busy={vm.busy} onPress={() => void vm.undo()} />
-        </View>
-      ) : null}
-
-      {vm.stage === 'completed' ? (
-        <View style={styles.done}>
-          <View style={styles.doneMark}><Icon name="check" size={size.navIcon + space.s8} color={color.positive} strokeWidth={2.6} /></View>
-          <Text accessibilityRole="header" style={styles.doneTitle}>{t('leave.doneTitle')}</Text>
-          <Text style={[boardText.body, styles.center]}>{t('leave.doneBody')}</Text>
-          <Button label={t('leave.seeRecords')} fullWidth onPress={links.openRecords} />
-        </View>
-      ) : null}
-
-      {vm.stage === 'form' && s ? (
+  const goodToKnow = (
+    <M2Card fill style={styles.card} testID="leave-campus-know">
+      <View style={styles.head}>
+        <M2Tile3d icon="download" hue="indigo" />
+        <M2Heading style={[m2Text.section, styles.grow]}>{t('swt.leave.knowTitle')}</M2Heading>
+      </View>
+      <Text style={m2Text.body}>{t('swt.leave.know1')}</Text>
+      <Text style={m2Text.body}>{t('swt.leave.know2')}</Text>
+      {links.openExport ? (
         <>
-          {s.signsInWithCollegeEmail ? (
-            <Note tone="attention" title={t('leave.emailWarnTitle')}>
-              {t('leave.emailWarnBody')}
-            </Note>
-          ) : null}
-
-          <BoardSection label={t('leave.what')}>
-            {REASONS.map((r) => (
-              <ChoiceCard key={r} radio testID={`leave-reason-${r}`} title={t(`leave.reason.${r}` as MessageKey)} selected={vm.reason === r} onPress={() => vm.setReason(r)} />
-            ))}
-          </BoardSection>
-
-          {vm.needsDate || vm.reason === 'TRANSFERRING' ? (
-            <View style={styles.fields}>
-              {vm.needsDate ? (
-                <TextField
-                  label={vm.reason === 'GRADUATING' ? t('leave.lastDay') : t('leave.moveDay')}
-                  mono
-                  value={vm.effectiveOn}
-                  onChangeText={vm.setEffectiveOn}
-                  error={vm.dateError ? t(vm.dateError) : undefined}
-                  maxLength={10}
-                  placeholder={s.today}
-                />
-              ) : null}
-              {vm.reason === 'TRANSFERRING' ? (
-                <TextField
-                  label={t('leave.whereTo')}
-                  hint={t('leave.whereToHint')}
-                  value={vm.destination}
-                  onChangeText={vm.setDestination}
-                  maxLength={160}
-                />
-              ) : null}
-            </View>
-          ) : null}
-
-          <View style={[styles.panel, { backgroundColor: color.positiveBg }]} testID="leave-campus-stays">
-            <Text style={[styles.panelLabel, { color: color.positive }]}>{t('leave.stays')}</Text>
-            {(['leave.s1', 'leave.s2', 'leave.s3'] as const).map((key) => (
-              <View key={key} style={styles.item}>
-                <Icon name="check" size={space.s16} color={color.positive} strokeWidth={2.6} />
-                <Text style={[styles.itemText, styles.flex]}>{t(key)}</Text>
-              </View>
-            ))}
-          </View>
-
-          <View style={[styles.panel, { backgroundColor: color.attentionBg }]} testID="leave-campus-changes">
-            <Text style={[styles.panelLabel, { color: color.attention }]}>{t('leave.changes')}</Text>
-            <View style={styles.item}>
-              <Icon name="arrow-right" size={space.s16} color={color.attention} strokeWidth={2.6} />
-              <Text style={[styles.itemText, styles.flex]}>{t('leave.c1', { college: s.campus?.university ?? t('leave.yourCollege') })}</Text>
-            </View>
-            <View style={styles.item}>
-              <Icon name="arrow-right" size={space.s16} color={color.attention} strokeWidth={2.6} />
-              <Text style={[styles.itemText, styles.flex]}>{t('leave.c2')}</Text>
-            </View>
-            {s.collegePlan ? (
-              <View style={styles.item}>
-                <Icon name="arrow-right" size={space.s16} color={color.attention} strokeWidth={2.6} />
-                <Text style={[styles.itemText, styles.flex]}>{t('leave.c3', { org: s.collegePlan.organization })}</Text>
-              </View>
-            ) : null}
-            {vm.reason ? <Text style={boardText.meta}>{vm.reason === 'PAUSING' ? t('leave.effectToday') : t('leave.effectChosen')}</Text> : null}
-          </View>
-
-          {s.collegePlan && links.openPlans ? <TextLink label={t('leave.compare')} onPress={links.openPlans} /> : null}
-          {vm.error ? <Note tone="danger">{say(t, vm.error)}</Note> : null}
-          <Button label={t('leave.submit')} size="cta" fullWidth busy={vm.busy} disabled={!vm.canSubmit && !vm.busy} onPress={() => void vm.submit()} />
-          {links.openSupport ? <TextLink label={t('leave.support')} onPress={links.openSupport} /> : null}
+          <Text style={m2Text.body}>{t('swt.leave.know3')}</Text>
+          <Button label={t('swt.leave.download')} variant="secondary" onPress={links.openExport} icon={<Icon name="download" size={16} color={color.action} />} />
         </>
       ) : null}
-    </BoardScreen>
+    </M2Card>
+  );
+
+  const form = vm.stage === 'form' && s ? (
+    <>
+      {s.signsInWithCollegeEmail ? (
+        <M2Callout tone="attention" icon="mail" hue="amber" title={t('leave.emailWarnTitle')} body={t('leave.emailWarnBody')} testID="leave-campus-email" />
+      ) : null}
+      <M2Card style={styles.card} testID="leave-campus-form">
+        <M2Heading style={m2Text.section}>{t('leave.what')}</M2Heading>
+        <View role="radiogroup" accessibilityLabel={t('leave.what')} aria-label={t('leave.what')} style={styles.choices}>
+          {REASONS.map((r) => (
+            <ChoiceCard key={r} radio testID={`leave-reason-${r}`} title={t(`leave.reason.${r}` as MessageKey)} selected={vm.reason === r} onPress={() => vm.setReason(r)} />
+          ))}
+        </View>
+        {vm.needsDate ? (
+          <TextField
+            label={vm.reason === 'GRADUATING' ? t('leave.lastDay') : t('leave.moveDay')}
+            mono
+            value={vm.effectiveOn}
+            onChangeText={vm.setEffectiveOn}
+            error={vm.dateError ? t(vm.dateError) : undefined}
+            maxLength={10}
+            placeholder={s.today}
+            testID="leave-date"
+          />
+        ) : null}
+        {vm.reason === 'TRANSFERRING' ? (
+          <TextField label={t('leave.whereTo')} hint={t('leave.whereToHint')} value={vm.destination} onChangeText={vm.setDestination} maxLength={160} />
+        ) : null}
+      </M2Card>
+      {wide ? (
+        <M2Grid columns={{ desktop: 3, tablet: 2 }}>{stays}{changes}{goodToKnow}</M2Grid>
+      ) : (
+        <>{stays}{changes}</>
+      )}
+      {vm.error ? <Note tone="danger">{say(t, vm.error)}</Note> : null}
+      <View style={[styles.actions, wide ? styles.actionsWide : null]}>
+        <Button label={t('leave.submit')} size="cta" fullWidth={!wide} busy={vm.busy} disabled={(!vm.canSubmit || !online) && !vm.busy} onPress={() => void vm.submit()} testID="leave-submit" />
+        {links.openSupport ? <Button label={t('leave.support')} variant="secondary" fullWidth={!wide} onPress={links.openSupport} /> : null}
+        {s.collegePlan && links.openPlans ? <TextLink label={t('leave.compare')} onPress={links.openPlans} /> : null}
+      </View>
+    </>
+  ) : null;
+
+  const scheduled = vm.stage === 'scheduled' && s?.departure ? (
+    <M2PageHero hue="orange" testID="leave-campus-scheduled" art={<M2Tile3d icon="calendar" hue="orange" size={72} float />} artOnPhone={false}>
+      <View style={styles.head}>
+        <M2Tile3d icon="check" hue="green" size={48} />
+        <M2Tile3d icon="calendar" hue="orange" size={48} />
+      </View>
+      <M2Heading style={styles.heroTitle}>{t('leave.scheduledTitle', { date: s.departure.effectiveOn })}</M2Heading>
+      <Text style={styles.heroBody}>{t('leave.scheduledBody')}</Text>
+      {vm.error ? <Note tone="danger">{say(t, vm.error)}</Note> : null}
+      <View style={styles.heroActions}>
+        <Button label={t('leave.undo')} variant="secondary" fullWidth={!wide} busy={vm.busy} disabled={!online && !vm.busy} onPress={() => void vm.undo()} testID="leave-undo" />
+        <Button label={t('leave.seeRecords')} variant="ghost" fullWidth={!wide} onPress={links.openRecords} />
+      </View>
+    </M2PageHero>
+  ) : null;
+
+  const completed = vm.stage === 'completed' ? (
+    <M2EmptyState animation="anim-check" hue="green" poster={<Icon name="check" size={28} color={color.onHero} />} title={t('leave.doneTitle')} body={t('leave.doneBody')} action={{ label: t('leave.seeRecords'), onPress: links.openRecords }} testID="leave-campus-done" />
+  ) : null;
+
+  const body = (
+    <>
+      {!online ? <OfflineBanner message={t('common.retryConnection')} /> : null}
+      {vm.stage === 'loading' ? <M2Card style={styles.card}><Skeleton label={t('common.loading')} lines={['80%', '100%', '60%']} /></M2Card> : null}
+      {vm.stage === 'failed' ? <M2Card style={styles.card}><ErrorState title={t('del.failedTitle')} body={t('del.failedBody')} retryLabel={t('common.tryAgain')} onRetry={() => void vm.load()} /></M2Card> : null}
+      {vm.stage === 'notLinked' ? (
+        <M2EmptyState animation="anim-home" hue="amber" poster={<Icon name="graduation-cap" size={28} color={color.onHero} />} title={t('leave.notLinkedTitle')} body={t('leave.notLinkedBody')} action={{ label: t('leave.seeRecords'), onPress: links.openRecords }} testID="leave-campus-not-linked" />
+      ) : null}
+      {scheduled}
+      {vm.stage === 'scheduled' ? stays : null}
+      {completed}
+      {form}
+    </>
+  );
+
+  if (wide) {
+    return (
+      <M2WideColumn testID="leave-campus">
+        <M2Header backLabel={t('common.back')} onBack={links.back} title={title} testID="leave-header" />
+        {vm.stage === 'form' ? <M2PageHero hue="orange" icon="graduation-cap" body={t('leave.intro')} testID="leave-hero" art={<M2Tile3d icon="graduation-cap" hue="orange" size={96} float />} artOnPhone={false} /> : null}
+        {body}
+      </M2WideColumn>
+    );
+  }
+  return (
+    <ScrollView style={styles.screen} contentContainerStyle={styles.content} testID="leave-campus">
+      <M2Header backLabel={t('common.back')} onBack={links.back} title={title} testID="leave-header" />
+      <View style={[styles.gutter, styles.column]}>
+        {vm.stage === 'form' ? <M2PageHero hue="orange" icon="graduation-cap" body={t('leave.intro')} testID="leave-hero" /> : null}
+        {body}
+      </View>
+    </ScrollView>
   );
 });
 
-export function LeaveCampusRoute({ links }: { links: LeaveCampusLinks }): React.ReactElement {
+export function LeaveCampusRoute({ links, wide = false }: { links: LeaveCampusLinks; wide?: boolean }): React.ReactElement {
   const [vm] = useState(() => new LeaveCampusViewModel());
   useEffect(() => {
     void vm.load();
     return () => vm.dispose();
   }, [vm]);
-  return <LeaveCampusView viewModel={vm} links={links} />;
+  return <LeaveCampusView viewModel={vm} links={links} wide={wide} />;
 }
 
 const styles = StyleSheet.create({
-  flex: { flex: 1, minWidth: 0 },
-  center: { textAlign: 'center' },
-  fields: { gap: space.s12 },
-  panel: { gap: space.s8, borderRadius: radius.xl, padding: space.s16 },
-  panelLabel: { fontFamily: font.family.sans, fontSize: font.size.caption, fontWeight: fontWeight(font.weight.heavy), letterSpacing: 1, textTransform: 'uppercase' },
-  item: { flexDirection: 'row', alignItems: 'flex-start', gap: space.s8 },
-  itemText: { fontFamily: font.family.sans, fontSize: font.size.bodySm, fontWeight: fontWeight(font.weight.strong), color: color.text, lineHeight: font.size.bodySm * font.lineHeight.body },
-  done: { alignItems: 'center', gap: space.s12, backgroundColor: color.surface, borderRadius: radius.sheet, borderWidth: 1, borderColor: color.ruleSoft, padding: space.s24 },
-  doneMark: { width: size.controlLg + space.s10, height: size.controlLg + space.s10, borderRadius: radius.full, backgroundColor: color.positiveBg, alignItems: 'center', justifyContent: 'center' },
-  doneTitle: { fontFamily: font.family.sans, fontSize: font.size.title, fontWeight: fontWeight(font.weight.heavy), color: color.text, textAlign: 'center' },
+  grow: { flex: 1, minWidth: 0 },
+  screen: { flex: 1, backgroundColor: color.canvas },
+  content: { gap: space.s14, paddingBottom: space.s40 },
+  gutter: { paddingHorizontal: space.gutterPhone },
+  column: { gap: space.s14 },
+  card: { padding: space.s16, gap: space.s12 },
+  head: { flexDirection: 'row', alignItems: 'center', gap: space.s12 },
+  choices: { gap: space.s8 },
+  actions: { gap: space.s10 },
+  actionsWide: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: space.s12 },
+  heroTitle: { ...m2Text.title, color: color.onHero },
+  heroBody: { ...m2Text.body, color: color.onHero },
+  heroActions: { gap: space.s8, marginTop: space.s6 },
 });

@@ -3,6 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { ScrollView, Text, View } from 'react-native';
 import {
   GradientHeroCard, HeroCarousel, LiftCard, M2Card, M2EmptyState, M2Grid, M2Header, M2ListRow, M2ProductCard, M2Responsive, M2SearchField, M2SectionHead,
+  M2Callout, M2Countdown, M2EdgeCard, M2ListLine, M2PageHero, M2Tile3d, M2Timeline,
   NAVY_STOPS, NotYetTile, SERVICE_HUES, ServiceRail, SoftTileGrid, heroStops, m2Text,
 } from '../m2';
 import type { HeroSlide, M2Layout, ServiceTile, SoftTileItem } from '../m2';
@@ -121,3 +122,40 @@ export const EmptyStates: Story = {
     </View>
   ),
 };
+
+/**
+ * The Tier 1 pieces (canvas page 3, docs/plans/tier1-parity-2026-10-24.md §13–21): the gradient page hero, the
+ * 3D tile, the tinted callout, the consent-history timeline and the deletion countdown, at both widths.
+ */
+function Tier1Pieces({ layout }: { layout: 'phone' | 'desktop' }) {
+  const labels = { what: 'What', wording: 'Wording', given: 'Given', withdrawn: 'Withdrawn', stillOn: 'Still on' };
+  return (
+    <Frame layout={layout}>
+      <M2PageHero hue="indigo" icon="shield-2" title="Privacy & consent" body="Every consent you gave, which wording and when." art={<M2Tile3d icon="shield-check" hue="indigo" size={96} float />} />
+      <M2Callout tone="danger" icon="phone-off" hue="danger" title="Lost your phone?" body="Cancel your check-in pass and sign it out in under a minute." action={{ label: 'Secure it', onPress: noop }} />
+      <M2Callout tone="attention" icon="mail" hue="amber" title="You sign in with your college email" body="If that address stops working after you leave, you won’t receive sign-in codes." />
+      <M2Grid columns={{ phone: 1, tablet: 2, desktop: 3 }}>
+        <M2EdgeCard edge={SERVICE_HUES.green.deep}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.s12 }}><M2Tile3d icon="check" hue="green" /><Text style={m2Text.section}>Stays yours</Text></View>
+          <M2ListLine icon="check" ink={color.positive}>All your records and reports</M2ListLine>
+          <M2ListLine icon="check" ink={color.positive}>Your account and sign-in</M2ListLine>
+        </M2EdgeCard>
+        <M2EdgeCard edge={SERVICE_HUES.orange.deep}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.s12 }}><M2Tile3d icon="arrow-right" hue="orange" /><Text style={m2Text.section}>Changes</Text></View>
+          <M2ListLine icon="arrow-right" ink={color.attention}>Your verified-student status ends</M2ListLine>
+        </M2EdgeCard>
+        <M2Card style={{ padding: space.s16 }}>
+          <M2Countdown day={2} of={7} label="Day 2 of 7" />
+        </M2Card>
+      </M2Grid>
+      <M2Card style={{ padding: space.s16 }}>
+        <M2Timeline caption="Every consent on record" labels={labels} items={[
+          { key: '1', what: 'Keep my health records', wording: '3', given: '01 Jul 2026', withdrawn: null },
+          { key: '2', what: 'Seasonal health tips', wording: '1', given: '05 Jul 2026', withdrawn: '10 Sep 2026' },
+        ]} />
+      </M2Card>
+    </Frame>
+  );
+}
+export const Tier1Phone: Story = { render: () => <Tier1Pieces layout="phone" /> };
+export const Tier1Desktop: Story = { render: () => <Tier1Pieces layout="desktop" /> };

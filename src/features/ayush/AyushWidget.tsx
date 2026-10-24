@@ -74,7 +74,7 @@ export const AyushWidget = observer(function AyushWidget() {
           <p className="sk-ayw__intro"><Glyph name="ayush-orb" size={22} /><span>{t('swt.ayw.intro')}</span></p>
           <div className="sk-ayw__body" ref={body}>
             {!online ? <p className="sk-ayw__state" role="status">{t('swt.ayush.offline')}</p> : null}
-            <AyushThread vm={vm} online={online} inset={space.s16} sendIcon="arrow-up"
+            <AyushThread vm={vm} online={online} inset={space.s16} sendIcon="arrow-up" wide
               links={{ help: () => { setOpen(false); navigate('support'); }, book: () => { setOpen(false); navigate('care'); } }} />
           </div>
           <p className="sk-ayw__emergency">

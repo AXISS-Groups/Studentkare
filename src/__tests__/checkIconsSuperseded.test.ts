@@ -78,7 +78,7 @@ describe('check-icons: superseded boards', () => {
   it('the real map is consistent: every superseded board has a built successor and a recorded source', () => {
     const map = JSON.parse(readFileSync(resolve(process.cwd(), 'design/screens/implementation-map.json'), 'utf8'));
     const entries = Object.entries(map.superseded as Record<string, { by: string[]; source: string }>).filter(([k]) => !k.startsWith('_'));
-    expect(entries.map(([k]) => k).sort()).toEqual(['MyReports', 'ReportInsights', 'WebAccount', 'WebAyush', 'WebDashboard', 'WebHome', 'WebOrders']);
+    expect(entries.map(([k]) => k).sort()).toEqual(['MyReports', 'ReportInsights', 'WebAccount', 'WebAyush', 'WebDashboard', 'WebDeleteAccount', 'WebEmergencyCard', 'WebHome', 'WebLeaveCampus', 'WebOrders']);
     for (const [screen, entry] of entries) {
       expect(map.screens[screen], screen).toBeUndefined();
       expect(map.inProgress[screen], screen).toBeUndefined();
@@ -119,7 +119,8 @@ describe('check-icons: icons a recorded decision retired', () => {
     const entries = Object.entries(map.retiredIcons as Record<string, { icons: string[]; source: string }>).filter(([k]) => !k.startsWith('_'));
     expect(entries.length).toBeGreaterThan(0);
     for (const [screen, entry] of entries) {
-      expect(entry.source, screen).toMatch(/^docs\/ux\/web-mobile-parity-2026-10-23\.md#approved-decisions/);
+      // The shell de-duplication decisions (parity doc, 23 Oct) or the approved Tier 1 boards (parity plan, 24 Oct: M2Header's round arrow-left back).
+      expect(entry.source, screen).toMatch(/^docs\/(ux\/web-mobile-parity-2026-10-23\.md#approved-decisions|plans\/tier1-parity-2026-10-24\.md)/);
       expect(entry.icons.length, screen).toBeGreaterThan(0);
     }
   });
