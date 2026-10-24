@@ -48,7 +48,12 @@ self.addEventListener('fetch', (event) => {
       const copy = res.clone();
       caches.open(CACHE).then((cache) => cache.put(event.request, copy));
       return res;
-    }))
+    }).catch(() =>
+      // Offline and not cached: answer with a network error instead of an
+      // unhandled rejection. Never the app shell: a script or image request
+      // must not get HTML back. (Thanks to #247 for spotting the rejection.)
+      Response.error()
+    ))
   );
 });
 
