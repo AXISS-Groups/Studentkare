@@ -6,7 +6,13 @@ import { pickReturnPhoto } from '@/features/requests/views/pickReturnPhoto.web';
 
 // keep-sorted start
 const CareDirectoryRoute = lazy(() => import('@/features/careDirectory/views/CareDirectoryRoute').then((m) => ({ default: m.CareDirectoryRoute })));
+const ConsentInboxBoard = lazy(() => import('@/features/vault/views/ConsentInboxBoard').then((m) => ({ default: m.ConsentInboxBoard })));
+const DataRightsView = lazy(() => import('@/features/privacy/DataRightsView').then((m) => ({ default: m.DataRightsView })));
+const DeleteAccountRoute = lazy(() => import('@/features/account/views/DeleteAccountView').then((m) => ({ default: m.DeleteAccountRoute })));
+const EmergencyCardRoute = lazy(() => import('@/features/emergency/views/EmergencyCardBoard').then((m) => ({ default: m.EmergencyCardRoute })));
+const FamilyCircleBoard = lazy(() => import('@/features/vault/views/FamilyCircleBoard').then((m) => ({ default: m.FamilyCircleBoard })));
 const IdentityVerifyView = lazy(() => import('@/features/auth/views/IdentityVerifyView').then((m) => ({ default: m.IdentityVerifyView })));
+const LeaveCampusRoute = lazy(() => import('@/features/campus/views/LeaveCampusView').then((m) => ({ default: m.LeaveCampusRoute })));
 const M2AskAyushRoute = lazy(() => import('@/features/chat/views/M2AskAyushRoute').then((m) => ({ default: m.M2AskAyushRoute })));
 const M2CampsRoute = lazy(() => import('@/features/camp/views/M2CampsRoute').then((m) => ({ default: m.M2CampsRoute })));
 const M2ConsultsRoute = lazy(() => import('@/features/m2store/views/M2ConsultsRoute').then((m) => ({ default: m.M2ConsultsRoute })));
@@ -24,9 +30,11 @@ const M2VaccinesRoute = lazy(() => import('@/features/preventive/views/M2Vaccine
 const M2WaterRoute = lazy(() => import('@/features/reminders/views/M2WaterRoute').then((m) => ({ default: m.M2WaterRoute })));
 const M2WhatsNewRoute = lazy(() => import('@/features/newsroom/views/M2WhatsNewRoute').then((m) => ({ default: m.M2WhatsNewRoute })));
 const MedicineInfoRoute = lazy(() => import('@/features/medicineInfo/views/MedicineInfoRoute').then((m) => ({ default: m.MedicineInfoRoute })));
+const PrivacyConsentView = lazy(() => import('@/features/privacy/PrivacyConsentView').then((m) => ({ default: m.PrivacyConsentView })));
 const ReturnRequestRoute = lazy(() => import('@/features/requests/views/ReturnRequestView').then((m) => ({ default: m.ReturnRequestRoute })));
 const SearchRoute = lazy(() => import('@/features/discover/views/SearchRoute').then((m) => ({ default: m.SearchRoute })));
 const ShopPhoneRoute = lazy(() => import('@/features/shopPhone/views/ShopPhoneRoute').then((m) => ({ default: m.ShopPhoneRoute })));
+const SignInSecurityRoute = lazy(() => import('@/features/account/views/SignInSecurityView').then((m) => ({ default: m.SignInSecurityRoute })));
 // keep-sorted end
 
 export interface PhoneBoard {
@@ -75,6 +83,15 @@ export function studentPhoneBoard(route: RoutePath): PhoneBoard | null {
       return { node: <ReturnRequestRoute links={{ done: () => navigate('my-requests'), pickPhoto: pickReturnPhoto }} />, title: 'phone.return.title', ownBack: true };
     // VerifyIdentity (Tier 1): the board draws its own back button.
     case 'verify': return { node: <IdentityVerifyView />, title: 'verify.title', ownBack: true };
+    // Tier 1 parity plan 2026-10-24 §13–21 (package B): the privacy, identity and safety boards draw their own header and SOS.
+    case 'emergency-card': return { node: <EmergencyCardRoute links={{ back: () => navigate('profile'), contacts: () => navigate('ice-contacts'), nearestHospitals: () => navigate('find-care') }} />, title: 'sf.card.title', ownBack: true };
+    case 'delete-account': return { node: <DeleteAccountRoute links={{ back: () => navigate('profile'), exportData: () => navigate('data-export'), crisis: () => navigate('crisis') }} />, title: 'del.title', ownBack: true };
+    case 'leave-campus': return { node: <LeaveCampusRoute links={{ back: () => navigate('profile'), openRecords: () => navigate('records'), openPlans: () => navigate('billing'), openSupport: () => navigate('support') }} />, title: 'leave.title', ownBack: true };
+    case 'consent': return { node: <ConsentInboxBoard links={{ back: () => navigate('records'), records: () => navigate('records') }} />, title: 'sf.consent.header', ownBack: true };
+    case 'care-circle': return { node: <FamilyCircleBoard links={{ back: () => navigate('records'), emergencyCard: () => navigate('emergency-card'), consent: () => navigate('consent') }} />, title: 'sf.fam.header', ownBack: true };
+    case 'privacy-consent': return { node: <PrivacyConsentView />, title: 'privacy.title', ownBack: true };
+    case 'data-rights': return { node: <DataRightsView />, title: 'privacy.rights.title', ownBack: true };
+    case 'security': return { node: <SignInSecurityRoute />, title: 'sec.title', ownBack: true };
     default: return null;
   }
 }

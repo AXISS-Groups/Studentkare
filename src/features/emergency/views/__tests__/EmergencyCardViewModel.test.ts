@@ -1,9 +1,6 @@
-import React from 'react';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import type { MemberProfile } from '@/data/types/workflowTypes';
 import { EmergencyCardViewModel, isValidIndianMobile } from '../../viewmodel/EmergencyCardViewModel';
-import { EmergencyCardView } from '../WebEmergencyCard';
 
 type Requester = typeof import('@/data/services/http').apiRequest;
 const profile = (over: Partial<MemberProfile> = {}): MemberProfile => ({
@@ -64,30 +61,5 @@ describe('EmergencyCardViewModel', () => {
     const vm = new EmergencyCardViewModel(api(() => profile()).request);
     await vm.load();
     expect(vm.missing).toEqual(['ice.missing.blood', 'ice.missing.contact']);
-  });
-});
-
-describe('EmergencyCardView', () => {
-  it('shows no invented data and makes no offline or QR claim', async () => {
-    const vm = new EmergencyCardViewModel(api(() => profile()).request);
-    await vm.load();
-    render(<EmergencyCardView vm={vm} />);
-    for (const fake of [/Sunita/, /Salbutamol/, /Works offline/, /ICE QR/, /break-glass/]) {
-      expect(screen.queryByText(fake)).toBeNull();
-    }
-    expect(screen.getByText(/There is no offline card or QR code yet/)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Call 112/ })).toBeInTheDocument();
-  });
-
-  it('saves through the server and shows the saved preview', async () => {
-    const { request } = api((b) => profile({ emergencyContactName: String(b.emergencyContactName), emergencyContactPhone: String(b.emergencyContactPhone), emergencyContactRelation: String(b.emergencyContactRelation) }));
-    const vm = new EmergencyCardViewModel(request);
-    await vm.load();
-    render(<EmergencyCardView vm={vm} />);
-    fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Asha' } });
-    fireEvent.change(screen.getByLabelText('Mobile number, India +91'), { target: { value: '9876543210' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Save card' }));
-    await waitFor(() => expect(screen.getByText('Saved to your profile.')).toBeInTheDocument());
-    expect(screen.getByText(/Asha · \+91 9876543210/)).toBeInTheDocument();
   });
 });

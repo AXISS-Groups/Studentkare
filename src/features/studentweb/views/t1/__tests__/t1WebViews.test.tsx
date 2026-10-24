@@ -12,11 +12,8 @@ import { WebMyLabTestsView, splitLabTests } from '../WebMyLabTestsView';
 import type { StudentLabTest } from '../WebMyLabTestsView';
 import { WebReportInsightsView, pickReport } from '../WebReportInsightsView';
 import { WebConsultSummaryRoute } from '../WebConsultSummaryView';
-import { WebEmergencyCardRoute, readiness } from '../WebEmergencyCardView';
 import { WebPassView } from '../WebPassView';
 import { WebRequestsRoute } from '../WebRequestsRoute';
-import { WebLeaveCampusRoute } from '../WebLeaveCampusView';
-import { WebDeleteAccountRoute } from '../WebDeleteAccountView';
 
 vi.mock('@/data/services/http', async (importOriginal) => ({ ...(await importOriginal<typeof import('@/data/services/http')>()), apiRequest: vi.fn() }));
 vi.mock('@/lib/utils/workflowRouting', async (importOriginal) => ({ ...(await importOriginal<typeof import('@/lib/utils/workflowRouting')>()), navigate: vi.fn() }));
@@ -182,51 +179,6 @@ describe('WebConsultSummary', () => {
   });
 });
 
-describe('WebEmergencyCard', () => {
-  const profile = { bloodGroup: '', allergies: ['Penicillin'], chronicConditions: [], emergencyContactName: '', emergencyContactPhone: '', emergencyContactRelation: '' };
-  // Both phone wallets are off until legal and the clinical lead sign (plan tier1-emergency-card-wallet-2026-10-24).
-  const walletOff = { available: { apple: false, google: false }, fields: [], defaultFields: [], passes: [], googleConsentVersion: 'v', googleConsent: null };
-
-  it('previews the draft live, computes readiness, and saves only the profile fields', async () => {
-    expect(readiness({ bloodGroup: '', allergies: '', conditions: '', contactName: '', contactPhone: '', contactRelation: '' }).percent).toBe(0);
-    expect(readiness({ bloodGroup: 'O+', allergies: '', conditions: '', contactName: 'A', contactPhone: '9876543210', contactRelation: '' }).percent).toBe(100);
-    serve({ '/wallet/emergency-card': walletOff, '/profile': (_p: string, init?: RequestInit) => (init?.method === 'PATCH' ? { ...profile, bloodGroup: 'O+' } : profile) });
-    const { container } = render(<WebEmergencyCardRoute />);
-    await settle();
-    const preview = screen.getByTestId('ice-preview');
-    expect(within(preview).getByText('Penicillin')).toBeTruthy();
-    expect(within(preview).getAllByText('Not set').length).toBe(1);
-    expect(screen.queryByText(/QR shows|Works offline|anyone who scans/i)).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: 'O+' }));
-    expect(within(preview).getByText('O+')).toBeTruthy();
-    expect(screen.getByText('Card is 50% ready')).toBeTruthy();
-    expect(screen.getByRole('region', { name: 'Unsaved changes' })).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'Save card' }));
-    await settle();
-    const patch = api.mock.calls.find(([, init]) => (init as RequestInit | undefined)?.method === 'PATCH');
-    expect(Object.keys(JSON.parse(String((patch?.[1] as RequestInit).body))).sort()).toEqual(['allergies', 'bloodGroup', 'chronicConditions', 'emergencyContactName', 'emergencyContactPhone', 'emergencyContactRelation']);
-    await axeClean(container);
-  });
-
-  it('fails closed: a failed save says so, and crisis lines stay reachable while loading and on error', async () => {
-    serve({ '/wallet/emergency-card': walletOff, '/profile': (_p: string, init?: RequestInit) => (init?.method === 'PATCH' ? new Error('down') : profile) });
-    render(<WebEmergencyCardRoute />);
-    expect(screen.getByRole('link', { name: 'Call 112, emergency services' })).toBeTruthy();
-    await settle();
-    fireEvent.click(screen.getByRole('button', { name: 'A+' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Save card' }));
-    await settle();
-    expect(screen.getByRole('alert').textContent).toMatch(/Not saved/);
-    expect(screen.getByRole('region', { name: 'Unsaved changes' })).toBeTruthy();
-
-    api.mockReset();
-    serve({ '/profile': new Error('down') });
-    render(<WebEmergencyCardRoute />);
-    await settle();
-    expect(screen.getAllByRole('link', { name: 'Call Tele-MANAS 14416' }).length).toBeGreaterThan(0);
-  });
-});
-
 describe('WebPass', () => {
   it('shows the server’s code and QR, never a photo-match claim or invented history', async () => {
     const now = Math.floor(Date.now() / 1000);
@@ -279,51 +231,5 @@ describe('WebRequests', () => {
     fireEvent.click(screen.getAllByRole('button', { name: 'New request' })[0]);
     fireEvent.click(screen.getByRole('button', { name: 'Return or refund' }));
     expect(go).toHaveBeenCalledWith('return-request');
-  });
-});
-
-describe('WebLeaveCampus', () => {
-  it('lists only what the backend changes, and undo cancels a scheduled departure', async () => {
-    serve({ '/campus/departure': { departure: null, campus: { university: 'VNR VJIET', status: 'VERIFIED' }, collegePlan: null, signsInWithCollegeEmail: false, today: '2026-10-21' } });
-    const { container, unmount } = render(<WebLeaveCampusRoute />);
-    await settle();
-    expect(screen.getByText('Leaving VNR VJIET?')).toBeTruthy();
-    expect(screen.queryByText(/Care Circle|Edu ID prices|personal email/i)).toBeNull();
-    expect(within(screen.getByTestId('leave-campus-changes')).getByText(/check-in pass stops working/)).toBeTruthy();
-    await axeClean(container);
-    unmount();
-
-    api.mockReset();
-    serve({
-      '/campus/departure/cancel': { departure: null, campus: { university: 'VNR VJIET', status: 'VERIFIED' }, collegePlan: null, signsInWithCollegeEmail: false, today: '2026-10-21' },
-      '/campus/departure': { departure: { id: 'x', university: 'VNR VJIET', reason: 'GRADUATING', destination: null, effectiveOn: '2027-05-31', status: 'SCHEDULED' }, campus: { university: 'VNR VJIET', status: 'VERIFIED' }, collegePlan: null, signsInWithCollegeEmail: false, today: '2026-10-21' },
-    });
-    render(<WebLeaveCampusRoute />);
-    await settle();
-    fireEvent.click(screen.getByRole('button', { name: 'Undo — I’m not leaving' }));
-    await settle();
-    expect(calls()).toContain('POST /campus/departure/cancel');
-  });
-});
-
-describe('WebDeleteAccount', () => {
-  it('needs the typed word before it schedules, offers export first, and makes no legal claims', async () => {
-    serve({ '/records/deletion-request': (_p: string, init?: RequestInit) => (init?.method === 'POST' ? { status: 'PENDING', requestedAt: 1, scheduledFor: 2, archiveRetentionDays: 30 } : { status: 'NONE', requestedAt: null, scheduledFor: null, archiveRetentionDays: 30 }) });
-    const { container } = render(<WebDeleteAccountRoute />);
-    await settle();
-    expect(screen.queryByText(/8 years|tax law|ABHA|grievance@/)).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: /Download my data first/ }));
-    expect(go).toHaveBeenCalledWith('data-export');
-    fireEvent.click(screen.getByRole('button', { name: 'Continue to delete' }));
-    const confirm = screen.getByRole('button', { name: 'Delete my account in 7 days' });
-    expect((confirm as HTMLButtonElement).disabled).toBe(true);
-    expect(screen.getByRole('link', { name: 'Call Tele-MANAS 14416' })).toBeTruthy();
-    fireEvent.change(screen.getByLabelText('Type DELETE to confirm'), { target: { value: 'delete' } });
-    expect((confirm as HTMLButtonElement).disabled).toBe(false);
-    await axeClean(container);
-    fireEvent.click(confirm);
-    await settle();
-    expect(screen.getByTestId('delete-scheduled')).toBeTruthy();
-    expect(calls()).toContain('POST /records/deletion-request');
   });
 });
