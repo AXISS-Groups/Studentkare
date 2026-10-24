@@ -16,7 +16,7 @@ from sqlalchemy.orm import Session
 
 from core import workflow_models as M
 from core.team_scope import RESERVED_CAMPUS_MESSAGE, is_reserved_campus
-from services import check_in_pass, clinical_profile
+from services import check_in_pass, clinical_profile, wallet_passes
 from services.workflow_auth import (
     StrictModel,
     account_payload,
@@ -160,7 +160,10 @@ def update_profile(body: ProfileUpdate, response: Response, user: dict = Depends
     stored["profileUpdatedAt"] = time.time()
     account.profile = stored
     record_audit(db, user, "PROFILE_UPDATED", account.id)
+    # A wallet pass of the emergency card follows the card (plan tier1-emergency-card-wallet-2026-10-24).
+    wallet_passes.sync_account(db, account.id)
     db.commit()
+    wallet_passes.deliver(db, account.id)
     return profile_payload(db, account)
 
 

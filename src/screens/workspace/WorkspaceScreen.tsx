@@ -135,7 +135,7 @@ const PartnerStaffScreen = lazy(() => import('../vendor/PartnerStaffScreen').the
 const M2HomeRoute = lazy(() => import('@/features/m2store/views/M2HomeRoute').then(module => ({ default: module.M2HomeRoute })));
 const WebOrdersHub = lazy(() => import('@/features/studentweb/views/WebOrdersHub').then(module => ({ default: module.WebOrdersHub })));
 const WebReorderView = lazy(() => import('@/features/studentweb/views/WebReorderView').then(module => ({ default: module.WebReorderView })));
-const WebAccountView = lazy(() => import('@/features/studentweb/views/WebAccountView').then(module => ({ default: module.WebAccountView })));
+const M2ProfileRoute = lazy(() => import('@/features/m2profile/views/M2ProfileRoute').then(module => ({ default: module.M2ProfileRoute })));
 const WebNotificationsRoute = lazy(() => import('@/features/studentweb/views/WebNotificationsView').then(module => ({ default: module.WebNotificationsRoute })));
 const WebShopView = lazy(() => import('@/features/studentweb/views/shop/WebShopView').then(module => ({ default: module.WebShopView })));
 const WebCheckoutView = lazy(() => import('@/features/studentweb/views/shop/WebCheckoutView').then(module => ({ default: module.WebCheckoutView })));
@@ -148,7 +148,7 @@ const HealthVaultRoute = lazy(() => import('@/features/vault/views/HealthVaultRo
 // Signed-in student web, Tier 1 pages (canvas 3b, WP-09), drawn in the student web shell.
 const WebMyLabTestsView = lazy(() => import('@/features/studentweb/views/t1/WebMyLabTestsView').then(module => ({ default: module.WebMyLabTestsView })));
 const ReportInsightsRoute = lazy(() => import('@/features/insights/views/ReportInsightsRoute').then(module => ({ default: module.ReportInsightsRoute })));
-const WebAyushView = lazy(() => import('@/features/studentweb/views/t1/WebAyushView').then(module => ({ default: module.WebAyushView })));
+const M2AskAyushRoute = lazy(() => import('@/features/chat/views/M2AskAyushRoute').then(module => ({ default: module.M2AskAyushRoute })));
 const WebEmergencyCardRoute = lazy(() => import('@/features/studentweb/views/t1/WebEmergencyCardView').then(module => ({ default: module.WebEmergencyCardRoute })));
 const WebRequestsRoute = lazy(() => import('@/features/studentweb/views/t1/WebRequestsRoute').then(module => ({ default: module.WebRequestsRoute })));
 const WebLeaveCampusRoute = lazy(() => import('@/features/studentweb/views/t1/WebLeaveCampusView').then(module => ({ default: module.WebLeaveCampusRoute })));
@@ -350,13 +350,15 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
       case 'orders': return <WebOrdersHub />;
       // The one notifications inbox, opened from the bell: the phone's inbox in the page column.
       case 'notifications': return <NotificationsPage />;
-      case 'profile': return <WebAccountView />;
+      // Tier 1 parity plan 2026-10-24 §11 (Q2): Mobile 2.0 Profile laid out wide replaces the 3b Account page; Sign out asks through the shell's confirm.
+      case 'profile': return <M2ProfileRoute wide onSignOut={() => setConfirmSignOut(true)} />;
       case 'notification-settings': return <WebNotificationsRoute />;
       case 'shop': return <WebShopView />;
       case 'checkout': return <WebCheckoutView />;
       case 'records': return <HealthVaultRoute wide />;
-      case 'ayush': return <WebAyushView />;
       case 'visit-summaries': return <VisitSummaryRoute wide links={visitSummaryLinks} />;
+      // §9 (Q2): one Ask Ayush view, chat beside the web board's side column.
+      case 'ayush': return <M2AskAyushRoute wide />;
       case 'emergency-card': return <WebEmergencyCardRoute />;
       case 'pass': return <MyPassRoute wide links={{ digitalId: () => navigate('digital-id') }} art={recordsArt.smallClinic} />;
       case 'digital-id': return <DigitalIdPage wide />;

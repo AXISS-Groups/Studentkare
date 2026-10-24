@@ -178,6 +178,17 @@ backend:
     # LiveKit (docs/video-consults.md). Empty = no video consult can be started, said so in the app.
     LIVEKIT_API_KEY: ""               # API key id (the token issuer)
     LIVEKIT_API_SECRET: ""            # signs join tokens; never leaves the server
+    # Emergency card in the phone wallet (docs/guides/wallet-passes.md). Empty = that wallet
+    # is not offered. PEM values may be given as the PEM text or base64 of it.
+    APPLE_WALLET_PASS_TYPE_ID: ""     # pass.co.studentkare.emergency
+    APPLE_WALLET_TEAM_ID: ""          # Apple Developer team id
+    APPLE_WALLET_CERT_PEM: ""         # Pass Type ID certificate
+    APPLE_WALLET_KEY_PEM: ""          # its private key
+    APPLE_WALLET_KEY_PASSWORD: ""     # only if the key has a password
+    APPLE_WALLET_WWDR_PEM: ""         # Apple WWDR intermediate (G4)
+    APPLE_WALLET_AUTH_SECRET: ""      # openssl rand -hex 32; derives each pass's web-service token
+    GOOGLE_WALLET_ISSUER_ID: ""       # Google Wallet issuer id
+    GOOGLE_WALLET_SERVICE_ACCOUNT_JSON: ""  # service-account key JSON (or base64 of it)
     PAYMENT_WEBHOOK_SECRET: ""        # HMAC secret for the generic signed payment webhook
     ABDM_CLIENT_SECRET: ""            # ABDM gateway client secret
     ABDM_HFR_CLIENT_SECRET: ""        # ABDM Health Facility Registry client secret

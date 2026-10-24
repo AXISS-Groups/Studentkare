@@ -637,6 +637,19 @@ declare("health.readings_list_cap", INT, 1000, area="health", unit="rows", minim
 # without a reload (SosBeacon). The server pushes nothing; this is a read.
 declare("emergency.sos_poll_seconds", INT, 15, area="emergency", unit="seconds", minimum=5, maximum=120, public=True,
         description="How often the SOS screen re-reads an open alert from GET /api/emergency/sos/current.")
+# The emergency card in the phone wallet (services/wallet_passes.py; plan
+# tier1-emergency-card-wallet-2026-10-24). Off until legal and the clinical lead
+# sign the wording and the default fields; even when on, a wallet is offered only
+# while its credentials are configured on the server.
+declare("emergency_card.wallet_apple_enabled", BOOL, False, area="emergency", public=True,
+        description="Offer 'Add to Apple Wallet' on the emergency card (needs the Apple Wallet credentials).")
+declare("emergency_card.wallet_google_enabled", BOOL, False, area="emergency", public=True,
+        description="Offer 'Add to Google Wallet' on the emergency card (needs the Google Wallet issuer account).")
+declare("emergency_card.wallet_download_minutes", INT, 5, area="emergency", unit="minutes", minimum=1, maximum=30,
+        description="How long the single-use Apple Wallet download link for a new pass stays valid.")
+declare("emergency_card.wallet_push_max_attempts", INT, 20, area="emergency", unit="attempts", minimum=1,
+        maximum=200, description="Times the worker retries sending one pass update or removal to a wallet "
+                                 "before it raises an ops alert and stops.")
 # Blood SOS (services/agents/blood_emergency_agent.py, audit H1). A broadcast goes
 # out on the platform's own WhatsApp to every matching donor on the campus, so it
 # is a fixed template plus a short optional note, and it is rate limited per

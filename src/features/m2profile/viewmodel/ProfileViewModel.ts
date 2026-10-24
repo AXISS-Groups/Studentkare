@@ -3,6 +3,8 @@ import { apiRequest } from '@/data/services/http';
 import type { ViewModel } from '@/core/store/ViewModel';
 import type { MemberProfile } from '@/data/types/workflowTypes';
 import { Resource } from '@/features/m2health/resource';
+import { inAnyWallet } from '@/features/emergency/viewmodel/WalletPassViewModel';
+import type { WalletStatus } from '@/features/emergency/viewmodel/WalletPassViewModel';
 
 /**
  * Mobile 2.0 Profile (M2Profile, Tier 1, plan package A): who the student is,
@@ -70,6 +72,8 @@ export class ProfileViewModel implements ViewModel {
   readonly body: Resource<BodyMeasurements>;
   readonly documents: Resource<DocumentCounts>;
   readonly plans: Resource<{ plans: Plan[] }>;
+  /** Whether the emergency card is in a phone wallet (plan tier1-emergency-card-wallet-2026-10-24). */
+  readonly wallet: Resource<WalletStatus>;
 
   constructor(request: typeof apiRequest = apiRequest) {
     this.profile = new Resource(() => request<MemberProfile>('/profile'));
@@ -81,7 +85,8 @@ export class ProfileViewModel implements ViewModel {
       return { total: res.total, categoryCounts: res.categoryCounts };
     });
     this.plans = new Resource(() => request<{ plans: Plan[] }>('/billing/plans'));
-    makeAutoObservable(this, { profile: false, body: false, documents: false, plans: false }, { autoBind: true });
+    this.wallet = new Resource(() => request<WalletStatus>('/wallet/emergency-card'));
+    makeAutoObservable(this, { profile: false, body: false, documents: false, plans: false, wallet: false }, { autoBind: true });
   }
 
   get completeness(): Completeness | null {
@@ -93,15 +98,26 @@ export class ProfileViewModel implements ViewModel {
     return this.plans.data?.plans.find((p) => p.id === 'STUDENT_PLUS') ?? null;
   }
 
+  /**
+   * The Profile line about where the card is kept, only when it is known: "In your
+   * phone's wallet" once a pass is in a wallet, "Not kept on this phone" otherwise,
+   * nothing about it while the wallet status is loading or failed.
+   */
+  get emergencyBody(): 'm2.prof.emergencyBodyWallet' | 'm2.prof.emergencyBody' | 'm2.prof.emergencyBodyShort' {
+    if (!this.wallet.ready) return 'm2.prof.emergencyBodyShort';
+    return inAnyWallet(this.wallet.data) ? 'm2.prof.emergencyBodyWallet' : 'm2.prof.emergencyBody';
+  }
+
   load(): void {
     void this.profile.load();
     void this.body.load();
     void this.documents.load();
     void this.plans.load();
+    void this.wallet.load();
   }
 
   dispose(): void {
-    [this.profile, this.body, this.documents, this.plans].forEach((r) => r.cancel());
+    [this.profile, this.body, this.documents, this.plans, this.wallet].forEach((r) => r.cancel());
   }
 
   reset(): void {

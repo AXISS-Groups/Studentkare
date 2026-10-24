@@ -79,11 +79,13 @@ describe('WebMyLabTests', () => {
 
 describe('WebEmergencyCard', () => {
   const profile = { bloodGroup: '', allergies: ['Penicillin'], chronicConditions: [], emergencyContactName: '', emergencyContactPhone: '', emergencyContactRelation: '' };
+  // Both phone wallets are off until legal and the clinical lead sign (plan tier1-emergency-card-wallet-2026-10-24).
+  const walletOff = { available: { apple: false, google: false }, fields: [], defaultFields: [], passes: [], googleConsentVersion: 'v', googleConsent: null };
 
   it('previews the draft live, computes readiness, and saves only the profile fields', async () => {
     expect(readiness({ bloodGroup: '', allergies: '', conditions: '', contactName: '', contactPhone: '', contactRelation: '' }).percent).toBe(0);
     expect(readiness({ bloodGroup: 'O+', allergies: '', conditions: '', contactName: 'A', contactPhone: '9876543210', contactRelation: '' }).percent).toBe(100);
-    serve({ '/profile': (_p: string, init?: RequestInit) => (init?.method === 'PATCH' ? { ...profile, bloodGroup: 'O+' } : profile) });
+    serve({ '/wallet/emergency-card': walletOff, '/profile': (_p: string, init?: RequestInit) => (init?.method === 'PATCH' ? { ...profile, bloodGroup: 'O+' } : profile) });
     const { container } = render(<WebEmergencyCardRoute />);
     await settle();
     const preview = screen.getByTestId('ice-preview');
@@ -102,7 +104,7 @@ describe('WebEmergencyCard', () => {
   });
 
   it('fails closed: a failed save says so, and crisis lines stay reachable while loading and on error', async () => {
-    serve({ '/profile': (_p: string, init?: RequestInit) => (init?.method === 'PATCH' ? new Error('down') : profile) });
+    serve({ '/wallet/emergency-card': walletOff, '/profile': (_p: string, init?: RequestInit) => (init?.method === 'PATCH' ? new Error('down') : profile) });
     render(<WebEmergencyCardRoute />);
     expect(screen.getByRole('link', { name: 'Call 112, emergency services' })).toBeTruthy();
     await settle();
