@@ -183,7 +183,7 @@ Decided by Krishna Chintakayala (named reviewer) on the recommendations below. W
 
 `WebHome` is marked superseded by `WebDashboard`.
 
-**Deferred** (Tier 1 content, phase 3): folding Report insights into My health. Report insights keeps its sidebar item until then.
+**Deferred** (Tier 1 content, phase 3): folding Report insights into My health. Report insights keeps its sidebar item until then. *Done in phase 3 (docs/plans/tier1-parity-2026-10-24.md §3, Q3): a "Reviewed lab reports" card on My health; the sidebar item is gone and `/report-insights` stays as the card's detail page.*
 
 ## Duplications (recommendations for Krishna; decided above)
 
