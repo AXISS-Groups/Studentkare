@@ -36,3 +36,5 @@ export type { AutoAdvance } from './m2Motion';
 export { useOwnPhoneChrome } from '../navigation/BoardHeader';
 export { ProgressRing, clampRing } from './ProgressRing';
 export type { ProgressRingProps } from './ProgressRing';
+export { M2Callout, M2Countdown, M2EdgeCard, M2ListLine, M2PageHero, M2Tile3d, M2Timeline, M2TimelineRow } from './M2Tier1';
+export type { CalloutTone, M2PageHeroProps, M2TimelineItem, M2TimelineLabels, TileHue3d } from './M2Tier1';

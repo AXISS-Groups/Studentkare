@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { cleanup, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { axeViolations, describeViolations } from '@/test/axe';
 
@@ -20,7 +20,7 @@ import { HealthVaultViewModel } from '@/features/vault/viewmodel/HealthVaultView
 import { AyushChatNativeView } from '@/features/chat/views/AyushChatNativeView';
 import { AyushViewModel } from '@/features/chat/viewmodel/AyushViewModel';
 import { TeleconsultNativeView } from '@/features/teleconsult/views/TeleconsultNativeView';
-import { EmergencyCardView } from '@/features/emergency/views/WebEmergencyCard';
+import { EmergencyCardBoard } from '@/features/emergency/views/EmergencyCardBoard';
 import { EmergencyCardViewModel } from '@/features/emergency/viewmodel/EmergencyCardViewModel';
 
 type Requester = typeof import('@/data/services/http').apiRequest;
@@ -83,6 +83,8 @@ describe('screens built in the remediation pass are accessible', () => {
   it('emergency card', async () => {
     const vm = new EmergencyCardViewModel(api({ '/profile': { id: 'u', fullName: 'S', role: 'STUDENT', email: '', phone: '', dob: '', university: '', rollNumber: '', bloodGroup: 'O+', ageVerified: false, isVerifiedStudent: false, emergencyContactName: 'Asha', emergencyContactPhone: '9876543210', emergencyContactRelation: 'Parent', allergies: ['Penicillin'], chronicConditions: [], updatedAt: null } }));
     await vm.load();
-    await expectAccessible(<EmergencyCardView vm={vm} />);
+    await expectAccessible(<EmergencyCardBoard vm={vm} links={{ contacts: () => undefined }} />);
+    cleanup();
+    await expectAccessible(<EmergencyCardBoard vm={vm} links={{ contacts: () => undefined }} wide />);
   });
 });

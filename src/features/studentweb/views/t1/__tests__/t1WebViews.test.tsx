@@ -10,8 +10,6 @@ import type { StudentLabTest } from '../WebMyLabTestsView';
 import type { LiveDocument } from '@/data/types/workflowTypes';
 import { WebEmergencyCardRoute, readiness } from '../WebEmergencyCardView';
 import { WebRequestsRoute } from '../WebRequestsRoute';
-import { WebLeaveCampusRoute } from '../WebLeaveCampusView';
-import { WebDeleteAccountRoute } from '../WebDeleteAccountView';
 
 vi.mock('@/data/services/http', async (importOriginal) => ({ ...(await importOriginal<typeof import('@/data/services/http')>()), apiRequest: vi.fn() }));
 vi.mock('@/lib/utils/workflowRouting', async (importOriginal) => ({ ...(await importOriginal<typeof import('@/lib/utils/workflowRouting')>()), navigate: vi.fn() }));
@@ -151,51 +149,5 @@ describe('WebRequests', () => {
     fireEvent.click(screen.getAllByRole('button', { name: 'New request' })[0]);
     fireEvent.click(screen.getByRole('button', { name: 'Return or refund' }));
     expect(go).toHaveBeenCalledWith('return-request');
-  });
-});
-
-describe('WebLeaveCampus', () => {
-  it('lists only what the backend changes, and undo cancels a scheduled departure', async () => {
-    serve({ '/campus/departure': { departure: null, campus: { university: 'VNR VJIET', status: 'VERIFIED' }, collegePlan: null, signsInWithCollegeEmail: false, today: '2026-10-21' } });
-    const { container, unmount } = render(<WebLeaveCampusRoute />);
-    await settle();
-    expect(screen.getByText('Leaving VNR VJIET?')).toBeTruthy();
-    expect(screen.queryByText(/Care Circle|Edu ID prices|personal email/i)).toBeNull();
-    expect(within(screen.getByTestId('leave-campus-changes')).getByText(/check-in pass stops working/)).toBeTruthy();
-    await axeClean(container);
-    unmount();
-
-    api.mockReset();
-    serve({
-      '/campus/departure/cancel': { departure: null, campus: { university: 'VNR VJIET', status: 'VERIFIED' }, collegePlan: null, signsInWithCollegeEmail: false, today: '2026-10-21' },
-      '/campus/departure': { departure: { id: 'x', university: 'VNR VJIET', reason: 'GRADUATING', destination: null, effectiveOn: '2027-05-31', status: 'SCHEDULED' }, campus: { university: 'VNR VJIET', status: 'VERIFIED' }, collegePlan: null, signsInWithCollegeEmail: false, today: '2026-10-21' },
-    });
-    render(<WebLeaveCampusRoute />);
-    await settle();
-    fireEvent.click(screen.getByRole('button', { name: 'Undo — I’m not leaving' }));
-    await settle();
-    expect(calls()).toContain('POST /campus/departure/cancel');
-  });
-});
-
-describe('WebDeleteAccount', () => {
-  it('needs the typed word before it schedules, offers export first, and makes no legal claims', async () => {
-    serve({ '/records/deletion-request': (_p: string, init?: RequestInit) => (init?.method === 'POST' ? { status: 'PENDING', requestedAt: 1, scheduledFor: 2, archiveRetentionDays: 30 } : { status: 'NONE', requestedAt: null, scheduledFor: null, archiveRetentionDays: 30 }) });
-    const { container } = render(<WebDeleteAccountRoute />);
-    await settle();
-    expect(screen.queryByText(/8 years|tax law|ABHA|grievance@/)).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: /Download my data first/ }));
-    expect(go).toHaveBeenCalledWith('data-export');
-    fireEvent.click(screen.getByRole('button', { name: 'Continue to delete' }));
-    const confirm = screen.getByRole('button', { name: 'Delete my account in 7 days' });
-    expect((confirm as HTMLButtonElement).disabled).toBe(true);
-    expect(screen.getByRole('link', { name: 'Call Tele-MANAS 14416' })).toBeTruthy();
-    fireEvent.change(screen.getByLabelText('Type DELETE to confirm'), { target: { value: 'delete' } });
-    expect((confirm as HTMLButtonElement).disabled).toBe(false);
-    await axeClean(container);
-    fireEvent.click(confirm);
-    await settle();
-    expect(screen.getByTestId('delete-scheduled')).toBeTruthy();
-    expect(calls()).toContain('POST /records/deletion-request');
   });
 });

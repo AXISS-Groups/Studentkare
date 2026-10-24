@@ -4,7 +4,8 @@ import { observer } from 'mobx-react-lite';
 import { Button, Checkbox, ErrorState, Note, Sheet, SwitchRow, useOnline } from '@/design-system';
 import { Icon } from '@/design-system/icons';
 import { boardText } from '@/design-system/board/BoardKit';
-import { color, radius, space } from '@/design-system/theme';
+import { M2Tile3d, m2Text } from '@/design-system/m2';
+import { color, shadow, shadowStyle, space } from '@/design-system/theme';
 import { useLanguage, useT } from '@/i18n';
 import type { Lang, MessageKey } from '@/i18n';
 import { HEALTH_FIELDS, WALLET_FIELDS, WalletPassViewModel } from '../viewmodel/WalletPassViewModel';
@@ -57,8 +58,13 @@ export const WalletPassPanel = observer(function WalletPassPanel({ vm }: { vm: W
 
   return (
     <View style={styles.panel} testID="wallet-panel">
-      <Text accessibilityRole="header" style={boardText.strong}>{t('wlt.title')}</Text>
-      <Text style={boardText.body}>{t('wlt.intro')}</Text>
+      <View style={styles.head}>
+        <M2Tile3d icon="devices" hue="indigo" size={44} />
+        <View style={styles.flex}>
+          <Text accessibilityRole="header" style={m2Text.section}>{t('wlt.title')}</Text>
+          <Text style={boardText.body}>{t('wlt.intro')}</Text>
+        </View>
+      </View>
       {!anyActive ? <Text testID="wallet-status-none" style={boardText.meta}>{t('wlt.status.none')}</Text> : null}
 
       {vm.shown.map((platform) => {
@@ -156,7 +162,8 @@ export function WalletPassSection({ refreshKey }: { refreshKey?: unknown }): Rea
 
 const styles = StyleSheet.create({
   flex: { flex: 1, minWidth: 0 },
-  panel: { backgroundColor: color.surface, borderRadius: radius.xl, padding: space.s16, gap: space.s10 },
+  panel: { backgroundColor: color.surface, borderRadius: 22, padding: space.s16, gap: space.s10, ...shadowStyle(shadow.card) },
+  head: { flexDirection: 'row', alignItems: 'flex-start', gap: space.s12 },
   wallet: { gap: space.s8 },
   statusRow: { flexDirection: 'row', alignItems: 'center', gap: space.s8 },
   sheet: { gap: space.s12 },

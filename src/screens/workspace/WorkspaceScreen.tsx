@@ -95,7 +95,6 @@ const MedicineInfoRoute = lazy(() => import('@/features/medicineInfo/views/Medic
 const PharmacyMedicineInfoScreen = lazy(() => import('@/features/medicineInfo/admin/MedicineInfoReviewView').then(module => ({ default: module.PharmacyMedicineInfoScreen })));
 const CareDirectoryRoute = lazy(() => import('@/features/careDirectory/views/CareDirectoryRoute').then(module => ({ default: module.CareDirectoryRoute })));
 const M2WhatsNewRoute = lazy(() => import('@/features/newsroom/views/M2WhatsNewRoute').then(module => ({ default: module.M2WhatsNewRoute })));
-const WebEmergencyCard = lazy(() => import('@/features/emergency/views/WebEmergencyCard').then(module => ({ default: module.WebEmergencyCard })));
 const IdentityVerifyView = lazy(() => import('@/features/auth/views/IdentityVerifyView').then(module => ({ default: module.IdentityVerifyView })));
 const MyPassRoute = lazy(() => import('@/features/digital_id/views/MyPassBoard').then(module => ({ default: module.MyPassRoute })));
 const WellnessTrainingScreen = lazy(() => import('../wellbeing/WellnessTrainingScreen').then(module => ({ default: module.WellnessTrainingScreen })));
@@ -151,8 +150,6 @@ const ReportInsightsRoute = lazy(() => import('@/features/insights/views/ReportI
 const M2AskAyushRoute = lazy(() => import('@/features/chat/views/M2AskAyushRoute').then(module => ({ default: module.M2AskAyushRoute })));
 const WebEmergencyCardRoute = lazy(() => import('@/features/studentweb/views/t1/WebEmergencyCardView').then(module => ({ default: module.WebEmergencyCardRoute })));
 const WebRequestsRoute = lazy(() => import('@/features/studentweb/views/t1/WebRequestsRoute').then(module => ({ default: module.WebRequestsRoute })));
-const WebLeaveCampusRoute = lazy(() => import('@/features/studentweb/views/t1/WebLeaveCampusView').then(module => ({ default: module.WebLeaveCampusRoute })));
-const WebDeleteAccountRoute = lazy(() => import('@/features/studentweb/views/t1/WebDeleteAccountView').then(module => ({ default: module.WebDeleteAccountRoute })));
 
 /** The partner console page for a route, or null when the route is not one (same role checks as before). */
 function vendorPageFor(route: RoutePath, role: AccountRole | null, onNavigate: (target: string) => void, onLogout: () => Promise<void>, onSwitchRole: (role: 'student' | 'admin' | 'vendor') => void): React.ReactNode {
@@ -363,8 +360,14 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
       case 'pass': return <MyPassRoute wide links={{ digitalId: () => navigate('digital-id') }} art={recordsArt.smallClinic} />;
       case 'digital-id': return <DigitalIdPage wide />;
       case 'my-requests': return <WebRequestsRoute />;
-      case 'leave-campus': return <WebLeaveCampusRoute />;
-      case 'delete-account': return <WebDeleteAccountRoute />;
+      case 'leave-campus': return <LeaveCampusRoute wide links={leaveCampusLinks} />;
+      case 'delete-account': return <DeleteAccountRoute wide links={deleteAccountLinks} />;
+      case 'consent': return <ConsentInboxBoard wide links={{ back: () => navigate('records'), records: () => navigate('records') }} />;
+      case 'care-circle': return <FamilyCircleBoard wide links={{ back: () => navigate('records'), emergencyCard: () => navigate('emergency-card'), consent: () => navigate('consent') }} />;
+      case 'privacy-consent': return <PrivacyConsentView wide />;
+      case 'data-rights': return <DataRightsView wide />;
+      case 'security': return <SignInSecurityRoute wide />;
+      case 'verify': return <IdentityVerifyView wide />;
       // Mobile 2.0 Lab tests: the student shell had no lab tests page (its nav item had no route).
       case 'lab-tests': return <M2LabsRoute wide />;
       // Mobile 2.0 Doctor consults: the shell's "Doctors" link stays in the shell (it used to open the public marketplace).
@@ -430,10 +433,10 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
       case 'health-camp': return <M2CampsRoute />;
       case 'notifications': return <NotificationInboxPanel />;
       case 'notification-settings': return <NotificationSettingsRoute device={webPushController} />;
-      case 'security': return <SignInSecurityRoute />;
-      case 'verify': return <IdentityVerifyView />;
+      case 'security': return <SignInSecurityRoute wide={!phoneFrame} />;
+      case 'verify': return <IdentityVerifyView wide={!phoneFrame} />;
       case 'rewards': return <RewardsRoute />;
-      case 'leave-campus': return <LeaveCampusRoute links={{ openRecords: () => navigate('records'), openPlans: () => navigate('billing'), openSupport: () => navigate('support') }} />;
+      case 'leave-campus': return <LeaveCampusRoute links={leaveCampusLinks} />;
       case 'care-navigator': return <CareNavigatorPanel />;
       case 'preventive-care': return <PreventiveCareScreen />;
       case 'report-reviews': return <PreventiveReviewScreen />;
@@ -443,9 +446,9 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
       case 'return-request': return <NewRequestRoute kind="RETURN" links={{ done: () => navigate('my-requests'), attachReturnPhoto }} />;
       case 'hostel-visit': return <NewRequestRoute kind="HOSTEL_VISIT" links={{ done: () => navigate('my-requests'), crisis: () => navigate('sos') }} />;
       case 'refill-request': return <NewRequestRoute kind="REFILL" links={{ done: () => navigate('my-requests') }} />;
-      case 'delete-account': return <DeleteAccountRoute links={{ exportData: () => navigate('data-export'), crisis: () => navigate('crisis') }} />;
+      case 'delete-account': return <DeleteAccountRoute links={deleteAccountLinks} />;
       // WP-06 boards with no desktop twin yet: the phone board in the page column.
-      case 'ice-contacts': case 'consent': case 'care-circle': return safetyBoardFor(route);
+      case 'ice-contacts': return safetyBoardFor(route);
       // Privacy & consent and data rights (audit H2): one page at every width.
       case 'privacy-consent': return <PrivacyConsentView />;
       case 'data-rights': return <DataRightsView />;

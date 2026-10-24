@@ -103,7 +103,9 @@
       "src/features/auth/views/IdentityVerifyView.tsx",
       "src/features/auth/views/IdentityVerifyPanel.tsx",
       "src/features/auth/views/IdentityCheckRow.tsx",
-      "src/features/auth/viewmodel/IdentityVerifyViewModel.ts"
+      "src/features/auth/viewmodel/IdentityVerifyViewModel.ts",
+      "src/design-system/m2/M2Parts.tsx",
+      "src/design-system/m2/M2Tier1.tsx"
     ],
     "VerifyGate": [
       "src/features/auth/views/VerifyGateView.tsx",
@@ -238,7 +240,9 @@
       "src/features/emergency/viewmodel/EmergencyCardViewModel.ts",
       "src/features/emergency/views/WalletPassPanel.tsx",
       "src/features/emergency/views/openWallet.ts",
-      "src/features/emergency/viewmodel/WalletPassViewModel.ts"
+      "src/features/emergency/viewmodel/WalletPassViewModel.ts",
+      "src/design-system/m2/M2Parts.tsx",
+      "src/design-system/m2/M2Tier1.tsx"
     ],
     "CrisisSupport": [
       "src/features/crisis/views/CrisisSupportBoard.tsx"
@@ -341,7 +345,9 @@
       "src/screens/workspace/PhoneBoards.tsx"
     ],
     "ConsentInbox": [
-      "src/features/vault/views/ConsentInboxBoard.tsx"
+      "src/features/vault/views/ConsentInboxBoard.tsx",
+      "src/design-system/m2/M2Parts.tsx",
+      "src/design-system/m2/M2Tier1.tsx"
     ],
     "SosBeacon": [
       "src/modules/m04-emergency/view/SosView.tsx",
@@ -356,7 +362,9 @@
       "src/features/emergency/viewmodel/EmergencyCardViewModel.ts"
     ],
     "FamilyCircle": [
-      "src/features/vault/views/FamilyCircleBoard.tsx"
+      "src/features/vault/views/FamilyCircleBoard.tsx",
+      "src/design-system/m2/M2Parts.tsx",
+      "src/design-system/m2/M2Tier1.tsx"
     ],
     "RefillRequest": [],
     "HostelVisit": [
@@ -400,11 +408,16 @@
     ],
     "CheckinReceipt": [],
     "LeaveCampus": [
-      "src/features/campus/views/LeaveCampusView.tsx"
+      "src/features/campus/views/LeaveCampusView.tsx",
+      "src/features/campus/viewmodel/LeaveCampusViewModel.ts",
+      "src/design-system/m2/M2Parts.tsx",
+      "src/design-system/m2/M2Tier1.tsx"
     ],
     "DeleteAccount": [
       "src/features/account/views/DeleteAccountView.tsx",
-      "src/features/account/viewmodel/DeleteAccountViewModel.ts"
+      "src/features/account/viewmodel/DeleteAccountViewModel.ts",
+      "src/design-system/m2/M2Parts.tsx",
+      "src/design-system/m2/M2Tier1.tsx"
     ],
     "NotificationSettings": [
       "src/features/notifications/views/NotificationSettingsView.tsx",
@@ -569,6 +582,8 @@
       "src/features/auth/views/IdentityVerifyPanel.tsx",
       "src/features/auth/views/IdentityCheckRow.tsx",
       "src/features/auth/viewmodel/IdentityVerifyViewModel.ts",
+      "src/design-system/m2/M2Parts.tsx",
+      "src/design-system/m2/M2Tier1.tsx",
       "src/design-system/student-shell/StudentWebShell.tsx",
       "src/design-system/student-shell/studentNav.ts",
       "src/design-system/overlays/ConfirmDialog.tsx"
@@ -692,6 +707,8 @@
       "src/features/account/viewmodel/TwoFactorViewModel.ts",
       "src/features/account/viewmodel/ContactsViewModel.ts",
       "src/features/account/viewmodel/PasswordCardViewModel.ts",
+      "src/design-system/m2/M2Parts.tsx",
+      "src/design-system/m2/M2Tier1.tsx",
       "src/design-system/student-shell/StudentWebShell.tsx",
       "src/design-system/student-shell/studentNav.ts",
       "src/design-system/overlays/ConfirmDialog.tsx"
@@ -720,26 +737,6 @@
     "WebLegal": [
       "src/features/legal/views/WebLegalView.tsx",
       "src/features/privacy/LegalText.tsx"
-    ],
-    "WebLeaveCampus": [
-      "src/features/studentweb/views/t1/WebLeaveCampusView.tsx",
-      "src/features/campus/viewmodel/LeaveCampusViewModel.ts",
-      "src/design-system/student-shell/StudentWebShell.tsx",
-      "src/design-system/student-shell/studentNav.ts",
-      "src/design-system/overlays/ConfirmDialog.tsx",
-      "src/features/studentweb/views/parts.tsx",
-      "src/features/studentweb/views/t1/shared.tsx",
-      "src/features/studentweb/views/t1/t1web.css"
-    ],
-    "WebDeleteAccount": [
-      "src/features/studentweb/views/t1/WebDeleteAccountView.tsx",
-      "src/features/account/viewmodel/DeleteAccountViewModel.ts",
-      "src/design-system/student-shell/StudentWebShell.tsx",
-      "src/design-system/student-shell/studentNav.ts",
-      "src/design-system/overlays/ConfirmDialog.tsx",
-      "src/features/studentweb/views/parts.tsx",
-      "src/features/studentweb/views/t1/shared.tsx",
-      "src/features/studentweb/views/t1/t1web.css"
     ],
     "CampusAdminConsole": [
       "src/design-system/campus-shell/CampusShell.tsx",
@@ -2238,6 +2235,27 @@
       ],
       "source": "docs/plans/tier1-parity-2026-10-24.md §11 (Q2: M2Profile wide with an Account details card replaces the Account page at /profile)",
       "redirects": {}
+    },
+    "WebDeleteAccount": {
+      "by": [
+        "DeleteAccount"
+      ],
+      "source": "docs/plans/tier1-parity-2026-10-24.md §19 (Q1, Q2: one Delete account view laid out wide)",
+      "redirects": {}
+    },
+    "WebEmergencyCard": {
+      "by": [
+        "EmergencyCard"
+      ],
+      "source": "docs/plans/tier1-parity-2026-10-24.md §21 (Q1, Q2: one Emergency card view, editor beside the live card on desktop)",
+      "redirects": {}
+    },
+    "WebLeaveCampus": {
+      "by": [
+        "LeaveCampus"
+      ],
+      "source": "docs/plans/tier1-parity-2026-10-24.md §20 (Q1, Q2: one Leave campus view laid out wide)",
+      "redirects": {}
     }
   },
   "retiredIcons": {
@@ -2245,36 +2263,6 @@
     "SearchEntry": {
       "icons": [
         "menu"
-      ],
-      "source": "docs/ux/web-mobile-parity-2026-10-23.md#approved-decisions-23-oct-2026"
-    },
-    "WebDeleteAccount": {
-      "icons": [
-        "bar-chart",
-        "flask",
-        "map-pin",
-        "sparkle",
-        "user"
-      ],
-      "source": "docs/ux/web-mobile-parity-2026-10-23.md#approved-decisions-23-oct-2026"
-    },
-    "WebEmergencyCard": {
-      "icons": [
-        "bar-chart",
-        "flask",
-        "map-pin",
-        "sparkle",
-        "user"
-      ],
-      "source": "docs/ux/web-mobile-parity-2026-10-23.md#approved-decisions-23-oct-2026"
-    },
-    "WebLeaveCampus": {
-      "icons": [
-        "bar-chart",
-        "flask",
-        "map-pin",
-        "sparkle",
-        "user"
       ],
       "source": "docs/ux/web-mobile-parity-2026-10-23.md#approved-decisions-23-oct-2026"
     },

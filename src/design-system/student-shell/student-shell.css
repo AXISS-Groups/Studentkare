@@ -196,6 +196,11 @@
   min-width: 0; box-sizing: border-box;
   padding: var(--sk-space-32) var(--sk-space-gutter-web) var(--sk-sshell-float-clearance);
 }
+/* The Ayush bubble is fixed to the bottom-right corner, so on a wide screen the page keeps a column clear of it on the
+   right as well as the bottom (the phone's M2_NAV_CLEARANCE for the pill nav): no control ever sits under the bubble. */
+@media (min-width: 1025px) {
+  .sk-sshell__main { padding-right: var(--sk-sshell-float-clearance); }
+}
 
 /* ---- boards without a sidebar (WebAyush): top nav only on wide screens ---- */
 @media (min-width: 1025px) {

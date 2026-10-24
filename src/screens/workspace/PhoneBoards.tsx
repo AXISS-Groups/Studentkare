@@ -17,7 +17,6 @@ import { M2InsuranceRoute } from '@/features/m2store/views/M2InsuranceRoute';
 import { HelpCentreBoard } from '@/features/support/views/HelpCentreBoard';
 import { MovementBoard } from '@/features/movement/views/MovementBoard';
 import { useExerciseStore } from '@/data/contexts/ExerciseStore';
-import { EmergencyCardRoute } from '@/features/emergency/views/EmergencyCardBoard';
 import { IceContactsRoute } from '@/features/emergency/views/IceContactsBoard';
 import { DeleteAccountRoute } from '@/features/account/views/DeleteAccountView';
 import { PlanBillingBoard } from '@/features/billing/views/PlanBillingBoard';
@@ -184,16 +183,14 @@ export function PlanBillingPage(): React.ReactElement {
 /**
  * The Tier 1 boards of WP-06 (safety, consent and account deletion), approved
  * by Krishna Chintakayala on 2026-10-21. The same boards serve the desktop
- * routes that have no web twin yet (ice-contacts, consent, care-circle).
+ * routes that have no web twin yet (ice-contacts, pass, billing). The emergency card, delete account,
+ * consent inbox and care circle are Mobile 2.0 boards now (features/phoneKit/studentPhoneBoards).
  */
 export function safetyBoardFor(route: RoutePath): React.ReactElement | null {
   switch (route) {
-    case 'emergency-card': return <EmergencyCardRoute links={{ contacts: () => navigate('ice-contacts'), nearestHospitals: () => navigate('find-care') }} />;
     case 'ice-contacts': return <IceContactsRoute links={{}} />;
     case 'delete-account': return <DeleteAccountRoute links={{ exportData: () => navigate('data-export'), crisis: () => navigate('crisis') }} />;
     case 'billing': return <PlanBillingPage />;
-    case 'consent': return <ConsentInboxBoard links={{ records: () => navigate('records') }} />;
-    case 'care-circle': return <FamilyCircleBoard links={{ emergencyCard: () => navigate('emergency-card'), consent: () => navigate('consent') }} />;
     default: return null;
   }
 }
