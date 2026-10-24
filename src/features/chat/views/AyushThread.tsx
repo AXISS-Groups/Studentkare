@@ -144,6 +144,12 @@ export const AyushThread = observer(function AyushThread({ vm, online, links, in
   const canSend = online && vm.canSend;
   const gutter = { paddingHorizontal: inset };
   const bubble = [styles.bubble, wide ? styles.bubbleWide : null];
+  const chips = SUGGESTIONS.map((key) => (
+    <Pressable key={key} role="button" accessibilityRole="button" accessibilityLabel={t(key)} aria-label={t(key)} disabled={!online || vm.sending}
+      onPress={() => send(t(key))} style={({ focused }: PressState) => [styles.suggestion, focused ? focusRing : null]}>
+      <Text style={styles.suggestionText}>{t(key)}</Text>
+    </Pressable>
+  ));
   return (
     <>
       <View style={[gutter, styles.thread]} aria-live="polite" testID="m2-ask-thread" {...webAttrs({ 'aria-label': t('assist.ayush.conversationLabel') })}>
@@ -185,14 +191,14 @@ export const AyushThread = observer(function AyushThread({ vm, online, links, in
         ) : null}
       </View>
 
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={[styles.suggestions, gutter]} keyboardShouldPersistTaps="handled" testID="m2-ask-suggestions">
-        {SUGGESTIONS.map((key) => (
-          <Pressable key={key} role="button" accessibilityRole="button" accessibilityLabel={t(key)} aria-label={t(key)} disabled={!online || vm.sending}
-            onPress={() => send(t(key))} style={({ focused }: PressState) => [styles.suggestion, focused ? focusRing : null]}>
-            <Text style={styles.suggestionText}>{t(key)}</Text>
-          </Pressable>
-        ))}
-      </ScrollView>
+      {/* Phone: one scrolling row, as the board. Wider: the chips wrap, so none is cut off at the column's edge. */}
+      {wide ? (
+        <View style={[styles.suggestions, styles.suggestionsWrap, gutter]} testID="m2-ask-suggestions">{chips}</View>
+      ) : (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={[styles.suggestions, gutter]} keyboardShouldPersistTaps="handled" testID="m2-ask-suggestions">
+          {chips}
+        </ScrollView>
+      )}
 
       <View style={gutter}>
         <View style={styles.crisisLine} testID="m2-ask-crisis-line">
@@ -269,6 +275,7 @@ const styles = StyleSheet.create({
   crisisCall: { minHeight: size.touchTarget, borderRadius: radius.full, paddingHorizontal: space.s14, flexDirection: 'row', alignItems: 'center', gap: space.s8, backgroundColor: color.dangerFill },
   crisisCallText: { fontFamily: font.family.sans, fontSize: font.size.bodySm, fontWeight: fontWeight(font.weight.heavy), color: color.onDangerFill },
   suggestions: { gap: space.s8 },
+  suggestionsWrap: { flexDirection: 'row', flexWrap: 'wrap' },
   suggestion: { minHeight: size.touchTarget, paddingHorizontal: space.s14, borderRadius: radius.full, justifyContent: 'center', borderWidth: 1, borderColor: color.rule, backgroundColor: color.surface },
   suggestionText: { fontFamily: font.family.sans, fontSize: 12.5, fontWeight: fontWeight(font.weight.strong), color: color.action },
   crisisLine: { paddingVertical: space.s8, paddingLeft: space.s12, paddingRight: space.s4, borderRadius: radius.lg, flexDirection: 'row', alignItems: 'center', gap: space.s10, backgroundColor: color.dangerBg },
