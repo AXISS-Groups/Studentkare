@@ -371,8 +371,8 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
       case 'preventive-care': return <M2VaccinesRoute wide />;
       // Mobile 2.0 Insurance; its Manage opens the full insurance panel under it.
       case 'insurance': return <InsurancePage wide />;
-      // Mobile 2.0 My health (Tier 1 plan: M2Insights replaces YourCare's overview), in the page column like Trends.
-      case 'your-care': return <M2InsightsRoute />;
+      // Mobile 2.0 My health (Tier 1 plan: M2Insights replaces YourCare's overview), laid out wide (parity plan 2026-10-24 §2).
+      case 'your-care': return <M2InsightsRoute wide />;
       // Find care near you (WebFindCare above phone width): the same board, two columns.
       case 'find-care': return <CareDirectoryRoute wide />;
       // What's new (product update posts), from Profile: the same board in the page column.
@@ -383,6 +383,9 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
       case 'health/water': return <M2WaterRoute wide />;
       case 'health/refills': return <M2RefillsRoute wide />;
       case 'health/steps': return <M2StepsRoute wide />;
+      // Tier 1 parity plan 2026-10-24 §4–5: Trends and Add a lab report laid out wide, as the phone draws them.
+      case 'health/trends': return <M2TrendsRoute wide />;
+      case 'health/report-upload': return <M2ReportUploadRoute wide />;
       // Parity phase 2c: the phone boards in the page column, instead of the older panels.
       case 'appointments': return <AppointmentsPage />;
       case 'billing': return <PlanBillingPage />;

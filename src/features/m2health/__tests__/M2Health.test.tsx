@@ -132,7 +132,7 @@ describe('M2Profile', () => {
 
 function insightsLinks(): M2InsightsLinks {
   return {
-    sos: vi.fn(), trends: vi.fn(), records: vi.fn(), reportUpload: vi.fn(), medicines: vi.fn(), water: vi.fn(), refill: vi.fn(), collection: vi.fn(),
+    trends: vi.fn(), records: vi.fn(), reportUpload: vi.fn(), medicines: vi.fn(), water: vi.fn(), refill: vi.fn(), collection: vi.fn(),
     addVaccineCard: vi.fn(), appointments: vi.fn(),
   };
 }
@@ -282,7 +282,8 @@ describe('safety elements on the health screens', () => {
     const profile = new ProfileViewModel(request);
     profile.load();
     const sos = vi.fn();
-    const { unmount } = wrap(<M2InsightsView vm={insights} name="" links={{ ...insightsLinks(), sos }} />);
+    // SOS on My health is the shell's (parity plan 2026-10-24 §1): the phone frame and the app provide it.
+    const { unmount } = wrap(<M2SosProvider value={sos}><M2InsightsView vm={insights} name="" links={insightsLinks()} /></M2SosProvider>);
     await waitFor(() => expect(insights.values.phase).toBe('error'));
     const insightsSos = screen.getByRole('button', { name: en('m2.sosSpoken') });
     expect(insightsSos).toHaveAttribute('tabindex', '0');

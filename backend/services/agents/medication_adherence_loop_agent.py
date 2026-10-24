@@ -138,9 +138,10 @@ class MedicationAdherenceLoopAgent:
 
         One query for every dose, rather than one per plan per day.
         """
-        today = today or date.today()
         if db is None:
             return {"windows": {}, "missedDays": [], "trackedSince": None}
+        zone = student_time.student_zone(db, account_id)
+        today = today or student_time.local_today(zone)
 
         plans = db.scalars(
             select(M.MedicationPlan).where(
@@ -158,7 +159,7 @@ class MedicationAdherenceLoopAgent:
         )
         earliest = min((plan.created_at or 0.0) for plan in plans)
         active_from = (
-            date.fromtimestamp(earliest) if earliest else min(dose_dates, default=today.isoformat())
+            datetime.fromtimestamp(earliest, zone).date() if earliest else min(dose_dates, default=today.isoformat())
         )
         if isinstance(active_from, str):
             active_from = date.fromisoformat(active_from)

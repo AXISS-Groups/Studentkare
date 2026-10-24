@@ -12,7 +12,7 @@ import { pickReportFile } from './pickReportFile.web';
  * signed-in student. A photo or a PDF comes from the browser's file picker (on
  * a phone the camera is offered for a photo); the server checks and scans it.
  */
-export function M2ReportUploadRoute(): React.ReactElement {
+export function M2ReportUploadRoute({ wide = false }: { wide?: boolean } = {}): React.ReactElement {
   const t = useT();
   const [vm] = useState(() => new ReportUploadViewModel(t('m2v.up.documentTitle')));
   const online = useOnline();
@@ -25,6 +25,7 @@ export function M2ReportUploadRoute(): React.ReactElement {
       vm={vm}
       sources={{ photo: pick('photo'), pdf: pick('pdf') }}
       online={online}
+      wide={wide}
       links={{ back: () => navigate(STUDENT_NAV_ROUTES.health), trends: () => navigate('health/trends') }}
     />
   );

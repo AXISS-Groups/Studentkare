@@ -8,6 +8,7 @@ import { useLocation } from '@/core/navigation';
 import { navigate } from '@/lib/utils/workflowRouting';
 import { initialsOf } from '@/design-system/student-shell/StudentWebShell';
 import { EmptyPanel, ErrorPanel, LinkRow, LoadingRows, OfflinePanel, PageHead, Pill } from '../parts';
+import { pickReport } from '@/features/insights/viewmodel/releasedReports';
 import type { StudentLabTest } from './WebMyLabTestsView';
 import { IconNote, dayDate } from './shared';
 import '../../studentweb.css';
@@ -15,13 +16,8 @@ import './t1web.css';
 
 type InsightTab = 'summary' | 'history';
 
-/** The report to show: the one asked for (?id=), else the newest released one. */
-export function pickReport(tests: StudentLabTest[], id: string | null): StudentLabTest | null {
-  const released = tests
-    .filter((test) => test.status === 'REPORT_RELEASED' && test.reportDocumentId)
-    .sort((a, b) => (b.reviewedAt ?? b.createdAt) - (a.reviewedAt ?? a.createdAt));
-  return (id ? released.find((test) => test.id === id) : undefined) ?? released[0] ?? null;
-}
+// The pick rule is shared with My health's "Reviewed lab reports" card (Tier 1 parity plan §3).
+export { pickReport };
 
 /**
  * Report insights (canvas 3b, WebReportInsights, Tier 1 — approved by Krishna

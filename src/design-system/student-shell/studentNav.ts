@@ -8,7 +8,7 @@ import type { RoutePath } from '@/lib/utils/workflowRouting';
  * Icon names are the brief's; labels are i18n keys (studentshell area).
  */
 export type StudentNavId =
-  | 'home' | 'my-health' | 'vault' | 'insights' | 'medicines' | 'water' | 'emergency' | 'pass'
+  | 'home' | 'my-health' | 'vault' | 'medicines' | 'water' | 'emergency' | 'pass'
   | 'orders' | 'buy-again' | 'requests'
   | 'verify' | 'security' | 'notifications' | 'plan';
 
@@ -31,6 +31,9 @@ export interface StudentNavGroup { id: 'care' | 'services' | 'account'; label: M
  * - Health vault and Orders live here, not in the top bar; the account is the
  *   avatar and the account header (no "Account" item).
  * - Notifications here is the settings page; the inbox opens from the bell.
+ * - Report insights is a card on My health ("Reviewed lab reports"), not a
+ *   sidebar item; /report-insights stays its detail page (Tier 1 parity plan
+ *   2026-10-24 §3, Q3).
  */
 export const STUDENT_NAV: StudentNavGroup[] = [
   {
@@ -40,7 +43,6 @@ export const STUDENT_NAV: StudentNavGroup[] = [
       { id: 'home', label: 'm2.nav.home', icon: 'home', route: 'health' },
       { id: 'my-health', label: 'm2.nav.health', icon: 'heart', route: 'your-care' },
       { id: 'vault', label: 'shell.item.vault', icon: 'lock-2', route: 'records' },
-      { id: 'insights', label: 'shell.item.insights', icon: 'bar-chart', route: 'report-insights' },
       // Mobile 2.0 Medicines today and Water (reminders ticket; not on the WebDashboard board): the phone boards in the page column.
       { id: 'medicines', label: 'm2r.meds.title', icon: 'pill-3', route: 'health/medicines' },
       { id: 'water', label: 'nav.water', icon: 'glass', route: 'health/water' },
@@ -91,6 +93,8 @@ const EXTRA: Partial<Record<RoutePath, StudentNavId>> = {
   'health/report-upload': 'my-health',
   'health/steps': 'my-health',
   'health/refills': 'my-health',
+  // Report insights is the detail page of My health's "Reviewed lab reports" card (parity plan 2026-10-24 §3).
+  'report-insights': 'my-health',
 };
 
 /** The sidebar item to mark current for a route, or null when the route is not in the sidebar. */

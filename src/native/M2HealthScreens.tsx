@@ -88,7 +88,6 @@ export function InsightsScreen(): React.ReactElement {
   return (
     <Frame>
       <M2InsightsView vm={vm} name={user?.fullName ?? ''} stepsOnPhone links={{
-        sos: () => navigate('Emergency'),
         trends: () => navigate('Trends'),
         records: () => navigate('Vault'),
         reportUpload: () => navigate('ReportUpload'),

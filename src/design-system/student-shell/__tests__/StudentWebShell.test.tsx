@@ -33,7 +33,7 @@ describe('StudentWebShell', () => {
     const groups = within(nav).getAllByRole('group').filter((group) => group.getAttribute('aria-labelledby'));
     expect(groups.map((group) => group.getAttribute('aria-labelledby'))).toEqual(['sk-sshell-care', 'sk-sshell-services', 'sk-sshell-account']);
     expect(within(groups[0]).getAllByRole('button').map((button) => button.textContent)).toEqual([
-      'Home', 'My health', 'Health vault', 'Report insights', 'Medicines today', 'Water', 'Emergency card', 'My check-in pass',
+      'Home', 'My health', 'Health vault', 'Medicines today', 'Water', 'Emergency card', 'My check-in pass',
     ]);
     expect(within(groups[1]).getAllByRole('button').map((button) => button.textContent)).toEqual([
       'Orders', 'Buy again', 'My requests',
@@ -54,14 +54,15 @@ describe('StudentWebShell', () => {
     expect(props.onNavigate).toHaveBeenCalledWith('security');
   });
 
-  it('opens Home and My health with the phone’s routes, and Report insights (WP-09)', () => {
+  it('opens Home and My health with the phone’s routes; Report insights is a My health card, not a sidebar item (parity plan §3)', () => {
     const props = renderShell();
     fireEvent.click(within(sidebarNav()).getByRole('button', { name: 'Home' }));
     expect(props.onNavigate).toHaveBeenCalledWith('health');
     fireEvent.click(within(sidebarNav()).getByRole('button', { name: 'My health' }));
     expect(props.onNavigate).toHaveBeenCalledWith('your-care');
-    fireEvent.click(within(sidebarNav()).getByRole('button', { name: 'Report insights' }));
-    expect(props.onNavigate).toHaveBeenCalledWith('report-insights');
+    expect(within(sidebarNav()).queryByRole('button', { name: 'Report insights' })).toBeNull();
+    expect(STUDENT_NAV.flatMap((g) => g.items).some((item) => item.route === 'report-insights')).toBe(false);
+    expect(studentNavIdFor('report-insights')).toBe('my-health');
   });
 
   it('a bare board (WebAyush) keeps the top nav and SOS and marks the frame for no sidebar', () => {
