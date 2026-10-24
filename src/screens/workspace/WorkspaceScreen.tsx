@@ -330,9 +330,9 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
    * phone frame keeps its own screens.
    */
   // The same links at both widths (phone boards: features/phoneKit/studentPhoneBoards).
-  const emergencyCardLinks = { contacts: () => navigate('ice-contacts'), nearestHospitals: () => navigate('find-care') };
-  const leaveCampusLinks = { openRecords: () => navigate('records'), openPlans: () => navigate('billing'), openSupport: () => navigate('support') };
-  const deleteAccountLinks = { exportData: () => navigate('data-export'), crisis: () => navigate('crisis'), leaveCampus: () => navigate('leave-campus'), security: () => navigate('security'), shares: () => navigate('consent'), support: () => navigate('my-requests') };
+  const emergencyCardLinks = { back: () => navigate('profile'), contacts: () => navigate('ice-contacts'), nearestHospitals: () => navigate('find-care') };
+  const leaveCampusLinks = { back: () => navigate('profile'), openRecords: () => navigate('records'), openPlans: () => navigate('billing'), openSupport: () => navigate('support'), openExport: () => navigate('data-export') };
+  const deleteAccountLinks = { back: () => navigate('profile'), exportData: () => navigate('data-export'), crisis: () => navigate('crisis'), leaveCampus: () => navigate('leave-campus'), security: () => navigate('security'), shares: () => navigate('consent'), support: () => navigate('my-requests') };
   const studentWebPage = (): React.ReactNode => {
     if (user.role !== 'STUDENT') return null;
     // One home (founder decision, 23 Oct 2026): /home is retired for a student; Home is /health, as on the phone.

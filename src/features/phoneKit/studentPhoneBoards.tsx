@@ -84,11 +84,11 @@ export function studentPhoneBoard(route: RoutePath): PhoneBoard | null {
     // VerifyIdentity (Tier 1): the board draws its own back button.
     case 'verify': return { node: <IdentityVerifyView />, title: 'verify.title', ownBack: true };
     // Tier 1 parity plan 2026-10-24 §13–21 (package B): the privacy, identity and safety boards draw their own header and SOS.
-    case 'emergency-card': return { node: <EmergencyCardRoute links={{ contacts: () => navigate('ice-contacts'), nearestHospitals: () => navigate('find-care') }} />, title: 'sf.card.title', ownBack: true };
-    case 'delete-account': return { node: <DeleteAccountRoute links={{ exportData: () => navigate('data-export'), crisis: () => navigate('crisis') }} />, title: 'del.title', ownBack: true };
-    case 'leave-campus': return { node: <LeaveCampusRoute links={{ openRecords: () => navigate('records'), openPlans: () => navigate('billing'), openSupport: () => navigate('support') }} />, title: 'leave.title', ownBack: true };
-    case 'consent': return { node: <ConsentInboxBoard links={{ records: () => navigate('records') }} />, title: 'sf.consent.header', ownBack: true };
-    case 'care-circle': return { node: <FamilyCircleBoard links={{ emergencyCard: () => navigate('emergency-card'), consent: () => navigate('consent') }} />, title: 'sf.fam.header', ownBack: true };
+    case 'emergency-card': return { node: <EmergencyCardRoute links={{ back: () => navigate('profile'), contacts: () => navigate('ice-contacts'), nearestHospitals: () => navigate('find-care') }} />, title: 'sf.card.title', ownBack: true };
+    case 'delete-account': return { node: <DeleteAccountRoute links={{ back: () => navigate('profile'), exportData: () => navigate('data-export'), crisis: () => navigate('crisis') }} />, title: 'del.title', ownBack: true };
+    case 'leave-campus': return { node: <LeaveCampusRoute links={{ back: () => navigate('profile'), openRecords: () => navigate('records'), openPlans: () => navigate('billing'), openSupport: () => navigate('support') }} />, title: 'leave.title', ownBack: true };
+    case 'consent': return { node: <ConsentInboxBoard links={{ back: () => navigate('records'), records: () => navigate('records') }} />, title: 'sf.consent.header', ownBack: true };
+    case 'care-circle': return { node: <FamilyCircleBoard links={{ back: () => navigate('records'), emergencyCard: () => navigate('emergency-card'), consent: () => navigate('consent') }} />, title: 'sf.fam.header', ownBack: true };
     case 'privacy-consent': return { node: <PrivacyConsentView />, title: 'privacy.title', ownBack: true };
     case 'data-rights': return { node: <DataRightsView />, title: 'privacy.rights.title', ownBack: true };
     case 'security': return { node: <SignInSecurityRoute />, title: 'sec.title', ownBack: true };

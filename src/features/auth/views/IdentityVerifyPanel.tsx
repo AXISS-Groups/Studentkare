@@ -4,7 +4,7 @@ import { observer } from 'mobx-react-lite';
 import { Button, ErrorState, ProgressRing, Sheet, Skeleton } from '@/design-system';
 import { Icon, Illustration } from '@/design-system/icons';
 import type { SkIllustrationName } from '@/design-system/icons';
-import { M2Callout, M2Card, M2Grid, M2Header, M2Heading, M2PageHero, M2Tile3d, M2WideColumn, m2Text, useOwnPhoneChrome } from '@/design-system/m2';
+import { M2Callout, M2Card, M2Grid, M2Header, M2Heading, M2PageHero, M2Tile3d, M2WideColumn, m2Text, useM2Layout, useOwnPhoneChrome } from '@/design-system/m2';
 import type { PressState } from '@/design-system/m2';
 import { BoardArt } from '@/design-system/board/BoardKit';
 import { color, focusRing, font, fontWeight, size, space } from '@/design-system/theme';
@@ -96,8 +96,7 @@ export const IdentityVerifyPanel = observer(function IdentityVerifyPanel({ viewM
     <M2Grid columns={{ phone: 1, tablet: 2, desktop: 2 }} style={styles.rows}>
       {vm.checks.map((check) => (
         <View key={check.id}>
-          <IdentityCheckRow check={check} onPress={open(check.id)} testID={`check-${check.id}`}
-            art={wide ? <Illustration name={check.id === 'photo' ? WEB_FACE_ART : CHECK_ART[check.id]} size={40} /> : undefined} />
+          <IdentityCheckRow check={check} onPress={open(check.id)} testID={`check-${check.id}`} />
         </View>
       ))}
     </M2Grid>
@@ -174,19 +173,10 @@ export const IdentityVerifyPanel = observer(function IdentityVerifyPanel({ viewM
       <M2WideColumn testID="verify-identity">
         <M2Header backLabel={t('common.back')} onBack={links.back} title={t('verify.title')} testID="verify-header" />
         {hero}
-        <M2Grid columns={{ desktop: 3, tablet: 1 }}>
-          <View style={styles.span2}>
-            {progress}
-            {states}
-            {rows}
-            {privacy}
-          </View>
-          <View style={styles.column}>
-            {who}
-            {always}
-            {skipLink}
-          </View>
-        </M2Grid>
+        <TwoThirds
+          main={<>{progress}{states}{rows}{privacy}</>}
+          side={<>{who}{always}{skipLink}</>}
+        />
         {sheets}
       </M2WideColumn>
     );
@@ -211,6 +201,18 @@ export const IdentityVerifyPanel = observer(function IdentityVerifyPanel({ viewM
   );
 });
 
+/** Desktop: the checks take two thirds, the side cards one third (the board); narrower they stack. */
+function TwoThirds({ main, side }: { main: React.ReactNode; side: React.ReactNode }) {
+  const desktop = useM2Layout() === 'desktop';
+  if (!desktop) return <View style={styles.column}>{main}{side}</View>;
+  return (
+    <View style={styles.twoThirds}>
+      <View style={styles.span2}>{main}</View>
+      <View style={styles.side}>{side}</View>
+    </View>
+  );
+}
+
 export function IdentityVerifyRoute({ links, wide = false }: { links: IdentityVerifyLinks; wide?: boolean }): React.ReactElement {
   const [vm] = useState(() => new IdentityVerifyViewModel());
   useEffect(() => {
@@ -226,7 +228,9 @@ const styles = StyleSheet.create({
   content: { gap: space.s14, paddingBottom: space.s40 },
   gutter: { paddingHorizontal: space.gutterPhone },
   column: { gap: space.s14 },
-  span2: { gap: space.s14 },
+  span2: { flex: 2, minWidth: 0, gap: space.s14 },
+  side: { flex: 1, minWidth: 0, gap: space.s14 },
+  twoThirds: { flexDirection: 'row', alignItems: 'flex-start', gap: space.s16 },
   card: { padding: space.s16, gap: space.s10 },
   progress: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: space.s16, padding: space.s16 },
   headCta: { minWidth: 220 },
