@@ -14,12 +14,17 @@ import type { LivePassEntry } from './livePass';
  * card now shows only what the server returns, and campus status as the
  * server reports it.
  */
+/** Which change failed; the view says it in the student's language (AGENTS.md rule 11: no copy in code). */
+export type DigitalIdError = 'issue' | 'revoke';
+
 export class DigitalIdViewModel implements ViewModel {
   identity: MemberIdentity | null = null;
   loadFailed = false;
   busy = false;
-  error: string | null = null;
+  error: DigitalIdError | null = null;
   confirmingRevoke = false;
+  /** The last top-up of codes failed (offline or the server): the view says so instead of silently running down. */
+  refreshFailed = false;
   /** Clock for the 30 s pass: a code outside its step is refused at the counter, so it is hidden. */
   now = Date.now();
   private disposed = false;
@@ -53,13 +58,13 @@ export class DigitalIdViewModel implements ViewModel {
     }
   }
 
-  /** More codes, in place. Never persisted; on failure the window simply runs down. */
+  /** More codes, in place. Never persisted; on failure the window runs down and the view says so (never a stale code). */
   private async refresh(): Promise<void> {
     try {
       const identity = await this.request<MemberIdentity>('/identity');
-      if (!this.disposed) runInAction(() => { this.identity = identity; });
+      if (!this.disposed) runInAction(() => { this.identity = identity; this.refreshFailed = false; });
     } catch {
-      // Offline: no live code. The view says so; nothing stale is shown.
+      if (!this.disposed) runInAction(() => { this.refreshFailed = true; });
     }
   }
 
@@ -85,7 +90,7 @@ export class DigitalIdViewModel implements ViewModel {
 
   /** Create the QR, or replace it (the old one stops verifying). */
   async issue(): Promise<void> {
-    await this.change('POST', 'Your QR wasn’t created. Try again.');
+    await this.change('POST', 'issue');
   }
 
   askRevoke(): void {
@@ -97,11 +102,11 @@ export class DigitalIdViewModel implements ViewModel {
   }
 
   async revoke(): Promise<void> {
-    await this.change('DELETE', 'Your QR wasn’t revoked. It still works — try again.');
+    await this.change('DELETE', 'revoke');
     if (!this.error) runInAction(() => { this.confirmingRevoke = false; });
   }
 
-  private async change(method: 'POST' | 'DELETE', failure: string): Promise<void> {
+  private async change(method: 'POST' | 'DELETE', failure: DigitalIdError): Promise<void> {
     if (this.busy) return;
     this.busy = true;
     this.error = null;
@@ -124,5 +129,6 @@ export class DigitalIdViewModel implements ViewModel {
     this.loadFailed = false;
     this.error = null;
     this.confirmingRevoke = false;
+    this.refreshFailed = false;
   }
 }

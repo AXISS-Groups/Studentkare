@@ -73,10 +73,12 @@ export function cardLabel(label: string): { accessibilityLabel?: string; 'aria-l
 }
 
 /** A tappable card: lifts on hover and press, focus ring, ≥ 44 px. Named as `cardLabel` says. */
-export function LiftCard({ label, onPress, role = 'link', style, children, testID, disabled = false, fill = false }: {
+export function LiftCard({ label, onPress, role = 'link', style, children, testID, disabled = false, fill = false, current = false }: {
   label: string; onPress?: () => void; role?: 'link' | 'button'; style?: StyleProp<ViewStyle>; children: React.ReactNode; testID?: string; disabled?: boolean;
   /** Grows to its grid cell's height (`M2Grid`), so cards in a row line up. */
   fill?: boolean;
+  /** The item that is open (a master–detail list): `aria-current`. */
+  current?: boolean;
 }) {
   const lift = useLift();
   return (
@@ -84,7 +86,8 @@ export function LiftCard({ label, onPress, role = 'link', style, children, testI
       role={role}
       accessibilityRole={role}
       {...cardLabel(label)}
-      accessibilityState={disabled ? { disabled: true } : undefined}
+      {...webAttrs({ 'aria-current': current ? 'true' : undefined })}
+      accessibilityState={disabled ? { disabled: true } : current ? { selected: true } : undefined}
       disabled={disabled}
       onPress={onPress}
       testID={testID}
@@ -141,8 +144,11 @@ export function SosButton({ label, spoken, onPress, testID = 'm2-sos' }: { label
  * handler, and `sos={false}` leaves it out only where the board draws SOS
  * somewhere else in the same header.
  */
-export function M2Header({ backLabel, onBack, eyebrow, title, trailing, sos, testID = 'm2-header' }: {
-  backLabel?: string; onBack?: () => void; eyebrow?: string; title: string; trailing?: React.ReactNode;
+export function M2Header({ backLabel, onBack, backIcon = 'arrow-left', eyebrow, title, trailing, sos, testID = 'm2-header' }: {
+  backLabel?: string; onBack?: () => void;
+  /** The back glyph: the boards draw `arrow-left`; a brief that names `chevron-left` keeps it. */
+  backIcon?: 'arrow-left' | 'chevron-left';
+  eyebrow?: string; title: string; trailing?: React.ReactNode;
   sos?: { label: string; spoken: string; onPress: () => void } | false;
   testID?: string;
 }) {
@@ -150,7 +156,7 @@ export function M2Header({ backLabel, onBack, eyebrow, title, trailing, sos, tes
   return (
     // Wider, the header sits in a page that already has its gutter (the web shell's column).
     <View style={[styles.header, { paddingHorizontal: layout === 'phone' ? m2Gutter(layout) : 0 }]} testID={testID}>
-      {onBack && backLabel ? <RoundButton icon="arrow-left" label={backLabel} onPress={onBack} testID={`${testID}-back`} /> : null}
+      {onBack && backLabel ? <RoundButton icon={backIcon} label={backLabel} onPress={onBack} testID={`${testID}-back`} /> : null}
       <View style={styles.grow}>
         {eyebrow ? <Text numberOfLines={1} style={styles.headerEyebrow}>{eyebrow}</Text> : null}
         <M2Heading level={1} style={[styles.headerTitle, layout === 'desktop' ? styles.headerTitleDesktop : null]}>{title}</M2Heading>

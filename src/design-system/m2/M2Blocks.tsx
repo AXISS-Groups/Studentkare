@@ -5,6 +5,7 @@ import { AnimatedIcon, Icon } from '../icons';
 import type { SkAnimatedName, SkIconName, TileHue } from '../icons';
 import { color, focusRing, font, fontWeight, radius, shadow, shadowStyle, size, space } from '../theme';
 import { cardLabel, LiftCard, M2Card, m2Text, SoftIcon } from './M2Parts';
+import { GlossTile } from './M2Surfaces';
 import type { PressState } from './M2Parts';
 import { isWide, useM2Layout } from './m2Layout';
 import { SERVICE_HUES } from './servicePalette';
@@ -41,15 +42,21 @@ export interface M2ListRowProps {
   neutral?: boolean;
   /** Grows to its grid cell's height. */
   fill?: boolean;
+  /** The row that is open beside a list (desktop master–detail): `aria-current`, on `surface-3`. */
+  selected?: boolean;
+  /** A glossy 3D tile instead of the soft one (the Tier 1 records boards). */
+  tile?: 'soft' | 'gloss';
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }
 
-export function M2ListRow({ icon, hue, title, meta, onPress, trailing, neutral = false, fill = false, style, testID }: M2ListRowProps) {
+export function M2ListRow({ icon, hue, title, meta, onPress, trailing, neutral = false, fill = false, selected = false, tile = 'soft', style, testID }: M2ListRowProps) {
   const wide = isWide(useM2Layout());
   const body = (
     <>
-      <SoftIcon icon={icon} hue={hue} neutral={neutral} tile={wide ? 48 : 44} iconSize={wide ? 24 : 22} />
+      {tile === 'gloss'
+        ? <GlossTile icon={icon} hue={hue} size={wide ? 48 : 44} iconSize={wide ? 24 : 22} />
+        : <SoftIcon icon={icon} hue={hue} neutral={neutral} tile={wide ? 48 : 44} iconSize={wide ? 24 : 22} />}
       <View style={styles.words}>
         <Text style={m2Text.cardTitle}>{title}</Text>
         {meta ? <Text style={m2Text.meta}>{meta}</Text> : null}
@@ -66,7 +73,7 @@ export function M2ListRow({ icon, hue, title, meta, onPress, trailing, neutral =
     );
   }
   return (
-    <LiftCard label={label} onPress={onPress} fill={fill} style={[styles.row, styles.card, wide ? styles.rowWide : null, style]} testID={testID}>
+    <LiftCard label={label} onPress={onPress} fill={fill} current={selected} style={[styles.row, styles.card, wide ? styles.rowWide : null, selected ? styles.rowSelected : null, style]} testID={testID}>
       <View style={styles.inner}>{body}</View>
     </LiftCard>
   );
@@ -193,6 +200,7 @@ const styles = StyleSheet.create({
   row: { minHeight: size.touchTarget + space.s20, paddingHorizontal: space.s14, paddingVertical: space.s12, justifyContent: 'center' },
   card: { borderRadius: 22, backgroundColor: color.surface, ...shadowStyle(shadow.card) },
   rowWide: { paddingHorizontal: space.s16, paddingVertical: space.s14 },
+  rowSelected: { backgroundColor: color.surface3, borderWidth: 1, borderColor: color.selectedRule },
   inner: { flexDirection: 'row', alignItems: 'center', gap: space.s12 },
   words: { flex: 1, minWidth: 0, gap: space.s2 },
   empty: { alignItems: 'center', gap: space.s12, paddingHorizontal: space.s20, paddingVertical: space.s24 },

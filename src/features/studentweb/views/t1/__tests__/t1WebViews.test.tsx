@@ -5,15 +5,10 @@ import { apiRequest } from '@/data/services/http';
 import { navigate } from '@/lib/utils/workflowRouting';
 import { BrowserRouter } from '@/core/navigation';
 import { axeViolations, describeViolations } from '@/test/axe';
-import type { LiveDocument } from '@/data/types/workflowTypes';
-import { WebVaultView, vaultStats } from '../WebVaultView';
-import type { VaultShare } from '../WebVaultView';
 import { WebMyLabTestsView, splitLabTests } from '../WebMyLabTestsView';
 import type { StudentLabTest } from '../WebMyLabTestsView';
-import { WebReportInsightsView, pickReport } from '../WebReportInsightsView';
-import { WebConsultSummaryRoute } from '../WebConsultSummaryView';
+import type { LiveDocument } from '@/data/types/workflowTypes';
 import { WebEmergencyCardRoute, readiness } from '../WebEmergencyCardView';
-import { WebPassView } from '../WebPassView';
 import { WebRequestsRoute } from '../WebRequestsRoute';
 import { WebLeaveCampusRoute } from '../WebLeaveCampusView';
 import { WebDeleteAccountRoute } from '../WebDeleteAccountView';
@@ -41,65 +36,9 @@ const withRouter = (ui: React.ReactElement) => <BrowserRouter>{ui}</BrowserRoute
 const axeClean = async (container: Element) => { const v = await axeViolations(container); expect(v, describeViolations(v)).toEqual([]); };
 
 const doc = (id: string, category: string, createdAt = 1_760_000_000): LiveDocument => ({ id, title: `Doc ${id}`, category, filename: `${id}.pdf`, mimeType: 'application/pdf', createdAt });
-const share = (id: string, documentId: string, active = true): VaultShare => ({ id, clinician: 'Dr Test', document: `Doc ${documentId}`, documentId, grantedAt: 0, expiresAt: 0, revoked: !active, active });
 const lab = (id: string, status: string, extra: Partial<StudentLabTest> = {}): StudentLabTest => ({ id, status, testPanel: ['CBC'], collectionMode: 'HOME', slotStart: null, collectedAt: null, reportDocumentId: '', reviewedAt: null, reviewNote: '', reviewedByDoctor: '', orderedByDoctor: '', createdAt: 1_760_000_000, ...extra });
 
 beforeEach(() => { api.mockReset(); go.mockReset(); window.history.pushState({}, '', '/'); auth.user.isVerifiedStudent = true; });
-
-describe('WebVault', () => {
-  it('tiles equal the server list, chips filter by type, and the shared column follows active shares', async () => {
-    serve({ '/health/documents': { items: [doc('d1', 'LAB', 1_760_100_000), doc('d2', 'LAB'), doc('d3', 'PRESCRIPTION')], total: 3 }, '/records/shares': { items: [share('s1', 'd3'), share('s2', 'd1', false)] } });
-    const { container } = render(<WebVaultView />);
-    await settle();
-    expect(vaultStats([doc('d1', 'LAB'), doc('d2', 'LAB'), doc('d3', 'PRESCRIPTION')], 3, [share('s1', 'd3')])).toMatchObject({ documents: 3, labReports: 2, sharedNow: 1 });
-    const stats = screen.getByLabelText('Your vault at a glance');
-    expect(within(stats).getByText('Documents').nextSibling?.textContent).toBe('3');
-    expect(within(stats).getByText('Lab reports').nextSibling?.textContent).toBe('2');
-    expect(within(stats).getByText('Shared right now').nextSibling?.textContent).toBe('1');
-    const row = (title: string) => screen.getByText(title).closest('tr') as HTMLElement;
-    expect(within(row('Doc d3')).getByText(/Shared · 1/)).toBeTruthy();
-    expect(within(row('Doc d1')).getByText('Private')).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'Prescriptions · 1' }));
-    expect(screen.getByRole('button', { name: 'Prescriptions · 1' }).getAttribute('aria-pressed')).toBe('true');
-    expect(screen.queryByText('Doc d1')).toBeNull();
-    expect(screen.queryByText(/Linked to ABDM/)).toBeNull();
-    await axeClean(container);
-  });
-
-  it('a failed revoke keeps the document shared and says so', async () => {
-    serve({
-      '/health/documents': { items: [doc('d3', 'PRESCRIPTION')], total: 1 },
-      '/records/shares': { items: [share('s1', 'd3')] },
-      '/records/shares/s1/revoke': new Error('down'),
-    });
-    render(<WebVaultView />);
-    await settle();
-    fireEvent.click(screen.getByRole('button', { name: 'More for Doc d3' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Stop sharing' }));
-    const dialog = screen.getByRole('alertdialog');
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Stop sharing' }));
-    await settle();
-    expect(screen.getByRole('alert').textContent).toMatch(/still shared/);
-    expect(within(screen.getByText('Doc d3').closest('tr') as HTMLElement).getByText(/Shared · 1/)).toBeTruthy();
-  });
-
-  it('first time: empty vault offers upload, and verification only to an unverified student', async () => {
-    auth.user.isVerifiedStudent = false;
-    serve({ '/health/documents': { items: [], total: 0 }, '/records/shares': { items: [] } });
-    render(<WebVaultView />);
-    await settle();
-    expect(screen.getByText('Your vault is empty')).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'Get verified first' }));
-    expect(go).toHaveBeenCalledWith('verify');
-  });
-
-  it('error state retries', async () => {
-    serve({ '/health/documents': new Error('down'), '/records/shares': { items: [] } });
-    render(<WebVaultView />);
-    await settle();
-    expect(screen.getByText('Your vault didn’t load')).toBeTruthy();
-  });
-});
 
 describe('WebMyLabTests', () => {
   const released = lab('l1', 'REPORT_RELEASED', { reportDocumentId: 'd1', reviewedAt: 1_760_000_000, reviewNote: 'Fine.', reviewedByDoctor: 'Dr Rao' });
@@ -135,50 +74,6 @@ describe('WebMyLabTests', () => {
     await settle();
     expect(screen.getByText('No lab tests yet')).toBeTruthy();
     expect(container.querySelector('[data-icon^="glyph:qr-sample"]')).toBeNull();
-  });
-});
-
-describe('WebReportInsights', () => {
-  it('shows the releasing doctor’s own note, picks the report asked for, and no body-system scores', async () => {
-    const a = lab('l1', 'REPORT_RELEASED', { reportDocumentId: 'd1', reviewedAt: 100, reviewNote: 'Older note', reviewedByDoctor: 'Dr A' });
-    const b = lab('l2', 'REPORT_RELEASED', { reportDocumentId: 'd2', reviewedAt: 200, reviewNote: 'Newer note', reviewedByDoctor: 'Dr B' });
-    expect(pickReport([a, b, lab('l3', 'REPORT_READY')], null)?.id).toBe('l2');
-    expect(pickReport([a, b], 'l1')?.id).toBe('l1');
-    expect(pickReport([lab('l3', 'REPORT_READY')], 'l3')).toBeNull();
-    window.history.pushState({}, '', '/report-insights?id=l1');
-    serve({ '/lab-orders': { items: [a, b] } });
-    const { container } = render(withRouter(<WebReportInsightsView />));
-    await settle();
-    expect(screen.getByText('Older note')).toBeTruthy();
-    expect(screen.queryByText(/AI draft|percentile score|Ask Ayush/)).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: /Go over it with a clinician/ }));
-    expect(go).toHaveBeenCalledWith('care');
-    await axeClean(container);
-  });
-
-  it('with nothing released it says so and never shows a held result', async () => {
-    serve({ '/lab-orders': { items: [lab('l3', 'REPORT_READY', { reviewNote: 'secret' })] } });
-    render(withRouter(<WebReportInsightsView />));
-    await settle();
-    expect(screen.getByText('No released reports yet')).toBeTruthy();
-    expect(screen.queryByText('secret')).toBeNull();
-  });
-});
-
-describe('WebConsultSummary', () => {
-  it('opens a signed note from ?id= in two columns with its prescription, and no rating or cart', async () => {
-    window.history.pushState({}, '', '/visit-summaries?id=v1');
-    const header = { id: 'v1', appointmentId: 'a1', appointmentStart: '2026-10-20T10:00', doctorName: 'Dr Menon', doctorRegistrationNumber: 'NMC-1', signedAt: 1_760_000_000 };
-    serve({ '/records/visit-summaries/v1': { ...header, subjective: 'Sore throat.', objective: '', assessment: 'Viral.', plan: 'Rest.', prescriptions: [{ id: 'rx12345678', issuedAt: 1_760_000_000, status: 'ISSUED' }] }, '/records/visit-summaries': { items: [header] } });
-    const { container } = render(withRouter(<WebConsultSummaryRoute />));
-    await settle();
-    expect(screen.getByText('Consult with Dr Menon')).toBeTruthy();
-    expect(screen.getByText('Sore throat.')).toBeTruthy();
-    expect(screen.queryByText('What the doctor found')).toBeNull();
-    expect(screen.queryByText(/How was the consult|Order these/i)).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: 'Open in Prescriptions' }));
-    expect(go).toHaveBeenCalledWith('prescriptions');
-    await axeClean(container);
   });
 });
 
@@ -222,29 +117,6 @@ describe('WebEmergencyCard', () => {
     render(<WebEmergencyCardRoute />);
     await settle();
     expect(screen.getAllByRole('link', { name: 'Call Tele-MANAS 14416' }).length).toBeGreaterThan(0);
-  });
-});
-
-describe('WebPass', () => {
-  it('shows the server’s code and QR, never a photo-match claim or invented history', async () => {
-    const now = Math.floor(Date.now() / 1000);
-    serve({ '/identity': { memberId: 'SK-ABC', fullName: 'Krishna Chintakayala', university: 'VNR VJIET', rollNumber: '22', campusStatus: 'VERIFIED', issued: true, issuedAt: now, code: 't', qrSvg: '<svg xmlns="http://www.w3.org/2000/svg"/>', passCode: '123456', expiresAt: now + 20, passWindow: [] } });
-    const { container } = render(<WebPassView />);
-    await settle();
-    expect(screen.getByText('123456')).toBeTruthy();
-    expect(screen.getByAltText('Your member verification QR code')).toBeTruthy();
-    expect(screen.queryByText(/Deleted after 24|Photo matched|4 of 4|This wasn’t me/)).toBeNull();
-    expect(screen.getByText(/No check-ins recorded/)).toBeTruthy();
-    await axeClean(container);
-  });
-
-  it('a stale pass is hidden, not shown', async () => {
-    const now = Math.floor(Date.now() / 1000);
-    serve({ '/identity': { memberId: 'SK-ABC', fullName: 'K C', university: '', rollNumber: '', campusStatus: 'PENDING', issued: true, issuedAt: now, code: 't', passCode: '999999', expiresAt: now - 100, passWindow: [] } });
-    render(<WebPassView />);
-    await settle();
-    expect(screen.queryByText('999999')).toBeNull();
-    expect(screen.getByRole('status').textContent).toMatch(/expired/i);
   });
 });
 

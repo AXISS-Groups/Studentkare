@@ -6,6 +6,8 @@ import { pickReturnPhoto } from '@/features/requests/views/pickReturnPhoto.web';
 
 // keep-sorted start
 const CareDirectoryRoute = lazy(() => import('@/features/careDirectory/views/CareDirectoryRoute').then((m) => ({ default: m.CareDirectoryRoute })));
+const DigitalIdPage = lazy(() => import('@/screens/workspace/PhoneBoards').then((m) => ({ default: m.DigitalIdPage })));
+const HealthVaultRoute = lazy(() => import('@/features/vault/views/HealthVaultRoute').then((m) => ({ default: m.HealthVaultRoute })));
 const IdentityVerifyView = lazy(() => import('@/features/auth/views/IdentityVerifyView').then((m) => ({ default: m.IdentityVerifyView })));
 const M2AskAyushRoute = lazy(() => import('@/features/chat/views/M2AskAyushRoute').then((m) => ({ default: m.M2AskAyushRoute })));
 const M2CampsRoute = lazy(() => import('@/features/camp/views/M2CampsRoute').then((m) => ({ default: m.M2CampsRoute })));
@@ -24,9 +26,12 @@ const M2VaccinesRoute = lazy(() => import('@/features/preventive/views/M2Vaccine
 const M2WaterRoute = lazy(() => import('@/features/reminders/views/M2WaterRoute').then((m) => ({ default: m.M2WaterRoute })));
 const M2WhatsNewRoute = lazy(() => import('@/features/newsroom/views/M2WhatsNewRoute').then((m) => ({ default: m.M2WhatsNewRoute })));
 const MedicineInfoRoute = lazy(() => import('@/features/medicineInfo/views/MedicineInfoRoute').then((m) => ({ default: m.MedicineInfoRoute })));
+const MyPassRoute = lazy(() => import('@/features/digital_id/views/MyPassBoard').then((m) => ({ default: m.MyPassRoute })));
+const ReportInsightsRoute = lazy(() => import('@/features/insights/views/ReportInsightsRoute').then((m) => ({ default: m.ReportInsightsRoute })));
 const ReturnRequestRoute = lazy(() => import('@/features/requests/views/ReturnRequestView').then((m) => ({ default: m.ReturnRequestRoute })));
 const SearchRoute = lazy(() => import('@/features/discover/views/SearchRoute').then((m) => ({ default: m.SearchRoute })));
 const ShopPhoneRoute = lazy(() => import('@/features/shopPhone/views/ShopPhoneRoute').then((m) => ({ default: m.ShopPhoneRoute })));
+const VisitSummaryRoute = lazy(() => import('@/features/vault/views/VisitSummaryView').then((m) => ({ default: m.VisitSummaryRoute })));
 // keep-sorted end
 
 export interface PhoneBoard {
@@ -75,6 +80,12 @@ export function studentPhoneBoard(route: RoutePath): PhoneBoard | null {
       return { node: <ReturnRequestRoute links={{ done: () => navigate('my-requests'), pickPhoto: pickReturnPhoto }} />, title: 'phone.return.title', ownBack: true };
     // VerifyIdentity (Tier 1): the board draws its own back button.
     case 'verify': return { node: <IdentityVerifyView />, title: 'verify.title', ownBack: true };
+    // Tier 1 records boards (parity plan 2026-10-24 §3, §6–8, §12, §22): one view at both widths, each drawing its own header.
+    case 'records': return { node: <HealthVaultRoute />, title: 'swt.vault.title', ownBack: true };
+    case 'report-insights': return { node: <ReportInsightsRoute />, title: 'swt.insights.title', ownBack: true };
+    case 'visit-summaries': return { node: <VisitSummaryRoute links={{ openPrescriptions: () => navigate('prescriptions'), openAppointments: () => navigate('appointments'), back: () => navigate('records') }} />, title: 'care.visit.listTitle', ownBack: true };
+    case 'digital-id': return { node: <DigitalIdPage />, title: 'pb.id.title', ownBack: true };
+    case 'pass': return { node: <MyPassRoute links={{ back: () => navigate('digital-id'), digitalId: () => navigate('digital-id') }} />, title: 'pass.title', ownBack: true };
     default: return null;
   }
 }

@@ -11,7 +11,8 @@ const RENDERED = [
   'src/features/teleconsult/views/TeleconsultNativeView.tsx',
   'src/features/landing/views/LandingPlansNativeView.tsx',
   'src/features/auth/views/IdentityVerifyPanel.tsx',
-  'src/features/digital_id/views/WebPass.tsx',
+  'src/features/digital_id/views/MyPassBoard.tsx',
+  'src/features/vault/views/HealthVaultView.tsx',
 ];
 
 describe('unbacked security claims', () => {

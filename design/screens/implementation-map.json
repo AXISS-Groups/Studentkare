@@ -214,7 +214,20 @@
       "src/features/movement/views/MovementBoard.tsx",
       "src/screens/workspace/PhoneBoards.tsx"
     ],
-    "RecordsVault": [],
+    "RecordsVault": [
+      "src/features/vault/views/HealthVaultView.tsx",
+      "src/features/vault/views/HealthVaultRoute.tsx",
+      "src/features/vault/views/HealthVaultNativeView.tsx",
+      "src/features/vault/views/PrescriptionsTab.tsx",
+      "src/features/vault/views/recordsArt.ts",
+      "src/features/vault/viewmodel/HealthVaultViewModel.ts",
+      "src/features/phoneKit/studentPhoneBoards.tsx",
+      "src/design-system/m2/M2Parts.tsx",
+      "src/design-system/m2/M2Surfaces.tsx",
+      "src/design-system/m2/M2Structure.tsx",
+      "src/design-system/m2/M2Blocks.tsx",
+      "src/design-system/m2/Gradient.tsx"
+    ],
     "AyushChat": [],
     "Notifications": [
       "src/features/notifications/views/NotificationNativeView.tsx",
@@ -299,7 +312,14 @@
     ],
     "DigitalId": [
       "src/features/digital_id/views/DigitalIdNativeView.tsx",
-      "src/screens/workspace/PhoneBoards.tsx"
+      "src/features/digital_id/viewmodel/DigitalIdViewModel.ts",
+      "src/screens/workspace/PhoneBoards.tsx",
+      "src/features/phoneKit/studentPhoneBoards.tsx",
+      "src/design-system/m2/M2Parts.tsx",
+      "src/design-system/m2/M2Surfaces.tsx",
+      "src/design-system/m2/M2Structure.tsx",
+      "src/design-system/m2/M2Blocks.tsx",
+      "src/design-system/m2/Gradient.tsx"
     ],
     "PlanBilling": [
       "src/features/billing/views/PlanBillingBoard.tsx",
@@ -366,7 +386,14 @@
       "src/design-system/ResultMoment.tsx"
     ],
     "MyPass": [
-      "src/features/digital_id/views/MyPassBoard.tsx"
+      "src/features/digital_id/views/MyPassBoard.tsx",
+      "src/features/digital_id/viewmodel/livePass.ts",
+      "src/features/phoneKit/studentPhoneBoards.tsx",
+      "src/design-system/m2/M2Parts.tsx",
+      "src/design-system/m2/M2Surfaces.tsx",
+      "src/design-system/m2/M2Structure.tsx",
+      "src/design-system/m2/M2Blocks.tsx",
+      "src/design-system/m2/Gradient.tsx"
     ],
     "CheckinReceipt": [],
     "LeaveCampus": [
@@ -382,7 +409,16 @@
       "src/features/notifications/data/pushDevice.ts",
       "src/native/hardware/push.ts"
     ],
-    "ConsultSummary": [],
+    "ConsultSummary": [
+      "src/features/vault/views/VisitSummaryView.tsx",
+      "src/features/vault/viewmodel/VisitSummaryViewModel.ts",
+      "src/features/phoneKit/studentPhoneBoards.tsx",
+      "src/design-system/m2/M2Parts.tsx",
+      "src/design-system/m2/M2Surfaces.tsx",
+      "src/design-system/m2/M2Structure.tsx",
+      "src/design-system/m2/M2Blocks.tsx",
+      "src/design-system/m2/Gradient.tsx"
+    ],
     "SosDebrief": [
       "src/modules/m04-emergency/view/SosView.tsx",
       "src/features/emergency/screens/SosRouteScreen.tsx"
@@ -541,15 +577,6 @@
     ],
     "WebGuardianConsent": [],
     "WebGuardianApprove": [],
-    "WebVault": [
-      "src/features/studentweb/views/t1/WebVaultView.tsx",
-      "src/design-system/student-shell/StudentWebShell.tsx",
-      "src/design-system/student-shell/studentNav.ts",
-      "src/design-system/overlays/ConfirmDialog.tsx",
-      "src/features/studentweb/views/parts.tsx",
-      "src/features/studentweb/views/t1/shared.tsx",
-      "src/features/studentweb/views/t1/t1web.css"
-    ],
     "WebMyLabTests": [
       "src/features/studentweb/views/t1/WebMyLabTestsView.tsx",
       "src/design-system/student-shell/StudentWebShell.tsx",
@@ -574,20 +601,9 @@
       "src/features/studentweb/views/t1/shared.tsx",
       "src/features/studentweb/views/t1/t1web.css"
     ],
-    "WebConsultSummary": [],
     "WebEmergencyCard": [
       "src/features/studentweb/views/t1/WebEmergencyCardView.tsx",
       "src/features/emergency/viewmodel/EmergencyCardViewModel.ts",
-      "src/design-system/student-shell/StudentWebShell.tsx",
-      "src/design-system/student-shell/studentNav.ts",
-      "src/design-system/overlays/ConfirmDialog.tsx",
-      "src/features/studentweb/views/parts.tsx",
-      "src/features/studentweb/views/t1/shared.tsx",
-      "src/features/studentweb/views/t1/t1web.css"
-    ],
-    "WebPass": [
-      "src/features/studentweb/views/t1/WebPassView.tsx",
-      "src/features/digital_id/viewmodel/livePass.ts",
       "src/design-system/student-shell/StudentWebShell.tsx",
       "src/design-system/student-shell/studentNav.ts",
       "src/design-system/overlays/ConfirmDialog.tsx",
@@ -1803,7 +1819,12 @@
       "src/features/reminders/views/ReminderParts.tsx",
       "src/features/reminders/views/useUndoClock.ts",
       "src/features/reminders/viewmodel/MedsTodayViewModel.ts",
-      "src/features/reminders/viewmodel/WaterViewModel.ts"
+      "src/features/reminders/viewmodel/WaterViewModel.ts",
+      "src/features/insights/views/ReportInsightsView.tsx",
+      "src/features/insights/views/ReportInsightsRoute.tsx",
+      "src/design-system/m2/M2Surfaces.tsx",
+      "src/design-system/m2/M2Structure.tsx",
+      "src/design-system/m2/M2Blocks.tsx"
     ],
     "M2Reminders": [
       "src/features/reminders/views/M2RemindersView.tsx",
@@ -1905,7 +1926,6 @@
       "src/native/M2HealthScreens.tsx"
     ],
     "VitalTrends": [],
-    "WebReportInsights": [],
     "WebReportAssistant": [],
     "M2FindCare": [
       "src/features/careDirectory/views/CareDirectoryView.tsx",
@@ -2122,10 +2142,6 @@
     "Devices": [
       "src/screens/workspace/DevicesAndSensorsScreen.tsx"
     ],
-    "RecordsVault": [
-      "src/screens/vault/VaultWorkspaceHub.tsx",
-      "src/features/vault/views/HealthVaultNativeView.tsx"
-    ],
     "AyushChat": [
       "src/screens/workspace/AgentAyushPanel.tsx",
       "src/features/chat/views/AyushChatNativeView.tsx"
@@ -2144,9 +2160,6 @@
     "RefillRequest": [
       "src/features/requests/views/RequestsViews.tsx"
     ],
-    "ConsultSummary": [
-      "src/features/vault/views/VisitSummaryView.tsx"
-    ],
     "LandingClinician": [
       "src/features/landing/views/LandingClinicianView.tsx",
       "src/features/landing/views/LandingClinicianNativeView.tsx",
@@ -2161,29 +2174,6 @@
     ],
     "AyushSheet": [
       "src/features/chat/views/AyushChatNativeView.tsx"
-    ],
-    "WebConsultSummary": [
-      "src/features/vault/views/VisitSummaryView.tsx",
-      "src/features/vault/viewmodel/VisitSummaryViewModel.ts",
-      "src/features/studentweb/views/t1/WebConsultSummaryView.tsx",
-      "src/design-system/student-shell/StudentWebShell.tsx",
-      "src/design-system/student-shell/studentNav.ts",
-      "src/design-system/overlays/ConfirmDialog.tsx",
-      "src/features/studentweb/views/parts.tsx",
-      "src/features/studentweb/views/t1/shared.tsx",
-      "src/features/studentweb/views/t1/t1web.css"
-    ],
-    "WebReportInsights": [
-      "src/features/studentweb/views/t1/WebReportInsightsView.tsx",
-      "src/design-system/student-shell/StudentWebShell.tsx",
-      "src/design-system/student-shell/studentNav.ts",
-      "src/design-system/overlays/ConfirmDialog.tsx",
-      "src/features/studentweb/views/parts.tsx",
-      "src/features/studentweb/views/t1/shared.tsx",
-      "src/features/studentweb/views/t1/t1web.css",
-      "src/design-system/public-site/PublicSiteFooter.tsx",
-      "src/design-system/public-site/publicSiteNav.ts",
-      "src/design-system/public-site/NewsletterBand.tsx"
     ]
   },
   "superseded": {
@@ -2220,6 +2210,36 @@
         "M2Orders"
       ],
       "source": "docs/ux/web-mobile-parity-2026-10-23.md#approved-decisions-23-oct-2026 (desktop Orders is Mobile 2.0 Orders laid out wide, parity phase 2)"
+    },
+    "WebVault": {
+      "by": [
+        "RecordsVault"
+      ],
+      "source": "docs/plans/tier1-parity-2026-10-24.md §6 (Q2: one Health vault view at both widths; design boards T1Vault, T1VaultDesktop, T1VaultEmpty approved 24 Oct 2026)",
+      "redirects": {
+        "/prescriptions": "/records?tab=prescriptions"
+      }
+    },
+    "WebReportInsights": {
+      "by": [
+        "M2Insights"
+      ],
+      "source": "docs/plans/tier1-parity-2026-10-24.md §3 (Q2/Q3: a \"Reviewed lab reports\" card on My health; /report-insights is its detail page, design boards T1ReportInsights, T1ReportInsightsDesktop approved 24 Oct 2026)",
+      "redirects": {}
+    },
+    "WebConsultSummary": {
+      "by": [
+        "ConsultSummary"
+      ],
+      "source": "docs/plans/tier1-parity-2026-10-24.md §8 (Q2: one Visit summaries view, laid out wide; design boards T1VisitSummaries, T1VisitSummariesDesktop approved 24 Oct 2026)",
+      "redirects": {}
+    },
+    "WebPass": {
+      "by": [
+        "MyPass"
+      ],
+      "source": "docs/plans/tier1-parity-2026-10-24.md §22 (Q2: one check-in pass view, laid out wide; design boards T1Pass, T1PassDesktop, T1PassStale approved 24 Oct 2026)",
+      "redirects": {}
     }
   },
   "retiredIcons": {
@@ -2361,6 +2381,18 @@
         "menu"
       ],
       "source": "docs/ux/web-mobile-parity-2026-10-23.md#approved-decisions-23-oct-2026"
+    },
+    "RecordsVault": {
+      "icons": [
+        "check"
+      ],
+      "source": "docs/plans/tier1-parity-2026-10-24.md §6: the Tier 1 vault boards approved 24 Oct 2026 carry no tick; the page-2 board’s ✓ marked lines the one view does not draw"
+    },
+    "ConsultSummary": {
+      "icons": [
+        "star-filled"
+      ],
+      "source": "docs/plans/tier1-parity-2026-10-24.md §8: the board’s star rating has no data behind it and is not drawn (D7-9; nothing the server does not have)"
     }
   }
 }

@@ -2,8 +2,8 @@ import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { ScrollView, Text, View } from 'react-native';
 import {
-  GradientHeroCard, HeroCarousel, LiftCard, M2Card, M2EmptyState, M2Grid, M2Header, M2ListRow, M2ProductCard, M2Responsive, M2SearchField, M2SectionHead,
-  NAVY_STOPS, NotYetTile, SERVICE_HUES, ServiceRail, SoftTileGrid, heroStops, m2Text,
+  GlossTile, GradientHeroCard, HeroButton, HeroCarousel, LiftCard, M2Card, M2EmptyState, M2Grid, M2Header, M2HeroPanel, M2ListRow, M2Note, M2Pill, M2ProductCard, M2Responsive,
+  M2SearchField, M2SectionHead, M2StatCard, M2Table, M2Tabs, M2Timeline, M2TimerRing, NAVY_STOPS, NotYetTile, SERVICE_HUES, ServiceRail, SoftTileGrid, heroStops, m2TableText, m2Text,
 } from '../m2';
 import type { HeroSlide, M2Layout, ServiceTile, SoftTileItem } from '../m2';
 import { color, size, space } from '../theme';
@@ -121,3 +121,53 @@ export const EmptyStates: Story = {
     </View>
   ),
 };
+
+/**
+ * The Tier 1 records pieces (plan docs/plans/tier1-parity-2026-10-24.md, boards approved 24 Oct 2026): a
+ * hero section with actions, gradient count cards as filters, tab pills and a segmented pair, notes in every
+ * tone, pills, a timeline (dots and gloss tiles), the countdown ring and a table of views.
+ */
+function RecordsSampler({ layout }: { layout: 'phone' | 'desktop' }) {
+  const [tab, setTab] = React.useState<'documents' | 'prescriptions' | 'who'>('documents');
+  const [seg, setSeg] = React.useState<'summary' | 'history'>('summary');
+  const rows = [{ id: 'd1', title: 'Complete blood count (sample)', type: 'Lab report', date: '12 Oct 2026', shared: 1 }, { id: 'd2', title: 'Prescription · Demo Clinic', type: 'Prescription', date: '03 Oct 2026', shared: 0 }];
+  return (
+    <Frame layout={layout}>
+      <M2Header backLabel="Back" onBack={noop} title="Health vault" sos={{ label: 'SOS', spoken: 'SOS, get help now', onPress: noop }} />
+      <M2HeroPanel icon="lock" title="Health vault" sub="5 documents · Portable after you graduate"
+        actions={<><HeroButton label="Add a document" icon="plus" onPress={noop} /><HeroButton label="Export all" icon="download" variant="glass" onPress={noop} /></>} />
+      <M2Grid columns={{ phone: 2, desktop: 4 }}>
+        <M2StatCard icon="flask" hue="violet" count={2} label="Lab reports" selected onPress={noop} fill />
+        <M2StatCard icon="file-text" hue="green" count={1} label="Prescriptions" onPress={noop} fill />
+        <M2StatCard icon="syringe" hue="rose" count={1} label="Vaccine documents" onPress={noop} fill />
+        <M2StatCard icon="file" hue="orange" count={1} label="Scans and other" onPress={noop} fill />
+      </M2Grid>
+      <M2Tabs label="Health records sections" current={tab} onChange={setTab} tabs={[{ key: 'documents', label: 'Documents' }, { key: 'prescriptions', label: 'Prescriptions' }, { key: 'who', label: 'Who can see what' }]} />
+      <M2Tabs label="Report views" segmented current={seg} onChange={setSeg} tabs={[{ key: 'summary', label: 'Clinician summary' }, { key: 'history', label: 'History · 3' }]} />
+      <M2Card style={{ padding: space.s16 }}>
+        <M2Table caption="Your documents, newest first" rows={rows} rowKey={(r) => r.id} columns={[
+          { key: 'doc', header: 'Document', flex: 2, cell: (r) => <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.s12 }}><GlossTile icon="flask" hue="violet" size={36} iconSize={17} /><Text style={m2TableText.strong}>{r.title}</Text></View> },
+          { key: 'type', header: 'Type', cell: (r) => <Text style={m2TableText.cell}>{r.type}</Text> },
+          { key: 'date', header: 'Date', cell: (r) => <Text style={m2TableText.mono}>{r.date}</Text> },
+          { key: 'shared', header: 'Shared', cell: (r) => (r.shared ? <M2Pill label={`Shared · ${r.shared}`} tone="attention" /> : <M2Pill label="Private" tone="neutral" icon="lock" />) },
+        ]} />
+      </M2Card>
+      <M2ListRow icon="stethoscope" hue="sky" tile="gloss" title="Consult with Dr. Demo Clinician" meta="Visit 03 Oct 2026 · Signed 03 Oct 2026" onPress={noop} selected={layout === 'desktop'} />
+      <M2Note tone="positive" icon="shield-check">Nothing is released to you until a doctor has reviewed it.</M2Note>
+      <M2Note tone="attention" icon="alert-triangle" announce>This pass has expired. Connect to the internet to show a live one.</M2Note>
+      <M2Note tone="danger" icon="phone">If you feel worse, or something in these notes worries you, contact your doctor. In an emergency, call 112.</M2Note>
+      <M2Note tone="info" icon="lock">Scanning this ID tells a clinic you are verified and nothing more.</M2Note>
+      <M2Card style={{ padding: space.s16, gap: space.s16 }}>
+        <M2Timeline items={[{ key: 's', title: 'What you told the doctor', body: 'Shown word for word, as the doctor signed it', eyebrow: true }, { key: 'o', title: 'What the doctor found', body: 'Shown word for word', eyebrow: true }]} />
+        <M2Timeline items={[{ key: 'scan', icon: 'qr-code', hue: 'indigo', title: 'Scanned', body: 'The pass signature and its time window are checked.' }, { key: 'see', icon: 'eye', hue: 'green', title: 'What staff see', body: 'Your name, campus and roll number.' }]} />
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.s16 }}>
+          <M2TimerRing secondsLeft={24} totalSeconds={30} label="24s" />
+          <Text style={m2Text.body}>Refreshes in 24 s</Text>
+        </View>
+      </M2Card>
+    </Frame>
+  );
+}
+
+export const RecordsPhone: Story = { render: () => <RecordsSampler layout="phone" /> };
+export const RecordsDesktop: Story = { render: () => <RecordsSampler layout="desktop" /> };
