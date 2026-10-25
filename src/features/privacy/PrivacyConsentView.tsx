@@ -6,9 +6,9 @@ import { Button, ErrorState, OfflineBanner, Skeleton, useOnline } from '@/design
 import { Icon } from '@/design-system/icons';
 import type { SkIconName } from '@/design-system/icons';
 import {
-  M2Card, M2Grid, M2Header, M2Heading, M2ListRow, M2PageHero, M2Tile3d, M2Timeline, M2WideColumn, m2Text, useM2Layout, useOwnPhoneChrome,
+  M2Card, M2Grid, M2Header, M2Heading, M2ListRow, M2PageHero, M2Tile3d, M2ConsentTimeline, M2WideColumn, m2Text, useM2Layout, useOwnPhoneChrome,
 } from '@/design-system/m2';
-import type { M2TimelineItem, PressState, ServiceHue } from '@/design-system/m2';
+import type { M2ConsentTimelineItem, PressState, ServiceHue } from '@/design-system/m2';
 import { color, focusRing, font, fontWeight, radius, size, space } from '@/design-system/theme';
 import { navigate } from '@/lib/utils/workflowRouting';
 import { privacyRepository, UNPUBLISHED } from './privacyRepository';
@@ -196,7 +196,7 @@ export function PrivacyConsentView({ repository = privacyRepository, wide = fals
     </View>
   );
 
-  const items: M2TimelineItem[] = (data?.history ?? []).map((row) => ({
+  const items: M2ConsentTimelineItem[] = (data?.history ?? []).map((row) => ({
     key: `${row.version}-${row.givenAt}-${row.purposes.join()}`,
     what: row.purposes.map((purpose) => t(purposeTitle(purpose))).join(' · '),
     wording: row.version,
@@ -212,7 +212,7 @@ export function PrivacyConsentView({ repository = privacyRepository, wide = fals
           <Text style={m2Text.body}>{t('privacy.history.caption')}</Text>
         </View>
       </View>
-      <M2Timeline items={items} caption={t('privacy.history.caption')} testID="privacy-timeline"
+      <M2ConsentTimeline items={items} caption={t('privacy.history.caption')} testID="privacy-timeline"
         labels={{ what: t('privacy.history.what'), wording: t('privacy.history.wording'), given: t('privacy.history.given'), withdrawn: t('privacy.history.withdrawn'), stillOn: t('privacy.history.stillOn') }} />
     </M2Card>
   ) : null;
