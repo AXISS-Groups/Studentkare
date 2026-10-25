@@ -8,7 +8,7 @@ import { axeViolations, describeViolations } from '@/test/axe';
 import { WebMyLabTestsView, splitLabTests } from '../WebMyLabTestsView';
 import type { StudentLabTest } from '../WebMyLabTestsView';
 import type { LiveDocument } from '@/data/types/workflowTypes';
-import { WebEmergencyCardRoute, readiness } from '../WebEmergencyCardView';
+import { EmergencyCardRoute, readiness } from '@/features/emergency/views/EmergencyCardBoard';
 import { WebRequestsRoute } from '../WebRequestsRoute';
 
 vi.mock('@/data/services/http', async (importOriginal) => ({ ...(await importOriginal<typeof import('@/data/services/http')>()), apiRequest: vi.fn() }));
@@ -84,7 +84,7 @@ describe('WebEmergencyCard', () => {
     expect(readiness({ bloodGroup: '', allergies: '', conditions: '', contactName: '', contactPhone: '', contactRelation: '' }).percent).toBe(0);
     expect(readiness({ bloodGroup: 'O+', allergies: '', conditions: '', contactName: 'A', contactPhone: '9876543210', contactRelation: '' }).percent).toBe(100);
     serve({ '/wallet/emergency-card': walletOff, '/profile': (_p: string, init?: RequestInit) => (init?.method === 'PATCH' ? { ...profile, bloodGroup: 'O+' } : profile) });
-    const { container } = render(<WebEmergencyCardRoute />);
+    const { container } = render(<EmergencyCardRoute links={{ contacts: vi.fn(), nearestHospitals: vi.fn() }} />);
     await settle();
     const preview = screen.getByTestId('ice-preview');
     expect(within(preview).getByText('Penicillin')).toBeTruthy();
@@ -103,7 +103,7 @@ describe('WebEmergencyCard', () => {
 
   it('fails closed: a failed save says so, and crisis lines stay reachable while loading and on error', async () => {
     serve({ '/wallet/emergency-card': walletOff, '/profile': (_p: string, init?: RequestInit) => (init?.method === 'PATCH' ? new Error('down') : profile) });
-    render(<WebEmergencyCardRoute />);
+    render(<EmergencyCardRoute links={{ contacts: vi.fn(), nearestHospitals: vi.fn() }} />);
     expect(screen.getByRole('link', { name: 'Call 112, emergency services' })).toBeTruthy();
     await settle();
     fireEvent.click(screen.getByRole('button', { name: 'A+' }));
@@ -114,7 +114,7 @@ describe('WebEmergencyCard', () => {
 
     api.mockReset();
     serve({ '/profile': new Error('down') });
-    render(<WebEmergencyCardRoute />);
+    render(<EmergencyCardRoute links={{ contacts: vi.fn(), nearestHospitals: vi.fn() }} />);
     await settle();
     expect(screen.getAllByRole('link', { name: 'Call Tele-MANAS 14416' }).length).toBeGreaterThan(0);
   });

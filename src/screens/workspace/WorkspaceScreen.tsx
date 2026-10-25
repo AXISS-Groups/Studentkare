@@ -57,6 +57,8 @@ import { webPushController } from '@/lib/webPush';
 import { SignInSecurityRoute } from '@/features/account/views/SignInSecurityView';
 import { RewardsRoute } from '@/features/rewards/views/RewardsView';
 import { LeaveCampusRoute } from '@/features/campus/views/LeaveCampusView';
+import { ConsentInboxBoard } from '@/features/vault/views/ConsentInboxBoard';
+import { FamilyCircleBoard } from '@/features/vault/views/FamilyCircleBoard';
 import { CareNavigatorPanel } from './CareNavigatorPanel';
 import { EncounterNotesPanel } from './EncounterNotesPanel';
 import { CounsellorShell } from './CounsellorShell';
@@ -148,7 +150,7 @@ const HealthVaultRoute = lazy(() => import('@/features/vault/views/HealthVaultRo
 const WebMyLabTestsView = lazy(() => import('@/features/studentweb/views/t1/WebMyLabTestsView').then(module => ({ default: module.WebMyLabTestsView })));
 const ReportInsightsRoute = lazy(() => import('@/features/insights/views/ReportInsightsRoute').then(module => ({ default: module.ReportInsightsRoute })));
 const M2AskAyushRoute = lazy(() => import('@/features/chat/views/M2AskAyushRoute').then(module => ({ default: module.M2AskAyushRoute })));
-const WebEmergencyCardRoute = lazy(() => import('@/features/studentweb/views/t1/WebEmergencyCardView').then(module => ({ default: module.WebEmergencyCardRoute })));
+const EmergencyCardRoute = lazy(() => import('@/features/emergency/views/EmergencyCardBoard').then(module => ({ default: module.EmergencyCardRoute })));
 const WebRequestsRoute = lazy(() => import('@/features/studentweb/views/t1/WebRequestsRoute').then(module => ({ default: module.WebRequestsRoute })));
 
 /** The partner console page for a route, or null when the route is not one (same role checks as before). */
@@ -326,6 +328,8 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
    * phone frame keeps its own screens.
    */
   const visitSummaryLinks = { openPrescriptions: () => navigate('prescriptions'), openAppointments: () => navigate('appointments'), back: () => navigate('records') };
+  const leaveCampusLinks = { openRecords: () => navigate('records'), openPlans: () => navigate('billing'), openSupport: () => navigate('support'), openExport: () => navigate('data-export') };
+  const deleteAccountLinks = { exportData: () => navigate('data-export'), crisis: () => navigate('sos'), leaveCampus: () => navigate('leave-campus'), security: () => navigate('security'), support: () => navigate('support') };
   const studentWebPage = (): React.ReactNode => {
     if (user.role !== 'STUDENT') return null;
     // One home (founder decision, 23 Oct 2026): /home is retired for a student; Home is /health, as on the phone.
@@ -356,7 +360,7 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
       case 'visit-summaries': return <VisitSummaryRoute wide links={visitSummaryLinks} />;
       // §9 (Q2): one Ask Ayush view, chat beside the web board's side column.
       case 'ayush': return <M2AskAyushRoute wide />;
-      case 'emergency-card': return <WebEmergencyCardRoute />;
+      case 'emergency-card': return <EmergencyCardRoute wide links={{ contacts: () => navigate('ice-contacts'), nearestHospitals: () => navigate('find-care') }} />;
       case 'pass': return <MyPassRoute wide links={{ digitalId: () => navigate('digital-id') }} art={recordsArt.smallClinic} />;
       case 'digital-id': return <DigitalIdPage wide />;
       case 'my-requests': return <WebRequestsRoute />;
@@ -424,7 +428,7 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
       case 'profile': return <MemberProfilePanel initialTab="profile" />;
       case 'digital-id': return <MemberProfilePanel initialTab="digital-id" />;
       case 'records': return <HealthVaultRoute />;
-      case 'emergency-card': return <WebEmergencyCard />;
+      case 'emergency-card': return <EmergencyCardRoute links={{ contacts: () => navigate('ice-contacts'), nearestHospitals: () => navigate('find-care') }} />;
       case 'pass': return <MyPassRoute links={{ digitalId: () => navigate('digital-id') }} />;
       case 'insurance': return <MemberProfilePanel initialTab="insurance" />;
       case 'orders': return <OrdersPanel />;
