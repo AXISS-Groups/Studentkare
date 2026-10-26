@@ -1,5 +1,5 @@
 export interface Page<T> { items: T[]; total: number; offset: number; limit: number }
-export type VerificationStatus = 'UNVERIFIED' | 'VERIFIED' | 'EXPIRED';
+type VerificationStatus = 'UNVERIFIED' | 'VERIFIED' | 'EXPIRED';
 export interface VaccineOffering {
   id: string; providerId: string; providerName: string; vaccineName: string;
   pincode: string; region: string; sourceUrl: string; bookingUrl: string | null;

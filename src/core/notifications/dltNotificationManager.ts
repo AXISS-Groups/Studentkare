@@ -5,7 +5,7 @@
  * anti-PHI payload scrubbing before sending notifications.
  */
 
-export interface SmsPayload {
+interface SmsPayload {
   recipientPhone: string;
   dltTemplateId: string;
   variables: Record<string, string>;

@@ -29,7 +29,7 @@ function parseSlotTime(value: string): { hours: number; minutes: number } | null
   return { hours, minutes };
 }
 
-export function icsDate(date: string, time: string): string | null {
+function icsDate(date: string, time: string): string | null {
   const parts = date.split('-').map(Number);
   if (parts.length !== 3 || parts.some(Number.isNaN)) return null;
   const parsed = parseSlotTime(time);

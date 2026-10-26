@@ -35,7 +35,7 @@ export interface M2StepsLinks {
 
 const TEAL = SERVICE_HUES.teal;
 
-export const SOURCE_ICON: Readonly<Record<StepSource, SkIconName>> = {
+const SOURCE_ICON: Readonly<Record<StepSource, SkIconName>> = {
   HEALTHKIT: 'heart-plus',
   HEALTH_CONNECT: 'heart-plus',
   PHONE_MOTION: 'devices',
@@ -77,7 +77,7 @@ const STATE_LABEL: Readonly<Record<ConnectorState, MessageKey>> = {
 };
 
 /** The white chip on the hero that says where today's number came from. */
-export function SourceChip({ source, onHero = false, testID }: { source: StepSource; onHero?: boolean; testID?: string }) {
+function SourceChip({ source, onHero = false, testID }: { source: StepSource; onHero?: boolean; testID?: string }) {
   const t = useT();
   return (
     <View style={[styles.chip, onHero ? styles.chipOnHero : styles.chipOnCard]} testID={testID}>

@@ -8,7 +8,7 @@ import { apiBaseUrl, allowOfflineAuth } from '../core/env';
 const API_BASE_URL = apiBaseUrl();
 const ALLOW_OFFLINE_AUTH = allowOfflineAuth();
 
-export interface AuthResponse {
+interface AuthResponse {
   success: boolean;
   token?: string;
   user?: StudentProfile;
@@ -22,7 +22,7 @@ export interface AuthResponse {
   fallbackTargetMasked?: string;
 }
 
-export const authApi = {
+const authApi = {
   async sendOtp(
     identifier: string,
     channel: 'WHATSAPP' | 'EMAIL' = 'WHATSAPP',
@@ -147,7 +147,7 @@ export const authApi = {
   },
 };
 
-export const adminApi = {
+const adminApi = {
   async getTelemetry(token?: string) {
     try {
       const res = await fetch(`${API_BASE_URL}/admin/telemetry`, {
@@ -300,7 +300,7 @@ export const publicConfigApi = {
   },
 };
 
-export const twoFactorApi = {
+const twoFactorApi = {
   async setup(token: string) {
     const res = await fetch(`${API_BASE_URL}/auth/2fa/setup`, {
       method: 'POST',
@@ -468,7 +468,7 @@ export const agentApi = {
   },
 };
 
-export const telemetryApi = {
+const telemetryApi = {
   async ingest(deviceId: string, deviceType: string, readings: Record<string, unknown>, studentId?: string) {
     try {
       const res = await fetch(`${API_BASE_URL}/telemetry/sensors`, {

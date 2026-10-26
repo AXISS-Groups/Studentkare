@@ -7,7 +7,7 @@ export type ClinicianNavId =
   | 'encounter-note' | 'prescribe' | 'lab-orders' | 'referrals' | 'renewals' | 'my-patients'
   | 'chronic-care' | 'ayush' | 'decision-support' | 'schedule' | 'earnings' | 'post-reviews';
 
-export interface ClinicianNavItem {
+interface ClinicianNavItem {
   id: ClinicianNavId;
   /** English name (stable for tests); `labelKey` is what the sidebar shows, in the chosen language. */
   label: string;

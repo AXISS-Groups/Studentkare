@@ -11,7 +11,7 @@
  */
 import type { ReferenceRange } from './types';
 
-export const REFERENCE_RANGES: ReferenceRange[] = [
+const REFERENCE_RANGES: ReferenceRange[] = [
   {
     code: '718-7',
     display: 'Haemoglobin',

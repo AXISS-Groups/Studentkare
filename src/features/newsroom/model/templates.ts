@@ -153,4 +153,4 @@ export const BLOCK_ICON: Readonly<Record<BlockType, SkIconName>> = {
 };
 
 /** Every service-palette hue a category or a series cover may take (the server keeps the same list). */
-export const HUES: readonly ServiceHue[] = ['indigo', 'violet', 'blue', 'sky', 'teal', 'green', 'amber', 'orange', 'rose'];
+const HUES: readonly ServiceHue[] = ['indigo', 'violet', 'blue', 'sky', 'teal', 'green', 'amber', 'orange', 'rose'];

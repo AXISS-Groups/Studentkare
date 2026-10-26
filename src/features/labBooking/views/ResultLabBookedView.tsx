@@ -130,7 +130,7 @@ export const ResultLabBookedView = observer(function ResultLabBookedView({
 });
 
 /** A calendar entry for the collection. Generic on purpose: no test name leaves the app (Rule L). */
-export function icsFor(title: string, start: string, end: string, ref: string): string {
+function icsFor(title: string, start: string, end: string, ref: string): string {
   const stamp = (iso: string) => new Date(iso).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
   const now = stamp(new Date().toISOString());
   return [

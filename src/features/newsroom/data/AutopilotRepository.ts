@@ -8,8 +8,8 @@ import type { PostTemplate } from '../model/templates';
  * time); this reads the state and runs the actions the Autopilot tab offers.
  */
 
-export type AutopilotLane = 'NEWS' | 'BLOG';
-export type AutopilotState = 'SEEN' | 'SKIPPED' | 'POSTED' | 'HELD' | 'FAILED';
+type AutopilotLane = 'NEWS' | 'BLOG';
+type AutopilotState = 'SEEN' | 'SKIPPED' | 'POSTED' | 'HELD' | 'FAILED';
 
 export interface AutopilotSource {
   id: string;
@@ -25,7 +25,7 @@ export interface AutopilotSource {
   failures: number;
 }
 
-export interface AutopilotPost {
+interface AutopilotPost {
   id: string;
   status: PostStatus;
   live: boolean;
@@ -41,7 +41,7 @@ export interface AutopilotPost {
 }
 
 /** A built-in series' schedule (settings series.<key>.*). */
-export interface AutopilotSeries {
+interface AutopilotSeries {
   key: 'motivation' | 'health';
   enabled: boolean;
   name: string;

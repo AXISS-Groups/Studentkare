@@ -33,7 +33,7 @@ export interface TeamAccountList { items: TeamAccount[]; pinSignInEnabled: boole
 export interface CurrentSecret { currentPin?: string; currentPassword?: string }
 
 /** The new PIN, in the one answer that ever carries it. */
-export interface RotatedPin { id: string; identifier: string; pin: string }
+interface RotatedPin { id: string; identifier: string; pin: string }
 
 /** Super admin → Team accounts. The only place that knows the /ops/team-accounts endpoints. */
 export interface TeamAccountsRepository {
@@ -61,7 +61,7 @@ export const teamAccountsRepository: TeamAccountsRepository = {
 };
 
 /** A super admin who is one named person (GET /ops/super-admins; audit H3). */
-export interface NamedSuperAdmin {
+interface NamedSuperAdmin {
   id: string;
   fullName: string;
   identifier: string;

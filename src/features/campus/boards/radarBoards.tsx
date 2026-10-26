@@ -104,7 +104,7 @@ const COPY: Record<RadarBoardId, { title: MessageKey; subtitle: MessageKey; unco
 /** The board's 3D tile in its empty state (every page-4 board draws this one). */
 const EMPTY_TILE = 'chart-alt--p4';
 
-export function RadarBoard({ id }: { id: RadarBoardId }): React.ReactElement {
+function RadarBoard({ id }: { id: RadarBoardId }): React.ReactElement {
   const t = useT();
   const spec = RADAR_BOARDS[id];
   const copy = COPY[id];

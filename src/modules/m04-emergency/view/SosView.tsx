@@ -53,7 +53,7 @@ export function elapsedClock(totalSeconds: number): string {
 }
 
 /** A finished SOS's length in words ("4 min 12 s"), from the server's own times. */
-export function durationWords(totalSeconds: number, t: (key: MessageKey, vars?: Record<string, string | number>) => string): string {
+function durationWords(totalSeconds: number, t: (key: MessageKey, vars?: Record<string, string | number>) => string): string {
   const s = Math.max(0, Math.round(totalSeconds));
   return t('sf.sos.duration', { m: Math.floor(s / 60), s: s % 60 });
 }

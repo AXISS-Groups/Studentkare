@@ -33,7 +33,7 @@ export function orderStatus(order: Pick<LiveOrder, 'lines'>): RequestStatus {
   return 'CANCELLED';
 }
 
-export const isActiveOrder = (order: Pick<LiveOrder, 'lines'>): boolean => ACTIVE.includes(orderStatus(order));
+const isActiveOrder = (order: Pick<LiveOrder, 'lines'>): boolean => ACTIVE.includes(orderStatus(order));
 
 /** The short reference the student sees ("SK-1A2B3C4D"), from the order id. */
 export const orderRef = (id: string): string => `SK-${id.slice(0, 8).toUpperCase()}`;
@@ -79,8 +79,8 @@ export function buyAgainBlock(item: LiveCatalogItem | undefined): BuyAgainBlock 
 }
 
 /** Catalogue counts per kind for the search sidebar. */
-export type SearchKind = 'all' | 'product' | 'lab' | 'consultation';
-export const SEARCH_KINDS: readonly SearchKind[] = ['all', 'product', 'lab', 'consultation'];
+type SearchKind = 'all' | 'product' | 'lab' | 'consultation';
+const SEARCH_KINDS: readonly SearchKind[] = ['all', 'product', 'lab', 'consultation'];
 
 export type SortOrder = 'name' | 'priceLow' | 'priceHigh';
 export const SORT_ORDERS: readonly SortOrder[] = ['name', 'priceLow', 'priceHigh'];
@@ -94,7 +94,7 @@ export function sortItems(items: readonly LiveCatalogItem[], order: SortOrder): 
 }
 
 /** Cart lines a student can still change the quantity of: shop items, up to stock and the cart's cap. */
-export const CART_LINE_CAP = 10;
+const CART_LINE_CAP = 10;
 export const maxQuantity = (item: Pick<LiveCatalogItem, 'kind' | 'stock'>): number =>
   item.kind === 'product' ? Math.max(0, Math.min(item.stock, CART_LINE_CAP)) : 1;
 

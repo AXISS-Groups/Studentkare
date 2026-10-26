@@ -1,7 +1,7 @@
 import { assertRule } from './constitution';
 import { DepartmentId, OPERATIONAL_AI_DEPARTMENTS } from '../departments';
 
-export interface CircuitBreakerState {
+interface CircuitBreakerState {
   departmentId: DepartmentId;
   totalCalls: number;
   errorCalls: number;
@@ -10,7 +10,7 @@ export interface CircuitBreakerState {
   lastTrippedAt?: string;
 }
 
-export class DepartmentCircuitBreakers {
+class DepartmentCircuitBreakers {
   private states: Record<DepartmentId, CircuitBreakerState> = {
     D1: { departmentId: 'D1', totalCalls: 100, errorCalls: 0, errorRate: 0, isTripped: false },
     D2: { departmentId: 'D2', totalCalls: 50, errorCalls: 1, errorRate: 0.02, isTripped: false },

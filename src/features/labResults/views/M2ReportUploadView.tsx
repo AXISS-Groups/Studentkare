@@ -33,7 +33,7 @@ import { dateLocale, fullDate, fullDateFromEpoch } from '../viewmodel/trendScree
  * Range chips appear only once the server has saved a value: whether a value
  * is inside its range is the server's `rangeState`, never worked out here.
  */
-export interface M2ReportUploadLinks {
+interface M2ReportUploadLinks {
   back: () => void;
   trends: () => void;
 }

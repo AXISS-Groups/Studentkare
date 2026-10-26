@@ -2,7 +2,7 @@ import { apiRequest } from '@/data/services/http';
 import type { SosAlert } from '../domain/Emergency';
 
 /** backend/services/emergency_api.py. No fallbacks: a failure is the caller's to show. */
-export class EmergencyRepository {
+class EmergencyRepository {
   async raiseSos(locationNote: string): Promise<SosAlert> {
     const res = await apiRequest<{ alert: SosAlert }>('/emergency/sos', {
       method: 'POST',

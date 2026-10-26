@@ -17,7 +17,7 @@ const STRENGTH_BARS: Record<PasscodeStrength, number> = { empty: 0, weak: 1, fai
 const BARS = [1, 2, 3] as const;
 
 /** The plain strength hint: a three-step bar and words (never colour alone). */
-export function StrengthHint({ strength }: { strength: PasscodeStrength }): React.ReactElement {
+function StrengthHint({ strength }: { strength: PasscodeStrength }): React.ReactElement {
   const t = useT();
   return (
     <div className="sk-strength" data-strength={strength}>

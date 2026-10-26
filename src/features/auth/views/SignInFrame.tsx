@@ -20,7 +20,7 @@ const LANGS: readonly { code: Lang; short: string }[] = [
  * EN / తె / हि (canvas SignIn, WebSignIn): switches the whole app's language
  * through the i18n provider. Each button says its language in that language.
  */
-export function LanguageSwitch({ onNavy = false }: { onNavy?: boolean }): React.ReactElement {
+function LanguageSwitch({ onNavy = false }: { onNavy?: boolean }): React.ReactElement {
   const t = useT();
   const { lang, setLang } = useLanguage();
   return (
@@ -57,7 +57,7 @@ export function Wordmark({ onNavy = false }: { onNavy?: boolean }): React.ReactE
 }
 
 /** The logo goes to the public home page (founder, 2026-10-22): the site root, from config. */
-export function BrandHomeLink({ onNavy = false }: { onNavy?: boolean }): React.ReactElement {
+function BrandHomeLink({ onNavy = false }: { onNavy?: boolean }): React.ReactElement {
   const t = useT();
   return (
     <a className="sk-signin__home" href={publicHomeUrl()} data-testid="auth-logo-home">
@@ -85,7 +85,7 @@ export type AuthTab = 'signIn' | 'create';
  * "Sign in" / "Create account": the two pages share this frame, and the one in
  * view is the highlighted pill (aria-current). They are links to the two pages.
  */
-export function AuthTabs({ current, onPick }: { current: AuthTab; onPick: (tab: AuthTab) => void }): React.ReactElement {
+function AuthTabs({ current, onPick }: { current: AuthTab; onPick: (tab: AuthTab) => void }): React.ReactElement {
   const t = useT();
   const tabs: readonly { id: AuthTab; href: string; label: MessageKey }[] = [
     { id: 'signIn', href: '/login', label: 'authpc.tabs.signIn' },

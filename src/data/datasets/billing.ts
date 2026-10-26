@@ -15,7 +15,7 @@ export interface BillingPlan {
   audience: string; benefits: string[]; description: string;
   priceFrom?: boolean; packages?: BillingPackage[];
 }
-export interface BillingReceipt {
+interface BillingReceipt {
   invoiceId: string; amountPaise: number; currency: string; paidAt: number;
   refundedPaise: number; periodStart: number; periodEnd: number;
 }

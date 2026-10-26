@@ -11,7 +11,7 @@ import { useT, type MessageKey, type Vars } from '@/i18n';
 import type { ArtSource } from '@/features/phoneKit/artSource';
 import { awaitsLabPayment } from '@/features/labBooking/views/labPaymentState';
 
-export interface PrescriptionItem {
+interface PrescriptionItem {
   id: string; genericName: string; brandName: string; strength: string; dose: string;
   frequency: string; durationDays: number; quantity: number; scheduleClass: string;
 }
@@ -33,19 +33,19 @@ export interface LabOrder {
 }
 
 /** The two reads the Prescriptions tab makes (the same pages the older panel read). */
-export const PRESCRIPTIONS_PATH = '/prescriptions?limit=20';
-export const LAB_ORDERS_PATH = '/lab-orders?limit=20';
+const PRESCRIPTIONS_PATH = '/prescriptions?limit=20';
+const LAB_ORDERS_PATH = '/lab-orders?limit=20';
 
 const LAB_PROGRESS = ['BOOKED', 'ASSIGNED', 'SAMPLE_COLLECTED', 'RECEIVED_AT_LAB', 'IN_ANALYSIS', 'REPORT_READY', 'REPORT_RELEASED'];
 /** Statuses with a translation. Anything else the server sends is shown readably, in English. */
 const TRANSLATED_STATUS = new Set(['ISSUED', ...LAB_PROGRESS]);
 
-export function statusLabel(status: string, t: (key: MessageKey, vars?: Vars) => string): string {
+function statusLabel(status: string, t: (key: MessageKey, vars?: Vars) => string): string {
   if (TRANSLATED_STATUS.has(status)) return t(`care.rx.status.${status}` as MessageKey);
   return status.replace(/_/g, ' ').toLowerCase().replace(/^./, (character) => character.toUpperCase());
 }
 
-export const prescriptionExpired = (prescription: Prescription, now: number = Date.now()): boolean => prescription.validUntil > 0 && prescription.validUntil * 1000 < now;
+const prescriptionExpired = (prescription: Prescription, now: number = Date.now()): boolean => prescription.validUntil > 0 && prescription.validUntil * 1000 < now;
 
 export interface PrescriptionsTabLinks {
   /** Choose or change a doctor-ordered test's collection time (the web's slot picker). Omitted: no time can be chosen here. */

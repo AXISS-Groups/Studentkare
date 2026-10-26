@@ -31,11 +31,11 @@ export interface Plan { id: string; name: string; price: number | string; period
  * allergies would punish a student who has none.
  */
 export const PROFILE_FIELDS = ['name', 'dob', 'university', 'rollNumber', 'hostel', 'emergencyContact', 'bloodGroup'] as const;
-export type ProfileField = (typeof PROFILE_FIELDS)[number];
+type ProfileField = (typeof PROFILE_FIELDS)[number];
 
 const filled = (value: string | undefined | null): boolean => Boolean(value && value.trim());
 
-export function fieldFilled(profile: MemberProfile, field: ProfileField): boolean {
+function fieldFilled(profile: MemberProfile, field: ProfileField): boolean {
   switch (field) {
     case 'name': return filled(profile.fullName);
     case 'dob': return filled(profile.dob);

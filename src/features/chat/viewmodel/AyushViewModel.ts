@@ -5,8 +5,8 @@ import type { MessageKey } from '@/i18n';
 
 export type AyushOutcome = 'ANSWERED' | 'NO_SOURCE' | 'REFUSED_SCOPE' | 'REFUSED_PERSONAL' | 'REFUSED_OUTPUT' | 'CRISIS' | 'EMPTY';
 
-export interface AyushCitation { sourceId: string; title: string; category: string; version: number; snippet: string; score: number; stale: boolean }
-export interface AyushCrisisResource { label: string; number: string; detail: string }
+interface AyushCitation { sourceId: string; title: string; category: string; version: number; snippet: string; score: number; stale: boolean }
+interface AyushCrisisResource { label: string; number: string; detail: string }
 
 /** POST /api/agents/ayush/ask (backend/services/clinical_api.py, then agent_ayush). */
 export interface AyushReply {

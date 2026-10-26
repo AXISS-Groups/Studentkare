@@ -62,7 +62,7 @@ const STATUS_KEY: Record<string, MessageKey> = {
   RECOLLECTION_REQUIRED: 'clinLab.status.RECOLLECTION_REQUIRED', CANCELLED: 'clinLab.status.CANCELLED',
 };
 
-export function statusLabel(status: string, t: T): string {
+function statusLabel(status: string, t: T): string {
   return t(STATUS_KEY[status] ?? 'clinLab.status.other');
 }
 
@@ -91,7 +91,7 @@ export function mapLabOrders(orders: PlacedLabOrder[], t: T): ConsoleTableData {
   };
 }
 
-export function labOrdersApiSource(t: T, request: Request = apiRequest): ConsoleTableSource {
+function labOrdersApiSource(t: T, request: Request = apiRequest): ConsoleTableSource {
   return { load: async () => mapLabOrders((await request<{ items: PlacedLabOrder[] }>('/work/doctor-lab-orders')).items, t) };
 }
 

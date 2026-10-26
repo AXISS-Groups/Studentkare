@@ -22,7 +22,7 @@ export function __setForceConstitutionFailure(fail: boolean): void {
   forceConstitutionLoadFailure = fail;
 }
 
-export function isConstitutionLoaded(): boolean {
+function isConstitutionLoaded(): boolean {
   if (forceConstitutionLoadFailure) return false;
   try {
     return Boolean(CONSTITUTION_RULES && Object.keys(CONSTITUTION_RULES).length > 0);

@@ -101,7 +101,7 @@ export function PartnerLoading({ label, tiles = 4, rows = 5 }: { label: string; 
   );
 }
 
-export type LoadStatus = 'loading' | 'ready' | 'error';
+type LoadStatus = 'loading' | 'ready' | 'error';
 
 export interface Loaded<T> {
   status: LoadStatus;

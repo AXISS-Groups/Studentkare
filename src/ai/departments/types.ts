@@ -2,8 +2,8 @@ import { RuleId } from '../core/constitution';
 
 export type DepartmentId = 'D1' | 'D2' | 'D3' | 'D4' | 'D5' | 'D6' | 'D7' | 'D8' | 'D9';
 
-export type ActionType = string;
-export type ToolAllowlist = string[];
+type ActionType = string;
+type ToolAllowlist = string[];
 
 export interface DepartmentAction {
   id: string;
@@ -27,7 +27,7 @@ export interface DepartmentTaskResult {
   details?: Record<string, any>;
 }
 
-export interface Department {
+interface Department {
   id: DepartmentId;
   name: string;
   description: string;

@@ -60,7 +60,7 @@ function Detail({ item }: { item: RequestItem }) {
   );
 }
 
-export const MyRequestsView = observer(function MyRequestsView({ viewModel: vm, links }: { viewModel: MyRequestsViewModel; links: RequestsLinks }) {
+const MyRequestsView = observer(function MyRequestsView({ viewModel: vm, links }: { viewModel: MyRequestsViewModel; links: RequestsLinks }) {
   const t = useT();
   const [open, setOpen] = useState<string | null>(null);
   const [choosing, setChoosing] = useState(false);
@@ -189,7 +189,7 @@ const HostelVisitSteps = observer(function HostelVisitSteps({ vm, links, step, s
   );
 });
 
-export const NewRequestView = observer(function NewRequestView({ viewModel: vm, links }: { viewModel: NewRequestViewModel; links: NewRequestLinks }) {
+const NewRequestView = observer(function NewRequestView({ viewModel: vm, links }: { viewModel: NewRequestViewModel; links: NewRequestLinks }) {
   const o = vm.options;
   const t = useT();
   const [photoNote, setPhotoNote] = useState<MessageKey | null>(null);

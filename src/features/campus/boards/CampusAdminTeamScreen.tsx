@@ -29,7 +29,7 @@ export interface CampusStaff {
 export interface TeamSource { load(): Promise<CampusStaff[]> }
 
 /** The campus team endpoint (GET /ops/campus/team): the board used to call the super-admin /ops/accounts and got a 403. */
-export const CAMPUS_TEAM_PATH = '/ops/campus/team';
+const CAMPUS_TEAM_PATH = '/ops/campus/team';
 interface TeamPage { items: Array<Omit<CampusStaff, 'role'> & { role: string }> }
 
 export const liveTeamSource: TeamSource = {

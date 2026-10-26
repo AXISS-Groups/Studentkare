@@ -32,7 +32,7 @@ const TARGET: Readonly<Record<ShareTarget, { icon: SkIconName | null; label: Mes
   email: { icon: 'mail', label: 'cms.share.email', name: 'cms.share.name.email' },
 };
 
-export function utmSettings(): UtmSettings {
+function utmSettings(): UtmSettings {
   return { enabled: getSetting('content.share_utm_enabled'), medium: getSetting('content.share_utm_medium'), campaign: getSetting('content.share_utm_campaign') };
 }
 
@@ -40,7 +40,7 @@ function siteOrigin(): string {
   return typeof window !== 'undefined' ? window.location.origin : '';
 }
 
-export function countShare(post: Pick<PostTeaser, 'section' | 'slug' | 'sample'>, channel: ShareChannel, repo = new ContentRepository()): void {
+function countShare(post: Pick<PostTeaser, 'section' | 'slug' | 'sample'>, channel: ShareChannel, repo = new ContentRepository()): void {
   if (!getSetting('content.stats_enabled') || post.sample) return;
   repo.hit(post.section, post.slug, 'share', channel).catch(() => undefined);   // a count is never worth an error
 }

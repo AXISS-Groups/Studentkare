@@ -28,12 +28,12 @@ const MINUTES_PER_HOUR = 60;
 const PAD = 2;
 
 /** "09:00": 24-hour clock, the same in every language. */
-export function clock(time: ClockTime): string {
+function clock(time: ClockTime): string {
   return `${String(time.hour).padStart(PAD, '0')}:${String(time.minute).padStart(PAD, '0')}`;
 }
 
 /** "2 h", "1 h 30 min", "45 min". */
-export function gapLabel(minutes: number, t: Translate): string {
+function gapLabel(minutes: number, t: Translate): string {
   const h = Math.floor(minutes / MINUTES_PER_HOUR);
   const m = minutes % MINUTES_PER_HOUR;
   if (h && m) return t('m2r.wrem.hoursMinutes', { h, m });
@@ -106,7 +106,7 @@ function StepButton({ icon, label, disabled, onPress, testID }: { icon: SkIconNa
 }
 
 /** "1 of 2 taken today · 1 skipped", or for a plan without a count, what today holds. */
-export function doseLine(plan: MedsTodayPlan, t: Translate): string {
+function doseLine(plan: MedsTodayPlan, t: Translate): string {
   const skipped = plan.dosesSkipped ?? 0;
   if (plan.dosesPlanned === null) {
     if (plan.dosesTaken > 0) return t('m2r.meds.onceTaken');

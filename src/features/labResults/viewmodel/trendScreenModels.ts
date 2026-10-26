@@ -44,7 +44,7 @@ export function fullDateFromEpoch(seconds: number | null, locale?: string): stri
   return new Date(seconds < 1e12 ? seconds * 1000 : seconds).toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
-export function yearOf(iso: string): string {
+function yearOf(iso: string): string {
   return /^(\d{4})-/.exec(iso)?.[1] ?? '';
 }
 
@@ -128,7 +128,7 @@ export function rangeBar(v: Pick<LabValue, 'valueNumeric' | 'refLow' | 'refHigh'
   return { zones: ['low', 'range'], marker };
 }
 
-export const toneOfState = (state: RangeState): ValueTone => toneOf(state);
+const toneOfState = (state: RangeState): ValueTone => toneOf(state);
 
 // ── The doctor's steps (D-M2-11) ─────────────────────────────────────────────
 

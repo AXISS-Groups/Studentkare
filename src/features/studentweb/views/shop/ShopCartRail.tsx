@@ -11,7 +11,7 @@ import { maxQuantity } from '../../data/studentWebData';
 import { cartPaise, cartUnits, itemArt } from './shopShared';
 
 /** The quantity stepper used in every cart (− count +), capped as the cart caps it. */
-export function QtyStepper({ line, onSet, onAdd }: { line: CartLine; onSet: (quantity: number) => void; onAdd: () => void }) {
+function QtyStepper({ line, onSet, onAdd }: { line: CartLine; onSet: (quantity: number) => void; onAdd: () => void }) {
   const t = useT();
   return (
     <span className="sk-m2w-qty" role="group" aria-label={t('sw.product.quantity')}>
@@ -49,7 +49,7 @@ export function CartLines({ lines, onSet, onAdd }: { lines: readonly CartLine[];
 }
 
 /** Where the cart summary sits, so "View cart" can bring it into view. */
-export const CART_RAIL_ID = 'sk-m2w-cart';
+const CART_RAIL_ID = 'sk-m2w-cart';
 
 /** Brings the cart summary into view and moves focus to it (the signed-out "View cart"). */
 export function showCartRail(): void {

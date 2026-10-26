@@ -13,7 +13,7 @@ export interface CountdownRingProps {
 }
 
 /** Fraction of the step still left, clamped to 0…1 (0 for a nonsense total). */
-export function ringFraction(secondsLeft: number, totalSeconds: number): number {
+function ringFraction(secondsLeft: number, totalSeconds: number): number {
   if (!Number.isFinite(secondsLeft) || !Number.isFinite(totalSeconds) || totalSeconds <= 0) return 0;
   return Math.max(0, Math.min(1, secondsLeft / totalSeconds));
 }

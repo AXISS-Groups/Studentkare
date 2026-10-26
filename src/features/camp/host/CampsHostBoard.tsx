@@ -39,7 +39,7 @@ const SKELETON_CAMPS = 3;
 
 type Timing = 'today' | 'upcoming' | 'past';
 
-export function localToday(): string {
+function localToday(): string {
   const now = new Date();
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 }
@@ -59,7 +59,7 @@ function pillOf(camp: HostCamp, today: string): { key: MessageKey; tone: SkTone 
   return timing === 'upcoming' ? { key: 'campusBoards.camps.status.upcoming', tone: 'action' } : { key: 'campusBoards.camps.status.past', tone: 'neutral' };
 }
 
-export function totals(camp: HostCamp) {
+function totals(camp: HostCamp) {
   return camp.slots.reduce((sum, s) => ({
     capacity: sum.capacity + s.capacity, booked: sum.booked + s.booked, waitlisted: sum.waitlisted + s.waitlisted,
     checkedIn: sum.checkedIn + s.checkedIn, cancelled: sum.cancelled + s.cancelled,

@@ -15,7 +15,7 @@ import { IconTile, SearchField, Tag, phoneLayout, Heading } from '@/features/pho
  * On the web the phone frame already draws the brand, the bell and the tab
  * bar; the Expo app draws the brand row here (`brandRow`).
  */
-export interface HomeDiscoverLinks {
+interface HomeDiscoverLinks {
   openSearch: () => void;
   openCrisis: () => void;
   call112: () => void;

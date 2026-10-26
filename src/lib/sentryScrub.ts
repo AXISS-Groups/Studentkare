@@ -3,7 +3,7 @@
  * phone app's crash reporting (src/native/crashReporting.ts). Pure functions,
  * no Sentry import, so both platforms bundle it.
  */
-export const PHI_KEYWORDS = [
+const PHI_KEYWORDS = [
   'diagnosis',
   'prescription',
   'hiv',

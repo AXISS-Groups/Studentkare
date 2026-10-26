@@ -16,7 +16,7 @@ import '@/design-system/design-system.css';
  * links that carry no state and make no request, so they work while the page
  * is loading, failed or offline (DESIGN.md §2.4: help is always one tap away).
  */
-export type EmergencyNumber = '108' | '112' | '14416';
+type EmergencyNumber = '108' | '112' | '14416';
 
 const LINE_COPY: Record<EmergencyNumber, { label: MessageKey; spoken: MessageKey }> = {
   108: { label: 'campusSafety.lines.call108', spoken: 'campusSafety.lines.call108Spoken' },

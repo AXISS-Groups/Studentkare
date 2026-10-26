@@ -19,7 +19,7 @@ export function canAccessRoute(route: RoutePath, role: AccountRole | null) {
     : routePrefixRoles.find(([prefix]) => route.startsWith(prefix))?.[1];
   return roles ? roles.includes(role) : true;
 }
-export function readRoute() {
+function readRoute() {
   const hashRaw = window.location.hash.replace(/^#\/?/, '');
   const pathRaw = hashRaw || window.location.pathname.replace(/^\//, '');
   const [path = '', search = ''] = pathRaw.split('?');
