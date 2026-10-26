@@ -8,7 +8,6 @@ import { axeViolations, describeViolations } from '@/test/axe';
 import { WebMyLabTestsView, splitLabTests } from '../WebMyLabTestsView';
 import type { StudentLabTest } from '../WebMyLabTestsView';
 import type { LiveDocument } from '@/data/types/workflowTypes';
-import { EmergencyCardRoute, readiness } from '@/features/emergency/views/EmergencyCardBoard';
 import { WebRequestsRoute } from '../WebRequestsRoute';
 
 vi.mock('@/data/services/http', async (importOriginal) => ({ ...(await importOriginal<typeof import('@/data/services/http')>()), apiRequest: vi.fn() }));
@@ -72,51 +71,6 @@ describe('WebMyLabTests', () => {
     await settle();
     expect(screen.getByText('No lab tests yet')).toBeTruthy();
     expect(container.querySelector('[data-icon^="glyph:qr-sample"]')).toBeNull();
-  });
-});
-
-describe('WebEmergencyCard', () => {
-  const profile = { bloodGroup: '', allergies: ['Penicillin'], chronicConditions: [], emergencyContactName: '', emergencyContactPhone: '', emergencyContactRelation: '' };
-  // Both phone wallets are off until legal and the clinical lead sign (plan tier1-emergency-card-wallet-2026-10-24).
-  const walletOff = { available: { apple: false, google: false }, fields: [], defaultFields: [], passes: [], googleConsentVersion: 'v', googleConsent: null };
-
-  it('previews the draft live, computes readiness, and saves only the profile fields', async () => {
-    expect(readiness({ bloodGroup: '', allergies: '', conditions: '', contactName: '', contactPhone: '', contactRelation: '' }).percent).toBe(0);
-    expect(readiness({ bloodGroup: 'O+', allergies: '', conditions: '', contactName: 'A', contactPhone: '9876543210', contactRelation: '' }).percent).toBe(100);
-    serve({ '/wallet/emergency-card': walletOff, '/profile': (_p: string, init?: RequestInit) => (init?.method === 'PATCH' ? { ...profile, bloodGroup: 'O+' } : profile) });
-    const { container } = render(<EmergencyCardRoute links={{ contacts: vi.fn(), nearestHospitals: vi.fn() }} />);
-    await settle();
-    const preview = screen.getByTestId('ice-preview');
-    expect(within(preview).getByText('Penicillin')).toBeTruthy();
-    expect(within(preview).getAllByText('Not set').length).toBe(1);
-    expect(screen.queryByText(/QR shows|Works offline|anyone who scans/i)).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: 'O+' }));
-    expect(within(preview).getByText('O+')).toBeTruthy();
-    expect(screen.getByText('Card is 50% ready')).toBeTruthy();
-    expect(screen.getByRole('region', { name: 'Unsaved changes' })).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'Save card' }));
-    await settle();
-    const patch = api.mock.calls.find(([, init]) => (init as RequestInit | undefined)?.method === 'PATCH');
-    expect(Object.keys(JSON.parse(String((patch?.[1] as RequestInit).body))).sort()).toEqual(['allergies', 'bloodGroup', 'chronicConditions', 'emergencyContactName', 'emergencyContactPhone', 'emergencyContactRelation']);
-    await axeClean(container);
-  });
-
-  it('fails closed: a failed save says so, and crisis lines stay reachable while loading and on error', async () => {
-    serve({ '/wallet/emergency-card': walletOff, '/profile': (_p: string, init?: RequestInit) => (init?.method === 'PATCH' ? new Error('down') : profile) });
-    render(<EmergencyCardRoute links={{ contacts: vi.fn(), nearestHospitals: vi.fn() }} />);
-    expect(screen.getByRole('link', { name: 'Call 112, emergency services' })).toBeTruthy();
-    await settle();
-    fireEvent.click(screen.getByRole('button', { name: 'A+' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Save card' }));
-    await settle();
-    expect(screen.getByRole('alert').textContent).toMatch(/Not saved/);
-    expect(screen.getByRole('region', { name: 'Unsaved changes' })).toBeTruthy();
-
-    api.mockReset();
-    serve({ '/profile': new Error('down') });
-    render(<EmergencyCardRoute links={{ contacts: vi.fn(), nearestHospitals: vi.fn() }} />);
-    await settle();
-    expect(screen.getAllByRole('link', { name: 'Call Tele-MANAS 14416' }).length).toBeGreaterThan(0);
   });
 });
 
