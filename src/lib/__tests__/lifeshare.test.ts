@@ -22,7 +22,7 @@ function codeOf(path: string): string {
     .replace(/(^|[^:])\/\/.*$/gm, '$1');
 }
 
-const SCREEN = codeOf('src/screens/emergency/LifeShareExchangeScreen.tsx');
+const SCREEN = codeOf('src/features/care/views/LifeShareExchangeScreen.tsx');
 const DATASET = codeOf('src/data/datasets/lifeshareData.ts');
 const STORE = codeOf('src/features/care/store/LifeShareStore.tsx');
 // The screen's copy now lives in the member catalogue; check both.

@@ -1,12 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('../platform/CheckoutStoragePort', () => ({
+vi.mock('../../platform/CheckoutStoragePort', () => ({
   CheckoutStoragePort: { getCachedCart: async () => [], setCachedCart: async () => undefined, clearCachedCart: async () => undefined },
 }));
 
-import { CheckoutStore, toRequestedSlot } from '../state/CheckoutStore';
-import { CheckoutRepository } from '../data/CheckoutRepository';
-import type { CartLineItem } from '../domain/Checkout';
+import { CheckoutStore, toRequestedSlot } from '../../state/CheckoutStore';
+import { CheckoutRepository } from '../../data/CheckoutRepository';
+import type { CartLineItem } from '../../domain/Checkout';
 
 type Requester = typeof import('@/data/services/http').apiRequest;
 const line = (over: Partial<CartLineItem> = {}): CartLineItem => ({

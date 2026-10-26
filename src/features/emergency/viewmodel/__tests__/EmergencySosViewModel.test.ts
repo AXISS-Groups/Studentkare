@@ -1,10 +1,10 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { translate } from '@/i18n';
 import type { MessageKey } from '@/i18n';
-import { emergencyStore } from '../state/EmergencyStore';
-import { emergencyRepository } from '../data/EmergencyRepository';
-import { anyoneReached } from '../domain/Emergency';
-import type { SosAlert } from '../domain/Emergency';
+import { emergencyStore } from '../../state/EmergencyStore';
+import { emergencyRepository } from '../../data/EmergencyRepository';
+import { anyoneReached } from '../../domain/Emergency';
+import type { SosAlert } from '../../domain/Emergency';
 
 const alert = (over: Partial<SosAlert> = {}): SosAlert => ({
   id: 'a1', status: 'ACTIVE', campus: 'IIT Hyderabad', locationNote: null, createdAt: 1, acknowledgedAt: null,

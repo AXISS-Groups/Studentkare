@@ -9,7 +9,7 @@ import { M2ActiveProvider } from '@/design-system/m2';
 import { color, font, fontWeight, radius, space } from '@/design-system/theme';
 import { useApiResource } from '@/hooks/api/useApiResource';
 import { useT } from '@/i18n';
-import { useCheckoutViewModel } from '@/modules/m16-checkout';
+import { useCheckoutViewModel } from '@/features/shopPhone/viewmodel/useCheckoutViewModel';
 import { InsightsViewModel } from '@/features/insights/viewmodel/InsightsViewModel';
 import { M2InsightsView } from '@/features/insights/views/M2InsightsView';
 import { ProfileViewModel } from '@/features/m2profile/viewmodel/ProfileViewModel';

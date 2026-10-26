@@ -37,9 +37,9 @@ import {
 } from './AuthScreens';
 import { HealthVaultRoute } from '@/features/vault/views/HealthVaultNativeView';
 import { nativePhoneArt } from './phoneArt';
-import { EmergencySosNativeView } from '@/modules/m04-emergency/view/EmergencySosNativeView';
+import { EmergencySosNativeView } from '@/features/emergency/views/EmergencySosNativeView';
 import { DigitalIdRoute as DigitalIdScreen } from '@/features/digital_id/views/DigitalIdNativeView';
-import { CartCheckoutNativeView } from '@/modules/m16-checkout/view/CartCheckoutNativeView';
+import { CartCheckoutNativeView } from '@/features/shopPhone/views/CartCheckoutNativeView';
 import { AppointmentBookingNativeView } from '@/features/appointments/views/AppointmentBookingNativeView';
 import { AppointmentBookingViewModel } from '@/features/appointments/viewmodel/AppointmentBookingViewModel';
 import { ShopRoute } from '@/features/marketplace/views/ShopNativeView';

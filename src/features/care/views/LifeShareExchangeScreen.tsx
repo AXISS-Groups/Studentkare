@@ -1,11 +1,11 @@
 import { observer } from 'mobx-react-lite';
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
-import { useTheme } from '../../theme/tokens/theme';
-import { useLifeShareStore } from '../../store/AppStores';
-import { Card } from '../../components/Card';
+import { useTheme } from '@/theme/tokens/theme';
+import { useLifeShareStore } from '@/store/AppStores';
+import { Card } from '@/components/Card';
 import { AlertTriangle, Droplet, PhoneCall } from 'lucide-react';
-import { BLOOD_COMPATIBILITY_MAP } from '../../data/datasets/lifeshareData';
+import { BLOOD_COMPATIBILITY_MAP } from '@/data/datasets/lifeshareData';
 import { useT } from '@/i18n';
 
 const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'] as const;
