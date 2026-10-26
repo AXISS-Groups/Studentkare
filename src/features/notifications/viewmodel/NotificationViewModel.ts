@@ -4,7 +4,7 @@ import { apiRequest } from '@/data/services/http';
 import type { ViewModel } from '@/core/store/ViewModel';
 import { CrossPlatformStorage } from '@/core/storage/CrossPlatformStorage';
 
-export type NotificationCategory = 'EMERGENCY' | 'MEDICATION' | 'APPOINTMENT' | 'SYSTEM';
+type NotificationCategory = 'EMERGENCY' | 'MEDICATION' | 'APPOINTMENT' | 'SYSTEM';
 
 export interface NotificationItem {
   id: string;

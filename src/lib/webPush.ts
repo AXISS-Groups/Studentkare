@@ -30,7 +30,7 @@ function writeId(id: string): void {
   }
 }
 
-export function webPushSupported(): boolean {
+function webPushSupported(): boolean {
   return typeof window !== 'undefined' && 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
 }
 

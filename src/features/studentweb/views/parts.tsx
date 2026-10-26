@@ -126,7 +126,7 @@ export function TrustBand() {
 }
 
 /** A row that opens another page: icon, title, meta, chevron. */
-export function LinkRow({ icon, title, meta, tone = 'default', onPress }: { icon: SkIconName; title: string; meta: string; tone?: 'default' | 'danger'; onPress: () => void }) {
+function LinkRow({ icon, title, meta, tone = 'default', onPress }: { icon: SkIconName; title: string; meta: string; tone?: 'default' | 'danger'; onPress: () => void }) {
   return (
     <button type="button" className={`sk-sw-linkrow${tone === 'danger' ? ' is-danger' : ''}`} onClick={onPress}>
       <span className="sk-sw-linkrow__icon" aria-hidden="true"><Icon name={icon} size={18} /></span>

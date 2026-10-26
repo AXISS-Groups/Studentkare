@@ -4,7 +4,7 @@ export const PARTNER_CATEGORIES = ['Laboratory', 'Pharmacy', 'Clinic', 'Campus',
 export type PartnerCategory = (typeof PARTNER_CATEGORIES)[number];
 
 /** The body POST /billing/inquiries accepts (backend/services/billing.py, InquiryInput). */
-export interface EnquiryBody {
+interface EnquiryBody {
   organization: string;
   contactName: string;
   email: string;

@@ -22,7 +22,7 @@ export type ReviewsTab = 'awaiting' | 'reviewed' | 'unread';
 const blankDraft = (): ReviewDraft => ({ decision: 'APPROVED', summary: '', questions: '', nextSteps: '', sources: [{ title: '', url: '' }] });
 
 /** "3F2A9C1B" — enough of the document id to tell two reports apart. */
-export const shortRef = (id: string): string => id.replace(/-/g, '').slice(0, 8).toUpperCase();
+const shortRef = (id: string): string => id.replace(/-/g, '').slice(0, 8).toUpperCase();
 
 /**
  * ReportReviews (design page 5). Tier 1, approved by Krishna Chintakayala on

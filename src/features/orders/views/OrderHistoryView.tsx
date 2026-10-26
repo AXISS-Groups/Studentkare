@@ -20,7 +20,7 @@ import type { OrderKind, OrderState, OrdersTab, OrdersViewModel } from '../viewm
 
 type Pressed = { pressed: boolean; focused?: boolean };
 
-export const KIND_ICON: Record<OrderKind, { icon: SkIconName; tone: Tone }> = {
+const KIND_ICON: Record<OrderKind, { icon: SkIconName; tone: Tone }> = {
   product: { icon: 'shopping-bag', tone: 'action' },
   lab: { icon: 'flask-2', tone: 'positive' },
   consultation: { icon: 'doctor-2', tone: 'action' },

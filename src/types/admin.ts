@@ -1,15 +1,15 @@
 import { RuleId } from '../ai/core/constitution';
 
-export type BreakGlassReason =
+type BreakGlassReason =
   | 'SAFETY_ESCALATION'
   | 'DPDP_DATA_PRINCIPAL_REQUEST'
   | 'LEGAL_ORDER'
   | 'INCIDENT_INVESTIGATION'
   | 'STUDENT_SUPPORT_TICKET';
 
-export type SensitiveCategory = 'MENTAL_HEALTH' | 'REPRODUCTIVE' | 'HIV' | 'NONE';
+type SensitiveCategory = 'MENTAL_HEALTH' | 'REPRODUCTIVE' | 'HIV' | 'NONE';
 
-export interface BreakGlassSession {
+interface BreakGlassSession {
   id: string;
   studentId: string;
   requestedByAdminId: string;
@@ -27,7 +27,7 @@ export interface BreakGlassSession {
   auditEntryId: string;
 }
 
-export interface AuditEntry {
+interface AuditEntry {
   id: string;
   timestamp: string;
   actorId: string;

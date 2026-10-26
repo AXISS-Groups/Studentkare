@@ -21,15 +21,15 @@ export function splitList(text: string): string[] {
   return text.split(',').map((v) => v.trim()).filter(Boolean);
 }
 
-export function blankCategory(hue: ServiceHue = 'indigo', icon: SkIconName = 'file-text'): CategoryInput {
+function blankCategory(hue: ServiceHue = 'indigo', icon: SkIconName = 'file-text'): CategoryInput {
   return { name: '', hue, icon, clinical: false, crisisLines: false, hashtags: [], keywords: [], topics: [] };
 }
 
-export function blankSeries(hue: ServiceHue = 'teal'): SeriesInput {
+function blankSeries(hue: ServiceHue = 'teal'): SeriesInput {
   return { name: '', summary: '', categoryId: '', template: 'SERIES_EPISODE', hue, library: [] };
 }
 
-export function blankLine(): LibraryEntry {
+function blankLine(): LibraryEntry {
   return { kind: 'own', text: '', cite: '', sourceUrl: '', publicDomain: false };
 }
 

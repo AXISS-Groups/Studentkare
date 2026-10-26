@@ -14,7 +14,7 @@ const isTube = (pack: string) => /tube|lotion|cream|gel/i.test(pack);
 const isBottle = (pack: string) => /bottle|vial|syrup|capsule|softgel|tablet/i.test(pack);
 
 /** WebShop and search cards. */
-export function shopArt(item: Art): SkIconName {
+function shopArt(item: Art): SkIconName {
   if (item.kind === 'lab' || item.kind === 'consultation') return 'file-text-2';
   if (item.kind === 'vaccine') return 'pipette';
   if (isJar(item.pack)) return 'jar';
@@ -31,7 +31,7 @@ export function reorderArt(item: Pick<LiveCatalogItem, 'pack' | 'category'> | un
 }
 
 /** WebProduct hero and WebCheckout cart thumbnails. */
-export function productArt(item: Art): SkIconName {
+function productArt(item: Art): SkIconName {
   if (item.category === 'ayurveda' || item.category === 'nutrition' || item.category === 'vitamins') return 'leaf-3';
   if (item.category === 'skin' || isTube(item.pack)) return 'droplet-2';
   if (isBottle(item.pack)) return 'leaf-2';
@@ -39,6 +39,6 @@ export function productArt(item: Art): SkIconName {
 }
 
 /** Checkout thumbnails use the lighter line set of the WebCheckout board. */
-export function checkoutArt(item: Art): SkIconName {
+function checkoutArt(item: Art): SkIconName {
   return item.category === 'skin' || isTube(item.pack) ? 'droplet-2' : 'leaf-2';
 }

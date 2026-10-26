@@ -14,7 +14,7 @@ import './ayush.css';
  * Pages the widget is never drawn on (D9-6): the crisis and SOS pages, the
  * emergency card, checkout and sign-in — and Ayush's own page.
  */
-export const AYUSH_WIDGET_HIDDEN: ReadonlySet<RoutePath> = new Set<RoutePath>([
+const AYUSH_WIDGET_HIDDEN: ReadonlySet<RoutePath> = new Set<RoutePath>([
   'sos', 'emergency-card', 'checkout', 'login', 'signup', 'welcome', 'ayush', 'medical-incident',
 ]);
 

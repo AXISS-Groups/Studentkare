@@ -20,7 +20,7 @@ export type StepSource = 'HEALTHKIT' | 'HEALTH_CONNECT' | 'PHONE_MOTION' | 'MANU
 /** Most trusted first. Equal to the server's SOURCE_PRIORITY. */
 export const STEP_SOURCE_PRIORITY: readonly StepSource[] = ['HEALTHKIT', 'HEALTH_CONNECT', 'PHONE_MOTION', 'MANUAL'];
 
-export const PROVIDER_SOURCE: Readonly<Record<StepProvider, StepSource>> = {
+const PROVIDER_SOURCE: Readonly<Record<StepProvider, StepSource>> = {
   healthkit: 'HEALTHKIT',
   health_connect: 'HEALTH_CONNECT',
   phone_motion: 'PHONE_MOTION',

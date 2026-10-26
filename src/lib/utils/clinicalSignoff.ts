@@ -7,7 +7,7 @@
  * 2. Unsigned artifacts throw a fatal error blocking application startup in production (`APP_ENV=production`).
  */
 
-export interface ClinicalArtifactMetadata {
+interface ClinicalArtifactMetadata {
   artifactId: string;
   description: string;
   version?: string;
@@ -15,7 +15,7 @@ export interface ClinicalArtifactMetadata {
   signedDate?: string;
 }
 
-export const REGISTERED_CLINICAL_ARTIFACTS: ClinicalArtifactMetadata[] = [
+const REGISTERED_CLINICAL_ARTIFACTS: ClinicalArtifactMetadata[] = [
   {
     artifactId: 'RED_FLAG_LIST_V1',
     description: 'Red-flag symptom detection rules',

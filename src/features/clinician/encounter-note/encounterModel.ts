@@ -33,7 +33,7 @@ export interface EncounterData {
   appointments: CareAppointment[];
 }
 
-export type SignOutcome = 'signed' | 'already-signed';
+type SignOutcome = 'signed' | 'already-signed';
 
 export interface EncounterSource {
   load(): Promise<EncounterData | null>;

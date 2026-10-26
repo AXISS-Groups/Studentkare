@@ -8,7 +8,7 @@ import type { AgeBand, AgeEntry, MedicineDetail, RelatedMedicine } from '../data
  * picked stays on this device: the answer is filtered here from the reviewed label
  * entries the server already returned. Never a dose, frequency or mg/kg.
  */
-export const AGE_BANDS: readonly AgeBand[] = ['UNDER_2', 'CHILD', 'TEEN', 'ADULT', 'OLDER_ADULT', 'PREGNANT_BREASTFEEDING'];
+const AGE_BANDS: readonly AgeBand[] = ['UNDER_2', 'CHILD', 'TEEN', 'ADULT', 'OLDER_ADULT', 'PREGNANT_BREASTFEEDING'];
 
 export interface BandOption {
   band: AgeBand;

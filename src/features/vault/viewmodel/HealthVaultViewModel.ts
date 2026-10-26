@@ -33,7 +33,7 @@ export const vaultKindOf = (category: string): VaultCategory => ((VAULT_CATEGORI
 /** POST /records/shares accepts 1–90 days (ShareInput); the form says so before the server does. */
 export const SHARE_DAYS = { min: 1, max: 90, initial: 7 } as const;
 /** One page of the vault: the server caps a page at 100 documents. */
-export const VAULT_PAGE = 100;
+const VAULT_PAGE = 100;
 
 /** Why a revoke did not fully happen: the clinicians the server still lists for the document. */
 export interface RevokeOutcome { documentId: string; stillShared: string[] }

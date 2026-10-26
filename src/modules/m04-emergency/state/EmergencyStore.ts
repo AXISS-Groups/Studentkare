@@ -10,7 +10,7 @@ import { emergencyRepository } from '../data/EmergencyRepository';
  * 112. (The previous store invented an ambulance, a driver, an ETA, a "GPS
  * verified" location and three emergency contacts.)
  */
-export class EmergencyStore {
+class EmergencyStore {
   status: EmergencyStatus = 'IDLE';
   countdownSeconds = 3;
   locationNote = '';

@@ -21,7 +21,7 @@ export const APPEARANCE_PATH = '/profile/appearance';
 const TO_THEME: Record<AccountAppearance, ThemePreference> = { SYSTEM: 'system', DARK: 'dark', LIGHT: 'light' };
 const TO_ACCOUNT: Record<ThemePreference, AccountAppearance> = { system: 'SYSTEM', dark: 'DARK', light: 'LIGHT' };
 
-export function toThemePreference(value: AccountAppearance): ThemePreference {
+function toThemePreference(value: AccountAppearance): ThemePreference {
   return TO_THEME[value];
 }
 

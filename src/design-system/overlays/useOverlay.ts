@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import type { RefObject } from 'react';
 
 /** Everything a keyboard user can land on inside an overlay. */
-export const FOCUSABLE =
+const FOCUSABLE =
   'a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 /**

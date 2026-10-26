@@ -13,7 +13,7 @@
  */
 import type { AdvisorContent, ContentKind } from './types';
 
-export const CONTENT: AdvisorContent[] = [
+const CONTENT: AdvisorContent[] = [
   {
     id: 'act-001',
     kind: 'ACTIVITY',

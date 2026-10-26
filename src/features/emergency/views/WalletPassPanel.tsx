@@ -27,7 +27,7 @@ const FIELD_DETAIL: Partial<Record<WalletField, MessageKey>> = {
 };
 
 /** A server time (seconds) as "24 Oct, 4:05 pm" in the reader's language. */
-export function walletTime(seconds: number, lang: Lang): string {
+function walletTime(seconds: number, lang: Lang): string {
   return new Date(seconds * 1000).toLocaleString(`${lang}-IN`, { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });
 }
 

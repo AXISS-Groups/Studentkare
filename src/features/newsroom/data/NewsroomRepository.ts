@@ -22,7 +22,7 @@ export type PostBlock =
   | { type: 'mythfact'; myth: string; fact: string }
   | { type: 'stat'; value: string; label: string };
 
-export type BlockOf<T extends BlockType> = Extract<PostBlock, { type: T }>;
+type BlockOf<T extends BlockType> = Extract<PostBlock, { type: T }>;
 
 export interface PostTeaser {
   id: string;
@@ -60,9 +60,9 @@ export interface PostTeaser {
 }
 
 export interface PostCategoryRef { id: string; name: string; hue: ServiceHue; icon: SkIconName; crisisLines: boolean }
-export interface PostSeriesRef { slug: string; name: string; hue: ServiceHue; episode: number }
+interface PostSeriesRef { slug: string; name: string; hue: ServiceHue; episode: number }
 
-export interface PostSource { name: string; url: string; publishedAt: string | null }
+interface PostSource { name: string; url: string; publishedAt: string | null }
 
 export interface PostDetail extends PostTeaser {
   body: PostBlock[];
@@ -110,7 +110,7 @@ export interface PostInput {
 }
 
 /** One sentence the precision gate checked, and why it failed (empty when it passed). */
-export interface PrecisionSentence { text: string; ok: boolean; reasons: string[] }
+interface PrecisionSentence { text: string; ok: boolean; reasons: string[] }
 export interface PrecisionReport { score: number; threshold: number; passed: boolean; sentences: PrecisionSentence[]; source: string[] }
 
 export interface AdminPost extends Omit<PostInput, 'body'> {
@@ -154,7 +154,7 @@ export interface AdminFilters {
   queue?: 'review' | null;
 }
 
-export interface HistoryEntry {
+interface HistoryEntry {
   id: string;
   action: string;
   actorRole: string;

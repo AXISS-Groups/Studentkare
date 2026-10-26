@@ -24,7 +24,7 @@ const rupees = (paise: number) => `₹${(paise / 100).toLocaleString('en-IN', { 
 const clock = (seconds: number) => new Date(seconds * 1000).toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit' });
 
 /** POST /support limits (SupportInput): subject 3–160, message 10–2000. */
-export const SUPPORT_LIMITS = { subjectMin: 3, subjectMax: 160, messageMin: 10, messageMax: 2000 } as const;
+const SUPPORT_LIMITS = { subjectMin: 3, subjectMax: 160, messageMin: 10, messageMax: 2000 } as const;
 
 type Topic = 'RETURN' | 'HOSTEL_VISIT' | 'REFILL' | 'OTHER';
 const TOPICS: ReadonlyArray<{ id: Topic; label: MessageKey; route?: RoutePath }> = [

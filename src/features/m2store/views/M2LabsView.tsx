@@ -29,7 +29,7 @@ import type { LabsPhase } from '../data/useLabPackages';
  * carry no audience) and "Book again" (it would list the student's own tests).
  * "Call to book" is not available until an order line is configured.
  */
-export interface M2LabsLinks {
+interface M2LabsLinks {
   back: () => void;
   /** My reports (the vault). */
   reports: () => void;

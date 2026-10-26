@@ -7,7 +7,7 @@ import type { PostTemplate } from './templates';
  * third-party script, pixel or SDK is loaded, and nothing about the reader is sent.
  * The server's share kit (backend services/newsroom_content.py) builds the same.
  */
-export const SHARE_ENDPOINTS = {
+const SHARE_ENDPOINTS = {
   linkedin: 'https://www.linkedin.com/sharing/share-offsite/',
   whatsapp: 'https://wa.me/',
   x: 'https://x.com/intent/post',
@@ -105,6 +105,6 @@ export function postJsonLd(post: PostDetail, origin: string, publisher: string):
   };
 }
 
-export function teaserKey(post: PostTeaser): string {
+function teaserKey(post: PostTeaser): string {
   return `${post.section}/${post.slug}`;
 }

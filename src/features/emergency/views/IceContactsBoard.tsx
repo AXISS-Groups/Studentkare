@@ -19,7 +19,7 @@ export interface IceContactsLinks {
  * a WhatsApp message with the student's name, the time and the location they typed.
  * Messages carry no health data, so the clinical rows are "never".
  */
-export const WHAT_THEY_SEE: readonly { label: MessageKey; shared: boolean }[] = [
+const WHAT_THEY_SEE: readonly { label: MessageKey; shared: boolean }[] = [
   { label: 'sf.ice.see.nameTime', shared: true },
   { label: 'sf.ice.see.location', shared: true },
   { label: 'sf.ice.see.blood', shared: false },

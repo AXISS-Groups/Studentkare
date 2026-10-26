@@ -1,7 +1,7 @@
 import type { AccountRole } from '@/data/types/workflowTypes';
 
 /** Route guard: true grants access for the given role (or anonymous). */
-export type AccessCheck = (role: AccountRole | null) => boolean;
+type AccessCheck = (role: AccountRole | null) => boolean;
 
 /** A route declaration registered by a feature module. */
 export interface FeatureRoute {
@@ -34,7 +34,7 @@ export interface FeatureModule {
   providers?: React.ComponentType<{ children?: React.ReactNode }>[];
 }
 
-export const registry: FeatureModule[] = [];
+const registry: FeatureModule[] = [];
 
 export function registerModule(module: FeatureModule): void {
   if (registry.some((existing) => existing.id === module.id)) return;
@@ -45,7 +45,7 @@ export function getModules(): FeatureModule[] {
   return registry;
 }
 
-export function getModuleById(id: string): FeatureModule | undefined {
+function getModuleById(id: string): FeatureModule | undefined {
   return registry.find((module) => module.id === id);
 }
 

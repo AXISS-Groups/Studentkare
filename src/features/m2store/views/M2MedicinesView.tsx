@@ -31,7 +31,7 @@ import { GenericsCompare } from './GenericsCompare';
  * window estimate exists); "Lower prices this week" is the catalogue's own
  * first shelf, filtered to what sells below MRP (no "deals" selection exists).
  */
-export type Phase = 'idle' | 'loading' | 'ready' | 'error';
+type Phase = 'idle' | 'loading' | 'ready' | 'error';
 
 export interface M2MedicinesLinks {
   back: () => void;

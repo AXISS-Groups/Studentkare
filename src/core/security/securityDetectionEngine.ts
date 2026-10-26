@@ -6,7 +6,7 @@
 
 import { AuditRecord, AuditLogger } from '../audit/auditLogger';
 
-export type AlertSeverity = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+type AlertSeverity = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
 
 export interface DetectionAlert {
   alertId: string;

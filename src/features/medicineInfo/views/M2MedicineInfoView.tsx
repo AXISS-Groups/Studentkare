@@ -59,7 +59,7 @@ const FORMS: Readonly<Record<string, MessageKey>> = {
   POWDER: 'mi.form.POWDER',
 };
 
-export function formLabel(t: ReturnType<typeof useT>, form: string): string {
+function formLabel(t: ReturnType<typeof useT>, form: string): string {
   const key = FORMS[form];
   return key ? t(key) : form;
 }

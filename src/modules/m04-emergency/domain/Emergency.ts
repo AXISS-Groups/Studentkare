@@ -13,7 +13,7 @@ export type EmergencyStatus = 'IDLE' | 'COUNTDOWN' | 'SENDING' | 'OPEN' | 'FAILE
 
 export type SosAlertStatus = 'ACTIVE' | 'ACKNOWLEDGED' | 'RESOLVED' | 'CANCELLED';
 export type SosRecipientKind = 'CAMPUS_CONSOLE' | 'CAMPUS_SECURITY' | 'EMERGENCY_CONTACT';
-export type SosDeliveryStatus = 'SENT' | 'FAILED' | 'SKIPPED';
+type SosDeliveryStatus = 'SENT' | 'FAILED' | 'SKIPPED';
 
 export interface SosDelivery {
   recipientKind: SosRecipientKind;

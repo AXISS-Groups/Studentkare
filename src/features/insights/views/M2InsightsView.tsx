@@ -79,7 +79,7 @@ const STATE_WORDS: Record<LabValue['rangeState'], MessageKey> = {
   ABOVE: 'm2.ins.above', BELOW: 'm2.ins.below', IN_RANGE: 'm2.ins.inside', NO_RANGE: 'm2.ins.noRangeShort',
 };
 
-export function valueText(v: LabValue): string {
+function valueText(v: LabValue): string {
   return v.valueNumeric !== null ? `${v.valueNumeric}${v.unit ? ` ${v.unit}` : ''}` : v.valueText;
 }
 

@@ -1,7 +1,7 @@
 import { assertRule } from '../core/constitution';
 import { DepartmentAction } from '../departments/types';
 
-export interface ApprovalQueueEntry {
+interface ApprovalQueueEntry {
   id: string;
   action: DepartmentAction;
   status: 'PENDING' | 'APPROVED' | 'REJECTED';
@@ -11,7 +11,7 @@ export interface ApprovalQueueEntry {
   rejectionReason?: string;
 }
 
-export class UnifiedApprovalQueue {
+class UnifiedApprovalQueue {
   private queue: ApprovalQueueEntry[] = [];
 
   constructor() {

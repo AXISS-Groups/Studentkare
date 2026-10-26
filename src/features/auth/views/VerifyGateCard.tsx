@@ -40,7 +40,7 @@ const ALWAYS: readonly { key: keyof AlwaysOpenLinks; label: MessageKey }[] = [
  * first and outside any loading or error state, so crisis help, SOS, the
  * emergency card and help are reachable even when /identity is slow or fails.
  */
-export const VerifyGateCard = observer(function VerifyGateCard({ viewModel: vm, links, wide = false }: { viewModel: IdentityVerifyViewModel; links: VerifyGateLinks; wide?: boolean }) {
+const VerifyGateCard = observer(function VerifyGateCard({ viewModel: vm, links, wide = false }: { viewModel: IdentityVerifyViewModel; links: VerifyGateLinks; wide?: boolean }) {
   const t = useT();
   const share = vm.availableCount > 0 ? vm.verifiedCount / vm.availableCount : 0;
   const always = ALWAYS.filter((item) => links.always[item.key]);

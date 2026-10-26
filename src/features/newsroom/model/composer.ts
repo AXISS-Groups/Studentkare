@@ -9,7 +9,7 @@ import type { PostBlock, PostInput } from '../data/NewsroomRepository';
 
 const WORD = /[\p{L}\p{N}]+(?:['’-][\p{L}\p{N}]+)*/gu;
 /** Link labels that say nothing out of context (WCAG 2.4.4). A definition list, compared case-insensitively. */
-export const VAGUE_LINK_LABELS: readonly string[] = ['click here', 'here', 'read more', 'more', 'link', 'this'];
+const VAGUE_LINK_LABELS: readonly string[] = ['click here', 'here', 'read more', 'more', 'link', 'this'];
 const ALT_MIN = 3;
 
 function blockText(block: PostBlock): string {

@@ -15,7 +15,7 @@ import { apiRequest } from '@/data/services/http';
 /** Order-line states (workflow_api.update_request transitions; CANCELLED is set by the student, POST /orders/{id}/cancel). */
 export type RequestStatus = 'REQUESTED' | 'ACCEPTED' | 'DECLINED' | 'DISPATCHED' | 'COMPLETED' | 'CANCELLED';
 
-export interface PartnerDelivery {
+interface PartnerDelivery {
   mode?: 'delivery' | 'pickup';
   address?: string;
   city?: string;
@@ -51,7 +51,7 @@ export interface Page<T> {
   offset: number;
 }
 
-export function requestsPath(options: { status?: QueueFilter; limit?: number; offset?: number } = {}): string {
+function requestsPath(options: { status?: QueueFilter; limit?: number; offset?: number } = {}): string {
   const params = new URLSearchParams();
   params.set('limit', String(options.limit ?? 20));
   params.set('offset', String(options.offset ?? 0));
@@ -84,8 +84,8 @@ export async function countRxReviews(signal?: AbortSignal): Promise<number> {
 
 /* ------------------------------------------------------------------ returns */
 
-export type ReturnStatus = 'REQUESTED' | 'APPROVED' | 'DECLINED' | 'PICKED_UP' | 'CANCELLED';
-export type ReturnReason = 'WRONG_ITEM' | 'DAMAGED' | 'NOT_NEEDED' | 'OTHER';
+type ReturnStatus = 'REQUESTED' | 'APPROVED' | 'DECLINED' | 'PICKED_UP' | 'CANCELLED';
+type ReturnReason = 'WRONG_ITEM' | 'DAMAGED' | 'NOT_NEEDED' | 'OTHER';
 
 /** One row of `GET /work/returns` (the student's name is returned but not shown). */
 export interface PartnerReturn {

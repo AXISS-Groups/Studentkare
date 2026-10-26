@@ -9,7 +9,7 @@ export interface SpecialistAgentResult {
   timestamp: string;
 }
 
-export class SpecialistAgentsMesh {
+class SpecialistAgentsMesh {
   public runOutbreakPredictor(hostelName: string, pyrexiaCount: number): SpecialistAgentResult {
     assertRule('Rule-A'); // Educational symptom triage rule
     const r0Estimate = (pyrexiaCount * 0.08).toFixed(2);

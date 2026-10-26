@@ -61,7 +61,7 @@ const REVIEWS_READ = 20;
 /** The same page the Report insights page reads, so "All reports (n)" counts what that page lists (parity plan §3). */
 const ORDERS_READ = 50;
 
-export function nextConsult(items: readonly Appointment[], now = Date.now()): Appointment | null {
+function nextConsult(items: readonly Appointment[], now = Date.now()): Appointment | null {
   return items
     .filter((a) => UPCOMING.has(a.status) && (toDate(a.slotStart)?.getTime() ?? 0) > now)
     .sort((a, b) => (toDate(a.slotStart)?.getTime() ?? 0) - (toDate(b.slotStart)?.getTime() ?? 0))[0] ?? null;

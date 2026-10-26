@@ -32,6 +32,6 @@ export const OPERATIONAL_AI_DEPARTMENTS: Record<DepartmentId, DepartmentAgent> =
   D9: d9ClinicalGovernanceAgent,
 };
 
-export function getDepartmentAgent(id: DepartmentId): DepartmentAgent | undefined {
+function getDepartmentAgent(id: DepartmentId): DepartmentAgent | undefined {
   return OPERATIONAL_AI_DEPARTMENTS[id];
 }

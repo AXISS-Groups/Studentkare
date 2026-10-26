@@ -11,7 +11,7 @@ import type { Tone } from './phoneParts';
  */
 
 /** Categories as the catalogue stores them (CatalogEntry.category), with the canvas icon for each. */
-export const CATEGORY_ICONS: Readonly<Record<string, SkIconName>> = {
+const CATEGORY_ICONS: Readonly<Record<string, SkIconName>> = {
   vitamins: 'pill-2',
   medicines: 'pill-2',
   skin: 'droplet-2',

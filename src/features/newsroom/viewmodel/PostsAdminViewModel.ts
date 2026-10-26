@@ -30,16 +30,16 @@ export type Notice = 'saved' | 'created' | 'published' | 'scheduled' | 'unpublis
 export type Origin = 'AUTO' | 'MANUAL';
 export type PreviewMode = 'desktop' | 'phone' | 'linkedin';
 /** How long the composer waits after the title stops changing before it looks for a similar post. */
-export const SIMILAR_DEBOUNCE_MS = 600;
+const SIMILAR_DEBOUNCE_MS = 600;
 
-export const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 /** A web address from a title: lowercase Latin letters and numbers joined by single hyphens. */
 export function slugify(title: string): string {
   return title.normalize('NFKD').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 80).replace(/-+$/, '');
 }
 
-export function blankBlock(type: BlockType): PostBlock {
+function blankBlock(type: BlockType): PostBlock {
   switch (type) {
     case 'heading': return { type, text: '' };
     case 'paragraph': return { type, text: '' };
@@ -54,7 +54,7 @@ export function blankBlock(type: BlockType): PostBlock {
   }
 }
 
-export function blankDraft(template: PostTemplate = 'HEALTH_TIP'): PostInput {
+function blankDraft(template: PostTemplate = 'HEALTH_TIP'): PostInput {
   const first = TEMPLATES[template].blocks.includes('paragraph') ? 'paragraph' : TEMPLATES[template].blocks[0] ?? 'paragraph';
   return { template, slug: '', title: '', summary: '', body: [blankBlock(first)], tags: [], coverAlt: '', coverArt: TEMPLATES[template].art[0] ?? '',
     seoTitle: '', seoDescription: '', featured: false, authorId: '', categoryId: '', seriesId: '' };

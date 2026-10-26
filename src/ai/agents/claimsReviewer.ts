@@ -19,7 +19,7 @@ export interface DecisionPackageSummary {
   ruleConstitutionStatement: string;
 }
 
-export function isValidProvenance(prov: Provenance | undefined): boolean {
+function isValidProvenance(prov: Provenance | undefined): boolean {
   if (!prov) return false;
   return (
     typeof prov.documentId === 'string' &&

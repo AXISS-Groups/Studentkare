@@ -13,7 +13,7 @@ import { apiRequest } from '@/data/services/http';
  * Nothing here is kept on the device (WP-07 D7-1).
  */
 
-export type RefillSource = 'ORDER' | 'PLAN';
+type RefillSource = 'ORDER' | 'PLAN';
 
 export interface Refill {
   id: string;
@@ -58,9 +58,9 @@ export interface RxStatus { validCount: number; latestValidUntil: number | null 
 /** One past order's product line the student can start a refill from (from GET /orders). */
 export interface OrderedItem { orderId: string; itemId: string; name: string; quantity: number; orderedAt: number }
 
-export interface Delivery { mode: 'delivery' | 'pickup'; address: string; city: string; pincode: string }
+interface Delivery { mode: 'delivery' | 'pickup'; address: string; city: string; pincode: string }
 
-export type QuoteState = 'OK' | 'PRESCRIPTION' | 'OUT_OF_STOCK' | 'LOW_STOCK' | 'UNAVAILABLE';
+type QuoteState = 'OK' | 'PRESCRIPTION' | 'OUT_OF_STOCK' | 'LOW_STOCK' | 'UNAVAILABLE';
 
 export interface QuoteLine {
   itemId: string;
@@ -77,7 +77,7 @@ export interface QuoteLine {
 
 export interface ReorderQuote { orderId: string; quotedAt: number; delivery: Delivery; lines: QuoteLine[]; totalPaise: number; ready: boolean }
 
-export interface PlacedOrder { id: string; totalPaise: number }
+interface PlacedOrder { id: string; totalPaise: number }
 
 interface OrdersPage { items: { id: string; createdAt: number; paymentStatus: string; lines: { itemId: string; name: string; kind: string; quantity: number; status: string }[] }[] }
 

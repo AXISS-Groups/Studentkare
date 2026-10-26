@@ -10,8 +10,8 @@ import type { MessageKey } from '@/i18n';
 
 export type CampService = 'GENERAL_SCREENING' | 'EYE_CHECK' | 'DENTAL_CHECK' | 'BLOOD_DONATION' | 'VACCINATION';
 export type CampEligibility = 'CAMPUS_VERIFIED' | 'CAMPUS_ANY' | 'OPEN';
-export type CampStatus = 'PUBLISHED' | 'PENDING_APPROVAL' | 'DECLINED' | 'CANCELLED';
-export type BookingStatus = 'BOOKED' | 'WAITLISTED' | 'CANCELLED' | 'REGISTERED';
+type CampStatus = 'PUBLISHED' | 'PENDING_APPROVAL' | 'DECLINED' | 'CANCELLED';
+type BookingStatus = 'BOOKED' | 'WAITLISTED' | 'CANCELLED' | 'REGISTERED';
 export type Ineligible = 'NOT_STUDENT' | 'OTHER_CAMPUS' | 'NOT_VERIFIED';
 
 export interface CampBase {

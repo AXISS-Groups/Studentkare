@@ -8,7 +8,7 @@ import { color, focusRing, font, fontWeight, radius, size, space } from '@/desig
 import type { CheckState, IdentityCheck, IdentityCheckId } from '../viewmodel/IdentityVerifyViewModel';
 
 /** Row icons from the briefs (VerifyIdentity, VerifyGate): user-2, mail, id-card, shield. */
-export const CHECK_ICON: Record<IdentityCheckId, SkIconName> = {
+const CHECK_ICON: Record<IdentityCheckId, SkIconName> = {
   photo: 'user-2', email: 'mail', campus: 'id-card', gov: 'shield',
 };
 
@@ -17,7 +17,7 @@ export const CHECK_TITLE: Record<IdentityCheckId, MessageKey> = {
 };
 
 /** The line under a row's title. Campus wording follows the server's status; the rest are not available. */
-export function checkMeta(check: IdentityCheck): MessageKey {
+function checkMeta(check: IdentityCheck): MessageKey {
   switch (check.state) {
     case 'verified': return 'ident.meta.verified';
     case 'review': return 'ident.meta.review';

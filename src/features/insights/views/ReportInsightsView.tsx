@@ -14,7 +14,7 @@ import type { StudentLabTest } from '@/features/studentweb/views/t1/WebMyLabTest
 import { pickReport, releasedReports } from '../viewmodel/releasedReports';
 import { fullDateFromEpoch } from '@/features/labResults/viewmodel/trendScreenModels';
 
-export type ReportInsightsTab = 'summary' | 'history';
+type ReportInsightsTab = 'summary' | 'history';
 
 export interface ReportInsightsLinks {
   /** Back to My health (the card this page details). */

@@ -14,7 +14,7 @@ import type { RootStackParamList } from './App';
  *
  * Keep the web paths in step with LINK_PATH_PREFIXES in app.config.ts.
  */
-export const LINK_PREFIXES = ['studentkare://', 'https://studentkare.co', 'https://www.studentkare.co'];
+const LINK_PREFIXES = ['studentkare://', 'https://studentkare.co', 'https://www.studentkare.co'];
 
 type RouteName = keyof RootStackParamList;
 export type DeepLinkTarget = { [K in RouteName]: { name: K; params?: RootStackParamList[K] } }[RouteName];
