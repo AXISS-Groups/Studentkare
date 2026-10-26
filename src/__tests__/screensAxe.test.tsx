@@ -3,7 +3,7 @@ import { cleanup, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { axeViolations, describeViolations } from '@/test/axe';
 
-vi.mock('@/modules/m16-checkout/platform/CheckoutStoragePort', () => ({
+vi.mock('@/features/shopPhone/platform/CheckoutStoragePort', () => ({
   CheckoutStoragePort: { getCachedCart: async () => [], setCachedCart: async () => undefined, clearCachedCart: async () => undefined },
 }));
 

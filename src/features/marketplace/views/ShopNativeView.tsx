@@ -4,7 +4,7 @@ import { observer } from 'mobx-react-lite';
 import { Button, Card, EmptyState, ErrorState, Eyebrow, RadioGroup, Skeleton, TextField } from '@/design-system';
 import { color, font, fontWeight, space } from '@/design-system/theme';
 import { money } from '@/data/types/workflowTypes';
-import { useCheckoutViewModel } from '@/modules/m16-checkout';
+import { useCheckoutViewModel } from '@/features/shopPhone/viewmodel/useCheckoutViewModel';
 import { ShopViewModel } from '../viewmodel/ShopViewModel';
 import type { CatalogItem, ShopKind } from '../viewmodel/ShopViewModel';
 import { LabBookingRoute } from '@/features/labBooking/views/LabBookingFlow';
