@@ -127,7 +127,6 @@
     "NewDevice": [],
     "HomeDiscover": [
       "src/features/discover/views/HomeDiscoverView.tsx",
-      "src/features/discover/views/HomeDiscoverRoute.tsx",
       "src/features/phoneKit/phoneParts.tsx",
       "src/features/phoneKit/studentPhoneBoards.tsx",
       "src/screens/workspace/StudentPhoneFrame.tsx",
@@ -247,23 +246,7 @@
     "CrisisSupport": [
       "src/features/crisis/views/CrisisSupportBoard.tsx"
     ],
-    "ShopHome": [
-      "src/features/shopPhone/views/ShopHomeView.tsx",
-      "src/features/shopPhone/views/shopParts.tsx",
-      "src/features/shopPhone/views/ShopFlow.tsx",
-      "src/features/shopPhone/views/ShopPhoneRoute.tsx",
-      "src/features/shopPhone/viewmodel/PhoneShopViewModel.ts",
-      "src/features/phoneKit/phoneParts.tsx",
-      "src/features/phoneKit/catalogArt.ts",
-      "src/features/phoneKit/phoneArt.ts"
-    ],
     "ProductList": [],
-    "ProductDetail": [
-      "src/features/shopPhone/views/ProductDetailView.tsx",
-      "src/features/shopPhone/viewmodel/PhoneShopViewModel.ts",
-      "src/features/phoneKit/phoneParts.tsx",
-      "src/features/phoneKit/catalogArt.ts"
-    ],
     "LabPackages": [
       "src/features/labBooking/views/LabPackagesView.tsx",
       "src/features/labBooking/views/LabBookingFlow.tsx",
@@ -296,14 +279,12 @@
     ],
     "OrderTracking": [
       "src/features/orders/views/OrderTrackingView.tsx",
-      "src/features/orders/views/OrdersPhoneRoute.tsx",
       "src/features/orders/viewmodel/OrdersViewModel.ts",
       "src/features/phoneKit/phoneParts.tsx",
       "src/native/PhoneBoardsScreens.tsx"
     ],
     "OrderHistory": [
       "src/features/orders/views/OrderHistoryView.tsx",
-      "src/features/orders/views/OrdersPhoneRoute.tsx",
       "src/features/orders/viewmodel/OrdersViewModel.ts",
       "src/features/phoneKit/OfflineBoard.tsx",
       "src/features/phoneKit/phoneParts.tsx",
@@ -350,7 +331,7 @@
       "src/design-system/m2/M2Tier1.tsx"
     ],
     "SosBeacon": [
-      "src/modules/m04-emergency/view/SosView.tsx",
+      "src/features/emergency/views/SosView.tsx",
       "src/features/emergency/screens/SosRouteScreen.tsx"
     ],
     "DataExport": [
@@ -436,7 +417,7 @@
       "src/design-system/m2/Gradient.tsx"
     ],
     "SosDebrief": [
-      "src/modules/m04-emergency/view/SosView.tsx",
+      "src/features/emergency/views/SosView.tsx",
       "src/features/emergency/screens/SosRouteScreen.tsx"
     ],
     "MyRequests": [
@@ -606,18 +587,6 @@
       "src/design-system/public-site/PublicSiteFooter.tsx",
       "src/design-system/public-site/publicSiteNav.ts",
       "src/design-system/public-site/NewsletterBand.tsx"
-    ],
-    "WebEmergencyCard": [
-      "src/features/studentweb/views/t1/WebEmergencyCardView.tsx",
-      "src/features/emergency/viewmodel/EmergencyCardViewModel.ts",
-      "src/features/emergency/views/WalletPassPanel.tsx",
-      "src/features/emergency/viewmodel/WalletPassViewModel.ts",
-      "src/design-system/student-shell/StudentWebShell.tsx",
-      "src/design-system/student-shell/studentNav.ts",
-      "src/design-system/overlays/ConfirmDialog.tsx",
-      "src/features/studentweb/views/parts.tsx",
-      "src/features/studentweb/views/t1/shared.tsx",
-      "src/features/studentweb/views/t1/t1web.css"
     ],
     "WebSearchResults": [
       "src/features/studentweb/views/shop/WebShopView.tsx",
@@ -2163,7 +2132,7 @@
         "M2Insights",
         "M2ReportUpload"
       ],
-      "source": "design/screens/mobile-2-supersedes.md §1 (M2Insights replaces MyReports, ReportInsights)",
+      "source": "design/screens/mobile-2-supersedes.md \u00a71 (M2Insights replaces MyReports, ReportInsights)",
       "redirects": {}
     },
     "ReportInsights": {
@@ -2171,7 +2140,7 @@
         "M2Insights",
         "M2Trends"
       ],
-      "source": "design/screens/mobile-2-supersedes.md §1 (M2Insights replaces MyReports, ReportInsights)",
+      "source": "design/screens/mobile-2-supersedes.md \u00a71 (M2Insights replaces MyReports, ReportInsights)",
       "redirects": {}
     },
     "WebHome": {
@@ -2196,7 +2165,7 @@
       "by": [
         "RecordsVault"
       ],
-      "source": "docs/plans/tier1-parity-2026-10-24.md §6 (Q2: one Health vault view at both widths; design boards T1Vault, T1VaultDesktop, T1VaultEmpty approved 24 Oct 2026)",
+      "source": "docs/plans/tier1-parity-2026-10-24.md \u00a76 (Q2: one Health vault view at both widths; design boards T1Vault, T1VaultDesktop, T1VaultEmpty approved 24 Oct 2026)",
       "redirects": {
         "/prescriptions": "/records?tab=prescriptions"
       }
@@ -2205,61 +2174,74 @@
       "by": [
         "M2Insights"
       ],
-      "source": "docs/plans/tier1-parity-2026-10-24.md §3 (Q2/Q3: a \"Reviewed lab reports\" card on My health; /report-insights is its detail page, design boards T1ReportInsights, T1ReportInsightsDesktop approved 24 Oct 2026)",
+      "source": "docs/plans/tier1-parity-2026-10-24.md \u00a73 (Q2/Q3: a \"Reviewed lab reports\" card on My health; /report-insights is its detail page, design boards T1ReportInsights, T1ReportInsightsDesktop approved 24 Oct 2026)",
       "redirects": {}
     },
     "WebConsultSummary": {
       "by": [
         "ConsultSummary"
       ],
-      "source": "docs/plans/tier1-parity-2026-10-24.md §8 (Q2: one Visit summaries view, laid out wide; design boards T1VisitSummaries, T1VisitSummariesDesktop approved 24 Oct 2026)",
+      "source": "docs/plans/tier1-parity-2026-10-24.md \u00a78 (Q2: one Visit summaries view, laid out wide; design boards T1VisitSummaries, T1VisitSummariesDesktop approved 24 Oct 2026)",
       "redirects": {}
     },
     "WebPass": {
       "by": [
         "MyPass"
       ],
-      "source": "docs/plans/tier1-parity-2026-10-24.md §22 (Q2: one check-in pass view, laid out wide; design boards T1Pass, T1PassDesktop, T1PassStale approved 24 Oct 2026)",
+      "source": "docs/plans/tier1-parity-2026-10-24.md \u00a722 (Q2: one check-in pass view, laid out wide; design boards T1Pass, T1PassDesktop, T1PassStale approved 24 Oct 2026)",
       "redirects": {}
     },
     "WebAyush": {
       "by": [
         "M2AskAyush"
       ],
-      "source": "docs/plans/tier1-parity-2026-10-24.md §9 (Q2: one Ask Ayush view; the side column is its desktop column)",
+      "source": "docs/plans/tier1-parity-2026-10-24.md \u00a79 (Q2: one Ask Ayush view; the side column is its desktop column)",
       "redirects": {}
     },
     "WebAccount": {
       "by": [
         "M2Profile"
       ],
-      "source": "docs/plans/tier1-parity-2026-10-24.md §11 (Q2: M2Profile wide with an Account details card replaces the Account page at /profile)",
+      "source": "docs/plans/tier1-parity-2026-10-24.md \u00a711 (Q2: M2Profile wide with an Account details card replaces the Account page at /profile)",
       "redirects": {}
     },
     "WebDeleteAccount": {
       "by": [
         "DeleteAccount"
       ],
-      "source": "docs/plans/tier1-parity-2026-10-24.md §19 (Q1, Q2: one Delete account view laid out wide)",
+      "source": "docs/plans/tier1-parity-2026-10-24.md \u00a719 (Q1, Q2: one Delete account view laid out wide)",
       "redirects": {}
     },
     "WebEmergencyCard": {
       "by": [
         "EmergencyCard"
       ],
-      "source": "docs/plans/tier1-parity-2026-10-24.md §21 (Q1, Q2: one Emergency card view, editor beside the live card on desktop)",
+      "source": "docs/plans/tier1-parity-2026-10-24.md \u00a721 (Q1, Q2: one Emergency card view, editor beside the live card on desktop)",
       "redirects": {}
     },
     "WebLeaveCampus": {
       "by": [
         "LeaveCampus"
       ],
-      "source": "docs/plans/tier1-parity-2026-10-24.md §20 (Q1, Q2: one Leave campus view laid out wide)",
+      "source": "docs/plans/tier1-parity-2026-10-24.md \u00a720 (Q1, Q2: one Leave campus view laid out wide)",
       "redirects": {}
+    },
+    "ProductDetail": {
+      "by": [
+        "M2Product"
+      ],
+      "source": "design/screens/mobile-2-supersedes.md (M2Product replaces ProductDetail)"
+    },
+    "ShopHome": {
+      "by": [
+        "M2Home",
+        "M2Medicines"
+      ],
+      "source": "design/screens/mobile-2-supersedes.md (M2Home and M2Medicines replace ShopHome)"
     }
   },
   "retiredIcons": {
-    "_readme": "Icons a recorded decision took off a screen; check-icons does not require them there. Each entry names the decision's source. Shell de-duplication (founder, 23 Oct 2026): the sidebar's Your Care (map-pin, now Home with the phone's home icon), My lab tests (flask, now a tab of Orders), Ayush AI (sparkle, Ayush is the floating bubble) and Account (user, the account is the avatar and the account header); the phone header's menu button (menu, More opens from Profile, Settings). Report insights left the sidebar (bar-chart): it is a card on My health and /report-insights its detail page (docs/plans/tier1-parity-2026-10-24.md §3, Q3; the deferral is recorded in the parity doc).",
+    "_readme": "Icons a recorded decision took off a screen; check-icons does not require them there. Each entry names the decision's source. Shell de-duplication (founder, 23 Oct 2026): the sidebar's Your Care (map-pin, now Home with the phone's home icon), My lab tests (flask, now a tab of Orders), Ayush AI (sparkle, Ayush is the floating bubble) and Account (user, the account is the avatar and the account header); the phone header's menu button (menu, More opens from Profile, Settings). Report insights left the sidebar (bar-chart): it is a card on My health and /report-insights its detail page (docs/plans/tier1-parity-2026-10-24.md \u00a73, Q3; the deferral is recorded in the parity doc).",
     "SearchEntry": {
       "icons": [
         "menu"
@@ -2363,13 +2345,13 @@
       "icons": [
         "check"
       ],
-      "source": "docs/plans/tier1-parity-2026-10-24.md §6: the Tier 1 vault boards approved 24 Oct 2026 carry no tick; the page-2 board’s ✓ marked lines the one view does not draw"
+      "source": "docs/plans/tier1-parity-2026-10-24.md \u00a76: the Tier 1 vault boards approved 24 Oct 2026 carry no tick; the page-2 board\u2019s \u2713 marked lines the one view does not draw"
     },
     "ConsultSummary": {
       "icons": [
         "star-filled"
       ],
-      "source": "docs/plans/tier1-parity-2026-10-24.md §8: the board’s star rating has no data behind it and is not drawn (D7-9; nothing the server does not have)"
+      "source": "docs/plans/tier1-parity-2026-10-24.md \u00a78: the board\u2019s star rating has no data behind it and is not drawn (D7-9; nothing the server does not have)"
     }
   }
 }

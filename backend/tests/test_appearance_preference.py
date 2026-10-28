@@ -7,7 +7,7 @@ from sqlalchemy.exc import IntegrityError
 
 from core import rule_l
 from core import workflow_models as M
-from tests.test_workflow_api import harness, login, register  # noqa: F401  (fixture)
+from test_workflow_api import harness, login, register  # noqa: F401  (fixture)
 
 
 def test_never_chosen_is_null_not_system(harness):

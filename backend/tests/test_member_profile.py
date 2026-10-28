@@ -5,7 +5,7 @@ from datetime import date, datetime, timezone
 import pytest
 
 from core import workflow_models as M
-from tests.test_workflow_api import harness, login, register
+from test_workflow_api import harness, login, register
 
 
 def add_staff(factory, role="CAMPUS_ADMIN"):
