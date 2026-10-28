@@ -9,7 +9,7 @@ const CareDirectoryRoute = lazy(() => import('@/features/careDirectory/views/Car
 const DigitalIdPage = lazy(() => import('@/screens/workspace/PhoneBoards').then((m) => ({ default: m.DigitalIdPage })));
 const HealthVaultRoute = lazy(() => import('@/features/vault/views/HealthVaultRoute').then((m) => ({ default: m.HealthVaultRoute })));
 const IdentityVerifyView = lazy(() => import('@/features/auth/views/IdentityVerifyView').then((m) => ({ default: m.IdentityVerifyView })));
-const LeaveCampusRoute = lazy(() => import('@/features/campus/views/LeaveCampusView').then((m) => ({ default: m.LeaveCampusRoute })));
+export const LeaveCampusRoute = lazy(() => import('@/features/campus/views/LeaveCampusView').then((m) => ({ default: m.LeaveCampusRoute })));
 const M2AskAyushRoute = lazy(() => import('@/features/chat/views/M2AskAyushRoute').then((m) => ({ default: m.M2AskAyushRoute })));
 const M2CampsRoute = lazy(() => import('@/features/camp/views/M2CampsRoute').then((m) => ({ default: m.M2CampsRoute })));
 const M2ConsultsRoute = lazy(() => import('@/features/m2store/views/M2ConsultsRoute').then((m) => ({ default: m.M2ConsultsRoute })));

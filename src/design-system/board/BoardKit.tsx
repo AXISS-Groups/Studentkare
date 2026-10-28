@@ -29,7 +29,7 @@ const TONE: Record<BoardTone, { bg: string; ink: string }> = {
   neutral: { bg: color.neutralBg, ink: color.text2 },
 };
 
-function toneColors(tone: BoardTone): { bg: string; ink: string } {
+export function toneColors(tone: BoardTone): { bg: string; ink: string } {
   return TONE[tone];
 }
 

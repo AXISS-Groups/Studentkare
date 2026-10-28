@@ -47,7 +47,7 @@ const HEALTH_ROUTES: ReadonlySet<string> = new Set([
   // keep-sorted end
 ]);
 
-function isStudentTabRoute(route: string): route is StudentTabRoute {
+export function isStudentTabRoute(route: string): route is StudentTabRoute {
   return (Object.values(STUDENT_NAV) as string[]).includes(route);
 }
 
