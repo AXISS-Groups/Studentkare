@@ -12,6 +12,7 @@ import { LanguageProvider, translate } from '@/i18n';
 import { fakeRequest, listing } from '@/features/phoneKit/__tests__/fixtures';
 import { forgetListings } from '@/features/phoneKit/listingCache';
 import { axeViolations, describeViolations } from '@/test/axe';
+import { M2SosProvider } from '@/design-system/m2';
 import type { MemberProfile } from '@/data/types/workflowTypes';
 import { list, value } from '@/features/labResults/viewmodel/__tests__/labFixtures';
 import { ProfileViewModel, completeness, PROFILE_FIELDS } from '@/features/m2profile/viewmodel/ProfileViewModel';
@@ -35,6 +36,8 @@ const en = (key: Parameters<typeof translate>[1], vars?: Parameters<typeof trans
 /** A link called without a test, value or medicine in it (only the press event, if any). */
 const noData = (fn: unknown) => (fn as { mock: { calls: unknown[][] } }).mock.calls.flat().every((a) => typeof a !== 'string' && typeof a !== 'number');
 const wrap = (ui: React.ReactElement) => render(<LanguageProvider>{ui}</LanguageProvider>);
+/** SOS on Profile and Ask Ayush is the shell's (Tier 1 parity plan 2026-10-24 §1): the phone frame and the app provide it. */
+const withSos = (sos: () => void, ui: React.ReactElement) => wrap(<M2SosProvider value={sos}>{ui}</M2SosProvider>);
 
 beforeEach(() => { motionFlag.reduced = true; });
 afterEach(() => { cleanup(); vi.restoreAllMocks(); });
@@ -52,7 +55,7 @@ const later = (hours: number) => new Date(Date.now() + hours * HOUR).toISOString
 
 function profileLinks(): M2ProfileLinks {
   return {
-    sos: vi.fn(), settings: vi.fn(), account: vi.fn(), emergencyCard: vi.fn(), pass: vi.fn(), documents: vi.fn(), addDocument: vi.fn(),
+    settings: vi.fn(), account: vi.fn(), emergencyCard: vi.fn(), pass: vi.fn(), documents: vi.fn(), addDocument: vi.fn(),
     plus: vi.fn(), orders: vi.fn(), privacy: vi.fn(), help: vi.fn(), signOut: vi.fn(),
   };
 }
@@ -111,7 +114,8 @@ describe('M2Profile', () => {
     const vm = new ProfileViewModel(request);
     vm.load();
     const links = profileLinks();
-    wrap(<M2ProfileView vm={vm} links={links} />);
+    const sos = vi.fn();
+    withSos(sos, <M2ProfileView vm={vm} links={links} />);
     expect(await screen.findByText('Asha Rao')).toBeInTheDocument();
     expect(await screen.findByTestId('m2-prof-body-error')).toBeInTheDocument();
     // No plan list, no price: the Student Plus card is hidden, never a fallback price.
@@ -119,7 +123,7 @@ describe('M2Profile', () => {
     expect(screen.queryByTestId('m2-prof-plus')).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: en('m2.sosSpoken') }));
     fireEvent.click(screen.getByRole('link', { name: new RegExp(`^${en('m2.prof.emergency')}`) }));
-    expect(links.sos).toHaveBeenCalledTimes(1);
+    expect(sos).toHaveBeenCalledTimes(1);
     expect(links.emergencyCard).toHaveBeenCalledTimes(1);
   });
 });
@@ -128,7 +132,7 @@ describe('M2Profile', () => {
 
 function insightsLinks(): M2InsightsLinks {
   return {
-    sos: vi.fn(), trends: vi.fn(), records: vi.fn(), reportUpload: vi.fn(), medicines: vi.fn(), water: vi.fn(), refill: vi.fn(), collection: vi.fn(),
+    trends: vi.fn(), records: vi.fn(), reportUpload: vi.fn(), medicines: vi.fn(), water: vi.fn(), refill: vi.fn(), collection: vi.fn(),
     addVaccineCard: vi.fn(), appointments: vi.fn(),
   };
 }
@@ -278,14 +282,15 @@ describe('safety elements on the health screens', () => {
     const profile = new ProfileViewModel(request);
     profile.load();
     const sos = vi.fn();
-    const { unmount } = wrap(<M2InsightsView vm={insights} name="" links={{ ...insightsLinks(), sos }} />);
+    // SOS on My health is the shell's (parity plan 2026-10-24 §1): the phone frame and the app provide it.
+    const { unmount } = wrap(<M2SosProvider value={sos}><M2InsightsView vm={insights} name="" links={insightsLinks()} /></M2SosProvider>);
     await waitFor(() => expect(insights.values.phase).toBe('error'));
     const insightsSos = screen.getByRole('button', { name: en('m2.sosSpoken') });
     expect(insightsSos).toHaveAttribute('tabindex', '0');
     fireEvent.click(insightsSos);
     unmount();
     const links = profileLinks();
-    const second = wrap(<M2ProfileView vm={profile} links={links} />);
+    const second = withSos(sos, <M2ProfileView vm={profile} links={links} />);
     await waitFor(() => expect(profile.profile.phase).toBe('error'));
     expect(screen.getByRole('button', { name: en('m2.sosSpoken') })).toHaveAttribute('tabindex', '0');
     const card = screen.getByRole('link', { name: new RegExp(`^${en('m2.prof.emergency')}`) });
@@ -293,7 +298,7 @@ describe('safety elements on the health screens', () => {
     fireEvent.click(card);
     expect(links.emergencyCard).toHaveBeenCalled();
     second.unmount();
-    wrap(<M2AskAyushView vm={new AyushViewModel(request)} links={{ back: vi.fn(), sos }} />);
+    withSos(sos, <M2AskAyushView vm={new AyushViewModel(request)} links={{ back: vi.fn() }} />);
     expect(screen.getByRole('link', { name: en('m2.ask.callSpoken', { number: '14416' }) })).toHaveAttribute('tabindex', '0');
     expect(sos).toHaveBeenCalledTimes(1);
   });
@@ -305,15 +310,16 @@ describe('M2AskAyush', () => {
   it('runs in general mode: says it cannot read records, offers no record suggestions, and keeps the helpline one tap away', () => {
     const { request, calls } = fakeRequest({});
     const vm = new AyushViewModel(request);
-    const links = { back: vi.fn(), sos: vi.fn() };
-    wrap(<M2AskAyushView vm={vm} links={links} />);
+    const links = { back: vi.fn() };
+    const sos = vi.fn();
+    withSos(sos, <M2AskAyushView vm={vm} links={links} />);
     expect(screen.getByTestId('m2-ask-banner')).toHaveTextContent(en('m2.ask.noRecords'));
     expect(screen.queryByText(/lipid profile|What did my doctor write|Which tests are due/)).toBeNull();
     const call = screen.getByRole('link', { name: en('m2.ask.callSpoken', { number: '14416' }) });
     expect(call).toBeInTheDocument();
     expect(calls).toHaveLength(0);
     fireEvent.click(screen.getByRole('button', { name: en('m2.sosSpoken') }));
-    expect(links.sos).toHaveBeenCalled();
+    expect(sos).toHaveBeenCalled();
   });
 
   it('sends to the server agent, shows typing while it waits, and draws the server’s crisis card', async () => {
@@ -322,7 +328,7 @@ describe('M2AskAyush', () => {
       'POST /agents/ayush/ask': () => new Promise((resolve) => { release = resolve; }),
     });
     const vm = new AyushViewModel(request);
-    const { container } = wrap(<M2AskAyushView vm={vm} links={{ back: vi.fn(), sos: vi.fn() }} />);
+    const { container } = wrap(<M2AskAyushView vm={vm} links={{ back: vi.fn() }} />);
     fireEvent.change(screen.getByLabelText(en('m2.ask.inputLabel')), { target: { value: 'I feel unsafe' } });
     fireEvent.click(screen.getByRole('button', { name: en('m2.ask.send') }));
     expect(await screen.findByTestId('m2-ask-typing')).toBeInTheDocument();
@@ -341,7 +347,7 @@ describe('M2AskAyush', () => {
       'POST /agents/ayush/ask': { agent: 'ayush', outcome: 'REFUSED_PERSONAL', answer: 'I can’t read your health records.', citations: [], answered: false },
     });
     const vm = new AyushViewModel(request);
-    wrap(<M2AskAyushView vm={vm} links={{ back: vi.fn(), sos: vi.fn() }} />);
+    wrap(<M2AskAyushView vm={vm} links={{ back: vi.fn() }} />);
     fireEvent.click(screen.getByRole('button', { name: en('ayush.starter1') }));
     expect(await screen.findByText(en('ayush.refusal.REFUSED_PERSONAL'))).toBeInTheDocument();
   });
@@ -351,7 +357,7 @@ describe('M2AskAyush', () => {
       'POST /agents/ayush/ask': { agent: 'ayush', outcome: 'NO_SOURCE', answer: 'server text', citations: [], answered: false },
     });
     const vm = new AyushViewModel(request);
-    const links = { back: vi.fn(), sos: vi.fn(), help: vi.fn(), book: vi.fn() };
+    const links = { back: vi.fn(), help: vi.fn(), book: vi.fn() };
     const { container } = wrap(<M2AskAyushView vm={vm} links={links} />);
     fireEvent.click(screen.getByRole('button', { name: en('ayush.starter1') }));
     expect(await screen.findByText(en('assist.ayush.noSource.title'))).toBeInTheDocument();
@@ -367,7 +373,7 @@ describe('M2AskAyush', () => {
     const { request } = fakeRequest({
       'POST /agents/ayush/ask': { agent: 'ayush', outcome: 'NO_SOURCE', answer: 'server text', citations: [], answered: false },
     });
-    wrap(<M2AskAyushView vm={new AyushViewModel(request)} links={{ back: vi.fn(), sos: vi.fn(), book: vi.fn() }} />);
+    wrap(<M2AskAyushView vm={new AyushViewModel(request)} links={{ back: vi.fn(), book: vi.fn() }} />);
     fireEvent.click(screen.getByRole('button', { name: en('ayush.starter1') }));
     expect(await screen.findByRole('link', { name: en('assist.ayush.noSource.book') })).toBeInTheDocument();
     expect(screen.queryByRole('link', { name: en('assist.ayush.noSource.help') })).toBeNull();

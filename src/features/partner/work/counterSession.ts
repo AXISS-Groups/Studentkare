@@ -29,7 +29,7 @@ export interface CounterVerification {
   verifiedAt: number;
 }
 
-export interface CounterLogEntry {
+interface CounterLogEntry {
   id: string;
   name: string;
   at: number;

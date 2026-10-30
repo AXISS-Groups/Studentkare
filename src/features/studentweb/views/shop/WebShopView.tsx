@@ -2,11 +2,12 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
 import { Icon } from '@/design-system/icons';
-import { useOnline } from '@/design-system';
-import { ServiceRail } from '@/design-system/m2';
+import { Rise, useOnline } from '@/design-system';
+import { M2ProductCard, M2Responsive, ServiceRail } from '@/design-system/m2';
 import type { ServiceTile } from '@/design-system/m2';
 import { useSearchParams } from '@/core/navigation';
 import { useApiResource } from '@/hooks/api/useApiResource';
+import { discountPercent, money } from '@/data/types/workflowTypes';
 import type { LiveCatalogItem } from '@/data/types/workflowTypes';
 import { LabBookingOverlay } from '@/features/labBooking/views/LabBookingOverlay';
 import { rememberListing } from '@/features/phoneKit/listingCache';
@@ -15,8 +16,7 @@ import { navigate } from '@/lib/utils/workflowRouting';
 import { sortItems } from '../../data/studentWebData';
 import type { SortOrder } from '../../data/studentWebData';
 import { EmptyPanel, ErrorPanel, LoadingRows, OfflinePanel } from '../parts';
-import { ShopSearch, useAddToCart } from './shopShared';
-import { ProductCard } from './m2WebParts';
+import { ShopSearch, cannotAdd, itemArt, kindLabel, useAddToCart } from './shopShared';
 import { CartBar, CartRail, showCartRail } from './ShopCartRail';
 import { GenericsTable, WebShopFront } from './WebShopFront';
 import { SHOP_KINDS, ShopFilterPanel, ShopHelpRail, asShopKind } from './WebSearchResultsView';
@@ -25,6 +25,50 @@ import { WebProductView } from './WebProductView';
 
 /** Listings per page: fills three and four columns. */
 const PAGE_SIZE = 12;
+/** Cards rise in one after another up to this many steps, then together. */
+const RISE_STEPS = 6;
+/** A grid cell's card grows to the row's height, so the cards in a row line up. */
+const CELL = { flexGrow: 1 } as const;
+
+/**
+ * One catalogue listing: the shared Mobile 2.0 product card (M2Medicines'
+ * "Below MRP"), with the web's extra lines: the maker, availability, a note
+ * that the art is a drawing, and what kind of listing it is. Its one action is
+ * Add (products) or Book a slot (labs, consults, vaccines).
+ */
+function ShopCard({ item, inCart, onOpen, onAdd }: { item: LiveCatalogItem; inCart: boolean; onOpen: () => void; onAdd: () => void }) {
+  const t = useT();
+  const off = discountPercent(item.mrpPaise, item.pricePaise);
+  const availability = item.kind === 'product'
+    ? (item.stock > 0 ? t('shopweb.card.available', { count: item.stock }) : t('shop.outOfStock'))
+    : item.kind === 'vaccine' ? t('shopweb.card.eligibility') : t('shopweb.card.providerBooking');
+  let action: string;
+  if (item.kind === 'product') action = inCart ? t('shopweb.card.inCart') : t('shopweb.card.add');
+  else if (item.kind === 'lab') action = t('shopweb.card.bookSlot');
+  else action = inCart ? t('shopweb.card.inCart') : t('shopweb.card.bookSlot');
+  return (
+    <M2ProductCard
+      testID={`m2w-card-${item.id}`}
+      art={itemArt(item)}
+      artNote={t('shopweb.card.illustration')}
+      off={off > 0 ? t('m2.med.off', { percent: off }) : undefined}
+      eyebrow={item.brand}
+      name={item.name}
+      pack={item.pack}
+      notes={[
+        ...(item.requiresPrescription ? [{ text: t('shopweb.card.rxRequired'), tone: 'attention' as const }] : []),
+        { text: availability, tone: item.kind === 'product' ? 'meta' as const : 'positive' as const },
+      ]}
+      price={money(item.pricePaise)}
+      mrp={off > 0 ? money(item.mrpPaise) : undefined}
+      footnote={item.requiresPrescription ? t('m2.med.rxNeeded') : t(kindLabel(item.kind))}
+      onOpen={onOpen}
+      label={`${item.name}, ${item.pack}, ${money(item.pricePaise)}`}
+      // Starts with what it shows (label-in-name, WCAG 2.5.3), then which item.
+      action={{ label: action, spoken: `${action}, ${item.name}`, onPress: onAdd, disabled: cannotAdd(item), tone: item.kind === 'product' ? 'outline' : 'positive' }}
+    />
+  );
+}
 
 interface Filters { q: string; kind: ShopKind; category: string }
 type FilterPatch = Partial<Filters> & { product?: string | null };
@@ -143,7 +187,11 @@ function ShopBrowse({ signedIn, filters, onFilter, onOpen, onBookLab }: {
     body = (
       <ul className="sk-m2w-grid" aria-label={t('m2w.catalogue')}>
         {items.map((item, index) => (
-          <ProductCard key={item.id} item={item} index={index} inCart={inCart(item)} onOpen={() => onOpen(item)} onAdd={() => add(item)} />
+          <li key={item.id}>
+            <Rise index={Math.min(index, RISE_STEPS)} style={CELL}>
+              <ShopCard item={item} inCart={inCart(item)} onOpen={() => onOpen(item)} onAdd={() => add(item)} />
+            </Rise>
+          </li>
         ))}
       </ul>
     );
@@ -151,12 +199,19 @@ function ShopBrowse({ signedIn, filters, onFilter, onOpen, onBookLab }: {
 
   return (
     <div className="sk-sw-page sk-m2w" data-testid="m2w-shop">
-      <div className="sk-m2w-top sk-m2w-rise">
-        <ShopSearch initial={filters.q} onSearch={(next) => onFilter({ q: next })} />
-      </div>
-      <div className="sk-m2w-railwrap sk-m2w-rise">
-        <ServiceRail label={t('m2w.railLabel')} tiles={rail} current={filters.kind} testID="m2w-rail" />
-      </div>
+      {/* Signed in, the shell's top bar has the one search box (founder decision, 23 Oct 2026); a visitor's shop keeps its own. */}
+      {signedIn ? null : (
+        <Rise>
+          <div className="sk-m2w-top">
+            <ShopSearch initial={filters.q} onSearch={(next) => onFilter({ q: next })} />
+          </div>
+        </Rise>
+      )}
+      <Rise index={1}>
+        <M2Responsive>
+          <ServiceRail label={t('m2w.railLabel')} tiles={rail} current={filters.kind} testID="m2w-rail" />
+        </M2Responsive>
+      </Rise>
 
       {front ? <div className="sk-m2w-cq"><WebShopFront signedIn={signedIn} onFilter={applyFilter} /></div> : null}
 

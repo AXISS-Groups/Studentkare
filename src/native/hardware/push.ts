@@ -24,7 +24,7 @@ import type { MessageKey } from '@/i18n';
 type Translate = (key: MessageKey) => string;
 
 /** Android channel ids; keep in step with backend/core/push_copy.CATEGORIES android_channel. */
-export const ANDROID_CHANNELS = ['safety', 'reminders', 'orders', 'camps', 'announcements'] as const;
+const ANDROID_CHANNELS = ['safety', 'reminders', 'orders', 'camps', 'announcements'] as const;
 const CHANNEL_NAME: Record<(typeof ANDROID_CHANNELS)[number], MessageKey> = {
   safety: 'push.android.safety',
   reminders: 'push.android.reminders',
@@ -33,7 +33,7 @@ const CHANNEL_NAME: Record<(typeof ANDROID_CHANNELS)[number], MessageKey> = {
   announcements: 'push.android.announcements',
 };
 /** iOS category ids; keep in step with push_copy ios_category. */
-export const IOS_CATEGORIES = ['safety', 'reminder', 'update', 'announcement'] as const;
+const IOS_CATEGORIES = ['safety', 'reminder', 'update', 'announcement'] as const;
 
 let deviceId = '';
 let channelsReady = false;

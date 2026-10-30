@@ -10,8 +10,8 @@ import { M2StepsView } from './M2StepsView';
  * connected here: the screen shows the week from the server, says to open the
  * phone app to count steps automatically, and keeps typed entry.
  */
-export function M2StepsRoute(): React.ReactElement {
+export function M2StepsRoute({ wide = false }: { /** Laid out wide in the desktop web shell. */ wide?: boolean } = {}): React.ReactElement {
   const [vm] = useState(() => new StepsViewModel());
   useEffect(() => { vm.open(); return () => vm.dispose(); }, [vm]);
-  return <M2StepsView vm={vm} links={{ back: () => navigate(STUDENT_NAV_ROUTES.health) }} />;
+  return <M2StepsView vm={vm} wide={wide} links={{ back: () => navigate(STUDENT_NAV_ROUTES.health) }} />;
 }

@@ -9,7 +9,7 @@
  * 4. Resource Card Links: Tele-MANAS (14416 & 1-800-891-4416), 112 Emergency Services, Campus Counsellor.
  */
 
-export type CrisisGateStatus = 'crisis' | 'clear' | 'error';
+type CrisisGateStatus = 'crisis' | 'clear' | 'error';
 
 export type CrisisKind =
   | 'CRISIS_SELF_HARM'
@@ -35,7 +35,7 @@ export const EMERGENCY_NUMBER = '112';
 export const DEFAULT_CAMPUS_COUNSELLOR = '1800-599-0019';
 
 // TODO(clinical-review): Advisor-reviewed phrase list floor table (English, Hindi, Telugu, Hinglish)
-export const CRISIS_PHRASE_MAPPINGS: Array<{
+const CRISIS_PHRASE_MAPPINGS: Array<{
   pattern: RegExp;
   kind: 'CRISIS_SELF_HARM' | 'CRISIS_OVERDOSE' | 'CRISIS_MEDICAL';
   language: 'EN' | 'HI' | 'TE' | 'HINGLISH';

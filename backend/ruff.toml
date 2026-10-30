@@ -22,6 +22,14 @@ select = [
     "C",  # complexity and comprehension conventions
     "B",  # flake8-bugbear
     "S",  # flake8-bandit (security)
+    # A naive "today" or "now" is the runner's local day, not the student's
+    # (services/student_time.py; tests use tests/clock.py). Between 18:30 and
+    # 00:00 UTC the two differ, and tests that mixed them failed on CI only then.
+    "DTZ002",  # datetime.today()
+    "DTZ003",  # datetime.utcnow()
+    "DTZ005",  # datetime.now() without tz
+    "DTZ011",  # date.today()
+    "DTZ012",  # date.fromtimestamp()
     # AGENTS.md rule 11: nothing hard-coded. A number compared against in code is
     # a limit or threshold, and belongs in core/settings_registry.py (business
     # values) or a named constant at its definition. Ratchet: the files listed

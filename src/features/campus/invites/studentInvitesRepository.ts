@@ -1,7 +1,7 @@
 import { apiRequest } from '@/data/services/http';
 
 export type InviteChannel = 'EMAIL' | 'WHATSAPP';
-export type InviteStatus = 'PENDING' | 'CLAIMED' | 'EXPIRED';
+type InviteStatus = 'PENDING' | 'CLAIMED' | 'EXPIRED';
 
 /** One invite, as GET /campus/invites lists it. Never a token or a password. */
 export interface StudentInvite {
@@ -24,7 +24,7 @@ export interface StudentInvite {
 /** The one answer that carries the temporary password (create and resend). */
 export interface IssuedInvite extends StudentInvite { tempPassword: string }
 
-export interface InviteDraft {
+interface InviteDraft {
   fullName: string;
   rollNumber: string;
   email?: string;

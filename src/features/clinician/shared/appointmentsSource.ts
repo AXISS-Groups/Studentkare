@@ -8,7 +8,7 @@ import type { StaffAppointment } from '@/data/types/workflowTypes';
  * booking's state — nothing about what the student has shared, their age or
  * why they booked, so the screens never show those as if they knew.
  */
-export type BookingStatus = 'REQUESTED' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED' | 'NO_SHOW';
+type BookingStatus = 'REQUESTED' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED' | 'NO_SHOW';
 
 export interface Booking {
   id: string;
@@ -32,7 +32,7 @@ function parseDate(value: string): Date | null {
 }
 
 /** Drops anything the screens can't place honestly: no slot time, or a state they don't know. */
-export function toBookings(items: StaffAppointment[]): Booking[] {
+function toBookings(items: StaffAppointment[]): Booking[] {
   const bookings: Booking[] = [];
   for (const item of items) {
     const start = parseDate(item.slotStart);

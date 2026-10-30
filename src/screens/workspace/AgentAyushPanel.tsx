@@ -5,7 +5,7 @@ import { apiRequest } from '../../data/services/http';
 import { FormError, useMutation } from '../../components/interface/WorkflowUI';
 import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
-import { ayushCategoryLabel } from '@/features/ayush/useAyushConversation';
+import { ayushCategoryLabel } from '@/features/ayush/ayushCategory';
 import '../../theme/workflows.css';
 
 interface Citation {

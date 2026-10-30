@@ -1,9 +1,10 @@
 import React from 'react';
 import { Linking, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { Icon } from '@/design-system/icons';
+import { AnimatedIcon, Icon } from '@/design-system/icons';
+import type { SkAnimatedName } from '@/design-system/icons';
 import { Rise } from '@/design-system';
 import { cardLabel,
-  Gradient, HeroCarousel, LiftCard, M2Heading, M2SearchField, M2SectionHead, M2_NAV_CLEARANCE, NAVY_STOPS, ProgressRing, RoundButton, SERVICE_HUES,
+  Gradient, HeroCarousel, LiftCard, M2Grid, M2Heading, M2SearchField, M2WideColumn, M2SectionHead, M2_NAV_CLEARANCE, NAVY_STOPS, ProgressRing, RoundButton, SERVICE_HUES,
   ServiceRail, SoftIcon, SoftTileGrid, SosButton, heroStops, m2Text, useLift, useOwnPhoneChrome,
 } from '@/design-system/m2';
 import type { HeroSlide, PressState, ServiceTile } from '@/design-system/m2';
@@ -16,6 +17,7 @@ import { clockLabel, dayLabel } from '@/features/phoneboards/format';
 import { HOME_CONCERNS, productArt } from '../data/storeArt';
 import type { ShopFilter } from '../data/storeArt';
 import { orderLinePhone } from '../data/orderLine';
+import { packageMeta } from './M2LabsView';
 import type { M2HomeData } from '../data/useM2Home';
 
 /**
@@ -74,6 +76,13 @@ export interface M2HomeViewProps {
   footer?: React.ReactNode;
   /** "From the StudentKare blog": the latest reviewed health tips (features/newsroom M2BlogCard). Editorial, never about the student. */
   blog?: React.ReactNode;
+  /**
+   * Drawn in the desktop web shell (parity phase 2): the same board laid out wide (the rail in one row,
+   * two highlights, Today for you as one bento row, eight concerns a row, campus tiles in a row). The
+   * shell's top bar already has the bell, cart, SOS, account and the one search box, so the board's own
+   * copies are left out there.
+   */
+  wide?: boolean;
 }
 
 const NOON = 12;
@@ -93,7 +102,7 @@ export function initials(name: string): string {
   return `${first}${last}`.toUpperCase();
 }
 
-const SERVICES: readonly { key: ServiceKey; label: MessageKey; icon: ServiceTile['icon']; hue: ServiceTile['hue'] }[] = [
+const SERVICES: readonly { key: ServiceKey; label: MessageKey; icon: ServiceTile['icon']; hue: ServiceTile['hue']; anim?: SkAnimatedName }[] = [
   { key: 'you', label: 'm2.svc.you', icon: 'star', hue: 'indigo' },
   { key: 'medicines', label: 'm2.svc.medicines', icon: 'pill-3', hue: 'teal' },
   { key: 'labs', label: 'm2.svc.labs', icon: 'lab', hue: 'violet' },
@@ -102,13 +111,21 @@ const SERVICES: readonly { key: ServiceKey; label: MessageKey; icon: ServiceTile
   { key: 'nearMe', label: 'fc.svc.nearMe', icon: 'map-pin-2', hue: 'orange' },
   { key: 'vaccines', label: 'm2.svc.vaccines', icon: 'syringe', hue: 'amber' },
   { key: 'insurance', label: 'm2.svc.insurance', icon: 'shield', hue: 'green' },
-  { key: 'campus', label: 'm2.svc.campus', icon: 'home-2', hue: 'sky' },
+  // The campus tile's house is the animated set's anim-home (the pill nav's Home): it plays once as the rail comes into view.
+  { key: 'campus', label: 'm2.svc.campus', icon: 'home-2', hue: 'sky', anim: 'anim-home' },
 ];
 
-function TodayTile({ icon, hue, title, onPress, testID }: { icon: 'doc' | 'refresh'; hue: 'orange' | 'green'; title: string; onPress: () => void; testID: string }) {
+/** The same drawings from the animated set: a document for the report, the refresh arrows for buy again. */
+const TODAY_ANIM: Readonly<Record<'doc' | 'refresh', SkAnimatedName>> = { doc: 'anim-file-text', refresh: 'anim-refresh' };
+
+function TodayTile({ icon, hue, title, onPress, testID, fill = false }: { icon: 'doc' | 'refresh'; hue: 'orange' | 'green'; title: string; onPress: () => void; testID: string; fill?: boolean }) {
   return (
-    <LiftCard label={title} onPress={onPress} testID={testID} style={styles.todayTile}>
-      <SoftIcon icon={icon} hue={hue} tile={38} iconSize={20} />
+    <LiftCard label={title} onPress={onPress} testID={testID} fill={fill} style={styles.todayTile}>
+      {/* A raised 3D tile that draws its icon once as it comes into view (anim-refresh is a loader loop: once here). The still soft tile is the poster. */}
+      <View style={styles.todayArt}>
+        <AnimatedIcon name={TODAY_ANIM[icon]} variant="3d" hue={hue} size="mark" play="mount"
+          poster={<SoftIcon icon={icon} hue={hue} tile={38} iconSize={20} />} testID={`${testID}-anim`} />
+      </View>
       <Text style={m2Text.cardTitle}>{title}</Text>
     </LiftCard>
   );
@@ -141,14 +158,14 @@ function MedsCard({ data, onPress }: { data: M2HomeData['meds']; onPress: () => 
   );
 }
 
-function ConsultCard({ data, links }: { data: M2HomeData['consult']; links: M2HomeLinks }) {
+function ConsultCard({ data, links, wide = false }: { data: M2HomeData['consult']; links: M2HomeLinks; wide?: boolean }) {
   const t = useT();
   const next = data.next;
   const when = next ? t('m2.home.consultWhen', { day: dayLabel(next.slotStart, t), time: clockLabel(next.slotStart) }) : '';
   const status = next ? t(next.status === 'CONFIRMED' ? 'm2.home.consultConfirmed' : 'm2.home.consultRequested') : '';
   const label = next ? `${t('m2.home.nextConsult')}: ${when}. ${status}. ${t('m2.home.details')}` : `${t('m2.home.noConsult')}. ${t('m2.home.bookConsult')}`;
   return (
-    <LiftCard label={label} onPress={next ? links.consult : links.bookConsult} testID="m2-home-consult" style={styles.consult}>
+    <LiftCard label={label} onPress={next ? links.consult : links.bookConsult} testID="m2-home-consult" fill={wide} style={[styles.consult, wide ? styles.consultWide : null]}>
       <SoftIcon icon="stetho" hue="blue" tile={52} iconSize={24} />
       <View style={styles.grow}>
         <Text style={m2Text.eyebrow}>{t('m2.home.nextConsult')}</Text>
@@ -164,13 +181,13 @@ function ConsultCard({ data, links }: { data: M2HomeData['consult']; links: M2Ho
   );
 }
 
-function RecentCard({ item, onOpen, cart }: { item: LiveCatalogItem; onOpen: () => void; cart?: M2HomeViewProps['cart'] }) {
+function RecentCard({ item, onOpen, cart, wide = false }: { item: LiveCatalogItem; onOpen: () => void; cart?: M2HomeViewProps['cart']; wide?: boolean }) {
   const t = useT();
   const art = productArt(item);
   const hue = SERVICE_HUES[art.hue];
   const canAdd = cart ? cart.canAdd(item) : false;
   return (
-    <View style={styles.recent}>
+    <View style={wide ? styles.recentWide : styles.recent}>
       <LiftCard label={`${item.name}, ${item.pack}, ${money(item.pricePaise)}`} onPress={onOpen} testID={`m2-recent-${item.id}`} style={styles.recentOpen}>
         <View style={[styles.recentArt, { backgroundColor: hue.soft }]}><Icon name={art.icon} size={34} color={hue.ink} strokeWidth={1.8} /></View>
         <Text numberOfLines={2} style={m2Text.cardTitle}>{item.name}</Text>
@@ -187,135 +204,179 @@ function RecentCard({ item, onOpen, cart }: { item: LiveCatalogItem; onOpen: () 
   );
 }
 
-function CampusTile({ icon, hue, title, onPress, testID }: { icon: 'qr-code-2' | 'home-2' | 'calendar-2'; hue: 'indigo' | 'sky' | 'amber'; title: string; onPress: () => void; testID: string }) {
+function CampusTile({ icon, hue, title, onPress, testID, wide = false }: { icon: 'qr-code-2' | 'home-2' | 'calendar-2'; hue: 'indigo' | 'sky' | 'amber'; title: string; onPress: () => void; testID: string; wide?: boolean }) {
   return (
-    <LiftCard label={title} onPress={onPress} testID={testID} style={styles.campusTile}>
+    <LiftCard label={title} onPress={onPress} testID={testID} fill={wide} style={[styles.campusTile, wide ? styles.campusTileWide : null]}>
       <SoftIcon icon={icon} hue={hue} tile={38} iconSize={20} />
       <Text style={m2Text.cardTitle}>{title}</Text>
     </LiftCard>
   );
 }
 
-export function M2HomeView({ name, campus, verified, data, links, cart, recent, footer, blog }: M2HomeViewProps): React.ReactElement {
+export function M2HomeView({ name, campus, verified, data, links, cart, recent, footer, blog, wide = false }: M2HomeViewProps): React.ReactElement {
   const t = useT();
   useOwnPhoneChrome();
   const phone = orderLinePhone();
+  // Highlights from real data only: the lab package the catalogue lists, Generics when the programme is on, and the
+  // report upload (an action, not an offer). No promotional claim the platform cannot back (founder, 23 Oct 2026).
+  const lab = data.featuredLab ?? null;
   const slides: HeroSlide[] = [
-    { key: 'check', eyebrow: t('m2.home.s1.eyebrow'), title: t('m2.home.s1.title'), body: t('m2.home.s1.body'), cta: t('m2.home.s1.cta'), icon: 'lab', stops: NAVY_STOPS, chipFill: color.brandNavy, ink: color.onHeroCurrent, onPress: links.labs },
-    { key: 'generics', eyebrow: t('m2.home.s2.eyebrow'), title: t('m2.home.s2.title'), body: t('m2.home.s2.body'), cta: t('m2.home.s2.cta'), icon: 'plus-slash', stops: heroStops('green'), chipFill: SERVICE_HUES.green.end, ink: SERVICE_HUES.green.end, onPress: links.generics },
+    ...(lab ? [{ key: 'check', eyebrow: t('m2.labs.heroEyebrow'), title: lab.name, body: t('m2.labs.heroMeta', { meta: packageMeta(lab, t), hours: lab.reportHours }), cta: t('m2.labs.bookSlot'), icon: 'lab' as const, stops: NAVY_STOPS, chipFill: color.brandNavy, ink: color.onHeroCurrent, onPress: links.labs }] : []),
+    ...(data.genericsHighlight ? [{ key: 'generics', eyebrow: t('m2.home.s2.eyebrow'), title: t('m2.home.s2.title'), body: t('m2.home.s2.body'), cta: t('m2.home.s2.cta'), icon: 'plus-slash' as const, stops: heroStops('green'), chipFill: SERVICE_HUES.green.end, ink: SERVICE_HUES.green.end, onPress: links.generics }] : []),
     { key: 'report', eyebrow: t('m2.home.s3.eyebrow'), title: t('m2.home.s3.title'), body: t('m2.home.s3.body'), cta: t('m2.home.s3.cta'), icon: 'doc-upload', stops: heroStops('orange'), chipFill: SERVICE_HUES.orange.end, ink: SERVICE_HUES.orange.deep, onPress: links.uploadReport },
   ];
   const tiles: ServiceTile[] = SERVICES.flatMap((s) => {
     const open = s.key === 'you' ? () => undefined : links.services[s.key];
-    return open ? [{ key: s.key, label: t(s.label), icon: s.icon, hue: s.hue, onPress: open }] : [];
+    return open ? [{ key: s.key, label: t(s.label), icon: s.icon, hue: s.hue, anim: s.anim, onPress: open }] : [];
   });
   const buyAgain = data.buyAgainCount === null || data.buyAgainCount === 0 ? t('m2.home.buyAgain')
     : t(data.buyAgainCount === 1 ? 'm2.home.buyAgainOne' : 'm2.home.buyAgainCount', { count: data.buyAgainCount });
 
-  return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content} testID="m2-home">
-      <Gradient colors={[color.surface3, color.canvas]} radial={{ x: 0.5, y: 0.5 }} style={styles.glow} pointerEvents="none" />
+  // Wide, the shell's main column gives the gutter; on the phone each section has its own.
+  const gutter = wide ? undefined : styles.gutter;
+  const placeRow = (
+    <View style={[styles.placeRow, wide ? styles.placeRowWide : null]}>
+      <Pressable role="link" accessibilityRole="link" onPress={links.place} testID="m2-home-place"
+        accessibilityLabel={campus ? t('m2.home.placeSpoken', { place: campus }) : t('m2.home.noCampus')}
+        aria-label={campus ? t('m2.home.placeSpoken', { place: campus }) : t('m2.home.noCampus')}
+        style={({ focused }: PressState) => [styles.place, focused ? focusRing : null]}>
+        <Icon name="map-pin-2" size={16} color={color.action} strokeWidth={2.2} />
+        <Text numberOfLines={1} style={styles.placeText}>{campus || t('m2.home.noCampus')}</Text>
+        <Icon name="chevron-down" size={14} color={color.text} strokeWidth={2.4} />
+      </Pressable>
+      {campus && verified ? (
+        <View style={[styles.verified, wide ? styles.verifiedWide : null]}><View style={styles.dot} /><Text style={styles.verifiedText}>{t('m2.home.verified')}</Text></View>
+      ) : null}
+    </View>
+  );
+  const rxButton = (
+    <Pressable role="link" accessibilityRole="link" accessibilityLabel={t('m2.home.uploadRx')} aria-label={t('m2.home.uploadRx')} onPress={links.uploadRx}
+      testID="m2-home-rx" style={({ focused }: PressState) => [styles.rxPress, focused ? focusRing : null]}>
+      <Gradient colors={NAVY_STOPS} style={styles.rx}><Icon name="doc-upload" size={21} color={color.onHero} strokeWidth={2.2} /></Gradient>
+    </Pressable>
+  );
+  const emergency = (
+    <LiftCard key="emergency" label={`${t('m2.home.emergencyCard')}. ${t('m2.home.offlineReady')}`} onPress={links.emergencyCard} testID="m2-home-emergency" fill={wide}
+      style={[styles.campusTile, wide ? styles.campusTileWide : null, styles.emergency]}>
+      <View style={styles.emergencyTop}>
+        <Icon name="card-lines" size={22} color={color.onHeroPositive} />
+        <Text style={styles.offline}>{t('m2.home.offlineReady')}</Text>
+      </View>
+      <Text style={styles.emergencyTitle}>{t('m2.home.emergencyCard')}</Text>
+    </LiftCard>
+  );
+  const campusTiles = [
+    emergency,
+    <CampusTile key="pass" icon="qr-code-2" hue="indigo" title={t('m2.home.pass')} onPress={links.pass} testID="m2-home-pass" wide={wide} />,
+    <CampusTile key="hostel" icon="home-2" hue="sky" title={t('m2.home.hostel')} onPress={links.hostelVisit} testID="m2-home-hostel" wide={wide} />,
+    <CampusTile key="camp" icon="calendar-2" hue="amber" testID="m2-home-camp" onPress={links.camp} wide={wide}
+      title={data.camp ? t('m2.home.campDay', { day: dayLabel(data.camp.date, t) }) : t('m2.home.camp')} />,
+  ];
 
+  const board = (
+    <>
       <Rise>
-        <View style={styles.header}>
-          {links.menu ? (
-            <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('m2.home.openMenuInitials', { initials: initials(name) })} aria-label={t('m2.home.openMenuInitials', { initials: initials(name) })} onPress={links.menu}
-              testID="m2-home-avatar" style={({ focused }: PressState) => [styles.avatar, focused ? focusRing : null]}>
-              <Text style={styles.avatarText}>{initials(name)}</Text>
-            </Pressable>
-          ) : (
-            <View style={styles.avatar} accessibilityElementsHidden importantForAccessibility="no-hide-descendants"><Text style={styles.avatarText}>{initials(name)}</Text></View>
-          )}
-          <View style={styles.grow}>
-            <Text style={styles.greeting}>{t(greetingKey())}</Text>
-            <M2Heading level={1} style={styles.name}>{name}</M2Heading>
+        {wide ? (
+          <View style={styles.headerWide}>
+            <View style={styles.grow}>
+              <Text style={styles.greeting}>{t(greetingKey())}</Text>
+              <M2Heading level={1} style={[styles.name, styles.nameWide]}>{name}</M2Heading>
+            </View>
+            {placeRow}
+            {rxButton}
           </View>
-          {links.notifications ? <RoundButton icon="bell-dome" label={t('m2.home.notifications')} onPress={links.notifications} testID="m2-home-bell" /> : null}
-          <RoundButton icon="cart" label={cart && cart.count > 0 ? t(cart.count === 1 ? 'm2.cartOne' : 'm2.cartCount', { count: cart.count }) : t('m2.cart')}
-            badge={cart?.count} onPress={links.cart} testID="m2-home-cart" />
-          <SosButton label={t('m2.sos')} spoken={t('m2.sosSpoken')} onPress={links.sos} />
-        </View>
+        ) : (
+          <View style={styles.header}>
+            {links.menu ? (
+              <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('m2.home.openMenuInitials', { initials: initials(name) })} aria-label={t('m2.home.openMenuInitials', { initials: initials(name) })} onPress={links.menu}
+                testID="m2-home-avatar" style={({ focused }: PressState) => [styles.avatar, focused ? focusRing : null]}>
+                <Text style={styles.avatarText}>{initials(name)}</Text>
+              </Pressable>
+            ) : (
+              <View style={styles.avatar} accessibilityElementsHidden importantForAccessibility="no-hide-descendants"><Text style={styles.avatarText}>{initials(name)}</Text></View>
+            )}
+            <View style={styles.grow}>
+              <Text style={styles.greeting}>{t(greetingKey())}</Text>
+              <M2Heading level={1} style={styles.name}>{name}</M2Heading>
+            </View>
+            {links.notifications ? <RoundButton icon="bell-dome" label={t('m2.home.notifications')} onPress={links.notifications} testID="m2-home-bell" /> : null}
+            <RoundButton icon="cart" label={cart && cart.count > 0 ? t(cart.count === 1 ? 'm2.cartOne' : 'm2.cartCount', { count: cart.count }) : t('m2.cart')}
+              badge={cart?.count} onPress={links.cart} testID="m2-home-cart" />
+            <SosButton label={t('m2.sos')} spoken={t('m2.sosSpoken')} onPress={links.sos} />
+          </View>
+        )}
       </Rise>
 
-      <Rise index={1}>
-        <View style={styles.placeRow}>
-          <Pressable role="link" accessibilityRole="link" onPress={links.place} testID="m2-home-place"
-            accessibilityLabel={campus ? t('m2.home.placeSpoken', { place: campus }) : t('m2.home.noCampus')}
-            aria-label={campus ? t('m2.home.placeSpoken', { place: campus }) : t('m2.home.noCampus')}
-            style={({ focused }: PressState) => [styles.place, focused ? focusRing : null]}>
-            <Icon name="map-pin-2" size={16} color={color.action} strokeWidth={2.2} />
-            <Text numberOfLines={1} style={styles.placeText}>{campus || t('m2.home.noCampus')}</Text>
-            <Icon name="chevron-down" size={14} color={color.text} strokeWidth={2.4} />
-          </Pressable>
-          {campus && verified ? (
-            <View style={styles.verified}><View style={styles.dot} /><Text style={styles.verifiedText}>{t('m2.home.verified')}</Text></View>
-          ) : null}
-        </View>
-      </Rise>
-
-      <Rise index={2}>
-        <View style={styles.searchRow}>
-          <M2SearchField placeholder={t('m2.home.search')} label={t('m2.home.searchLabel')} onPress={links.search} micUnavailable={t('m2.micUnavailable')} testID="m2-home-search" />
-          <Pressable role="link" accessibilityRole="link" accessibilityLabel={t('m2.home.uploadRx')} aria-label={t('m2.home.uploadRx')} onPress={links.uploadRx}
-            testID="m2-home-rx" style={({ focused }: PressState) => [styles.rxPress, focused ? focusRing : null]}>
-            <Gradient colors={NAVY_STOPS} style={styles.rx}><Icon name="doc-upload" size={21} color={color.onHero} strokeWidth={2.2} /></Gradient>
-          </Pressable>
-        </View>
-      </Rise>
+      {wide ? null : (
+        <>
+          <Rise index={1}>{placeRow}</Rise>
+          <Rise index={2}>
+            <View style={styles.searchRow}>
+              <M2SearchField placeholder={t('m2.home.search')} label={t('m2.home.searchLabel')} onPress={links.search} micUnavailable={t('m2.micUnavailable')} testID="m2-home-search" />
+              {rxButton}
+            </View>
+          </Rise>
+        </>
+      )}
 
       <Rise index={3}><ServiceRail label={t('m2.home.services')} tiles={tiles} current="you" /></Rise>
 
-      <Rise index={4} style={styles.gutter}>
+      <Rise index={4} style={gutter}>
         <HeroCarousel label={t('m2.home.highlights')} slides={slides} dotLabel={(n) => t('m2.home.dot', { n })} />
       </Rise>
 
-      <Rise index={5} style={styles.gutter}>
+      <Rise index={5} style={gutter}>
         <M2SectionHead title={t('m2.home.today')} />
-        <View style={styles.todayGrid}>
-          <View style={styles.todayCol}><MedsCard data={data.meds} onPress={links.meds} /></View>
-          <View style={[styles.todayCol, styles.todayStack]}>
-            <TodayTile icon="doc" hue="orange" title={t('m2.home.uploadReport')} onPress={links.uploadReport} testID="m2-home-report" />
-            <TodayTile icon="refresh" hue="green" title={buyAgain} onPress={links.buyAgain} testID="m2-home-buy-again" />
-          </View>
-        </View>
-        <ConsultCard data={data.consult} links={links} />
+        {wide ? (
+          <M2Grid columns={{ tablet: 2, desktop: 4 }}>
+            <MedsCard data={data.meds} onPress={links.meds} />
+            <TodayTile icon="doc" hue="orange" title={t('m2.home.uploadReport')} onPress={links.uploadReport} testID="m2-home-report" fill />
+            <TodayTile icon="refresh" hue="green" title={buyAgain} onPress={links.buyAgain} testID="m2-home-buy-again" fill />
+            <ConsultCard data={data.consult} links={links} wide />
+          </M2Grid>
+        ) : (
+          <>
+            <View style={styles.todayGrid}>
+              <View style={styles.todayCol}><MedsCard data={data.meds} onPress={links.meds} /></View>
+              <View style={[styles.todayCol, styles.todayStack]}>
+                <TodayTile icon="doc" hue="orange" title={t('m2.home.uploadReport')} onPress={links.uploadReport} testID="m2-home-report" />
+                <TodayTile icon="refresh" hue="green" title={buyAgain} onPress={links.buyAgain} testID="m2-home-buy-again" />
+              </View>
+            </View>
+            <ConsultCard data={data.consult} links={links} />
+          </>
+        )}
       </Rise>
 
-      {blog ? <Rise index={6} style={styles.gutter}>{blog}</Rise> : null}
+      {blog ? <Rise index={6} style={gutter}>{blog}</Rise> : null}
 
-      <Rise index={6} style={styles.gutter}>
+      <Rise index={6} style={gutter}>
         <M2SectionHead title={t('m2.home.concern')} action={links.services.medicines ? { label: t('m2.seeAll'), spoken: t('m2.home.seeAllMedicines'), onPress: links.services.medicines } : undefined} />
         <SoftTileGrid testID="m2-home-concern" items={HOME_CONCERNS.map((c) => ({ key: c.key, label: t(c.label), icon: c.icon, hue: c.hue, onPress: () => links.concern(c.filter) }))} />
       </Rise>
 
       {recent.length > 0 ? (
         <Rise index={7}>
-          <View style={styles.gutter}><M2SectionHead title={t('m2.home.recent')} /></View>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.rail} testID="m2-home-recent">
-            {recent.map((item) => <RecentCard key={item.id} item={item} cart={cart} onOpen={() => links.product(item)} />)}
-          </ScrollView>
+          <View style={gutter}><M2SectionHead title={t('m2.home.recent')} /></View>
+          {wide ? (
+            <M2Grid columns={{ tablet: 3, desktop: 6 }} testID="m2-home-recent">
+              {recent.map((item) => <RecentCard key={item.id} item={item} cart={cart} wide onOpen={() => links.product(item)} />)}
+            </M2Grid>
+          ) : (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.rail} testID="m2-home-recent">
+              {recent.map((item) => <RecentCard key={item.id} item={item} cart={cart} onOpen={() => links.product(item)} />)}
+            </ScrollView>
+          )}
         </Rise>
       ) : null}
 
-      <Rise index={7} style={styles.gutter}>
+      <Rise index={7} style={gutter}>
         <M2SectionHead title={t('m2.home.campus')} />
-        <View style={styles.campusGrid}>
-          <LiftCard label={`${t('m2.home.emergencyCard')}. ${t('m2.home.offlineReady')}`} onPress={links.emergencyCard} testID="m2-home-emergency" style={[styles.campusTile, styles.emergency]}>
-            <View style={styles.emergencyTop}>
-              <Icon name="card-lines" size={22} color={color.onHeroPositive} />
-              <Text style={styles.offline}>{t('m2.home.offlineReady')}</Text>
-            </View>
-            <Text style={styles.emergencyTitle}>{t('m2.home.emergencyCard')}</Text>
-          </LiftCard>
-          <CampusTile icon="qr-code-2" hue="indigo" title={t('m2.home.pass')} onPress={links.pass} testID="m2-home-pass" />
-          <CampusTile icon="home-2" hue="sky" title={t('m2.home.hostel')} onPress={links.hostelVisit} testID="m2-home-hostel" />
-          <CampusTile icon="calendar-2" hue="amber" testID="m2-home-camp" onPress={links.camp}
-            title={data.camp ? t('m2.home.campDay', { day: dayLabel(data.camp.date, t) }) : t('m2.home.camp')} />
-        </View>
+        {wide ? <M2Grid columns={{ tablet: 2, desktop: 4 }}>{campusTiles}</M2Grid> : <View style={styles.campusGrid}>{campusTiles}</View>}
       </Rise>
 
       {phone ? (
-        <View style={styles.callRow}>
+        <View style={[styles.callRow, wide ? styles.callRowWide : null]}>
           <Pressable role="link" accessibilityRole="link" accessibilityLabel={t('m2.callOrderSpoken', { number: phone })} aria-label={t('m2.callOrderSpoken', { number: phone })}
             onPress={() => void Linking.openURL(`tel:${phone}`)} testID="m2-home-call" style={({ focused }: PressState) => [styles.call, focused ? focusRing : null]}>
             <Gradient colors={NAVY_STOPS} style={styles.callIcon}><Icon name="phone" size={15} color={color.onHero} strokeWidth={2.4} /></Gradient>
@@ -323,7 +384,19 @@ export function M2HomeView({ name, campus, verified, data, links, cart, recent, 
           </Pressable>
         </View>
       ) : null}
-      {footer ? <View style={styles.gutter}>{footer}</View> : null}
+      {footer ? <View style={gutter}>{footer}</View> : null}
+    </>
+  );
+
+  if (wide) {
+    return (
+      <M2WideColumn testID="m2-home">{board}</M2WideColumn>
+    );
+  }
+  return (
+    <ScrollView style={styles.screen} contentContainerStyle={styles.content} testID="m2-home">
+      <Gradient colors={[color.surface3, color.canvas]} radial={{ x: 0.5, y: 0.5 }} style={styles.glow} pointerEvents="none" />
+      {board}
     </ScrollView>
   );
 }
@@ -335,6 +408,14 @@ const styles = StyleSheet.create({
   content: { paddingTop: space.s16, paddingBottom: M2_NAV_CLEARANCE, gap: space.s16, width: '100%', maxWidth: size.phoneFrameMax, alignSelf: 'center', overflow: 'hidden' },
   glow: { position: 'absolute', top: -120, right: -90, width: 300, height: 300, borderRadius: radius.full, opacity: 0.9 },
   gutter: { paddingHorizontal: space.gutterPhone },
+  headerWide: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: space.s16 },
+  nameWide: { fontSize: font.size.heading },
+  placeRowWide: { paddingHorizontal: 0 },
+  verifiedWide: { marginLeft: 0 },
+  consultWide: { marginTop: 0, flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'space-between' },
+  recentWide: { flexGrow: 1 },
+  campusTileWide: { flexBasis: 'auto', height: 'auto', minHeight: 112 },
+  callRowWide: { paddingHorizontal: 0 },
   grow: { flex: 1, minWidth: 0 },
   header: { flexDirection: 'row', alignItems: 'center', gap: space.s10, paddingHorizontal: space.gutterPhone },
   avatar: { width: size.touchTarget, height: size.touchTarget, borderRadius: radius.full, alignItems: 'center', justifyContent: 'center', backgroundColor: color.surface3 },
@@ -353,6 +434,7 @@ const styles = StyleSheet.create({
   todayGrid: { flexDirection: 'row', gap: space.s12 },
   todayCol: { flex: 1, minWidth: 0 },
   todayStack: { gap: space.s12 },
+  todayArt: { alignSelf: 'flex-start' },
   todayTile: { flex: 1, minHeight: 104, borderRadius: 24, padding: space.s14, justifyContent: 'space-between', gap: space.s8, backgroundColor: color.surface, ...shadowStyle(shadow.card) },
   medsPress: { flex: 1, borderRadius: 24 },
   meds: { flex: 1, minHeight: 220, borderRadius: 24, padding: space.s16, justifyContent: 'space-between', gap: space.s6 },

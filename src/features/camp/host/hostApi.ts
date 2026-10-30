@@ -2,7 +2,7 @@ import { apiRequest } from '@/data/services/http';
 import type { CampBase, CampEligibility, CampService } from '../data/campsApi';
 
 /** GET /ops/camps: a camp a host runs or may approve, with counts per slot (never who booked). */
-export interface HostSlot {
+interface HostSlot {
   id: string;
   slotStart: string;
   slotEnd: string;
@@ -21,7 +21,7 @@ export interface HostCamp extends CampBase {
   cancelReason: string | null;
 }
 
-export type HostKind = 'CAMPUS' | 'PARTNER' | 'PLATFORM';
+type HostKind = 'CAMPUS' | 'PARTNER' | 'PLATFORM';
 
 export interface HostOptions {
   hostKind: HostKind;

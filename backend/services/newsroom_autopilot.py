@@ -28,6 +28,19 @@ week's What's new posts (their own titles and summaries). **A health tip is
 public only once a clinician approves it** (services/newsroom.py, no bypass);
 the autopilot notifies the clinicians and it waits in their queue.
 
+**Precision gate (services/newsroom_precision.py).** Every draft is scored:
+each sentence must be traceable to the item's own text (numbers, dates and
+names included), with no advice or unverifiable claim, from an allow-listed,
+recent, dated source. At or above ``content.precision_threshold`` a post goes out
+on its own (news, when ``autopilot.news_auto_publish``); below it waits in
+Content, Review with each failed sentence and why. Health content waits for a
+clinician while ``content.health_requires_clinician`` is on, however precise.
+
+**Aggregator.** The feeds are read round the clock, every
+``autopilot.fetch_interval_minutes``; each new item is classified into a
+category by the categories' keywords. Posting stays inside the news window.
+The series scheduler (services/newsroom_series.py) runs in the same job.
+
 **Safety.** Rate caps per lane and per day, length limits, no images (the
 template cover only), nothing about a person, every post audited
 (``care_post_events``, actor ``autopilot``) and tagged Auto. In development and
@@ -63,7 +76,7 @@ from sqlalchemy.orm import Session
 from core import workflow_models as M
 from core.app_env import is_dev_or_test
 from core.settings_registry import setting
-from services import agent_ayush, llm_gateway, newsroom, ops_feed, vector_store
+from services import agent_ayush, llm_gateway, newsroom, newsroom_precision, ops_feed, vector_store
 from services.integration_config import brand_name
 from services.workflow_auth import StrictModel, require_super_admin, workflow_db
 
@@ -326,14 +339,38 @@ def _alert(db: Session, kind: str, summary: str, resource_id: str = "") -> None:
         pass
 
 
+def fetch_due(db: Session, now: float) -> bool:
+    """Whether ``autopilot.fetch_interval_minutes`` has gone by since the last read of any feed."""
+    last = db.scalar(select(func.max(M.AutopilotSource.last_fetch_at))) or 0.0
+    return now - last >= int(setting("autopilot.fetch_interval_minutes", db)) * 60
+
+
+def classify(title: str, excerpt: str, categories: list[M.PostCategory]) -> str:
+    """The category whose keywords the item matches most (twice in the title); the default news category if none."""
+    best, best_score = "", 0
+    for category in categories:
+        hits = relevance(title, excerpt, [" ".join(k.casefold().split()) for k in category.keywords or []])
+        if hits > best_score:
+            best, best_score = category.id, hits
+    return best or newsroom.CONTENT_DEFS["defaultNewsCategory"]
+
+
+def _live_categories(db: Session) -> list[M.PostCategory]:
+    from services.newsroom_content import ensure_defaults
+    ensure_defaults(db)
+    return list(db.scalars(select(M.PostCategory).where(M.PostCategory.archived.is_(False)).order_by(M.PostCategory.sort)))
+
+
 def fetch_sources(db: Session, now: float) -> dict:
-    """Read every enabled feed once; record new items (SEEN or SKIPPED with why) and each feed's health."""
+    """Read every enabled feed once; record new items (SEEN or SKIPPED with why, and their category) and each feed's
+    health."""
     timeout = float(setting("autopilot.fetch_timeout_seconds", db))
     max_bytes = int(setting("autopilot.fetch_max_bytes", db))
     alert_after = int(setting("autopilot.source_failures_before_alert", db))
     max_age = int(setting("autopilot.news_max_age_hours", db)) * HOUR
     keywords = phrases(setting("autopilot.relevance_keywords", db))
     block = phrases(setting("autopilot.block_words", db))
+    categories = _live_categories(db)
     result = {"sources": 0, "failed": [], "new": 0}
     for source_id, source in SOURCES.items():
         url = source_url(source_id, db)
@@ -355,13 +392,13 @@ def fetch_sources(db: Session, now: float) -> dict:
                        source_id)
             continue
         health.failures, health.last_error, health.last_ok_at, health.last_items = 0, "", now, len(entries)
-        result["new"] += _record_entries(db, source_id, source, entries, now, max_age, keywords, block)
+        result["new"] += _record_entries(db, source_id, source, entries, now, max_age, keywords, block, categories)
     db.flush()
     return result
 
 
 def _record_entries(db: Session, source_id: str, source: dict, entries: list[dict], now: float, max_age: int,
-                    keywords: list[str], block: list[str]) -> int:
+                    keywords: list[str], block: list[str], categories: list[M.PostCategory]) -> int:
     added = 0
     seen: set[str] = set()   # this batch too: a session without autoflush would not see rows added above
     for entry in entries:
@@ -385,7 +422,7 @@ def _record_entries(db: Session, source_id: str, source: dict, entries: list[dic
             id=uuid.uuid4().hex, lane=NEWS, dedupe_key=key, source_id=source_id, source_url=link,
             title=entry["title"], excerpt=entry["excerpt"], published_at=entry["publishedAt"] or 0.0,
             relevance=relevance(entry["title"], entry["excerpt"], keywords), state=state, reason=reason[:REASON_MAX],
-            created_at=now, updated_at=now))
+            category_id=classify(entry["title"], entry["excerpt"], categories), created_at=now, updated_at=now))
         added += 1
     return added
 
@@ -507,7 +544,7 @@ def _unique_slug(db: Session, title: str, seed: str, fallback: str) -> str:
 
 
 def create_post(db: Session, *, template: str, title: str, summary: str, body: list[dict], tags: list[str],
-                cover_alt: str, now: float, seed: str, source: dict | None = None) -> M.Post:
+                cover_alt: str, now: float, seed: str, source: dict | None = None, category_id: str = "") -> M.Post:
     """An AUTO post as a DRAFT, in its template, validated like an editor's. A sample outside production."""
     sample = is_dev_or_test()
     if sample:
@@ -520,7 +557,8 @@ def create_post(db: Session, *, template: str, title: str, summary: str, body: l
         cover_art=art[0] if art else "", featured=False, author_id="", status=newsroom.DRAFT, publish_at=0.0,
         first_published_at=0.0, reviewed_by=None, reviewed_at=0.0, reviewed_hash="", sample=sample,
         origin=newsroom.AUTO, source_name=(source or {}).get("name", ""), source_url=(source or {}).get("url", ""),
-        source_published_at=(source or {}).get("at", 0.0), created_by=ACTOR["id"], created_at=now,
+        source_published_at=(source or {}).get("at", 0.0), category_id=category_id, series_id="", episode=0,
+        precision=-1, precision_report={}, hold_reason="", created_by=ACTOR["id"], created_at=now,
         updated_by=ACTOR["id"], updated_at=now)
     db.add(row)
     db.flush()
@@ -538,6 +576,44 @@ def _go_live(db: Session, row: M.Post, at: float, now: float) -> None:
         newsroom._event(db, ACTOR, row, "AUTO_PUBLISHED")
     row.first_published_at = row.first_published_at or row.publish_at
     row.updated_at = now
+
+
+HELD_EDITOR = "Waiting for an editor (auto-publish is off)"
+HELD_CLINICIAN = "Waiting for a clinician's approval"
+
+
+def route(db: Session, row: M.Post, item: M.AutopilotItem, report: newsroom_precision.Report, at: float, now: float,
+          *, auto_publish: bool) -> str:
+    """Where a scored draft goes. Imprecise: held for the super admin (Content, Review). Health content: scheduled,
+    public only once a clinician approves it (unless the switch is off and it is precise). Otherwise out on its
+    own when auto-publish allows, or held for an editor. Returns the item's state."""
+    row.precision, row.precision_report = report.score, report.as_dict()
+    item.precision = report.score
+    if not report.passed:
+        row.hold_reason = "PRECISION"
+        item.state, item.reason = HELD, f"Held for the super admin: precision {report.score}% (needs {report.threshold}%)"
+        ops_feed.publish(db, "AUTOPILOT_DRAFT_HELD", "ACCOUNT", summary="An auto draft failed the precision gate.",
+                         actor_id=ACTOR["id"], actor_role=ACTOR["role"], resource_type="post", resource_id=row.id)
+        return HELD
+    if newsroom.needs_review(row, newsroom.policy(db)):
+        _go_live(db, row, at, now)   # scheduled; public only once a clinician approves this exact version
+        _notify_clinicians(db, row)
+        item.state, item.reason = HELD, HELD_CLINICIAN
+        return HELD
+    if auto_publish:
+        _go_live(db, row, at, now)
+        item.state = POSTED
+        return POSTED
+    row.hold_reason = "EDITOR"
+    item.state, item.reason = HELD, HELD_EDITOR
+    ops_feed.publish(db, "AUTOPILOT_DRAFT_HELD", "ACCOUNT", summary="The autopilot drafted a post for review.",
+                     actor_id=ACTOR["id"], actor_role=ACTOR["role"], resource_type="post", resource_id=row.id)
+    return HELD
+
+
+def writer_title(row: M.Post) -> str:
+    """The title as written: without the "Sample: " a development build puts in front (the gate scores the writer)."""
+    return row.title.removeprefix(COPY["samplePrefix"])
 
 
 def _today_count(db: Session, start: float, lane: str | None = None) -> int:
@@ -577,24 +653,21 @@ def post_news(db: Session, now: float) -> dict:
             continue
         headline, summary, generator = written
         source = SOURCES[item.source_id]
+        body = [{"type": "paragraph", "text": summary}]
         try:
-            row = create_post(db, template=NEWS_TEMPLATE, title=headline, summary=summary,
-                              body=[{"type": "paragraph", "text": summary}],
+            row = create_post(db, template=NEWS_TEMPLATE, title=headline, summary=summary, body=body,
                               tags=[COPY["tagAuto"], COPY["tagNews"]], cover_alt=COPY["newsCoverAlt"], now=now,
                               seed=item.dedupe_key, source={"name": source["publisher"], "url": item.source_url,
-                                                            "at": item.published_at})
+                                                            "at": item.published_at}, category_id=item.category_id)
         except ValueError as exc:   # the template refused it: recorded, never posted half-made
             item.state, item.reason, item.updated_at = FAILED, str(exc)[:REASON_MAX], now
             continue
         item.post_id, item.generator, item.updated_at = row.id, generator, now
-        if setting("autopilot.news_auto_publish", db) is True:
-            _go_live(db, row, now, now)
-            item.state = POSTED
-        else:
-            item.state, item.reason = HELD, "Waiting for an editor (auto-publish is off)"
-            ops_feed.publish(db, "AUTOPILOT_DRAFT_HELD", "ACCOUNT", summary="The autopilot drafted a news post for review.",
-                             actor_id=ACTOR["id"], actor_role=ACTOR["role"], resource_type="post", resource_id=row.id)
-        return {"posted": 1, "postId": row.id, "generator": generator}
+        report = newsroom_precision.gate(db, newsroom_precision.post_texts(headline, summary, body), newsroom_precision.Source(
+            text=f"{item.title}. {item.excerpt}", allowed=source_enabled(item.source_id, db), kind=newsroom_precision.FEED,
+            published_at=item.published_at), now)
+        state = route(db, row, item, report, now, now, auto_publish=setting("autopilot.news_auto_publish", db) is True)
+        return {"posted": 1, "postId": row.id, "generator": generator, "state": state, "precision": report.score}
     return {"posted": 0, "why": "no_candidate"}
 
 
@@ -606,6 +679,12 @@ def week_slots(now: float, tz: ZoneInfo, days: list[int], per_week: int, hour: i
     monday = today - timedelta(days=today.weekday())
     chosen = days[:per_week]
     return [(monday + timedelta(weeks=w, days=d)).timestamp() for w in (0, 1) for d in chosen]
+
+
+def knowledge_source(passages: list[dict]) -> newsroom_precision.Source:
+    """Approved knowledge as a precision-gate source: allow-listed by its approval, no date needed."""
+    text = " ".join(f"{p['title']}. {p['content']}" for p in passages)
+    return newsroom_precision.Source(text=text, allowed=True, kind=newsroom_precision.KNOWLEDGE)
 
 
 def _approved_tip(db: Session, topic: str, block: list[str]) -> tuple[list[dict], str, str] | None:
@@ -632,7 +711,8 @@ def _roundup_posts(db: Session, now: float) -> list[M.Post]:
         M.Post.template == "PRODUCT_UPDATE", M.Post.status.in_((newsroom.PUBLISHED, newsroom.SCHEDULED)),
         M.Post.publish_at >= now - WEEK, M.Post.publish_at <= now, M.Post.origin != newsroom.AUTO)
         .order_by(M.Post.publish_at.desc())).all()
-    return [r for r in rows if newsroom.is_public(r, now) and (is_dev_or_test() or not r.sample)]
+    pol = newsroom.policy(db)
+    return [r for r in rows if newsroom.is_public(r, now, pol) and (is_dev_or_test() or not r.sample)]
 
 
 def _notify_clinicians(db: Session, row: M.Post) -> int:
@@ -653,7 +733,8 @@ def _draft_tip(db: Session, item: M.AutopilotItem, slot: float, now: float) -> b
     if not topics:
         return False
     used = int(db.scalar(select(func.count(M.AutopilotItem.id)).where(
-        M.AutopilotItem.lane == BLOG, M.AutopilotItem.topic != "", M.AutopilotItem.post_id != "")) or 0)
+        M.AutopilotItem.lane == BLOG, M.AutopilotItem.topic != "", M.AutopilotItem.post_id != "",
+        M.AutopilotItem.series_id == "")) or 0)
     summary_max = int(setting("autopilot.summary_max_chars", db))
     for step in range(len(topics)):
         topic = topics[(used + step) % len(topics)]
@@ -663,13 +744,13 @@ def _draft_tip(db: Session, item: M.AutopilotItem, slot: float, now: float) -> b
         passages, paragraph, generator = found
         body = [{"type": "paragraph", "text": paragraph},
                 {"type": "facts", "title": COPY["tipSourcesTitle"], "items": list(dict.fromkeys(trim(p["title"], FACT_MAX) for p in passages))}]
-        row = create_post(db, template=TIP_TEMPLATE, title=passages[0]["title"], summary=first_sentences(paragraph, summary_max),
+        summary = first_sentences(paragraph, summary_max)
+        row = create_post(db, template=TIP_TEMPLATE, title=passages[0]["title"], summary=summary,
                           body=body, tags=[COPY["tagAuto"], slugify(topic).replace("-", " ")[:newsroom.TAG_MAX].strip() or COPY["tagAuto"]],
                           cover_alt=COPY["blogTipCoverAlt"], now=now, seed=item.dedupe_key)
-        _go_live(db, row, slot, now)   # scheduled; public only once a clinician approves this exact version
-        _notify_clinicians(db, row)
         item.topic, item.title, item.post_id, item.generator = topic[:TOPIC_MAX], row.title[:TITLE_MAX], row.id, generator
-        item.state, item.reason = HELD, "Waiting for a clinician's approval"
+        report = newsroom_precision.gate(db, newsroom_precision.post_texts(writer_title(row), summary, body), knowledge_source(passages), now)
+        route(db, row, item, report, slot, now, auto_publish=setting("autopilot.blog_auto_publish", db) is True)
         return True
     return False
 
@@ -709,7 +790,8 @@ def draft_blog(db: Session, now: float) -> dict:
             return {"drafted": drafted, "skipped": skipped, "why": "daily_cap"}
         item = M.AutopilotItem(id=uuid.uuid4().hex, lane=BLOG, dedupe_key=key, source_id="", source_url="", title="",
                                excerpt="", published_at=0.0, relevance=0, state=SEEN, reason="", topic="", slot_at=slot,
-                               post_id="", generator="", created_at=now, updated_at=now)
+                               post_id="", generator="", category_id="", series_id="", precision=-1, created_at=now,
+                               updated_at=now)
         db.add(item)
         updates = _roundup_posts(db, now) if index % 2 else []
         try:
@@ -734,40 +816,51 @@ def run(db: Session, now: float | None = None) -> dict:
     now = time.time() if now is None else now
     if setting("autopilot.kill_switch", db) is True:
         return {"status": "SKIPPED", "summary": {"reason": "kill_switch"}}
+    from services import newsroom_series
     news_on, blog_on = setting("autopilot.news_enabled", db) is True, setting("autopilot.blog_enabled", db) is True
-    if not news_on and not blog_on:
+    series_on = newsroom_series.any_enabled(db)
+    if not news_on and not blog_on and not series_on:
         return {"status": "SKIPPED", "summary": {"reason": "off"}}
     summary: dict[str, Any] = {}
     status = "SUCCESS"
     if news_on:
-        fetched = fetch_sources(db, now)
-        summary["fetch"] = fetched
+        if fetch_due(db, now):
+            fetched = fetch_sources(db, now)
+            summary["fetch"] = fetched
+            if fetched["failed"]:
+                status = "DEGRADED"
+        else:
+            summary["fetch"] = {"skipped": "interval"}
         summary["news"] = post_news(db, now)
-        if fetched["failed"]:
-            status = "DEGRADED"
     if blog_on:
         summary["blog"] = draft_blog(db, now)
+    if series_on:
+        summary["series"] = newsroom_series.draft_series(db, now)
     db.flush()
     return {"status": status, "summary": summary}
 
 
 # --- super admin: the Autopilot tab ------------------------------------------------------------------
 
-def _post_view(row: M.Post | None, now: float) -> dict | None:
+def _post_view(row: M.Post | None, now: float, pol: newsroom.Policy) -> dict | None:
     if row is None:
         return None
-    return {"id": row.id, "status": row.status, "live": newsroom.is_public(row, now), "path": newsroom.post_path(row),
-            "template": row.template, "needsReview": newsroom.needs_review(row), "reviewCurrent": newsroom.review_current(row),
-            "publishAt": row.publish_at or None, "sample": bool(row.sample)}
+    return {"id": row.id, "status": row.status, "live": newsroom.is_public(row, now, pol), "path": newsroom.post_path(row),
+            "template": row.template, "needsReview": newsroom.needs_review(row, pol),
+            "reviewCurrent": newsroom.review_current(row), "publishAt": row.publish_at or None, "sample": bool(row.sample),
+            "precision": row.precision if row.precision is not None else -1, "holdReason": row.hold_reason or ""}
 
 
-def _item_view(item: M.AutopilotItem, post: M.Post | None, now: float) -> dict:
+def _item_view(item: M.AutopilotItem, post: M.Post | None, now: float, pol: newsroom.Policy,
+               series: dict[str, str] | None = None) -> dict:
     source = SOURCES.get(item.source_id)
     return {"id": item.id, "lane": item.lane, "state": item.state, "reason": item.reason, "title": item.title,
             "topic": item.topic, "sourceId": item.source_id, "sourceName": source["publisher"] if source else "",
             "sourceUrl": item.source_url, "sourcePublishedAt": item.published_at or None, "relevance": item.relevance,
             "generator": item.generator, "slotAt": item.slot_at or None, "createdAt": item.created_at,
-            "updatedAt": item.updated_at, "post": _post_view(post, now)}
+            "updatedAt": item.updated_at, "post": _post_view(post, now, pol), "categoryId": item.category_id or "",
+            "seriesName": (series or {}).get(item.series_id or "", ""),
+            "precision": item.precision if item.precision is not None else -1}
 
 
 def status_payload(db: Session, now: float | None = None) -> dict:
@@ -788,7 +881,9 @@ def status_payload(db: Session, now: float | None = None) -> dict:
     acted = db.scalars(select(M.AutopilotItem).where(M.AutopilotItem.state.in_((POSTED, HELD, SKIPPED, FAILED)))
                        .order_by(M.AutopilotItem.updated_at.desc(), M.AutopilotItem.id).limit(limit)).all()
     posts = {p.id: p for p in db.scalars(select(M.Post).where(M.Post.id.in_({i.post_id for i in acted if i.post_id})))}
-    views = [_item_view(i, posts.get(i.post_id), now) for i in acted]
+    pol = newsroom.policy(db)
+    series_names = dict(db.execute(select(M.PostSeries.id, M.PostSeries.name)).all())
+    views = [_item_view(i, posts.get(i.post_id), now, pol, series_names) for i in acted]
     queue = [v for v in views if v["post"] and not v["post"]["live"] and v["post"]["status"] != newsroom.UNPUBLISHED]
     log = [v for v in views if v not in queue]
     per_week = int(setting("autopilot.blog_posts_per_week", db))
@@ -813,11 +908,20 @@ def status_payload(db: Session, now: float | None = None) -> dict:
                  "days": [DAYS[d] for d in days], "hour": int(setting("autopilot.blog_hour", db)),
                  "topics": phrases(setting("autopilot.blog_topics", db)), "upcoming": upcoming[:per_week]},
         "sources": sources,
+        "fetchIntervalMinutes": int(setting("autopilot.fetch_interval_minutes", db)),
+        "precision": {"threshold": int(setting("content.precision_threshold", db)),
+                      "healthRequiresClinician": setting("content.health_requires_clinician", db) is True},
+        "series": series_status(db, now),
         "queue": queue,
         "log": log,
         "job": {"lastRunAt": job.last_run_at or None, "lastStatus": job.last_status, "lastError": job.last_error,
                 "nextRunAt": job.next_run_at or None} if job else None,
     }
+
+
+def series_status(db: Session, now: float) -> list[dict]:
+    from services import newsroom_series
+    return newsroom_series.status(db, now)
 
 
 @router.get("/ops/autopilot")

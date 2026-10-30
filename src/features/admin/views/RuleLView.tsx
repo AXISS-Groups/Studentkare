@@ -15,7 +15,7 @@ type Translate = ReturnType<typeof useT>;
 interface Check { id: string; label: string; held: boolean; failure: string; detail?: string }
 
 /** The checks /ops/rule-l reports, in the order the server runs them. Missing checks are not invented. */
-export function ruleLChecks(t: Translate, status: RuleLStatus): Check[] {
+function ruleLChecks(t: Translate, status: RuleLStatus): Check[] {
   const { checks } = status;
   const rows: Check[] = [];
   Object.entries(checks.rolesPresent ?? {}).forEach(([role, present]) => {

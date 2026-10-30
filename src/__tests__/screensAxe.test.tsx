@@ -1,9 +1,9 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { cleanup, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { axeViolations, describeViolations } from '@/test/axe';
 
-vi.mock('@/modules/m16-checkout/platform/CheckoutStoragePort', () => ({
+vi.mock('@/features/shopPhone/platform/CheckoutStoragePort', () => ({
   CheckoutStoragePort: { getCachedCart: async () => [], setCachedCart: async () => undefined, clearCachedCart: async () => undefined },
 }));
 
@@ -15,12 +15,12 @@ import { PrescribeView } from '@/screens/clinician/NMCDoctorEPrescriptionScreen'
 import { PrescribeViewModel } from '@/features/clinician/viewmodel/PrescribeViewModel';
 import { ShopNativeView } from '@/features/marketplace/views/ShopNativeView';
 import { ShopViewModel } from '@/features/marketplace/viewmodel/ShopViewModel';
-import { HealthVaultNativeView } from '@/features/vault/views/HealthVaultNativeView';
+import { HealthVaultView } from '@/features/vault/views/HealthVaultView';
 import { HealthVaultViewModel } from '@/features/vault/viewmodel/HealthVaultViewModel';
 import { AyushChatNativeView } from '@/features/chat/views/AyushChatNativeView';
 import { AyushViewModel } from '@/features/chat/viewmodel/AyushViewModel';
 import { TeleconsultNativeView } from '@/features/teleconsult/views/TeleconsultNativeView';
-import { EmergencyCardView } from '@/features/emergency/views/WebEmergencyCard';
+import { EmergencyCardBoard } from '@/features/emergency/views/EmergencyCardBoard';
 import { EmergencyCardViewModel } from '@/features/emergency/viewmodel/EmergencyCardViewModel';
 
 type Requester = typeof import('@/data/services/http').apiRequest;
@@ -69,7 +69,7 @@ describe('screens built in the remediation pass are accessible', () => {
   it('health records', async () => {
     const vm = new HealthVaultViewModel(api({ '/health/documents': { items: [{ id: 'd', title: 'CBC', category: 'LAB', createdAt: 1 }] }, '/records/shares': { items: [] } }));
     await vm.load();
-    await expectAccessible(<HealthVaultNativeView viewModel={vm} />);
+    await expectAccessible(<HealthVaultView viewModel={vm} online tab="documents" onTabChange={() => undefined} links={{}} locale="en-IN" />);
   });
 
   it('Ask Ayush', async () => {
@@ -83,6 +83,8 @@ describe('screens built in the remediation pass are accessible', () => {
   it('emergency card', async () => {
     const vm = new EmergencyCardViewModel(api({ '/profile': { id: 'u', fullName: 'S', role: 'STUDENT', email: '', phone: '', dob: '', university: '', rollNumber: '', bloodGroup: 'O+', ageVerified: false, isVerifiedStudent: false, emergencyContactName: 'Asha', emergencyContactPhone: '9876543210', emergencyContactRelation: 'Parent', allergies: ['Penicillin'], chronicConditions: [], updatedAt: null } }));
     await vm.load();
-    await expectAccessible(<EmergencyCardView vm={vm} />);
+    await expectAccessible(<EmergencyCardBoard vm={vm} links={{ contacts: () => undefined }} />);
+    cleanup();
+    await expectAccessible(<EmergencyCardBoard vm={vm} links={{ contacts: () => undefined }} wide />);
   });
 });

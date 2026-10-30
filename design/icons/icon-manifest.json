@@ -101,9 +101,9 @@
     "VerifyIdentity",
     "WebPass",
     "WebVerify",
-    "WebPost",
+    "M2Reorder",
     "AdminPosts",
-    "M2Reorder"
+    "WebPost"
    ],
    "elements": [
     [
@@ -206,9 +206,11 @@
     "WebVault",
     "WebVerify",
     "WebVerifyGate",
-    "WebPost",
+    "M2Reorder",
     "AdminPosts",
-    "M2Reorder"
+    "WebPost",
+    "WebNewsroom",
+    "WebSeries"
    ],
    "elements": [
     [
@@ -488,7 +490,11 @@
     "WebScanVerify",
     "WebSecurity",
     "WebVault",
-    "WebVerify"
+    "WebVerify",
+    "AdminPosts",
+    "WebPost",
+    "WebNewsroom",
+    "WebSeries"
    ],
    "elements": [
     [
@@ -908,7 +914,11 @@
     "VendorRxReview",
     "VendorSettlement",
     "VendorSubstitution",
-    "WebScanVerify"
+    "WebScanVerify",
+    "AdminPosts",
+    "WebPost",
+    "WebNewsroom",
+    "WebSeries"
    ],
    "elements": [
     [
@@ -1085,7 +1095,11 @@
     "WebSecurity",
     "WebVault",
     "WebVerify",
-    "M2Refills"
+    "M2Refills",
+    "AdminPosts",
+    "WebPost",
+    "WebNewsroom",
+    "WebSeries"
    ],
    "elements": [
     [
@@ -1188,10 +1202,11 @@
     "StudentProfile",
     "VitalTrends",
     "WebFindCare",
-    "WebPost",
-    "AdminPosts",
     "M2Refills",
-    "M2Reorder"
+    "M2Reorder",
+    "AdminPosts",
+    "WebPost",
+    "WebSeries"
    ],
    "elements": [
     [
@@ -1299,8 +1314,11 @@
     "DpdpQueue",
     "Integrations",
     "SuperAdminConsole",
+    "M2Home",
+    "AdminPosts",
+    "WebPost",
     "WebNewsroom",
-    "M2Home"
+    "WebSeries"
    ],
    "elements": [
     [
@@ -1662,8 +1680,9 @@
     "WebSecurity",
     "WebVault",
     "WebVerify",
+    "WebPost",
     "WebNewsroom",
-    "WebPost"
+    "WebSeries"
    ],
    "elements": [
     [
@@ -1735,8 +1754,10 @@
     "VendorSettlement",
     "VendorSubstitution",
     "WebScanVerify",
+    "AdminPosts",
     "WebPost",
-    "AdminPosts"
+    "WebNewsroom",
+    "WebSeries"
    ],
    "elements": [
     [
@@ -1856,7 +1877,11 @@
     "WebReportInsights",
     "WebVerify",
     "WebVerifyGate",
-    "WebWellness"
+    "WebWellness",
+    "AdminPosts",
+    "WebPost",
+    "WebNewsroom",
+    "WebSeries"
    ],
    "elements": [
     [
@@ -2478,7 +2503,10 @@
     "DpdpQueue",
     "Integrations",
     "SuperAdminConsole",
-    "AdminPosts"
+    "AdminPosts",
+    "WebPost",
+    "WebNewsroom",
+    "WebSeries"
    ],
    "elements": [
     [
@@ -3528,11 +3556,12 @@
     "M2FindCare",
     "M2MedicineInfo",
     "WebFindCare",
-    "WebNewsroom",
-    "WebPost",
-    "AdminPosts",
     "M2WhatsNew",
-    "M2Home"
+    "M2Home",
+    "AdminPosts",
+    "WebPost",
+    "WebNewsroom",
+    "WebSeries"
    ],
    "elements": [
     [
@@ -3635,8 +3664,8 @@
     "CampusWellness",
     "M2Camps",
     "M2MedicineInfo",
-    "AdminPosts",
-    "M2Reorder"
+    "M2Reorder",
+    "AdminPosts"
    ],
    "elements": [
     [
@@ -3724,8 +3753,8 @@
     "VendorRxReview",
     "WebReportAssistant",
     "WebReportInsights",
-    "WebNewsroom",
-    "AdminPosts"
+    "AdminPosts",
+    "WebNewsroom"
    ],
    "elements": [
     [
@@ -3773,11 +3802,12 @@
     "Prescribe",
     "ReportReviews",
     "WebFindCare",
-    "WebNewsroom",
-    "WebPost",
-    "AdminPosts",
     "M2Refills",
-    "M2Reorder"
+    "M2Reorder",
+    "AdminPosts",
+    "WebPost",
+    "WebNewsroom",
+    "WebSeries"
    ],
    "elements": [
     [
@@ -3870,7 +3900,8 @@
     "StaffCollect",
     "StaffHandover",
     "VerifyIdentity",
-    "WebNewsroom"
+    "WebNewsroom",
+    "WebSeries"
    ],
    "elements": [
     [
@@ -3910,8 +3941,8 @@
     "WebSecurity",
     "WebVault",
     "WebVerify",
-    "AdminPosts",
-    "M2Refills"
+    "M2Refills",
+    "AdminPosts"
    ],
    "elements": [
     [
@@ -4515,8 +4546,10 @@
     "WebSecurity",
     "WebVault",
     "WebVerify",
+    "AdminPosts",
     "WebPost",
-    "AdminPosts"
+    "WebNewsroom",
+    "WebSeries"
    ],
    "elements": [
     [
@@ -4714,9 +4747,10 @@
     "WebMyLabTests",
     "WebReportInsights",
     "WebSignIn",
-    "WebNewsroom",
     "M2WhatsNew",
-    "M2Refills"
+    "M2Refills",
+    "WebNewsroom",
+    "WebSeries"
    ],
    "elements": [
     [
@@ -4816,7 +4850,11 @@
     "VendorRxReview",
     "VendorSettlement",
     "VendorSubstitution",
-    "WebScanVerify"
+    "WebScanVerify",
+    "AdminPosts",
+    "WebPost",
+    "WebNewsroom",
+    "WebSeries"
    ],
    "elements": [
     [
@@ -5142,7 +5180,10 @@
     "EncounterNote",
     "Prescribe",
     "ReportReviews",
-    "AdminPosts"
+    "AdminPosts",
+    "WebPost",
+    "WebNewsroom",
+    "WebSeries"
    ],
    "elements": [
     [
@@ -5219,7 +5260,9 @@
     "Prescribe",
     "ReportReviews",
     "AdminPosts",
-    "WebPost"
+    "WebPost",
+    "WebNewsroom",
+    "WebSeries"
    ],
    "elements": [
     [
@@ -5283,8 +5326,11 @@
     "WebReorder",
     "WebReportInsights",
     "WebWellness",
+    "M2Reorder",
+    "AdminPosts",
     "WebPost",
-    "M2Reorder"
+    "WebNewsroom",
+    "WebSeries"
    ],
    "elements": [
     [
@@ -5317,7 +5363,10 @@
     "WebReorder",
     "WebReportInsights",
     "WebWellness",
-    "WebPost"
+    "AdminPosts",
+    "WebPost",
+    "WebNewsroom",
+    "WebSeries"
    ],
    "elements": [
     [
@@ -5392,7 +5441,10 @@
     "WebReorder",
     "WebReportInsights",
     "WebWellness",
-    "WebPost"
+    "AdminPosts",
+    "WebPost",
+    "WebNewsroom",
+    "WebSeries"
    ],
    "elements": [
     [
@@ -5491,9 +5543,11 @@
     "M2MedicineInfo",
     "M2Steps",
     "WebFindCare",
-    "WebPost",
+    "M2Refills",
     "AdminPosts",
-    "M2Refills"
+    "WebPost",
+    "WebNewsroom",
+    "WebSeries"
    ],
    "elements": [
     [
@@ -5538,8 +5592,8 @@
     "Teleconsult",
     "WebDashboard",
     "WebVault",
-    "AdminPosts",
-    "M2Refills"
+    "M2Refills",
+    "AdminPosts"
    ],
    "elements": [
     [
@@ -5817,7 +5871,8 @@
     "M2Labs",
     "M2Medicines",
     "WebAccount",
-    "WebFindCare"
+    "WebFindCare",
+    "AdminPosts"
    ],
    "elements": [
     [
@@ -5976,7 +6031,8 @@
     "ResultCampBooked",
     "ResultLabBooked",
     "ResultRefund",
-    "StatusMoments"
+    "StatusMoments",
+    "AdminPosts"
    ],
    "elements": [
     [
@@ -6082,7 +6138,10 @@
     "ResultLabBooked",
     "ResultRefund",
     "StatusMoments",
-    "WebPost"
+    "AdminPosts",
+    "WebPost",
+    "WebNewsroom",
+    "WebSeries"
    ],
    "elements": [
     [
@@ -6114,9 +6173,11 @@
     "CampusBreakGlass",
     "CampusOverview",
     "HostelVisit",
-    "WebNewsroom",
+    "M2WhatsNew",
+    "AdminPosts",
     "WebPost",
-    "M2WhatsNew"
+    "WebNewsroom",
+    "WebSeries"
    ],
    "elements": [
     [
@@ -6216,7 +6277,11 @@
     "M2Medicines",
     "ReportInsights",
     "WebReportAssistant",
-    "WebReportInsights"
+    "WebReportInsights",
+    "AdminPosts",
+    "WebPost",
+    "WebNewsroom",
+    "WebSeries"
    ],
    "elements": [
     [
@@ -6322,10 +6387,11 @@
     "ReportInsights",
     "WebReportAssistant",
     "WebReportInsights",
-    "WebNewsroom",
-    "WebPost",
+    "M2Home",
     "AdminPosts",
-    "M2Home"
+    "WebPost",
+    "WebNewsroom",
+    "WebSeries"
    ],
    "elements": [
     [
@@ -6564,7 +6630,10 @@
     "PrescriptionUpload",
     "VendorSettlement",
     "WebVault",
-    "WebPost"
+    "AdminPosts",
+    "WebPost",
+    "WebNewsroom",
+    "WebSeries"
    ],
    "elements": [
     [
@@ -6663,9 +6732,9 @@
     "M2MedicineInfo",
     "WebFindCare",
     "WebHome",
-    "AdminPosts",
     "M2Refills",
-    "M2Reorder"
+    "M2Reorder",
+    "AdminPosts"
    ],
    "elements": [
     [
@@ -6874,7 +6943,8 @@
    "screens": [
     "ReportInsights",
     "WebReportAssistant",
-    "WebReportInsights"
+    "WebReportInsights",
+    "WebPost"
    ],
    "elements": [
     [
@@ -6906,9 +6976,10 @@
     "HomeDiscover",
     "M2Home",
     "SearchEntry",
-    "WebNewsroom",
+    "AdminPosts",
     "WebPost",
-    "AdminPosts"
+    "WebNewsroom",
+    "WebSeries"
    ],
    "elements": [
     [
@@ -6974,7 +7045,8 @@
     "LoggedOut",
     "M2MedicineInfo",
     "WebLoggedOut",
-    "AdminPosts"
+    "AdminPosts",
+    "WebPost"
    ],
    "elements": [
     [
@@ -7457,9 +7529,10 @@
    "screens": [
     "SignIn",
     "WebSignIn",
-    "WebNewsroom",
+    "AdminPosts",
     "WebPost",
-    "AdminPosts"
+    "WebNewsroom",
+    "WebSeries"
    ],
    "elements": [
     [
@@ -7504,11 +7577,12 @@
    "uses": 2,
    "screens": [
     "AyushSheet",
-    "WebNewsroom",
-    "WebPost",
-    "AdminPosts",
     "M2WhatsNew",
-    "M2Profile"
+    "M2Profile",
+    "AdminPosts",
+    "WebPost",
+    "WebNewsroom",
+    "WebSeries"
    ],
    "elements": [
     [
@@ -7536,8 +7610,10 @@
     "M2Home",
     "M2Profile",
     "WebAccount",
+    "AdminPosts",
+    "WebPost",
     "WebNewsroom",
-    "WebPost"
+    "WebSeries"
    ],
    "elements": [
     [
@@ -7656,8 +7732,9 @@
     "AdminMedicineInfo",
     "PrescriptionUpload",
     "SearchEntry",
+    "AdminPosts",
     "WebPost",
-    "AdminPosts"
+    "WebSeries"
    ],
    "elements": [
     [
@@ -8044,10 +8121,11 @@
    "screens": [
     "ReportInsights",
     "WebReportInsights",
-    "WebNewsroom",
-    "WebPost",
+    "M2WhatsNew",
     "AdminPosts",
-    "M2WhatsNew"
+    "WebPost",
+    "WebNewsroom",
+    "WebSeries"
    ],
    "elements": [
     [
@@ -8072,7 +8150,8 @@
    "uses": 2,
    "screens": [
     "Notifications",
-    "SearchResults"
+    "SearchResults",
+    "AdminPosts"
    ],
    "elements": [
     [
@@ -8404,7 +8483,8 @@
    "screens": [
     "ClinicianConsultRoom",
     "M2Medicines",
-    "WebLoggedOut"
+    "WebLoggedOut",
+    "AdminPosts"
    ],
    "elements": [
     [
@@ -8633,10 +8713,11 @@
    "screens": [
     "IconSystem",
     "M2Camps",
-    "WebNewsroom",
-    "WebPost",
+    "M2Refills",
     "AdminPosts",
-    "M2Refills"
+    "WebPost",
+    "WebNewsroom",
+    "WebSeries"
    ],
    "elements": [
     [
@@ -9140,7 +9221,11 @@
    "source": "canvas",
    "uses": 1,
    "screens": [
-    "MoreHub"
+    "MoreHub",
+    "AdminPosts",
+    "WebPost",
+    "WebNewsroom",
+    "WebSeries"
    ],
    "elements": [
     [
@@ -9317,9 +9402,9 @@
     "M2Insurance",
     "SuperAdminConsole",
     "WebFindCare",
-    "AdminPosts",
     "M2Refills",
-    "M2Reorder"
+    "M2Reorder",
+    "AdminPosts"
    ],
    "elements": [
     [
@@ -9688,9 +9773,10 @@
     "M2Medicines",
     "M2Steps",
     "OtpVerify",
-    "WebNewsroom",
+    "M2Reorder",
     "AdminPosts",
-    "M2Reorder"
+    "WebNewsroom",
+    "WebSeries"
    ],
    "elements": [
     [
@@ -10002,7 +10088,10 @@
    "uses": 1,
    "screens": [
     "Onboarding2",
-    "AdminPosts"
+    "AdminPosts",
+    "WebPost",
+    "WebNewsroom",
+    "WebSeries"
    ],
    "elements": [
     [
@@ -10021,7 +10110,10 @@
    "uses": 1,
    "screens": [
     "PrescriptionUpload",
-    "AdminPosts"
+    "AdminPosts",
+    "WebPost",
+    "WebNewsroom",
+    "WebSeries"
    ],
    "elements": [
     [
@@ -10077,8 +10169,8 @@
    "screens": [
     "AdminCareDirectory",
     "HelpCentre",
-    "AdminPosts",
-    "M2Refills"
+    "M2Refills",
+    "AdminPosts"
    ],
    "elements": [
     [
@@ -10270,7 +10362,9 @@
    "source": "canvas",
    "uses": 1,
    "screens": [
-    "Landing"
+    "Landing",
+    "AdminPosts",
+    "WebPost"
    ],
    "elements": [
     [
@@ -11675,10 +11769,11 @@
    "file": "icons/3d/bell--p2.svg",
    "screens": [
     "IconSystem",
-    "WebNewsroom",
-    "WebPost",
+    "M2WhatsNew",
     "AdminPosts",
-    "M2WhatsNew"
+    "WebPost",
+    "WebNewsroom",
+    "WebSeries"
    ]
   },
   {
@@ -11689,10 +11784,11 @@
    "file": "icons/3d/brain-alt--p3.svg",
    "screens": [
     "IconSystem",
-    "WebNewsroom",
-    "WebPost",
+    "M2Home",
     "AdminPosts",
-    "M2Home"
+    "WebPost",
+    "WebNewsroom",
+    "WebSeries"
    ]
   },
   {
@@ -11704,9 +11800,10 @@
    "screens": [
     "Appointments",
     "IconSystem",
-    "WebNewsroom",
+    "AdminPosts",
     "WebPost",
-    "AdminPosts"
+    "WebNewsroom",
+    "WebSeries"
    ]
   },
   {
@@ -11774,7 +11871,11 @@
     "PartnerCamps",
     "WebDashboard",
     "WebLoggedOut",
-    "YourCare"
+    "YourCare",
+    "AdminPosts",
+    "WebPost",
+    "WebNewsroom",
+    "WebSeries"
    ]
   },
   {
@@ -11787,9 +11888,10 @@
     "IconSystem",
     "LoggedOut",
     "WebLoggedOut",
-    "WebNewsroom",
+    "AdminPosts",
     "WebPost",
-    "AdminPosts"
+    "WebNewsroom",
+    "WebSeries"
    ]
   },
   {
@@ -11800,9 +11902,10 @@
    "file": "icons/3d/doc--p4.svg",
    "screens": [
     "IconSystem",
-    "WebNewsroom",
+    "AdminPosts",
     "WebPost",
-    "AdminPosts"
+    "WebNewsroom",
+    "WebSeries"
    ]
   },
   {
@@ -11825,10 +11928,11 @@
     "IconSystem",
     "LoggedOut",
     "WebLoggedOut",
-    "WebNewsroom",
-    "WebPost",
+    "M2Home",
     "AdminPosts",
-    "M2Home"
+    "WebPost",
+    "WebNewsroom",
+    "WebSeries"
    ]
   },
   {
@@ -11839,9 +11943,10 @@
    "file": "icons/3d/home-alt--p4.svg",
    "screens": [
     "IconSystem",
-    "WebNewsroom",
+    "AdminPosts",
     "WebPost",
-    "AdminPosts"
+    "WebNewsroom",
+    "WebSeries"
    ]
   },
   {
@@ -11852,9 +11957,10 @@
    "file": "icons/3d/idcard-alt--p4.svg",
    "screens": [
     "IconSystem",
-    "WebNewsroom",
+    "AdminPosts",
     "WebPost",
-    "AdminPosts"
+    "WebNewsroom",
+    "WebSeries"
    ]
   },
   {
@@ -11866,7 +11972,11 @@
    "screens": [
     "IconSystem",
     "LabResults",
-    "WebMyLabTests"
+    "WebMyLabTests",
+    "AdminPosts",
+    "WebPost",
+    "WebNewsroom",
+    "WebSeries"
    ]
   },
   {
@@ -11907,7 +12017,11 @@
    "viewBox": "0 0 72 72",
    "file": "icons/3d/search--p4.svg",
    "screens": [
-    "IconSystem"
+    "IconSystem",
+    "AdminPosts",
+    "WebPost",
+    "WebNewsroom",
+    "WebSeries"
    ]
   },
   {
@@ -11918,10 +12032,11 @@
    "file": "icons/3d/settings-alt--p4.svg",
    "screens": [
     "IconSystem",
-    "WebNewsroom",
-    "WebPost",
+    "M2WhatsNew",
     "AdminPosts",
-    "M2WhatsNew"
+    "WebPost",
+    "WebNewsroom",
+    "WebSeries"
    ]
   },
   {
@@ -11961,7 +12076,11 @@
     "Integrations",
     "SuperAdminConsole",
     "VerifyGate",
-    "WebVerifyGate"
+    "WebVerifyGate",
+    "AdminPosts",
+    "WebPost",
+    "WebNewsroom",
+    "WebSeries"
    ]
   },
   {
@@ -12019,10 +12138,11 @@
    "file": "icons/3d/thermo-alt--p1.svg",
    "screens": [
     "IconSystem",
-    "WebNewsroom",
-    "WebPost",
+    "M2Home",
     "AdminPosts",
-    "M2Home"
+    "WebPost",
+    "WebNewsroom",
+    "WebSeries"
    ]
   },
   {
@@ -12033,9 +12153,10 @@
    "file": "icons/3d/user--p4.svg",
    "screens": [
     "IconSystem",
-    "WebNewsroom",
+    "AdminPosts",
     "WebPost",
-    "AdminPosts"
+    "WebNewsroom",
+    "WebSeries"
    ]
   },
   {
@@ -12048,10 +12169,11 @@
     "IconSystem",
     "RecordsVault",
     "WebVault",
-    "WebNewsroom",
-    "WebPost",
+    "M2WhatsNew",
     "AdminPosts",
-    "M2WhatsNew"
+    "WebPost",
+    "WebNewsroom",
+    "WebSeries"
    ]
   },
   {
@@ -12072,10 +12194,11 @@
    "file": "icons/3d/wellness-alt--p5.svg",
    "screens": [
     "IconSystem",
-    "WebNewsroom",
-    "WebPost",
+    "M2Home",
     "AdminPosts",
-    "M2Home"
+    "WebPost",
+    "WebNewsroom",
+    "WebSeries"
    ]
   }
  ],
@@ -21451,33 +21574,58 @@
    "size": "1440x1600",
    "icons": [
     "alert-circle",
+    "align-left",
+    "align-left-2",
+    "arrow-up-right",
+    "bar-chart",
     "book",
+    "brand-linkedin",
     "calendar",
+    "camera",
+    "check",
     "chevron-left",
     "chevron-right",
+    "clipboard",
     "clock",
+    "copy",
     "graduation-cap",
+    "grid",
     "heart-pulse",
+    "help-circle",
+    "info",
+    "mail",
     "megaphone",
+    "message-circle-2",
+    "message-square-text",
     "mic",
+    "question-mark",
     "refresh",
+    "repeat",
+    "rows-split",
     "search",
+    "share",
     "share-nodes",
     "shield-check",
     "sparkles",
     "star",
-    "user"
+    "sun",
+    "user",
+    "x-2"
    ],
    "icons3d": [
     "bell--p2",
     "brain-alt--p3",
     "calendar-alt--p4",
+    "chart-alt--p4",
     "chat-alt--p4",
     "doc--p4",
     "heart--p1",
     "home-alt--p4",
     "idcard-alt--p4",
+    "lab-alt--p5",
+    "search--p4",
     "settings-alt--p4",
+    "shield--p5",
     "thermo-alt--p1",
     "user--p4",
     "vault-alt--p4",
@@ -21498,41 +21646,60 @@
    "icons": [
     "alert-circle",
     "alert-triangle",
+    "align-left",
+    "align-left-2",
     "arrow-left",
     "arrow-right",
     "arrow-up-right",
+    "bar-chart",
+    "book",
     "brand-linkedin",
     "calendar",
+    "camera",
     "check",
+    "check-circle",
     "clipboard",
     "clock",
     "copy",
     "file-text",
     "graduation-cap",
+    "grid",
     "heart-pulse",
+    "help-circle",
     "image-off",
     "info",
+    "mail",
     "megaphone",
     "message-circle-2",
     "message-square-text",
     "mic",
+    "phone-call",
+    "question-mark",
+    "repeat",
+    "rows-split",
     "share",
     "shield-check",
     "sparkles",
     "star",
+    "sun",
     "user",
-    "x-2"
+    "x-2",
+    "x-square"
    ],
    "icons3d": [
     "bell--p2",
     "brain-alt--p3",
     "calendar-alt--p4",
+    "chart-alt--p4",
     "chat-alt--p4",
     "doc--p4",
     "heart--p1",
     "home-alt--p4",
     "idcard-alt--p4",
+    "lab-alt--p5",
+    "search--p4",
     "settings-alt--p4",
+    "shield--p5",
     "thermo-alt--p1",
     "user--p4",
     "vault-alt--p4",
@@ -21552,12 +21719,16 @@
    "size": "1440x1600",
    "icons": [
     "activity",
+    "alert-circle",
     "alert-triangle",
     "align-left",
     "align-left-2",
     "arrow-left",
     "arrow-up",
     "arrow-up-right",
+    "bar-chart",
+    "book",
+    "brand-linkedin",
     "calendar",
     "camera",
     "check",
@@ -21565,45 +21736,65 @@
     "chevron-down",
     "clipboard",
     "clock",
+    "copy",
+    "download",
     "eye",
     "eye-off",
     "file-text",
+    "filter",
     "graduation-cap",
+    "grid",
     "heart-pulse",
+    "help-circle",
     "inbox",
     "info",
     "lock",
+    "mail",
     "megaphone",
+    "message-circle-2",
     "message-square-text",
     "mic",
+    "monitor",
     "pause",
     "pencil",
+    "phone",
+    "phone-call",
     "play",
     "plus",
+    "question-mark",
     "refresh",
+    "repeat",
     "rotate-ccw",
     "rows-split",
     "search",
     "settings",
+    "share",
     "shield-alert",
     "shield-check",
     "sparkles",
+    "star",
     "stethoscope",
+    "sun",
     "trash",
     "upload",
     "wifi-off",
+    "x-2",
     "zap"
    ],
    "icons3d": [
     "bell--p2",
     "brain-alt--p3",
     "calendar-alt--p4",
+    "chart-alt--p4",
     "chat-alt--p4",
     "doc--p4",
     "heart--p1",
     "home-alt--p4",
     "idcard-alt--p4",
+    "lab-alt--p5",
+    "search--p4",
     "settings-alt--p4",
+    "shield--p5",
     "thermo-alt--p1",
     "user--p4",
     "vault-alt--p4",
@@ -21740,6 +21931,77 @@
    "brand": [],
    "assets": [],
    "textGlyphs": []
+  },
+  "WebSeries": {
+   "page": "New · Newsroom: News and Blog (2026-10-23, no canvas board)",
+   "size": "1440x1600",
+   "glyphs": [],
+   "illustrations": [],
+   "charts": [],
+   "brand": [
+    "studentkare-logo"
+   ],
+   "assets": [],
+   "textGlyphs": [],
+   "icons": [
+    "alert-circle",
+    "align-left",
+    "align-left-2",
+    "arrow-left",
+    "arrow-up-right",
+    "bar-chart",
+    "book",
+    "brand-linkedin",
+    "calendar",
+    "camera",
+    "check",
+    "chevron-left",
+    "chevron-right",
+    "clipboard",
+    "clock",
+    "copy",
+    "file-text",
+    "graduation-cap",
+    "grid",
+    "heart-pulse",
+    "help-circle",
+    "info",
+    "mail",
+    "megaphone",
+    "message-circle-2",
+    "message-square-text",
+    "mic",
+    "question-mark",
+    "refresh",
+    "repeat",
+    "rows-split",
+    "share",
+    "shield-check",
+    "sparkles",
+    "star",
+    "sun",
+    "user",
+    "x-2"
+   ],
+   "icons3d": [
+    "bell--p2",
+    "brain-alt--p3",
+    "calendar-alt--p4",
+    "chart-alt--p4",
+    "chat-alt--p4",
+    "doc--p4",
+    "heart--p1",
+    "home-alt--p4",
+    "idcard-alt--p4",
+    "lab-alt--p5",
+    "search--p4",
+    "settings-alt--p4",
+    "shield--p5",
+    "thermo-alt--p1",
+    "user--p4",
+    "vault-alt--p4",
+    "wellness-alt--p5"
+   ]
   }
  },
  "assets": {
@@ -22484,7 +22746,8 @@
    "bytes": 6765,
    "originalBytes": 8149,
    "screens": [
-    "M2Camps"
+    "M2Camps",
+    "WebPost"
    ],
    "uses": "Appointments empty (web panel, native booking); health camps empty (M2Camps)"
   },
@@ -22563,7 +22826,8 @@
    "bytes": 4259,
    "originalBytes": 4853,
    "screens": [
-    "WebNewsroom"
+    "WebNewsroom",
+    "WebPost"
    ],
    "uses": "Blog empty"
   },
@@ -22589,7 +22853,9 @@
    ],
    "bytes": 6405,
    "originalBytes": 7448,
-   "screens": [],
+   "screens": [
+    "WebPost"
+   ],
    "uses": "Member support tickets empty (web)"
   },
   {

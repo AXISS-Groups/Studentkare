@@ -12,7 +12,7 @@ import { apiRequest } from '@/data/services/http';
  * The critical flag and note are the lab's own, set when it files the report.
  */
 
-export type LabStatus =
+type LabStatus =
   | 'BOOKED' | 'ASSIGNED' | 'SAMPLE_COLLECTED' | 'IN_TRANSIT' | 'RECEIVED_AT_LAB' | 'IN_ANALYSIS'
   | 'REPORT_READY' | 'REPORT_RELEASED' | 'SAMPLE_REJECTED' | 'RECOLLECTION_REQUIRED' | 'CANCELLED';
 
@@ -50,7 +50,7 @@ export interface LabQueue {
 }
 
 /** The server's maximum page (`limit` le=200). */
-export const LAB_PAGE = 200;
+const LAB_PAGE = 200;
 
 export function loadLabOrders(signal?: AbortSignal, status = ''): Promise<LabQueue> {
   const params = new URLSearchParams({ limit: String(LAB_PAGE) });

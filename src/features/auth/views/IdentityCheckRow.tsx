@@ -8,7 +8,7 @@ import { color, focusRing, font, fontWeight, radius, size, space } from '@/desig
 import type { CheckState, IdentityCheck, IdentityCheckId } from '../viewmodel/IdentityVerifyViewModel';
 
 /** Row icons from the briefs (VerifyIdentity, VerifyGate): user-2, mail, id-card, shield. */
-export const CHECK_ICON: Record<IdentityCheckId, SkIconName> = {
+const CHECK_ICON: Record<IdentityCheckId, SkIconName> = {
   photo: 'user-2', email: 'mail', campus: 'id-card', gov: 'shield',
 };
 
@@ -17,7 +17,7 @@ export const CHECK_TITLE: Record<IdentityCheckId, MessageKey> = {
 };
 
 /** The line under a row's title. Campus wording follows the server's status; the rest are not available. */
-export function checkMeta(check: IdentityCheck): MessageKey {
+function checkMeta(check: IdentityCheck): MessageKey {
   switch (check.state) {
     case 'verified': return 'ident.meta.verified';
     case 'review': return 'ident.meta.review';
@@ -41,6 +41,8 @@ const BADGE: Partial<Record<CheckState, MessageKey>> = {
 export interface IdentityCheckRowProps {
   check: IdentityCheck;
   onPress?: () => void;
+  /** The check's illustration, drawn beside the words on the wide board (decorative). */
+  art?: React.ReactNode;
   testID?: string;
 }
 
@@ -50,7 +52,7 @@ export interface IdentityCheckRowProps {
  * Rejected is red: a failed verification is a safety alert (founder colour
  * rule, decision D3-1). A row with nowhere to go is not a button.
  */
-export function IdentityCheckRow({ check, onPress, testID }: IdentityCheckRowProps): React.ReactElement {
+export function IdentityCheckRow({ check, onPress, art, testID }: IdentityCheckRowProps): React.ReactElement {
   const t = useT();
   const tone = TONE[check.state];
   const title = t(CHECK_TITLE[check.id]);
@@ -65,6 +67,7 @@ export function IdentityCheckRow({ check, onPress, testID }: IdentityCheckRowPro
         <Text style={styles.title}>{title}</Text>
         <Text style={[styles.meta, metaTone[tone]]}>{meta}</Text>
       </View>
+      {art ? <View style={styles.art} pointerEvents="none" accessibilityElementsHidden importantForAccessibility="no-hide-descendants">{art}</View> : null}
       {check.state === 'verified' ? (
         <View style={styles.done} testID={testID ? `${testID}-done` : undefined}>
           <Icon name="check" size={16} strokeWidth={2.8} color={color.onAction} />
@@ -105,10 +108,11 @@ export function IdentityCheckRow({ check, onPress, testID }: IdentityCheckRowPro
 const styles = StyleSheet.create({
   row: {
     flexDirection: 'row', alignItems: 'center', gap: space.s12, minHeight: size.touchTarget + space.s20,
-    paddingVertical: space.s12, paddingHorizontal: space.s14, borderRadius: radius.lg, borderWidth: 1.5, backgroundColor: color.surface,
+    paddingVertical: space.s12, paddingHorizontal: space.s14, borderRadius: radius.xl, borderWidth: 1.5, backgroundColor: color.surface,
   },
   tile: { width: size.touchTarget, height: size.touchTarget, borderRadius: radius.md, alignItems: 'center', justifyContent: 'center' },
   words: { flex: 1, gap: space.s2 },
+  art: { width: 48, height: 48, borderRadius: radius.md, backgroundColor: color.surface2, alignItems: 'center', justifyContent: 'center' },
   title: { fontFamily: font.family.sans, fontSize: font.size.body, fontWeight: fontWeight(font.weight.heavy), color: color.text },
   meta: { fontFamily: font.family.sans, fontSize: font.size.bodySm, lineHeight: font.size.bodySm * font.lineHeight.body },
   done: { width: 30, height: 30, borderRadius: radius.full, backgroundColor: color.positive, alignItems: 'center', justifyContent: 'center' },

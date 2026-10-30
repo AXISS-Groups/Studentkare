@@ -15,7 +15,7 @@ import { GovCard, GovPill, ago, median, useResource } from './GovBoard';
 
 /** SOS states, in the order the board lists them: anything still open sorts first. */
 const SOS_ORDER: Record<string, number> = { ACTIVE: 0, ACKNOWLEDGED: 1 };
-export const SOS_OPEN = new Set(['ACTIVE', 'ACKNOWLEDGED']);
+const SOS_OPEN = new Set(['ACTIVE', 'ACKNOWLEDGED']);
 const SOS_STATE: Record<string, { label: MessageKey; tone: SkTone }> = {
   ACTIVE: { label: 'gov.ops.stateLive', tone: 'danger' },
   ACKNOWLEDGED: { label: 'gov.ops.stateAcknowledged', tone: 'attention' },

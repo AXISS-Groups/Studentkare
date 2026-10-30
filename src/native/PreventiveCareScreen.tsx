@@ -59,7 +59,7 @@ function isOffering(value: unknown): value is VaccineOffering {
 }
 
 /** Public transport only: no shared authenticated client, session headers or PHI. */
-export const listNativeVaccines: ListVaccines = async ({ query, pincode, provider, offset, limit }) => {
+const listNativeVaccines: ListVaccines = async ({ query, pincode, provider, offset, limit }) => {
   const base = nativeApiBaseUrl();
   const params = Object.entries({ query, pincode, provider, offset, limit })
     .map(([key, value]) => `${key}=${encodeURIComponent(String(value))}`).join('&');

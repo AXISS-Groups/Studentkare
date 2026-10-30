@@ -10,7 +10,7 @@ import type { PayMethod } from '../viewmodel/PayStepViewModel';
 const KEY = 'studentkare_last_pay_method_v1';
 const METHODS: readonly PayMethod[] = ['upi', 'card', 'netbanking'];
 
-export function isPayMethod(value: unknown): value is PayMethod {
+function isPayMethod(value: unknown): value is PayMethod {
   return typeof value === 'string' && (METHODS as readonly string[]).includes(value);
 }
 

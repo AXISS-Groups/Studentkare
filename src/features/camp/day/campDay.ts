@@ -11,10 +11,10 @@ import { apiRequest } from '@/data/services/http';
  * drawn as numbers; the view says the queue isn't connected.
  */
 
-export interface CampSummary { id: string; name: string; date: string; location: string; whatToBring?: string }
-export interface CampStatus { registered: boolean; checkedIn: boolean; completedStations: string[]; slotId?: string | null }
-export interface CampStation { id: string; name: string; sort: number }
-export interface CampSlot { id: string; slotStart: string; slotEnd: string }
+interface CampSummary { id: string; name: string; date: string; location: string; whatToBring?: string }
+interface CampStatus { registered: boolean; checkedIn: boolean; completedStations: string[]; slotId?: string | null }
+interface CampStation { id: string; name: string; sort: number }
+interface CampSlot { id: string; slotStart: string; slotEnd: string }
 
 export interface CampDayData {
   camp: CampSummary;
@@ -23,7 +23,7 @@ export interface CampDayData {
   slot: CampSlot | null;
 }
 
-export type StationState = 'done' | 'now' | 'next';
+type StationState = 'done' | 'now' | 'next';
 
 export interface CampDayStationView extends CampStation { state: StationState }
 
@@ -37,7 +37,7 @@ export interface CampDayView {
 }
 
 /** ISO date (YYYY-MM-DD) of `now` in the student's own calendar. */
-export function localIsoDate(now: Date): string {
+function localIsoDate(now: Date): string {
   const pad = (n: number) => String(n).padStart(2, '0');
   return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
 }

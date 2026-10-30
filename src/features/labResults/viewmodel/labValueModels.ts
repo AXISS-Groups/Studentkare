@@ -24,7 +24,7 @@ export function toneOf(state: RangeState): ValueTone {
   return 'neutral';
 }
 
-export const isOutside = (state: RangeState): boolean => toneOf(state) === 'attention';
+const isOutside = (state: RangeState): boolean => toneOf(state) === 'attention';
 
 // ── M2Insights ───────────────────────────────────────────────────────────────
 

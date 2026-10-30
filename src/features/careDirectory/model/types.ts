@@ -5,7 +5,7 @@
  * the student shares their location, and never sent anywhere.
  */
 export type FacilityKind = 'HOSPITAL' | 'CLINIC' | 'PHARMACY' | 'AMBULANCE' | 'BLOOD_BANK';
-export type FacilitySource = 'CURATED' | 'PARTNER';
+type FacilitySource = 'CURATED' | 'PARTNER';
 export type PlaceSegment = 'hospitals' | 'pharmacies' | 'ambulance';
 export type DirectorySegment = PlaceSegment | 'doctors';
 

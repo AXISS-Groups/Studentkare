@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Icon } from '@/design-system/icons';
 import { SkButton, StatusPill, Toast } from '@/design-system/primitives';
-import type { SkTone } from '@/design-system/primitives';
 import { ConsoleTopbar } from '@/design-system/console-shell/ConsoleShell';
 import { TeamBadge } from '@/features/team-accounts/TeamBadge';
 import toolsArt from '../../assets/image-6f6766.jpg';
@@ -14,7 +13,8 @@ import type { MessageKey } from '@/i18n';
 import { useEffectivePartnerKind } from './partnerPreview';
 import { partnerInitials } from './partnerAccess';
 import { countRequests, countRxReviews, loadRequests, updateRequest } from '@/features/partner/partnerApi';
-import type { PartnerRequest, RequestStatus } from '@/features/partner/partnerApi';
+import type { PartnerRequest } from '@/features/partner/partnerApi';
+import { lineState } from '@/features/partner/lineState';
 import { PartnerError, PartnerEmpty, PartnerKpis, PartnerLoading, PartnerPage, shortRef, usePartnerLoad } from '@/features/partner/PartnerPage';
 import './vendor-home.css';
 import '@/design-system/design-system.css';
@@ -123,17 +123,6 @@ const TOOLS: Record<ProviderType, Tool[]> = {
 };
 
 const PROVIDER_FOR_KIND: Record<PartnerKind, ProviderType> = { PHARMACY: 'pharmacy', LAB: 'lab', CLINIC: 'clinic', WELLNESS: 'wellness' };
-
-const STATE: Record<RequestStatus, { key: MessageKey; tone: SkTone }> = {
-  REQUESTED: { key: 'pc.state.new', tone: 'attention' },
-  ACCEPTED: { key: 'pc.state.accepted', tone: 'action' },
-  DISPATCHED: { key: 'pc.state.out', tone: 'positive' },
-  COMPLETED: { key: 'pc.state.delivered', tone: 'neutral' },
-  DECLINED: { key: 'pc.state.declined', tone: 'neutral' },
-};
-/** Placed but not paid: not "New" for the partner until the payment is confirmed. */
-const AWAITING_PAYMENT_STATE = { key: 'pc.state.awaitingPayment', tone: 'neutral' } as const;
-const stateOf = (line: PartnerRequest) => (line.awaitingPayment ? AWAITING_PAYMENT_STATE : STATE[line.status]);
 
 export interface VendorHomeScreenProps {
   initialProviderType?: ProviderType;
@@ -244,7 +233,7 @@ export function VendorHomeScreen({ initialProviderType, source = liveHomeSource,
                     <span className="vh-row__id">{shortRef(line.orderId)}</span>
                     <span className="vh-row__what">{t('pc.lineWhat', { name: line.name, qty: line.quantity })}</span>
                     <span className="vh-row__meta">{deliveryMeta(line, t)}</span>
-                    <StatusPill tone={stateOf(line).tone} className="vh-row__state">{t(stateOf(line).key)}</StatusPill>
+                    <StatusPill tone={lineState(line).tone} className="vh-row__state">{t(lineState(line).key)}</StatusPill>
                   </li>
                 ))}
               </ul>

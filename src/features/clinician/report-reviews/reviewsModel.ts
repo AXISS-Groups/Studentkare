@@ -17,7 +17,7 @@ import type { Request } from '../shared/clinicalData';
 
 /** Server limits (preventive_care ReviewInput / GuidanceLine / SourceRef). */
 export const REVIEW_LIMITS = { summary: 4000, lines: 10, line: 1000, sources: 10, titleMin: 2, title: 160, url: 2000 } as const;
-export const QUEUE_PAGE = 100;
+const QUEUE_PAGE = 100;
 
 export interface QueueReview {
   id: string;
@@ -33,7 +33,7 @@ export interface ReviewsData {
 }
 
 export type Decision = 'APPROVED' | 'REJECTED';
-export interface SourceRef { title: string; url: string }
+interface SourceRef { title: string; url: string }
 
 export interface ReviewDraft {
   decision: Decision;
@@ -55,7 +55,7 @@ export type ReviewBody =
   | { expectedVersion: number; decision: 'REJECTED' }
   | { expectedVersion: number; decision: 'APPROVED'; summary: string; questions: string[]; nextSteps: string[]; sourceRefs: SourceRef[] };
 
-export function lines(text: string): string[] {
+function lines(text: string): string[] {
   return text.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
 }
 

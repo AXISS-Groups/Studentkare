@@ -9,7 +9,7 @@ import type { FeatureModule } from '@/core/routing/registry';
  * `/privacy` and `/terms` were both routed to the marketplace screen, so anyone
  * following either link was served the shop.
  */
-export const landingModule: FeatureModule = {
+const landingModule: FeatureModule = {
   id: 'landing',
   title: 'Public site',
   basePath: '/',

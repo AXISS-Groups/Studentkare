@@ -1,13 +1,13 @@
 import { RuleId } from '../ai/core/constitution';
 
-export type BreakGlassReason =
+type BreakGlassReason =
   | 'SAFETY_ESCALATION'
   | 'DPDP_DATA_PRINCIPAL_REQUEST'
   | 'LEGAL_ORDER'
   | 'INCIDENT_INVESTIGATION'
   | 'STUDENT_SUPPORT_TICKET';
 
-export type SensitiveCategory = 'MENTAL_HEALTH' | 'REPRODUCTIVE' | 'HIV' | 'NONE';
+type SensitiveCategory = 'MENTAL_HEALTH' | 'REPRODUCTIVE' | 'HIV' | 'NONE';
 
 export interface BreakGlassSession {
   id: string;

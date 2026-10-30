@@ -1,7 +1,7 @@
 import { registerModule } from '@/core/routing';
 import type { FeatureModule } from '@/core/routing';
 
-export const authModule: FeatureModule = {
+const authModule: FeatureModule = {
   id: 'auth',
   title: 'Authentication',
   basePath: '/',

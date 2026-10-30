@@ -21,7 +21,7 @@ import './campus-safety.css';
  * of this page; one that describes behaviour the app does not have (a breached
  * timer escalating to a named person) is left out.
  */
-export type SafetyBoardId = 'isolation' | 'ambulance' | 'sla' | 'discharge';
+type SafetyBoardId = 'isolation' | 'ambulance' | 'sla' | 'discharge';
 
 interface SafetySpec {
   /** Canvas board name, for the error reference. */
@@ -42,7 +42,7 @@ interface SafetySpec {
 const ID_WIDTH = '110px';
 const STATE_WIDTH = '170px';
 
-export const SAFETY_BOARDS: Record<SafetyBoardId, SafetySpec> = {
+const SAFETY_BOARDS: Record<SafetyBoardId, SafetySpec> = {
   isolation: {
     board: 'CampusIsolation',
     title: 'campusSafety.isolation.title',
@@ -123,7 +123,7 @@ export const SAFETY_BOARDS: Record<SafetyBoardId, SafetySpec> = {
 /** The board's 3D tile in its empty state (every page-4 board draws this one). */
 const EMPTY_TILE = 'chart-alt--p4';
 
-export function SafetyTableBoard({ id }: { id: SafetyBoardId }): React.ReactElement {
+function SafetyTableBoard({ id }: { id: SafetyBoardId }): React.ReactElement {
   const t = useT();
   const spec = SAFETY_BOARDS[id];
   const columns: DataTableColumn[] = spec.columns.map((column) => ({ label: t(column.label), width: column.width, align: column.align }));

@@ -1,5 +1,7 @@
 import { apiRequest } from '@/data/services/http';
 import { apiBaseUrl } from '@/core/env';
+import type { SkIconName } from '@/design-system/icons';
+import type { ServiceHue } from '@/design-system/m2';
 import type { BlockType, CtaRoute, PostTemplate, SectionPath } from '../model/templates';
 
 /**
@@ -16,7 +18,9 @@ export type PostBlock =
   | { type: 'callout'; tone: 'info' | 'attention'; text: string }
   | { type: 'image'; imageId: string; alt: string; caption: string; src?: string }
   | { type: 'facts'; title: string; items: string[] }
-  | { type: 'cta'; label: string; route: CtaRoute };
+  | { type: 'cta'; label: string; route: CtaRoute }
+  | { type: 'mythfact'; myth: string; fact: string }
+  | { type: 'stat'; value: string; label: string };
 
 export type BlockOf<T extends BlockType> = Extract<PostBlock, { type: T }>;
 
@@ -45,9 +49,20 @@ export interface PostTeaser {
   auto: boolean;
   /** The outside item an auto news post summarises: its publisher, link and date. */
   source: PostSource | null;
+  /** Its category (a reader's filter, chip colour and icon). */
+  category: PostCategoryRef | null;
+  /** The series it is an episode of, with its number. */
+  series: PostSeriesRef | null;
+  /** Mental health (or a category marked so): the page always shows Tele-MANAS 14416 and 112. */
+  crisisLines: boolean;
+  /** Health content: the page carries the fixed "general information, not advice" note. */
+  healthNote: boolean;
 }
 
-export interface PostSource { name: string; url: string; publishedAt: string | null }
+export interface PostCategoryRef { id: string; name: string; hue: ServiceHue; icon: SkIconName; crisisLines: boolean }
+interface PostSeriesRef { slug: string; name: string; hue: ServiceHue; episode: number }
+
+interface PostSource { name: string; url: string; publishedAt: string | null }
 
 export interface PostDetail extends PostTeaser {
   body: PostBlock[];
@@ -67,6 +82,8 @@ export interface PostList {
 export interface ListQuery {
   section?: SectionPath;
   template?: PostTemplate | null;
+  category?: string | null;
+  series?: string | null;
   q?: string;
   tag?: string;
   page?: number;
@@ -88,7 +105,13 @@ export interface PostInput {
   seoDescription: string;
   featured: boolean;
   authorId: string;
+  categoryId: string;
+  seriesId: string;
 }
+
+/** One sentence the precision gate checked, and why it failed (empty when it passed). */
+interface PrecisionSentence { text: string; ok: boolean; reasons: string[] }
+export interface PrecisionReport { score: number; threshold: number; passed: boolean; sentences: PrecisionSentence[]; source: string[] }
 
 export interface AdminPost extends Omit<PostInput, 'body'> {
   id: string;
@@ -109,9 +132,29 @@ export interface AdminPost extends Omit<PostInput, 'body'> {
   updatedAt: number;
   auto: boolean;
   source: PostSource | null;
+  episode: number;
+  category: PostCategoryRef | null;
+  series: PostSeriesRef | null;
+  /** The precision gate's score in percent (-1: not scored, typed by the team). */
+  precision: number;
+  precisionReport: PrecisionReport | null;
+  /** Why an auto draft waits for the super admin: PRECISION, EDITOR, or '' when it does not. */
+  holdReason: '' | 'PRECISION' | 'EDITOR';
+  healthContent: boolean;
 }
 
-export interface HistoryEntry {
+export interface AdminFilters {
+  status?: PostStatus | null;
+  template?: PostTemplate | null;
+  q?: string;
+  category?: string | null;
+  series?: string | null;
+  origin?: 'AUTO' | 'MANUAL' | null;
+  source?: string | null;
+  queue?: 'review' | null;
+}
+
+interface HistoryEntry {
   id: string;
   action: string;
   actorRole: string;
@@ -137,7 +180,7 @@ export class NewsroomRepository {
 
   // --- public ---
   list(q: ListQuery, signal?: AbortSignal): Promise<PostList> {
-    return this.request<PostList>(`/posts${query({ section: q.section, template: q.template, q: q.q?.trim(), tag: q.tag, page: q.page, pageSize: q.pageSize })}`, { signal });
+    return this.request<PostList>(`/posts${query({ section: q.section, template: q.template, category: q.category, series: q.series, q: q.q?.trim(), tag: q.tag, page: q.page, pageSize: q.pageSize })}`, { signal });
   }
 
   post(section: SectionPath, slug: string): Promise<PostDetail> {
@@ -145,8 +188,9 @@ export class NewsroomRepository {
   }
 
   // --- editor (super admin) ---
-  adminList(filters: { status?: PostStatus | null; template?: PostTemplate | null; q?: string }): Promise<{ items: AdminPost[]; total: number }> {
-    return this.request(`/ops/posts${query({ status: filters.status, template: filters.template, q: filters.q?.trim() })}`);
+  adminList(filters: AdminFilters): Promise<{ items: AdminPost[]; total: number }> {
+    return this.request(`/ops/posts${query({ status: filters.status, template: filters.template, q: filters.q?.trim(), category: filters.category,
+      series: filters.series, origin: filters.origin, source: filters.source, queue: filters.queue })}`);
   }
 
   authors(): Promise<{ items: TeamMember[] }> {

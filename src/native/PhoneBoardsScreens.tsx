@@ -35,7 +35,7 @@ export function SearchScreen(): React.ReactElement {
     bookDoctor: () => navigate('Appointments'),
     openPrescriptions: () => navigate('Vault'),
     openAyush: () => navigate('AiChat'),
-    openEmergencyCard: () => navigate('Emergency'),
+    openEmergencyCard: () => navigate('EmergencyCard'),
     openPass: () => navigate('DigitalId'),
     openCrisis: () => navigate('Emergency'),
     openMedicineInfo: (query) => navigate('MedicineInfo', query ? { query } : undefined),

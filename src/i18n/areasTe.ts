@@ -30,6 +30,7 @@ import { mobile2HealthTe } from './areas/mobile2health';
 import { mobile2OrdersTe } from './areas/mobile2Orders';
 import { mobile2Te } from './areas/mobile2';
 import { mobile2WebTe } from './areas/mobile2Web';
+import { newsroomContentTe } from './areas/newsroomContent';
 import { newsroomTe } from './areas/newsroom';
 import { onboardTe } from './areas/onboard';
 import { partnerConsoleTe } from './areas/partnerConsole';
@@ -51,6 +52,7 @@ import { studentshellTe } from './areas/studentshell';
 import { studentwebT1Te } from './areas/studentwebT1';
 import { studentwebTe } from './areas/studentweb';
 import { teamAccountsTe } from './areas/teamAccounts';
+import { walletTe } from './areas/wallet';
 import { wellnessTe } from './areas/wellness';
 // keep-sorted end
 
@@ -93,6 +95,7 @@ export const areasTe = {
   ...mobile2OrdersTe,
   ...mobile2Te,
   ...mobile2WebTe,
+  ...newsroomContentTe,
   ...newsroomTe,
   ...onboardTe,
   ...partnerConsoleTe,
@@ -114,6 +117,7 @@ export const areasTe = {
   ...studentwebT1Te,
   ...studentwebTe,
   ...teamAccountsTe,
+  ...walletTe,
   ...wellnessTe,
   // keep-sorted end
 };

@@ -5,7 +5,7 @@
  */
 
 /** One delivery attempt of an SOS (who was told, on which channel, whether it went). */
-export interface SosDelivery { recipientKind?: string; channel?: string; status: string }
+interface SosDelivery { recipientKind?: string; channel?: string; status: string }
 
 /**
  * GET /ops/sos?open=false, as this board reads it. The endpoint also returns the
@@ -26,7 +26,7 @@ export interface SosAlertRow {
 export interface SosList { items: SosAlertRow[] }
 
 /** GET /ops/rule-l: Rule L at the database, computed on each request. */
-export interface RuleLChecks {
+interface RuleLChecks {
   rolesPresent?: Record<string, boolean>;
   unclassifiedTables?: string[];
   loginCanAssumeCommerce?: boolean;

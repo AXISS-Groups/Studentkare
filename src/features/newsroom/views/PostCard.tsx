@@ -5,14 +5,21 @@ import type { PostTeaser } from '../data/NewsroomRepository';
 import { TEMPLATES } from '../model/templates';
 import { formatDate } from '../model/share';
 import { PostCover } from './PostCover';
+import { ShareBar } from './ShareBar';
 import './newsroom.css';
 
-/** The chips every teaser shows: its category, and "Sample post" in a development build. */
+/** The chips every teaser shows: its type, its category, its series episode, and "Sample post" in a development build. */
 export function PostChips({ post }: { post: PostTeaser }): React.ReactElement {
   const t = useT();
   return (
     <span className="sk-news-chips">
       <span className="sk-news-chip" data-hue={TEMPLATES[post.template].hue}>{t(TEMPLATES[post.template].label)}</span>
+      {post.category ? (
+        <span className="sk-news-chip sk-news-chip--category" data-hue={post.category.hue} data-testid="news-category-chip">
+          <Icon name={post.category.icon} size={12} strokeWidth={2.2} />{post.category.name}
+        </span>
+      ) : null}
+      {post.series ? <span className="sk-news-chip" data-hue={post.series.hue}>{t('cms.series.episode', { n: post.series.episode })}</span> : null}
       {post.sample ? <span className="sk-news-chip sk-news-chip--sample">{t('news.sample')}</span> : null}
     </span>
   );
@@ -35,14 +42,16 @@ export function PostMeta({ post }: { post: PostTeaser }): React.ReactElement {
  * A post in a list: its template's cover, chips, title, summary and meta. The
  * whole card is one link (the title), so a screen reader hears it once.
  */
-export function PostCard({ post, featured = false, onOpen, headingLevel = 3 }: {
+export function PostCard({ post, featured = false, onOpen, headingLevel = 3, share = true }: {
   post: PostTeaser; featured?: boolean; onOpen?: (post: PostTeaser) => void; headingLevel?: 2 | 3;
+  /** The card's own Share button (off where a card sits inside another post's page, e.g. a preview). */
+  share?: boolean;
 }): React.ReactElement {
   const t = useT();
   const Heading = headingLevel === 2 ? 'h2' : 'h3';
   return (
     <article className={`sk-news-card${featured ? ' sk-news-card--featured' : ''}`} data-testid={`news-card-${post.slug}`}>
-      <PostCover template={post.template} art={post.coverArt} alt={post.coverAlt} size="card" />
+      <PostCover template={post.template} art={post.coverArt} alt={post.coverAlt} size="card" hue={post.series?.hue} />
       <div className="sk-news-card__text">
         {featured ? <span className="sk-news-card__eyebrow"><Icon name="star" size={14} />{t('news.featured')}</span> : null}
         <PostChips post={post} />
@@ -56,6 +65,7 @@ export function PostCard({ post, featured = false, onOpen, headingLevel = 3 }: {
         {post.reviewed ? (
           <p className="sk-news-card__reviewed"><Icon name="shield-check" size={14} />{t('news.reviewedShort', { name: post.reviewed.by })}</p>
         ) : null}
+        {share ? <ShareBar post={post} variant="compact" /> : null}
       </div>
     </article>
   );

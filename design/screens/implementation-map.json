@@ -103,7 +103,9 @@
       "src/features/auth/views/IdentityVerifyView.tsx",
       "src/features/auth/views/IdentityVerifyPanel.tsx",
       "src/features/auth/views/IdentityCheckRow.tsx",
-      "src/features/auth/viewmodel/IdentityVerifyViewModel.ts"
+      "src/features/auth/viewmodel/IdentityVerifyViewModel.ts",
+      "src/design-system/m2/M2Parts.tsx",
+      "src/design-system/m2/M2Tier1.tsx"
     ],
     "VerifyGate": [
       "src/features/auth/views/VerifyGateView.tsx",
@@ -125,7 +127,6 @@
     "NewDevice": [],
     "HomeDiscover": [
       "src/features/discover/views/HomeDiscoverView.tsx",
-      "src/features/discover/views/HomeDiscoverRoute.tsx",
       "src/features/phoneKit/phoneParts.tsx",
       "src/features/phoneKit/studentPhoneBoards.tsx",
       "src/screens/workspace/StudentPhoneFrame.tsx",
@@ -214,7 +215,20 @@
       "src/features/movement/views/MovementBoard.tsx",
       "src/screens/workspace/PhoneBoards.tsx"
     ],
-    "RecordsVault": [],
+    "RecordsVault": [
+      "src/features/vault/views/HealthVaultView.tsx",
+      "src/features/vault/views/HealthVaultRoute.tsx",
+      "src/features/vault/views/HealthVaultNativeView.tsx",
+      "src/features/vault/views/PrescriptionsTab.tsx",
+      "src/features/vault/views/recordsArt.ts",
+      "src/features/vault/viewmodel/HealthVaultViewModel.ts",
+      "src/features/phoneKit/studentPhoneBoards.tsx",
+      "src/design-system/m2/M2Parts.tsx",
+      "src/design-system/m2/M2Surfaces.tsx",
+      "src/design-system/m2/M2Structure.tsx",
+      "src/design-system/m2/M2Blocks.tsx",
+      "src/design-system/m2/Gradient.tsx"
+    ],
     "AyushChat": [],
     "Notifications": [
       "src/features/notifications/views/NotificationNativeView.tsx",
@@ -222,28 +236,17 @@
     ],
     "EmergencyCard": [
       "src/features/emergency/views/EmergencyCardBoard.tsx",
-      "src/features/emergency/viewmodel/EmergencyCardViewModel.ts"
+      "src/features/emergency/viewmodel/EmergencyCardViewModel.ts",
+      "src/features/emergency/views/WalletPassPanel.tsx",
+      "src/features/emergency/views/openWallet.ts",
+      "src/features/emergency/viewmodel/WalletPassViewModel.ts",
+      "src/design-system/m2/M2Parts.tsx",
+      "src/design-system/m2/M2Tier1.tsx"
     ],
     "CrisisSupport": [
       "src/features/crisis/views/CrisisSupportBoard.tsx"
     ],
-    "ShopHome": [
-      "src/features/shopPhone/views/ShopHomeView.tsx",
-      "src/features/shopPhone/views/shopParts.tsx",
-      "src/features/shopPhone/views/ShopFlow.tsx",
-      "src/features/shopPhone/views/ShopPhoneRoute.tsx",
-      "src/features/shopPhone/viewmodel/PhoneShopViewModel.ts",
-      "src/features/phoneKit/phoneParts.tsx",
-      "src/features/phoneKit/catalogArt.ts",
-      "src/features/phoneKit/phoneArt.ts"
-    ],
     "ProductList": [],
-    "ProductDetail": [
-      "src/features/shopPhone/views/ProductDetailView.tsx",
-      "src/features/shopPhone/viewmodel/PhoneShopViewModel.ts",
-      "src/features/phoneKit/phoneParts.tsx",
-      "src/features/phoneKit/catalogArt.ts"
-    ],
     "LabPackages": [
       "src/features/labBooking/views/LabPackagesView.tsx",
       "src/features/labBooking/views/LabBookingFlow.tsx",
@@ -276,14 +279,12 @@
     ],
     "OrderTracking": [
       "src/features/orders/views/OrderTrackingView.tsx",
-      "src/features/orders/views/OrdersPhoneRoute.tsx",
       "src/features/orders/viewmodel/OrdersViewModel.ts",
       "src/features/phoneKit/phoneParts.tsx",
       "src/native/PhoneBoardsScreens.tsx"
     ],
     "OrderHistory": [
       "src/features/orders/views/OrderHistoryView.tsx",
-      "src/features/orders/views/OrdersPhoneRoute.tsx",
       "src/features/orders/viewmodel/OrdersViewModel.ts",
       "src/features/phoneKit/OfflineBoard.tsx",
       "src/features/phoneKit/phoneParts.tsx",
@@ -299,10 +300,18 @@
     ],
     "DigitalId": [
       "src/features/digital_id/views/DigitalIdNativeView.tsx",
-      "src/screens/workspace/PhoneBoards.tsx"
+      "src/features/digital_id/viewmodel/DigitalIdViewModel.ts",
+      "src/screens/workspace/PhoneBoards.tsx",
+      "src/features/phoneKit/studentPhoneBoards.tsx",
+      "src/design-system/m2/M2Parts.tsx",
+      "src/design-system/m2/M2Surfaces.tsx",
+      "src/design-system/m2/M2Structure.tsx",
+      "src/design-system/m2/M2Blocks.tsx",
+      "src/design-system/m2/Gradient.tsx"
     ],
     "PlanBilling": [
-      "src/features/billing/views/PlanBillingBoard.tsx"
+      "src/features/billing/views/PlanBillingBoard.tsx",
+      "src/screens/workspace/PhoneBoards.tsx"
     ],
     "ClaimsHub": [
       "src/features/claims/views/ClaimsHubBoard.tsx",
@@ -317,10 +326,12 @@
       "src/screens/workspace/PhoneBoards.tsx"
     ],
     "ConsentInbox": [
-      "src/features/vault/views/ConsentInboxBoard.tsx"
+      "src/features/vault/views/ConsentInboxBoard.tsx",
+      "src/design-system/m2/M2Parts.tsx",
+      "src/design-system/m2/M2Tier1.tsx"
     ],
     "SosBeacon": [
-      "src/modules/m04-emergency/view/SosView.tsx",
+      "src/features/emergency/views/SosView.tsx",
       "src/features/emergency/screens/SosRouteScreen.tsx"
     ],
     "DataExport": [
@@ -332,7 +343,9 @@
       "src/features/emergency/viewmodel/EmergencyCardViewModel.ts"
     ],
     "FamilyCircle": [
-      "src/features/vault/views/FamilyCircleBoard.tsx"
+      "src/features/vault/views/FamilyCircleBoard.tsx",
+      "src/design-system/m2/M2Parts.tsx",
+      "src/design-system/m2/M2Tier1.tsx"
     ],
     "RefillRequest": [],
     "HostelVisit": [
@@ -365,15 +378,27 @@
       "src/design-system/ResultMoment.tsx"
     ],
     "MyPass": [
-      "src/features/digital_id/views/MyPassBoard.tsx"
+      "src/features/digital_id/views/MyPassBoard.tsx",
+      "src/features/digital_id/viewmodel/livePass.ts",
+      "src/features/phoneKit/studentPhoneBoards.tsx",
+      "src/design-system/m2/M2Parts.tsx",
+      "src/design-system/m2/M2Surfaces.tsx",
+      "src/design-system/m2/M2Structure.tsx",
+      "src/design-system/m2/M2Blocks.tsx",
+      "src/design-system/m2/Gradient.tsx"
     ],
     "CheckinReceipt": [],
     "LeaveCampus": [
-      "src/features/campus/views/LeaveCampusView.tsx"
+      "src/features/campus/views/LeaveCampusView.tsx",
+      "src/features/campus/viewmodel/LeaveCampusViewModel.ts",
+      "src/design-system/m2/M2Parts.tsx",
+      "src/design-system/m2/M2Tier1.tsx"
     ],
     "DeleteAccount": [
       "src/features/account/views/DeleteAccountView.tsx",
-      "src/features/account/viewmodel/DeleteAccountViewModel.ts"
+      "src/features/account/viewmodel/DeleteAccountViewModel.ts",
+      "src/design-system/m2/M2Parts.tsx",
+      "src/design-system/m2/M2Tier1.tsx"
     ],
     "NotificationSettings": [
       "src/features/notifications/views/NotificationSettingsView.tsx",
@@ -381,9 +406,18 @@
       "src/features/notifications/data/pushDevice.ts",
       "src/native/hardware/push.ts"
     ],
-    "ConsultSummary": [],
+    "ConsultSummary": [
+      "src/features/vault/views/VisitSummaryView.tsx",
+      "src/features/vault/viewmodel/VisitSummaryViewModel.ts",
+      "src/features/phoneKit/studentPhoneBoards.tsx",
+      "src/design-system/m2/M2Parts.tsx",
+      "src/design-system/m2/M2Surfaces.tsx",
+      "src/design-system/m2/M2Structure.tsx",
+      "src/design-system/m2/M2Blocks.tsx",
+      "src/design-system/m2/Gradient.tsx"
+    ],
     "SosDebrief": [
-      "src/modules/m04-emergency/view/SosView.tsx",
+      "src/features/emergency/views/SosView.tsx",
       "src/features/emergency/screens/SosRouteScreen.tsx"
     ],
     "MyRequests": [
@@ -529,6 +563,8 @@
       "src/features/auth/views/IdentityVerifyPanel.tsx",
       "src/features/auth/views/IdentityCheckRow.tsx",
       "src/features/auth/viewmodel/IdentityVerifyViewModel.ts",
+      "src/design-system/m2/M2Parts.tsx",
+      "src/design-system/m2/M2Tier1.tsx",
       "src/design-system/student-shell/StudentWebShell.tsx",
       "src/design-system/student-shell/studentNav.ts",
       "src/design-system/overlays/ConfirmDialog.tsx"
@@ -540,33 +576,6 @@
     ],
     "WebGuardianConsent": [],
     "WebGuardianApprove": [],
-    "WebHome": [
-      "src/features/studentweb/views/WebHomeView.tsx",
-      "src/features/studentweb/views/parts.tsx",
-      "src/design-system/student-shell/StudentWebShell.tsx",
-      "src/design-system/student-shell/studentNav.ts",
-      "src/design-system/overlays/ConfirmDialog.tsx",
-      "src/design-system/public-site/PublicSiteFooter.tsx",
-      "src/design-system/public-site/NewsletterBand.tsx",
-      "src/design-system/public-site/publicSiteNav.ts"
-    ],
-    "WebDashboard": [
-      "src/features/studentweb/views/WebDashboardView.tsx",
-      "src/features/studentweb/views/parts.tsx",
-      "src/features/studentweb/data/studentWebData.ts",
-      "src/design-system/student-shell/StudentWebShell.tsx",
-      "src/design-system/student-shell/studentNav.ts",
-      "src/design-system/overlays/ConfirmDialog.tsx"
-    ],
-    "WebVault": [
-      "src/features/studentweb/views/t1/WebVaultView.tsx",
-      "src/design-system/student-shell/StudentWebShell.tsx",
-      "src/design-system/student-shell/studentNav.ts",
-      "src/design-system/overlays/ConfirmDialog.tsx",
-      "src/features/studentweb/views/parts.tsx",
-      "src/features/studentweb/views/t1/shared.tsx",
-      "src/features/studentweb/views/t1/t1web.css"
-    ],
     "WebMyLabTests": [
       "src/features/studentweb/views/t1/WebMyLabTestsView.tsx",
       "src/design-system/student-shell/StudentWebShell.tsx",
@@ -579,39 +588,6 @@
       "src/design-system/public-site/publicSiteNav.ts",
       "src/design-system/public-site/NewsletterBand.tsx"
     ],
-    "WebAyush": [
-      "src/features/studentweb/views/t1/WebAyushView.tsx",
-      "src/features/ayush/AyushAnswer.tsx",
-      "src/features/ayush/useAyushConversation.ts",
-      "src/features/ayush/ayush.css",
-      "src/design-system/student-shell/StudentWebShell.tsx",
-      "src/design-system/student-shell/studentNav.ts",
-      "src/design-system/overlays/ConfirmDialog.tsx",
-      "src/features/studentweb/views/parts.tsx",
-      "src/features/studentweb/views/t1/shared.tsx",
-      "src/features/studentweb/views/t1/t1web.css"
-    ],
-    "WebConsultSummary": [],
-    "WebEmergencyCard": [
-      "src/features/studentweb/views/t1/WebEmergencyCardView.tsx",
-      "src/features/emergency/viewmodel/EmergencyCardViewModel.ts",
-      "src/design-system/student-shell/StudentWebShell.tsx",
-      "src/design-system/student-shell/studentNav.ts",
-      "src/design-system/overlays/ConfirmDialog.tsx",
-      "src/features/studentweb/views/parts.tsx",
-      "src/features/studentweb/views/t1/shared.tsx",
-      "src/features/studentweb/views/t1/t1web.css"
-    ],
-    "WebPass": [
-      "src/features/studentweb/views/t1/WebPassView.tsx",
-      "src/features/digital_id/viewmodel/livePass.ts",
-      "src/design-system/student-shell/StudentWebShell.tsx",
-      "src/design-system/student-shell/studentNav.ts",
-      "src/design-system/overlays/ConfirmDialog.tsx",
-      "src/features/studentweb/views/parts.tsx",
-      "src/features/studentweb/views/t1/shared.tsx",
-      "src/features/studentweb/views/t1/t1web.css"
-    ],
     "WebSearchResults": [
       "src/features/studentweb/views/shop/WebShopView.tsx",
       "src/features/studentweb/views/shop/WebSearchResultsView.tsx",
@@ -621,8 +597,8 @@
       "src/design-system/student-shell/StudentWebShell.tsx",
       "src/design-system/student-shell/studentNav.ts",
       "src/design-system/overlays/ConfirmDialog.tsx",
-      "src/features/studentweb/views/shop/m2WebParts.tsx",
-      "src/features/studentweb/views/shop/m2webshop.css",
+      "src/design-system/m2/M2Blocks.tsx",
+      "src/features/studentweb/views/shop/webshop.css",
       "src/features/studentweb/views/shop/ShopCartRail.tsx",
       "src/features/studentweb/views/shop/PublicShopPage.tsx",
       "src/features/m2store/data/storeArt.ts",
@@ -637,8 +613,8 @@
       "src/design-system/student-shell/StudentWebShell.tsx",
       "src/design-system/student-shell/studentNav.ts",
       "src/design-system/overlays/ConfirmDialog.tsx",
-      "src/features/studentweb/views/shop/m2WebParts.tsx",
-      "src/features/studentweb/views/shop/m2webshop.css",
+      "src/design-system/m2/M2Blocks.tsx",
+      "src/features/studentweb/views/shop/webshop.css",
       "src/features/studentweb/views/shop/ShopCartRail.tsx",
       "src/features/studentweb/views/shop/PublicShopPage.tsx",
       "src/features/m2store/data/storeArt.ts",
@@ -647,7 +623,9 @@
       "src/features/studentweb/views/shop/WebSearchResultsView.tsx",
       "src/design-system/m2/HeroCarousel.tsx",
       "src/design-system/m2/GradientHeroCard.tsx",
-      "src/features/m2store/data/orderLine.ts"
+      "src/features/m2store/data/orderLine.ts",
+      "src/design-system/m2/M2Parts.tsx",
+      "src/features/m2store/views/GenericsCompare.tsx"
     ],
     "WebProduct": [
       "src/features/studentweb/views/shop/WebProductView.tsx",
@@ -656,8 +634,8 @@
       "src/design-system/student-shell/StudentWebShell.tsx",
       "src/design-system/student-shell/studentNav.ts",
       "src/design-system/overlays/ConfirmDialog.tsx",
-      "src/features/studentweb/views/shop/m2WebParts.tsx",
-      "src/features/studentweb/views/shop/m2webshop.css",
+      "src/design-system/m2/M2Blocks.tsx",
+      "src/features/studentweb/views/shop/webshop.css",
       "src/features/studentweb/views/shop/ShopCartRail.tsx",
       "src/features/studentweb/views/shop/PublicShopPage.tsx",
       "src/features/m2store/data/storeArt.ts",
@@ -672,21 +650,13 @@
       "src/design-system/student-shell/StudentWebShell.tsx",
       "src/design-system/student-shell/studentNav.ts",
       "src/design-system/overlays/ConfirmDialog.tsx",
-      "src/features/studentweb/views/shop/m2WebParts.tsx",
-      "src/features/studentweb/views/shop/m2webshop.css",
+      "src/design-system/m2/M2Blocks.tsx",
+      "src/features/studentweb/views/shop/webshop.css",
       "src/features/studentweb/views/shop/ShopCartRail.tsx",
       "src/features/studentweb/views/shop/PublicShopPage.tsx",
       "src/features/m2store/data/storeArt.ts",
       "src/design-system/m2/ServiceRail.tsx",
       "src/features/shopPhone/viewmodel/PhoneShopViewModel.ts"
-    ],
-    "WebOrders": [
-      "src/features/studentweb/views/WebOrdersView.tsx",
-      "src/features/studentweb/views/parts.tsx",
-      "src/features/studentweb/data/studentWebData.ts",
-      "src/design-system/student-shell/StudentWebShell.tsx",
-      "src/design-system/student-shell/studentNav.ts",
-      "src/design-system/overlays/ConfirmDialog.tsx"
     ],
     "WebReorder": [
       "src/features/studentweb/views/WebReorderView.tsx",
@@ -701,22 +671,13 @@
       "src/design-system/public-site/NewsletterBand.tsx",
       "src/design-system/public-site/publicSiteNav.ts"
     ],
-    "WebAccount": [
-      "src/features/studentweb/views/WebAccountView.tsx",
-      "src/features/studentweb/views/parts.tsx",
-      "src/design-system/art/canvasAssets.ts",
-      "src/design-system/student-shell/StudentWebShell.tsx",
-      "src/design-system/student-shell/studentNav.ts",
-      "src/design-system/overlays/ConfirmDialog.tsx",
-      "src/design-system/public-site/PublicSiteFooter.tsx",
-      "src/design-system/public-site/NewsletterBand.tsx",
-      "src/design-system/public-site/publicSiteNav.ts"
-    ],
     "WebSecurity": [
       "src/features/account/views/SignInSecurityView.tsx",
       "src/features/account/viewmodel/TwoFactorViewModel.ts",
       "src/features/account/viewmodel/ContactsViewModel.ts",
       "src/features/account/viewmodel/PasswordCardViewModel.ts",
+      "src/design-system/m2/M2Parts.tsx",
+      "src/design-system/m2/M2Tier1.tsx",
       "src/design-system/student-shell/StudentWebShell.tsx",
       "src/design-system/student-shell/studentNav.ts",
       "src/design-system/overlays/ConfirmDialog.tsx"
@@ -745,26 +706,6 @@
     "WebLegal": [
       "src/features/legal/views/WebLegalView.tsx",
       "src/features/privacy/LegalText.tsx"
-    ],
-    "WebLeaveCampus": [
-      "src/features/studentweb/views/t1/WebLeaveCampusView.tsx",
-      "src/features/campus/viewmodel/LeaveCampusViewModel.ts",
-      "src/design-system/student-shell/StudentWebShell.tsx",
-      "src/design-system/student-shell/studentNav.ts",
-      "src/design-system/overlays/ConfirmDialog.tsx",
-      "src/features/studentweb/views/parts.tsx",
-      "src/features/studentweb/views/t1/shared.tsx",
-      "src/features/studentweb/views/t1/t1web.css"
-    ],
-    "WebDeleteAccount": [
-      "src/features/studentweb/views/t1/WebDeleteAccountView.tsx",
-      "src/features/account/viewmodel/DeleteAccountViewModel.ts",
-      "src/design-system/student-shell/StudentWebShell.tsx",
-      "src/design-system/student-shell/studentNav.ts",
-      "src/design-system/overlays/ConfirmDialog.tsx",
-      "src/features/studentweb/views/parts.tsx",
-      "src/features/studentweb/views/t1/shared.tsx",
-      "src/features/studentweb/views/t1/t1web.css"
     ],
     "CampusAdminConsole": [
       "src/design-system/campus-shell/CampusShell.tsx",
@@ -1650,8 +1591,8 @@
     "StateScreens": [],
     "AyushWidget": [
       "src/features/ayush/AyushWidget.tsx",
-      "src/features/ayush/AyushAnswer.tsx",
-      "src/features/ayush/useAyushConversation.ts",
+      "src/features/chat/views/AyushThread.tsx",
+      "src/features/chat/viewmodel/AyushViewModel.ts",
       "src/features/ayush/ayush.css"
     ],
     "AyushSheet": [],
@@ -1688,7 +1629,9 @@
       "src/screens/workspace/StudentPhoneFrame.tsx",
       "src/native/StudentTabBar.tsx",
       "src/features/newsroom/views/M2PostParts.tsx",
-      "src/features/newsroom/model/templates.ts"
+      "src/features/newsroom/model/templates.ts",
+      "src/design-system/m2/m2Layout.tsx",
+      "src/design-system/m2/M2Blocks.tsx"
     ],
     "M2Medicines": [
       "src/features/m2store/views/M2MedicinesView.tsx",
@@ -1705,7 +1648,9 @@
       "src/design-system/m2/servicePalette.ts",
       "src/design-system/m2/m2Motion.ts",
       "src/screens/workspace/StudentPhoneFrame.tsx",
-      "src/native/StudentTabBar.tsx"
+      "src/native/StudentTabBar.tsx",
+      "src/design-system/m2/M2Blocks.tsx",
+      "src/features/m2store/views/GenericsCompare.tsx"
     ],
     "M2Product": [
       "src/features/shopPhone/views/M2ProductView.tsx",
@@ -1796,12 +1741,14 @@
       "src/design-system/m2/servicePalette.ts",
       "src/design-system/m2/m2Motion.ts",
       "src/screens/workspace/StudentPhoneFrame.tsx",
-      "src/native/StudentTabBar.tsx"
+      "src/native/StudentTabBar.tsx",
+      "src/design-system/m2/m2Layout.tsx"
     ],
     "M2Insights": [
       "src/features/insights/views/M2InsightsView.tsx",
       "src/features/insights/views/M2InsightsRoute.tsx",
       "src/features/insights/viewmodel/InsightsViewModel.ts",
+      "src/features/insights/viewmodel/releasedReports.ts",
       "src/features/labResults/viewmodel/LabValuesViewModels.ts",
       "src/features/m2health/HealthParts.tsx",
       "src/features/m2health/resource.ts",
@@ -1820,7 +1767,12 @@
       "src/features/reminders/views/ReminderParts.tsx",
       "src/features/reminders/views/useUndoClock.ts",
       "src/features/reminders/viewmodel/MedsTodayViewModel.ts",
-      "src/features/reminders/viewmodel/WaterViewModel.ts"
+      "src/features/reminders/viewmodel/WaterViewModel.ts",
+      "src/features/insights/views/ReportInsightsView.tsx",
+      "src/features/insights/views/ReportInsightsRoute.tsx",
+      "src/design-system/m2/M2Surfaces.tsx",
+      "src/design-system/m2/M2Structure.tsx",
+      "src/design-system/m2/M2Blocks.tsx"
     ],
     "M2Reminders": [
       "src/features/reminders/views/M2RemindersView.tsx",
@@ -1895,6 +1847,7 @@
     ],
     "M2AskAyush": [
       "src/features/chat/views/M2AskAyushView.tsx",
+      "src/features/chat/views/AyushThread.tsx",
       "src/features/chat/views/M2AskAyushRoute.tsx",
       "src/features/chat/viewmodel/AyushViewModel.ts",
       "src/design-system/m2/PillNav.tsx",
@@ -1909,6 +1862,7 @@
     "M2Profile": [
       "src/features/m2profile/views/M2ProfileView.tsx",
       "src/features/m2profile/views/M2ProfileRoute.tsx",
+      "src/features/m2profile/views/AccountDetailsCard.tsx",
       "src/features/m2profile/viewmodel/ProfileViewModel.ts",
       "src/features/m2health/HealthParts.tsx",
       "src/features/m2health/resource.ts",
@@ -1922,7 +1876,6 @@
       "src/native/M2HealthScreens.tsx"
     ],
     "VitalTrends": [],
-    "WebReportInsights": [],
     "WebReportAssistant": [],
     "M2FindCare": [
       "src/features/careDirectory/views/CareDirectoryView.tsx",
@@ -1986,7 +1939,8 @@
       "src/design-system/m2/servicePalette.ts",
       "src/design-system/m2/m2Motion.ts",
       "src/screens/workspace/StudentPhoneFrame.tsx",
-      "src/native/StudentTabBar.tsx"
+      "src/native/StudentTabBar.tsx",
+      "src/design-system/m2/m2Layout.tsx"
     ],
     "M2Refills": [
       "src/features/refills/views/M2RefillsView.tsx",
@@ -2001,7 +1955,8 @@
       "src/design-system/m2/Gradient.tsx",
       "src/design-system/m2/servicePalette.ts",
       "src/screens/workspace/StudentPhoneFrame.tsx",
-      "src/native/StudentTabBar.tsx"
+      "src/native/StudentTabBar.tsx",
+      "src/design-system/m2/m2Layout.tsx"
     ],
     "M2Reorder": [
       "src/features/refills/views/M2ReorderView.tsx",
@@ -2050,7 +2005,9 @@
       "src/features/newsroom/data/NewsroomRepository.ts",
       "src/features/newsroom/model/templates.ts",
       "src/features/newsroom/screens/NewsroomScreens.tsx",
-      "src/design-system/public-site/publicSiteNav.ts"
+      "src/design-system/public-site/publicSiteNav.ts",
+      "src/features/newsroom/views/ShareBar.tsx",
+      "src/features/newsroom/data/ContentRepository.ts"
     ],
     "WebPost": [
       "src/features/newsroom/views/PostPage.tsx",
@@ -2061,7 +2018,11 @@
       "src/features/newsroom/model/share.ts",
       "src/features/newsroom/model/templates.ts",
       "src/features/newsroom/data/NewsroomRepository.ts",
-      "src/features/newsroom/screens/NewsroomScreens.tsx"
+      "src/features/newsroom/screens/NewsroomScreens.tsx",
+      "src/features/newsroom/views/ShareBar.tsx",
+      "src/features/newsroom/model/nativeShare.ts",
+      "src/features/newsroom/model/nativeShare.native.ts",
+      "src/features/newsroom/data/ContentRepository.ts"
     ],
     "AdminPosts": [
       "src/features/newsroom/admin/PostsAdminView.tsx",
@@ -2076,7 +2037,12 @@
       "src/screens/workspace/admin/SuperAdminScreens.tsx",
       "src/screens/workspace/admin/superAdminNavigation.ts",
       "src/design-system/clinician-shell/clinicianNav.ts",
-      "src/features/health/screens/WorkspaceRouteScreen.tsx"
+      "src/features/health/screens/WorkspaceRouteScreen.tsx",
+      "src/features/newsroom/admin/ContentTabs.tsx",
+      "src/features/newsroom/viewmodel/ContentAdminViewModel.ts",
+      "src/features/newsroom/data/ContentRepository.ts",
+      "src/features/newsroom/model/composer.ts",
+      "src/features/newsroom/model/share.ts"
     ],
     "M2WhatsNew": [
       "src/features/newsroom/views/M2WhatsNewView.tsx",
@@ -2099,6 +2065,18 @@
       "src/features/camp/host/hostApi.ts",
       "src/features/camp/host/campCsv.ts",
       "src/screens/vendor/vendorNavigation.ts"
+    ],
+    "WebSeries": [
+      "src/features/newsroom/views/SeriesPages.tsx",
+      "src/features/newsroom/views/PostCover.tsx",
+      "src/features/newsroom/views/PostCard.tsx",
+      "src/features/newsroom/views/ShareBar.tsx",
+      "src/features/newsroom/views/NewsroomListPage.tsx",
+      "src/features/newsroom/views/newsroom.css",
+      "src/features/newsroom/data/ContentRepository.ts",
+      "src/features/newsroom/model/templates.ts",
+      "src/features/newsroom/screens/NewsroomScreens.tsx",
+      "src/features/care/module.ts"
     ]
   },
   "inProgress": {
@@ -2113,10 +2091,6 @@
     ],
     "Devices": [
       "src/screens/workspace/DevicesAndSensorsScreen.tsx"
-    ],
-    "RecordsVault": [
-      "src/screens/vault/VaultWorkspaceHub.tsx",
-      "src/features/vault/views/HealthVaultNativeView.tsx"
     ],
     "AyushChat": [
       "src/screens/workspace/AgentAyushPanel.tsx",
@@ -2136,9 +2110,6 @@
     "RefillRequest": [
       "src/features/requests/views/RequestsViews.tsx"
     ],
-    "ConsultSummary": [
-      "src/features/vault/views/VisitSummaryView.tsx"
-    ],
     "LandingClinician": [
       "src/features/landing/views/LandingClinicianView.tsx",
       "src/features/landing/views/LandingClinicianNativeView.tsx",
@@ -2153,29 +2124,6 @@
     ],
     "AyushSheet": [
       "src/features/chat/views/AyushChatNativeView.tsx"
-    ],
-    "WebConsultSummary": [
-      "src/features/vault/views/VisitSummaryView.tsx",
-      "src/features/vault/viewmodel/VisitSummaryViewModel.ts",
-      "src/features/studentweb/views/t1/WebConsultSummaryView.tsx",
-      "src/design-system/student-shell/StudentWebShell.tsx",
-      "src/design-system/student-shell/studentNav.ts",
-      "src/design-system/overlays/ConfirmDialog.tsx",
-      "src/features/studentweb/views/parts.tsx",
-      "src/features/studentweb/views/t1/shared.tsx",
-      "src/features/studentweb/views/t1/t1web.css"
-    ],
-    "WebReportInsights": [
-      "src/features/studentweb/views/t1/WebReportInsightsView.tsx",
-      "src/design-system/student-shell/StudentWebShell.tsx",
-      "src/design-system/student-shell/studentNav.ts",
-      "src/design-system/overlays/ConfirmDialog.tsx",
-      "src/features/studentweb/views/parts.tsx",
-      "src/features/studentweb/views/t1/shared.tsx",
-      "src/features/studentweb/views/t1/t1web.css",
-      "src/design-system/public-site/PublicSiteFooter.tsx",
-      "src/design-system/public-site/publicSiteNav.ts",
-      "src/design-system/public-site/NewsletterBand.tsx"
     ]
   },
   "superseded": {
@@ -2194,6 +2142,217 @@
       ],
       "source": "design/screens/mobile-2-supersedes.md §1 (M2Insights replaces MyReports, ReportInsights)",
       "redirects": {}
+    },
+    "WebHome": {
+      "by": [
+        "M2Home"
+      ],
+      "source": "docs/ux/web-mobile-parity-2026-10-23.md#approved-decisions-23-oct-2026 (one home: /home is retired for a signed-in student; Home is /health)"
+    },
+    "WebDashboard": {
+      "by": [
+        "M2Home"
+      ],
+      "source": "docs/ux/web-mobile-parity-2026-10-23.md#approved-decisions-23-oct-2026 (one home; desktop Home is Mobile 2.0 Home laid out wide, parity phase 2)"
+    },
+    "WebOrders": {
+      "by": [
+        "M2Orders"
+      ],
+      "source": "docs/ux/web-mobile-parity-2026-10-23.md#approved-decisions-23-oct-2026 (desktop Orders is Mobile 2.0 Orders laid out wide, parity phase 2)"
+    },
+    "WebVault": {
+      "by": [
+        "RecordsVault"
+      ],
+      "source": "docs/plans/tier1-parity-2026-10-24.md §6 (Q2: one Health vault view at both widths; design boards T1Vault, T1VaultDesktop, T1VaultEmpty approved 24 Oct 2026)",
+      "redirects": {
+        "/prescriptions": "/records?tab=prescriptions"
+      }
+    },
+    "WebReportInsights": {
+      "by": [
+        "M2Insights"
+      ],
+      "source": "docs/plans/tier1-parity-2026-10-24.md §3 (Q2/Q3: a \"Reviewed lab reports\" card on My health; /report-insights is its detail page, design boards T1ReportInsights, T1ReportInsightsDesktop approved 24 Oct 2026)",
+      "redirects": {}
+    },
+    "WebConsultSummary": {
+      "by": [
+        "ConsultSummary"
+      ],
+      "source": "docs/plans/tier1-parity-2026-10-24.md §8 (Q2: one Visit summaries view, laid out wide; design boards T1VisitSummaries, T1VisitSummariesDesktop approved 24 Oct 2026)",
+      "redirects": {}
+    },
+    "WebPass": {
+      "by": [
+        "MyPass"
+      ],
+      "source": "docs/plans/tier1-parity-2026-10-24.md §22 (Q2: one check-in pass view, laid out wide; design boards T1Pass, T1PassDesktop, T1PassStale approved 24 Oct 2026)",
+      "redirects": {}
+    },
+    "WebAyush": {
+      "by": [
+        "M2AskAyush"
+      ],
+      "source": "docs/plans/tier1-parity-2026-10-24.md §9 (Q2: one Ask Ayush view; the side column is its desktop column)",
+      "redirects": {}
+    },
+    "WebAccount": {
+      "by": [
+        "M2Profile"
+      ],
+      "source": "docs/plans/tier1-parity-2026-10-24.md §11 (Q2: M2Profile wide with an Account details card replaces the Account page at /profile)",
+      "redirects": {}
+    },
+    "WebDeleteAccount": {
+      "by": [
+        "DeleteAccount"
+      ],
+      "source": "docs/plans/tier1-parity-2026-10-24.md §19 (Q1, Q2: one Delete account view laid out wide)",
+      "redirects": {}
+    },
+    "WebEmergencyCard": {
+      "by": [
+        "EmergencyCard"
+      ],
+      "source": "docs/plans/tier1-parity-2026-10-24.md §21 (Q1, Q2: one Emergency card view, editor beside the live card on desktop)",
+      "redirects": {}
+    },
+    "WebLeaveCampus": {
+      "by": [
+        "LeaveCampus"
+      ],
+      "source": "docs/plans/tier1-parity-2026-10-24.md §20 (Q1, Q2: one Leave campus view laid out wide)",
+      "redirects": {}
+    },
+    "ShopHome": {
+      "by": [
+        "M2Medicines"
+      ],
+      "source": "design/screens/mobile-2-supersedes.md §1 (M2Medicines replaces ShopHome, ProductList)",
+      "redirects": {}
+    },
+    "ProductDetail": {
+      "by": [
+        "M2Product"
+      ],
+      "source": "design/screens/mobile-2-supersedes.md §1 (M2Product replaces ProductDetail)",
+      "redirects": {}
+    }
+  },
+  "retiredIcons": {
+    "_readme": "Icons a recorded decision took off a screen; check-icons does not require them there. Each entry names the decision's source. Shell de-duplication (founder, 23 Oct 2026): the sidebar's Your Care (map-pin, now Home with the phone's home icon), My lab tests (flask, now a tab of Orders), Ayush AI (sparkle, Ayush is the floating bubble) and Account (user, the account is the avatar and the account header); the phone header's menu button (menu, More opens from Profile, Settings). Report insights left the sidebar (bar-chart): it is a card on My health and /report-insights its detail page (docs/plans/tier1-parity-2026-10-24.md §3, Q3; the deferral is recorded in the parity doc).",
+    "SearchEntry": {
+      "icons": [
+        "menu"
+      ],
+      "source": "docs/ux/web-mobile-parity-2026-10-23.md#approved-decisions-23-oct-2026"
+    },
+    "WebLostPhone": {
+      "icons": [
+        "bar-chart",
+        "flask",
+        "map-pin",
+        "sparkle",
+        "user"
+      ],
+      "source": "docs/ux/web-mobile-parity-2026-10-23.md#approved-decisions-23-oct-2026"
+    },
+    "WebMyLabTests": {
+      "icons": [
+        "bar-chart",
+        "map-pin",
+        "sparkle"
+      ],
+      "source": "docs/ux/web-mobile-parity-2026-10-23.md#approved-decisions-23-oct-2026"
+    },
+    "WebNotifications": {
+      "icons": [
+        "bar-chart",
+        "flask",
+        "map-pin",
+        "sparkle",
+        "user"
+      ],
+      "source": "docs/ux/web-mobile-parity-2026-10-23.md#approved-decisions-23-oct-2026"
+    },
+    "WebPass": {
+      "icons": [
+        "bar-chart",
+        "flask",
+        "map-pin",
+        "sparkle",
+        "user"
+      ],
+      "source": "docs/ux/web-mobile-parity-2026-10-23.md#approved-decisions-23-oct-2026"
+    },
+    "WebReorder": {
+      "icons": [
+        "bar-chart",
+        "flask",
+        "map-pin",
+        "sparkle",
+        "user"
+      ],
+      "source": "docs/ux/web-mobile-parity-2026-10-23.md#approved-decisions-23-oct-2026"
+    },
+    "WebRequests": {
+      "icons": [
+        "bar-chart",
+        "flask",
+        "map-pin",
+        "sparkle",
+        "user"
+      ],
+      "source": "docs/ux/web-mobile-parity-2026-10-23.md#approved-decisions-23-oct-2026"
+    },
+    "WebSecurity": {
+      "icons": [
+        "bar-chart",
+        "flask",
+        "map-pin",
+        "sparkle"
+      ],
+      "source": "docs/ux/web-mobile-parity-2026-10-23.md#approved-decisions-23-oct-2026"
+    },
+    "WebVault": {
+      "icons": [
+        "bar-chart",
+        "flask",
+        "map-pin",
+        "sparkle",
+        "user"
+      ],
+      "source": "docs/ux/web-mobile-parity-2026-10-23.md#approved-decisions-23-oct-2026"
+    },
+    "WebVerify": {
+      "icons": [
+        "bar-chart",
+        "flask",
+        "map-pin",
+        "sparkle",
+        "user"
+      ],
+      "source": "docs/ux/web-mobile-parity-2026-10-23.md#approved-decisions-23-oct-2026"
+    },
+    "YourCare": {
+      "icons": [
+        "menu"
+      ],
+      "source": "docs/ux/web-mobile-parity-2026-10-23.md#approved-decisions-23-oct-2026"
+    },
+    "RecordsVault": {
+      "icons": [
+        "check"
+      ],
+      "source": "docs/plans/tier1-parity-2026-10-24.md §6: the Tier 1 vault boards approved 24 Oct 2026 carry no tick; the page-2 board’s ✓ marked lines the one view does not draw"
+    },
+    "ConsultSummary": {
+      "icons": [
+        "star-filled"
+      ],
+      "source": "docs/plans/tier1-parity-2026-10-24.md §8: the board’s star rating has no data behind it and is not drawn (D7-9; nothing the server does not have)"
     }
   }
 }

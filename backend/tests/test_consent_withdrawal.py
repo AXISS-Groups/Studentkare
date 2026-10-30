@@ -26,7 +26,8 @@ from core import workflow_models as M
 from services import consent_ledger
 from services.agent_ayush import history_kept
 
-OPTIONAL = {"AYUSH_HISTORY", "BLOOD_DONOR_CONTACT", "PICKUP_LOCATION", "PREVENTIVE_OFFERS", "SEASONAL_EDUCATION"}
+OPTIONAL = {"AYUSH_HISTORY", "BLOOD_DONOR_CONTACT", "PICKUP_LOCATION", "PREVENTIVE_OFFERS", "SEASONAL_EDUCATION",
+            "WALLET_GOOGLE"}
 
 
 def change(client, headers, purpose, granted):

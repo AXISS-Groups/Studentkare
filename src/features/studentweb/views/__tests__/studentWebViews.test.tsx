@@ -6,14 +6,9 @@ import { navigate } from '@/lib/utils/workflowRouting';
 import { BrowserRouter } from '@/core/navigation';
 import { LiveCartProvider, useLiveCart } from '@/data/contexts/LiveCartContext';
 import type { LiveCatalogItem, LiveOrder } from '@/data/types/workflowTypes';
-import { axeViolations, describeViolations } from '@/test/axe';
-import { ThemeProvider } from '@/theme/tokens/theme';
-import { WebDashboardView } from '../WebDashboardView';
-import { WebOrdersView } from '../WebOrdersView';
+import { WebOrdersHub } from '../WebOrdersHub';
 import { WebReorderView } from '../WebReorderView';
-import { WebAccountView } from '../WebAccountView';
 import { WebNotificationsRoute } from '../WebNotificationsView';
-import { WebHomeView } from '../WebHomeView';
 import { WebShopView } from '../shop/WebShopView';
 import { WebCheckoutView } from '../shop/WebCheckoutView';
 
@@ -63,101 +58,19 @@ const withCart = (ui: React.ReactElement) => <BrowserRouter><LiveCartProvider>{u
 beforeEach(() => { api.mockReset(); go.mockReset(); window.history.pushState({}, '', '/'); });
 afterEach(() => { vi.useRealTimers(); });
 
-const CLINICAL = /\/health\/readings|\/health\/metrics|\/records\/export|\/prescriptions|\/clinical/;
-
-describe('WebDashboard — Your Care', () => {
-  const dashboard = {
-    '/orders': { items: [order('unpaid1', 'REQUESTED', { paymentStatus: 'UNPAID' })] },
-    '/appointments': { items: [{ id: 'a1', slotStart: '2099-01-02T10:00:00Z', slotEnd: '', status: 'CONFIRMED' }] },
-    '/lab-orders': { items: [{ id: 'l1', status: 'IN_ANALYSIS', slotStart: null, collectionMode: 'HOME', createdAt: 0, updatedAt: 0, paymentStatus: 'PAID' }] },
-    '/records/shares': { items: [] },
-    '/health/documents': { items: [{}], total: 11 },
-  };
-
-  it('shows what needs doing from real records, never a score about the body', async () => {
-    serve(dashboard);
-    render(<WebDashboardView />);
+describe('Orders hub (founder decisions, 23 Oct 2026; parity phase 2)', () => {
+  it('has My lab tests as its second tab (founder decision, 23 Oct 2026), and opens it from ?view=lab-tests', async () => {
+    serve({ '/orders': { items: [], total: 0 }, '/lab-orders': { items: [] }, '/health/documents': { items: [] } });
+    window.history.pushState({}, '', '/orders');
+    render(<BrowserRouter><WebOrdersHub /></BrowserRouter>);
     await settle();
-    expect(screen.getByRole('heading', { level: 1, name: 'Your Care' })).toBeInTheDocument();
-    expect(screen.getByText('An order is waiting for payment')).toBeInTheDocument();
-    expect(screen.getByText(/No health score here/)).toBeInTheDocument();
-    expect(screen.getByText('11 documents')).toBeInTheDocument();
-    expect(screen.getByText('Doctor consult')).toBeInTheDocument();
-    expect(requested().some((path) => CLINICAL.test(path))).toBe(false);
-  });
-
-  it('opens Book something with real places to start', async () => {
-    serve(dashboard);
-    render(<WebDashboardView />);
+    const tabs = screen.getByTestId('orders-hub-tabs');
+    expect(within(tabs).getByRole('button', { name: 'Orders' })).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(within(tabs).getByRole('button', { name: 'My lab tests' }));
     await settle();
-    fireEvent.click(screen.getByRole('button', { name: 'Book something' }));
-    const dialog = screen.getByRole('dialog', { name: 'Book something' });
-    fireEvent.click(within(dialog).getByRole('button', { name: /Book a lab test/ }));
-    expect(go).toHaveBeenCalledWith('lab-tests');
-  });
-
-  it('first time: says nothing needs you yet and gives the next steps', async () => {
-    serve({ '/orders': { items: [] }, '/appointments': { items: [] }, '/lab-orders': { items: [] }, '/records/shares': { items: [] }, '/health/documents': { items: [], total: 0 } });
-    render(<WebDashboardView />);
-    await settle();
-    expect(screen.getByText('Nothing needs you yet')).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Set up your emergency card' }));
-    expect(go).toHaveBeenCalledWith('emergency-card');
-  });
-
-  it('error: calm copy and a retry that loads again', async () => {
-    serve({ ...dashboard, '/orders': new Error('down') });
-    render(<WebDashboardView />);
-    await settle();
-    expect(screen.getByRole('alert')).toHaveTextContent('This is on our side, not yours.');
-    const before = api.mock.calls.length;
-    fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
-    await settle();
-    expect(api.mock.calls.length).toBeGreaterThan(before);
-  });
-});
-
-describe('WebOrders — My orders', () => {
-  it('lists orders with status words, tracks the active one and cancels only an untouched order', async () => {
-    serve({ '/orders': (path: string, init?: RequestInit) => (init?.method === 'POST' ? {} : { items: [order('abcdef12xx', 'REQUESTED'), order('done000000', 'COMPLETED')], total: 2 }) });
-    render(<WebOrdersView />);
-    await settle();
-    const table = screen.getByRole('table', { name: 'Your orders, newest first' });
-    expect(within(table).getByText('SK-ABCDEF12')).toBeInTheDocument();
-    expect(within(table).getByText('Delivered')).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Requested' })).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Cancel order' }));
-    await settle();
-    expect(api).toHaveBeenCalledWith('/orders/abcdef12xx/cancel', { method: 'POST' });
-    await settle();
-    fireEvent.click(screen.getByRole('button', { name: 'Reorder SK-DONE0000' }));
-    expect(go).toHaveBeenCalledWith('buy-again');
-  });
-
-  it('has no cancel once the provider has accepted', async () => {
-    serve({ '/orders': { items: [order('acc0000000', 'ACCEPTED')], total: 1 } });
-    render(<WebOrdersView />);
-    await settle();
-    expect(screen.queryByRole('button', { name: 'Cancel order' })).toBeNull();
-  });
-
-  it('empty: no orders yet, with the shop as the next step', async () => {
-    serve({ '/orders': { items: [], total: 0 } });
-    render(<WebOrdersView />);
-    await settle();
-    expect(screen.getByText('No orders yet')).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Browse the shop' }));
-    expect(go).toHaveBeenCalledWith('shop');
-  });
-
-  it('has no accessibility violations', async () => {
-    serve({ '/orders': { items: [order('abcdef12xx', 'DISPATCHED')], total: 1 } });
-    const { container } = render(<WebOrdersView />);
-    await settle();
-    const violations = await axeViolations(container);
-    expect(violations, describeViolations(violations)).toEqual([]);
-  });
-});
+    expect(window.location.search).toBe('?view=lab-tests');
+    expect(screen.getByRole('heading', { level: 1, name: 'My lab tests' })).toBeInTheDocument();
+  });});
 
 describe('WebReorder — Buy again (the student page, not the partner /reorder)', () => {
   const orders = { items: [order('o1', 'COMPLETED', {}, { itemId: 'ok', name: 'ORS sachets' }), order('o2', 'COMPLETED', {}, { itemId: 'rx', name: 'Antibiotic' })] };
@@ -184,26 +97,6 @@ describe('WebReorder — Buy again (the student page, not the partner /reorder)'
     expect(screen.getByRole('button', { name: /Campus store.*Not available yet/ })).toHaveAttribute('aria-disabled', 'true');
     expect(screen.getByText('Nothing to buy again yet')).toBeInTheDocument();
     expect(screen.getByText('Ratings aren’t open yet')).toBeInTheDocument();
-  });
-});
-
-describe('WebAccount', () => {
-  it('shows the account as stored, with no edit on the sign-in contact and ABHA as not available', async () => {
-    serve({
-      '/profile': { id: 'u1', fullName: 'Krishna Chintakayala', role: 'STUDENT', email: 'k@example.in', phone: '+91 98765 43210', dob: '2004-01-01', university: 'VNR VJIET', rollNumber: '', bloodGroup: '', ageVerified: true, isVerifiedStudent: true, emergencyContactName: '', emergencyContactPhone: '', emergencyContactRelation: '', allergies: [], chronicConditions: [], updatedAt: null },
-      '/identity': { campusStatus: 'VERIFIED' },
-      '/points/me': { balance: 240, redeemable: false },
-      '/notifications/preferences': { pushEnabled: true, emailEnabled: false, remindersEnabled: true },
-    });
-    render(<ThemeProvider><WebAccountView /></ThemeProvider>);
-    await settle();
-    expect(screen.getByRole('heading', { level: 1, name: 'Hi, Krishna' })).toBeInTheDocument();
-    expect(screen.getByText('+91 98765 43210')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /: Mobile number/ })).toBeNull();
-    expect(screen.getAllByText('Not available yet').length).toBeGreaterThan(0);
-    expect(screen.getByText('Kare points · 240')).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Add: Emergency contact' }));
-    expect(screen.getByRole('dialog', { name: 'Your details' })).toBeInTheDocument();
   });
 });
 
@@ -247,16 +140,6 @@ describe('WebNotifications', () => {
   });
 });
 
-describe('WebHome', () => {
-  it('searches into the shop’s results and claims no accreditation', () => {
-    render(<BrowserRouter><WebHomeView /></BrowserRouter>);
-    fireEvent.change(screen.getByRole('searchbox', { name: 'Search medicines, lab tests and doctors' }), { target: { value: 'vitamin d' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Search' }));
-    expect(window.location.pathname + window.location.search).toBe('/shop?q=vitamin%20d');
-    expect(document.body.textContent).not.toMatch(/NABL|ABDM-linked|Live on 3 campuses/i);
-  });
-});
-
 describe('WebShop, search and product', () => {
   const catalog = (path: string) => {
     const q = new URL(path, 'http://x').searchParams;
@@ -292,7 +175,7 @@ describe('WebShop, search and product', () => {
     let units = 0;
     render(withCart(<><WebShopView /><CartProbe onCart={(n) => { units = n; }} /></>));
     await settle();
-    fireEvent.click(screen.getByRole('button', { name: 'Vitamin D3' }));
+    fireEvent.click(screen.getByTestId('m2w-card-a-open'));
     expect(screen.getByRole('heading', { level: 1, name: 'Vitamin D3' })).toBeInTheDocument();
     expect(screen.getByText('No ratings yet')).toBeInTheDocument();
     expect(document.body.textContent).not.toMatch(/student reviews|Earn \d+ Kare points/);

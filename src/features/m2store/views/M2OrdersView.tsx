@@ -4,7 +4,7 @@ import { observer } from 'mobx-react-lite';
 import { AnimatedIcon, Icon3d } from '@/design-system/icons';
 import { Button, ErrorState, Note, Rise, Skeleton, useOnline } from '@/design-system';
 import {
-  M2Card, M2Header, M2Heading, M2_NAV_CLEARANCE, SosButton, m2Text, useAmbientMotion, useLift, useLoop, useOwnPhoneChrome, webAttrs,
+  M2Card, M2Grid, M2Header, M2Heading, M2WideColumn, M2_NAV_CLEARANCE, SosButton, m2Text, useAmbientMotion, useLift, useLoop, useOwnPhoneChrome, webAttrs,
 } from '@/design-system/m2';
 import type { PressState } from '@/design-system/m2';
 import { color, focusRing, font, fontWeight, motion, radius, shadow, shadowStyle, size, space, webOnly } from '@/design-system/theme';
@@ -231,7 +231,11 @@ function Tabs({ tab, activeCount, onPick }: { tab: 'active' | 'past'; activeCoun
   );
 }
 
-export const M2OrdersView = observer(function M2OrdersView({ vm, links, focusId = null }: { vm: OrdersViewModel; links: M2OrdersLinks; focusId?: string | null }) {
+export const M2OrdersView = observer(function M2OrdersView({ vm, links, focusId = null, wide = false }: {
+  vm: OrdersViewModel; links: M2OrdersLinks; focusId?: string | null;
+  /** Laid out wide in the desktop web shell (parity phase 2): orders two a row, no own SOS (the shell's top bar has it). */
+  wide?: boolean;
+}) {
   const t = useT();
   useOwnPhoneChrome();
   const online = useOnline();
@@ -251,14 +255,18 @@ export const M2OrdersView = observer(function M2OrdersView({ vm, links, focusId 
   const activeCount = vm.items.filter(isActive).length;
   const loading = (vm.phase === 'loading' || vm.phase === 'idle') && vm.items.length === 0;
   const firstTime = vm.phase === 'ready' && vm.items.length === 0;
+  const gutter = wide ? styles.gutterWide : styles.gutter;
+  const frame = (testID: string, body: React.ReactNode) => (wide
+    ? <M2WideColumn testID={testID}>{body}</M2WideColumn>
+    : <ScrollView style={styles.screen} contentContainerStyle={styles.content} testID={testID}>{body}</ScrollView>);
 
   if (focusId) {
     const order = vm.byId(focusId);
-    return (
-      <ScrollView style={styles.screen} contentContainerStyle={styles.content} testID="m2-orders-one">
+    return frame('m2-orders-one', (
+      <>
         <M2Header backLabel={t('phone.track.allOrders')} onBack={links.allOrders} eyebrow={t('m2.ord.eyebrow')} title={order ? t('m2.ord.ref', { ref: orderRef(order.id) }) : t('phone.orders.title')}
-          trailing={<SosButton label={t('m2.sos')} spoken={t('m2.sosSpoken')} onPress={links.sos} />} />
-        <View style={styles.gutter}>
+          sos={wide ? false : { label: t('m2.sos'), spoken: t('m2.sosSpoken'), onPress: links.sos }} />
+        <View style={gutter}>
           {!order && loading ? <Skeleton label={t('phone.orders.loading')} lines={['60%', '100%', '80%']} /> : null}
           {!order && !loading ? (
             <ErrorState title={t('phone.track.missingTitle')} body={t('phone.track.missingBody')} retryLabel={t('phone.track.allOrders')} onRetry={links.allOrders} />
@@ -272,15 +280,15 @@ export const M2OrdersView = observer(function M2OrdersView({ vm, links, focusId 
             </View>
           ) : null}
         </View>
-      </ScrollView>
-    );
+      </>
+    ));
   }
 
   const shown = tab === 'active' ? vm.items.filter(isActive) : vm.items.filter((o) => !isActive(o));
-  return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content} testID="m2-orders">
+  return frame('m2-orders', (
+    <>
       <Rise>
-        <View style={styles.header}>
+        <View style={[styles.header, wide ? styles.headerWide : null]}>
           <View style={styles.grow}>
             <Text style={styles.eyebrow}>{t('m2.ord.eyebrow')}</Text>
             <M2Heading level={1} style={styles.title}>{t('phone.orders.title')}</M2Heading>
@@ -289,12 +297,12 @@ export const M2OrdersView = observer(function M2OrdersView({ vm, links, focusId 
             style={({ focused }: PressState) => [styles.helpPill, focused ? focusRing : null]}>
             <Text style={styles.helpText}>{t('m2.ord.help')}</Text>
           </Pressable>
-          <SosButton label={t('m2.sos')} spoken={t('m2.sosSpoken')} onPress={links.sos} />
+          {wide ? null : <SosButton label={t('m2.sos')} spoken={t('m2.sosSpoken')} onPress={links.sos} />}
         </View>
       </Rise>
-      <Rise index={1} style={styles.gutter}><Tabs tab={tab} activeCount={activeCount} onPick={pick} /></Rise>
+      <Rise index={1} style={gutter}><Tabs tab={tab} activeCount={activeCount} onPick={pick} /></Rise>
 
-      <View style={styles.gutter} role="tabpanel" accessibilityLabel={tab === 'active' ? t('m2.ord.tabActiveNone') : t('m2.ord.tabPast')}>
+      <View style={gutter} role="tabpanel" accessibilityLabel={tab === 'active' ? t('m2.ord.tabActiveNone') : t('m2.ord.tabPast')}>
         {!online ? <OfflineBoard links={links} onRetry={() => void vm.load()} /> : null}
         {online && loading ? <Skeleton label={t('phone.orders.loading')} lines={['100%', '70%', '100%', '60%']} /> : null}
         {online && vm.phase === 'error' ? (
@@ -318,18 +326,18 @@ export const M2OrdersView = observer(function M2OrdersView({ vm, links, focusId 
           </M2Card>
         ) : null}
         {online ? (
-          <View style={styles.list}>
+          <M2Grid columns={{ phone: 1, tablet: 1, desktop: 2 }} gap={space.s12}>
             {shown.map((o, i) => (
               <Rise key={o.id} index={i}>
                 {tab === 'active' ? <OrderCard order={o} vm={vm} links={links} /> : <PastCard order={o} links={links} />}
               </Rise>
             ))}
-          </View>
+          </M2Grid>
         ) : null}
         {online && vm.canLoadMore ? <Button label={t('phone.orders.more')} variant="secondary" fullWidth onPress={() => void vm.loadMore()} testID="m2-ord-more" /> : null}
       </View>
-    </ScrollView>
-  );
+    </>
+  ));
 });
 
 const DOT = 14;
@@ -338,9 +346,11 @@ const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.canvas },
   content: { paddingBottom: M2_NAV_CLEARANCE, gap: space.s16, width: '100%', maxWidth: size.phoneFrameMax, alignSelf: 'center' },
   gutter: { paddingHorizontal: space.gutterPhone, gap: space.s12 },
+  gutterWide: { gap: space.s12 },
   grow: { flex: 1, minWidth: 0 },
   centre: { textAlign: 'center' },
   header: { flexDirection: 'row', alignItems: 'center', gap: space.s10, paddingHorizontal: space.gutterPhone, paddingTop: space.s16 },
+  headerWide: { paddingHorizontal: 0, paddingTop: 0 },
   eyebrow: { fontFamily: font.family.sans, fontSize: font.size.caption, fontWeight: fontWeight(font.weight.strong), color: color.text3 },
   title: { fontFamily: font.family.sans, fontSize: font.size.heading, fontWeight: fontWeight(font.weight.heavy), letterSpacing: -0.7, color: color.text },
   helpPill: {
@@ -355,7 +365,6 @@ const styles = StyleSheet.create({
   tabOn: { backgroundColor: color.action, ...shadowStyle(shadow.hairline) },
   tabText: { fontFamily: font.family.sans, fontSize: font.size.bodySm, fontWeight: fontWeight(font.weight.heavy), color: color.text2 },
   tabTextOn: { color: color.onAction },
-  list: { gap: space.s12 },
   orderCard: { borderRadius: 28, overflow: 'hidden', ...shadowStyle(shadow.float) },
   cardBody: { padding: space.s16, gap: space.s6 },
   cardTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: space.s8 },

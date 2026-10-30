@@ -4,7 +4,7 @@ import { observer } from 'mobx-react-lite';
 import { Icon } from '@/design-system/icons';
 import type { SkIconName } from '@/design-system/icons';
 import { ErrorState, Rise, Skeleton } from '@/design-system';
-import { M2Card, M2Heading, M2_NAV_CLEARANCE, RoundButton, m2Text, useOwnPhoneChrome } from '@/design-system/m2';
+import { M2Card, M2Heading, M2_NAV_CLEARANCE, RoundButton, m2Text, useOwnPhoneChrome, M2HeaderSos } from '@/design-system/m2';
 import type { PressState } from '@/design-system/m2';
 import { color, focusRing, font, fontWeight, radius, size, space } from '@/design-system/theme';
 import { useT } from '@/i18n';
@@ -108,6 +108,7 @@ export const FacilityDetailView = observer(function FacilityDetailView({ vm, onB
       <View style={[styles.gutter, styles.head]}>
         <RoundButton icon="arrow-left" label={t('fc.d.back')} onPress={onBack} testID="fc-detail-back" />
         <Text style={styles.eyebrow}>{t('fc.eyebrow')}</Text>
+        <M2HeaderSos push />
       </View>
       {vm.detailPhase === 'loading' ? <View style={styles.gutter}><Skeleton label={t('fc.d.loading')} lines={['70%', '100%', '90%']} /></View> : null}
       {vm.detailPhase === 'error' ? (

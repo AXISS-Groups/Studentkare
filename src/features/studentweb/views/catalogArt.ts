@@ -14,7 +14,7 @@ const isTube = (pack: string) => /tube|lotion|cream|gel/i.test(pack);
 const isBottle = (pack: string) => /bottle|vial|syrup|capsule|softgel|tablet/i.test(pack);
 
 /** WebShop and search cards. */
-export function shopArt(item: Art): SkIconName {
+function shopArt(item: Art): SkIconName {
   if (item.kind === 'lab' || item.kind === 'consultation') return 'file-text-2';
   if (item.kind === 'vaccine') return 'pipette';
   if (isJar(item.pack)) return 'jar';

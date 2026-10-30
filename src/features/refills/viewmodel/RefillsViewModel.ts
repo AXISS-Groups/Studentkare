@@ -47,7 +47,7 @@ export interface Limits { packSize: number; packs: number; perDose: number; perD
 
 export type SheetKind = 'adjust' | 'restock' | 'remove';
 
-export function limits(): Limits {
+function limits(): Limits {
   return {
     packSize: getSetting('refill.pack_units_max'),
     packs: getSetting('refill.packs_max'),

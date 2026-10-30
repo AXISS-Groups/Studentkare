@@ -11,6 +11,7 @@ vi.mock('@/design-system/motion', async (importOriginal) => ({
 import { LanguageProvider } from '@/i18n';
 import { ApiError } from '@/data/services/http';
 import { color } from '@/design-system/theme';
+import { M2SosProvider } from '@/design-system/m2';
 import { trendGeometry } from '@/design-system/charts';
 import { axeViolations, describeViolations } from '@/test/axe';
 import type { ReportReview } from '@/features/preventive/models';
@@ -270,5 +271,63 @@ describe('M2Trends', () => {
     expect(l.back).toHaveBeenCalledTimes(1);
     const violations = await axeViolations(container);
     expect(violations, describeViolations(violations)).toEqual([]);
+  });
+});
+
+// ── Wide (Tier 1 parity plan 2026-10-24 §1, §4) ────────────────────────────────
+
+async function mountWide(routes: Record<string, unknown>, sos?: () => void) {
+  const { repo } = setup(routes);
+  const vm = new TrendsViewModel(repo);
+  const view = <M2TrendsView vm={vm} reviews={[]} online links={links()} wide />;
+  const utils = render(<LanguageProvider>{sos ? <M2SosProvider value={sos}>{view}</M2SosProvider> : view}</LanguageProvider>);
+  await act(async () => { await vm.load(); });
+  return { vm, ...utils };
+}
+
+describe('M2Trends wide (desktop web shell)', () => {
+  it('lists the tests on the left with the chip’s spoken state, selecting the same default test as the phone', async () => {
+    const phone = await mount(base());
+    const phoneSelected = phone.vm.selectedKey;
+    cleanup();
+    const { vm, container } = await mountWide(base());
+    expect(vm.selectedKey).toBe(phoneSelected);
+    const list = screen.getByTestId('m2-trends-chips');
+    expect(screen.getByTestId('m2-trends-split')).toContainElement(list);
+    const first = within(list).getByRole('button', { name: /HbA1c/ });
+    expect(first).toHaveAttribute('aria-pressed', 'true');
+    expect(within(list).getByRole('button', { name: /HDL cholesterol/ })).toHaveAttribute('aria-pressed', 'false');
+    expect(await screen.findByTestId('m2-trends-card')).toBeInTheDocument();
+    const violations = await axeViolations(container);
+    expect(violations, describeViolations(violations)).toEqual([]);
+  });
+
+  it('keeps the table alternative and the chart’s text alternative at the desktop layout', async () => {
+    await mountWide(base());
+    expect(await screen.findByRole('img', { name: /HbA1c/ })).toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('m2-trends-mode-table'));
+    expect(screen.getByTestId('m2-trends-table')).toBeInTheDocument();
+    expect(screen.getAllByRole('row').length).toBeGreaterThan(1);
+  });
+
+  it('draws no SOS of its own on desktop; with the phone frame’s provider, one that opens the shell’s', async () => {
+    await mountWide(base());
+    expect(screen.queryByRole('button', { name: /SOS/i })).toBeNull();
+    cleanup();
+    const sos = vi.fn();
+    const { repo } = setup(base());
+    render(<LanguageProvider><M2SosProvider value={sos}><M2TrendsView vm={new TrendsViewModel(repo)} reviews={[]} online links={links()} /></M2SosProvider></LanguageProvider>);
+    const buttons = screen.getAllByTestId('m2-header-sos');
+    expect(buttons).toHaveLength(1);
+    fireEvent.click(buttons[0] as HTMLElement);
+    expect(sos).toHaveBeenCalledTimes(1);
+  });
+
+  it('empty and error states at the desktop layout', async () => {
+    await mountWide({ 'GET /health/lab-results/tests': { items: [], pinned: [], minPointsForLine: 2 } });
+    expect(await screen.findByTestId('m2-trends-empty')).toBeInTheDocument();
+    cleanup();
+    await mountWide({ 'GET /health/lab-results/tests': new ApiError('down', 500) });
+    expect(await screen.findByRole('button', { name: /Try again|Retry/i })).toBeInTheDocument();
   });
 });

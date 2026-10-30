@@ -319,6 +319,8 @@ def test_template_table_matches_the_app():
             assert f"'{art}'" in text, (name, art)
         blocks = re.search(r"blocks: \[(.*?)\]", text).group(1)
         assert [b.strip(" '") for b in blocks.split(",")] == list(spec["blocks"]), name
+        assert f"advice: {'true' if spec['advice'] else 'false'}" in text, name
+        assert f"words: [{spec['words'][0]}, {spec['words'][1]}]" in text, name
     routes = re.search(r"CTA_ROUTES = \[(.*?)\] as const", source, re.S).group(1)
     assert [r.strip(" '\n") for r in routes.split(",") if r.strip()] == list(newsroom.CTA_ROUTES)
 

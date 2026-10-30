@@ -17,8 +17,8 @@ import type { ViewModel } from '@/core/store/ViewModel';
  */
 export const PRIMARY_GOALS = ['STAY_ACTIVE', 'SLEEP_BETTER', 'MANAGE_STRESS', 'BUILD_ROUTINE', 'RECORDS_IN_ONE_PLACE'] as const;
 export const ACTIVITY_LEVELS = ['MOSTLY_SEATED', 'SOME_WALKING', 'ACTIVE_MOST_DAYS', 'VERY_ACTIVE'] as const;
-export type PrimaryGoal = (typeof PRIMARY_GOALS)[number];
-export type ActivityLevel = (typeof ACTIVITY_LEVELS)[number];
+type PrimaryGoal = (typeof PRIMARY_GOALS)[number];
+type ActivityLevel = (typeof ACTIVITY_LEVELS)[number];
 
 export interface WellnessGoals {
   primaryGoal: PrimaryGoal | '';

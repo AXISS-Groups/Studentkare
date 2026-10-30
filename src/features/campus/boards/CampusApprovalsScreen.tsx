@@ -20,14 +20,14 @@ export interface PendingStudent {
   rollNumber: string;
 }
 
-export type Decision = 'VERIFIED' | 'REJECTED';
+type Decision = 'VERIFIED' | 'REJECTED';
 
 export interface ApprovalsSource {
   load(): Promise<PendingStudent[]>;
   decide(accountId: string, decision: Decision): Promise<void>;
 }
 
-export const liveApprovalsSource: ApprovalsSource = {
+const liveApprovalsSource: ApprovalsSource = {
   async load() {
     const { items } = await apiRequest<{ items: PendingStudent[] }>('/ops/campus/pending');
     return items.map(({ accountId, fullName, email, university, rollNumber }) => ({ accountId, fullName, email, university, rollNumber }));

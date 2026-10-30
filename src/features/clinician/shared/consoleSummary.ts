@@ -19,7 +19,7 @@ export interface ConsoleSummarySource {
   load(): Promise<ConsoleSummary | null>;
 }
 
-export const unconnectedConsoleSummarySource: ConsoleSummarySource = {
+const unconnectedConsoleSummarySource: ConsoleSummarySource = {
   async load() {
     return null;
   },

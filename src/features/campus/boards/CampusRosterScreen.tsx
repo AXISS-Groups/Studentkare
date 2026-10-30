@@ -19,7 +19,7 @@ export interface RosterSource {
   pendingCount(): Promise<number | null>;
 }
 
-export const liveRosterSource: RosterSource = {
+const liveRosterSource: RosterSource = {
   pendingCount: () => apiRequest<{ items: unknown[] }>('/ops/campus/pending').then((body) => body.items.length).catch(() => null),
 };
 

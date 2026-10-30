@@ -9,7 +9,7 @@
  * which verifies the signature and asks Razorpay what was actually paid.
  */
 
-export const RAZORPAY_CHECKOUT_SRC = 'https://checkout.razorpay.com/v1/checkout.js';
+const RAZORPAY_CHECKOUT_SRC = 'https://checkout.razorpay.com/v1/checkout.js';
 
 export interface RazorpayOrderSuccess {
   razorpay_payment_id: string;
@@ -47,7 +47,7 @@ function razorpayGlobal(): RazorpayConstructor | undefined {
 
 let loading: Promise<void> | null = null;
 
-export function loadRazorpayCheckout(): Promise<void> {
+function loadRazorpayCheckout(): Promise<void> {
   if (razorpayGlobal()) return Promise.resolve();
   if (typeof document === 'undefined') return Promise.reject(new Error('The payment checkout is only available on the web.'));
   if (!loading) {

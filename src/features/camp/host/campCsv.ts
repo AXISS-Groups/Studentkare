@@ -30,7 +30,7 @@ export function campCsv(camp: HostCamp, withhold: boolean, t: Translate): string
   return [header, ...rows].map((row) => row.map(csvCell).join(',')).join('\r\n');
 }
 
-export function csvFileName(camp: Pick<HostCamp, 'name' | 'date'>): string {
+function csvFileName(camp: Pick<HostCamp, 'name' | 'date'>): string {
   const slug = camp.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'camp';
   return `${camp.date}-${slug}-bookings.csv`;
 }

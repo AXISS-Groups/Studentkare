@@ -6,7 +6,7 @@
  * Enforces 7-year NMC medical record retention requirement.
  */
 
-export type StudentLifecycleState = 
+type StudentLifecycleState = 
   | 'ACTIVE' 
   | 'GRADUATED' 
   | 'ARCHIVED' 

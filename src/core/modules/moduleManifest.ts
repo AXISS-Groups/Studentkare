@@ -10,9 +10,9 @@ export type ModuleId =
   | 'M16' | 'M17' | 'M18' | 'M19' | 'M20'
   | 'M21' | 'M22' | 'M23' | 'M24' | 'M25';
 
-export type DataClass = 'clinical' | 'operational' | 'commercial';
+type DataClass = 'clinical' | 'operational' | 'commercial';
 
-export type Capability = 'ai' | 'agent' | 'seo' | 'realtime';
+type Capability = 'ai' | 'agent' | 'seo' | 'realtime';
 
 export interface ModuleConfig {
   /** Unique module identifier (M01-M25) */

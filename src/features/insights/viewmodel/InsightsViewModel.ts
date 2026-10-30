@@ -10,6 +10,7 @@ import { MedsTodayViewModel } from '@/features/reminders/viewmodel/MedsTodayView
 import { WaterViewModel } from '@/features/reminders/viewmodel/WaterViewModel';
 import { readWeek } from '@/features/steps/data/stepsApi';
 import type { ActivityTrends } from '@/features/steps/data/stepsApi';
+import { pickReport, releasedReports } from './releasedReports';
 
 /**
  * Mobile 2.0 My health · Insights (M2Insights, Tier 1; plan package A and the
@@ -49,15 +50,18 @@ export function refillLine(plan: RefillPlan, due: (date: string) => string, date
 }
 export interface LabOrder {
   id: string; status: string; testPanel: string[]; orderedByDoctor?: string; collectedAt: number | null; slotStart: string | null; createdAt: number;
+  /** Fields the same /lab-orders response already carries (as StudentLabTest types them), for "Reviewed lab reports" (parity plan §3). */
+  reportDocumentId?: string | null; reviewNote?: string; reviewedByDoctor?: string; reviewedAt?: number | null;
 }
 
 const UPCOMING = new Set(['REQUESTED', 'CONFIRMED']);
 /** A doctor-ordered test still waiting for its sample (clinical_fulfilment LAB_TRANSITIONS). */
 const AWAITING_COLLECTION = new Set(['BOOKED', 'ASSIGNED', 'RECOLLECTION_REQUIRED']);
 const REVIEWS_READ = 20;
-const ORDERS_READ = 20;
+/** The same page the Report insights page reads, so "All reports (n)" counts what that page lists (parity plan §3). */
+const ORDERS_READ = 50;
 
-export function nextConsult(items: readonly Appointment[], now = Date.now()): Appointment | null {
+function nextConsult(items: readonly Appointment[], now = Date.now()): Appointment | null {
   return items
     .filter((a) => UPCOMING.has(a.status) && (toDate(a.slotStart)?.getTime() ?? 0) > now)
     .sort((a, b) => (toDate(a.slotStart)?.getTime() ?? 0) - (toDate(b.slotStart)?.getTime() ?? 0))[0] ?? null;
@@ -123,6 +127,16 @@ export class InsightsViewModel implements ViewModel {
   get toDo(): number | null {
     if (!this.refills.data || !this.labOrders.data) return null;
     return this.refills.data.items.length + this.ordered.length;
+  }
+
+  /** "Reviewed lab reports" (parity plan §3, Q3): the newest released StudentKare lab report, by the page's own pick rule. */
+  get reviewedReport(): LabOrder | null {
+    return this.labOrders.data ? pickReport(this.labOrders.data.items, null) : null;
+  }
+
+  /** How many released reports the Report insights page lists. */
+  get releasedReportCount(): number {
+    return this.labOrders.data ? releasedReports(this.labOrders.data.items).length : 0;
   }
 
   get note(): ReportReview | null {

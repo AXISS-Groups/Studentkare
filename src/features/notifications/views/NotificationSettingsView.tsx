@@ -43,7 +43,7 @@ export const DEVICE_TEXT: Record<PushDeviceState, MessageKey> = {
  * This phone's push state sits above the grid; the OS prompt appears only
  * when the student taps Turn on (or sets their first reminder).
  */
-export const NotificationSettingsView = observer(function NotificationSettingsView({
+const NotificationSettingsView = observer(function NotificationSettingsView({
   viewModel,
   links = {},
 }: {
