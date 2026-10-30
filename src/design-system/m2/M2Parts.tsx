@@ -125,7 +125,7 @@ export function SosButton({ label, spoken, onPress, testID = 'm2-sos' }: { label
   };
   return (
     <View style={styles.sosWrap}>
-      {ambient ? <Animated.View pointerEvents="none" style={[styles.sosRing, ring]} /> : null}
+      {ambient ? <Animated.View style={[styles.sosRing, ring, { pointerEvents: 'none' }]} /> : null}
       <Pressable role="button" accessibilityRole="button" accessibilityLabel={spoken} aria-label={spoken} onPress={onPress} testID={testID}
         style={({ focused }: PressState) => [styles.sos, focused ? focusRing : null]}>
         <Icon name="shield-alert" size={16} color={color.onDangerFill} strokeWidth={2.4} />

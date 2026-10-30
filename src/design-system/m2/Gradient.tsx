@@ -43,7 +43,7 @@ export function gradientCss({ colors, angle = 150, radial, gloss = false }: Pick
 export function Gradient({ colors, angle, radial, gloss, style, children, testID, pointerEvents }: GradientProps): React.ReactElement {
   const flat = colors[colors.length - 1] ?? color.surface;
   return (
-    <View testID={testID} pointerEvents={pointerEvents} style={[{ backgroundColor: flat }, style, webOnly({ backgroundImage: gradientCss({ colors, angle, radial, gloss }) })]}>
+    <View testID={testID} style={[{ backgroundColor: flat }, pointerEvents ? { pointerEvents } : null, style, webOnly({ backgroundImage: gradientCss({ colors, angle, radial, gloss }) })]}>
       {children}
     </View>
   );

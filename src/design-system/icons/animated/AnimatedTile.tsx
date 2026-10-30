@@ -95,7 +95,7 @@ export function AnimatedTile({ size, hue, children }: { size: number; hue: TileH
         ]}
       >
         <Gradient colors={stops} gloss style={[StyleSheet.absoluteFill, { borderRadius: tile * CORNER_RATIO }]} />
-        <View pointerEvents="none" style={[StyleSheet.absoluteFill, styles.highlight, { borderRadius: tile * CORNER_RATIO }]} />
+        <View style={[StyleSheet.absoluteFill, styles.highlight, { borderRadius: tile * CORNER_RATIO, pointerEvents: 'none' }]} />
         <View style={styles.glyph}>{children(tile * GLYPH_RATIO, deep)}</View>
       </Animated.View>
     </View>

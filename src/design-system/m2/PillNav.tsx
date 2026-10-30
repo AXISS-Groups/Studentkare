@@ -94,7 +94,7 @@ export function PillNav({ current, onSelect, bottomInset = 0, testID = 'pill-nav
   const keyboardShown = useKeyboardShown();
   if (keyboardShown) return null;
   return (
-    <View style={[styles.dock, { paddingBottom: Math.max(bottomInset, space.s16) }]} pointerEvents="box-none">
+    <View style={[styles.dock, { paddingBottom: Math.max(bottomInset, space.s16), pointerEvents: 'box-none' }]}>
       <Gradient colors={NAVY_STOPS} angle={160} style={styles.bar} testID={testID}>
         <View role="navigation" accessibilityLabel={t('m2.nav.label')} aria-label={t('m2.nav.label')} style={styles.row}>
           {PILL_NAV.map((item) => {

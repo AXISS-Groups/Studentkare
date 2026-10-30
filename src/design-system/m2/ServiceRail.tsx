@@ -46,7 +46,7 @@ function Shine({ index }: { index: number }) {
   if (!ambient) return null;
   // The band crosses in the last part of each loop (canvas skShine: still for 60 %, then across).
   const translateX = sweep.interpolate({ inputRange: [0, 0.6, 1], outputRange: [-TILE, -TILE, SHINE_TRAVEL] });
-  return <Animated.View pointerEvents="none" style={[styles.shine, { transform: [{ translateX }, { rotate: '18deg' }] }]} />;
+  return <Animated.View style={[styles.shine, { pointerEvents: 'none', transform: [{ translateX }, { rotate: '18deg' }] }]} />;
 }
 
 export function ServiceRail({ label, tiles, current, testID = 'service-rail' }: { label: string; tiles: readonly ServiceTile[]; current: string | null; testID?: string }) {
