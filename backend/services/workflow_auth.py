@@ -383,7 +383,6 @@ class OtpSend(StrictModel):
     identifier: str = Field(min_length=3, max_length=254)
     channel: Literal["EMAIL", "WHATSAPP"]
     intent: Literal["LOGIN", "SIGNUP"]
-    fallbackEmail: str | None = Field(default=None, max_length=254)
     # The staff sign-in page (AdminSignIn) asks for STAFF: a code is then sent
     # only to an active account whose role is not STUDENT, by email only.
     audience: Literal["STUDENT", "STAFF"] = "STUDENT"
@@ -582,13 +581,11 @@ def send_otp(body: OtpSend, request: Request, response: Response, db: DBSession 
     fallback_sent, fallback_channel, fallback_masked = False, None, None
     if not delivered and body.channel == "WHATSAPP":
         # Auto-fallback: WhatsApp failed → same code via Postal/SMTP email ONLY to an
-        # already-verified recovery contact stored on the account. Never to a
+        # already-verified email contact stored on the account. Never to a
         # client-supplied email that we cannot prove belongs to this account.
-        fallback = None
         account = account_for_sign_in(db, identifier, body.channel)
-        if account:
-            fallback = (account.profile or {}).get("recovery_email", "").strip() or None
-        if fallback and "@" in fallback:
+        fallback = verified_contact(db, account, "EMAIL") if account else ""
+        if fallback:
             from services.otp_delivery import mask_email, send_email_code
             if send_email_code(fallback, code).get("status") == "sent":
                 delivered = True

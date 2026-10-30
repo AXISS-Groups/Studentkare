@@ -295,40 +295,6 @@ def _whatsapp_otp_text(code: str) -> str:
     return "\n".join(lines)
 
 
-def dispatch_with_fallback(identifier: str, code: str, channel: str = "EMAIL", fallback_email: str | None = None) -> dict:
-    """Send OTP on the requested channel; on WhatsApp failure auto-retry via email.
-
-    Returns {"delivered", "channel", "fallback_sent", "fallback_channel",
-    "fallback_masked", "reason"} — never raises.
-    """
-    text = _whatsapp_otp_text(code)
-    out = {"delivered": False, "channel": channel, "fallback_sent": False,
-           "fallback_channel": None, "fallback_masked": None, "reason": ""}
-    if channel == "WHATSAPP":
-        result = _send_openwa(normalize_chat_id(identifier, _openwa()["cc"]), text)
-        if result.get("status") == "sent":
-            out["delivered"] = True
-            return out
-        if result.get("status") == "skipped":
-            out["reason"] = result.get("reason", "")
-            return out
-        out["reason"] = result.get("reason", "")
-        if fallback_email and "@" in fallback_email:
-            fb = _send_email(fallback_email.strip(), code)
-            if fb.get("status") == "sent":
-                out["delivered"] = True
-                out["fallback_sent"] = True
-                out["fallback_channel"] = "EMAIL"
-                out["fallback_masked"] = mask_email(fallback_email)
-            else:
-                out["reason"] = f"whatsapp_{out['reason']}; email_{fb.get('reason', fb.get('status'))}"
-        return out
-    result = _send_email(identifier, code)
-    out["delivered"] = result.get("status") == "sent"
-    out["reason"] = "" if out["delivered"] else result.get("reason", result.get("status", ""))
-    return out
-
-
 def send_email_code(to_email: str, code: str) -> dict:
     """Public wrapper: send an OTP code to an email address. Never raises."""
     return _send_email(to_email, code)

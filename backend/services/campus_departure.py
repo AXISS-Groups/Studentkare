@@ -5,9 +5,9 @@ reminders and account are never touched. What ends on the effective date is
 the campus link: the campus verification, the verified-student flag, the
 college and roll number on the profile, and any seat on the college's contract.
 
-Deliberately not collected: a "personal email". There is no verified recovery
-contact flow yet (profile.recovery_email is read for OTP fallback but nothing
-sets or verifies it), so an unverified address would be data held for nothing.
+Deliberately not collected: a "personal email". A free-text address nobody has
+proved is theirs would be data held for nothing, so the OTP fallback only ever
+uses the account's own verified email contact (services/contact_store.py).
 The screen instead warns a student who signs in with a college email.
 """
 from __future__ import annotations
