@@ -20,8 +20,6 @@ import { useExerciseStore } from '@/data/contexts/ExerciseStore';
 import { IceContactsRoute } from '@/features/emergency/views/IceContactsBoard';
 import { DeleteAccountRoute } from '@/features/account/views/DeleteAccountView';
 import { PlanBillingBoard } from '@/features/billing/views/PlanBillingBoard';
-import { ConsentInboxBoard } from '@/features/vault/views/ConsentInboxBoard';
-import { FamilyCircleBoard } from '@/features/vault/views/FamilyCircleBoard';
 import { recordsArt } from '@/features/vault/views/recordsArt';
 
 const ExerciseLibraryScreen = lazy(() => import('../wellbeing/ExerciseLibraryScreen').then((module) => ({ default: module.ExerciseLibraryScreen })));

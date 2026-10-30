@@ -9,7 +9,7 @@ import './landingWeb.css';
  * question list. Copy arrives already translated; tokens only.
  */
 
-function LwSection({ children, className, label, labelledBy }: { children: React.ReactNode; className?: string; label?: string; labelledBy?: string }): React.ReactElement {
+export function LwSection({ children, className, label, labelledBy }: { children: React.ReactNode; className?: string; label?: string; labelledBy?: string }): React.ReactElement {
   return (
     <section className={`lw-section${className ? ` ${className}` : ''}`} aria-label={label} aria-labelledby={labelledBy}>
       {children}

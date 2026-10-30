@@ -4,7 +4,7 @@ import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useTheme } from '@/theme/tokens/theme';
 import { useLifeShareStore } from '@/store/AppStores';
 import { Card } from '@/components/Card';
-import { AlertTriangle, Droplet, PhoneCall } from 'lucide-react';
+import { Icon } from '@/design-system/icons';
 import { BLOOD_COMPATIBILITY_MAP } from '@/data/datasets/lifeshareData';
 import { useT } from '@/i18n';
 
@@ -61,12 +61,12 @@ const LifeShareExchangeScreenUnwrapped: React.FC = () => {
         </Text>
         <View style={styles.callRow}>
           <a href="tel:112" style={linkStyle} aria-label={t('member.lifeshare.call112Spoken')}>
-            <PhoneCall size={18} aria-hidden="true" />
+            <Icon name="phone-call" size={18} />
             <span style={numberStyle}>112</span>
             <span style={whatStyle}>{t('member.lifeshare.call112What')}</span>
           </a>
           <a href="tel:108" style={linkStyle} aria-label={t('member.lifeshare.call108Spoken')}>
-            <PhoneCall size={18} aria-hidden="true" />
+            <Icon name="phone-call" size={18} />
             <span style={numberStyle}>108</span>
             <span style={whatStyle}>{t('member.lifeshare.call108What')}</span>
           </a>
@@ -79,7 +79,7 @@ const LifeShareExchangeScreenUnwrapped: React.FC = () => {
       */}
       <Card variant="surface" style={styles.stateCard}>
         <View style={styles.stateHead}>
-          <AlertTriangle size={20} color={tokens.attention} aria-hidden="true" />
+          <Icon name="alert-triangle" size={20} color={tokens.attention} />
           <Text accessibilityRole="header" style={[styles.stateHeading, { color: tokens.text }]}>
             {t('member.lifeshare.availabilityHeading')}
           </Text>
@@ -98,7 +98,7 @@ const LifeShareExchangeScreenUnwrapped: React.FC = () => {
       {/* True without a network, which is why this part survives. */}
       <Card variant="surface" style={styles.bloodCard}>
         <View style={styles.stateHead}>
-          <Droplet size={20} color={tokens.emergency} aria-hidden="true" />
+          <Icon name="droplet" size={20} color={tokens.emergency} />
           <Text accessibilityRole="header" style={[styles.stateHeading, { color: tokens.text }]}>
             {t('member.lifeshare.bloodHeading')}
           </Text>

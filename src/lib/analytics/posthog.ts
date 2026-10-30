@@ -22,7 +22,7 @@ export function configurePostHog(c: Partial<PostHogPublicConfig>) {
   cfg = { ...cfg, ...c } as PostHogPublicConfig;
 }
 
-function setPostHogConsent(granted: boolean) {
+export function setPostHogConsent(granted: boolean) {
   consent = granted;
 }
 
@@ -74,7 +74,7 @@ export function posthogCapture(event: string, route: string, props?: Record<stri
   }
 }
 
-function posthogIdentify(userId: string, traits?: Record<string, unknown>) {
+export function posthogIdentify(userId: string, traits?: Record<string, unknown>) {
   try {
     client?.identify?.(userId, traits);
   } catch { /* noop */ }
