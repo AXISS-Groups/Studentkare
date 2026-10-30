@@ -215,6 +215,8 @@ function CampusTile({ icon, hue, title, onPress, testID, wide = false }: { icon:
 
 export function M2HomeView({ name, campus, verified, data, links, cart, recent, footer, blog, wide = false }: M2HomeViewProps): React.ReactElement {
   const t = useT();
+  const avatarInitials = initials(name);
+  const avatarLabel = avatarInitials ? t('m2.home.openMenuInitials', { initials: avatarInitials }) : t('m2.home.openMenu');
   useOwnPhoneChrome();
   const phone = orderLinePhone();
   // Highlights from real data only: the lab package the catalogue lists, Generics when the programme is on, and the
@@ -288,12 +290,14 @@ export function M2HomeView({ name, campus, verified, data, links, cart, recent, 
         ) : (
           <View style={styles.header}>
             {links.menu ? (
-              <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('m2.home.openMenuInitials', { initials: initials(name) })} aria-label={t('m2.home.openMenuInitials', { initials: initials(name) })} onPress={links.menu}
+              <Pressable role="button" accessibilityRole="button" accessibilityLabel={avatarLabel} aria-label={avatarLabel} onPress={links.menu}
                 testID="m2-home-avatar" style={({ focused }: PressState) => [styles.avatar, focused ? focusRing : null]}>
-                <Text style={styles.avatarText}>{initials(name)}</Text>
+                {avatarInitials ? <Text style={styles.avatarText}>{avatarInitials}</Text> : <Icon name="user-5" size={20} color={color.action} />}
               </Pressable>
             ) : (
-              <View style={styles.avatar} accessibilityElementsHidden importantForAccessibility="no-hide-descendants"><Text style={styles.avatarText}>{initials(name)}</Text></View>
+              <View style={styles.avatar} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+                {avatarInitials ? <Text style={styles.avatarText}>{avatarInitials}</Text> : <Icon name="user-5" size={20} color={color.action} />}
+              </View>
             )}
             <View style={styles.grow}>
               <Text style={styles.greeting}>{t(greetingKey())}</Text>
@@ -350,7 +354,7 @@ export function M2HomeView({ name, campus, verified, data, links, cart, recent, 
 
       {blog ? <Rise index={6} style={gutter}>{blog}</Rise> : null}
 
-      <Rise index={6} style={gutter}>
+      <Rise index={blog ? 7 : 6} style={gutter}>
         <M2SectionHead title={t('m2.home.concern')} action={links.services.medicines ? { label: t('m2.seeAll'), spoken: t('m2.home.seeAllMedicines'), onPress: links.services.medicines } : undefined} />
         <SoftTileGrid testID="m2-home-concern" items={HOME_CONCERNS.map((c) => ({ key: c.key, label: t(c.label), icon: c.icon, hue: c.hue, onPress: () => links.concern(c.filter) }))} />
       </Rise>
@@ -395,7 +399,7 @@ export function M2HomeView({ name, campus, verified, data, links, cart, recent, 
   }
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content} testID="m2-home">
-      <Gradient colors={[color.surface3, color.canvas]} radial={{ x: 0.5, y: 0.5 }} style={styles.glow} pointerEvents="none" />
+      <Gradient colors={[color.surface3, color.canvas]} radial={{ x: 0.5, y: 0.5 }} style={[styles.glow, { pointerEvents: 'none' }]} />
       {board}
     </ScrollView>
   );
@@ -413,7 +417,7 @@ const styles = StyleSheet.create({
   placeRowWide: { paddingHorizontal: 0 },
   verifiedWide: { marginLeft: 0 },
   consultWide: { marginTop: 0, flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'space-between' },
-  recentWide: { flexGrow: 1 },
+  recentWide: { flexGrow: 1, position: 'relative' },
   campusTileWide: { flexBasis: 'auto', height: 'auto', minHeight: 112 },
   callRowWide: { paddingHorizontal: 0 },
   grow: { flex: 1, minWidth: 0 },
@@ -447,7 +451,7 @@ const styles = StyleSheet.create({
   pill: { minHeight: 36, paddingHorizontal: space.s14, borderRadius: radius.full, justifyContent: 'center', backgroundColor: color.surface3 },
   pillText: { fontFamily: font.family.sans, fontSize: font.size.bodySm, fontWeight: fontWeight(font.weight.heavy), color: color.action },
   rail: { paddingHorizontal: space.gutterPhone, paddingBottom: space.s8, gap: space.s12 },
-  recent: { width: 148 },
+  recent: { width: 148, position: 'relative' },
   recentOpen: { borderRadius: 22, padding: space.s12, gap: space.s6, backgroundColor: color.surface, ...shadowStyle(shadow.card) },
   recentArt: { height: 84, borderRadius: radius.lg, alignItems: 'center', justifyContent: 'center' },
   add: {

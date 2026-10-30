@@ -54,7 +54,7 @@ export interface DirectoryPage {
   registry: RegistryStatus;
 }
 
-function isPlaceSegment(value: unknown): value is PlaceSegment {
+export function isPlaceSegment(value: unknown): value is PlaceSegment {
   return typeof value === 'string' && (PLACE_SEGMENTS as readonly string[]).includes(value);
 }
 

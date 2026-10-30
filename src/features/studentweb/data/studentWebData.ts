@@ -33,7 +33,7 @@ export function orderStatus(order: Pick<LiveOrder, 'lines'>): RequestStatus {
   return 'CANCELLED';
 }
 
-const isActiveOrder = (order: Pick<LiveOrder, 'lines'>): boolean => ACTIVE.includes(orderStatus(order));
+export const isActiveOrder = (order: Pick<LiveOrder, 'lines'>): boolean => ACTIVE.includes(orderStatus(order));
 
 /** The short reference the student sees ("SK-1A2B3C4D"), from the order id. */
 export const orderRef = (id: string): string => `SK-${id.slice(0, 8).toUpperCase()}`;
@@ -80,7 +80,7 @@ export function buyAgainBlock(item: LiveCatalogItem | undefined): BuyAgainBlock 
 
 /** Catalogue counts per kind for the search sidebar. */
 type SearchKind = 'all' | 'product' | 'lab' | 'consultation';
-const SEARCH_KINDS: readonly SearchKind[] = ['all', 'product', 'lab', 'consultation'];
+export const SEARCH_KINDS: readonly SearchKind[] = ['all', 'product', 'lab', 'consultation'];
 
 export type SortOrder = 'name' | 'priceLow' | 'priceHigh';
 export const SORT_ORDERS: readonly SortOrder[] = ['name', 'priceLow', 'priceHigh'];

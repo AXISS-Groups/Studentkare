@@ -45,7 +45,7 @@ export function getModules(): FeatureModule[] {
   return registry;
 }
 
-function getModuleById(id: string): FeatureModule | undefined {
+export function getModuleById(id: string): FeatureModule | undefined {
   return registry.find((module) => module.id === id);
 }
 

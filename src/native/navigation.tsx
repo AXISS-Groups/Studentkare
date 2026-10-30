@@ -25,7 +25,7 @@ export function NavigationProvider<P extends ParamListBase>({ children, linking,
 }
 
 /** Current route name, normalized to the same format the web facade returns. */
-function useRoutePath(): string {
+export function useRoutePath(): string {
   return useNavigationState(state => state.routes[state.index]?.name ?? '');
 }
 

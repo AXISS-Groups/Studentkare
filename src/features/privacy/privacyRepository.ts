@@ -2,7 +2,7 @@ import { apiRequest } from '@/data/services/http';
 import type { Lang } from '@/i18n';
 
 /** backend/services/consent_ledger.py OPTIONAL_PURPOSES, sorted. */
-const OPTIONAL_PURPOSES = ['AYUSH_HISTORY', 'BLOOD_DONOR_CONTACT', 'PICKUP_LOCATION', 'PREVENTIVE_OFFERS', 'SEASONAL_EDUCATION', 'WALLET_GOOGLE'] as const;
+export const OPTIONAL_PURPOSES = ['AYUSH_HISTORY', 'BLOOD_DONOR_CONTACT', 'PICKUP_LOCATION', 'PREVENTIVE_OFFERS', 'SEASONAL_EDUCATION', 'WALLET_GOOGLE'] as const;
 export type OptionalPurpose = (typeof OPTIONAL_PURPOSES)[number];
 
 /** What GET /privacy/consents answers. */

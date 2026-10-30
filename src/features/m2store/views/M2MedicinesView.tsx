@@ -70,7 +70,7 @@ function Coin() {
   const turn = useLoop(ambient, motion.duration.ambient);
   const rotate = turn.interpolate({ inputRange: [0, 0.5, 1], outputRange: ['-8deg', '8deg', '-8deg'] });
   return (
-    <Animated.View pointerEvents="none" style={[styles.coin, { transform: [...floatTransform(turn, space.s8), { rotate }] }]}>
+    <Animated.View style={[styles.coin, { pointerEvents: 'none', transform: [...floatTransform(turn, space.s8), { rotate }] }]}>
       <Gradient colors={[SERVICE_HUES.amber.soft, SERVICE_HUES.amber.light]} style={styles.coinFace}>
         <Text style={styles.coinText}>₹</Text>
       </Gradient>
@@ -112,7 +112,7 @@ export function M2MedicinesView({ links, cartCount, shelf, points, labFromPaise 
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content} testID="m2-medicines">
-      <Gradient colors={[SERVICE_HUES.teal.soft, color.canvas]} radial={{ x: 0.5, y: 0.5 }} style={styles.glow} pointerEvents="none" />
+      <Gradient colors={[SERVICE_HUES.teal.soft, color.canvas]} radial={{ x: 0.5, y: 0.5 }} style={[styles.glow, { pointerEvents: 'none' }]} />
       <Rise>
         <M2Header backLabel={t('m2.backHome')} onBack={links.back} eyebrow={t('m2.med.eyebrow')} title={t('m2.med.title')}
           trailing={<RoundButton icon="cart" label={cartLabel} badge={cartCount} onPress={links.cart} testID="m2-med-cart" />} />
@@ -146,7 +146,7 @@ export function M2MedicinesView({ links, cartCount, shelf, points, labFromPaise 
         <Pressable role="link" accessibilityRole="link" {...cardLabel(`${t('m2.med.genericsTitle')}. ${t('m2.med.genericsCta')}`)}
           onPress={links.generics} testID="m2-med-generics" style={(state: PressState) => [styles.genericsPress, lift(state)]}>
           <Gradient colors={heroStops('green')} style={styles.generics}>
-            <View pointerEvents="none" style={styles.genericsRing} />
+            <View style={[styles.genericsRing, { pointerEvents: 'none' }]} />
             <Coin />
             <Text style={styles.genericsEyebrow}>{t('m2.med.genericsEyebrow')}</Text>
             <Text style={styles.genericsTitle}>{t('m2.med.genericsTitle')}</Text>

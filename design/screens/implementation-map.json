@@ -127,7 +127,6 @@
     "NewDevice": [],
     "HomeDiscover": [
       "src/features/discover/views/HomeDiscoverView.tsx",
-      "src/features/discover/views/HomeDiscoverRoute.tsx",
       "src/features/phoneKit/phoneParts.tsx",
       "src/features/phoneKit/studentPhoneBoards.tsx",
       "src/screens/workspace/StudentPhoneFrame.tsx",
@@ -247,23 +246,7 @@
     "CrisisSupport": [
       "src/features/crisis/views/CrisisSupportBoard.tsx"
     ],
-    "ShopHome": [
-      "src/features/shopPhone/views/ShopHomeView.tsx",
-      "src/features/shopPhone/views/shopParts.tsx",
-      "src/features/shopPhone/views/ShopFlow.tsx",
-      "src/features/shopPhone/views/ShopPhoneRoute.tsx",
-      "src/features/shopPhone/viewmodel/PhoneShopViewModel.ts",
-      "src/features/phoneKit/phoneParts.tsx",
-      "src/features/phoneKit/catalogArt.ts",
-      "src/features/phoneKit/phoneArt.ts"
-    ],
     "ProductList": [],
-    "ProductDetail": [
-      "src/features/shopPhone/views/ProductDetailView.tsx",
-      "src/features/shopPhone/viewmodel/PhoneShopViewModel.ts",
-      "src/features/phoneKit/phoneParts.tsx",
-      "src/features/phoneKit/catalogArt.ts"
-    ],
     "LabPackages": [
       "src/features/labBooking/views/LabPackagesView.tsx",
       "src/features/labBooking/views/LabBookingFlow.tsx",
@@ -296,14 +279,12 @@
     ],
     "OrderTracking": [
       "src/features/orders/views/OrderTrackingView.tsx",
-      "src/features/orders/views/OrdersPhoneRoute.tsx",
       "src/features/orders/viewmodel/OrdersViewModel.ts",
       "src/features/phoneKit/phoneParts.tsx",
       "src/native/PhoneBoardsScreens.tsx"
     ],
     "OrderHistory": [
       "src/features/orders/views/OrderHistoryView.tsx",
-      "src/features/orders/views/OrdersPhoneRoute.tsx",
       "src/features/orders/viewmodel/OrdersViewModel.ts",
       "src/features/phoneKit/OfflineBoard.tsx",
       "src/features/phoneKit/phoneParts.tsx",
@@ -350,7 +331,7 @@
       "src/design-system/m2/M2Tier1.tsx"
     ],
     "SosBeacon": [
-      "src/modules/m04-emergency/view/SosView.tsx",
+      "src/features/emergency/views/SosView.tsx",
       "src/features/emergency/screens/SosRouteScreen.tsx"
     ],
     "DataExport": [
@@ -436,7 +417,7 @@
       "src/design-system/m2/Gradient.tsx"
     ],
     "SosDebrief": [
-      "src/modules/m04-emergency/view/SosView.tsx",
+      "src/features/emergency/views/SosView.tsx",
       "src/features/emergency/screens/SosRouteScreen.tsx"
     ],
     "MyRequests": [
@@ -606,18 +587,6 @@
       "src/design-system/public-site/PublicSiteFooter.tsx",
       "src/design-system/public-site/publicSiteNav.ts",
       "src/design-system/public-site/NewsletterBand.tsx"
-    ],
-    "WebEmergencyCard": [
-      "src/features/studentweb/views/t1/WebEmergencyCardView.tsx",
-      "src/features/emergency/viewmodel/EmergencyCardViewModel.ts",
-      "src/features/emergency/views/WalletPassPanel.tsx",
-      "src/features/emergency/viewmodel/WalletPassViewModel.ts",
-      "src/design-system/student-shell/StudentWebShell.tsx",
-      "src/design-system/student-shell/studentNav.ts",
-      "src/design-system/overlays/ConfirmDialog.tsx",
-      "src/features/studentweb/views/parts.tsx",
-      "src/features/studentweb/views/t1/shared.tsx",
-      "src/features/studentweb/views/t1/t1web.css"
     ],
     "WebSearchResults": [
       "src/features/studentweb/views/shop/WebShopView.tsx",
@@ -2255,6 +2224,20 @@
         "LeaveCampus"
       ],
       "source": "docs/plans/tier1-parity-2026-10-24.md §20 (Q1, Q2: one Leave campus view laid out wide)",
+      "redirects": {}
+    },
+    "ShopHome": {
+      "by": [
+        "M2Medicines"
+      ],
+      "source": "design/screens/mobile-2-supersedes.md §1 (M2Medicines replaces ShopHome, ProductList)",
+      "redirects": {}
+    },
+    "ProductDetail": {
+      "by": [
+        "M2Product"
+      ],
+      "source": "design/screens/mobile-2-supersedes.md §1 (M2Product replaces ProductDetail)",
       "redirects": {}
     }
   },

@@ -72,7 +72,7 @@ function Wave() {
   const beat = useLoop(ambient, motion.duration.ambient / 4);
   const bars = [30, 42, 24, 36];
   return (
-    <Animated.View pointerEvents="none" style={[styles.wave, { transform: floatTransform(float, space.s6) }]}>
+    <Animated.View style={[styles.wave, { pointerEvents: 'none', transform: floatTransform(float, space.s6) }]}>
       {bars.map((h, i) => (
         <Animated.View key={h} style={[styles.bar, { height: h }, ambient ? {
           transform: [{ scaleY: beat.interpolate({ inputRange: [0, 0.5, 1], outputRange: i % 2 ? [1, 0.4, 1] : [0.4, 1, 0.4] }) }],
@@ -144,7 +144,7 @@ export const M2ConsultsView = observer(function M2ConsultsView({ vm, links, wide
     <>
       <Rise>
         <Gradient colors={heroStops('blue')} angle={160} style={[styles.hero, wide ? styles.heroWide : null]}>
-          <View pointerEvents="none" style={styles.heroRing} />
+          <View style={[styles.heroRing, { pointerEvents: 'none' }]} />
           <View style={styles.heroHead}>
             <RoundButton icon="arrow-left" label={t('m2.backHome')} onPress={links.back} onHero testID="m2-doc-back" />
             <Text style={styles.heroEyebrow}>{t('m2.doc.eyebrow')}</Text>

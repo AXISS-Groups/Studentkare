@@ -79,24 +79,26 @@ export function HeroCarousel({ label, slides, dotLabel, testID = 'hero-carousel'
           </Rise>
         ))}
       </View>
-      <View style={styles.dots}>
-        {slides.map((s, i) => (
-          <Pressable
-            key={s.key}
-            role="button"
-            accessibilityRole="button"
-            accessibilityLabel={dotLabel(i + 1)}
-            aria-label={dotLabel(i + 1)}
-            aria-pressed={i === index}
-            accessibilityState={{ selected: i === index }}
-            onPress={() => pick(i)}
-            testID={`${testID}-dot-${i + 1}`}
-            style={({ focused }: PressState) => [styles.dotHit, focused ? focusRing : null]}
-          >
-            <View style={[styles.dot, i === index ? styles.dotOn : null]} />
-          </Pressable>
-        ))}
-      </View>
+      {slides.length > 1 ? (
+        <View style={styles.dots}>
+          {slides.map((s, i) => (
+            <Pressable
+              key={s.key}
+              role="button"
+              accessibilityRole="button"
+              accessibilityLabel={dotLabel(i + 1)}
+              aria-label={dotLabel(i + 1)}
+              aria-pressed={i === index}
+              accessibilityState={{ selected: i === index }}
+              onPress={() => pick(i)}
+              testID={`${testID}-dot-${i + 1}`}
+              style={({ focused }: PressState) => [styles.dotHit, focused ? focusRing : null]}
+            >
+              <View style={[styles.dot, i === index ? styles.dotOn : null]} />
+            </Pressable>
+          ))}
+        </View>
+      ) : null}
     </View>
   );
 }

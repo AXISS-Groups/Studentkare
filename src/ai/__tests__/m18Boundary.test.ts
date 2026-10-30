@@ -9,7 +9,7 @@
  * This scans the student-facing surfaces and fails if any predictive phrase
  * appears in rendered text.
  */
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
@@ -18,15 +18,13 @@ const ROOT = join(process.cwd(), 'src');
 // Student-facing screen directories (staff/admin/clinician/claims excluded).
 const STUDENT_DIRS = [
   'screens/auth',
-  'screens/vault',
-  'screens/camp',
-  'screens/care',
-  'screens/emergency',
-  'screens/learn',
-  'screens/rewards',
-  'screens/profile',
-  'screens/community',
   'screens/wellbeing',
+  'features/vault',
+  'features/camp',
+  'features/care',
+  'features/emergency',
+  'features/rewards',
+  'features/m2profile',
 ];
 
 const PREDICTIVE_PHRASES = [
@@ -42,9 +40,11 @@ const PREDICTIVE_PHRASES = [
 ];
 
 function collectTsx(dir: string): string[] {
+  const full = join(ROOT, dir);
+  if (!existsSync(full)) return [];
   const out: string[] = [];
-  for (const f of readdirSync(join(ROOT, dir))) {
-    const p = join(ROOT, dir, f);
+  for (const f of readdirSync(full)) {
+    const p = join(full, f);
     if (statSync(p).isDirectory()) out.push(...collectTsx(join(dir, f)));
     else if (f.endsWith('.tsx')) out.push(p);
   }

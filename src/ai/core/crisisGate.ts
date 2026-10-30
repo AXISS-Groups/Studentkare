@@ -91,7 +91,7 @@ const CRISIS_PHRASE_MAPPINGS: Array<{
   { pattern: /anaphylaxis/i, kind: 'CRISIS_MEDICAL', language: 'EN' },
 ];
 
-const CLEAR_HYPERBOLE_PATTERNS = [
+export const CLEAR_HYPERBOLE_PATTERNS = [
   /dying\s+of\s+boredom/i,
   /assignment\s+is\s+killing\s+me/i,
   /murder\s+a\s+biryani/i,
