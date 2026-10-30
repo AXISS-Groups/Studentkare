@@ -26,14 +26,13 @@ const authApi = {
   async sendOtp(
     identifier: string,
     channel: 'WHATSAPP' | 'EMAIL' = 'WHATSAPP',
-    intent: 'LOGIN' | 'SIGNUP' = 'LOGIN',
-    fallbackEmail?: string
+    intent: 'LOGIN' | 'SIGNUP' = 'LOGIN'
   ): Promise<AuthResponse> {
     try {
       const res = await fetch(`${API_BASE_URL}/auth/otp/send`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ identifier, channel, intent, fallbackEmail: fallbackEmail || undefined }),
+        body: JSON.stringify({ identifier, channel, intent }),
       });
 
       if (res.ok) {

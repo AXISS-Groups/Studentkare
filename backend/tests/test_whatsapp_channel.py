@@ -5,15 +5,52 @@ out, or the gateway is down). A student offered it then meets a form that can
 only fail. These check that the channel drops out when the session check or a
 send fails, that the screens learn it from /auth/options, that a failed send
 answers a 503 the screen can act on, and that no phone number reaches the logs.
+
+The last block is the OTP-fallback account-takeover regression (issue register):
+when WhatsApp fails, the same code may be re-sent by email ONLY to the
+account's own verified email contact — never to an address the client supplied.
 """
+import secrets
+import time
+
 import httpx
 import pytest
 from test_workflow_api import harness  # noqa: F401 — pytest fixture
 
+from core import workflow_models as M
 from services import otp_delivery, workflow_auth
+from services.contact_store import save_contact
 
 PHONE = "9121495077"
 OPENWA = {"enabled": True, "base_url": "https://wa.example.test", "api_key": "k", "session_id": "sk", "cc": "91"}
+
+
+def seed_whatsapp_account(factory, phone, *, email=None):
+    """A WhatsApp-primary active student; optionally carrying a verified email contact."""
+    with factory() as db:
+        account = M.Account(
+            id=f"acc_{secrets.token_hex(8)}",
+            identifier=phone,
+            channel="WHATSAPP",
+            full_name="Test Student",
+            role="STUDENT",
+            active=True,
+            profile={},
+            created_at=time.time(),
+        )
+        db.add(account)
+        db.flush()
+        if email:
+            save_contact(db, account.id, "EMAIL", email, verified=True)
+        db.commit()
+
+
+@pytest.fixture
+def whatsapp_fail(harness, monkeypatch):
+    """Force the primary WhatsApp send to fail so /otp/send reaches its fallback."""
+    client, factory, _codes = harness
+    monkeypatch.setattr(workflow_auth, "deliver_code", lambda identifier, code, channel: False)
+    return client, factory, []
 
 
 class FakeResponse:
@@ -227,3 +264,81 @@ def test_integrations_test_button_says_configured_but_not_connected(whatsapp, mo
     assert result["success"] is False and result["state"] == "not_connected"
     assert "not connected" in result["message"]
     assert integrations.list_integrations(user={}, db=None)["status"]["openwa"]["state"] == "not_connected"
+
+
+# --- OTP fallback: the re-sent code must never reach an address we don't own ----
+#
+# When WhatsApp fails, /otp/send re-sends the same code by email, but ONLY to
+# the account's own verified email contact. These regressions close the account
+# takeover the issue register flags: a client-supplied address, or an account
+# with no verified email, must never receive the sign-in code.
+
+def test_no_verified_email_falls_back_nowhere(whatsapp_fail, monkeypatch):
+    """A WhatsApp-only account whose email contact is missing/unverified: WhatsApp
+    failing must NOT invent an email target. The send fails closed with a 503 and
+    no email is ever sent — to nobody."""
+    client, factory, _ = whatsapp_fail
+    seed_whatsapp_account(factory, PHONE, email=None)
+    sent: list = []
+    monkeypatch.setattr(otp_delivery, "send_email_code", lambda to, code: sent.append(to) or {"status": "sent"})
+
+    response = client.post("/api/auth/otp/send", json={"identifier": PHONE, "channel": "WHATSAPP", "intent": "LOGIN"})
+    assert response.status_code == 503
+    assert sent == []  # no email address, verified or otherwise, received the code
+
+
+def test_unverified_email_contact_is_not_a_fallback_target(whatsapp_fail, monkeypatch):
+    """An email that exists on the account but has never been proven to be theirs
+    (verified_at empty) is not a verified contact, so the fallback must skip it."""
+    client, factory, _ = whatsapp_fail
+    seed_whatsapp_account(factory, PHONE, email="pending@example.test")
+    # The seeded contact is verified; make it unverified to model the unsafe value.
+    with factory() as db:
+        from sqlalchemy import select
+        row = db.scalar(select(M.AccountContact).where(M.AccountContact.kind == "EMAIL"))
+        row.verified_at = 0.0
+        db.commit()
+    sent: list = []
+    monkeypatch.setattr(otp_delivery, "send_email_code", lambda to, code: sent.append(to) or {"status": "sent"})
+
+    response = client.post("/api/auth/otp/send", json={"identifier": PHONE, "channel": "WHATSAPP", "intent": "LOGIN"})
+    assert response.status_code == 503
+    assert sent == []
+
+
+def test_client_supplied_fallback_email_is_rejected(whatsapp_fail, monkeypatch):
+    """The request body no longer carries a fallback email. An attacker trying to
+    smuggle one in must get a 422 before any code is minted or delivered — the
+    code can never be steered to an address we cannot prove is the account's."""
+    client, factory, _ = whatsapp_fail
+    seed_whatsapp_account(factory, PHONE, email="student.verified@example.test")
+    sent: list = []
+    monkeypatch.setattr(otp_delivery, "send_email_code", lambda to, code: sent.append(to) or {"status": "sent"})
+
+    response = client.post("/api/auth/otp/send", json={
+        "identifier": PHONE, "channel": "WHATSAPP", "intent": "LOGIN", "fallbackEmail": "attacker@evil.com"})
+    assert response.status_code == 422
+    assert sent == []
+    # The 422 is a pure validation refusal: it leaks nothing about the account.
+    # FastAPI's 422 detail echoes the attacker's *own* submitted value back
+    # (standard behaviour — not a leak; they sent it). What the response must
+    # never disclose is that the account carries a verified email, or what it is.
+    assert "student.verified@example.test" not in response.text
+
+
+def test_whatsapp_failure_re_sends_only_to_the_verified_email(whatsapp_fail, monkeypatch):
+    """The legitimate path: WhatsApp down, and the account carries a verified email
+    contact. The same code is re-sent there — and only there."""
+    client, factory, _ = whatsapp_fail
+    email = "student.verified@example.test"
+    seed_whatsapp_account(factory, PHONE, email=email)
+    sent: list = []
+    monkeypatch.setattr(otp_delivery, "send_email_code", lambda to, code: sent.append(to) or {"status": "sent"})
+
+    response = client.post("/api/auth/otp/send", json={"identifier": PHONE, "channel": "WHATSAPP", "intent": "LOGIN"})
+    assert response.status_code == 200, response.text
+    body = response.json()
+    assert body["fallbackSent"] is True
+    assert body["fallbackChannel"] == "EMAIL"
+    assert body["fallbackTargetMasked"] == otp_delivery.mask_email(email)
+    assert sent == [email]  # exactly the account's verified email, and nothing else

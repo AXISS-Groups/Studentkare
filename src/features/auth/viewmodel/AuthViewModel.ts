@@ -123,7 +123,6 @@ export class AuthViewModel {
   identifier = '';
   code = '';
   masked = '';
-  fallbackEmail = '';
   fallbackNotice = '';
   tempToken = '';
   twoFaCode = '';
@@ -230,7 +229,6 @@ export class AuthViewModel {
     this.identifier = '';
     this.code = '';
     this.masked = '';
-    this.fallbackEmail = '';
     this.fallbackNotice = '';
     this.tempToken = '';
     this.twoFaCode = '';
@@ -318,10 +316,6 @@ export class AuthViewModel {
 
   setCode(value: string): void {
     this.code = value.replace(/\D/g, '').slice(0, 6);
-  }
-
-  setFallbackEmail(value: string): void {
-    this.fallbackEmail = value;
   }
 
   setTwoFaCode(value: string): void {
@@ -664,7 +658,6 @@ export class AuthViewModel {
           identifier: this.identifier,
           channel: this.channel,
           intent: this.isLogin ? 'LOGIN' : 'SIGNUP',
-          fallbackEmail: this.channel === 'WHATSAPP' && this.fallbackEmail.includes('@') ? this.fallbackEmail : undefined,
           ...(this.audience === 'STAFF' ? { audience: 'STAFF' } : {}),
         }),
       });
