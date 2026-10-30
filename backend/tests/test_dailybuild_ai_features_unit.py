@@ -4,25 +4,76 @@ backend/tests/test_dailybuild_ai_features_unit.py — Unit tests for DailyBuild-
 import pytest
 from test_workflow_api import harness, register
 
+from core import workflow_models as M
 from services.agents.hitl_approval_agent import hitl_approval_agent
 
 
-def test_hitl_queue_holds_nothing_invented():
-    # No agent holds actions yet, so there is nothing to approve — and approving
-    # an id that was never held is refused, not recorded.
-    assert hitl_approval_agent.get_pending_actions() == []
-    assert hitl_approval_agent.approve_action("act_02", "Dr. Test")["status"] == "NOT_FOUND"
+def test_hitl_queue_holds_nothing_invented(harness):
+    # No agent holds actions yet, so the queue is empty — and approving an id that
+    # was never held is refused, not recorded. The queue is a table now, so a fresh
+    # database has nothing in it.
+    _, factory, _ = harness
+    with factory() as db:
+        assert hitl_approval_agent.get_pending_actions(db) == []
+        assert hitl_approval_agent.approve_action(db, "act_02", "Dr. Test")["status"] == "NOT_FOUND"
 
 
-def test_hitl_approves_a_held_action_once(monkeypatch):
-    import importlib
-    module = importlib.import_module("services.agents.hitl_approval_agent")
-    held = module.PendingAction(id="act_x", action_type="PRESCRIPTION_APPROVAL", title="Held", patient_name="",
-                                requested_by="agent", summary="", risk_level="MEDIUM",
-                                status="PENDING_DOCTOR_APPROVAL", created_at="")
-    monkeypatch.setattr(module, "PENDING_ACTIONS_REGISTRY", [held])
-    assert hitl_approval_agent.approve_action("act_x", "Dr. Test")["status"] == "SUCCESS"
-    assert hitl_approval_agent.approve_action("act_x", "Dr. Test")["status"] == "NOT_PENDING"
+def test_hitl_holds_then_approves_a_held_action_once(harness):
+    # A held action persists to care_hitl_actions, appears in the queue, is released
+    # exactly once, and a second release is refused as no longer pending.
+    _, factory, _ = harness
+    with factory() as db:
+        held = hitl_approval_agent.hold_action(
+            db, action_type="PRESCRIPTION_APPROVAL", title="Held",
+            patient_id="student_1", patient_name="A Student",
+            campus="Some University", requested_by="agent",
+            assigned_clinician="Dr. Test")
+        db.commit()
+    with factory() as db:
+        assert [a.id for a in hitl_approval_agent.get_pending_actions(db)] == [held.id]
+        assert hitl_approval_agent.approve_action(db, held.id, "Dr. Test")["status"] == "SUCCESS"
+        db.commit()
+    with factory() as db:
+        assert hitl_approval_agent.approve_action(db, held.id, "Dr. Test")["status"] == "NOT_PENDING"
+
+
+def test_hitl_approval_is_scoped_to_the_caller_campus(harness):
+    # A held action belongs to a campus; a scoped approver outside it neither sees
+    # nor can release it (answer: not found, not "exists elsewhere"). The queue
+    # also filters to the caller's campus on the read.
+    _, factory, _ = harness
+    with factory() as db:
+        held = hitl_approval_agent.hold_action(
+            db, action_type="PRESCRIPTION_APPROVAL", title="Held",
+            patient_id="student_1", patient_name="A Student",
+            campus="Some University", assigned_clinician="Dr. Test")
+        db.commit()
+    with factory() as db:
+        assert [a.id for a in hitl_approval_agent.get_pending_actions(db, campus="Some University")] == [held.id]
+        assert hitl_approval_agent.get_pending_actions(db, campus="Other University") == []
+        assert hitl_approval_agent.approve_action(db, held.id, "Dr. Test", campus="Other University")["status"] == "NOT_FOUND"
+        # The same approver, in the right campus, releases it.
+        assert hitl_approval_agent.approve_action(db, held.id, "Dr. Test", campus="Some University")["status"] == "SUCCESS"
+
+
+def test_hitl_holding_requires_an_assigned_clinician(harness):
+    # A held action with no one assigned is refused at hold time, and a row that
+    # somehow reached the queue unassigned is released by no one.
+    _, factory, _ = harness
+    with factory() as db:
+        with pytest.raises(ValueError):
+            hitl_approval_agent.hold_action(
+                db, action_type="PRESCRIPTION_APPROVAL", title="Held",
+                patient_id="student_1", assigned_clinician="")
+        db.commit()
+        # An unassigned row, inserted directly, is held but releasable by no one.
+        unassigned = M.HitlAction(id="ua_1", action_type="PRESCRIPTION_APPROVAL", title="Unassigned",
+                                  patient_id="student_1", status="PENDING_DOCTOR_APPROVAL",
+                                  created_at="", assigned_clinician="")
+        db.add(unassigned)
+        db.commit()
+    with factory() as db:
+        assert hitl_approval_agent.approve_action(db, "ua_1", "Dr. Test")["status"] == "NOT_ASSIGNED"
 
 
 def test_camera_scan_and_mental_game_endpoints(harness):

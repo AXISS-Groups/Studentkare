@@ -234,7 +234,7 @@ was removed). None calls a model.
 |----------|--------|-----------------|
 | `/api/blood/*` | `blood_emergency_agent` | donor matching; SOS queued as `BLOOD_SOS` outbox events |
 | `/api/meds/*` | `medication_adherence_loop_agent` | plans and dose logs in Postgres |
-| `/api/ops/approvals`, `/api/v1/ops/kill-switch` | `hitl_approval_agent`, `medical_guard` | approvals from a module-level list; kill switch is a process flag |
+| `/api/ops/approvals`, `/api/v1/ops/kill-switch` | `hitl_approval_agent`, `medical_guard` | held actions persisted in `care_hitl_actions` (scoped to campus + patient + assigned clinician); kill switch persisted in the settings registry |
 
 Removed, because they gave any signed-in user fixed, clinical-looking output
 (clinician decision support belongs to M18, AGENTS.md guardrail 5): `POST

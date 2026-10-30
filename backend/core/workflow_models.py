@@ -2331,3 +2331,35 @@ class PostImage(Base):
     content: Mapped[bytes] = mapped_column(LargeBinary)
     uploaded_by: Mapped[str] = mapped_column(String, default="")
     created_at: Mapped[float] = mapped_column(Float, default=0.0)
+
+
+class HitlAction(Base):
+    """A high-stakes AI action held for a named clinician's sign-off before it may run.
+
+    Persisted so the queue survives a restart and is shared across replicas
+    (audit M2: it was a module-level list). Each row names the student it is about
+    and the campus it belongs to, and the clinician who must release it — so a
+    held action is always scoped, never invented, and releasable by exactly the
+    person assigned. ``status`` is ``PENDING_DOCTOR_APPROVAL`` until a clinician
+    sets it to ``APPROVED_BY_CLINICIAN``; anything else is stale or already handled.
+    """
+    __tablename__ = "care_hitl_actions"
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    action_type: Mapped[str] = mapped_column(String(48), default="")
+    title: Mapped[str] = mapped_column(String(300), default="")
+    patient_name: Mapped[str] = mapped_column(String(120), default="")
+    requested_by: Mapped[str] = mapped_column(String(64), default="")
+    summary: Mapped[str] = mapped_column(Text, default="")
+    risk_level: Mapped[str] = mapped_column(String(24), default="")
+    status: Mapped[str] = mapped_column(String(32), default="PENDING_DOCTOR_APPROVAL", index=True)
+    created_at: Mapped[str] = mapped_column(String(40), default="")
+    # Who the action is about, and where: the student's account id and the campus
+    # key it belongs to (services.workflow_api.campus_scope). An empty campus means
+    # unscoped; approval is still the super admin's alone, but the scoping fields
+    # make each row addressable by patient and by campus.
+    patient_id: Mapped[str] = mapped_column(String, default="", index=True)
+    campus: Mapped[str] = mapped_column(String(160), default="", index=True)
+    # The clinician (or admin) who may release this action. Empty means it was
+    # held without an assignee: approval must then fail closed, not fall back to
+    # whoever clicked.
+    assigned_clinician: Mapped[str] = mapped_column(String(120), default="")
