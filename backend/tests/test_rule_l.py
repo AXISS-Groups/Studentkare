@@ -173,6 +173,43 @@ def test_fail_closed_mode_refuses_commerce_without_grants(monkeypatch):
     assert denied.value.status_code == 503
 
 
+def test_production_fails_closed_by_default_without_grants(monkeypatch):
+    from fastapi import HTTPException
+
+    from services import commerce_session
+
+    monkeypatch.setenv("APP_ENV", "production")
+    monkeypatch.delenv("RULE_L_REQUIRE_GRANTS", raising=False)
+    engine = create_engine("sqlite://")
+    with sessionmaker(bind=engine)() as db:
+        gen = commerce_session.commerce_db(db)
+        with pytest.raises(HTTPException) as denied:
+            next(gen)
+    assert denied.value.status_code == 503
+    assert commerce_session.grants_required() is True
+
+
+def test_production_allows_explicit_provisioning_override(monkeypatch):
+    from services import commerce_session
+
+    monkeypatch.setenv("APP_ENV", "production")
+    monkeypatch.setenv("RULE_L_REQUIRE_GRANTS", "0")
+    engine = create_engine("sqlite://")
+    with sessionmaker(bind=engine)() as db:
+        gen = commerce_session.commerce_db(db)
+        yielded = next(gen)
+        assert yielded is db
+    assert commerce_session.grants_required() is False
+
+
+def test_dev_mode_grants_not_required_by_default(monkeypatch):
+    from services import commerce_session
+
+    monkeypatch.setenv("APP_ENV", "development")
+    monkeypatch.delenv("RULE_L_REQUIRE_GRANTS", raising=False)
+    assert commerce_session.grants_required() is False
+
+
 def test_billing_and_returns_use_the_commerce_session():
     from services import billing, student_requests
     from services.commerce_session import commerce_db
