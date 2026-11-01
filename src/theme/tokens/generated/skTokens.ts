@@ -54,7 +54,11 @@ export const skTokens = {
       "onHero": "#FFFFFF",
       "onHero2": "#C7D2FE",
       "onHeroLabel": "#A5B4FC",
-      "onHeroPositive": "#6EE7B7"
+      "onHeroPositive": "#6EE7B7",
+      "categoryMedicines": "#0F766E",
+      "categoryLabs": "#6D28D9",
+      "categoryVaccines": "#78350F",
+      "categoryConsults": "#1D4ED8"
     },
     "dark": {
       "canvas": "#0E1428",
@@ -107,7 +111,11 @@ export const skTokens = {
       "onHero": "#FFFFFF",
       "onHero2": "#C7D2FE",
       "onHeroLabel": "#A5B4FC",
-      "onHeroPositive": "#6EE7B7"
+      "onHeroPositive": "#6EE7B7",
+      "categoryMedicines": "#5EEAD4",
+      "categoryLabs": "#A78BFA",
+      "categoryVaccines": "#D08B3A",
+      "categoryConsults": "#93C5FD"
     }
   },
   "font": {

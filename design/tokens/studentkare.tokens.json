@@ -54,7 +54,11 @@
       "on-hero":       { "$value": "#FFFFFF" },
       "on-hero-2":     { "$value": "#C7D2FE", "$description": "Secondary text on the hero" },
       "on-hero-label": { "$value": "#A5B4FC", "$description": "Eyebrow on the hero" },
-      "on-hero-positive":{ "$value": "#6EE7B7", "$description": "Positive pill text on the hero" }
+      "on-hero-positive":{ "$value": "#6EE7B7", "$description": "Positive pill text on the hero" },
+      "category-medicines": { "$value": "#0F766E", "$description": "Medicines/pharmacy category accent. Hero gradients and icon tiles on that flow only — never a general-purpose teal." },
+      "category-labs":       { "$value": "#6D28D9", "$description": "Labs category accent. Hero gradients and icon tiles on that flow only." },
+      "category-vaccines":   { "$value": "#78350F", "$description": "Vaccines category accent. Deliberately distinct from `attention` (#B45309): a category brand color must never reuse a semantic status color's exact value." },
+      "category-consults":   { "$value": "#1D4ED8", "$description": "Consults/teleconsult category accent, for hero gradients and icon tiles on that flow only." }
     },
     "dark": {
       "canvas":        { "$value": "#0E1428" },
@@ -107,7 +111,11 @@
       "on-hero":       { "$value": "#FFFFFF" },
       "on-hero-2":     { "$value": "#C7D2FE" },
       "on-hero-label": { "$value": "#A5B4FC" },
-      "on-hero-positive":{ "$value": "#6EE7B7" }
+      "on-hero-positive":{ "$value": "#6EE7B7" },
+      "category-medicines": { "$value": "#5EEAD4" },
+      "category-labs":       { "$value": "#A78BFA" },
+      "category-vaccines":   { "$value": "#D08B3A" },
+      "category-consults":   { "$value": "#93C5FD" }
     }
   },
   "contrast-minimum": {
