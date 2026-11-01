@@ -21,11 +21,12 @@ import { M2HeaderSos } from './m2Sos';
 
 export type PressState = { pressed: boolean; hovered?: boolean; focused?: boolean };
 
-/** Hover and press lift a card 2 px (canvas .sk-card), unless motion is reduced. */
+/** Hover lifts a card 2 px (canvas .sk-card); a press scales it down instead, so a tap reads as a tap. Both skip under reduced motion. */
 export function useLift(): (state: PressState) => StyleProp<ViewStyle> {
   const reduced = useReducedMotion();
   return ({ pressed, hovered, focused }: PressState) => [
-    !reduced && (hovered || pressed) ? styles.lifted : null,
+    !reduced && hovered && !pressed ? styles.lifted : null,
+    !reduced && pressed ? styles.pressed : null,
     focused ? focusRing : null,
   ];
 }
@@ -312,8 +313,13 @@ export const M2_BOTTOM_SPACE = space.s32;
 
 const styles = StyleSheet.create({
   grow: { flex: 1, minWidth: 0 },
-  liftBase: webOnly({ transitionProperty: 'transform, box-shadow', transitionDuration: `${motion.duration.fast}ms`, transitionTimingFunction: motion.easing.standard }),
+  liftBase: webOnly({
+    transitionProperty: 'transform, box-shadow', transitionDuration: `${motion.duration.fast}ms`, transitionTimingFunction: motion.easing.standard,
+    // The browser's own tap flash/outline, not this app's focus ring — strip it; focusRing above still shows for keyboard use.
+    WebkitTapHighlightColor: 'transparent', outlineStyle: 'none',
+  }),
   lifted: { transform: [{ translateY: -space.s2 }], ...shadowStyle(shadow.float) },
+  pressed: { transform: [{ scale: 0.97 }], opacity: 0.92 },
   round: {
     width: size.touchTarget, height: size.touchTarget, borderRadius: radius.full, alignItems: 'center', justifyContent: 'center',
     backgroundColor: color.surface, ...shadowStyle(shadow.hairline),
