@@ -12,7 +12,7 @@ import { AccountDetailsBoard } from '@/features/account/views/AccountDetailsBoar
 import { DataExportBoard } from '@/features/account/views/DataExportBoard';
 import type { RecordsExport } from '@/features/account/views/DataExportBoard';
 import { DigitalIdRoute } from '@/features/digital_id/views/DigitalIdNativeView';
-import { ScreenLoading } from '@/components/health/ScreenLoading';
+import { ScreenLoading } from '@/design-system/feedback/ScreenLoading';
 import { M2InsuranceRoute } from '@/features/m2store/views/M2InsuranceRoute';
 import { HelpCentreBoard } from '@/features/support/views/HelpCentreBoard';
 import { MovementBoard } from '@/features/movement/views/MovementBoard';

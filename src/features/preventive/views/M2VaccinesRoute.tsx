@@ -1,6 +1,6 @@
 import React, { Suspense, lazy, useEffect, useState } from 'react';
 import { navigate } from '@/lib/utils/workflowRouting';
-import { ScreenLoading } from '@/components/health/ScreenLoading';
+import { ScreenLoading } from '@/design-system/feedback/ScreenLoading';
 import { VaccinesViewModel } from '../viewmodel/VaccinesViewModel';
 import { M2VaccinesView } from './M2VaccinesView';
 

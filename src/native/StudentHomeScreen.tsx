@@ -1,5 +1,5 @@
 import React from 'react';
-import { LanguageSetting } from '@/i18n/LanguageSetting';
+import { LanguageSetting } from '@/features/account/views/LanguageSetting';
 import { Linking, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useIsFocused } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';

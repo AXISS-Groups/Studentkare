@@ -6,7 +6,7 @@ import { BrandLogo, Icon } from '@/design-system/icons';
 import { NotificationSettingsViewModel } from '@/features/notifications/viewmodel/NotificationSettingsViewModel';
 import type { PushCategory } from '@/features/notifications/viewmodel/NotificationSettingsViewModel';
 import { CATEGORY_DESC, CATEGORY_LOCK, CATEGORY_NAME, CHANNEL_NAME, DEVICE_TEXT } from '@/features/notifications/views/NotificationSettingsView';
-import type { PushDeviceController } from '@/features/notifications/data/pushDevice';
+import type { PushDeviceController } from '@/data/services/pushDevice';
 import { webPushController } from '@/lib/webPush';
 import { ErrorPanel, Eyebrow, LoadingRows, PageHead } from './parts';
 

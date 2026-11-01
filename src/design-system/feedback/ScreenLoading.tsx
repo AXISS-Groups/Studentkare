@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useT } from '@/i18n';
 import { StyleSheet, View } from 'react-native';
-import { Skeleton } from '@/design-system';
+import { Skeleton } from '../States';
 import { space } from '@/design-system/theme';
 
 /** Fast loads finish before this and never flash a placeholder. */

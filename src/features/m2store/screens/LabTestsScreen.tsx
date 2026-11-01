@@ -1,6 +1,6 @@
 import React, { Suspense, lazy } from 'react';
 import { useAuth } from '@/data/contexts/AuthContext';
-import { ScreenLoading } from '@/components/health/ScreenLoading';
+import { ScreenLoading } from '@/design-system/feedback/ScreenLoading';
 import { LandingLabTestsView } from '@/features/landing/views/LandingLabTestsView';
 
 // Loaded only for a signed-in student, so the public page does not carry the workspace.

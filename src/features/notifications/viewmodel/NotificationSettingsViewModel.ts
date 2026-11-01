@@ -2,7 +2,7 @@ import { makeAutoObservable, runInAction } from 'mobx';
 import type { MessageKey } from '@/i18n';
 import { apiRequest } from '@/data/services/http';
 import type { ViewModel } from '@/core/store/ViewModel';
-import type { PushDeviceController, PushDeviceState } from '../data/pushDevice';
+import type { PushDeviceController, PushDeviceState } from '@/data/services/pushDevice';
 
 export type PushChannel = 'PUSH' | 'WHATSAPP' | 'EMAIL';
 export type PushCategory = 'SAFETY' | 'CARE' | 'REMINDERS' | 'ORDERS' | 'CAMPS' | 'ACCOUNT' | 'ANNOUNCEMENTS';

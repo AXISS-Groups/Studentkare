@@ -21,7 +21,7 @@ import { PrescribeScreen } from '@/features/clinician/prescribe/PrescribeScreen'
 import { ClinicianPostReviewsScreen } from '@/features/newsroom/admin/PostsAdminView';
 import { asRoutePath } from '@/lib/utils/workflowRouting';
 import { useAuth } from '@/data/contexts/AuthContext';
-import { ScreenLoading } from '@/components/health/ScreenLoading';
+import { ScreenLoading } from '@/design-system/feedback/ScreenLoading';
 import { PageTransition } from '@/components/interface/PageTransition';
 import { ClinicianConsoleFrame, ClinicianConsoleLayout } from '@/features/clinician/shared/ClinicianConsoleFrame';
 import type { ClinicianNavId } from '@/design-system';
