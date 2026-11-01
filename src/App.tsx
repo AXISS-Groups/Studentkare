@@ -11,7 +11,7 @@ import { InterfaceBar } from './components/interface/InterfaceBar';
 import { AmbientBackground } from './components/interface/AmbientBackground';
 import { PageTransition } from './components/interface/PageTransition';
 import { ErrorBoundary } from './components/interface/ErrorBoundary';
-import { ScreenLoading } from './components/health/ScreenLoading';
+import { ScreenLoading } from './design-system/feedback/ScreenLoading';
 import { SEOHead } from './components/interface/SEOHead';
 import { asRoutePath, registerGlobalNavigator } from './lib/utils/workflowRouting';
 import { publicConfigApi } from './data/api';

@@ -43,7 +43,7 @@ import { StudentKareLogo } from '../../components/StudentKareLogo';
 import { ConsoleIntro } from '../../components/interface/ConsoleIntro';
 import { PageTransition } from '../../components/interface/PageTransition';
 import { FormError, useMutation } from '../../components/interface/WorkflowUI';
-import { ScreenLoading } from '../../components/health/ScreenLoading';
+import { ScreenLoading } from '@/design-system/feedback/ScreenLoading';
 import { MemberOverview, OrdersPanel, SupportPanel } from './MemberPanels';
 import { DevicesAndSensorsScreen } from './DevicesAndSensorsScreen';
 import { AppointmentsPanel } from './AppointmentsPanel';
