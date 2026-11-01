@@ -20,7 +20,7 @@ export function SetPasscodeScreen(): React.ReactElement {
     void vm.load();
     return () => vm.dispose();
   }, [vm]);
-  const done = () => navigate(auth.user ? homeForRole(auth.user.role) : 'login');
+  const done = () => navigate(auth.user ? (homeForRole(auth.user.role) || '') : 'login');
   return (
     <SignInFrame web={!phone} onBack={done} regionLabel="authpc.set.region">
       <SetPasscodeView vm={vm} onDone={done} />

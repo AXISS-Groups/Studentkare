@@ -439,7 +439,7 @@ export function SignInSecurityRoute({ wide = false }: { wide?: boolean } = {}): 
     <SignInSecurityView
       viewModel={vm}
       wide={wide}
-      onContinue={role ? () => navigate(homeForRole(role)) : undefined}
+      onContinue={role ? () => navigate(homeForRole(role) || '') : undefined}
       passcode={role === 'STUDENT' ? passcode : undefined}
       contacts={role === 'STUDENT' ? contacts : undefined}
       password={role === 'STUDENT' ? password : undefined}

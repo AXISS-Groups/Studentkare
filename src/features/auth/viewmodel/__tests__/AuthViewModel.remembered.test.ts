@@ -56,7 +56,7 @@ describe('AuthViewModel — remembered device', () => {
     expect(routing.navigate).toHaveBeenCalledWith('records');
   });
 
-  it.each([['VENDOR', 'dispensing'], ['STUDENT', 'health']])('a remembered partner console page sends a %s to %s', async (role, expected) => {
+  it.each([['VENDOR', 'dispensing'], ['STUDENT', '']])('a remembered partner console page sends a %s to %s', async (role, expected) => {
     const vm = new AuthViewModel('login', null);
     api.apiRequest.mockResolvedValueOnce({ ...HINT, lastRoute: 'dispensing' });
     await vm.loadRemembered();
@@ -77,7 +77,7 @@ describe('AuthViewModel — remembered device', () => {
     vm.setCode('123456');
     api.apiRequest.mockResolvedValueOnce(signedIn('STUDENT'));
     await vm.verify(() => undefined);
-    expect(routing.navigate).toHaveBeenCalledWith('health');
+    expect(routing.navigate).toHaveBeenCalledWith('');
   });
 
   it('drops the hint when the server no longer remembers the device', async () => {

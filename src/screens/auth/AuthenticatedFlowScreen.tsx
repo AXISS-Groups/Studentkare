@@ -46,7 +46,7 @@ export function AuthenticatedFlowScreen({ mode, next }: { mode: 'login' | 'signu
   const accept = (response: SessionResponse) => {
     if (!response.user) throw new Error('The server did not establish a signed-in session.');
     auth.acceptSession(response);
-    navigate(next && canAccessRoute(next, response.user.role) ? next : homeForRole(response.user.role));
+    navigate(next && canAccessRoute(next, response.user.role) ? next : (homeForRole(response.user.role) || ''));
   };
 
   const sendCode = () => mutation.run(() => apiRequest<{ targetMasked: string; fallbackSent?: boolean; fallbackTargetMasked?: string; message?: string }>('/auth/otp/send', {

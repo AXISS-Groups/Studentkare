@@ -139,7 +139,7 @@ export function PricingScreen() {
           <div className="cm-column">
             <div className="cm-column-pill">{t('shopweb.pricing.userColumn')}</div>
 
-            <PlanCard title={t(planKey('free', 'title'))} price={t(planKey('free', 'price'))} desc={t(planKey('free', 'desc'))} Icon={UserRound} tone="action" onActivate={() => user ? navigate('health') : navigate('signup')} />
+            <PlanCard title={t(planKey('free', 'title'))} price={t(planKey('free', 'price'))} desc={t(planKey('free', 'desc'))} Icon={UserRound} tone="action" onActivate={() => user ? navigate('') : navigate('signup')} />
 
             {/* No "MOST POPULAR" badge: nothing measures popularity, and this plan's own card said it was not live. */}
             <div className="cm-card cm-card-featured" {...pressable(handleStudentPlus)}>

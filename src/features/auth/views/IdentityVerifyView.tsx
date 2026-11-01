@@ -34,7 +34,7 @@ export function IdentityVerifyView({ wide }: { wide?: boolean } = {}): React.Rea
         links={{
           openCampusVerification: () => setCampusOpen(true),
           openCrisis: () => go('/crisis'),
-          back: () => navigate('health'),
+          back: () => navigate(''),
         }}
       />
       <Sheet

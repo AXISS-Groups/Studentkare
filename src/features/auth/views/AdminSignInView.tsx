@@ -333,6 +333,9 @@ export const AdminSignInScreen = observer(function AdminSignInScreen() {
     return () => window.clearInterval(interval);
   }, [vm, vm.resendAt]);
   useEffect(() => () => vm.dispose(), [vm]);
-  if (auth.status === 'authenticated' && auth.user) return <Navigate to={`/${homeForRole(auth.user.role)}`} replace />;
+  if (auth.status === 'authenticated' && auth.user) {
+    const target = homeForRole(auth.user.role);
+    return <Navigate to={target ? `/${target}` : '/'} replace />;
+  }
   return <AdminSignInView vm={vm} onAccept={(response) => auth.acceptSession(response)} />;
 });

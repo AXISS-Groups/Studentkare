@@ -650,7 +650,7 @@ export class AuthViewModel {
     }
     // A brand-new account gets told what it can now do and what is still
     // pending. A returning student goes straight to work.
-    this.go(this.isLogin ? homeForRole(response.user.role) : 'account-ready');
+    this.go(this.isLogin ? (homeForRole(response.user.role) || '') : 'account-ready');
   }
 
   async sendCode(): Promise<void> {

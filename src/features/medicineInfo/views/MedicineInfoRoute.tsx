@@ -37,5 +37,5 @@ export function useMedicineInfo(signedIn: boolean): { vm: MedicineInfoViewModel;
  */
 export function MedicineInfoRoute({ wide = false }: { wide?: boolean }): React.ReactElement {
   const { vm, links } = useMedicineInfo(true);
-  return <M2MedicineInfoView vm={vm} wide={wide} links={{ ...links, back: () => (window.history.length > 1 ? window.history.back() : navigate(wide ? 'home' : 'health')) }} />;
+  return <M2MedicineInfoView vm={vm} wide={wide} links={{ ...links, back: () => (window.history.length > 1 ? window.history.back() : navigate('')) }} />;
 }

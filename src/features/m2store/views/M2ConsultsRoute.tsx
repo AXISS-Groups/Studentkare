@@ -18,7 +18,7 @@ export function M2ConsultsRoute({ wide = false }: { wide?: boolean } = {}): Reac
   }, [vm]);
   return (
     <>
-      <M2ConsultsView wide={wide} vm={vm} links={{ back: () => navigate('health'), book: (service) => setBooking(service.id), plus: () => navigate('billing') }} />
+      <M2ConsultsView wide={wide} vm={vm} links={{ back: () => navigate(''), book: (service) => setBooking(service.id), plus: () => navigate('billing') }} />
       {booking ? (
         <BookAppointmentDialog initialItemId={booking} onClose={() => setBooking(null)} onDone={() => { setBooking(null); navigate('appointments'); }} />
       ) : null}

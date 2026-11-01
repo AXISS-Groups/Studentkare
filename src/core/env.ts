@@ -13,7 +13,9 @@ function read(key: string): string | undefined {
 }
 
 export const isDev = (): boolean =>
-  Boolean((globalThis as unknown as { __DEV__?: boolean }).__DEV__) || read('NODE_ENV') === 'development';
+  (typeof __DEV__ !== 'undefined' ? Boolean(__DEV__) : false) ||
+  Boolean((globalThis as unknown as { __DEV__?: boolean }).__DEV__) ||
+  read('NODE_ENV') === 'development';
 
 /**
  * The API origin for the native app. Expo inlines only EXPO_PUBLIC_* variables,

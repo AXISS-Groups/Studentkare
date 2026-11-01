@@ -24,10 +24,9 @@
       "react-dom",
       "node"
     ],
-    "baseUrl": ".",
     "paths": {
       "@/*": [
-        "src/*"
+        "./src/*"
       ]
     }
   },

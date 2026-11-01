@@ -35,7 +35,7 @@ export function InterfaceBar({ section }: { section: string }) {
 
   return <div className="care-interface-bar" ref={root}>
     {/* Named by its visible text (label-in-name, WCAG 2.5.3), with where it goes for screen readers. */}
-    <button type="button" className="care-workspace-label care-workspace-logo-btn" onClick={() => navigate('shop')}>
+    <button type="button" className="care-workspace-label care-workspace-logo-btn" onClick={() => navigate('')}>
       <Sparkles size={14} aria-hidden="true" />Studentkare <span aria-hidden="true">/</span><strong>{section}</strong>
       <span className="sk-visually-hidden">{t('bar.home')}</span>
     </button>

@@ -87,7 +87,8 @@ export function RouteGuard({
     return <Navigate to="/security" replace />;
   }
   if (access && !access(auth.user.role)) {
-    return <Navigate to={`/${homeForRole(auth.user.role)}`} replace />;
+    const home = homeForRole(auth.user.role);
+    return <Navigate to={home ? `/${home}` : '/'} replace />;
   }
   return <>{children}</>;
 }

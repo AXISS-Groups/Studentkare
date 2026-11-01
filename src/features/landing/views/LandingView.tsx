@@ -1,4 +1,8 @@
 import React, { useEffect, useState } from 'react';
+import { useAuth } from '@/data/contexts/AuthContext';
+import { useLocation } from '@/core/navigation';
+import { ScreenLoading } from '@/components/health/ScreenLoading';
+import { WorkspaceRouteScreen } from '@/features/health/screens/WorkspaceRouteScreen';
 import { useApiResource } from '@/hooks/api/useApiResource';
 import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
@@ -109,6 +113,13 @@ function packIcon(pack: string): SkIconName {
  * store badges and scan code (nothing is listed in either store).
  */
 export function LandingView(): React.ReactElement {
+  const { user, status } = useAuth();
+  const location = useLocation();
+
+  if (location.pathname === '/' || location.pathname === '') {
+    if (status === 'loading') return <ScreenLoading />;
+    if (user) return <WorkspaceRouteScreen />;
+  }
   const t = useT();
   const catalog = useApiResource<Catalog>('/catalog?limit=6');
   const labCatalog = useApiResource<Catalog>('/catalog?kind=lab&limit=4');

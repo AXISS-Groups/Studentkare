@@ -8,7 +8,7 @@ import type { RoutePath } from '@/lib/utils/workflowRouting';
  * Icon names are the brief's; labels are i18n keys (studentshell area).
  */
 export type StudentNavId =
-  | 'home' | 'my-health' | 'vault' | 'medicines' | 'water' | 'emergency' | 'pass'
+  | 'home' | 'vault' | 'medicines' | 'water' | 'emergency' | 'pass'
   | 'orders' | 'buy-again' | 'requests'
   | 'verify' | 'security' | 'notifications' | 'plan';
 
@@ -24,8 +24,8 @@ export interface StudentNavGroup { id: 'care' | 'services' | 'account'; label: M
 
 /**
  * Each place appears once (founder decisions, 23 Oct 2026, parity audit):
- * - Home and My health carry the phone's names and routes (Home /health,
- *   My health /your-care), replacing "Your Care".
+ * - Home is the single care dashboard entry; its detail screens remain reachable
+ *   from the dashboard and mobile navigation.
  * - Ayush is the floating bubble only (no sidebar or top-nav entry).
  * - My lab tests is a tab of Orders; Medications is Medicines today.
  * - Health vault and Orders live here, not in the top bar; the account is the
@@ -40,8 +40,7 @@ export const STUDENT_NAV: StudentNavGroup[] = [
     id: 'care',
     label: 'shell.group.care',
     items: [
-      { id: 'home', label: 'm2.nav.home', icon: 'home', route: 'health' },
-      { id: 'my-health', label: 'm2.nav.health', icon: 'heart', route: 'your-care' },
+      { id: 'home', label: 'm2.nav.home', icon: 'home', route: 'home' },
       { id: 'vault', label: 'shell.item.vault', icon: 'lock-2', route: 'records' },
       // Mobile 2.0 Medicines today and Water (reminders ticket; not on the WebDashboard board): the phone boards in the page column.
       { id: 'medicines', label: 'm2r.meds.title', icon: 'pill-3', route: 'health/medicines' },
@@ -82,6 +81,10 @@ export const STUDENT_TOP_NAV: { label: MessageKey; route: RoutePath }[] = [
 
 /** Workspace routes that belong to a sidebar item without being its own route. */
 const EXTRA: Partial<Record<RoutePath, StudentNavId>> = {
+  '': 'home',
+  home: 'home',
+  health: 'home',
+  'your-care': 'home',
   'visit-summaries': 'vault',
   'my-lab-tests': 'orders',
   medications: 'medicines',
@@ -89,12 +92,12 @@ const EXTRA: Partial<Record<RoutePath, StudentNavId>> = {
   'hostel-visit': 'requests',
   'refill-request': 'requests',
   // My health's own screens (as the phone's pill nav marks them).
-  'health/trends': 'my-health',
-  'health/report-upload': 'my-health',
-  'health/steps': 'my-health',
-  'health/refills': 'my-health',
+  'health/trends': 'home',
+  'health/report-upload': 'home',
+  'health/steps': 'home',
+  'health/refills': 'home',
   // Report insights is the detail page of My health's "Reviewed lab reports" card (parity plan 2026-10-24 §3).
-  'report-insights': 'my-health',
+  'report-insights': 'home',
 };
 
 /** The sidebar item to mark current for a route, or null when the route is not in the sidebar. */

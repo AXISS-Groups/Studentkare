@@ -5,12 +5,12 @@ import { routePrefixRoles, routeRoles } from './routes/routeRoles';
 
 // The route lists live in ./routes/, one entry per line, so parallel branches don't collide.
 export { routePaths, publicRoutes };
-export type RoutePath = typeof routePaths[number];
-export const isRoutePath = (value: string): value is RoutePath => routePaths.includes(value as RoutePath);
-export const asRoutePath = (value: string): RoutePath => (isRoutePath(value) ? value : ('shop' as RoutePath));
-export const homeForRole = (role: AccountRole): RoutePath => role === 'SUPER_ADMIN' ? 'admin' : role === 'VENDOR' ? 'vendor' : role === 'NMC_DOCTOR' ? 'clinician' : role === 'CAMPUS_ADMIN' ? 'campus' : role === 'COUNSELLOR' ? 'counsellor' : role === 'LAB_COLLECTOR' ? 'staff-collect' : 'health';
+export type RoutePath = typeof routePaths[number] | '';
+export const isRoutePath = (value: string): value is RoutePath => value === '' || routePaths.includes(value as typeof routePaths[number]);
+export const asRoutePath = (value: string): RoutePath => (value === '' || value === '/' ? ('home' as RoutePath) : isRoutePath(value) ? value : ('shop' as RoutePath));
+export const homeForRole = (role: AccountRole): RoutePath => role === 'SUPER_ADMIN' ? 'admin' : role === 'VENDOR' ? 'vendor' : role === 'NMC_DOCTOR' ? 'clinician' : role === 'CAMPUS_ADMIN' ? 'campus' : role === 'COUNSELLOR' ? 'counsellor' : role === 'LAB_COLLECTOR' ? 'staff-collect' : '';
 export function canAccessRoute(route: RoutePath, role: AccountRole | null) {
-  if (publicRoutes.includes(route)) return true;
+  if (route === '' || route === 'home' || publicRoutes.includes(route as RoutePath)) return true;
   if (!role) return false;
   // Every /admin… page is the super admin's, whatever ./routes/routeRoles.ts says.
   if (route.startsWith('admin')) return role === 'SUPER_ADMIN';
@@ -39,8 +39,8 @@ export function registerGlobalNavigator(navigator: NavigationListener | null) {
  * Imperative navigation supporting clean URLs, React Router, and legacy hash links.
  * Updates clean pathname and invokes router navigator for seamless single-page transitions.
  */
-export const navigate = (path: RoutePath, next?: RoutePath) => {
-  const targetUrl = `/${path}${next ? `?next=${encodeURIComponent(next)}` : ''}`;
+export const navigate = (path: RoutePath | '/', next?: RoutePath) => {
+  const targetUrl = !path || path === '/' ? '/' : `/${path}${next ? `?next=${encodeURIComponent(next)}` : ''}`;
   if (globalNavigator) {
     globalNavigator(targetUrl);
     window.scrollTo({ top: 0, behavior: 'instant' });

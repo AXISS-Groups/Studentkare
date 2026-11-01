@@ -10,6 +10,11 @@ const authModule: FeatureModule = {
       path: '/login',
       public: true,
       load: () => import('./screens/AuthRouteScreen').then((m) => ({ default: m.AuthRouteScreen })),
+    },
+    {
+      path: '/auth/login',
+      public: true,
+      load: () => import('./screens/AuthRouteScreen').then((m) => ({ default: m.AuthRouteScreen })),
     },
     {
       path: '/signup',

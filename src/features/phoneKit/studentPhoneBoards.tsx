@@ -9,7 +9,6 @@ const CareDirectoryRoute = lazy(() => import('@/features/careDirectory/views/Car
 const DigitalIdPage = lazy(() => import('@/screens/workspace/PhoneBoards').then((m) => ({ default: m.DigitalIdPage })));
 const HealthVaultRoute = lazy(() => import('@/features/vault/views/HealthVaultRoute').then((m) => ({ default: m.HealthVaultRoute })));
 const IdentityVerifyView = lazy(() => import('@/features/auth/views/IdentityVerifyView').then((m) => ({ default: m.IdentityVerifyView })));
-export const LeaveCampusRoute = lazy(() => import('@/features/campus/views/LeaveCampusView').then((m) => ({ default: m.LeaveCampusRoute })));
 const M2AskAyushRoute = lazy(() => import('@/features/chat/views/M2AskAyushRoute').then((m) => ({ default: m.M2AskAyushRoute })));
 const M2CampsRoute = lazy(() => import('@/features/camp/views/M2CampsRoute').then((m) => ({ default: m.M2CampsRoute })));
 const M2ConsultsRoute = lazy(() => import('@/features/m2store/views/M2ConsultsRoute').then((m) => ({ default: m.M2ConsultsRoute })));
@@ -33,6 +32,7 @@ const ReturnRequestRoute = lazy(() => import('@/features/requests/views/ReturnRe
 const SearchRoute = lazy(() => import('@/features/discover/views/SearchRoute').then((m) => ({ default: m.SearchRoute })));
 const ShopPhoneRoute = lazy(() => import('@/features/shopPhone/views/ShopPhoneRoute').then((m) => ({ default: m.ShopPhoneRoute })));
 const VisitSummaryRoute = lazy(() => import('@/features/vault/views/VisitSummaryView').then((m) => ({ default: m.VisitSummaryRoute })));
+export const LeaveCampusRoute = lazy(() => import('@/features/campus/views/LeaveCampusView').then((m) => ({ default: m.LeaveCampusRoute })));
 // keep-sorted end
 
 export interface PhoneBoard {
@@ -54,6 +54,8 @@ export interface PhoneBoard {
  */
 export function studentPhoneBoard(route: RoutePath): PhoneBoard | null {
   switch (route) {
+    case '':
+    case 'home':
     case 'health': return { node: <M2HomeRoute />, title: 'm2.nav.home', ownBack: true };
     case 'lab-tests': return { node: <M2LabsRoute />, title: 'm2.labs.title', ownBack: true };
     case 'care': return { node: <M2ConsultsRoute />, title: 'm2.doc.eyebrow', ownBack: true };
