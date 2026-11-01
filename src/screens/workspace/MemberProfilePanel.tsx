@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { AppearanceSetting } from '../../components/interface/AppearanceSetting';
+import { AppearanceSetting } from '@/features/account/views/AppearanceSetting';
 import { ArrowUpRight, GraduationCap, HeartPulse, IdCard, MessageCircle, Package, Printer, ShieldCheck, UserRound } from 'lucide-react';
 import { useAuth } from '../../data/contexts/AuthContext';
 import { apiRequest } from '../../data/services/http';
