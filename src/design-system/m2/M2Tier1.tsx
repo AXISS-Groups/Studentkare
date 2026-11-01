@@ -10,7 +10,7 @@ import { M2Card, M2Heading, cardLabel, m2Text } from './M2Parts';
 import type { PressState } from './M2Parts';
 import { isWide, useM2Layout } from './m2Layout';
 import { ProgressRing } from './ProgressRing';
-import { heroStops, SERVICE_HUES, tileStops } from './servicePalette';
+import { heroStops, SERVICE_HUES } from './servicePalette';
 import type { ServiceHue } from './servicePalette';
 
 /**
@@ -27,25 +27,25 @@ import type { ServiceHue } from './servicePalette';
 /** A tile hue: the service palette, or `danger` for SOS, lost phone and deletion only (founder colour rule). */
 export type TileHue3d = ServiceHue | 'danger';
 
-function tileColours(hue: TileHue3d): { stops: readonly string[]; shadowColor: string } {
-  if (hue === 'danger') return { stops: [color.dangerFill, color.dangerFill], shadowColor: color.dangerFill };
-  return { stops: tileStops(hue), shadowColor: SERVICE_HUES[hue].deep };
+function tileColours(hue: TileHue3d): { flat: string } {
+  if (hue === 'danger') return { flat: color.dangerFill };
+  return { flat: SERVICE_HUES[hue].deep };
 }
 
-/** The glossy 3D icon tile (canvas `.sk-t3d`): hue gradient lit top-left, white glyph, soft drop shadow. Decoration: the row names itself. */
+/** The flat icon tile (canvas `.sk-t3d`): hue fill, white glyph, soft drop shadow. Flat — Krishna, 2026-11-01: no gradient or gloss. Decoration: the row names itself. */
 export function M2Tile3d({ icon, hue, size: side = 44, float = false, style, testID }: {
   icon: SkIconName; hue: TileHue3d; size?: number;
   /** A slow float (hero art only); still under reduced motion. */
   float?: boolean;
   style?: StyleProp<ViewStyle>; testID?: string;
 }) {
-  const { stops } = tileColours(hue);
+  const { flat } = tileColours(hue);
   const ambient = useAmbientMotion();
   const drift = useLoop(ambient && float, motion.duration.ambient);
   const tile = (
-    <Gradient colors={stops} gloss angle={150} style={[styles.tile, { width: side, height: side, borderRadius: Math.round(side * 0.32) }, style]} testID={testID}>
+    <View style={[styles.tile, { width: side, height: side, borderRadius: Math.round(side * 0.32), backgroundColor: flat }, style]} testID={testID}>
       <Icon name={icon} size={Math.round(side * 0.5)} color={color.onHero} strokeWidth={2.1} />
-    </Gradient>
+    </View>
   );
   if (!float) return tile;
   return <Animated.View pointerEvents="none" style={{ transform: floatTransform(drift, space.s6) }}>{tile}</Animated.View>;
