@@ -112,7 +112,7 @@ src/features/<domain>/
   `CampStore`, `FabricStore`, `ClaimsStore`, `ChatStore`, `LifeShareStore` and
   `MedicalIncidentStore`.
 - `src/core/routing/registry.ts` holds `FeatureModule` / `FeatureRoute`;
-  `src/core/routing/Router.tsx` builds the route tree and applies the role guard.
+  `src/app/Router.tsx` builds the route tree and applies the role guard.
 - `src/core/navigation/navigation.ts` is the only module that imports
   `react-router-dom`; features use the facade (`useRoutePath`, `useNavigate`). The web
   app mounts a `BrowserRouter` in `src/App.tsx`.

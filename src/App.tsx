@@ -17,7 +17,7 @@ import { asRoutePath, registerGlobalNavigator } from './lib/utils/workflowRoutin
 import { publicConfigApi } from './data/api';
 import { applyPublicConfig } from './data/services/config';
 import { configurePostHog, initPostHog } from './lib/analytics/posthog';
-import { AppRouter } from './core/routing/Router';
+import { AppRouter } from './app/Router';
 import { isPublicPath } from './core/routing/registry';
 import { isVendorPath } from './screens/vendor/vendorRoutes';
 import { isClinicianConsolePath } from './features/clinician/shared/clinicianRoutes';

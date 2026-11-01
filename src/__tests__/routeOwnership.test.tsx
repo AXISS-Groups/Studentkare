@@ -16,7 +16,7 @@ import '@/features/dev/module';
  *
  * For every path the feature modules register, records which module owns it,
  * which page component its lazy loader resolves to, and what each visitor gets
- * from RouteGuard (src/core/routing/Router.tsx): the page, a sign-in redirect,
+ * from RouteGuard (src/app/Router.tsx): the page, a sign-in redirect,
  * or a redirect to their role's home. The result is committed as
  * __snapshots__/routeOwnership.txt; a migration that changes who owns a route,
  * or who may open it, changes that file and has to be reviewed as such.

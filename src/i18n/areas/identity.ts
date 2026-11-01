@@ -9,7 +9,7 @@ export const identityEn = {
   'ident.lang.group': 'Language',
   'ident.close': 'Close',
 
-  // Session check (RouteGuard, src/core/routing/Router.tsx)
+  // Session check (RouteGuard, src/app/Router.tsx)
   'ident.session.checkFailed': 'Your session could not be checked.',
   'ident.session.retry': 'Retry session check',
   'ident.session.tooMany': 'Too many requests — try again in a moment',
