@@ -8,7 +8,7 @@ import { BrandLogo, Icon } from '@/design-system/icons';
 import { BoardHeader } from '@/design-system/navigation/BoardHeader';
 import { BoardCard, BoardScreen, BoardSection } from '@/design-system/board/BoardKit';
 import { color, font, fontWeight, radius, space } from '@/design-system/theme';
-import type { PushDeviceController, PushDeviceState } from '../data/pushDevice';
+import type { PushDeviceController, PushDeviceState } from '@/data/services/pushDevice';
 import { NotificationSettingsViewModel, isClockTime } from '../viewmodel/NotificationSettingsViewModel';
 import type { PushCategory, PushChannel } from '../viewmodel/NotificationSettingsViewModel';
 

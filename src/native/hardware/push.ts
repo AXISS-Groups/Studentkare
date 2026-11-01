@@ -2,8 +2,8 @@ import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 import * as Notifications from 'expo-notifications';
 import { skTokens } from '@/theme/tokens/generated/skTokens';
-import { pushDevicesApi } from '@/features/notifications/data/pushDevice';
-import type { PushDeviceController, PushDeviceState } from '@/features/notifications/data/pushDevice';
+import { pushDevicesApi } from '@/data/services/pushDevice';
+import type { PushDeviceController, PushDeviceState } from '@/data/services/pushDevice';
 import type { MessageKey } from '@/i18n';
 
 /**

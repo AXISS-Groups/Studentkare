@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { NotificationSettingsViewModel } from '../NotificationSettingsViewModel';
 import type { NotificationPreferences } from '../NotificationSettingsViewModel';
-import type { PushDeviceController } from '../../data/pushDevice';
+import type { PushDeviceController } from '@/data/services/pushDevice';
 
 const stored: NotificationPreferences = {
   emailEnabled: true, pushEnabled: true, remindersEnabled: true,
