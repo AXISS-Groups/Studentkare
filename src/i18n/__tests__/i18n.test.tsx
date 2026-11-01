@@ -9,7 +9,7 @@ import { te } from '../te';
 import { hi } from '../hi';
 import { LanguageProvider, REVIEW_STATUS, translate } from '..';
 import type { MessageKey } from '..';
-import { LanguageSetting } from '../LanguageSetting';
+import { LanguageSetting } from '@/features/account/views/LanguageSetting';
 import { CrisisLinks } from '@/design-system';
 import { destinationsFor } from '@/native/homeDestinations';
 

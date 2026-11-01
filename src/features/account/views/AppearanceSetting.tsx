@@ -2,7 +2,7 @@ import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
-import { LanguageSetting } from '@/i18n/LanguageSetting';
+import { LanguageSetting } from '@/features/account/views/LanguageSetting';
 import { Button, Note, RadioGroup } from '@/design-system';
 import type { NoteTone } from '@/design-system';
 import { useTheme } from '@/theme/tokens/theme';

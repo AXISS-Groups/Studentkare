@@ -1,8 +1,8 @@
 import React from 'react';
 import { View } from 'react-native';
 import { Note, RadioGroup } from '@/design-system';
-import { LANGUAGE_NAMES, REVIEW_STATUS, useLanguage, useT } from './index';
-import type { Lang } from './index';
+import { LANGUAGE_NAMES, REVIEW_STATUS, useLanguage, useT } from '@/i18n';
+import type { Lang } from '@/i18n';
 
 const OPTIONS = (Object.keys(LANGUAGE_NAMES) as Lang[]).map((lang) => ({ value: lang, label: LANGUAGE_NAMES[lang] }));
 
