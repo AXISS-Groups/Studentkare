@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { HashRouter } from '../../src/core/navigation';
-import { AppRouter } from '../../src/core/routing/Router';
+import { AppRouter } from '../../src/app/Router';
 import { registerModule } from '../../src/core/routing/registry';
 import { AuthProvider } from '../../src/data/contexts/AuthContext';
 
