@@ -150,7 +150,7 @@ The legacy prototype panels for these capabilities are not mounted as live servi
 
 - `src/App.tsx`, `src/lib/workflowRouting.ts`: active application routing.
 - `src/data/AuthContext.tsx`, `src/data/http.ts`: session and HTTP handling.
-- `src/screens/auth/AuthenticatedFlowScreen.tsx`: actual account flow.
+- `src/features/auth/screens/AuthenticatedFlowScreen.tsx`: actual account flow.
 - `src/screens/workspace/`: account and operations pages.
 - `src/screens/marketplace/LiveMarketplaceScreen.tsx`: database-backed storefront and order requests.
 - `backend/main.py`: mounted API only; no demo seed or fake automation startup.
