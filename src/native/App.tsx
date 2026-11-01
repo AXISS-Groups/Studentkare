@@ -51,6 +51,7 @@ import { NotificationViewModel } from '@/features/notifications/viewmodel/Notifi
 import { NotificationSettingsRoute } from '@/features/notifications/views/NotificationSettingsView';
 import { LeaveCampusRoute } from '@/features/campus/views/LeaveCampusView';
 import { DeleteAccountRoute } from '@/features/account/views/DeleteAccountView';
+import { SignInSecurityRoute } from '@/features/account/views/SignInSecurityView';
 import { RewardsRoute } from '@/features/rewards/views/RewardsView';
 import { MyRequestsRoute, NewRequestRoute } from '@/features/requests/views/RequestsViews';
 import { ReturnRequestBoardScreen, SearchScreen } from './PhoneBoardsScreens';
@@ -143,6 +144,7 @@ export type RootStackParamList = {
   ReturnRequest: undefined;
   Rewards: undefined;
   Search: undefined;
+  Security: undefined;
   SignIn: undefined;
   Steps: undefined;
   Teleconsult: undefined;
@@ -176,7 +178,7 @@ function VaultRoute() {
   useFocusEffect(useCallback(() => setVisit((v) => v + 1), []));
   return (
     <SafeAreaView edges={['left', 'right', 'bottom']} style={{ flex: 1 }}>
-      <HealthVaultRoute key={visit} onCapture={() => navigate('CaptureRecord')} art={{ hero: nativePhoneArt.vaultRecords, empty: nativePhoneArt.doctorOnScreen, rx: nativePhoneArt.rxPills }} />
+      <HealthVaultRoute key={visit} onCapture={() => navigate('CaptureRecord')} onEmergencyCard={() => navigate('EmergencyCard')} art={{ hero: nativePhoneArt.vaultRecords, empty: nativePhoneArt.doctorOnScreen, rx: nativePhoneArt.rxPills }} />
     </SafeAreaView>
   );
 }
@@ -289,6 +291,7 @@ function MoreRoute() {
               notifications: () => navigate('NotificationSettings'),
               campus: () => navigate('DigitalId'),
               crisis: () => navigate('Emergency'),
+              security: () => navigate('Security'),
             },
             signOut: () => { setSigningOut(true); return signOut().finally(() => setSigningOut(false)); },
             signingOut,
@@ -429,6 +432,11 @@ function LeaveCampusScreen() {
   return <BoardFrame><LeaveCampusRoute links={{ openRecords: () => navigate('Vault'), back: () => navigation.goBack() }} /></BoardFrame>;
 }
 
+function SecurityScreen() {
+  const navigation = useNavigation();
+  return <BoardFrame><SignInSecurityRoute onBack={() => navigation.goBack()} /></BoardFrame>;
+}
+
 function NotificationSettingsScreen() {
   const navigation = useNavigation();
   const t = useT();
@@ -510,6 +518,7 @@ function RootNavigator() {
           <Stack.Screen name="Appearance" component={AppearanceRoute} options={{ title: t('appearance.title') }} />
           <Stack.Screen name="LeaveCampus" component={LeaveCampusScreen} options={{ title: t('onboard.nav.leaveCampus'), headerShown: false }} />
           <Stack.Screen name="DeleteAccount" component={DeleteAccountScreen} options={{ title: t('onboard.nav.deleteAccount'), headerShown: false }} />
+          <Stack.Screen name="Security" component={SecurityScreen} options={{ title: t('nav.security'), headerShown: false }} />
           <Stack.Screen name="Rewards" component={RewardsRoute} options={{ title: t('nav.rewards') }} />
           <Stack.Screen name="MyRequests" component={MyRequestsScreen} options={{ title: t('nav.myRequests'), headerShown: false }} />
           <Stack.Screen name="ReturnRequest" component={ReturnRequestBoardScreen} options={{ title: t('onboard.nav.returnRequest') }} />
