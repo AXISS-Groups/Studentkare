@@ -2,7 +2,7 @@ import { makeAutoObservable } from 'mobx';
 import type { ChatMessage } from '@/types';
 import type { ChatStore } from '../store/ChatStore';
 
-export const QUICK_PROMPTS = [
+const QUICK_PROMPTS = [
   'Explain my latest CBC report',
   'Campus health camp schedule',
   'I have fever and eye headache',

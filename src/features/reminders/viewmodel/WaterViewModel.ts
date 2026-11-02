@@ -23,7 +23,7 @@ import { serverSaid } from './serverMessage';
  *   while offline the actions are refused here and the screen says why.
  */
 
-export interface WaterEntry { id: string; amountMl: number; recordedAt: string; source: string }
+interface WaterEntry { id: string; amountMl: number; recordedAt: string; source: string }
 export interface WaterToday {
   date: string;
   timezone: string;

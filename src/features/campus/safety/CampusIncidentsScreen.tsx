@@ -34,7 +34,7 @@ import './campus-safety.css';
  * Refreshes every 15 seconds like the SOS desk; a refresh that fails keeps the
  * board on screen and says when it was last loaded.
  */
-export type SosStatus = 'ACTIVE' | 'ACKNOWLEDGED' | 'RESOLVED' | 'CANCELLED';
+type SosStatus = 'ACTIVE' | 'ACKNOWLEDGED' | 'RESOLVED' | 'CANCELLED';
 export interface IncidentAlert {
   id: string;
   status: SosStatus;

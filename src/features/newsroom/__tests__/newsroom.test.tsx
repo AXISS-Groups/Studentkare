@@ -44,7 +44,8 @@ const teaser = (over: Partial<PostTeaser> = {}): PostTeaser => ({
   id: 'p1', slug: 'exam-week-sleep', section: 'blog', template: 'HEALTH_TIP', title: 'Sleep in exam week', summary: 'Small habits that help.',
   tags: ['sleep'], coverAlt: 'Green health tip cover', coverArt: 'heart--p1', author: { name: 'Asha Editor' }, publishedAt: '2026-10-20T08:00:00Z',
   updatedAt: '2026-10-20T08:00:00Z', featured: false, readingMinutes: 3, reviewed: { by: 'Dr. Meera Rao', on: '2026-10-19T08:00:00Z' }, sample: false,
-  path: '/blog/exam-week-sleep', ogImage: '/api/posts/blog/exam-week-sleep/og.png', auto: false, source: null, ...over,
+  path: '/blog/exam-week-sleep', ogImage: '/api/posts/blog/exam-week-sleep/og.png', auto: false, source: null, category: null, series: null,
+  crisisLines: false, healthNote: true, ...over,
 });
 
 const detail = (over: Partial<PostDetail> = {}): PostDetail => ({
@@ -76,9 +77,9 @@ afterEach(() => { cleanup(); document.getElementById('sk-news-jsonld')?.remove()
 
 describe('SK templates: fixed layouts and covers from tokens', () => {
   it('gives every template a section, a service-palette hue, its own art and its own blocks', () => {
-    expect(TEMPLATE_ORDER).toHaveLength(5);
-    expect(templatesIn('blog')).toEqual(['HEALTH_TIP', 'STORY']);
-    expect(templatesIn('news')).toEqual(['CAMPUS_NEWS', 'PRODUCT_UPDATE', 'PRESS_RELEASE']);
+    expect(TEMPLATE_ORDER).toHaveLength(12);
+    expect(templatesIn('blog')).toEqual(['HEALTH_TIP', 'SERIES_EPISODE', 'EXPLAINER', 'MYTH_FACT', 'QUICK_CARD', 'MOTIVATION', 'STORY']);
+    expect(templatesIn('news')).toEqual(['CAMPUS_NEWS', 'EVENT', 'CAMPUS_SPOTLIGHT', 'PRODUCT_UPDATE', 'PRESS_RELEASE']);
     for (const tpl of TEMPLATE_ORDER) {
       const spec = TEMPLATES[tpl];
       expect(SERVICE_HUES[spec.hue], tpl).toBeDefined();
@@ -222,7 +223,8 @@ const adminPost = (over: Partial<AdminPostDetail> = {}): AdminPostDetail => ({
   tags: [], coverAlt: 'Green cover', coverArt: 'heart--p1', seoTitle: '', seoDescription: '', featured: false, authorId: 'admin', authorName: 'Asha Editor',
   status: 'DRAFT', publishAt: null, live: false, needsReview: true, review: null, contentHash: 'a'.repeat(64),
   blockedBy: 'A clinician must review this health tip as it stands before it is published.', sample: false, path: '/blog/exam-week-sleep',
-  readingMinutes: 1, createdAt: 1, updatedAt: 1, auto: false, source: null, history: [{ id: 'e1', action: 'CREATED', actorRole: 'SUPER_ADMIN', actorName: 'Asha Editor', byYou: true, at: 1 }], ...over,
+  readingMinutes: 1, createdAt: 1, updatedAt: 1, auto: false, source: null, categoryId: '', seriesId: '', episode: 0, category: null, series: null,
+  precision: -1, precisionReport: null, holdReason: '', healthContent: true, history: [{ id: 'e1', action: 'CREATED', actorRole: 'SUPER_ADMIN', actorName: 'Asha Editor', byYou: true, at: 1 }], ...over,
 });
 
 describe('Super admin, Posts and the clinician review', () => {
@@ -259,7 +261,7 @@ describe('Super admin, Posts and the clinician review', () => {
 
   it('turns a title into a web address and sends clean blocks', () => {
     expect(slugify('Sleep in exam week: 7 habits!')).toBe('sleep-in-exam-week-7-habits');
-    const input = cleanInput({ template: 'CAMPUS_NEWS', slug: ' camp ', title: 'Camp', summary: '', tags: [' Camp', ''], coverAlt: '', coverArt: '', seoTitle: '', seoDescription: '', featured: false, authorId: '',
+    const input = cleanInput({ template: 'CAMPUS_NEWS', slug: ' camp ', title: 'Camp', summary: '', tags: [' Camp', ''], coverAlt: '', coverArt: '', seoTitle: '', seoDescription: '', featured: false, authorId: '', categoryId: '', seriesId: '',
       body: [{ type: 'list', ordered: false, items: ['a', ' ', 'b'] }, { type: 'image', imageId: 'i1', alt: 'Map', caption: '', src: '/api/ops/post-images/i1' }] });
     expect(input.slug).toBe('camp');
     expect(input.tags).toEqual(['camp']);

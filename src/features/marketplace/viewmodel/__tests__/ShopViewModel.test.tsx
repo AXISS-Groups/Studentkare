@@ -2,14 +2,14 @@ import React from 'react';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
-vi.mock('@/modules/m16-checkout/platform/CheckoutStoragePort', () => ({
+vi.mock('@/features/shopPhone/platform/CheckoutStoragePort', () => ({
   CheckoutStoragePort: { getCachedCart: async () => [], setCachedCart: async () => undefined, clearCachedCart: async () => undefined },
 }));
 
 import { ShopViewModel } from '../ShopViewModel';
 import type { CatalogItem } from '../ShopViewModel';
 import { ShopNativeView } from '../../views/ShopNativeView';
-import { checkoutStore } from '@/modules/m16-checkout/state/CheckoutStore';
+import { checkoutStore } from '@/features/shopPhone/state/CheckoutStore';
 
 type Requester = typeof import('@/data/services/http').apiRequest;
 const item = (over: Partial<CatalogItem> = {}): CatalogItem => ({

@@ -181,6 +181,23 @@ def test_invalid_override_falls_back_and_raises_one_ops_event(harness):
     assert all("999" not in e.summary and "lots" not in e.summary for e in events)
 
 
+def test_a_cold_load_keeps_the_callers_unsaved_work(harness):
+    """The harness engine (in-memory SQLite, StaticPool) has one connection. Loading the
+    overrides through a second session on it rolled back the caller's flushed rows
+    whenever the cache had expired, so seeded catalogues vanished only when the suite
+    happened to be slow enough to outlive CACHE_TTL_SECONDS."""
+    _, factory, _ = harness
+    R.reset_cache()
+    with factory() as db:
+        db.add(M.Article(id="art-kept", tag="T", title="Kept", read_time="1 min", color="", body=[],
+                         active=True, sort=0))
+        db.flush()
+        R.setting("platform.default_timezone", db)   # cold: reads the overrides table
+        db.commit()
+    with factory() as db:
+        assert db.get(M.Article, "art-kept") is not None
+
+
 def test_unreadable_overrides_mean_defaults(harness):
     _, factory, _ = harness
     with factory() as db:

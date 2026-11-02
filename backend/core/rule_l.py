@@ -75,6 +75,8 @@ TABLE_PLANES: dict[str, str] = {
     "care_wellness_goals": CLINICAL,              # setup answers: goal ("manage stress"), activity level
     "care_clinical_profiles": CLINICAL,           # typed blood group and allergies (moved out of care_accounts.profile)
     "care_consent_records": CLINICAL,
+    "care_wallet_passes": CLINICAL,               # emergency card in a phone wallet: which health fields a student chose
+    "care_wallet_registrations": CLINICAL,        # Apple device push tokens for those passes
     "care_policies": CLINICAL,                    # insurance
     "care_claim_requests": CLINICAL,              # names the service received
     "care_agent_turns": CLINICAL,                 # questions asked of the care agent
@@ -162,6 +164,9 @@ TABLE_PLANES: dict[str, str] = {
     "care_post_images": PLATFORM,                 # images placed in posts, virus-scanned before storing
     "care_autopilot_items": PLATFORM,             # content autopilot: official feed items and blog slots, never a person
     "care_autopilot_sources": PLATFORM,           # content autopilot: per-feed fetch health (times, error class)
+    "care_post_categories": PLATFORM,             # newsroom categories: editorial labels, hue, icon, hashtags
+    "care_post_series": PLATFORM,                 # newsroom series (Monday Motivation, health series) and their pages
+    "care_post_stats": PLATFORM,                  # views and shares per post: counts only, never a reader
     "care_availability_slots": PLATFORM,
     "care_lab_test_reference": PLATFORM,          # test names and body-system groups; no person, no range
     "care_lab_collectors": PLATFORM,              # which staff account collects for which lab

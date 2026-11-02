@@ -7,7 +7,7 @@
  * 2. Static `true` or hardcoded 100% assertions are strictly forbidden.
  */
 
-export type ComplianceStatus = 'VERIFIED' | 'FAILED' | 'UNKNOWN';
+type ComplianceStatus = 'VERIFIED' | 'FAILED' | 'UNKNOWN';
 
 export interface ComplianceAssertion {
   ruleId: string;

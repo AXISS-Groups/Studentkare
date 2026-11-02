@@ -49,7 +49,7 @@ const EFFECTS: Record<'device' | 'browser', readonly Effect[]> = {
 };
 
 /** "asha@vnrvjiet.in" becomes "a•••••@vnrvjiet.in"; a phone number keeps its last four digits. */
-export function maskContact(contact: string): string {
+function maskContact(contact: string): string {
   const value = contact.trim();
   const at = value.indexOf('@');
   if (at > 0) return `${value[0]}•••••${value.slice(at)}`;

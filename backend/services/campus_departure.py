@@ -24,7 +24,7 @@ from sqlalchemy.orm import Session
 
 from core import billing_models as B
 from core import workflow_models as M
-from services import ops_feed, student_time
+from services import ops_feed, student_time, wallet_passes
 from services.workflow_auth import StrictModel, authenticated_user, workflow_db
 
 router = APIRouter(prefix="/api", tags=["Campus departure"])
@@ -88,6 +88,9 @@ def complete_departure(db: Session, departure: M.CampusDeparture) -> None:
         profile.pop("digitalIdSecret", None)
         profile.pop("digitalIdIssuedAt", None)
         account.profile = profile
+    # The emergency card leaves the phone wallets with the campus link (plan
+    # tier1-emergency-card-wallet-2026-10-24); the wallet_passes job sends the void.
+    wallet_passes.revoke(db, departure.account_id, wallet_passes.LEFT_CAMPUS)
     departure.status = "COMPLETED"
     departure.completed_at = time.time()
     _audit(db, departure.account_id, "CAMPUS_DEPARTURE_COMPLETED", departure.id)

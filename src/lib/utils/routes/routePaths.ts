@@ -194,6 +194,7 @@ export const routePaths = [
   'scan-verify',
   'search',
   'security',
+  'series',
   'set-passcode',
   'settlement',
   'settlements',

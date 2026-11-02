@@ -42,7 +42,7 @@ async function publicRequest(path: string, init: { method: 'GET' | 'POST'; body?
 }
 
 /** The view models keep the message as given, so it is written in the reader's language here. */
-export function nativeCatalog(t: Translate): ListLandingCatalog {
+function nativeCatalog(t: Translate): ListLandingCatalog {
   return async (query: CatalogQuery) => {
     const kind = query.kind ? `&kind=${encodeURIComponent(query.kind)}` : '';
     const response = await publicRequest(`/catalog?offset=0&limit=${query.limit}${kind}`, { method: 'GET' }, t);
@@ -58,7 +58,7 @@ export function nativeCatalog(t: Translate): ListLandingCatalog {
   };
 }
 
-export function nativeEnquiry(t: Translate): SubmitEnquiry {
+function nativeEnquiry(t: Translate): SubmitEnquiry {
   return async (enquiry) => {
     const response = await publicRequest('/billing/inquiries', { method: 'POST', body: JSON.stringify(enquiry) }, t);
     if (response.ok) return;

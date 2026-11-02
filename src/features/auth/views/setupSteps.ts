@@ -4,7 +4,7 @@
  * Permissions counts these, at their real positions (the canvas numbers its
  * own different six-step flow, "3 of 6" and "6 of 6").
  */
-export const SETUP_STEPS = ['profile-setup', 'setup/goal', 'setup/activity', 'permissions'] as const;
+const SETUP_STEPS = ['profile-setup', 'setup/goal', 'setup/activity', 'permissions'] as const;
 export type SetupStep = (typeof SETUP_STEPS)[number];
 
 export function setupPosition(step: SetupStep): { position: number; total: number } {

@@ -3,6 +3,7 @@ import time
 from datetime import date, timedelta
 from types import SimpleNamespace
 
+from clock import platform_today
 from sqlalchemy import select
 from test_workflow_api import harness, login, register  # noqa: F401 — pytest fixture
 
@@ -13,7 +14,7 @@ STUDENT_CAMPUS = "Test University"   # what register() signs students up with
 
 
 def _future(days=10):
-    return (date.today() + timedelta(days=days)).isoformat()
+    return (platform_today() + timedelta(days=days)).isoformat()
 
 
 def _camp(factory, *, with_slot=False, capacity=1, campus="", eligibility="OPEN", price=0, status="PUBLISHED",
@@ -134,7 +135,7 @@ def test_students_see_only_their_campus_and_every_campus_camps(harness):
     _camp(factory, camp_id="mine", campus="  test   university ", eligibility="CAMPUS_ANY")
     _camp(factory, camp_id="theirs", campus="BITS Pilani", eligibility="CAMPUS_ANY")
     _camp(factory, camp_id="everyone")
-    _camp(factory, camp_id="past", day=(date.today() - timedelta(days=1)).isoformat())
+    _camp(factory, camp_id="past", day=(platform_today() - timedelta(days=1)).isoformat())
     _camp(factory, camp_id="pending", campus=STUDENT_CAMPUS, status="PENDING_APPROVAL")
     ids = {item["id"] for item in client.get("/api/camps", headers=headers).json()["items"]}
     assert ids == {"mine", "everyone"}
@@ -320,7 +321,7 @@ def test_create_refuses_held_services_paid_camps_and_bad_slots(harness):
     assert paid.status_code == 422 and paid.json()["detail"]["code"] == "PAID_CAMPS_OFF"
     backwards = _body(slots=[{"start": "10:00", "end": "09:00", "capacity": 5}])
     assert client.post("/api/ops/camps", headers=headers, json=backwards).status_code == 422
-    past = _body(date=(date.today() - timedelta(days=1)).isoformat())
+    past = _body(date=(platform_today() - timedelta(days=1)).isoformat())
     assert client.post("/api/ops/camps", headers=headers, json=past).status_code == 422
     too_big = _body(slots=[{"start": "09:00", "end": "10:00", "capacity": 10 ** 6}])
     assert client.post("/api/ops/camps", headers=headers, json=too_big).status_code == 422

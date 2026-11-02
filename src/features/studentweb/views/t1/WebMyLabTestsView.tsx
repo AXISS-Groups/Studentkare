@@ -11,7 +11,7 @@ import type { LiveDocument } from '@/data/types/workflowTypes';
 import { navigate } from '@/lib/utils/workflowRouting';
 import { useNavigate } from '@/core/navigation';
 import { shortNameOf } from '@/design-system/student-shell/StudentWebShell';
-import { EmptyPanel, ErrorPanel, LoadingRows, OfflinePanel, PageHead, Pill, StudentWebFooter, TrustBand } from '../parts';
+import { EmptyPanel, ErrorPanel, LoadingRows, OfflinePanel, PageHead, Pill, TrustBand } from '../parts';
 import { dayDate, shortDate } from './shared';
 import { awaitsLabPayment } from '@/features/labBooking/views/labPaymentState';
 import '../../studentweb.css';
@@ -152,7 +152,6 @@ export function WebMyLabTestsView() {
       <AppPromo />
       {body}
       <TrustBand />
-      <StudentWebFooter />
     </div>
   );
 }

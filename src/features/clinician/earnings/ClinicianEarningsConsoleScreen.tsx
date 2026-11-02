@@ -46,7 +46,7 @@ export function earningsConfig(t: T): ConsoleTableConfig {
 
 /* ----------------------------------------------------------- API mapping */
 
-export interface EarningsPeriod {
+interface EarningsPeriod {
   start: string;
   end: string;
   consults: number;
@@ -118,7 +118,7 @@ export function mapEarnings(data: EarningsResponse, t: T): ConsoleTableData {
   };
 }
 
-export function earningsApiSource(t: T, request: typeof apiRequest = apiRequest): ConsoleTableSource {
+function earningsApiSource(t: T, request: typeof apiRequest = apiRequest): ConsoleTableSource {
   return { load: async () => mapEarnings(await request<EarningsResponse>('/work/earnings'), t) };
 }
 

@@ -64,6 +64,24 @@ describe('VendorConsole — the fulfilment queue', () => {
     await waitFor(() => expect(source).toHaveBeenLastCalledWith('AWAITING_PAYMENT', 0, true, expect.anything()));
   });
 
+  it('a line the student cancelled shows "Cancelled by student", muted, and never blanks the queue', async () => {
+    // Before the fix STATE['CANCELLED'] was undefined and the whole board threw.
+    const source: ConsoleSource = vi.fn(async () => data({
+      page: { items: [
+        line({ id: 'line-c', status: 'CANCELLED', paymentStatus: 'CANCELLED' }),
+        // A cancelled unpaid order is cancelled, not "awaiting payment".
+        line({ id: 'line-d', orderId: 'order-00048119', status: 'CANCELLED', awaitingPayment: true, paymentStatus: 'CANCELLED' }),
+        // A state this build has never heard of shows a neutral pill instead of crashing.
+        line({ id: 'line-e', orderId: 'order-00048118', status: 'ON_HOLD' as PartnerRequest['status'] }),
+      ], total: 3, limit: 20, offset: 0 },
+    }));
+    render(<VendorConsoleScreen source={source} />);
+    const table = await screen.findByRole('table');
+    expect(within(table).getAllByText('Cancelled by student')).toHaveLength(2);
+    expect(within(table).queryByText('Awaiting payment')).toBeNull();
+    expect(within(table).getByText('Status not shown')).toBeInTheDocument();
+  });
+
   it('a non-pharmacy partner gets no pharmacist note and no Rx call', async () => {
     partner.partnerKind = 'CLINIC';
     const source: ConsoleSource = vi.fn(async () => data({ rxWaiting: null }));

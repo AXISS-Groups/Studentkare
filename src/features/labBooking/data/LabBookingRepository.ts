@@ -43,7 +43,7 @@ export interface LabAddress {
   landmark: string;
 }
 
-export type LabPaymentStatus = 'UNPAID' | 'PAID' | 'PARTIALLY_REFUNDED' | 'REFUNDED' | 'EXPIRED' | 'CANCELLED';
+type LabPaymentStatus = 'UNPAID' | 'PAID' | 'PARTIALLY_REFUNDED' | 'REFUNDED' | 'EXPIRED' | 'CANCELLED';
 
 /** GET /lab-bookings/{id} and POST /lab-bookings. */
 export interface LabBooking {

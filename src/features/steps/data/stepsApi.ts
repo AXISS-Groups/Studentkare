@@ -9,7 +9,7 @@ import { isStepSource, type StepSource } from '../model/stepSources';
  * POST /activity/entries (a typed total for a day, kept apart from synced ones).
  */
 
-export const WEEK_PATH = '/activity/trends?period=this_week';
+const WEEK_PATH = '/activity/trends?period=this_week';
 
 export type ActivityDay = SyncedDay;
 

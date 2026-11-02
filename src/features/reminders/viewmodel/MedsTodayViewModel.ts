@@ -25,7 +25,7 @@ import { codedSaid, serverSaid } from './serverMessage';
  * (`useM2Home.medsSummary`), never a name.
  */
 
-export type DoseOutcome = 'TAKEN' | 'SKIPPED';
+type DoseOutcome = 'TAKEN' | 'SKIPPED';
 export interface DoseUndo { doseId: string; undoUntil: string; outcome: DoseOutcome }
 export interface MedsTodayPlan {
   planId: string;
@@ -41,7 +41,7 @@ export interface MedsTodayPlan {
 export interface MedsToday { date: string; timezone: string; plans: MedsTodayPlan[] }
 
 /** Doses logged today (taken or skipped). */
-export function logged(plan: MedsTodayPlan): number {
+function logged(plan: MedsTodayPlan): number {
   return plan.dosesTaken + (plan.dosesSkipped ?? 0);
 }
 

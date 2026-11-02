@@ -17,7 +17,7 @@ import type { LiveOrder, OrderLine } from '@/data/types/workflowTypes';
 
 export type OrdersTab = 'all' | 'active' | 'labs' | 'past';
 export type OrderState = 'awaitingPayment' | 'requested' | 'accepted' | 'dispatched' | 'completed' | 'declined' | 'cancelled';
-export type StepState = 'done' | 'active' | 'todo';
+type StepState = 'done' | 'active' | 'todo';
 export type OrderKind = 'product' | 'lab' | 'consultation' | 'vaccine';
 
 export interface TrackStep { key: 'placed' | 'paid' | 'accepted' | 'dispatched' | 'completed'; state: StepState }

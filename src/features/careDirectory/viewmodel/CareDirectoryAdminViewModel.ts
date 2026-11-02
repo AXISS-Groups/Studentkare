@@ -70,7 +70,7 @@ export const BLANK_FORM: FacilityForm = {
   emergency24x7: false, hoursText: '', source: '', sourceUrl: '', verifiedOn: '', campus: '', active: true,
 };
 
-export function formFrom(row: AdminFacility): FacilityForm {
+function formFrom(row: AdminFacility): FacilityForm {
   return {
     id: row.id, kind: row.kind, name: row.name, departments: row.departments.join(', '), address: row.address, area: row.area, pincode: row.pincode,
     latitude: row.latitude === null ? '' : String(row.latitude), longitude: row.longitude === null ? '' : String(row.longitude), phone: row.phone,

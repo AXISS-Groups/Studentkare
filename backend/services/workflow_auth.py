@@ -6,7 +6,7 @@ import re
 import secrets
 import time
 import uuid
-from datetime import date
+from datetime import date, datetime, timezone
 from typing import Literal
 from urllib.parse import urlsplit
 
@@ -399,7 +399,7 @@ MAXIMUM_AGE = 120
 
 def age_in_years(dob: date, today: date | None = None) -> int:
     """Completed years between dob and today. Negative for a date in the future."""
-    today = today or date.today()
+    today = today or datetime.now(timezone.utc).date()
     return today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
 
 

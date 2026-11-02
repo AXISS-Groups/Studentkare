@@ -1,6 +1,6 @@
 import { assertRule, RuleId } from '../core/constitution';
 
-export interface ReActStep {
+interface ReActStep {
   stepIndex: number;
   agentName: string;
   thought: string;
@@ -18,7 +18,7 @@ export interface MultiAgentSwarmResult {
   timestamp: string;
 }
 
-export class MultiAgentLoopOrchestrator {
+class MultiAgentLoopOrchestrator {
   public executeSwarmLoop(goal: string): MultiAgentSwarmResult {
     assertRule('Rule-A'); // Non-prescriptive triage
     assertRule('Rule-B'); // Emergency triage escalation

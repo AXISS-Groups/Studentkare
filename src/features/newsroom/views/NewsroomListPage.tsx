@@ -33,7 +33,7 @@ function SectionTabs({ section }: { section: SectionPath }): React.ReactElement 
   );
 }
 
-function Pagination({ page, pages, go }: { page: number; pages: number; go: (page: number) => void }): React.ReactElement | null {
+export function Pagination({ page, pages, go }: { page: number; pages: number; go: (page: number) => void }): React.ReactElement | null {
   const t = useT();
   if (pages <= 1) return null;
   return (
@@ -77,7 +77,7 @@ export const NewsroomListPage = observer(function NewsroomListPage({ section }: 
     void vm.load(state);
     // The URL is the state: reload whenever it changes.
   }, [vm, key]);
-  useEffect(() => () => vm.dispose(), [vm]);
+  useEffect(() => { void vm.loadCategories(); return () => vm.dispose(); }, [vm]);
   useEffect(() => setQuery(state.q), [state.q]);
 
   const apply = (next: Partial<ListState>) => setParams(writeListState({ ...state, page: 1, ...next }));
@@ -98,6 +98,8 @@ export const NewsroomListPage = observer(function NewsroomListPage({ section }: 
             <a href={`/api/posts/${section}/rss.xml`}>{t('news.rss')}</a>
             <span aria-hidden="true">·</span>
             <a href={`/api/posts/${section}/atom.xml`}>{t('news.atom')}</a>
+            <span aria-hidden="true">·</span>
+            <a href="/series" onClick={(e) => { e.preventDefault(); routerNavigate('/series'); }} data-testid="news-series-link">{t('cms.series.all')}</a>
           </p>
         </header>
 
@@ -114,6 +116,20 @@ export const NewsroomListPage = observer(function NewsroomListPage({ section }: 
               </button>
             ))}
           </div>
+          {vm.categories.length ? (
+            <div className="sk-news-filters" role="group" aria-label={t('cms.topics.aria')}>
+              <button type="button" className="sk-news-filter" aria-pressed={state.topic === null} onClick={() => apply({ topic: null })}>
+                {t('cms.topics.all')}
+              </button>
+              {vm.categories.map((c) => (
+                <button key={c.id} type="button" className="sk-news-filter" data-hue={c.hue} aria-pressed={state.topic === c.id}
+                  onClick={() => apply({ topic: c.id })} data-testid={`news-topic-${c.id}`}>
+                  <Icon name={c.icon} size={16} />
+                  {c.name}
+                </button>
+              ))}
+            </div>
+          ) : null}
           <form className="sk-news-search" role="search" onSubmit={(e) => { e.preventDefault(); apply({ q: query }); }}>
             <label className="sk-news-search__field" htmlFor={searchId}>
               <Icon name="search" size={18} />
@@ -143,7 +159,7 @@ export const NewsroomListPage = observer(function NewsroomListPage({ section }: 
               : <Icon name="megaphone" size={28} />}
             <h2>{vm.filtered ? t('news.emptyFiltered') : t('news.empty')}</h2>
             <p>{vm.filtered ? t('news.emptyFilteredBody') : t('news.emptyBody')}</p>
-            {vm.filtered ? <button type="button" className="sk-news-btn" onClick={() => { setQuery(''); apply({ category: null, q: '' }); }}>{t('news.clear')}</button> : null}
+            {vm.filtered ? <button type="button" className="sk-news-btn" onClick={() => { setQuery(''); apply({ category: null, topic: null, q: '' }); }}>{t('news.clear')}</button> : null}
           </div>
         ) : null}
 

@@ -21,7 +21,7 @@ import type { CareDirectoryViewModel, ListedPlace } from '../viewmodel/CareDirec
 
 type T = ReturnType<typeof useT>;
 
-export const KIND_STYLE: Readonly<Record<FacilityKind, { icon: SkIconName; hue: ServiceHue; label: MessageKey }>> = {
+const KIND_STYLE: Readonly<Record<FacilityKind, { icon: SkIconName; hue: ServiceHue; label: MessageKey }>> = {
   HOSPITAL: { icon: 'hospital', hue: 'blue', label: 'fc.kind.HOSPITAL' },
   CLINIC: { icon: 'stethoscope', hue: 'sky', label: 'fc.kind.CLINIC' },
   PHARMACY: { icon: 'pill', hue: 'teal', label: 'fc.kind.PHARMACY' },
@@ -49,7 +49,7 @@ export function placeMeta(facility: Facility, t: T): string {
   return where ? `${kind} · ${where}` : kind;
 }
 
-export function openTel(phone: string): void {
+function openTel(phone: string): void {
   void Linking.openURL(telUrl(phone));
 }
 

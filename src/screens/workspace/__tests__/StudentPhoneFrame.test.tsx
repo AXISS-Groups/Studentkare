@@ -117,16 +117,23 @@ describe('student workspace at phone width', () => {
     expect(nav.calls).toEqual(['orders', 'your-care', 'ayush']);
   });
 
-  it('opens the More panel (MoreHub board) from More, with log out in reach', () => {
-    render(<WorkspaceScreen route="appointments" />);
-    const more = screen.getByRole('button', { name: 'Open menu' });
-    expect(more).toHaveAttribute('aria-expanded', 'false');
-    fireEvent.click(more);
-    expect(screen.getByRole('button', { name: 'Close menu' })).toHaveAttribute('aria-expanded', 'true');
+  it('opens the More panel from Profile, Settings (no menu button in the header), with log out in reach and its own close', async () => {
+    render(<WorkspaceScreen route="profile" />);
+    expect(screen.queryByRole('button', { name: 'Open menu' })).toBeNull();
+    fireEvent.click(await screen.findByTestId('m2-prof-settings'));
     expect(screen.getByTestId('more-hub')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: translate('en', 'shell.logout') })).toBeInTheDocument();
+    // Ayush (the pill nav's orb) and Orders (its own tab) are not repeated in More.
+    expect(screen.queryByTestId('more-hub-ayush')).toBeNull();
     fireEvent.click(screen.getByTestId('more-hub-requests'));
     expect(nav.calls).toEqual(['my-requests']);
+  });
+
+  it('closes the More panel from its own close button', async () => {
+    render(<WorkspaceScreen route="profile" />);
+    fireEvent.click(await screen.findByTestId('m2-prof-settings'));
+    fireEvent.click(screen.getByRole('button', { name: 'Close menu' }));
+    expect(screen.queryByTestId('more-hub')).toBeNull();
   });
 
   it('draws a board’s own header: its title, and its controls on the row under the header', () => {
@@ -165,6 +172,13 @@ describe('phone boards in the frame (WP-04)', () => {
     await screen.findByTestId('search-entry');
     expect(screen.getAllByRole('button', { name: 'Back' })).toHaveLength(1);
     expect(screen.getByRole('heading', { name: 'Search' })).toBeInTheDocument();
+  });
+
+  it('draws Refills above 430 px too (it fell through to the old overview, parity audit 2026-10-23)', async () => {
+    phoneWidth(false);
+    render(<BrowserRouter><WorkspaceScreen route="health/refills" /></BrowserRouter>);
+    expect(await screen.findByTestId('m2-refills')).toBeInTheDocument();
+    expect(screen.queryByTestId('pill-nav')).toBeNull();
   });
 
   it('keeps the desktop orders page above 430 px', () => {

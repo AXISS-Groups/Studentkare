@@ -75,7 +75,7 @@ export function listingMeta(t: (key: MessageKey) => string, item: LiveCatalogIte
 }
 
 /** The listing's honest tag: prescription, stock, or the discount the catalogue prices give. */
-export function listingTag(t: (key: MessageKey, vars?: Record<string, string | number>) => string, item: LiveCatalogItem): { label: string; tone: Tone } | null {
+function listingTag(t: (key: MessageKey, vars?: Record<string, string | number>) => string, item: LiveCatalogItem): { label: string; tone: Tone } | null {
   if (item.requiresPrescription) return { label: t('phone.search.tag.rx'), tone: 'attention' };
   if (item.kind === 'product' && item.stock < 1) return { label: t('shop.outOfStock'), tone: 'neutral' };
   const off = discountPercent(item.mrpPaise, item.pricePaise);

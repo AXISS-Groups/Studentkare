@@ -258,19 +258,21 @@ describe('Profile and account details', () => {
 
 describe('Digital ID', () => {
   const identity = { memberId: 'SK-VNR-4821', fullName: 'Krishna C.', university: 'VNR VJIET', rollNumber: '21B81A05', campusStatus: 'VERIFIED', issued: true, issuedAt: 1 };
-  it('web: the ID card links to the check-in pass instead of drawing it (Tier 1 stays on its own board)', async () => {
+  it('web: the ID card, its QR controls and a row to the check-in pass (one view, Tier 1 parity plan §12)', async () => {
     serve({ '/identity': identity, '/health/policies': { items: [{ id: 'p', insurer: 'Campus group policy', validUntil: '2999-01-01' }] } });
     const pass = vi.fn();
     render(<DigitalIdRoute links={{ pass, abha: vi.fn() }} />);
     expect(await screen.findByTestId('digital-id-card')).toBeInTheDocument();
     expect(screen.getByText('SK-VNR-4821')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: translate('en', 'id.replace') })).toBeNull();
+    // Issued, but no live code in memory: the stale note, never a stale code; replace / revoke stay.
+    expect(screen.getByTestId('digital-id-stale')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: translate('en', 'id.replace') })).toBeInTheDocument();
     fireEvent.click(screen.getByTestId('digital-id-pass'));
     expect(pass).toHaveBeenCalled();
     expect(await screen.findByText('Campus group policy')).toBeInTheDocument();
   });
 
-  it('native: keeps the existing check-in pass card unchanged under the ID', async () => {
+  it('native: the same view; not issued offers Create', async () => {
     serve({ '/identity': { ...identity, issued: false }, '/health/policies': { items: [] } });
     render(<DigitalIdRoute links={{}} />);
     expect(await screen.findByRole('button', { name: translate('en', 'id.create') })).toBeInTheDocument();

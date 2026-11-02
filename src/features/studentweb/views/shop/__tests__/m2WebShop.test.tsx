@@ -22,6 +22,7 @@ import { LiveCartProvider, useLiveCart } from '@/data/contexts/LiveCartContext';
 import type { LiveCatalogItem, LiveOrder } from '@/data/types/workflowTypes';
 import { forgetListings } from '@/features/phoneKit/listingCache';
 import { motion } from '@/design-system/theme';
+import { pkg } from '@/features/phoneKit/__tests__/fixtures';
 import { axeViolations, describeViolations } from '@/test/axe';
 import { WebShopView } from '../WebShopView';
 import { WebCheckoutView } from '../WebCheckoutView';
@@ -89,9 +90,9 @@ describe('web shop (Mobile 2.0), signed in', () => {
     expect(screen.getByRole('group', { name: 'Call to order, Not available yet' })).toBeInTheDocument();
     expect(screen.getByRole('group', { name: 'Chat to order, Coming soon' })).toBeInTheDocument();
     expect(screen.getByText('120 Kare points')).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: /Refills for your regular medicines/ }));
+    fireEvent.click(screen.getByRole('link', { name: /Refills for your regular medicines/ }));
     expect(go).toHaveBeenCalledWith('your-care');
-    fireEvent.click(screen.getByRole('button', { name: 'Order with prescription' }));
+    fireEvent.click(screen.getByRole('link', { name: 'Order with prescription' }));
     expect(go).toHaveBeenCalledWith('prescriptions');
     expect(screen.getByText('Nothing here is chosen from your health records')).toBeInTheDocument();
     // Commerce only: nothing clinical is read on the shop (Rule L).
@@ -202,7 +203,9 @@ describe('medicine page (M2Product rules at desktop width)', () => {
     let lines = 0;
     render(withCart(<><WebShopView /><CartProbe onCart={(n) => { lines = n; }} /></>));
     await settle();
-    fireEvent.click(screen.getByRole('button', { name: 'Paracetamol 650 mg' }));
+    // The card is the shared Mobile 2.0 product card: one link, named by its text (it starts with the brand, then the name).
+    expect(screen.getByTestId('m2w-card-a-open')).toHaveAccessibleName(/Paracetamol 650 mg/);
+    fireEvent.click(screen.getByTestId('m2w-card-a-open'));
     await settle();
     expect(screen.getByRole('heading', { level: 1, name: 'Paracetamol 650 mg' })).toBeInTheDocument();
     expect(screen.getByText('Contains: Paracetamol 650 mg')).toBeInTheDocument();
@@ -217,7 +220,7 @@ describe('medicine page (M2Product rules at desktop width)', () => {
     window.history.pushState({}, '', '/shop');
     render(withCart(<WebShopView />));
     await settle();
-    fireEvent.click(screen.getByRole('button', { name: 'Azithromycin 500 mg' }));
+    fireEvent.click(screen.getByTestId('m2w-card-rx-open'));
     await settle();
     expect(screen.getByTestId('m2w-prod-rx')).toHaveTextContent('Prescription needed');
     expect(screen.queryByRole('group', { name: 'Quantity' })).not.toBeInTheDocument();
@@ -290,8 +293,21 @@ describe('web checkout (Mobile 2.0)', () => {
 });
 
 describe('motion', () => {
+  it('the lab highlight is a package the catalogue really lists; with none, it is not drawn (no made-up offer)', async () => {
+    serve({ '/catalog': catalog(), '/points/me': { balance: 1 }, '/lab-packages': { items: [pkg({ id: 'big', name: 'Complete Health Checkup', includes: ['a', 'b', 'c'] }), pkg({})] } });
+    render(withCart(<WebShopView />));
+    await settle();
+    expect(screen.getByTestId('m2w-carousel-slide-check')).toHaveTextContent('Complete Health Checkup');
+    expect(document.body.textContent).not.toMatch(/Three checks, one visit/);
+    cleanup();
+    serve({ '/catalog': catalog(), '/points/me': { balance: 1 }, '/lab-packages': { items: [] } });
+    render(withCart(<WebShopView />));
+    await settle();
+    expect(screen.queryByTestId('m2w-carousel-slide-check')).toBeNull();
+  });
+
   it('the highlights never advance under reduced motion', async () => {
-    serve({ '/catalog': catalog(), '/points/me': { balance: 1 } });
+    serve({ '/catalog': catalog(), '/points/me': { balance: 1 }, '/lab-packages': { items: [pkg({})] } });
     render(withCart(<WebShopView />));
     await settle();
     vi.useFakeTimers();
@@ -302,17 +318,18 @@ describe('motion', () => {
   it('the highlights move on when motion is allowed', async () => {
     state.reduced = false;
     vi.useFakeTimers();
-    serve({ '/catalog': catalog(), '/points/me': { balance: 1 } });
+    serve({ '/catalog': catalog(), '/points/me': { balance: 1 }, '/lab-packages': { items: [pkg({})] } });
     render(withCart(<WebShopView />));
     await settle();
     act(() => { vi.advanceTimersByTime(motion.duration.carousel); });
     expect(screen.getByTestId('m2w-carousel-slide-rx')).toBeInTheDocument();
   });
 
-  it('the stylesheet turns rise-in, lift and float off under reduced motion', () => {
-    const css = readFileSync(join(__dirname, '..', 'm2webshop.css'), 'utf8');
+  it('the stylesheet turns the float off under reduced motion, and redraws no Mobile 2.0 piece', () => {
+    const css = readFileSync(join(__dirname, '..', 'webshop.css'), 'utf8');
     const block = css.slice(css.indexOf('@media (prefers-reduced-motion: reduce)'));
-    expect(block).toMatch(/\.sk-m2w-rise, \.sk-m2w \.sk-m2w-blister \{ animation: none; \}/);
-    expect(block).toMatch(/\.sk-m2w-lift \{ transition: none; \}/);
+    expect(block).toMatch(/\.sk-m2w-blister \{ animation: none; \}/);
+    // Rise-in, lift, soft tiles, quick cards, link rows, product cards and the generics table are the shared components (parity audit phase 1).
+    expect(css).not.toMatch(/sk-m2w-(rise|lift|soft|softtile|softgrid|qcard|quick|linkcard|compare)\b|sk-m2w-card(__|\b)/);
   });
 });

@@ -3,7 +3,6 @@ import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
 import { Icon, Illustration } from '@/design-system/icons';
 import type { SkIconName, SkIllustrationName } from '@/design-system/icons';
-import { NewsletterBand, PublicSiteFooter } from '@/design-system/public-site';
 import { navigate } from '@/lib/utils/workflowRouting';
 import '../studentweb.css';
 
@@ -124,11 +123,6 @@ export function TrustBand() {
       ))}
     </section>
   );
-}
-
-/** The canvas footer (newsletter band + public footer) under a signed-in page. */
-export function StudentWebFooter() {
-  return <div className="sk-sw-footer"><PublicSiteFooter band={<NewsletterBand />} /></div>;
 }
 
 /** A row that opens another page: icon, title, meta, chevron. */

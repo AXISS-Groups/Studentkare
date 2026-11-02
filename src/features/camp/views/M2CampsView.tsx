@@ -5,6 +5,7 @@ import { Icon } from '@/design-system/icons';
 import { Button, ConfirmDialog, EmptyState, ErrorState, OfflineBanner, Rise, Skeleton, Toast, useOnline } from '@/design-system';
 import {
   Gradient, M2Card, M2Heading, M2_NAV_CLEARANCE, RoundButton, SERVICE_HUES, floatTransform, heroStops, m2Text, useAmbientMotion, useLoop, useOwnPhoneChrome,
+  M2HeaderSos, M2Grid, M2WideColumn,
 } from '@/design-system/m2';
 import type { PressState } from '@/design-system/m2';
 import { color, focusRing, font, fontWeight, motion, radius, size, space, webOnly } from '@/design-system/theme';
@@ -231,7 +232,7 @@ const CampCard = observer(function CampCard({ c, vm, links, online }: { c: CampL
   );
 });
 
-export const M2CampsView = observer(function M2CampsView({ vm, links }: { vm: CampsBookingViewModel; links: M2CampsLinks }) {
+export const M2CampsView = observer(function M2CampsView({ vm, links, wide = false }: { vm: CampsBookingViewModel; links: M2CampsLinks; /** Laid out wide in the desktop web shell (parity phase 2). */ wide?: boolean }) {
   const t = useT();
   const online = useOnline();
   useOwnPhoneChrome();
@@ -240,15 +241,18 @@ export const M2CampsView = observer(function M2CampsView({ vm, links }: { vm: Ca
   // A camp opened to change a booking may not be in the list any more (it can be today, or full): show it from the booking.
   const changingCamp = vm.changing && !(camps.data ?? []).some((c) => c.id === vm.changing?.camp.id)
     ? { ...vm.changing.camp, capacity: 0, remaining: 0, slotCount: 0, ineligibleReason: null, myStatus: null } : null;
-  return (
-    <>
-      <ScrollView style={styles.screen} contentContainerStyle={styles.content} testID="m2-camps">
+  // Wide, the shell's page column gives the gutter, and camps sit two a row.
+  const gutter = wide ? undefined : styles.gutter;
+  const columns = { phone: 1, tablet: 2, desktop: 2 };
+  const board = (
+      <>
         <Rise>
-          <Gradient colors={heroStops('sky')} angle={160} style={styles.hero}>
+          <Gradient colors={heroStops('sky')} angle={160} style={[styles.hero, wide ? styles.heroWide : null]}>
             <View pointerEvents="none" style={styles.heroRing} />
             <View style={styles.heroHead}>
               <RoundButton icon="arrow-left" label={t('m2.backHome')} onPress={links.back} onHero testID="camps-back" />
               <Text style={styles.heroEyebrow}>{t('camps.eyebrow')}</Text>
+              <M2HeaderSos push />
             </View>
             <Art />
             <M2Heading level={1} style={styles.heroTitle}>{t('camps.title')}</M2Heading>
@@ -256,33 +260,33 @@ export const M2CampsView = observer(function M2CampsView({ vm, links }: { vm: Ca
           </Gradient>
         </Rise>
 
-        {!online ? <View style={styles.gutter}><OfflineBanner message={t('camps.offline')} /></View> : null}
+        {!online ? <View style={gutter}><OfflineBanner message={t('camps.offline')} /></View> : null}
 
-        <Rise index={1} style={styles.gutter}>
+        <Rise index={1} style={gutter}>
           <M2Heading style={[m2Text.section, styles.sectionTitle]}>{t('camps.yours')}</M2Heading>
           {bookings.phase === 'loading' ? <Skeleton label={t('camps.bookingsLoading')} lines={['100%', '70%']} /> : null}
           {bookings.phase === 'error' ? <ErrorState title={t('camps.bookingsFailed')} body={t('camps.failedBody')} retryLabel={t('common.tryAgain')} onRetry={() => void bookings.load()} /> : null}
           {bookings.phase === 'ready' && vm.active.length === 0 ? <Text style={m2Text.body} testID="camps-no-bookings">{t('camps.noBookings')}</Text> : null}
-          <View style={styles.list}>
+          <M2Grid columns={columns} gap={space.s12}>
             {vm.active.map((b) => <BookingCard key={b.id} b={b} vm={vm} links={links} online={online} />)}
             {changingCamp ? <CampCard c={changingCamp} vm={vm} links={links} online={online} /> : null}
-          </View>
+          </M2Grid>
         </Rise>
 
-        <Rise index={2} style={styles.gutter}>
+        <Rise index={2} style={gutter}>
           <M2Heading style={[m2Text.section, styles.sectionTitle]}>{t('camps.upcoming')}</M2Heading>
           {camps.phase === 'loading' ? <Skeleton label={t('camps.loading')} lines={['100%', '90%', '100%']} /> : null}
           {camps.phase === 'error' ? <ErrorState title={t('camps.failed')} body={t('camps.failedBody')} retryLabel={t('common.tryAgain')} onRetry={() => void camps.load()} /> : null}
           {camps.phase === 'ready' && !(camps.data ?? []).length ? (
             <EmptyState title={t('camps.emptyTitle')} body={t('camps.emptyBody')} animation="anim-calendar" action={{ label: t('camps.findCare'), onPress: links.findCare }} />
           ) : null}
-          <View style={styles.list}>
+          <M2Grid columns={columns} gap={space.s12}>
             {(camps.data ?? []).map((c) => <CampCard key={c.id} c={c} vm={vm} links={links} online={online} />)}
-          </View>
+          </M2Grid>
         </Rise>
 
         {vm.ended.length ? (
-          <Rise index={3} style={styles.gutter}>
+          <Rise index={3} style={gutter}>
             <M2Heading style={[m2Text.section, styles.sectionTitle]}>{t('camps.ended')}</M2Heading>
             <View style={styles.list}>
               {vm.ended.map((b) => (
@@ -298,13 +302,19 @@ export const M2CampsView = observer(function M2CampsView({ vm, links }: { vm: Ca
           </Rise>
         ) : null}
 
-        <Rise index={4} style={styles.gutter}>
+        <Rise index={4} style={gutter}>
           <View style={styles.privacy}>
             <Icon name="lock" size={16} color={color.text3} strokeWidth={2} />
             <Text style={[m2Text.meta, styles.grow]}>{t('camps.privacy')}</Text>
           </View>
         </Rise>
-      </ScrollView>
+      </>
+  );
+  return (
+    <>
+      {wide ? <M2WideColumn testID="m2-camps">{board}</M2WideColumn> : (
+        <ScrollView style={styles.screen} contentContainerStyle={styles.content} testID="m2-camps">{board}</ScrollView>
+      )}
 
       <ConfirmDialog
         open={Boolean(vm.cancelTarget)}
@@ -332,6 +342,7 @@ const styles = StyleSheet.create({
   content: { paddingBottom: M2_NAV_CLEARANCE, gap: space.s20, width: '100%', maxWidth: size.phoneFrameMax, alignSelf: 'center', overflow: 'hidden' },
   gutter: { paddingHorizontal: space.gutterPhone },
   grow: { flex: 1, minWidth: 0, gap: space.s2 },
+  heroWide: { borderRadius: 36, paddingHorizontal: space.s32 },
   hero: { paddingTop: space.s16, paddingHorizontal: space.gutterPhone, paddingBottom: space.s24, borderBottomLeftRadius: 36, borderBottomRightRadius: 36, overflow: 'hidden' },
   heroRing: { position: 'absolute', left: -60, bottom: -90, width: 240, height: 240, borderRadius: radius.full, borderWidth: 30, borderColor: color.onHeroRule },
   heroHead: { flexDirection: 'row', alignItems: 'center', gap: space.s12 },

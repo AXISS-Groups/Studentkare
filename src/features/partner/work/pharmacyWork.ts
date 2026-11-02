@@ -42,7 +42,7 @@ export interface Dispense {
   prescription: { id: string; prescriberRegNo: string; issuedAt: number; validUntil: number; items: DispenseItem[] } | null;
 }
 
-export const DISPENSE_PAGE = 200;
+const DISPENSE_PAGE = 200;
 
 export function loadDispenses(signal?: AbortSignal): Promise<{ items: Dispense[]; total: number }> {
   return apiRequest<{ items: Dispense[]; total: number }>(`/work/dispenses?limit=${DISPENSE_PAGE}`, { signal });

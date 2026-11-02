@@ -38,7 +38,7 @@ export interface ReferenceRange {
   isBodyMetric: boolean;
 }
 
-export interface ProvenanceNote {
+interface ProvenanceNote {
   sourceType: string;
   facility?: string;
   takenOn?: string;
@@ -57,7 +57,7 @@ export interface ValueRestatement {
   outsideTypicalRange: boolean;
 }
 
-export interface TrendPoint {
+interface TrendPoint {
   date: string;
   value: string | number;
   unit: string;
@@ -70,7 +70,7 @@ export interface TrendSeries {
   points: TrendPoint[];
 }
 
-export type CompletenessStatus = 'COMPLETE' | 'MISSING' | 'DUE' | 'EXPIRING' | 'OVERDUE';
+type CompletenessStatus = 'COMPLETE' | 'MISSING' | 'DUE' | 'EXPIRING' | 'OVERDUE';
 
 export interface CompletenessItem {
   id: string;
@@ -85,7 +85,7 @@ export interface RiskSignal {
   severity: 'LOW' | 'MEDIUM' | 'HIGH';
 }
 
-export type SuggestionTrigger =
+type SuggestionTrigger =
   | 'SEASONAL'
   | 'ACADEMIC'
   | 'CAMPUS_EVENT'

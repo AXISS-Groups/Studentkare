@@ -27,10 +27,10 @@ async function totalOf(path: string): Promise<number | null> {
 }
 
 /** Unacknowledged critical results this doctor may review (`GET /work/critical-results`). */
-export const criticalResultsCount: CountLoader = () => totalOf('/work/critical-results');
+const criticalResultsCount: CountLoader = () => totalOf('/work/critical-results');
 /** Report reviews assigned to this doctor (`GET /preventive/work/report-reviews`, services/preventive_care.py). */
-export const REPORTS_TO_SIGN_PATH = '/preventive/work/report-reviews?offset=0&limit=1';
-export const reportsToSignCount: CountLoader = () => totalOf(REPORTS_TO_SIGN_PATH);
+const REPORTS_TO_SIGN_PATH = '/preventive/work/report-reviews?offset=0&limit=1';
+const reportsToSignCount: CountLoader = () => totalOf(REPORTS_TO_SIGN_PATH);
 
 const KIND_BY_STATUS: Record<Booking['status'], SlotKind> = {
   COMPLETED: 'done',

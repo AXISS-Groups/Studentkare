@@ -60,7 +60,7 @@ export interface DataTableColumn {
 
 export type CellTone = 'action' | 'attention' | 'danger' | 'positive';
 
-export interface TextCell {
+interface TextCell {
   text: string;
   /** Second line in the meta style. */
   sub?: string;
@@ -70,12 +70,12 @@ export interface TextCell {
   mono?: boolean;
 }
 
-export interface PillCell {
+interface PillCell {
   pill: { label: string; tone: SkTone };
 }
 
 /** Anything else — a flag badge, a row action. */
-export interface NodeCell {
+interface NodeCell {
   node: React.ReactNode;
 }
 

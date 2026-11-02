@@ -18,9 +18,9 @@ vi.mock('@/data/contexts/AuthContext', () => ({ useAuth: () => ({ user: { fullNa
 import { EmergencyCardBoard, maskMobile } from '../EmergencyCardBoard';
 import { IceContactsBoard } from '../IceContactsBoard';
 import { EmergencyCardViewModel } from '../../viewmodel/EmergencyCardViewModel';
-import { SosView, elapsedClock } from '@/modules/m04-emergency/view/SosView';
-import { emergencyStore } from '@/modules/m04-emergency/state/EmergencyStore';
-import type { SosAlert } from '@/modules/m04-emergency/domain/Emergency';
+import { SosView, elapsedClock } from '../SosView';
+import { emergencyStore } from '../../state/EmergencyStore';
+import type { SosAlert } from '../../domain/Emergency';
 import { CrisisSupportBoard } from '@/features/crisis/views/CrisisSupportBoard';
 import { MyPassBoard, offlineMinutes, spokenCode } from '@/features/digital_id/views/MyPassBoard';
 import { DeleteAccountView, graceDay } from '@/features/account/views/DeleteAccountView';

@@ -1929,6 +1929,52 @@ class ConsentRecord(Base):
     terms_version: Mapped[str] = mapped_column(String(40), default="", server_default="")
 
 
+WALLET_PLATFORMS = ("APPLE", "GOOGLE")
+WALLET_PASS_STATUSES = ("ACTIVE", "VOIDED")
+
+
+class WalletPass(Base):
+    """The student's emergency card as a phone-wallet pass (services/wallet_passes.py).
+
+    Plan docs/plans/tier1-emergency-card-wallet-2026-10-24.md. ``fields`` is what the
+    student switched on; the pass content is rebuilt from their records each time and
+    only its hash is kept, so no health value is copied here. ``serial`` is random.
+    """
+    __tablename__ = "care_wallet_passes"
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    account_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"), index=True)
+    platform: Mapped[str] = mapped_column(String(10))
+    serial: Mapped[str] = mapped_column(String(64), unique=True, index=True)
+    fields: Mapped[list] = mapped_column(JSON, default=list)
+    status: Mapped[str] = mapped_column(String(10), default="ACTIVE", index=True)
+    content_hash: Mapped[str] = mapped_column(String(64), default="")
+    created_at: Mapped[float] = mapped_column(Float)
+    updated_at: Mapped[float] = mapped_column(Float)
+    voided_at: Mapped[float] = mapped_column(Float, default=0.0)
+    # Why it was voided: REMOVED, CONSENT_WITHDRAWN, ACCOUNT_DELETION, LEFT_CAMPUS, REPLACED.
+    void_reason: Mapped[str] = mapped_column(String(24), default="")
+    # An update or void not yet delivered to the wallet (APNs / Google Wallet API).
+    push_pending: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
+    push_attempts: Mapped[int] = mapped_column(Integer, default=0)
+    pushed_at: Mapped[float] = mapped_column(Float, default=0.0)
+    # Google: the object is saved in someone's wallet (the API's hasUsers).
+    in_wallet: Mapped[bool] = mapped_column(Boolean, default=False)
+    # A single-use download link for the .pkpass (sha256 of the token) and its expiry.
+    download_token_hash: Mapped[str] = mapped_column(String(64), default="")
+    download_expires_at: Mapped[float] = mapped_column(Float, default=0.0)
+
+
+class WalletRegistration(Base):
+    """An Apple device that added a pass (PassKit web service). The push token is Apple's."""
+    __tablename__ = "care_wallet_registrations"
+    __table_args__ = (UniqueConstraint("pass_id", "device_library_id"),)
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    pass_id: Mapped[str] = mapped_column(ForeignKey("care_wallet_passes.id"), index=True)
+    device_library_id: Mapped[str] = mapped_column(String(128), index=True)
+    push_token: Mapped[str] = mapped_column(String(256))
+    created_at: Mapped[float] = mapped_column(Float)
+
+
 LEGAL_DOCUMENT_KINDS = ("PRIVACY_NOTICE", "TERMS", "GRIEVANCE_OFFICER")
 LEGAL_DOCUMENT_STATUSES = ("DRAFT", "PUBLISHED", "RETIRED")
 
@@ -2136,10 +2182,83 @@ class Post(Base):
     source_name: Mapped[str] = mapped_column(String(120), default="")
     source_url: Mapped[str] = mapped_column(String(1000), default="")
     source_published_at: Mapped[float] = mapped_column(Float, default=0.0)
+    # The content module (services/newsroom_content.py): a category and, for an episode, its series.
+    category_id: Mapped[str] = mapped_column(String(40), default="", index=True)
+    series_id: Mapped[str] = mapped_column(String, default="", index=True)
+    episode: Mapped[int] = mapped_column(Integer, default=0)
+    # The precision gate (services/newsroom_precision.py) on an auto post: its score in percent
+    # (-1: not scored, a post typed by the team) and the per-sentence report shown in Review.
+    precision: Mapped[int] = mapped_column(Integer, default=-1)
+    precision_report: Mapped[dict] = mapped_column(JSON, default=dict)
+    # Why an auto draft waits for the super admin ("" when it does not): PRECISION or EDITOR.
+    hold_reason: Mapped[str] = mapped_column(String(20), default="")
     created_by: Mapped[str] = mapped_column(String, default="")
     created_at: Mapped[float] = mapped_column(Float, default=0.0)
     updated_by: Mapped[str] = mapped_column(String, default="")
     updated_at: Mapped[float] = mapped_column(Float, default=0.0)
+
+
+class PostCategory(Base):
+    """A newsroom category (Mental health, Campus life, …), managed by the super admin.
+
+    Platform plane: editorial labels only. ``clinical`` marks health-advice
+    categories: an advice template (health tip, series episode, explainer, myth vs
+    fact, quick card) in one needs a clinician while ``content.health_requires_clinician``
+    is on. ``crisis_lines``: its posts always show Tele-MANAS 14416 and 112.
+    ``hue`` is a service-palette token family and ``icon`` a line icon from the
+    manifest. Categories are archived, never deleted (posts keep pointing at them).
+    """
+    __tablename__ = "care_post_categories"
+    id: Mapped[str] = mapped_column(String(40), primary_key=True)        # a slug, e.g. mental-health
+    name: Mapped[str] = mapped_column(String(60))
+    hue: Mapped[str] = mapped_column(String(12), default="indigo")
+    icon: Mapped[str] = mapped_column(String(40), default="file-text")
+    clinical: Mapped[bool] = mapped_column(Boolean, default=False)
+    crisis_lines: Mapped[bool] = mapped_column(Boolean, default=False)
+    hashtags: Mapped[list] = mapped_column(JSON, default=list)
+    keywords: Mapped[list] = mapped_column(JSON, default=list)            # the aggregator's classifier
+    topics: Mapped[list] = mapped_column(JSON, default=list)             # the series scheduler's topic plan
+    archived: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
+    sort: Mapped[int] = mapped_column(Integer, default=0)
+    created_at: Mapped[float] = mapped_column(Float, default=0.0)
+    updated_by: Mapped[str] = mapped_column(String, default="")
+    updated_at: Mapped[float] = mapped_column(Float, default=0.0)
+
+
+class PostSeries(Base):
+    """A series of posts (Monday Motivation, the health series), with its own page on the site.
+
+    Platform plane. ``autopilot_key`` links a built-in series to its schedule in
+    the settings registry (``series.<key>.*``: days, hour, rota); a series the
+    super admin creates has none and is numbered as episodes are added by hand.
+    ``library`` (Monday Motivation) holds the team's own lines and clearly
+    attributed public-domain quotes, each with its source; the scheduler never
+    writes a quote of its own.
+    """
+    __tablename__ = "care_post_series"
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    slug: Mapped[str] = mapped_column(String(80), unique=True, index=True)
+    name: Mapped[str] = mapped_column(String(80))
+    summary: Mapped[str] = mapped_column(String(300), default="")
+    category_id: Mapped[str] = mapped_column(String(40), default="")
+    template: Mapped[str] = mapped_column(String(20), default="SERIES_EPISODE")
+    hue: Mapped[str] = mapped_column(String(12), default="teal")         # the cover style
+    autopilot_key: Mapped[str] = mapped_column(String(20), default="", index=True)
+    episode_count: Mapped[int] = mapped_column(Integer, default=0)
+    library: Mapped[list] = mapped_column(JSON, default=list)
+    archived: Mapped[bool] = mapped_column(Boolean, default=False)
+    sample: Mapped[bool] = mapped_column(Boolean, default=False)
+    created_at: Mapped[float] = mapped_column(Float, default=0.0)
+    updated_by: Mapped[str] = mapped_column(String, default="")
+    updated_at: Mapped[float] = mapped_column(Float, default=0.0)
+
+
+class PostStat(Base):
+    """Views and shares of one post, as counts only: no reader, address, device or time of a visit."""
+    __tablename__ = "care_post_stats"
+    post_id: Mapped[str] = mapped_column(String, primary_key=True)
+    views: Mapped[int] = mapped_column(Integer, default=0)
+    shares: Mapped[dict] = mapped_column(JSON, default=dict)             # {channel: count}
 
 
 class AutopilotItem(Base):
@@ -2172,6 +2291,9 @@ class AutopilotItem(Base):
     slot_at: Mapped[float] = mapped_column(Float, default=0.0)        # BLOG: when the post is due
     post_id: Mapped[str] = mapped_column(String, default="", index=True)
     generator: Mapped[str] = mapped_column(String(40), default="")   # source | rephrased | fallback:<why> | extractive
+    category_id: Mapped[str] = mapped_column(String(40), default="")   # the aggregator's classification
+    series_id: Mapped[str] = mapped_column(String, default="", index=True)   # BLOG: a series slot
+    precision: Mapped[int] = mapped_column(Integer, default=-1)       # the drafted post's precision score
     created_at: Mapped[float] = mapped_column(Float, default=0.0, index=True)
     updated_at: Mapped[float] = mapped_column(Float, default=0.0)
 

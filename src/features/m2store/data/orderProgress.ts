@@ -56,7 +56,7 @@ export function routeProgress(order: LiveOrder): RouteProgress {
 }
 
 /** Where a delivery goes, as the student typed it at checkout ('' when unknown). */
-export function deliveryPlace(order: LiveOrder): string {
+function deliveryPlace(order: LiveOrder): string {
   return (order.delivery.address || order.delivery.city || '').trim();
 }
 

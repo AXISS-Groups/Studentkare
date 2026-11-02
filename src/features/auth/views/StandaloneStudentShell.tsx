@@ -6,7 +6,6 @@ import { StudentWebShell } from '@/design-system/student-shell/StudentWebShell';
 import { ConfirmDialog } from '@/design-system/overlays/ConfirmDialog';
 import { useMutation } from '@/components/interface/WorkflowUI';
 import { EmergencyHelplinesDialog } from '@/components/interface/InterfaceBar';
-import { NotificationCenterModal } from '@/components/health/NotificationCenterModal';
 import { navigate } from '@/lib/utils/workflowRouting';
 import type { RoutePath } from '@/lib/utils/workflowRouting';
 import { SignOutConsequences } from './SignOutConsequences';
@@ -24,7 +23,6 @@ export function StandaloneStudentShell({ route, children }: { route: RoutePath; 
   const cartCount = useLiveCartCount();
   const mutation = useMutation();
   const [sosOpen, setSosOpen] = useState(false);
-  const [alertsOpen, setAlertsOpen] = useState(false);
   const [confirmSignOut, setConfirmSignOut] = useState(false);
   const [remember, setRemember] = useState(false);
   if (!user) return null;
@@ -36,7 +34,8 @@ export function StandaloneStudentShell({ route, children }: { route: RoutePath; 
         cartCount={cartCount}
         onNavigate={(target) => navigate(target)}
         onSos={() => setSosOpen(true)}
-        onAlerts={() => setAlertsOpen(true)}
+        onAlerts={() => navigate('notifications')}
+        onSearch={(query) => { window.location.assign(`/shop?q=${encodeURIComponent(query)}`); }}
         onSignOut={() => setConfirmSignOut(true)}
         signingOut={mutation.busy}
         signOutError={mutation.error || null}
@@ -58,7 +57,6 @@ export function StandaloneStudentShell({ route, children }: { route: RoutePath; 
       >
         <SignOutConsequences remember={remember} onRememberChange={setRemember} where="browser" account={{ name: user.fullName, contact: user.email || user.phone }} />
       </ConfirmDialog>
-      <NotificationCenterModal isOpen={alertsOpen} onClose={() => setAlertsOpen(false)} />
       {sosOpen ? <EmergencyHelplinesDialog onClose={() => setSosOpen(false)} onSendSos={() => { setSosOpen(false); navigate('sos'); }} /> : null}
     </>
   );

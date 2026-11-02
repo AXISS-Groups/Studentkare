@@ -7,7 +7,7 @@ export type CampusCheck = MemberIdentity['campusStatus'];
 
 /** The four checks the boards draw (VerifyIdentity, VerifyGate, WebVerify, WebVerifyGate), in board order. */
 export type IdentityCheckId = 'photo' | 'email' | 'campus' | 'gov';
-export const IDENTITY_CHECKS: readonly IdentityCheckId[] = ['photo', 'email', 'campus', 'gov'];
+const IDENTITY_CHECKS: readonly IdentityCheckId[] = ['photo', 'email', 'campus', 'gov'];
 
 /**
  * What a check row may say. Only `verified` is ever drawn as done, and only the
