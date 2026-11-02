@@ -12,7 +12,7 @@ import { IdentityVerifyViewModel } from '@/features/auth/viewmodel/IdentityVerif
 import { AppointmentBookingNativeView } from '@/features/appointments/views/AppointmentBookingNativeView';
 import { AppointmentBookingViewModel } from '@/features/appointments/viewmodel/AppointmentBookingViewModel';
 import { PrescribeView } from '@/screens/clinician/NMCDoctorEPrescriptionScreen';
-import { PrescribeViewModel } from '@/features/clinician/viewmodel/PrescribeViewModel';
+import { PrescribeViewModel } from '@/features/clinician/viewmodels/PrescribeViewModel';
 import { ShopNativeView } from '@/features/marketplace/views/ShopNativeView';
 import { ShopViewModel } from '@/features/marketplace/viewmodel/ShopViewModel';
 import { HealthVaultView } from '@/features/vault/views/HealthVaultView';

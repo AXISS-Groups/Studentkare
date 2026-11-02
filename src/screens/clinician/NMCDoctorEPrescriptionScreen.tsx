@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { AlertTriangle, CheckCircle2, Plus, Trash2 } from 'lucide-react';
 import { EmptyState, Field, FormError } from '../../components/interface/WorkflowUI';
-import { PrescribeViewModel, SCHEDULE_CLASSES } from '@/features/clinician/viewmodel/PrescribeViewModel';
-import type { ScheduleClass } from '@/features/clinician/viewmodel/PrescribeViewModel';
+import { PrescribeViewModel, SCHEDULE_CLASSES } from '@/features/clinician/viewmodels/PrescribeViewModel';
+import type { ScheduleClass } from '@/features/clinician/viewmodels/PrescribeViewModel';
 import { useT } from '@/i18n';
 import '../../theme/workflows.css';
 

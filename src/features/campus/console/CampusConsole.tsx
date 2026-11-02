@@ -10,7 +10,7 @@ import { FormError, useMutation } from '@/components/interface/WorkflowUI';
 import { PageTransition } from '@/components/interface/PageTransition';
 import { ScreenLoading } from '@/design-system/feedback/ScreenLoading';
 import { SignOutConsequences } from '@/features/auth/views/SignOutConsequences';
-import { initialsOf } from '@/features/clinician/shared/names';
+import { initialsOf } from '@/features/clinician/model/names';
 import { CAMPUS_PAGES } from './campusPages';
 import { CampusPendingPage } from './CampusPendingPage';
 import { liveCampusConsoleSummarySource } from './campusConsoleSummary';
