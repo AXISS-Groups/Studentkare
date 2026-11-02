@@ -15,7 +15,6 @@
   "src/features/preventive/screens/PreventiveCareScreen.tsx",
   "src/features/preventive/screens/ProviderResources.tsx",
   "src/screens/admin/IntegrationsSettingsModule.tsx",
-  "src/screens/auth/AuthenticatedFlowScreen.tsx",
   "src/screens/billing/BillingPanel.tsx",
   "src/screens/billing/PricingScreen.tsx",
   "src/screens/clinician/ClinicianChronicScreen.tsx",
