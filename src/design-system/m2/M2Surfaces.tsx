@@ -29,15 +29,14 @@ import type { ServiceHue } from './servicePalette';
  * Tokens only; white copy sits on the deep end of every gradient (DESIGN.md §3).
  */
 
-/** A still glossy tile with a white glyph, in a service hue (or `danger` for SOS and errors only). */
+/** A flat icon tile with a white glyph, in a service hue (or `danger` for SOS and errors only). Flat — Krishna, 2026-11-01: no gradient or gloss. */
 export function GlossTile({ icon, hue = 'indigo', size: px = 44, iconSize, testID }: { icon: SkIconName; hue?: TileHue; size?: number; iconSize?: number; testID?: string }) {
-  const { stops } = tileColours(hue);
+  const { deep } = tileColours(hue);
   const corner = Math.round(px * 18 / 56);
   return (
-    <Gradient colors={stops} gloss style={[styles.gloss, { width: px, height: px, borderRadius: corner }]} testID={testID}>
-      <View pointerEvents="none" style={[StyleSheet.absoluteFill, styles.glossHighlight, { borderRadius: corner }]} />
+    <View style={[styles.gloss, { width: px, height: px, borderRadius: corner, backgroundColor: deep }]} testID={testID}>
       <Icon name={icon} size={iconSize ?? Math.round(px * 0.5)} color={color.onHero} strokeWidth={2.1} />
-    </Gradient>
+    </View>
   );
 }
 
@@ -219,7 +218,6 @@ const styles = StyleSheet.create({
   fill: { flexGrow: 1 },
   disabled: { opacity: 0.5 },
   gloss: { alignItems: 'center', justifyContent: 'center', overflow: 'hidden', ...shadowStyle(shadow.hairline) },
-  glossHighlight: { borderWidth: 1.5, borderColor: color.actionHighlight },
   pill: { flexDirection: 'row', alignItems: 'center', gap: space.s4, alignSelf: 'flex-start', paddingHorizontal: space.s10, paddingVertical: space.s4, borderRadius: radius.full },
   pillText: { fontFamily: font.family.sans, fontSize: font.size.caption, fontWeight: fontWeight(font.weight.heavy) },
   note: { flexDirection: 'row', alignItems: 'flex-start', gap: space.s12, padding: space.s14, borderRadius: radius.xl },

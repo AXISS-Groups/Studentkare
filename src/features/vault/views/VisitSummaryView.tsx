@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { observer } from 'mobx-react-lite';
 import { useT } from '@/i18n';
@@ -11,7 +11,6 @@ import {
 import type { PressState } from '@/design-system/m2';
 import { color, focusRing, font, fontWeight, radius, size, space } from '@/design-system/theme';
 import { displayDate } from '@/data/types/workflowTypes';
-import { useLocation, useNavigate } from '@/core/navigation';
 import { VisitSummaryViewModel } from '../viewmodel/VisitSummaryViewModel';
 import type { VisitSummary, VisitSummaryHeader } from '../viewmodel/VisitSummaryViewModel';
 
@@ -203,28 +202,6 @@ function SummaryBody({ summary, links }: { summary: VisitSummary; links: VisitSu
     </>
   );
 }
-
-/** The route: reads `?id=` (a notification links straight to one summary) and owns the view-model. */
-export const VisitSummaryRoute = observer(function VisitSummaryRoute({ links, wide = false }: { links: VisitSummaryLinks; wide?: boolean }): React.ReactElement {
-  const location = useLocation();
-  const routerNavigate = useNavigate();
-  const linkedId = new URLSearchParams(location.search).get('id');
-  const [initialId] = useState(linkedId);
-  const [vm] = useState(() => new VisitSummaryViewModel());
-  useEffect(() => {
-    void vm.load();
-    if (initialId) void vm.open(initialId);
-    return () => vm.dispose();
-  }, [vm, initialId]);
-  const selectedId = vm.selectedId;
-  const wasOpen = useRef(false);
-  useEffect(() => {
-    // Back to the list drops the id from the address too, so a reload shows the list.
-    if (wasOpen.current && !selectedId && linkedId) routerNavigate('/visit-summaries', { replace: true });
-    wasOpen.current = selectedId !== null;
-  }, [selectedId, linkedId, routerNavigate]);
-  return <VisitSummaryView viewModel={vm} links={links} wide={wide} />;
-});
 
 const styles = StyleSheet.create({
   gutter: { paddingHorizontal: space.gutterPhone },

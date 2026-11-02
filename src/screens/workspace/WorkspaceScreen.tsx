@@ -107,7 +107,7 @@ const ClinicianChronicScreen = lazy(() => import('../clinician/ClinicianChronicS
 const ClinicianEarningsScreen = lazy(() => import('../clinician/ClinicianEarningsScreen').then(module => ({ default: module.ClinicianEarningsScreen })));
 const PreventiveReviewScreen = lazy(() => import('../../features/preventive/screens/PreventiveReviewScreen').then(module => ({ default: module.PreventiveReviewScreen })));
 const AgentAyushPanel = lazy(() => import('./AgentAyushPanel').then(module => ({ default: module.AgentAyushPanel })));
-const VisitSummaryRoute = lazy(() => import('@/features/vault/views/VisitSummaryView').then(module => ({ default: module.VisitSummaryRoute })));
+const VisitSummaryRoute = lazy(() => import('@/features/vault/views/VisitSummaryWebRoute').then(module => ({ default: module.VisitSummaryRoute })));
 const ClinicalReviewPanel = lazy(() => import('./ClinicalReviewPanel').then(module => ({ default: module.ClinicalReviewPanel })));
 const ClinicianWorkspaceHub = lazy(() => import('../clinician/ClinicianWorkspaceHub').then(module => ({ default: module.ClinicianWorkspaceHub })));
 const CounsellorQueueScreen = lazy(() => import('../institution/CounsellorQueueScreen').then(module => ({ default: module.CounsellorQueueScreen })));

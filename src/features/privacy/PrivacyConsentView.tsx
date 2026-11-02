@@ -17,6 +17,21 @@ import { dateOf } from './dates';
 
 type Repository = Pick<typeof privacyRepository, 'consents' | 'change'>;
 
+/**
+ * Injectable navigation, defaulting to the web's own `navigate()` calls when
+ * omitted — so web (which mounts this with no props) is unchanged, and native
+ * (phase 4, approved 2026-11-01) can pass its stack's own navigation instead.
+ */
+export interface PrivacyConsentLinks {
+  back?: () => void;
+  export?: () => void;
+  delete?: () => void;
+  emergencyCard?: () => void;
+  lifeshare?: () => void;
+  shares?: () => void;
+  dataRights?: () => void;
+}
+
 const REQUIRED_TITLES: Record<string, MessageKey> = {
   RECORDS_STORAGE: 'member.consent.store.title',
   CAMPUS_ENROLMENT: 'member.consent.campus.title',
@@ -82,11 +97,18 @@ function ConsentSwitch({ title, on, working, onFlip, disabled, testID }: { title
  * notice line is the same i18n value as before; no switch is pre-ticked and
  * a row draws only the state the server replied with, never optimistically.
  */
-export function PrivacyConsentView({ repository = privacyRepository, wide = false }: { repository?: Repository; wide?: boolean }): React.ReactElement {
+export function PrivacyConsentView({ repository = privacyRepository, wide = false, links = {} }: { repository?: Repository; wide?: boolean; links?: PrivacyConsentLinks }): React.ReactElement {
   const t = useT();
   const { lang } = useLanguage();
   useOwnPhoneChrome();
   const online = useOnline();
+  const goBack = links.back ?? (() => navigate('profile'));
+  const onExport = links.export ?? (() => navigate('data-export'));
+  const onDelete = links.delete ?? (() => navigate('delete-account'));
+  const onEmergencyCard = links.emergencyCard ?? (() => navigate('emergency-card'));
+  const onLifeshare = links.lifeshare ?? (() => navigate('lifeshare'));
+  const onShares = links.shares ?? (() => navigate('consent'));
+  const onDataRights = links.dataRights ?? (() => navigate('data-rights'));
   const [data, setData] = useState<ConsentOverview | null>(null);
   const [error, setError] = useState(false);
   const [busy, setBusy] = useState<OptionalPurpose | null>(null);
@@ -139,8 +161,8 @@ export function PrivacyConsentView({ repository = privacyRepository, wide = fals
         <M2Heading style={m2Text.cardTitle}>{t('privacy.required.withdrawTitle')}</M2Heading>
         <Text style={m2Text.body}>{t('privacy.required.withdrawBody')}</Text>
         <View style={styles.actions}>
-          <Button label={t('privacy.required.export')} variant="secondary" onPress={() => navigate('data-export')} icon={<Icon name="download" size={16} color={color.action} />} />
-          <Button label={t('privacy.required.delete')} variant="dangerOutline" onPress={() => navigate('delete-account')} testID="privacy-delete" />
+          <Button label={t('privacy.required.export')} variant="secondary" onPress={onExport} icon={<Icon name="download" size={16} color={color.action} />} />
+          <Button label={t('privacy.required.delete')} variant="dangerOutline" onPress={onDelete} testID="privacy-delete" />
         </View>
       </View>
     </M2Card>
@@ -180,7 +202,7 @@ export function PrivacyConsentView({ repository = privacyRepository, wide = fals
               // Given on its own screen first: the donor page, or the emergency card's wallet field picker. Under the words on a phone, beside them wider.
               <View style={wide ? null : styles.underWords}>
                 <Button label={t(item.purpose === 'WALLET_GOOGLE' ? 'privacy.optional.walletFromCard' : 'privacy.optional.donorFirst')} variant="secondary"
-                  onPress={() => navigate(item.purpose === 'WALLET_GOOGLE' ? 'emergency-card' : 'lifeshare')} />
+                  onPress={item.purpose === 'WALLET_GOOGLE' ? onEmergencyCard : onLifeshare} />
               </View>
             )}
           </View>
@@ -189,10 +211,10 @@ export function PrivacyConsentView({ repository = privacyRepository, wide = fals
     </M2Card>
   ) : null;
 
-  const links = (
+  const linksSection = (
     <View style={styles.links}>
-      <M2ListRow icon="eye" hue="indigo" title={t('privacy.shares.title')} meta={t('privacy.shares.body')} onPress={() => navigate('consent')} testID="privacy-shares" />
-      <M2ListRow icon="shield-2" hue="violet" title={t('privacy.rightsLink.title')} meta={t('privacy.rightsLink.meta')} onPress={() => navigate('data-rights')} testID="privacy-rights" />
+      <M2ListRow icon="eye" hue="indigo" title={t('privacy.shares.title')} meta={t('privacy.shares.body')} onPress={onShares} testID="privacy-shares" />
+      <M2ListRow icon="shield-2" hue="violet" title={t('privacy.rightsLink.title')} meta={t('privacy.rightsLink.meta')} onPress={onDataRights} testID="privacy-rights" />
     </View>
   );
 
@@ -230,23 +252,23 @@ export function PrivacyConsentView({ repository = privacyRepository, wide = fals
   if (wide) {
     return (
       <M2WideColumn testID="privacy-consent">
-        <M2Header backLabel={t('common.back')} onBack={() => navigate('profile')} title={t('privacy.title')} testID="privacy-header" />
+        <M2Header backLabel={t('common.back')} onBack={goBack} title={t('privacy.title')} testID="privacy-header" />
         {hero}
         {states}
         <TwoColumns left={required} right={optional} />
-        <TwoColumns left={links} right={history} />
+        <TwoColumns left={linksSection} right={history} />
       </M2WideColumn>
     );
   }
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content} testID="privacy-consent">
-      <M2Header backLabel={t('common.back')} onBack={() => navigate('profile')} title={t('privacy.title')} testID="privacy-header" />
+      <M2Header backLabel={t('common.back')} onBack={goBack} title={t('privacy.title')} testID="privacy-header" />
       <View style={[styles.gutter, styles.column]}>
         {hero}
         {states}
         {optional}
         {required}
-        {links}
+        {linksSection}
         {history}
       </View>
     </ScrollView>
