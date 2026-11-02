@@ -27,7 +27,7 @@
   "src/screens/clinician/DoctorSpecialistReferralScreen.tsx",
   "src/screens/clinician/DoctorTodayScreen.tsx",
   "src/screens/clinician/NMCDoctorEPrescriptionScreen.tsx",
-  "src/screens/institution/CampusSosDesk.tsx",
+  "src/features/campus/safety/CampusSosDesk.tsx",
   "src/screens/institution/WellnessWorkshopsScreen.tsx",
   "src/screens/marketplace/LiveMarketplaceScreen.tsx",
   "src/screens/marketplace/ShopFront.tsx",
