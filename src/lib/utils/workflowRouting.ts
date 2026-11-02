@@ -8,9 +8,9 @@ export { routePaths, publicRoutes };
 export type RoutePath = typeof routePaths[number] | '';
 export const isRoutePath = (value: string): value is RoutePath => value === '' || routePaths.includes(value as typeof routePaths[number]);
 export const asRoutePath = (value: string): RoutePath => (value === '' || value === '/' ? ('home' as RoutePath) : isRoutePath(value) ? value : ('shop' as RoutePath));
-export const homeForRole = (role: AccountRole): RoutePath => role === 'SUPER_ADMIN' ? 'admin' : role === 'VENDOR' ? 'vendor' : role === 'NMC_DOCTOR' ? 'clinician' : role === 'CAMPUS_ADMIN' ? 'campus' : role === 'COUNSELLOR' ? 'counsellor' : role === 'LAB_COLLECTOR' ? 'staff-collect' : '';
+export const homeForRole = (role: AccountRole): RoutePath => role === 'SUPER_ADMIN' ? 'admin' : role === 'VENDOR' ? 'vendor' : role === 'NMC_DOCTOR' ? 'clinician' : role === 'CAMPUS_ADMIN' ? 'campus' : role === 'COUNSELLOR' ? 'counsellor' : role === 'LAB_COLLECTOR' ? 'staff-collect' : 'health';
 export function canAccessRoute(route: RoutePath, role: AccountRole | null) {
-  if (route === '' || route === 'home' || publicRoutes.includes(route as RoutePath)) return true;
+  if (route === '' || publicRoutes.includes(route as RoutePath)) return true;
   if (!role) return false;
   // Every /admin… page is the super admin's, whatever ./routes/routeRoles.ts says.
   if (route.startsWith('admin')) return role === 'SUPER_ADMIN';

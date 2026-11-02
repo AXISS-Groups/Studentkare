@@ -17,8 +17,11 @@ import '@/features/health/module';
 const ROLES: AccountRole[] = ['STUDENT', 'SUPER_ADMIN', 'CAMPUS_ADMIN', 'COUNSELLOR', 'VENDOR', 'NMC_DOCTOR'];
 
 // Public in the registry so a signed-out visitor still gets help, but not sign-in pages:
-// canAccessRoute(route, null) is false for them, which no caller relies on.
-const PUBLIC_NOT_IN_PUBLIC_ROUTES: RoutePath[] = ['sos', 'lifeshare', 'medical-incident', 'lost-phone'];
+// canAccessRoute(route, null) is false for them, which no caller relies on. '' is the
+// landing module's root ('/'): isRoutePath treats it as the home sentinel, so it shows up
+// here as a registered, public RoutePath, but it is never passed to canAccessRoute as a
+// real route (asRoutePath maps '/' to 'home' instead), so it is excluded the same way.
+const PUBLIC_NOT_IN_PUBLIC_ROUTES: RoutePath[] = ['', 'sos', 'lifeshare', 'medical-incident', 'lost-phone'];
 
 function registered(): { route: RoutePath; isPublic: boolean }[] {
   const out: { route: RoutePath; isPublic: boolean }[] = [];
