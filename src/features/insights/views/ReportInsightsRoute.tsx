@@ -6,7 +6,7 @@ import { apiFileUrl } from '@/data/services/http';
 import { useLocation } from '@/core/navigation';
 import { useLanguage } from '@/i18n';
 import { navigate } from '@/lib/utils/workflowRouting';
-import { STUDENT_NAV_ROUTES } from '@/screens/workspace/StudentPhoneFrame';
+import { STUDENT_NAV_ROUTES } from '@/features/phoneKit/studentNavRoutes';
 import { dateLocale } from '@/features/labResults/viewmodel/trendScreenModels';
 import type { StudentLabTest } from '@/features/studentweb/views/t1/WebMyLabTestsView';
 import { recordsArt } from '@/features/vault/views/recordsArt';

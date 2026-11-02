@@ -18,7 +18,8 @@ vi.mock('@/lib/utils/workflowRouting', async (importOriginal) => ({
 
 import { BrowserRouter } from '@/core/navigation';
 import { WorkspaceScreen } from '../WorkspaceScreen';
-import { STUDENT_NAV_ROUTES, isStudentNavRoot, studentNavFor } from '../StudentPhoneFrame';
+import { isStudentNavRoot, studentNavFor } from '../StudentPhoneFrame';
+import { STUDENT_NAV_ROUTES } from '@/features/phoneKit/studentNavRoutes';
 import { PILL_NAV } from '@/design-system/m2';
 import { drawsStudentPhoneFrame } from '../../../App';
 import manifest from '../../../../design/icons/icon-manifest.json';

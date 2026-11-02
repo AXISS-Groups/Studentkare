@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useOnline } from '@/design-system';
 import { useApiResource } from '@/hooks/api/useApiResource';
 import { navigate } from '@/lib/utils/workflowRouting';
-import { STUDENT_NAV_ROUTES } from '@/screens/workspace/StudentPhoneFrame';
+import { STUDENT_NAV_ROUTES } from '@/features/phoneKit/studentNavRoutes';
 import type { Page, ReportReview } from '@/features/preventive/models';
 import { TrendsViewModel } from '../viewmodel/LabValuesViewModels';
 import { REVIEWS_PATH } from '../viewmodel/trendScreenModels';

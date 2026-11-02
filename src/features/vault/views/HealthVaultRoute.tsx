@@ -6,7 +6,7 @@ import { apiFileUrl } from '@/data/services/http';
 import { useAuth } from '@/data/contexts/AuthContext';
 import { useLocation, useNavigate } from '@/core/navigation';
 import { navigate } from '@/lib/utils/workflowRouting';
-import { STUDENT_NAV_ROUTES } from '@/screens/workspace/StudentPhoneFrame';
+import { STUDENT_NAV_ROUTES } from '@/features/phoneKit/studentNavRoutes';
 import { LabSlotPickerModal } from '@/components/health/LabSlotPickerModal';
 import { ProviderDirectoryPanel } from '@/screens/workspace/FulfilmentQueuePanel';
 import { dateLocale } from '@/features/labResults/viewmodel/trendScreenModels';
