@@ -2,6 +2,7 @@ import React, { Suspense } from 'react';
 import { Navigate, Route, Routes, useLocation } from '@/core/navigation';
 import { getModules, resolveAccess, joinPath } from '@/core/routing/registry';
 import type { FeatureRoute } from '@/core/routing/registry';
+import { canonicalPathname } from '@/core/routing/canonicalPath';
 import { ScreenLoading } from '@/design-system/feedback/ScreenLoading';
 import { useAuth } from '@/data/contexts/AuthContext';
 import { homeForRole } from '@/lib/utils/workflowRouting';
@@ -46,6 +47,29 @@ function renderFeatureRoutes(routes: FeatureRoute[], basePath: string): React.Re
       </Route>
     );
   });
+}
+
+function routePatterns(routes: FeatureRoute[], basePath: string): string[] {
+  return routes.flatMap((route) => {
+    const full = joinPath(basePath, route.path);
+    return [full, ...(route.children ? routePatterns(route.children, full) : [])];
+  });
+}
+
+/**
+ * Sends any other spelling of a path (`/ADMIN/`, `/admin//accounts`) to its
+ * canonical form first, keeping the query (e.g. ?next=) and the hash. It wraps
+ * the app shell, not only the routes: the shell picks its chrome from the raw
+ * path, so it must never render a spelling it does not recognise.
+ */
+export function CanonicalPath({ children }: { children: React.ReactNode }) {
+  const location = useLocation();
+  const patterns = getModules().flatMap((module) => routePatterns(module.routes, module.basePath));
+  const canonical = canonicalPathname(location.pathname, patterns);
+  if (canonical !== location.pathname) {
+    return <Navigate to={{ pathname: canonical, search: location.search, hash: location.hash }} replace />;
+  }
+  return <>{children}</>;
 }
 
 /** Wait for a checked session before deciding access; never mirror auth into globals. */
