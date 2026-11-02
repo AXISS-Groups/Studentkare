@@ -17,7 +17,7 @@ import { asRoutePath, registerGlobalNavigator } from './lib/utils/workflowRoutin
 import { publicConfigApi } from './data/api';
 import { applyPublicConfig } from './data/services/config';
 import { configurePostHog, initPostHog } from './lib/analytics/posthog';
-import { AppRouter } from './app/Router';
+import { AppRouter, CanonicalPath } from './app/Router';
 import { isPublicPath } from './core/routing/registry';
 import { isVendorPath } from './screens/vendor/vendorRoutes';
 import { isClinicianConsolePath } from './features/clinician/model/clinicianRoutes';
@@ -227,7 +227,9 @@ export default function App() {
               <LiveCartProvider>
                 <ExerciseProvider>
                   <BrowserRouter>
-                    <RouterShell />
+                    <CanonicalPath>
+                      <RouterShell />
+                    </CanonicalPath>
                   </BrowserRouter>
                 </ExerciseProvider>
               </LiveCartProvider>
