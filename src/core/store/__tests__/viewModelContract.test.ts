@@ -16,7 +16,6 @@ vi.mock('@/data/services/http', () => ({ apiRequest: vi.fn().mockRejectedValue(n
 
 import { AppointmentBookingViewModel } from '@/features/appointments/viewmodel/AppointmentBookingViewModel';
 import { DigitalIdViewModel } from '@/features/digital_id/viewmodel/DigitalIdViewModel';
-import { EmergencySosViewModel } from '@/features/emergency/viewmodel/EmergencySosViewModel';
 import { HealthVaultViewModel } from '@/features/vault/viewmodel/HealthVaultViewModel';
 import { MarketplaceViewModel } from '@/features/marketplace/viewmodel/MarketplaceViewModel';
 import { NotificationViewModel } from '@/features/notifications/viewmodel/NotificationViewModel';
@@ -24,7 +23,6 @@ import { NotificationViewModel } from '@/features/notifications/viewmodel/Notifi
 const VIEW_MODELS = [
   ['AppointmentBooking', () => new AppointmentBookingViewModel()],
   ['DigitalId', () => new DigitalIdViewModel()],
-  ['EmergencySos', () => new EmergencySosViewModel()],
   ['HealthVault', () => new HealthVaultViewModel()],
   ['Marketplace', () => new MarketplaceViewModel()],
   ['Notification', () => new NotificationViewModel()],
