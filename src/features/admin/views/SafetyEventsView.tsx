@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { ConsoleTablePage, DataTable } from '@/design-system';
 import type { DataTableRow, SkTone, Stat } from '@/design-system';
-import { AdminStatus } from '@/screens/workspace/admin/AdminPage';
+import { AdminStatus } from '@/features/admin/views/AdminPage';
 import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
 import { opsRepository } from '../model/opsRepository';

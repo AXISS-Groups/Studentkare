@@ -23,7 +23,7 @@
   "src/features/landing/views/CampusCalculatorsView.tsx",
   "src/features/landing/views/landingNativeKit.tsx",
   "src/features/legal/views/LegalView.tsx",
-  "src/screens/admin/IntegrationsSettingsModule.tsx",
+  "src/features/admin/integrations/IntegrationsSettingsModule.tsx",
   "src/screens/marketplace/LiveMarketplaceScreen.tsx",
   "src/screens/vendor/AutomatedReorderRulesScreen.tsx",
   "src/screens/vendor/BulkHealthCampIntakeScreen.tsx",
@@ -35,6 +35,5 @@
   "src/screens/vendor/PharmacyInventoryScreen.tsx",
   "src/screens/vendor/PincodeCoverageScreen.tsx",
   "src/screens/vendor/VendorShell.tsx",
-  "src/screens/workspace/DigitalIdPanel.tsx",
-  "src/screens/workspace/admin/SuperAdminScreens.tsx"
+  "src/screens/workspace/DigitalIdPanel.tsx"
 ]

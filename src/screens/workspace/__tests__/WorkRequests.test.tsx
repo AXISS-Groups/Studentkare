@@ -11,7 +11,7 @@ const apiAnswers: Record<string, (init?: RequestInit) => Promise<unknown>> = {};
 const apiRequest = vi.fn((path: string, init?: RequestInit) => apiAnswers[path]?.(init) ?? new Promise(() => undefined));
 vi.mock('../../../data/services/http', async importOriginal => ({ ...(await importOriginal<typeof import('../../../data/services/http')>()), apiRequest: (path: string, init?: RequestInit) => apiRequest(path, init) }));
 
-import { superAdminScreen } from '../admin/SuperAdminScreens';
+import { superAdminScreen } from '@/features/admin/SuperAdminScreens';
 
 const REQUESTS = '/work/requests?limit=15&offset=0';
 const APPOINTMENTS = '/work/appointments';

@@ -1,6 +1,6 @@
-import type { SkIconName } from '../../../design-system/icons';
+import type { SkIconName } from '@/design-system/icons';
 import type { MessageKey } from '@/i18n';
-import type { RoutePath } from '../../../lib/utils/workflowRouting';
+import type { RoutePath } from '@/lib/utils/workflowRouting';
 
 /**
  * The Super Admin sidebar, in the order of the approved SuperAdminConsole design.

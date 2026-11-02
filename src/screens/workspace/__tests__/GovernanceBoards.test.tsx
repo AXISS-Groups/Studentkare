@@ -24,7 +24,7 @@ vi.mock('../../../theme/tokens/theme', async () => {
   return { useTheme: () => ({ mode: 'light', isDark: false, tokens: lightTokens, setTheme: vi.fn(), toggleTheme: vi.fn() }) };
 });
 
-import { superAdminScreen } from '../admin/SuperAdminScreens';
+import { superAdminScreen } from '@/features/admin/SuperAdminScreens';
 
 const NOW = Date.now() / 1000;
 const DAY = 86400;

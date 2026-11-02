@@ -63,7 +63,7 @@ const CampusSlaScreen = named(() => import('@/features/campus/safety'), 'CampusS
 // Find care near you: the campus's own directory listings (no canvas board; brief AdminCareDirectory).
 const CampusCareDirectoryScreen = named(() => import('@/features/careDirectory/admin/CareDirectoryAdminView'), 'CampusCareDirectoryScreen');
 const NotificationInboxPanel = named(() => import('@/screens/workspace/NotificationInboxPanel'), 'NotificationInboxPanel');
-const SupportPanel = lazy(() => import('@/screens/workspace/MemberPanels').then((module) => ({ default: () => <module.SupportPanel /> })));
+const SupportPanel = lazy(() => import('@/features/support/views/SupportPanel').then((module) => ({ default: () => <module.SupportPanel /> })));
 
 export const CAMPUS_PAGES: Partial<Record<RoutePath, CampusPage>> = {
   campus: { current: 'overview', board: 'CampusOverview', title: 'campusShell.nav.overview', topBar: true, screen: CampusOverviewScreen },

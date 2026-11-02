@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { ConsoleTablePage, DataTable } from '@/design-system';
 import type { ConsoleTableStatus, DataTableRow, SkTone, Stat } from '@/design-system';
 import { Icon } from '@/design-system/icons';
-import { AdminError, AdminLoading, LegacyPanel } from '@/screens/workspace/admin/AdminPage';
+import { AdminError, AdminLoading, LegacyPanel } from '@/features/admin/views/AdminPage';
 import { accountsRepository } from '../model/accountsRepository';
 import { opsRepository } from '../model/opsRepository';
 import { count, readable, when } from '../model/format';

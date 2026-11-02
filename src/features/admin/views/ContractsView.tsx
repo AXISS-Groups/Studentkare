@@ -4,7 +4,7 @@ import { DataTable, Drawer, FormField, SkButton } from '@/design-system';
 import type { DataTableRow } from '@/design-system';
 import { navigate } from '@/lib/utils/workflowRouting';
 import { displayDate } from '@/data/types/workflowTypes';
-import { AdminError, AdminLoading } from '@/screens/workspace/admin/AdminPage';
+import { AdminError, AdminLoading } from '@/features/admin/views/AdminPage';
 import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
 import { contractsRepository } from '../model/contractsRepository';

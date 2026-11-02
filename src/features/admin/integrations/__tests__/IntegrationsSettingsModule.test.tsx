@@ -1,17 +1,17 @@
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { ThemeProvider } from '../../../theme/tokens/theme';
-import { ApiError } from '../../../data/services/http';
-import { LanguageProvider } from '../../../i18n';
+import { ThemeProvider } from '@/theme/tokens/theme';
+import { ApiError } from '@/data/services/http';
+import { LanguageProvider } from '@/i18n';
 
 // Integrations shows only what the server has stored: nothing unset is shown as a
 // default, as "connected", or as "all services real-time". Only HTTP is mocked.
 // One answer for every request in a test: a value, or an error the request rejects with.
 let answer: () => Promise<unknown> = () => new Promise(() => undefined);
-vi.mock('../../../data/services/http', async importOriginal => ({ ...(await importOriginal<typeof import('../../../data/services/http')>()), apiRequest: () => answer() }));
+vi.mock('@/data/services/http', async importOriginal => ({ ...(await importOriginal<typeof import('@/data/services/http')>()), apiRequest: () => answer() }));
 
-import { IntegrationsSettingsModule } from '../IntegrationsSettingsModule';
+import { IntegrationsSettingsModule } from '@/features/admin/integrations/IntegrationsSettingsModule';
 
 const renderModule = (lang: 'en' | 'te' = 'en') => render(<LanguageProvider initial={lang}><ThemeProvider><IntegrationsSettingsModule /></ThemeProvider></LanguageProvider>);
 

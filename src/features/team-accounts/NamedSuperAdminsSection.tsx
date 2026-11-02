@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { AdminEmpty, AdminError, AdminLoading } from '@/screens/workspace/admin/AdminPage';
+import { AdminEmpty, AdminError, AdminLoading } from '@/features/admin/views/AdminPage';
 import { ConfirmDialog } from '@/design-system/overlays/ConfirmDialog';
 import { Icon } from '@/design-system/icons';
 import { useT } from '@/i18n';

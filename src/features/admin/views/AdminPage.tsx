@@ -1,11 +1,11 @@
 import React, { KeyboardEvent, ReactNode, useId, useRef } from 'react';
 import { ConsolePageHeader, DataTable } from '@/design-system';
 import { Icon } from '@/design-system/icons';
-import { navigate, RoutePath } from '../../../lib/utils/workflowRouting';
-import { useT } from '../../../i18n';
-import type { MessageKey } from '../../../i18n';
-import './admin-screens.css';
-import './admin-legacy.css';
+import { navigate, RoutePath } from '@/lib/utils/workflowRouting';
+import { useT } from '@/i18n';
+import type { MessageKey } from '@/i18n';
+import '@/features/admin/views/admin-screens.css';
+import '@/features/admin/views/admin-legacy.css';
 
 /**
  * Page frame shared by the Super Admin screens (design: 07-super-admin/*). The

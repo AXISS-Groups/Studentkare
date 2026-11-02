@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import { pressable } from '@/lib/a11y/pressable';
-import { useTheme } from '../../theme/tokens/theme';
-import { apiRequest, ApiError } from '../../data/services/http';
-import { say, useT } from '../../i18n';
-import type { MessageKey, Said } from '../../i18n';
+import { useTheme } from '@/theme/tokens/theme';
+import { apiRequest, ApiError } from '@/data/services/http';
+import { say, useT } from '@/i18n';
+import type { MessageKey, Said } from '@/i18n';
 import {
   BarChart3,
   Bell,

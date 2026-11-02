@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import { AdminEmpty, AdminError, AdminLoading, AdminPage, AdminStats } from '@/screens/workspace/admin/AdminPage';
+import { AdminEmpty, AdminError, AdminLoading, AdminPage, AdminStats } from '@/features/admin/views/AdminPage';
 import { ConfirmDialog } from '@/components/interface/ConfirmDialog';
 import { Icon } from '@/design-system/icons';
 import { useT } from '@/i18n';

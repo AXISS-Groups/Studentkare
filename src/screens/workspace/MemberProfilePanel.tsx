@@ -9,7 +9,8 @@ import { DataState, Field, FormError, SubmitButton, useMutation } from '../../co
 import { BillingPanel } from '../billing/BillingPanel';
 import { DigitalIdPanel } from './DigitalIdPanel';
 import { CampusVerificationPanel } from './CampusVerificationPanel';
-import { InsurancePanel, OrdersPanel, SupportPanel } from './MemberPanels';
+import { InsurancePanel, OrdersPanel } from './MemberPanels';
+import { SupportPanel } from '@/features/support/views/SupportPanel';
 import { useT } from '@/i18n';
 import './member-profile.css';
 
