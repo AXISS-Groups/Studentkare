@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { mapEarnings, periodLabel, rupees } from '../../views/ClinicianEarningsConsoleScreen';
-import type { EarningsResponse } from '../../views/ClinicianEarningsConsoleScreen';
-import { mapChronic } from '../../views/ClinicianChronicConsoleScreen';
-import { mapSchedule } from '../../views/ClinicianScheduleScreen';
-import type { ChronicResponse, Programme } from '../../views/ClinicianChronicConsoleScreen';
+import { mapEarnings } from '../earningsBoard';
+import { periodLabel, rupees } from '../../model/earnings';
+import type { EarningsResponse } from '../../model/earnings';
+import { mapChronic } from '../chronicBoard';
+import { mapSchedule } from '../scheduleBoard';
+import type { ChronicResponse, Programme } from '../../model/chronic';
 import type { DataTableCell } from '@/design-system';
 import { translate } from '@/i18n';
 import type { MessageKey, Vars } from '@/i18n';

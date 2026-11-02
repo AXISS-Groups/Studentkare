@@ -1,14 +1,12 @@
 import React, { useMemo, useState } from 'react';
-import { apiRequest } from '@/data/services/http';
 import { DestinationButton } from '@/design-system';
-import type { DataTableRow } from '@/design-system';
 import { useT } from '@/i18n';
 import type { MessageKey, Vars } from '@/i18n';
 import { navigate } from '@/lib/utils/workflowRouting';
 import { ConsoleTableScreen } from './ConsoleTableScreen';
-import type { ConsoleTableData, ConsoleTableSource } from '../viewmodel/ConsoleTableViewModel';
+import type { ConsoleTableSource } from '../viewmodel/ConsoleTableViewModel';
 import type { ConsoleTableConfig } from './consoleTableConfig';
-import { muted, pill, strong } from '../viewmodel/cells';
+import { earningsApiSource } from '../viewmodel/earningsBoard';
 
 type T = (key: MessageKey, vars?: Vars) => string;
 
@@ -43,84 +41,6 @@ export function earningsConfig(t: T): ConsoleTableConfig {
     reference: t('clinEarnings.reference'),
     statLabels: [t('clinEarnings.statGrossPlain'), t('clinEarnings.statConsults'), t('clinEarnings.statCommission'), t('clinEarnings.statPayout')],
   };
-}
-
-/* ----------------------------------------------------------- API mapping */
-
-interface EarningsPeriod {
-  start: string;
-  end: string;
-  consults: number;
-  grossPaise: number;
-  /** Per-line deduction and net, only if the server ever reports them. */
-  commissionPaise?: number | null;
-  netPaise?: number | null;
-}
-
-export interface EarningsResponse {
-  periods: EarningsPeriod[];
-  grossPaise: number;
-  consults: number;
-  windowDays: number;
-  /** Null: no platform commission is configured. The client renders the absence, never a default. */
-  commissionRate: number | null;
-  settlementConfigured: boolean;
-}
-
-/** Paise to rupees. Integer paise in, no floating-point money arithmetic. */
-export function rupees(paise: number): string {
-  const whole = Math.trunc(paise / 100);
-  const remainder = Math.abs(paise % 100);
-  const grouped = whole.toLocaleString('en-IN');
-  return remainder === 0 ? `₹${grouped}` : `₹${grouped}.${String(remainder).padStart(2, '0')}`;
-}
-
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-const DAYS_PER_MONTH = 30;
-const PERCENT = 100;
-
-/** "Sep 1–15", as on the canvas. */
-export function periodLabel({ start, end }: { start: string; end: string }): string {
-  const from = new Date(`${start}T00:00:00Z`);
-  const to = new Date(`${end}T00:00:00Z`);
-  return `${MONTHS[to.getUTCMonth()]} ${from.getUTCDate()}–${to.getUTCDate()}`;
-}
-
-/** The rate as the server sent it, e.g. 0.1 is "10%". */
-function percent(rate: number): string {
-  return `${Math.round(rate * PERCENT * PERCENT) / PERCENT}%`;
-}
-
-export function mapEarnings(data: EarningsResponse, t: T): ConsoleTableData {
-  const rate = data.commissionRate;
-  const rows: DataTableRow[] = data.periods.map((period) => ({
-    id: period.start,
-    cells: [
-      strong(periodLabel(period)),
-      muted(t(period.consults === 1 ? 'clinEarnings.consultOne' : 'clinEarnings.consults', { count: period.consults })),
-      strong(rupees(period.grossPaise)),
-      muted(typeof period.commissionPaise === 'number' ? `−${rupees(period.commissionPaise).slice(1)}` : t('clinEarnings.notSet')),
-      strong(typeof period.netPaise === 'number' ? rupees(period.netPaise) : '—'),
-      // The API has no per-period payout status, so none is invented.
-      data.settlementConfigured ? muted('—') : pill(t('clinEarnings.settlementNotSetUp'), 'neutral'),
-    ],
-  }));
-  const months = Math.max(1, Math.round(data.windowDays / DAYS_PER_MONTH));
-  return {
-    subtitle: rate === null ? t('clinEarnings.subtitleGross') : t('clinEarnings.subtitleRate', { rate: percent(rate) }),
-    badge: data.settlementConfigured ? undefined : { label: t('clinEarnings.settlementNotSetUp'), tone: 'attention' },
-    stats: [
-      { value: rupees(data.grossPaise), label: t(months === 1 ? 'clinEarnings.statGrossOne' : 'clinEarnings.statGross', { months }) },
-      { value: String(data.consults), label: t('clinEarnings.statConsults') },
-      { value: rate === null ? t('clinEarnings.notSet') : percent(rate), label: t('clinEarnings.statCommission') },
-      { value: data.settlementConfigured ? null : t('clinEarnings.notSetUp'), label: t('clinEarnings.statPayout') },
-    ],
-    rows,
-  };
-}
-
-function earningsApiSource(t: T, request: typeof apiRequest = apiRequest): ConsoleTableSource {
-  return { load: async () => mapEarnings(await request<EarningsResponse>('/work/earnings'), t) };
 }
 
 export function ClinicianEarningsConsoleScreen({ source }: { source?: ConsoleTableSource }): React.ReactElement {

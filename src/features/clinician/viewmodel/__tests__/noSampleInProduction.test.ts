@@ -9,11 +9,11 @@ describe('no sample patient outside demo builds', () => {
   it('referrals, renewals, AYUSH and decision support load as not connected', async () => {
     vi.resetModules();
     vi.doMock('@/core/env', async (importOriginal) => ({ ...(await importOriginal<typeof import('@/core/env')>()), demoDataEnabled: () => false }));
-    const { sampleInDevelopment } = await import('../../viewmodel/ConsoleTableViewModel');
-    const { referralsSample } = await import('../../views/ClinicianReferralsScreen');
-    const { renewalsSample } = await import('../../views/ClinicianRenewalsScreen');
-    const { ayushSample } = await import('../../views/ClinicianAyushScreen');
-    const { decisionSupportSample } = await import('../../views/ClinicianDecisionSupportScreen');
+    const { sampleInDevelopment } = await import('../ConsoleTableViewModel');
+    const { referralsSample } = await import('../referralsBoard');
+    const { renewalsSample } = await import('../renewalsBoard');
+    const { ayushSample } = await import('../ayushBoard');
+    const { decisionSupportSample } = await import('../decisionSupportBoard');
     for (const sample of [referralsSample, renewalsSample, ayushSample, decisionSupportSample]) {
       await expect(sampleInDevelopment(sample).load()).resolves.toBeNull();
     }
@@ -21,7 +21,7 @@ describe('no sample patient outside demo builds', () => {
   });
 
   it('the referral commission figure is blank, never "0", even in the demo rows', async () => {
-    const { referralsSample } = await import('../../views/ClinicianReferralsScreen');
+    const { referralsSample } = await import('../referralsBoard');
     const commission = referralsSample().stats.find((s) => s.label === 'Commission taken');
     expect(commission?.value).toBeNull();
   });

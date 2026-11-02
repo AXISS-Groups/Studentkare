@@ -1,22 +1,17 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import { apiRequest } from '@/data/services/http';
 import { Drawer, FormField, SkButton, SkToast as Toast, useOnline } from '@/design-system';
-import type { DataTableRow, SkTone } from '@/design-system';
 import { useT } from '@/i18n';
-import type { MessageKey } from '@/i18n';
 import { navigate } from '@/lib/utils/workflowRouting';
 import { ClinicianConsoleFrame } from './ClinicianConsoleFrame';
 import { ConsoleTableView } from './ConsoleTableScreen';
 import { ConsoleTableViewModel } from '../viewmodel/ConsoleTableViewModel';
-import type { ConsoleTableData, ConsoleTableSource } from '../viewmodel/ConsoleTableViewModel';
+import type { ConsoleTableSource } from '../viewmodel/ConsoleTableViewModel';
 import type { ConsoleTableConfig } from './consoleTableConfig';
-import { cell, muted, pill, strong } from '../viewmodel/cells';
 import { OfflineNote } from './OfflineNote';
-import { dateOnly } from '../model/clinicalData';
-import type { Request, T } from '../model/clinicalData';
+import type { T } from '../model/clinicalData';
 import { DoctorLabOrderViewModel, INDICATION_MAX, INDICATION_MIN } from '../viewmodel/DoctorLabOrderViewModel';
-import type { PlacedLabOrder } from '../viewmodel/DoctorLabOrderViewModel';
+import { labOrdersApiSource } from '../viewmodel/labOrdersBoard';
 import './lab-orders.css';
 
 /**
@@ -46,54 +41,6 @@ export function labOrdersConfig(t: T): ConsoleTableConfig {
     reference: t('clinLab.reference'),
     statLabels: [t('clinLab.stat.open'), t('clinLab.stat.urgent'), t('clinLab.stat.fasting'), t('clinLab.stat.indication')],
   };
-}
-
-const OPEN = new Set(['BOOKED', 'ASSIGNED', 'SAMPLE_COLLECTED', 'IN_TRANSIT', 'RECEIVED_AT_LAB', 'IN_ANALYSIS', 'REPORT_READY', 'RECOLLECTION_REQUIRED', 'SAMPLE_REJECTED']);
-const STATUS_TONE: Record<string, SkTone> = {
-  BOOKED: 'action', ASSIGNED: 'action', SAMPLE_COLLECTED: 'positive', IN_TRANSIT: 'positive', RECEIVED_AT_LAB: 'positive',
-  IN_ANALYSIS: 'positive', REPORT_READY: 'attention', REPORT_RELEASED: 'positive', SAMPLE_REJECTED: 'danger',
-  RECOLLECTION_REQUIRED: 'attention', CANCELLED: 'neutral',
-};
-const PERCENT = 100;
-
-const STATUS_KEY: Record<string, MessageKey> = {
-  BOOKED: 'clinLab.status.BOOKED', ASSIGNED: 'clinLab.status.ASSIGNED', SAMPLE_COLLECTED: 'clinLab.status.SAMPLE_COLLECTED',
-  IN_TRANSIT: 'clinLab.status.IN_TRANSIT', RECEIVED_AT_LAB: 'clinLab.status.RECEIVED_AT_LAB', IN_ANALYSIS: 'clinLab.status.IN_ANALYSIS',
-  REPORT_READY: 'clinLab.status.REPORT_READY', REPORT_RELEASED: 'clinLab.status.REPORT_RELEASED', SAMPLE_REJECTED: 'clinLab.status.SAMPLE_REJECTED',
-  RECOLLECTION_REQUIRED: 'clinLab.status.RECOLLECTION_REQUIRED', CANCELLED: 'clinLab.status.CANCELLED',
-};
-
-function statusLabel(status: string, t: T): string {
-  return t(STATUS_KEY[status] ?? 'clinLab.status.other');
-}
-
-export function mapLabOrders(orders: PlacedLabOrder[], t: T): ConsoleTableData {
-  const open = orders.filter((o) => OPEN.has(o.status));
-  const withIndication = orders.filter((o) => o.clinicalIndication.trim().length >= INDICATION_MIN).length;
-  const rows: DataTableRow[] = orders.map((o) => ({
-    id: o.id,
-    cells: [
-      strong(o.patientName || t('clinLab.nameUnknown')),
-      strong(o.testPanel.join(', '), o.clinicalIndication),
-      cell(o.fastingRequired ? t('clinLab.fasting') : t('clinLab.noFasting'), o.fastingRequired ? 'attention' : undefined),
-      muted(o.labName || '—'),
-      pill(t('clinLab.stateOn', { status: statusLabel(o.status, t), date: dateOnly(o.createdAt) }), STATUS_TONE[o.status] ?? 'neutral'),
-    ],
-  }));
-  return {
-    stats: [
-      { value: String(open.length), label: t('clinLab.stat.open') },
-      // Orders carry no urgency field: shown as unreported, never guessed.
-      { value: null, label: t('clinLab.stat.urgent'), meta: t('clinLab.notReported') },
-      { value: String(open.filter((o) => o.fastingRequired).length), label: t('clinLab.stat.fasting'), tone: 'attention' },
-      { value: orders.length ? `${Math.round((withIndication / orders.length) * PERCENT)}%` : null, label: t('clinLab.stat.indication'), tone: 'positive' },
-    ],
-    rows,
-  };
-}
-
-function labOrdersApiSource(t: T, request: Request = apiRequest): ConsoleTableSource {
-  return { load: async () => mapLabOrders((await request<{ items: PlacedLabOrder[] }>('/work/doctor-lab-orders')).items, t) };
 }
 
 const OrderDrawer = observer(function OrderDrawer({ vm, open, online, onClose, onPlaced }: { vm: DoctorLabOrderViewModel; open: boolean; online: boolean; onClose: () => void; onPlaced: () => void }): React.ReactElement | null {
