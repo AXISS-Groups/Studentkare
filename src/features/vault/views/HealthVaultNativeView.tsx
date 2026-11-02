@@ -19,9 +19,9 @@ import type { VaultTab } from './HealthVaultView';
  * M2-styled here same as on web). No export here: a phone has nowhere the
  * app may write the file.
  */
-export function HealthVaultRoute({ onCapture, onEmergencyCard, art }: { onCapture?: () => void; onEmergencyCard?: () => void; art?: { hero?: ArtSource; empty?: ArtSource; rx?: ArtSource } } = {}): React.ReactElement {
+export function HealthVaultRoute({ onCapture, onEmergencyCard, onVisitSummaries, initialTab, art }: { onCapture?: () => void; onEmergencyCard?: () => void; onVisitSummaries?: () => void; initialTab?: VaultTab; art?: { hero?: ArtSource; empty?: ArtSource; rx?: ArtSource } } = {}): React.ReactElement {
   const [vm] = useState(() => new HealthVaultViewModel());
-  const [tab, setTab] = useState<VaultTab>('documents');
+  const [tab, setTab] = useState<VaultTab>(initialTab ?? 'documents');
   const locale = dateLocale(useLanguage().lang);
   useEffect(() => {
     void vm.load();
@@ -35,7 +35,7 @@ export function HealthVaultRoute({ onCapture, onEmergencyCard, art }: { onCaptur
       onTabChange={setTab}
       locale={locale}
       art={art}
-      links={{ addDocument: onCapture }}
+      links={{ addDocument: onCapture, visitSummaries: onVisitSummaries }}
       prescriptions={{ links: {} }}
       panels={{
         who: <ConsentInboxBoard embedded links={{ records: () => setTab('documents') }} />,
