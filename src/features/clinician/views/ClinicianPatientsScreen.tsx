@@ -2,8 +2,9 @@ import React, { useMemo } from 'react';
 import { useT } from '@/i18n';
 import type { MessageKey, Vars } from '@/i18n';
 import { ConsoleTableScreen } from './ConsoleTableScreen';
-import { unconnectedTableSource } from '../model/consoleTable';
-import type { ConsoleTableConfig, ConsoleTableSource } from '../model/consoleTable';
+import { unconnectedTableSource } from '../viewmodel/ConsoleTableViewModel';
+import type { ConsoleTableSource } from '../viewmodel/ConsoleTableViewModel';
+import type { ConsoleTableConfig } from './consoleTableConfig';
 
 /**
  * ClinicianPatients — "My patients" (design page 5, Tier 2). Only people who

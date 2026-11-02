@@ -4,7 +4,8 @@ import { useT } from '@/i18n';
 import { apiRequest } from '@/data/services/http';
 import type { DataTableRow } from '@/design-system';
 import { ConsoleTableScreen } from './ConsoleTableScreen';
-import type { ConsoleTableConfig, ConsoleTableData, ConsoleTableSource } from '../model/consoleTable';
+import type { ConsoleTableData, ConsoleTableSource } from '../viewmodel/ConsoleTableViewModel';
+import type { ConsoleTableConfig } from './consoleTableConfig';
 import { cell, muted, pill, strong } from '../model/cells';
 import type { Request, T } from '../model/clinicalData';
 

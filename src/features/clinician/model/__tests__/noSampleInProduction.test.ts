@@ -9,7 +9,7 @@ describe('no sample patient outside demo builds', () => {
   it('referrals, renewals, AYUSH and decision support load as not connected', async () => {
     vi.resetModules();
     vi.doMock('@/core/env', async (importOriginal) => ({ ...(await importOriginal<typeof import('@/core/env')>()), demoDataEnabled: () => false }));
-    const { sampleInDevelopment } = await import('../consoleTable');
+    const { sampleInDevelopment } = await import('../../viewmodel/ConsoleTableViewModel');
     const { referralsSample } = await import('../../views/ClinicianReferralsScreen');
     const { renewalsSample } = await import('../../views/ClinicianRenewalsScreen');
     const { ayushSample } = await import('../../views/ClinicianAyushScreen');

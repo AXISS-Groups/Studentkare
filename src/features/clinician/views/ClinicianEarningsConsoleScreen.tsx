@@ -6,7 +6,8 @@ import { useT } from '@/i18n';
 import type { MessageKey, Vars } from '@/i18n';
 import { navigate } from '@/lib/utils/workflowRouting';
 import { ConsoleTableScreen } from './ConsoleTableScreen';
-import type { ConsoleTableConfig, ConsoleTableData, ConsoleTableSource } from '../model/consoleTable';
+import type { ConsoleTableData, ConsoleTableSource } from '../viewmodel/ConsoleTableViewModel';
+import type { ConsoleTableConfig } from './consoleTableConfig';
 import { muted, pill, strong } from '../model/cells';
 
 type T = (key: MessageKey, vars?: Vars) => string;

@@ -6,8 +6,9 @@ import { useT } from '@/i18n';
 import { navigate } from '@/lib/utils/workflowRouting';
 import type { RoutePath } from '@/lib/utils/workflowRouting';
 import { ClinicianConsoleFrame } from './ClinicianConsoleFrame';
-import { ConsoleTableViewModel } from '../model/consoleTable';
-import type { ConsoleTableConfig, ConsoleTableSource } from '../model/consoleTable';
+import { ConsoleTableViewModel } from '../viewmodel/ConsoleTableViewModel';
+import type { ConsoleTableSource } from '../viewmodel/ConsoleTableViewModel';
+import type { ConsoleTableConfig } from './consoleTableConfig';
 
 export interface ConsoleTableViewProps {
   viewModel: ConsoleTableViewModel;

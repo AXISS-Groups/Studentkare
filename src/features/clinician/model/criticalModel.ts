@@ -1,7 +1,7 @@
 import { apiRequest } from '@/data/services/http';
 import type { Stat } from '@/design-system';
 import { translate } from '@/i18n';
-import type { Loadable } from '../viewmodel/LoadableViewModel';
+import type { Loadable } from './loadable';
 import { careAppointments, namesByPatient, waitedFor } from './clinicalData';
 import type { Request, T } from './clinicalData';
 

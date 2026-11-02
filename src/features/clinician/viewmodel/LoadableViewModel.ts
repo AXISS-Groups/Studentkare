@@ -1,11 +1,7 @@
 import { actionBound, makeObservable, observable, runInAction } from 'mobx';
+import type { Loadable } from '../model/loadable';
 
 export type LoadStatus = 'loading' | 'ready' | 'empty' | 'unconnected' | 'error';
-
-export interface Loadable<T> {
-  /** Null when the screen is not connected to anything real. */
-  load(): Promise<T | null>;
-}
 
 /**
  * Loading, ready, empty, not-connected and error for a clinician screen, in

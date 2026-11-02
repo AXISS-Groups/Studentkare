@@ -1,8 +1,9 @@
 import React, { useMemo } from 'react';
 import { useT } from '@/i18n';
 import { ConsoleTableScreen } from './ConsoleTableScreen';
-import { sampleInDevelopment } from '../model/consoleTable';
-import type { ConsoleTableConfig, ConsoleTableData, ConsoleTableSource } from '../model/consoleTable';
+import { sampleInDevelopment } from '../viewmodel/ConsoleTableViewModel';
+import type { ConsoleTableData, ConsoleTableSource } from '../viewmodel/ConsoleTableViewModel';
+import type { ConsoleTableConfig } from './consoleTableConfig';
 import { cell, muted, pill, strong } from '../model/cells';
 import type { T } from '../model/clinicalData';
 

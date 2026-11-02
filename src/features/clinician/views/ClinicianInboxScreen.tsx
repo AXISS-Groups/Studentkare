@@ -11,7 +11,7 @@ import type { RoutePath } from '@/lib/utils/workflowRouting';
 import { ClinicianConsoleFrame } from './ClinicianConsoleFrame';
 import { ClinicianEmptyState, ClinicianErrorState } from './ClinicianStates';
 import { LoadableViewModel } from '../viewmodel/LoadableViewModel';
-import type { Loadable } from '../viewmodel/LoadableViewModel';
+import type { Loadable } from '../model/loadable';
 import './inbox.css';
 
 /**
