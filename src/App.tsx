@@ -208,11 +208,16 @@ export function consoleHasOwnChrome(pathname: string, role: string | null): bool
 /** Roles whose every workspace page is drawn inside their own console shell. */
 const STAFF_SHELL_ROLES: ReadonlySet<string> = new Set(['COUNSELLOR', 'LAB_COLLECTOR', 'SUPER_ADMIN', 'VENDOR']);
 
-/** One key each for the /admin area, the partner, clinician and campus consoles, so no shell is remounted between sections. */
+/** One key each for the /admin area, the partner, clinician, campus and student workspaces, so no shell is remounted between sections. */
 export function pageTransitionKey(pathname: string, role: string | null = null): string {
   if (/^\/admin(\/|$)/.test(pathname)) return 'admin';
   // A campus admin's notifications and help open in the campus console, so they share its key.
   if (isCampusConsolePath(pathname) || opensInCampusConsole(pathname, role)) return 'campus';
+  // A student's workspace pages share one key: keyed by path, every nav click remounted the
+  // whole web shell (or phone frame), refetched its data and faded the full page in. The
+  // workspace fades only the section content in (WorkspaceScreen's own PageTransition).
+  // Before the clinician check: a student's notifications and help are in the student shell.
+  if (role === 'STUDENT' && isWorkspacePath(pathname)) return 'student';
   if (isClinicianConsolePath(pathname)) return 'clinician';
   return isVendorPath(pathname) ? 'vendor' : pathname;
 }

@@ -31,6 +31,16 @@ describe('page transition key', () => {
     expect(pageTransitionKey('/campuses')).toBe('/campuses');
   });
 
+  it('is the same for every student workspace page, so the student shell stays mounted', () => {
+    for (const path of ['/health', '/your-care', '/records', '/health/medicines', '/health/water', '/emergency-card', '/pass', '/orders', '/buy-again', '/notifications', '/profile']) {
+      expect(pageTransitionKey(path, 'STUDENT')).toBe('student');
+    }
+    // The shop and checkout are other screens, and other roles keep their own keys.
+    expect(pageTransitionKey('/shop', 'STUDENT')).toBe('/shop');
+    expect(pageTransitionKey('/notifications', 'NMC_DOCTOR')).toBe('clinician');
+    expect(pageTransitionKey('/health', null)).toBe('/health');
+  });
+
   it('still changes for other pages, which keep their full-page transition', () => {
     expect(pageTransitionKey('/health')).toBe('/health');
     expect(pageTransitionKey('/login')).toBe('/login');
