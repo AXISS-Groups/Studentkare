@@ -1,9 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import React from 'react';
 import { act, render, screen, within } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import * as http from '@/data/services/http';
+import { AuthProvider } from '@/data/contexts/AuthContext';
 import { LandingView } from '../LandingView';
 import { LandingLabTestsView } from '../LandingLabTestsView';
 import { LandingLabListView } from '../LandingLabListView';
@@ -15,7 +17,10 @@ import { LandingClinicianView } from '../LandingClinicianView';
 import { LandingPartnershipsView } from '../LandingPartnershipsView';
 import { ART_CREDIT } from '@/design-system/public-site/publicSiteNav';
 
-vi.mock('@/data/services/http', () => ({ apiRequest: vi.fn() }));
+vi.mock('@/data/services/http', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/data/services/http')>();
+  return { ...actual, apiRequest: vi.fn() };
+});
 vi.mock('@/components/clinical/ComprehensiveHealthCalculators', () => ({ ComprehensiveHealthCalculators: () => null }));
 const mocked = vi.mocked(http.apiRequest);
 
@@ -29,6 +34,13 @@ async function settle() {
     await Promise.resolve();
     await Promise.resolve();
   });
+}
+
+// LandingView reads useAuth (to skip straight to the workspace for a signed-in
+// visitor) and useLocation (to know it's mounted at '/'), so every page here
+// needs both an AuthProvider and a router context, not just plain render().
+function renderPage(element: React.ReactElement) {
+  return render(<MemoryRouter initialEntries={['/']}><AuthProvider>{element}</AuthProvider></MemoryRouter>);
 }
 
 /** Every route path the feature modules register. */
@@ -68,7 +80,7 @@ beforeEach(() => {
 
 describe.each(PAGES)('%s on the public frame', (_name, Page, current) => {
   it('has the shared header with its page marked, one h1, one main and the footer', async () => {
-    render(<Page />);
+    renderPage(<Page />);
     await settle();
     const marked = document.querySelectorAll('header [aria-current="page"]');
     expect(marked).toHaveLength(1);
@@ -80,7 +92,7 @@ describe.each(PAGES)('%s on the public frame', (_name, Page, current) => {
   });
 
   it('closes with the four pillars and the app band, and offers no newsletter form', async () => {
-    render(<Page />);
+    renderPage(<Page />);
     await settle();
     expect(screen.getByRole('region', { name: 'Why students trust Studentkare' })).toBeInTheDocument();
     expect(screen.getByText(/no Studentkare app to download yet/i)).toBeInTheDocument();
@@ -89,7 +101,7 @@ describe.each(PAGES)('%s on the public frame', (_name, Page, current) => {
   });
 
   it('draws icons only through the design system, all decorative, and no text arrows', async () => {
-    const { container } = render(<Page />);
+    const { container } = renderPage(<Page />);
     await settle();
     for (const svg of container.querySelectorAll('svg')) expect(svg).toHaveAttribute('aria-hidden', 'true');
     expect(container.textContent).not.toMatch(/[→✓✕✗←★]/);
@@ -98,7 +110,7 @@ describe.each(PAGES)('%s on the public frame', (_name, Page, current) => {
 
   it('links only to routes the app registers', async () => {
     const routes = registeredRoutes();
-    const { container } = render(<Page />);
+    const { container } = renderPage(<Page />);
     await settle();
     for (const a of container.querySelectorAll('a[href]')) {
       const href = a.getAttribute('href') ?? '';
@@ -110,7 +122,7 @@ describe.each(PAGES)('%s on the public frame', (_name, Page, current) => {
   });
 
   it('claims no accreditation, register check, rating or partner count', async () => {
-    const { container } = render(<Page />);
+    const { container } = renderPage(<Page />);
     await settle();
     expect(container.textContent).not.toMatch(/NABL|NMC-registered|NMC-verified|ABHA|ABDM|★|\d+ campuses live|verified students/i);
   });
@@ -121,7 +133,7 @@ describe('the Discover page', () => {
     mocked.mockImplementation((path: string) =>
       Promise.resolve(path.includes('kind=lab') ? { items: [], total: 0 } : { items: [row(), row({ id: 'r2', name: 'Sunscreen SPF 50', brand: 'Kindskin', pack: 'Tube of 50 g', pricePaise: 42900, mrpPaise: 59900 })], total: 2 }),
     );
-    render(<LandingView />);
+    renderPage(<LandingView />);
     await settle();
     const offer = screen.getByRole('region', { name: 'Pick up your everyday favourites' });
     expect(within(offer).getByText('Daily multivitamin')).toBeInTheDocument();
@@ -133,7 +145,7 @@ describe('the Discover page', () => {
     mocked.mockImplementation((path: string) =>
       Promise.resolve(path.includes('kind=lab') ? { items: [row({ id: 'l1', name: 'Thyroid profile', kind: 'lab', pack: '3 tests' })], total: 1 } : { items: [], total: 0 }),
     );
-    render(<LandingView />);
+    renderPage(<LandingView />);
     await settle();
     const band = screen.getByRole('region', { name: 'Health checks, made simpler.' });
     expect(within(band).getByText('Thyroid profile')).toBeInTheDocument();
@@ -141,7 +153,7 @@ describe('the Discover page', () => {
   });
 
   it('says no article is published rather than listing reading times', async () => {
-    render(<LandingView />);
+    renderPage(<LandingView />);
     await settle();
     expect(screen.getAllByText('No articles are published here yet.')).toHaveLength(3);
     expect(document.body.textContent).not.toMatch(/min read/);
