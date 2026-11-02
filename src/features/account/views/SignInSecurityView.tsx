@@ -205,6 +205,7 @@ const ContactsCard = observer(function ContactsCard({ vm }: { vm: ContactsViewMo
 export const SignInSecurityView = observer(function SignInSecurityView({
   viewModel: vm,
   onContinue,
+  onBack,
   passcode,
   contacts,
   password,
@@ -213,6 +214,8 @@ export const SignInSecurityView = observer(function SignInSecurityView({
   viewModel: TwoFactorViewModel;
   /** Shown once a held session has turned 2FA on: back to the workspace. */
   onContinue?: () => void;
+  /** Header back control. Defaults to the web's own-profile navigation; Expo passes its stack's goBack (phase 4, approved 2026-11-01). */
+  onBack?: () => void;
   /** Students: the passcode card. */
   passcode?: PasscodeViewModel;
   /** Students: their email and WhatsApp number. */
@@ -368,10 +371,12 @@ export const SignInSecurityView = observer(function SignInSecurityView({
   const hero = <M2PageHero hue="blue" icon="lock" title={wide ? t('sec.title') : undefined} body={t('sec.lead')} testID="security-hero" art={<M2Tile3d icon="lock" hue="blue" size={96} float />} artOnPhone={false} />;
   const offline = !online ? <OfflineBanner message={t('common.retryConnection')} /> : null;
 
+  const goBack = onBack ?? (() => navigate('profile'));
+
   if (wide) {
     return (
       <M2WideColumn testID="security">
-        <M2Header backLabel={t('common.back')} onBack={() => navigate('profile')} title={t('sec.title')} testID="security-header" />
+        <M2Header backLabel={t('common.back')} onBack={goBack} title={t('sec.title')} testID="security-header" />
         {hero}
         {offline}
         {lost}
@@ -393,7 +398,7 @@ export const SignInSecurityView = observer(function SignInSecurityView({
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content} testID="security">
-      <M2Header backLabel={t('common.back')} onBack={() => navigate('profile')} title={t('sec.title')} testID="security-header" />
+      <M2Header backLabel={t('common.back')} onBack={goBack} title={t('sec.title')} testID="security-header" />
       <View style={[styles.gutter, styles.column]}>
         {hero}
         {offline}
@@ -410,7 +415,7 @@ export const SignInSecurityView = observer(function SignInSecurityView({
 });
 
 /** Owns the view model's lifetime: the secret is dropped when the screen is left. */
-export function SignInSecurityRoute({ wide = false }: { wide?: boolean } = {}): React.ReactElement {
+export function SignInSecurityRoute({ wide = false, onBack }: { wide?: boolean; onBack?: () => void } = {}): React.ReactElement {
   const auth = useAuth();
   const latest = useRef(auth);
   latest.current = auth;
@@ -439,6 +444,7 @@ export function SignInSecurityRoute({ wide = false }: { wide?: boolean } = {}): 
     <SignInSecurityView
       viewModel={vm}
       wide={wide}
+      onBack={onBack}
       onContinue={role ? () => navigate(homeForRole(role)) : undefined}
       passcode={role === 'STUDENT' ? passcode : undefined}
       contacts={role === 'STUDENT' ? contacts : undefined}

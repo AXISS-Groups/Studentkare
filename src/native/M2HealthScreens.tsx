@@ -98,7 +98,7 @@ export function InsightsScreen(): React.ReactElement {
         appointments: () => navigate('Appointments'),
         steps: () => navigate('Steps'),
         emergencyCard: () => navigate('EmergencyCard'),
-        pass: () => navigate('DigitalId'),
+        pass: () => navigate('Pass'),
       }} />
     </Frame>
   );
@@ -134,11 +134,11 @@ export function ProfileScreen(): React.ReactElement {
       <M2ProfileView vm={vm} links={{
         settings: () => navigate('More'),
         emergencyCard: () => navigate('EmergencyCard'),
-        pass: () => navigate('DigitalId'),
+        pass: () => navigate('Pass'),
         documents: () => navigate('Vault'),
         addDocument: () => navigate('ReportUpload'),
         orders: () => navigate('Orders'),
-        privacy: () => navigate('DeleteAccount'),
+        privacy: () => navigate('Privacy'),
         signOut: () => setConfirm(true),
       }} />
       <Sheet visible={confirm} title={t('shell.logoutTitle')} onClose={() => setConfirm(false)} busy={busy}>

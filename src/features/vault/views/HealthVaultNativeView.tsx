@@ -3,6 +3,8 @@ import { useLanguage } from '@/i18n';
 import { dateLocale } from '@/features/labResults/viewmodel/trendScreenModels';
 import type { ArtSource } from '@/features/phoneKit/artSource';
 import { HealthVaultViewModel } from '../viewmodel/HealthVaultViewModel';
+import { ConsentInboxBoard } from './ConsentInboxBoard';
+import { FamilyCircleBoard } from './FamilyCircleBoard';
 import { HealthVaultView } from './HealthVaultView';
 import type { VaultTab } from './HealthVaultView';
 
@@ -10,13 +12,16 @@ import type { VaultTab } from './HealthVaultView';
  * Health records in the Expo app (design page 2: RecordsVault): the same
  * `HealthVaultView` the web draws (Tier 1 parity plan 2026-10-24 §6), on the
  * same view-model. Add a document opens the camera capture; the Prescriptions
- * tab shows the same two sections (choosing a collection time, the consent
- * inbox and the care circle are web-only until phase 4). No export here: a
- * phone has nowhere the app may write the file.
+ * tab shows the same two sections (choosing a collection time). The consent
+ * inbox and the care circle (§15, §16) are wired in as the "Who can see" and
+ * "Family" tabs, same panels and links the web passes — phase 4, approved
+ * 2026-11-01 (the design question was already settled: both boards are
+ * M2-styled here same as on web). No export here: a phone has nowhere the
+ * app may write the file.
  */
-export function HealthVaultRoute({ onCapture, art }: { onCapture?: () => void; art?: { hero?: ArtSource; empty?: ArtSource; rx?: ArtSource } } = {}): React.ReactElement {
+export function HealthVaultRoute({ onCapture, onEmergencyCard, onVisitSummaries, initialTab, art }: { onCapture?: () => void; onEmergencyCard?: () => void; onVisitSummaries?: () => void; initialTab?: VaultTab; art?: { hero?: ArtSource; empty?: ArtSource; rx?: ArtSource } } = {}): React.ReactElement {
   const [vm] = useState(() => new HealthVaultViewModel());
-  const [tab, setTab] = useState<VaultTab>('documents');
+  const [tab, setTab] = useState<VaultTab>(initialTab ?? 'documents');
   const locale = dateLocale(useLanguage().lang);
   useEffect(() => {
     void vm.load();
@@ -30,8 +35,12 @@ export function HealthVaultRoute({ onCapture, art }: { onCapture?: () => void; a
       onTabChange={setTab}
       locale={locale}
       art={art}
-      links={{ addDocument: onCapture }}
+      links={{ addDocument: onCapture, visitSummaries: onVisitSummaries }}
       prescriptions={{ links: {} }}
+      panels={{
+        who: <ConsentInboxBoard embedded links={{ records: () => setTab('documents') }} />,
+        family: <FamilyCircleBoard embedded links={{ emergencyCard: () => onEmergencyCard?.(), consent: () => setTab('who') }} />,
+      }}
     />
   );
 }
