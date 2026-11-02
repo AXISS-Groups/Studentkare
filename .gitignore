@@ -111,3 +111,6 @@ config/demo-credentials.local.json
 
 *.local.bat
 run-local.bat
+
+# Open-data downloads for the dev site (scripts/open_data.py). Licences differ; never commit them.
+/data/open/
