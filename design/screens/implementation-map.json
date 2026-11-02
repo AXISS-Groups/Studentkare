@@ -91,7 +91,7 @@
       "src/design-system/navigation/PhoneHeader.tsx"
     ],
     "AbhaLink": [
-      "src/screens/digital_id/ABHALinkScreen.tsx",
+      "src/features/digital_id/views/ABHALinkScreen.tsx",
       "src/design-system/navigation/PhoneHeader.tsx"
     ],
     "OnboardingConsent": [
@@ -1297,8 +1297,8 @@
       "src/screens/vendor/PartnerStaffScreen.tsx"
     ],
     "SuperAdminConsole": [
-      "src/screens/workspace/admin/SuperAdminShell.tsx",
-      "src/screens/workspace/admin/superAdminNavigation.ts",
+      "src/features/admin/shell/SuperAdminShell.tsx",
+      "src/features/admin/shell/superAdminNavigation.ts",
       "src/design-system/console-shell/ConsoleShell.tsx",
       "src/features/admin/views/AdminBoard.tsx",
       "src/features/admin/views/GovBoard.tsx",
@@ -1307,8 +1307,8 @@
       "src/features/admin/viewmodels/OperationsOverviewViewModel.ts"
     ],
     "AdminAccounts": [
-      "src/screens/workspace/admin/SuperAdminShell.tsx",
-      "src/screens/workspace/admin/superAdminNavigation.ts",
+      "src/features/admin/shell/SuperAdminShell.tsx",
+      "src/features/admin/shell/superAdminNavigation.ts",
       "src/design-system/console-shell/ConsoleShell.tsx",
       "src/design-system/console/ConsoleTablePage.tsx",
       "src/design-system/data/DataTable.tsx",
@@ -1317,8 +1317,8 @@
       "src/features/admin/views/AccountsListView.tsx"
     ],
     "AuditExplorer": [
-      "src/screens/workspace/admin/SuperAdminShell.tsx",
-      "src/screens/workspace/admin/superAdminNavigation.ts",
+      "src/features/admin/shell/SuperAdminShell.tsx",
+      "src/features/admin/shell/superAdminNavigation.ts",
       "src/design-system/console-shell/ConsoleShell.tsx",
       "src/features/admin/views/AdminBoard.tsx",
       "src/features/admin/views/GovBoard.tsx",
@@ -1327,8 +1327,8 @@
       "src/features/admin/viewmodels/AuditExplorerViewModel.ts"
     ],
     "AiGovernance": [
-      "src/screens/workspace/admin/SuperAdminShell.tsx",
-      "src/screens/workspace/admin/superAdminNavigation.ts",
+      "src/features/admin/shell/SuperAdminShell.tsx",
+      "src/features/admin/shell/superAdminNavigation.ts",
       "src/design-system/console-shell/ConsoleShell.tsx",
       "src/features/admin/views/AdminBoard.tsx",
       "src/features/admin/views/GovBoard.tsx",
@@ -1336,8 +1336,8 @@
       "src/features/admin/views/AiGovernanceView.tsx"
     ],
     "CatalogOps": [
-      "src/screens/workspace/admin/SuperAdminShell.tsx",
-      "src/screens/workspace/admin/superAdminNavigation.ts",
+      "src/features/admin/shell/SuperAdminShell.tsx",
+      "src/features/admin/shell/superAdminNavigation.ts",
       "src/design-system/console-shell/ConsoleShell.tsx",
       "src/design-system/console/ConsoleTablePage.tsx",
       "src/design-system/data/DataTable.tsx",
@@ -1345,8 +1345,8 @@
       "src/features/admin/views/CatalogueView.tsx"
     ],
     "Integrations": [
-      "src/screens/workspace/admin/SuperAdminShell.tsx",
-      "src/screens/workspace/admin/superAdminNavigation.ts",
+      "src/features/admin/shell/SuperAdminShell.tsx",
+      "src/features/admin/shell/superAdminNavigation.ts",
       "src/design-system/console-shell/ConsoleShell.tsx",
       "src/features/admin/views/AdminBoard.tsx",
       "src/features/admin/views/GovBoard.tsx",
@@ -1355,8 +1355,8 @@
       "src/design-system/data/DataTable.tsx"
     ],
     "DpdpQueue": [
-      "src/screens/workspace/admin/SuperAdminShell.tsx",
-      "src/screens/workspace/admin/superAdminNavigation.ts",
+      "src/features/admin/shell/SuperAdminShell.tsx",
+      "src/features/admin/shell/superAdminNavigation.ts",
       "src/design-system/console-shell/ConsoleShell.tsx",
       "src/features/admin/views/AdminBoard.tsx",
       "src/features/admin/views/GovBoard.tsx",
@@ -1367,8 +1367,8 @@
       "src/design-system/overlays/Overlay.tsx"
     ],
     "ClaimsAdjudication": [
-      "src/screens/workspace/admin/SuperAdminShell.tsx",
-      "src/screens/workspace/admin/superAdminNavigation.ts",
+      "src/features/admin/shell/SuperAdminShell.tsx",
+      "src/features/admin/shell/superAdminNavigation.ts",
       "src/design-system/console-shell/ConsoleShell.tsx",
       "src/design-system/console/ConsoleTablePage.tsx",
       "src/design-system/data/DataTable.tsx",
@@ -1376,8 +1376,8 @@
       "src/features/admin/views/ClaimsAdjudicationView.tsx"
     ],
     "AdminVerification": [
-      "src/screens/workspace/admin/SuperAdminShell.tsx",
-      "src/screens/workspace/admin/superAdminNavigation.ts",
+      "src/features/admin/shell/SuperAdminShell.tsx",
+      "src/features/admin/shell/superAdminNavigation.ts",
       "src/design-system/console-shell/ConsoleShell.tsx",
       "src/design-system/console/ConsoleTablePage.tsx",
       "src/design-system/data/DataTable.tsx",
@@ -1385,8 +1385,8 @@
       "src/features/admin/views/UnconnectedBoards.tsx"
     ],
     "AdminPartners": [
-      "src/screens/workspace/admin/SuperAdminShell.tsx",
-      "src/screens/workspace/admin/superAdminNavigation.ts",
+      "src/features/admin/shell/SuperAdminShell.tsx",
+      "src/features/admin/shell/superAdminNavigation.ts",
       "src/design-system/console-shell/ConsoleShell.tsx",
       "src/design-system/console/ConsoleTablePage.tsx",
       "src/design-system/data/DataTable.tsx",
@@ -1394,8 +1394,8 @@
       "src/features/admin/views/UnconnectedBoards.tsx"
     ],
     "AdminOps": [
-      "src/screens/workspace/admin/SuperAdminShell.tsx",
-      "src/screens/workspace/admin/superAdminNavigation.ts",
+      "src/features/admin/shell/SuperAdminShell.tsx",
+      "src/features/admin/shell/superAdminNavigation.ts",
       "src/design-system/console-shell/ConsoleShell.tsx",
       "src/features/admin/views/AdminBoard.tsx",
       "src/features/admin/views/GovBoard.tsx",
@@ -1404,8 +1404,8 @@
       "src/design-system/data/DataTable.tsx"
     ],
     "AdminSurveillance": [
-      "src/screens/workspace/admin/SuperAdminShell.tsx",
-      "src/screens/workspace/admin/superAdminNavigation.ts",
+      "src/features/admin/shell/SuperAdminShell.tsx",
+      "src/features/admin/shell/superAdminNavigation.ts",
       "src/design-system/console-shell/ConsoleShell.tsx",
       "src/features/admin/views/AdminBoard.tsx",
       "src/features/admin/views/GovBoard.tsx",
@@ -1414,8 +1414,8 @@
       "src/design-system/data/DataTable.tsx"
     ],
     "AdminTenants": [
-      "src/screens/workspace/admin/SuperAdminShell.tsx",
-      "src/screens/workspace/admin/superAdminNavigation.ts",
+      "src/features/admin/shell/SuperAdminShell.tsx",
+      "src/features/admin/shell/superAdminNavigation.ts",
       "src/design-system/console-shell/ConsoleShell.tsx",
       "src/design-system/console/ConsoleTablePage.tsx",
       "src/design-system/data/DataTable.tsx",
@@ -1424,8 +1424,8 @@
       "src/features/admin/views/ContractsView.tsx"
     ],
     "AdminRuleL": [
-      "src/screens/workspace/admin/SuperAdminShell.tsx",
-      "src/screens/workspace/admin/superAdminNavigation.ts",
+      "src/features/admin/shell/SuperAdminShell.tsx",
+      "src/features/admin/shell/superAdminNavigation.ts",
       "src/design-system/console-shell/ConsoleShell.tsx",
       "src/features/admin/views/AdminBoard.tsx",
       "src/features/admin/views/GovBoard.tsx",
@@ -1434,8 +1434,8 @@
       "src/design-system/data/DataTable.tsx"
     ],
     "AdminConsentPolicy": [
-      "src/screens/workspace/admin/SuperAdminShell.tsx",
-      "src/screens/workspace/admin/superAdminNavigation.ts",
+      "src/features/admin/shell/SuperAdminShell.tsx",
+      "src/features/admin/shell/superAdminNavigation.ts",
       "src/design-system/console-shell/ConsoleShell.tsx",
       "src/features/admin/views/AdminBoard.tsx",
       "src/features/admin/views/GovBoard.tsx",
@@ -1444,8 +1444,8 @@
       "src/design-system/data/DataTable.tsx"
     ],
     "AdminHandover": [
-      "src/screens/workspace/admin/SuperAdminShell.tsx",
-      "src/screens/workspace/admin/superAdminNavigation.ts",
+      "src/features/admin/shell/SuperAdminShell.tsx",
+      "src/features/admin/shell/superAdminNavigation.ts",
       "src/design-system/console-shell/ConsoleShell.tsx",
       "src/features/admin/views/AdminBoard.tsx",
       "src/features/admin/views/GovBoard.tsx",
@@ -1454,8 +1454,8 @@
       "src/design-system/data/DataTable.tsx"
     ],
     "AdminSentinel": [
-      "src/screens/workspace/admin/SuperAdminShell.tsx",
-      "src/screens/workspace/admin/superAdminNavigation.ts",
+      "src/features/admin/shell/SuperAdminShell.tsx",
+      "src/features/admin/shell/superAdminNavigation.ts",
       "src/design-system/console-shell/ConsoleShell.tsx",
       "src/design-system/console/ConsoleTablePage.tsx",
       "src/design-system/data/DataTable.tsx",
@@ -1463,8 +1463,8 @@
       "src/features/admin/views/UnconnectedBoards.tsx"
     ],
     "AdminTokens": [
-      "src/screens/workspace/admin/SuperAdminShell.tsx",
-      "src/screens/workspace/admin/superAdminNavigation.ts",
+      "src/features/admin/shell/SuperAdminShell.tsx",
+      "src/features/admin/shell/superAdminNavigation.ts",
       "src/design-system/console-shell/ConsoleShell.tsx",
       "src/design-system/console/ConsoleTablePage.tsx",
       "src/design-system/data/DataTable.tsx",
@@ -1472,8 +1472,8 @@
       "src/features/admin/views/TokensView.tsx"
     ],
     "AdminBreakGlassLog": [
-      "src/screens/workspace/admin/SuperAdminShell.tsx",
-      "src/screens/workspace/admin/superAdminNavigation.ts",
+      "src/features/admin/shell/SuperAdminShell.tsx",
+      "src/features/admin/shell/superAdminNavigation.ts",
       "src/design-system/console-shell/ConsoleShell.tsx",
       "src/features/admin/views/AdminBoard.tsx",
       "src/features/admin/views/GovBoard.tsx",
@@ -1482,8 +1482,8 @@
       "src/design-system/data/DataTable.tsx"
     ],
     "AdminPlansPricing": [
-      "src/screens/workspace/admin/SuperAdminShell.tsx",
-      "src/screens/workspace/admin/superAdminNavigation.ts",
+      "src/features/admin/shell/SuperAdminShell.tsx",
+      "src/features/admin/shell/superAdminNavigation.ts",
       "src/design-system/console-shell/ConsoleShell.tsx",
       "src/features/admin/views/AdminBoard.tsx",
       "src/features/admin/views/GovBoard.tsx",
@@ -1493,8 +1493,8 @@
       "src/design-system/overlays/Overlay.tsx"
     ],
     "AdminFlags": [
-      "src/screens/workspace/admin/SuperAdminShell.tsx",
-      "src/screens/workspace/admin/superAdminNavigation.ts",
+      "src/features/admin/shell/SuperAdminShell.tsx",
+      "src/features/admin/shell/superAdminNavigation.ts",
       "src/design-system/console-shell/ConsoleShell.tsx",
       "src/design-system/console/ConsoleTablePage.tsx",
       "src/design-system/data/DataTable.tsx",
@@ -1502,8 +1502,8 @@
       "src/features/admin/views/FeatureFlagsView.tsx"
     ],
     "AdminTemplates": [
-      "src/screens/workspace/admin/SuperAdminShell.tsx",
-      "src/screens/workspace/admin/superAdminNavigation.ts",
+      "src/features/admin/shell/SuperAdminShell.tsx",
+      "src/features/admin/shell/superAdminNavigation.ts",
       "src/design-system/console-shell/ConsoleShell.tsx",
       "src/features/admin/views/AdminBoard.tsx",
       "src/features/admin/views/GovBoard.tsx",
@@ -1511,8 +1511,8 @@
       "src/features/admin/views/MessageTemplatesView.tsx"
     ],
     "AdminBilling": [
-      "src/screens/workspace/admin/SuperAdminShell.tsx",
-      "src/screens/workspace/admin/superAdminNavigation.ts",
+      "src/features/admin/shell/SuperAdminShell.tsx",
+      "src/features/admin/shell/superAdminNavigation.ts",
       "src/design-system/console-shell/ConsoleShell.tsx",
       "src/design-system/console/ConsoleTablePage.tsx",
       "src/design-system/data/DataTable.tsx",
@@ -1520,8 +1520,8 @@
       "src/features/admin/views/BillingLedgerView.tsx"
     ],
     "AdminKnowledge": [
-      "src/screens/workspace/admin/SuperAdminShell.tsx",
-      "src/screens/workspace/admin/superAdminNavigation.ts",
+      "src/features/admin/shell/SuperAdminShell.tsx",
+      "src/features/admin/shell/superAdminNavigation.ts",
       "src/design-system/console-shell/ConsoleShell.tsx",
       "src/features/admin/views/AdminBoard.tsx",
       "src/features/admin/views/GovBoard.tsx",
@@ -1530,8 +1530,8 @@
       "src/features/admin/views/PublishSourceDialog.tsx"
     ],
     "AdminIntake": [
-      "src/screens/workspace/admin/SuperAdminShell.tsx",
-      "src/screens/workspace/admin/superAdminNavigation.ts",
+      "src/features/admin/shell/SuperAdminShell.tsx",
+      "src/features/admin/shell/superAdminNavigation.ts",
       "src/design-system/console-shell/ConsoleShell.tsx",
       "src/design-system/console/ConsoleTablePage.tsx",
       "src/design-system/data/DataTable.tsx",
@@ -1539,8 +1539,8 @@
       "src/features/admin/views/IntakeView.tsx"
     ],
     "AdminCheckins": [
-      "src/screens/workspace/admin/SuperAdminShell.tsx",
-      "src/screens/workspace/admin/superAdminNavigation.ts",
+      "src/features/admin/shell/SuperAdminShell.tsx",
+      "src/features/admin/shell/superAdminNavigation.ts",
       "src/design-system/console-shell/ConsoleShell.tsx",
       "src/features/admin/views/AdminBoard.tsx",
       "src/features/admin/views/GovBoard.tsx",
@@ -1549,8 +1549,8 @@
       "src/design-system/data/DataTable.tsx"
     ],
     "AdminCase": [
-      "src/screens/workspace/admin/SuperAdminShell.tsx",
-      "src/screens/workspace/admin/superAdminNavigation.ts",
+      "src/features/admin/shell/SuperAdminShell.tsx",
+      "src/features/admin/shell/superAdminNavigation.ts",
       "src/design-system/console-shell/ConsoleShell.tsx",
       "src/features/admin/views/AdminBoard.tsx",
       "src/features/admin/views/GovBoard.tsx",
@@ -1558,8 +1558,8 @@
       "src/features/admin/views/CaseView.tsx"
     ],
     "AdminPriceFix": [
-      "src/screens/workspace/admin/SuperAdminShell.tsx",
-      "src/screens/workspace/admin/superAdminNavigation.ts",
+      "src/features/admin/shell/SuperAdminShell.tsx",
+      "src/features/admin/shell/superAdminNavigation.ts",
       "src/design-system/console-shell/ConsoleShell.tsx",
       "src/features/admin/views/AdminBoard.tsx",
       "src/features/admin/views/GovBoard.tsx",
@@ -1568,8 +1568,8 @@
       "src/features/admin/views/PlansPricingView.tsx"
     ],
     "AdminApiKeys": [
-      "src/screens/workspace/admin/SuperAdminShell.tsx",
-      "src/screens/workspace/admin/superAdminNavigation.ts",
+      "src/features/admin/shell/SuperAdminShell.tsx",
+      "src/features/admin/shell/superAdminNavigation.ts",
       "src/design-system/console-shell/ConsoleShell.tsx",
       "src/features/admin/views/AdminBoard.tsx",
       "src/features/admin/views/GovBoard.tsx",
@@ -1918,8 +1918,8 @@
       "src/features/careDirectory/viewmodel/CareDirectoryAdminViewModel.ts",
       "src/features/campus/console/campusPages.tsx",
       "src/design-system/campus-shell/campusNav.ts",
-      "src/screens/workspace/admin/SuperAdminScreens.tsx",
-      "src/screens/workspace/admin/superAdminNavigation.ts"
+      "src/features/admin/SuperAdminScreens.tsx",
+      "src/features/admin/shell/superAdminNavigation.ts"
     ],
     "M2Steps": [
       "src/features/steps/views/M2StepsView.tsx",
@@ -1992,8 +1992,8 @@
     "AdminMedicineInfo": [
       "src/features/medicineInfo/admin/MedicineInfoReviewView.tsx",
       "src/features/medicineInfo/viewmodel/MedicineInfoReviewViewModel.ts",
-      "src/screens/workspace/admin/SuperAdminScreens.tsx",
-      "src/screens/workspace/admin/superAdminNavigation.ts",
+      "src/features/admin/SuperAdminScreens.tsx",
+      "src/features/admin/shell/superAdminNavigation.ts",
       "src/screens/vendor/vendorNavigation.ts"
     ],
     "WebNewsroom": [
@@ -2034,8 +2034,8 @@
       "src/features/newsroom/model/templates.ts",
       "src/features/newsroom/views/PostCover.tsx",
       "src/features/newsroom/views/PostPage.tsx",
-      "src/screens/workspace/admin/SuperAdminScreens.tsx",
-      "src/screens/workspace/admin/superAdminNavigation.ts",
+      "src/features/admin/SuperAdminScreens.tsx",
+      "src/features/admin/shell/superAdminNavigation.ts",
       "src/design-system/clinician-shell/clinicianNav.ts",
       "src/features/health/screens/WorkspaceRouteScreen.tsx",
       "src/features/newsroom/admin/ContentTabs.tsx",
