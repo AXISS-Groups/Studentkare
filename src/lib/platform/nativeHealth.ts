@@ -28,7 +28,7 @@ export interface NativeHealthState {
   detail: string;
 }
 
-export interface NativeHealthAdapter {
+interface NativeHealthAdapter {
   detect(): NativeHealthState;
   /** Request permission for a scoped set of health data types. */
   requestPermission(types?: string[]): Promise<'granted' | 'denied' | 'unsupported'>;
@@ -40,7 +40,7 @@ export interface NativeHealthAdapter {
  * Detect the running platform. In a browser there is no native health bridge,
  * so we report unsupported and let the UI fall back to manual entry.
  */
-export function detectPlatform(): HealthPlatform {
+function detectPlatform(): HealthPlatform {
   if (typeof navigator === 'undefined') return 'unknown';
   const ua = navigator.userAgent || '';
   const platform = (navigator as any).platform || '';
@@ -87,7 +87,7 @@ export class WebNativeHealthAdapter implements NativeHealthAdapter {
   }
 }
 
-export const nativeHealthAdapter = new WebNativeHealthAdapter();
+const nativeHealthAdapter = new WebNativeHealthAdapter();
 
 export function describeNativeSupport(): { platform: HealthPlatform; supported: boolean; detail: string } {
   const state = nativeHealthAdapter.detect();

@@ -30,6 +30,7 @@ import { mobile2HealthHi } from './areas/mobile2health';
 import { mobile2Hi } from './areas/mobile2';
 import { mobile2OrdersHi } from './areas/mobile2Orders';
 import { mobile2WebHi } from './areas/mobile2Web';
+import { newsroomContentHi } from './areas/newsroomContent';
 import { newsroomHi } from './areas/newsroom';
 import { onboardHi } from './areas/onboard';
 import { partnerConsoleHi } from './areas/partnerConsole';
@@ -51,6 +52,7 @@ import { studentshellHi } from './areas/studentshell';
 import { studentwebHi } from './areas/studentweb';
 import { studentwebT1Hi } from './areas/studentwebT1';
 import { teamAccountsHi } from './areas/teamAccounts';
+import { walletHi } from './areas/wallet';
 import { wellnessHi } from './areas/wellness';
 // keep-sorted end
 
@@ -93,6 +95,7 @@ export const areasHi = {
   ...mobile2Hi,
   ...mobile2OrdersHi,
   ...mobile2WebHi,
+  ...newsroomContentHi,
   ...newsroomHi,
   ...onboardHi,
   ...partnerConsoleHi,
@@ -114,6 +117,7 @@ export const areasHi = {
   ...studentwebHi,
   ...studentwebT1Hi,
   ...teamAccountsHi,
+  ...walletHi,
   ...wellnessHi,
   // keep-sorted end
 };

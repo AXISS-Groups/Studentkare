@@ -26,7 +26,7 @@ import './inbox.css';
 
 export type InboxKind = 'critical' | 'result' | 'message' | 'renewal' | 'referral';
 
-export interface InboxValue {
+interface InboxValue {
   name: string;
   value: string;
   /** critical: red; out-of-range: amber; normal: plain. */
@@ -79,7 +79,7 @@ export const unconnectedInboxSource: InboxSource = { load: async () => null };
 export type InboxFilter = 'all' | InboxKind;
 
 /** "8 min" / "2 h" as a key and its value. */
-export function ageText(minutes: number): { key: MessageKey; vars: Vars } {
+function ageText(minutes: number): { key: MessageKey; vars: Vars } {
   return minutes < 60 ? { key: 'clinInbox.ageMin', vars: { n: minutes } } : { key: 'clinInbox.ageHours', vars: { n: Math.round(minutes / 60) } };
 }
 

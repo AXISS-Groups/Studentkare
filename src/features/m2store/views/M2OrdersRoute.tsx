@@ -12,7 +12,7 @@ import type { M2OrdersLinks } from './M2OrdersView';
  * width (the pill nav's Orders), and `?order=<id>` one order (the link the
  * order-success screen and the old tracking board used).
  */
-export function M2OrdersRoute(): React.ReactElement {
+export function M2OrdersRoute({ wide = false }: { wide?: boolean } = {}): React.ReactElement {
   const [vm] = useState(() => new OrdersViewModel());
   const [params] = useSearchParams();
   const routerNavigate = useNavigate();
@@ -40,5 +40,5 @@ export function M2OrdersRoute(): React.ReactElement {
     openCrisis: () => navigate('sos'),
     refill: (order, item) => routerNavigate(`/health/refills?order=${encodeURIComponent(order)}&item=${encodeURIComponent(item)}`),
   };
-  return <M2OrdersView vm={vm} links={links} focusId={orderId} />;
+  return <M2OrdersView vm={vm} links={links} focusId={orderId} wide={wide} />;
 }

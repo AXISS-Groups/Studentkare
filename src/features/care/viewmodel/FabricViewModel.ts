@@ -2,7 +2,7 @@ import { makeAutoObservable } from 'mobx';
 import type { FabricOrder, FabricProvider, OrderState } from '@/types';
 import type { FabricStore } from '../store/FabricStore';
 
-export const ORDER_STATE_MACHINE: OrderState[] = [
+const ORDER_STATE_MACHINE: OrderState[] = [
   'created',
   'routed',
   'accepted',

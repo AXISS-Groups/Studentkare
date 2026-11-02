@@ -35,7 +35,7 @@ function isPlan(value: unknown): value is BillingPlan {
 }
 
 /** Fail closed: one malformed plan and no price is shown at all. */
-export function parsePlans(value: unknown): BillingPlan[] | null {
+function parsePlans(value: unknown): BillingPlan[] | null {
   if (typeof value !== 'object' || value === null) return null;
   const plans = (value as Record<string, unknown>).plans;
   return Array.isArray(plans) && plans.every(isPlan) ? plans : null;

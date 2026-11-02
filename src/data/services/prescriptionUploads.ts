@@ -14,10 +14,10 @@ import { ApiError, apiRequest } from './http';
 export const PRESCRIPTION_ACCEPT = [
   'image/jpeg', 'image/png', 'image/heic', 'image/heif', 'image/webp', 'application/pdf', 'image/tiff',
 ] as const;
-export type PrescriptionMimeType = (typeof PRESCRIPTION_ACCEPT)[number];
+type PrescriptionMimeType = (typeof PRESCRIPTION_ACCEPT)[number];
 export const PRESCRIPTION_MAX_BYTES = 10 * 1024 * 1024;
 
-export type RxUploadReviewStatus = 'PENDING' | 'RX_VERIFIED' | 'REJECTED' | 'WITHDRAWN';
+type RxUploadReviewStatus = 'PENDING' | 'RX_VERIFIED' | 'REJECTED' | 'WITHDRAWN';
 
 export interface PharmacyOption {
   id: string;
@@ -45,7 +45,7 @@ export interface PrescriptionReview {
   sentAt: number;
 }
 
-export interface PrescriptionUpload extends StoredPrescription {
+interface PrescriptionUpload extends StoredPrescription {
   reviews: PrescriptionReview[];
 }
 

@@ -5,7 +5,7 @@
 
 import { ModuleConfig, ModuleId } from './moduleManifest';
 
-export interface DomainEvent<T = Record<string, unknown>> {
+interface DomainEvent<T = Record<string, unknown>> {
   /** Event topic name (e.g., 'records.updated') */
   topic: string;
   /** Source module ID emitting the event */

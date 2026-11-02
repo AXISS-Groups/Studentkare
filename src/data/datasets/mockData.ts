@@ -7,7 +7,7 @@ import {
   ClaimAdjudication,
 } from '../../types';
 
-export const mockStudents: StudentProfile[] = [
+const mockStudents: StudentProfile[] = [
   {
     id: 'STU-2026-9812',
     fullName: 'Rohit Sharma',

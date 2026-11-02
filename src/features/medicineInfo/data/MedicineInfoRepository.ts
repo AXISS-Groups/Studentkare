@@ -8,7 +8,7 @@ import { apiRequest } from '@/data/services/http';
  */
 
 export type AgeBand = 'UNDER_2' | 'CHILD' | 'TEEN' | 'ADULT' | 'OLDER_ADULT' | 'PREGNANT_BREASTFEEDING';
-export type Schedule = 'OTC' | 'H' | 'H1' | 'X';
+type Schedule = 'OTC' | 'H' | 'H1' | 'X';
 export type MatchedOn = 'brand' | 'composition' | 'strength';
 
 export interface MedicineSummary {
@@ -25,7 +25,7 @@ export interface MedicineSummary {
   matchedOn: MatchedOn[];
 }
 
-export interface CrisisResource { label: string; number: string; detail: string }
+interface CrisisResource { label: string; number: string; detail: string }
 
 export type SearchResponse =
   | { status: 'OK'; results: MedicineSummary[] }
@@ -34,7 +34,7 @@ export type SearchResponse =
 export interface ReviewNote { source: { title: string; url: string | null }; reviewedOn: string | null }
 export interface ReviewedLines extends ReviewNote { items: string[] }
 export interface AgeEntry { band: AgeBand; form: string; strength: string }
-export interface ReviewedAges extends ReviewNote { items: AgeEntry[] }
+interface ReviewedAges extends ReviewNote { items: AgeEntry[] }
 
 export type BuyState =
   | { state: 'BUY'; itemId: string; pricePaise: number }
@@ -81,7 +81,7 @@ export interface MedicineDetail {
 }
 
 export type ReaderState = 'NOT_CONFIGURED' | 'UNAVAILABLE' | 'READY';
-export type PhotoState = 'NOT_CONFIGURED' | 'UNAVAILABLE' | 'READ' | 'NO_TEXT' | 'FAILED';
+type PhotoState = 'NOT_CONFIGURED' | 'UNAVAILABLE' | 'READ' | 'NO_TEXT' | 'FAILED';
 export interface PhotoResponse { state: PhotoState; text: string; candidates: MedicineSummary[] }
 
 /** A photo chosen on the device; it is sent once to be read and never kept. */

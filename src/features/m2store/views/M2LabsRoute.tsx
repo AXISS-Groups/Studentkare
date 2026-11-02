@@ -12,13 +12,14 @@ import { M2LabsView } from './M2LabsView';
  */
 interface ProfileLine { hostelBlock?: string }
 
-export function M2LabsRoute(): React.ReactElement {
+export function M2LabsRoute({ wide = false }: { wide?: boolean } = {}): React.ReactElement {
   const labs = useLabPackages();
   const profile = useApiResource<ProfileLine>('/profile');
   const [booking, setBooking] = useState<string | null>(null);
   return (
     <>
       <M2LabsView
+        wide={wide}
         phase={labs.phase}
         packages={labs.items}
         retry={labs.reload}

@@ -407,6 +407,7 @@
     "nav-icon":       { "$value": "20px", "$description": "Line icons in the phone tab bar (canvas HomeDiscover bottom bar)" },
     "phone-width":    { "$value": "390px" },
     "phone-frame-max":{ "$value": "430px", "$description": "Widest web viewport that draws the phone boards' frame (phone header and student tab bar) instead of the desktop web shell" },
+    "desktop-min":    { "$value": "880px", "$description": "Narrowest content width (not viewport) that lays Mobile 2.0 pieces out on the desktop grid (useM2Layout: phone up to phone-frame-max, tablet between, desktop from here)" },
     "panel-max":      { "$value": "640px", "$description": "Widest a single-column account or settings panel grows on the web" },
     "web-content-max":{ "$value": "1440px" },
     "web-sidebar":    { "$value": "260px" },

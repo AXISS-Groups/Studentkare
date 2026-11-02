@@ -14,7 +14,7 @@ import { M2TrendsView } from './M2TrendsView';
  * named in the URL: a test name is health data (plan, Rule L), so the screen
  * opens on the first bookmarked test, else the first.
  */
-export function M2TrendsRoute(): React.ReactElement {
+export function M2TrendsRoute({ wide = false }: { wide?: boolean } = {}): React.ReactElement {
   const [vm] = useState(() => new TrendsViewModel());
   const online = useOnline();
   const reviews = useApiResource<Page<ReportReview>>(REVIEWS_PATH);
@@ -24,6 +24,7 @@ export function M2TrendsRoute(): React.ReactElement {
       vm={vm}
       reviews={reviews.data?.items ?? null}
       online={online}
+      wide={wide}
       links={{ back: () => navigate(STUDENT_NAV_ROUTES.health), upload: () => navigate('health/report-upload') }}
     />
   );

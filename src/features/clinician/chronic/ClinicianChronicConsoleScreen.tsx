@@ -100,7 +100,7 @@ export function mapChronic(data: ChronicResponse, t: T, nowSeconds: number = Dat
   };
 }
 
-export function chronicApiSource(t: T, request: Request = apiRequest): ConsoleTableSource {
+function chronicApiSource(t: T, request: Request = apiRequest): ConsoleTableSource {
   return { load: async () => mapChronic(await request<ChronicResponse>('/work/chronic'), t) };
 }
 
@@ -125,7 +125,7 @@ export function chronicSample(): ConsoleTableData {
   };
 }
 
-export function defaultChronicSource(t: T): ConsoleTableSource {
+function defaultChronicSource(t: T): ConsoleTableSource {
   return demoDataEnabled() ? { load: async () => chronicSample() } : chronicApiSource(t);
 }
 

@@ -1,10 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Linking, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { observer } from 'mobx-react-lite';
 import { useT } from '@/i18n';
-import { Button, Card, CodeInput, ErrorState, Note, PhoneInput, Rise, Skeleton, TextField } from '@/design-system';
+import { Button, CodeInput, ErrorState, Note, OfflineBanner, PhoneInput, Rise, Skeleton, TextField, useOnline } from '@/design-system';
 import { Icon } from '@/design-system/icons';
-import { color, focusRing, font, fontWeight, radius, size, space } from '@/design-system/theme';
+import type { SkIconName } from '@/design-system/icons';
+import { M2Callout, M2Card, M2Grid, M2Header, M2PageHero, M2Tile3d, M2WideColumn, useOwnPhoneChrome } from '@/design-system/m2';
+import { color, font, fontWeight, radius, space } from '@/design-system/theme';
 import { ConfirmDialog } from '@/components/interface/ConfirmDialog';
 import { useAuth } from '@/data/contexts/AuthContext';
 import { homeForRole, navigate } from '@/lib/utils/workflowRouting';
@@ -39,9 +41,9 @@ const PasscodeCard = observer(function PasscodeCard({ vm }: { vm: PasscodeViewMo
   if (vm.phase !== 'ready' || !vm.usable) return null;
   const on = vm.hasPasscode;
   return (
-    <Card testID="passcode-card">
+    <M2Card style={styles.cardBox} testID="passcode-card">
       <View style={styles.cardHead}>
-        <Icon name="key" size={22} color={color.action} />
+        <M2Tile3d icon="key" hue="violet" size={48} />
         <View style={styles.cardHeadText}>
           <Text accessibilityRole="header" style={styles.cardTitle}>{t('authpc.card.title')}</Text>
           <Text style={styles.body}>{t('authpc.card.lead')}</Text>
@@ -59,7 +61,7 @@ const PasscodeCard = observer(function PasscodeCard({ vm }: { vm: PasscodeViewMo
         onPress={() => navigate('set-passcode')}
         icon={on ? undefined : <Icon name="key" size={16} color={color.onAction} />}
       />
-    </Card>
+    </M2Card>
   );
 });
 
@@ -74,9 +76,9 @@ const PasswordCard = observer(function PasswordCard({ vm }: { vm: PasswordCardVi
   const on = vm.status.hasPassword;
   const problem = vm.problem ? t(vm.problem, { min: vm.minLength }) : undefined;
   return (
-    <Card testID="password-card">
+    <M2Card style={styles.cardBox} testID="password-card">
       <View style={styles.cardHead}>
-        <Icon name="lock-keyhole" size={22} color={color.action} />
+        <M2Tile3d icon="lock-keyhole" hue="green" size={48} />
         <View style={styles.cardHeadText}>
           <Text accessibilityRole="header" style={styles.cardTitle}>{t('authpw.card.title')}</Text>
           <Text style={styles.body}>{t('authpw.card.lead')}</Text>
@@ -107,11 +109,11 @@ const PasswordCard = observer(function PasswordCard({ vm }: { vm: PasswordCardVi
         <Button label={t(on ? 'authpw.card.change' : 'authpw.card.set')} variant={on ? 'secondary' : 'primary'} onPress={vm.open}
           icon={on ? undefined : <Icon name="lock-keyhole" size={16} color={color.onAction} />} />
       )}
-    </Card>
+    </M2Card>
   );
 });
 
-const CONTACT_ICON = { EMAIL: 'mail-2', WHATSAPP: 'message-square-text' } as const;
+const CONTACT_ICON: Record<ContactKind, SkIconName> = { EMAIL: 'mail-2', WHATSAPP: 'message-square-text' };
 
 /**
  * Your email and WhatsApp number (plan tier1-auth-password-2026-10-22, section A):
@@ -127,9 +129,9 @@ const ContactsCard = observer(function ContactsCard({ vm }: { vm: ContactsViewMo
     return <ErrorState title={t('contacts.failedTitle')} body={t('contacts.failedBody')} retryLabel={t('common.tryAgain')} onRetry={() => void vm.load()} />;
   }
   return (
-    <Card testID="contacts-card">
+    <M2Card style={styles.cardBox} testID="contacts-card">
       <View style={styles.cardHead}>
-        <Icon name="user" size={22} color={color.action} />
+        <M2Tile3d icon="user" hue="blue" size={48} />
         <View style={styles.cardHeadText}>
           <Text accessibilityRole="header" style={styles.cardTitle}>{t('contacts.title')}</Text>
           <Text style={styles.body}>{t('contacts.lead')}</Text>
@@ -143,7 +145,7 @@ const ContactsCard = observer(function ContactsCard({ vm }: { vm: ContactsViewMo
         return (
           <View key={kind} style={styles.contactRow} testID={`contact-${kind}`}>
             <View style={styles.contactHead}>
-              <Icon name={CONTACT_ICON[kind]} size={20} color={color.text2} />
+              <M2Tile3d icon={CONTACT_ICON[kind]} hue={kind === 'EMAIL' ? 'blue' : 'green'} size={40} />
               <View style={styles.contactText}>
                 <Text style={styles.contactKind}>{kindLabel(kind)}</Text>
                 <Text style={styles.contactValue}>{contact ? contact.value : t('contacts.none')}</Text>
@@ -196,7 +198,7 @@ const ContactsCard = observer(function ContactsCard({ vm }: { vm: ContactsViewMo
         onConfirm={() => void vm.remove()}
         onCancel={vm.cancelRemove}
       />
-    </Card>
+    </M2Card>
   );
 });
 
@@ -206,6 +208,7 @@ export const SignInSecurityView = observer(function SignInSecurityView({
   passcode,
   contacts,
   password,
+  wide = false,
 }: {
   viewModel: TwoFactorViewModel;
   /** Shown once a held session has turned 2FA on: back to the workspace. */
@@ -216,50 +219,33 @@ export const SignInSecurityView = observer(function SignInSecurityView({
   contacts?: ContactsViewModel;
   /** Students: their password. */
   password?: PasswordCardViewModel;
+  /** In the desktop shell's column: two columns of cards (Tier 1 parity plan 2026-10-24 §17). */
+  wide?: boolean;
 }) {
   const t = useT();
+  useOwnPhoneChrome();
+  const online = useOnline();
   const status = vm.status;
   const enrolment = vm.enrolment;
 
-  return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-      <Rise>
-        <Text accessibilityRole="header" style={styles.title}>{t('sec.title')}</Text>
-        <Text style={styles.lead}>{t('sec.lead')}</Text>
-      </Rise>
+  const lost = (
+    <M2Callout tone="danger" icon="phone-off" hue="danger" title={t('sec.lost.title')} body={t('sec.lost.body')} testID="security-lost"
+      action={{ label: t('sec.lost.cta'), spoken: `${t('sec.lost.title')} ${t('sec.lost.cta')}`, onPress: () => navigate('lost-phone') }} />
+  );
 
-      <Pressable
-        accessibilityRole="link"
-        accessibilityLabel={`${t('sec.lost.title')} ${t('sec.lost.cta')}`}
-        onPress={() => navigate('lost-phone')}
-        style={({ focused }) => [styles.lost, focused ? focusRing : null]}
-      >
-        <Icon name="phone-off" size={22} color={color.danger} />
-        <View style={styles.lostText}>
-          <Text style={styles.lostTitle}>{t('sec.lost.title')}</Text>
-          <Text style={styles.lostBody}>{t('sec.lost.body')}</Text>
-        </View>
-        <View style={styles.lostCta}>
-          <Text style={styles.lostTitle}>{t('sec.lost.cta')}</Text>
-          <Icon name="arrow-right" size={16} color={color.danger} />
-        </View>
-      </Pressable>
-
-      {contacts ? <Rise index={1}><ContactsCard vm={contacts} /></Rise> : null}
-      {password ? <Rise index={1}><PasswordCard vm={password} /></Rise> : null}
-      {passcode ? <Rise index={1}><PasscodeCard vm={passcode} /></Rise> : null}
-
-      {vm.phase === 'loading' ? <Skeleton label={t('sec.loading')} lines={['50%', '100%', '80%']} /> : null}
+  const twoStep = (
+    <>
+      {vm.phase === 'loading' ? <M2Card style={styles.cardBox}><Skeleton label={t('sec.loading')} lines={['50%', '100%', '80%']} /></M2Card> : null}
 
       {vm.phase === 'failed' ? (
-        <ErrorState title={t('sec.failedTitle')} body={t('sec.failedBody')} retryLabel={t('common.tryAgain')} onRetry={() => void vm.load()} />
+        <M2Card style={styles.cardBox}><ErrorState title={t('sec.failedTitle')} body={t('sec.failedBody')} retryLabel={t('common.tryAgain')} onRetry={() => void vm.load()} /></M2Card>
       ) : null}
 
       {vm.phase === 'ready' && status ? (
         <Rise index={1}>
-          <Card testID="two-step-card">
+          <M2Card style={styles.cardBox} testID="two-step-card">
             <View style={styles.cardHead}>
-              <Icon name={status.enabled ? 'shield-check-2' : 'lock-keyhole'} size={22} color={color.action} />
+              <M2Tile3d icon={status.enabled ? 'shield-check-2' : 'shield-check'} hue="indigo" size={48} />
               <View style={styles.cardHeadText}>
                 <Text accessibilityRole="header" style={styles.cardTitle}>{t('sec.twofa.title')}</Text>
                 <Text style={styles.body}>{t('sec.twofa.lead')}</Text>
@@ -283,7 +269,7 @@ export const SignInSecurityView = observer(function SignInSecurityView({
                   <Button label={t('sec.twofa.continue')} onPress={onContinue} icon={<Icon name="arrow-right" size={16} color={color.onAction} />} />
                 ) : null}
                 {!status.required ? (
-                  <Button label={t('sec.twofa.turnOff')} variant="secondary" onPress={vm.askToDisable} disabled={vm.busy} />
+                  <Button label={t('sec.twofa.turnOff')} variant="secondary" onPress={vm.askToDisable} disabled={vm.busy || !online} />
                 ) : null}
               </>
             ) : enrolment ? (
@@ -310,7 +296,7 @@ export const SignInSecurityView = observer(function SignInSecurityView({
                     testID="two-step-code"
                   />
                   <View style={styles.actions}>
-                    <Button label={t('sec.twofa.turnOn')} onPress={() => void vm.enable()} busy={vm.busy} disabled={!vm.canEnable && !vm.busy} />
+                    <Button label={t('sec.twofa.turnOn')} onPress={() => void vm.enable()} busy={vm.busy} disabled={(!vm.canEnable || !online) && !vm.busy} />
                     <Button label={t('common.cancel')} variant="ghost" onPress={vm.cancelSetup} disabled={vm.busy} />
                   </View>
                 </View>
@@ -318,66 +304,113 @@ export const SignInSecurityView = observer(function SignInSecurityView({
             ) : (
               <>
                 <Text style={styles.body}>{t('sec.twofa.statusOff')}</Text>
-                <Button label={t('sec.twofa.setUp')} onPress={() => void vm.startSetup()} busy={vm.busy}
+                <Button label={t('sec.twofa.setUp')} onPress={() => void vm.startSetup()} busy={vm.busy} disabled={!online && !vm.busy}
                   icon={<Icon name="shield" size={16} color={color.onAction} />} />
               </>
             )}
-          </Card>
+          </M2Card>
         </Rise>
       ) : null}
+    </>
+  );
 
-      <View style={styles.later}>
-        <View style={styles.half}><Card testID="sessions-card">
-          <View style={styles.cardHead}>
-            <Icon name="devices" size={22} color={color.text2} />
-            <View style={styles.cardHeadText}>
-              <Text accessibilityRole="header" style={styles.cardTitle}>{t('sec.sessions.title')}</Text>
-              <Text style={styles.body}>{t('sec.sessions.lead')}</Text>
-            </View>
+  const later = (
+    <M2Grid columns={{ phone: 1, tablet: 2, desktop: 2 }}>
+      <M2Card fill style={styles.cardBox} testID="sessions-card">
+        <View style={styles.cardHead}>
+          <M2Tile3d icon="devices" hue="indigo" size={40} />
+          <View style={styles.cardHeadText}>
+            <Text accessibilityRole="header" style={styles.cardTitle}>{t('sec.sessions.title')}</Text>
+            <Text style={styles.body}>{t('sec.sessions.lead')}</Text>
           </View>
-          <Note tone="info">{t('sec.sessions.unavailable')}</Note>
-        </Card></View>
-        <View style={styles.half}><Card testID="history-card">
-          <View style={styles.cardHead}>
-            <Icon name="lock-keyhole" size={22} color={color.text2} />
-            <View style={styles.cardHeadText}>
-              <Text accessibilityRole="header" style={styles.cardTitle}>{t('sec.history.title')}</Text>
-              <Text style={styles.body}>{t('sec.history.lead')}</Text>
-            </View>
+        </View>
+        <Note tone="info">{t('sec.sessions.unavailable')}</Note>
+      </M2Card>
+      <M2Card fill style={styles.cardBox} testID="history-card">
+        <View style={styles.cardHead}>
+          <M2Tile3d icon="clock-3" hue="indigo" size={40} />
+          <View style={styles.cardHeadText}>
+            <Text accessibilityRole="header" style={styles.cardTitle}>{t('sec.history.title')}</Text>
+            <Text style={styles.body}>{t('sec.history.lead')}</Text>
           </View>
-          <Note tone="info">{t('sec.history.unavailable')}</Note>
-        </Card></View>
+        </View>
+        <Note tone="info">{t('sec.history.unavailable')}</Note>
+      </M2Card>
+    </M2Grid>
+  );
+
+  const dialog = (
+    <ConfirmDialog
+      open={vm.confirmingOff}
+      tone="destructive"
+      title={t('sec.twofa.offTitle')}
+      body={(
+        <View style={styles.dialogBody}>
+          <Text style={styles.body}>{t('sec.twofa.offBody')}</Text>
+          <CodeInput
+            label={t('sec.twofa.codeLabel')}
+            value={vm.offCode}
+            onChangeText={vm.setOffCode}
+            error={vm.error ? t(vm.error) : undefined}
+            disabled={vm.busy}
+            testID="two-step-off-code"
+          />
+        </View>
+      )}
+      confirmLabel={t('sec.twofa.turnOff')}
+      cancelLabel={t('common.cancel')}
+      busy={vm.busy}
+      onConfirm={() => void vm.disable()}
+      onCancel={vm.cancelDisable}
+    />
+  );
+
+  const hero = <M2PageHero hue="blue" icon="lock" title={wide ? t('sec.title') : undefined} body={t('sec.lead')} testID="security-hero" art={<M2Tile3d icon="lock" hue="blue" size={96} float />} artOnPhone={false} />;
+  const offline = !online ? <OfflineBanner message={t('common.retryConnection')} /> : null;
+
+  if (wide) {
+    return (
+      <M2WideColumn testID="security">
+        <M2Header backLabel={t('common.back')} onBack={() => navigate('profile')} title={t('sec.title')} testID="security-header" />
+        {hero}
+        {offline}
+        {lost}
+        <M2Grid columns={{ desktop: 2, tablet: 1 }}>
+          <View style={styles.column}>
+            {twoStep}
+            {passcode ? <PasscodeCard vm={passcode} /> : null}
+          </View>
+          <View style={styles.column}>
+            {password ? <PasswordCard vm={password} /> : null}
+            {contacts ? <ContactsCard vm={contacts} /> : null}
+          </View>
+        </M2Grid>
+        {later}
+        {dialog}
+      </M2WideColumn>
+    );
+  }
+
+  return (
+    <ScrollView style={styles.screen} contentContainerStyle={styles.content} testID="security">
+      <M2Header backLabel={t('common.back')} onBack={() => navigate('profile')} title={t('sec.title')} testID="security-header" />
+      <View style={[styles.gutter, styles.column]}>
+        {hero}
+        {offline}
+        {lost}
+        {twoStep}
+        {passcode ? <Rise index={1}><PasscodeCard vm={passcode} /></Rise> : null}
+        {password ? <Rise index={1}><PasswordCard vm={password} /></Rise> : null}
+        {contacts ? <Rise index={1}><ContactsCard vm={contacts} /></Rise> : null}
+        {later}
       </View>
-
-      <ConfirmDialog
-        open={vm.confirmingOff}
-        tone="destructive"
-        title={t('sec.twofa.offTitle')}
-        body={(
-          <View style={styles.dialogBody}>
-            <Text style={styles.body}>{t('sec.twofa.offBody')}</Text>
-            <CodeInput
-              label={t('sec.twofa.codeLabel')}
-              value={vm.offCode}
-              onChangeText={vm.setOffCode}
-              error={vm.error ? t(vm.error) : undefined}
-              disabled={vm.busy}
-              testID="two-step-off-code"
-            />
-          </View>
-        )}
-        confirmLabel={t('sec.twofa.turnOff')}
-        cancelLabel={t('common.cancel')}
-        busy={vm.busy}
-        onConfirm={() => void vm.disable()}
-        onCancel={vm.cancelDisable}
-      />
+      {dialog}
     </ScrollView>
   );
 });
 
 /** Owns the view model's lifetime: the secret is dropped when the screen is left. */
-export function SignInSecurityRoute(): React.ReactElement {
+export function SignInSecurityRoute({ wide = false }: { wide?: boolean } = {}): React.ReactElement {
   const auth = useAuth();
   const latest = useRef(auth);
   latest.current = auth;
@@ -405,6 +438,7 @@ export function SignInSecurityRoute(): React.ReactElement {
   return (
     <SignInSecurityView
       viewModel={vm}
+      wide={wide}
       onContinue={role ? () => navigate(homeForRole(role)) : undefined}
       passcode={role === 'STUDENT' ? passcode : undefined}
       contacts={role === 'STUDENT' ? contacts : undefined}
@@ -415,17 +449,10 @@ export function SignInSecurityRoute(): React.ReactElement {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.canvas },
-  content: { padding: space.gutterPhone, gap: space.s16, maxWidth: 1120 },
-  title: { fontFamily: font.family.sans, fontSize: font.size.heading, fontWeight: fontWeight(font.weight.heavy), color: color.text },
-  lead: { fontFamily: font.family.sans, fontSize: font.size.body, color: color.text2, marginTop: space.s4 },
-  lost: {
-    flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: space.s12, minHeight: size.touchTarget,
-    padding: space.s16, borderRadius: radius.xl, backgroundColor: color.dangerBg, borderWidth: 1, borderColor: color.danger,
-  },
-  lostText: { flex: 1, minWidth: 180, gap: space.s2 },
-  lostTitle: { fontFamily: font.family.sans, fontSize: font.size.bodySm, fontWeight: fontWeight(font.weight.heavy), color: color.danger },
-  lostBody: { fontFamily: font.family.sans, fontSize: font.size.caption, color: color.danger },
-  lostCta: { flexDirection: 'row', alignItems: 'center', gap: space.s4 },
+  content: { gap: space.s14, paddingBottom: space.s40 },
+  gutter: { paddingHorizontal: space.gutterPhone },
+  column: { gap: space.s14 },
+  cardBox: { padding: space.s16, gap: space.s12 },
   cardHead: { flexDirection: 'row', alignItems: 'flex-start', gap: space.s12, flexWrap: 'wrap' },
   cardHeadText: { flex: 1, minWidth: 200, gap: space.s4 },
   cardTitle: { fontFamily: font.family.sans, fontSize: font.size.titleSm, fontWeight: fontWeight(font.weight.heavy), color: color.text },
@@ -442,13 +469,10 @@ const styles = StyleSheet.create({
   secret: { fontFamily: font.family.mono, fontSize: font.size.body, color: color.clinicalValue, letterSpacing: 1 },
   actions: { flexDirection: 'row', flexWrap: 'wrap', gap: space.s8 },
   dialogBody: { gap: space.s12 },
-  contactRow: { gap: space.s10, paddingTop: space.s12, borderTopWidth: 1, borderTopColor: color.rule },
+  contactRow: { gap: space.s10, paddingTop: space.s12, borderTopWidth: 1, borderTopColor: color.ruleSoft },
   contactHead: { flexDirection: 'row', alignItems: 'flex-start', gap: space.s10, flexWrap: 'wrap' },
   contactText: { flex: 1, minWidth: 160, gap: space.s2 },
   contactKind: { fontFamily: font.family.sans, fontSize: font.size.caption, fontWeight: fontWeight(font.weight.heavy), color: color.text2 },
-  contactValue: { fontFamily: font.family.sans, fontSize: font.size.bodySm, color: color.text },
+  contactValue: { fontFamily: font.family.sans, fontSize: font.size.bodySm, fontWeight: fontWeight(font.weight.heavy), color: color.text },
   contactForm: { gap: space.s10 },
-  // Two cards side by side on the web board, stacked when narrow.
-  later: { flexDirection: 'row', flexWrap: 'wrap', gap: space.s16, alignItems: 'stretch' },
-  half: { flexGrow: 1, flexBasis: 320, minWidth: 0 },
 });

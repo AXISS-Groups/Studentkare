@@ -8,6 +8,9 @@
 }
 html[data-theme='dark'] { color-scheme: dark; --care-shadow: var(--sk-shadow-card); --care-shadow-raised: var(--sk-shadow-float); }
 html[data-theme='light'] { color-scheme: light; }
+/* The page behind the app follows the theme too (index.html paints a light splash before it loads), so
+   nothing under a page that ends below the window shows a light strip in dark mode (parity, #242). */
+html[data-theme] { background-color: var(--sk-color-canvas); }
 .wf-application { background: var(--canvas); color: var(--text); -webkit-font-smoothing: antialiased; }
 .wf-application *, .wf-application *::before, .wf-application *::after { box-sizing: border-box; }
 /* :where keeps this at element specificity, so a heading with its own colour (a

@@ -200,6 +200,18 @@ describe('M2RefillsView', () => {
     expect(screen.queryByTestId('m2-refill-reorder-r1')).toBeNull();
   });
 
+  it('wide (desktop shell): the same board in the page column, without its own SOS (the shell has one), axe-clean', async () => {
+    const vm = new RefillsViewModel(fakeApi());
+    vm.load();
+    const { container } = wrap(<M2RefillsView vm={vm} links={refillLinks()} wide />);
+    await waitFor(() => expect(screen.getByTestId('m2-refill-r1')).toBeTruthy());
+    expect(screen.queryByTestId('m2-refill-sos')).toBeNull();
+    expect(screen.getByTestId('m2-refill-back')).toBeTruthy();
+    expect(screen.getByTestId('m2-refill-reorder-r1')).toBeTruthy();
+    const violations = await axeViolations(container);
+    expect(violations, describeViolations(violations)).toEqual([]);
+  });
+
   it('has a first-time state with one next step', async () => {
     const vm = new RefillsViewModel(fakeApi({ list: vi.fn(async () => []) }));
     vm.load();

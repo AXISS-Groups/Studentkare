@@ -5,7 +5,7 @@ import { translate } from '@/i18n';
 import type { MessageKey, Said } from '@/i18n';
 
 /** backend/services/student_requests.py */
-export type RequestKind = 'ORDER' | 'APPOINTMENT' | 'RETURN' | 'HOSTEL_VISIT' | 'REFILL' | 'SUPPORT';
+type RequestKind = 'ORDER' | 'APPOINTMENT' | 'RETURN' | 'HOSTEL_VISIT' | 'REFILL' | 'SUPPORT';
 
 export interface RequestItem {
   kind: RequestKind;

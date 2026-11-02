@@ -16,7 +16,7 @@ export interface MediaGrant {
   expiresAt: number;
 }
 
-export type MediaRefusal = 'NOT_CONFIRMED' | 'OUTSIDE_WINDOW' | 'NOT_A_CONSULTATION' | 'NOT_FOUND';
+type MediaRefusal = 'NOT_CONFIRMED' | 'OUTSIDE_WINDOW' | 'NOT_A_CONSULTATION' | 'NOT_FOUND';
 
 export type MediaTokenResult =
   | { kind: 'granted'; grant: MediaGrant }

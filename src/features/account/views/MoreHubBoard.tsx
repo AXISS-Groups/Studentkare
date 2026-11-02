@@ -20,7 +20,7 @@ export interface MoreAccount {
 }
 
 /** A destination on the board; omitted where the platform has no such screen (the row is then not drawn). */
-export type MoreDestination =
+type MoreDestination =
   | 'account' | 'records' | 'orders' | 'requests' | 'notifications' | 'pass' | 'verify' | 'campus' | 'profile'
   | 'permissions' | 'ayush' | 'crisis' | 'plan' | 'help' | 'joinClinician' | 'joinPartner' | 'website';
 

@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 
+
 // A student chooses the collection time for a test their doctor ordered.
 const answers: Record<string, unknown> = {};
 const failures: Record<string, Error> = {};
@@ -16,8 +17,16 @@ const user = { id: 'pt-1', role: 'STUDENT' };
 vi.mock('../../../data/contexts/AuthContext', () => ({ useAuth: () => ({ user, logout: vi.fn() }) }));
 vi.mock('@/data/contexts/AuthContext', () => ({ useAuth: () => ({ user, logout: vi.fn() }) }));
 
-import { MyPrescriptionsPanel } from '../MyPrescriptionsPanel';
+import React from 'react';
+import { BrowserRouter } from '@/core/navigation';
+import { HealthVaultRoute } from '@/features/vault/views/HealthVaultRoute';
 import { LabQueuePanel } from '../FulfilmentQueuePanel';
+
+/** The vault's Prescriptions tab (Tier 1 parity plan 2026-10-24 §7): the page /prescriptions redirects to. */
+function renderPrescriptions() {
+  window.history.pushState({}, '', '/records?tab=prescriptions');
+  return render(<BrowserRouter><HealthVaultRoute /></BrowserRouter>);
+}
 
 const FUTURE = '2099-01-05T08:00:00+05:30';
 const FUTURE_END = '2099-01-05T08:30:00+05:30';
@@ -32,12 +41,14 @@ beforeEach(() => {
   for (const store of [answers, failures]) Object.keys(store).forEach(key => delete store[key]);
   apiRequest.mockClear();
   answers['/prescriptions?limit=20'] = { items: [], total: 0 };
+  answers['/health/documents?limit=100'] = { items: [{ id: 'd1', title: 'Doc', category: 'LAB', createdAt: 1 }], total: 1 };
+  answers['/records/shares'] = { items: [] };
 });
 
 describe('A test the student booked and has not paid for (live-run audit #2)', () => {
   it('reads "Awaiting payment" and says it has not gone to the lab, not "Booked"', async () => {
     answers['/lab-orders?limit=20'] = { items: [order({ orderedByDoctor: '', paymentStatus: 'UNPAID' })], total: 1 };
-    render(<MyPrescriptionsPanel />);
+    renderPrescriptions();
     expect(await screen.findByText('Awaiting payment')).toBeTruthy();
     expect(screen.getByText(/Not sent to the lab yet/)).toBeTruthy();
     expect(screen.queryByText('Booked')).toBeNull();
@@ -49,7 +60,7 @@ describe('Choosing a collection time for a doctor-ordered test', () => {
     answers['/lab-orders?limit=20'] = { items: [order()], total: 1 };
     answers['/lab-orders/lab-12345678/slots'] = { slots: [slot] };
     answers['/lab-orders/lab-12345678/slot'] = order({ slotStart: FUTURE });
-    render(<MyPrescriptionsPanel />);
+    renderPrescriptions();
 
     fireEvent.click(await screen.findByRole('button', { name: 'Choose a collection time for Complete Blood Count' }));
     const dialog = await screen.findByRole('dialog');
@@ -71,7 +82,7 @@ describe('Choosing a collection time for a doctor-ordered test', () => {
   it('says so calmly when the lab has published no times', async () => {
     answers['/lab-orders?limit=20'] = { items: [order({ fastingRequired: false })], total: 1 };
     answers['/lab-orders/lab-12345678/slots'] = { slots: [] };
-    render(<MyPrescriptionsPanel />);
+    renderPrescriptions();
     fireEvent.click(await screen.findByRole('button', { name: /Choose a collection time/ }));
     expect(await screen.findByText(/has not published any times/)).toBeTruthy();
     expect(screen.queryByText(/taken fasting/)).toBeNull();
@@ -81,7 +92,7 @@ describe('Choosing a collection time for a doctor-ordered test', () => {
     answers['/lab-orders?limit=20'] = { items: [order()], total: 1 };
     answers['/lab-orders/lab-12345678/slots'] = { slots: [slot] };
     failures['/lab-orders/lab-12345678/slot'] = new Error('The laboratory has already scheduled this collection.');
-    render(<MyPrescriptionsPanel />);
+    renderPrescriptions();
     fireEvent.click(await screen.findByRole('button', { name: /Choose a collection time/ }));
     const select = await screen.findByLabelText('Available provider slots') as HTMLSelectElement;
     await waitFor(() => expect(select.disabled).toBe(false));
@@ -96,7 +107,7 @@ describe('Choosing a collection time for a doctor-ordered test', () => {
       order({ id: 'lab-bbbbbbbb', orderedByDoctor: '' }),
       order({ id: 'lab-cccccccc', status: 'ASSIGNED', collectorName: 'P. Rao' }),
     ], total: 3 };
-    render(<MyPrescriptionsPanel />);
+    renderPrescriptions();
     expect(await screen.findByRole('button', { name: /Change the collection time/ })).toBeTruthy();
     expect(screen.queryAllByRole('button', { name: /Choose a collection time/ })).toHaveLength(0);
     expect(screen.getByText(/^Collection time:/)).toBeTruthy();

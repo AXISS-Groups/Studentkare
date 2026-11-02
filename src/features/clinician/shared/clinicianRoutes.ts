@@ -8,7 +8,7 @@
  */
 // `/notifications` and `/support` are the shell's top-bar and footer links; other
 // roles open them in their own workspace, which this key does not change.
-export const CLINICIAN_CONSOLE_PATHS = ['/clinician', '/earnings', '/chronic', '/report-reviews', '/clinical-review', '/clinical-notes', '/notifications', '/support'] as const;
+const CLINICIAN_CONSOLE_PATHS = ['/clinician', '/earnings', '/chronic', '/report-reviews', '/clinical-review', '/clinical-notes', '/notifications', '/support'] as const;
 
 export function isClinicianConsolePath(pathname: string): boolean {
   return CLINICIAN_CONSOLE_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`));

@@ -489,7 +489,7 @@ def seed_labs(db: Session, world: World, total: int) -> None:
                 value = round(rng.uniform(low * 0.8, high * 1.2 if not critical else high * 2), 2)
                 results.append({"id": sid("res", len(results)), "account_id": student["id"], "test_code": None,
                                 "test_name_as_printed": analyte, "value_numeric": value, "value_text": "", "unit": unit,
-                                "ref_low": low, "ref_high": high, "ref_text": "", "collected_on": date.fromtimestamp(created + DAY),
+                                "ref_low": low, "ref_high": high, "ref_text": "", "collected_on": datetime.fromtimestamp(created + DAY, tz=timezone.utc).date(),
                                 "lab_name": "Test Lab", "source": "LAB_RELEASED", "document_id": None, "lab_order_id": order_id,
                                 "status": "CONFIRMED", "created_at": created + 2 * DAY, "confirmed_at": created + 2 * DAY})
     world.add("lab orders", bulk(db, M.LabOrder, lab_orders))

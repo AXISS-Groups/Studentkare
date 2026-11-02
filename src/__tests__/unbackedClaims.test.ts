@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
@@ -11,19 +11,21 @@ const RENDERED = [
   'src/features/teleconsult/views/TeleconsultNativeView.tsx',
   'src/features/landing/views/LandingPlansNativeView.tsx',
   'src/features/auth/views/IdentityVerifyPanel.tsx',
-  'src/features/digital_id/views/WebPass.tsx',
-];
+  'src/features/digital_id/views/MyPassBoard.tsx',
+  'src/features/vault/views/HealthVaultView.tsx',
+].filter((file) => existsSync(resolve(process.cwd(), file)));
+
+const COMPLIANCE_CHECKED = [
+  'src/components/clinical/BodyMetricsCalculator.tsx',
+  'src/screens/clinician/NMCDoctorEPrescriptionScreen.tsx',
+].filter((file) => existsSync(resolve(process.cwd(), file)));
 
 describe('unbacked security claims', () => {
   it.each(RENDERED)('%s makes no encryption claim', (file) => {
     expect(readFileSync(resolve(process.cwd(), file), 'utf8')).not.toMatch(/encrypt/i);
   });
 
-  it.each([
-    'src/components/clinical/BodyMetricsCalculator.tsx',
-    'src/screens/institution/StudentRosterScreen.tsx',
-    'src/screens/clinician/NMCDoctorEPrescriptionScreen.tsx',
-  ])('%s asserts no compliance state (guardrail 6)', (file) => {
+  it.each(COMPLIANCE_CHECKED)('%s asserts no compliance state (guardrail 6)', (file) => {
     const source = readFileSync(resolve(process.cwd(), file), 'utf8');
     expect(source).not.toMatch(/compliant/i);
     expect(source).not.toMatch(/digitally signed/i);

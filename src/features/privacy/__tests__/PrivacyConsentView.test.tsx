@@ -10,7 +10,7 @@ vi.mock('@/lib/utils/workflowRouting', async (importOriginal) => ({ ...(await im
 
 const SIGNED_UP = 1_760_000_000;
 
-function overview(ayushOn: boolean, withdrawnAt: number | null = null): ConsentOverview {
+function overview(ayushOn: boolean, withdrawnAt: number | null = null, walletOn = false): ConsentOverview {
   return {
     required: { purposes: ['RECORDS_STORAGE', 'CAMPUS_ENROLMENT', 'ADULT_18_PLUS'], version: 'signup-2026-10-16b', language: 'en', givenAt: SIGNED_UP, noticeVersion: 'unpublished', termsVersion: '2026-11-01' },
     optional: [
@@ -19,6 +19,7 @@ function overview(ayushOn: boolean, withdrawnAt: number | null = null): ConsentO
       { purpose: 'PICKUP_LOCATION', on: false, canGiveHere: true, version: null, givenAt: null, withdrawnAt: null },
       { purpose: 'PREVENTIVE_OFFERS', on: false, canGiveHere: true, version: null, givenAt: null, withdrawnAt: null },
       { purpose: 'SEASONAL_EDUCATION', on: false, canGiveHere: true, version: null, givenAt: null, withdrawnAt: null },
+      { purpose: 'WALLET_GOOGLE', on: walletOn, canGiveHere: walletOn, version: walletOn ? 'wallet-google-2026-10-24' : null, givenAt: walletOn ? SIGNED_UP : null, withdrawnAt: null },
     ],
     history: [{ purposes: ['RECORDS_STORAGE', 'CAMPUS_ENROLMENT', 'ADULT_18_PLUS'], version: 'signup-2026-10-16b', givenAt: SIGNED_UP, withdrawnAt: null }],
   };
@@ -69,6 +70,18 @@ describe('Privacy & consent (audit H2)', () => {
     render(<PrivacyConsentView repository={repo} />);
     fireEvent.click(await screen.findByRole('button', { name: 'Register as a donor first' }));
     expect(navigate).toHaveBeenCalledWith('lifeshare');
+  });
+
+  it('Google Wallet consent is given on the emergency card and withdrawn here (plan tier1-emergency-card-wallet-2026-10-24)', async () => {
+    const change = vi.fn().mockResolvedValue(overview(false));
+    const off = { consents: vi.fn().mockResolvedValue(overview(false)), change };
+    const { unmount } = render(<PrivacyConsentView repository={off} />);
+    fireEvent.click(await screen.findByRole('button', { name: 'Add from your emergency card' }));
+    expect(navigate).toHaveBeenCalledWith('emergency-card');
+    unmount();
+    render(<PrivacyConsentView repository={{ consents: vi.fn().mockResolvedValue(overview(false, null, true)), change }} />);
+    fireEvent.click(await screen.findByRole('switch', { name: /Emergency card in Google Wallet On/ }));
+    expect(change).toHaveBeenCalledWith('WALLET_GOOGLE', false, 'en');
   });
 
   it('shows a calm error with a retry when the consents cannot load', async () => {

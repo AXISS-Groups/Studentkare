@@ -29,7 +29,7 @@ const STAGES: readonly { id: string; label: MessageKey; meta: MessageKey; outcom
 ];
 
 /** Turns that ended in a refusal (anything but an answer), as a share of all recorded turns. */
-export const refusalRate = (quality: AyushQuality) => 1 - quality.answerRate;
+const refusalRate = (quality: AyushQuality) => 1 - quality.answerRate;
 
 /**
  * AI governance (design: AiGovernance, Tier 1). From GET /ops/agents/ayush/quality (the

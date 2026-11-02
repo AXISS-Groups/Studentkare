@@ -5,6 +5,8 @@ import { Icon } from '@/design-system/icons';
 import { EmptyState, ErrorState, Rise, Skeleton } from '@/design-system';
 import {
   Gradient, LiftCard, M2Card, M2Heading, M2_NAV_CLEARANCE, RoundButton, SERVICE_HUES, floatTransform, heroStops, m2Text, useAmbientMotion, useLoop, useOwnPhoneChrome,
+  M2HeaderSos,
+  M2WideColumn,
 } from '@/design-system/m2';
 import type { PressState } from '@/design-system/m2';
 import { color, focusRing, font, fontWeight, motion, radius, size, space, webOnly } from '@/design-system/theme';
@@ -69,19 +71,22 @@ function Offering({ o }: { o: VaccineOffering }) {
   );
 }
 
-export const M2VaccinesView = observer(function M2VaccinesView({ vm, links }: { vm: VaccinesViewModel; links: M2VaccinesLinks }) {
+export const M2VaccinesView = observer(function M2VaccinesView({ vm, links, wide = false }: { vm: VaccinesViewModel; links: M2VaccinesLinks; /** Laid out wide in the desktop web shell (parity phase 2). */ wide?: boolean }) {
   const t = useT();
   useOwnPhoneChrome();
   const res = vm.offerings;
   const selected = vm.selected;
-  return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content} testID="m2-vaccines">
+  // Wide, the shell's page column gives the gutter (parity phase 2).
+  const gutter = wide ? undefined : styles.gutter;
+  const board = (
+    <>
       <Rise>
-        <Gradient colors={heroStops('amber')} angle={160} style={styles.hero}>
+        <Gradient colors={heroStops('amber')} angle={160} style={[styles.hero, wide ? styles.heroWide : null]}>
           <View pointerEvents="none" style={styles.heroRing} />
           <View style={styles.heroHead}>
             <RoundButton icon="arrow-left" label={t('m2.backHome')} onPress={links.back} onHero testID="m2-vac-back" />
             <Text style={styles.heroEyebrow}>{t('m2.vac.eyebrow')}</Text>
+            <M2HeaderSos push />
           </View>
           <Art />
           <M2Heading level={1} style={styles.heroTitle}>{t('m2.vac.title')}</M2Heading>
@@ -89,7 +94,7 @@ export const M2VaccinesView = observer(function M2VaccinesView({ vm, links }: { 
         </Gradient>
       </Rise>
 
-      <Rise index={1} style={styles.gutter}>
+      <Rise index={1} style={gutter}>
         <LiftCard label={`${t('m2.vac.record')}. ${t('m2.vac.recordBody')}`} onPress={links.myHealth} testID="m2-vac-record" style={styles.record}>
           <TileIcon icon="heart-3" fill={color.serviceRoseSoft} ink={color.serviceRoseInk} />
           <View style={styles.grow}>
@@ -102,7 +107,7 @@ export const M2VaccinesView = observer(function M2VaccinesView({ vm, links }: { 
 
       <Rise index={2}>
         <M2Heading style={[m2Text.section, styles.gutter, styles.sectionTitle]}>{t('m2.vac.book')}</M2Heading>
-        <View style={styles.gutter}>
+        <View style={gutter}>
           {res.phase === 'loading' ? <Skeleton label={t('pb.prev.loading')} lines={['100%', '80%', '100%']} /> : null}
           {res.phase === 'error' ? <ErrorState title={t('pb.prev.failedTitle')} body={t('pb.yc.failedBody')} retryLabel={t('common.tryAgain')} onRetry={() => void res.load()} /> : null}
           {res.phase === 'ready' && vm.names.length === 0 ? <EmptyState title={t('m2.vac.emptyTitle')} body={t('pb.prev.emptyBody')} /> : null}
@@ -129,7 +134,7 @@ export const M2VaccinesView = observer(function M2VaccinesView({ vm, links }: { 
           </ScrollView>
         ) : null}
         {selected ? (
-          <View style={styles.gutter}>
+          <View style={gutter}>
             <M2Card style={styles.detail} testID="m2-vac-detail">
               <M2Heading style={styles.detailTitle}>{selected}</M2Heading>
               <Text style={m2Text.meta}>{t('m2.vac.atClinic')}</Text>
@@ -148,7 +153,7 @@ export const M2VaccinesView = observer(function M2VaccinesView({ vm, links }: { 
         ) : null}
       </Rise>
 
-      <Rise index={3} style={styles.gutter}>
+      <Rise index={3} style={gutter}>
         <Text style={[m2Text.meta, styles.privacy]}>{t('pb.prev.privacy')}</Text>
         {links.camp ? (
           <Pressable role="link" accessibilityRole="link" accessibilityLabel={t('pb.prev.camp')} aria-label={t('pb.prev.camp')} onPress={links.camp} testID="m2-vac-camp"
@@ -163,8 +168,10 @@ export const M2VaccinesView = observer(function M2VaccinesView({ vm, links }: { 
           </Pressable>
         ) : null}
       </Rise>
-    </ScrollView>
+    </>
   );
+  if (wide) return <M2WideColumn testID="m2-vaccines">{board}</M2WideColumn>;
+  return <ScrollView style={styles.screen} contentContainerStyle={styles.content} testID="m2-vaccines">{board}</ScrollView>;
 });
 
 const styles = StyleSheet.create({
@@ -172,6 +179,7 @@ const styles = StyleSheet.create({
   content: { paddingBottom: M2_NAV_CLEARANCE, gap: space.s16, width: '100%', maxWidth: size.phoneFrameMax, alignSelf: 'center', overflow: 'hidden' },
   gutter: { paddingHorizontal: space.gutterPhone },
   grow: { flex: 1, minWidth: 0, gap: space.s2 },
+  heroWide: { borderRadius: 36, paddingHorizontal: space.s32 },
   hero: { paddingTop: space.s16, paddingHorizontal: space.gutterPhone, paddingBottom: space.s24, borderBottomLeftRadius: 36, borderBottomRightRadius: 36, overflow: 'hidden' },
   heroRing: { position: 'absolute', left: -60, bottom: -90, width: 240, height: 240, borderRadius: radius.full, borderWidth: 30, borderColor: color.onHeroRule },
   heroHead: { flexDirection: 'row', alignItems: 'center', gap: space.s12 },

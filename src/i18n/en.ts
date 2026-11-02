@@ -186,6 +186,9 @@ export const en = {
   'id.revokeBody': 'Any copy you saved or printed stops working. Your account and records are not affected.',
   'id.revokeYes': 'Yes, revoke it',
   'id.keep': 'Keep it',
+  'id.issueFailed': 'Your QR wasn’t created. Try again.',
+  'id.revokeFailed': 'Your QR wasn’t revoked. It still works — try again.',
+  'id.refreshFailed': 'New codes couldn’t be fetched. The codes you already have keep working until they run out; then connect to the internet and try again.',
 
   'vault.eyebrow': 'Your records',
   'vault.title': 'Health records',

@@ -14,7 +14,7 @@ import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
 import { shortDate } from '@/features/phoneboards/format';
 
-export type HelpTopic = 'orders' | 'prescriptions' | 'records' | 'verify' | 'delete';
+type HelpTopic = 'orders' | 'prescriptions' | 'records' | 'verify' | 'delete';
 
 export interface HelpCentreLinks {
   back?: () => void;

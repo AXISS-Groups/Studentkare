@@ -1,15 +1,16 @@
-import React from 'react';
-import { Animated, Linking, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import React, { useState } from 'react';
+import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { observer } from 'mobx-react-lite';
 import { Icon } from '@/design-system/icons';
-import { OfflineBanner, Rise, TELE_MANAS_NUMBER, useOnline } from '@/design-system';
-import { Gradient, M2_NAV_CLEARANCE, ORB_STOPS, RoundButton, SosButton, m2Text, useAmbientMotion, useLoop, useOwnPhoneChrome, M2Heading, webAttrs } from '@/design-system/m2';
+import { OfflineBanner, TELE_MANAS_NUMBER, useOnline } from '@/design-system';
+import { M2Card, M2HeaderSos, M2WideColumn, M2_NAV_CLEARANCE, RoundButton, m2Text, useM2Layout, useOwnPhoneChrome, M2Heading, webAttrs } from '@/design-system/m2';
 import type { PressState } from '@/design-system/m2';
-import { color, focusRing, font, fontWeight, motion, radius, shadow, shadowStyle, size, space, webOnly } from '@/design-system/theme';
+import { color, focusRing, font, fontWeight, radius, shadow, shadowStyle, size, space } from '@/design-system/theme';
 import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
-import { REFUSAL_NOTE } from '../viewmodel/AyushViewModel';
-import type { AyushReply, AyushViewModel } from '../viewmodel/AyushViewModel';
+import type { AyushViewModel } from '../viewmodel/AyushViewModel';
+import { AyushThread, Orb } from './AyushThread';
+import type { AyushThreadLinks } from './AyushThread';
 
 /**
  * Mobile 2.0 Ask Ayush (canvas page 9 M2AskAyush, Tier 1), in GENERAL MODE
@@ -24,221 +25,154 @@ import type { AyushReply, AyushViewModel } from '../viewmodel/AyushViewModel';
  * The crisis card comes from the server's CRISIS outcome and stays while it is
  * the latest answer (D7-5); the Tele-MANAS line is always on screen and needs
  * no request.
+ *
+ * One view at every width (Tier 1 parity plan 2026-10-24 §9, Q2): on desktop
+ * the chat column sits beside the web board's side column (what Ayush will not
+ * do, the transcript note, talk to a person); on a phone "What Ayush won't do"
+ * is a card under the banner, closed until opened. SOS is the shell's (§1).
  */
-export interface M2AskAyushLinks {
+export interface M2AskAyushLinks extends AyushThreadLinks {
   back: () => void;
-  sos: () => void;
-  /** The help centre. Omitted where there is none (the Expo app has no Help screen yet). */
-  help?: () => void;
-  /** Doctor consults. */
-  book?: () => void;
+  /** Where the student turns Ayush history on or off. Omitted where there is no such screen. */
+  manageHistory?: () => void;
 }
 
-/** General questions that pass the scope guard (the starters every Ayush surface offers). */
-const SUGGESTIONS: readonly MessageKey[] = ['ayush.starter1', 'ayush.starter2', 'ayush.starter3'];
+/** What the server refuses before or after retrieval (agent_ayush.py: scope guard, vault boundary, grounding floor). */
+const LIMITS: ReadonlyArray<{ title: MessageKey; meta: MessageKey }> = [
+  { title: 'swt.ayush.limit.diagnose', meta: 'swt.ayush.limit.diagnoseMeta' },
+  { title: 'swt.ayush.limit.prescribe', meta: 'swt.ayush.limit.prescribeMeta' },
+  { title: 'swt.ayush.limit.vault', meta: 'swt.ayush.limit.vaultMeta' },
+  { title: 'swt.ayush.limit.source', meta: 'swt.ayush.limit.sourceMeta' },
+];
 
-function Orb() {
-  const ambient = useAmbientMotion();
-  const pulse = useLoop(ambient, motion.duration.ambient);
-  const scale = pulse.interpolate({ inputRange: [0, 0.5, 1], outputRange: [1, 1.08, 1] });
-  return (
-    <Animated.View style={{ transform: [{ scale }] }} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-      <Gradient colors={ORB_STOPS} radial={{ x: 0.3, y: 0.25 }} style={styles.orb} />
-    </Animated.View>
-  );
-}
-
-function TypingDots({ label }: { label: string }) {
-  const ambient = useAmbientMotion();
-  const beat = useLoop(ambient, motion.duration.ambient / 4);
-  return (
-    <View style={[styles.bubble, styles.theirs, styles.typing]} role="status" accessibilityLiveRegion="polite" accessibilityLabel={label} aria-label={label} testID="m2-ask-typing">
-      {[0, 1, 2].map((i) => (
-        <Animated.View key={i} style={[styles.typingDot, ambient ? {
-          opacity: beat.interpolate({ inputRange: [0, 0.33, 0.66, 1], outputRange: i === 0 ? [1, 0.3, 0.3, 1] : i === 1 ? [0.3, 1, 0.3, 0.3] : [0.3, 0.3, 1, 0.3] }),
-        } : null]} />
-      ))}
-    </View>
-  );
-}
-
-function CrisisCard({ reply }: { reply: AyushReply }) {
+function LimitRows() {
   const t = useT();
   return (
-    <View role="alert" accessibilityRole="alert" style={styles.crisis} testID="m2-ask-crisis">
-      <Text style={styles.crisisTitle}>{t('ayush.notAlone')}</Text>
-      <Text style={styles.crisisText}>{reply.answer}</Text>
-      {(reply.crisis?.resources ?? []).map((r) => (
-        <Pressable key={`${r.label}-${r.number}`} role="link" accessibilityRole="link" accessibilityLabel={t('ayush.callSpoken', { label: r.label, number: r.number })}
-          aria-label={t('ayush.callSpoken', { label: r.label, number: r.number })} onPress={() => void Linking.openURL(`tel:${r.number.replace(/[^\d+]/g, '')}`)}
-          style={({ focused }: PressState) => [styles.crisisCall, focused ? focusRing : null]}>
-          <Icon name="phone" size={16} color={color.onDangerFill} />
-          <Text style={styles.crisisCallText}>{`${r.label} · ${r.number}`}</Text>
-        </Pressable>
-      ))}
-    </View>
-  );
-}
-
-/** "I couldn't find this": never a dead end — the help centre and a doctor, where the app has them. */
-function NoSourceNext({ links }: { links: M2AskAyushLinks }) {
-  const t = useT();
-  const next = [
-    links.help ? { key: 'help', label: t('assist.ayush.noSource.help'), onPress: links.help } : null,
-    links.book ? { key: 'book', label: t('assist.ayush.noSource.book'), onPress: links.book } : null,
-  ].filter((item): item is { key: string; label: string; onPress: () => void } => item !== null);
-  if (!next.length) return null;
-  return (
-    <View style={styles.nextRow} testID="m2-ask-no-source-next">
-      {next.map((item) => (
-        <Pressable key={item.key} role="link" accessibilityRole="link" accessibilityLabel={item.label} aria-label={item.label} onPress={item.onPress}
-          testID={`m2-ask-next-${item.key}`} style={({ focused }: PressState) => [styles.next, focused ? focusRing : null]}>
-          <Text style={styles.nextText}>{item.label}</Text>
-          <Icon name="arrow-right" size={14} color={color.action} />
-        </Pressable>
-      ))}
-    </View>
-  );
-}
-
-function Answer({ reply, links }: { reply: AyushReply; links: M2AskAyushLinks }) {
-  const t = useT();
-  if (reply.outcome === 'CRISIS' && reply.crisis) return <CrisisCard reply={reply} />;
-  if (reply.outcome === 'NO_SOURCE') {
-    return (
-      <View style={[styles.bubble, styles.theirs]} testID="m2-ask-answer">
-        <Text style={styles.theirText}>{t('assist.ayush.noSource.title')}</Text>
-        <Text style={styles.refusal}>{t('assist.ayush.noSource.next')}</Text>
-        <NoSourceNext links={links} />
-      </View>
-    );
-  }
-  const note = REFUSAL_NOTE[reply.outcome];
-  return (
-    <View style={[styles.bubble, styles.theirs]} testID="m2-ask-answer">
-      <Text style={styles.theirText}>{reply.answer}</Text>
-      {note ? <Text style={styles.refusal}>{t(note)}</Text> : null}
-      {reply.citations.length > 0 ? (
-        <View style={styles.sources} accessibilityLabel={t('ayush.sources')} aria-label={t('ayush.sources')}>
-          {reply.citations.map((c) => (
-            <View key={`${c.sourceId}-${c.version}`} style={styles.source}>
-              <Icon name="check" size={12} color={color.positive} strokeWidth={2.8} />
-              <Text style={styles.sourceText}>{`${c.title}${c.stale ? ` · ${t('ayush.mayBeOld')}` : ''}`}</Text>
-            </View>
-          ))}
+    <View style={styles.limits} testID="m2-ask-limit-rows">
+      {LIMITS.map((limit) => (
+        <View key={limit.title} style={styles.limit}>
+          <View style={styles.limitIcon}><Icon name="lock-4" size={15} color={color.text2} /></View>
+          <View style={styles.grow}>
+            <Text style={m2Text.cardTitle}>{t(limit.title)}</Text>
+            <Text style={m2Text.meta}>{t(limit.meta)}</Text>
+          </View>
         </View>
-      ) : null}
+      ))}
     </View>
   );
 }
 
-export const M2AskAyushView = observer(function M2AskAyushView({ vm, links }: { vm: AyushViewModel; links: M2AskAyushLinks }) {
+/** Phone: "What Ayush won't do" as a card that opens in place (closed at first). */
+function LimitsCard() {
+  const t = useT();
+  const [open, setOpen] = useState(false);
+  return (
+    <M2Card style={styles.limitsCard} testID="m2-ask-limits">
+      <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('swt.ayush.limitsTitle')} aria-label={t('swt.ayush.limitsTitle')}
+        aria-expanded={open} accessibilityState={{ expanded: open }} onPress={() => setOpen(!open)} testID="m2-ask-limits-toggle"
+        style={({ focused }: PressState) => [styles.limitsHead, focused ? focusRing : null]}>
+        <Text style={[m2Text.cardTitle, styles.grow]}>{t('swt.ayush.limitsTitle')}</Text>
+        <Icon name="chevron-right" size={16} color={color.text3} strokeWidth={2.6} />
+      </Pressable>
+      {open ? <LimitRows /> : null}
+    </M2Card>
+  );
+}
+
+/** Desktop: the web board's side column, in M2 cards with the same words. */
+function SideColumn({ links }: { links: M2AskAyushLinks }) {
+  const t = useT();
+  return (
+    <View style={styles.side} testID="m2-ask-side" {...webAttrs({ role: 'complementary', 'aria-label': t('swt.ayush.limitsTitle') })}>
+      <M2Card style={styles.sideCard}>
+        <Text style={m2Text.eyebrow}>{t('swt.ayush.limitsTitle')}</Text>
+        <LimitRows />
+      </M2Card>
+      <M2Card style={styles.sideCard} testID="m2-ask-transcript">
+        <Text style={m2Text.eyebrow}>{t('swt.ayush.transcriptTitle')}</Text>
+        <Text style={m2Text.body}>{t('swt.ayush.transcriptBody')}</Text>
+        {links.manageHistory ? (
+          <Pressable role="link" accessibilityRole="link" accessibilityLabel={t('swt.ayush.manage')} aria-label={t('swt.ayush.manage')} onPress={links.manageHistory}
+            testID="m2-ask-manage" style={({ focused }: PressState) => [styles.link, focused ? focusRing : null]}>
+            <Text style={m2Text.link}>{t('swt.ayush.manage')}</Text>
+          </Pressable>
+        ) : null}
+      </M2Card>
+      <M2Card style={styles.sideCard} testID="m2-ask-person">
+        <M2Heading style={m2Text.cardTitle}>{t('swt.ayush.personTitle')}</M2Heading>
+        <Text style={m2Text.body}>{t('swt.ayush.personBody')}</Text>
+        <Pressable role="link" accessibilityRole="link" accessibilityLabel={t('swt.crisis.callTelemanas')} aria-label={t('swt.crisis.callTelemanas')}
+          onPress={() => void Linking.openURL(`tel:${TELE_MANAS_NUMBER}`)} testID="m2-ask-person-call"
+          style={({ focused }: PressState) => [styles.personCall, focused ? focusRing : null]}>
+          <Icon name="phone-2" size={17} color={color.action} />
+          <Text style={styles.personCallText}>{t('swt.ayush.callTelemanas')}</Text>
+        </Pressable>
+      </M2Card>
+    </View>
+  );
+}
+
+/** Desktop: chat and side column side by side; narrower (a tablet column), one under the other. */
+function WideBody({ chat, side }: { chat: React.ReactNode; side: React.ReactNode }) {
+  const desktop = useM2Layout() === 'desktop';
+  return (
+    <View style={desktop ? styles.split : styles.stack} testID="m2-ask-split">
+      <View style={[styles.stack, desktop ? styles.chatColumn : null]}>{chat}</View>
+      <View style={desktop ? styles.sideColumn : null}>{side}</View>
+    </View>
+  );
+}
+
+export const M2AskAyushView = observer(function M2AskAyushView({ vm, links, wide = false }: {
+  vm: AyushViewModel; links: M2AskAyushLinks;
+  /** Laid out wide in the desktop web shell (parity plan §9): chat column and side column. */
+  wide?: boolean;
+}) {
   const t = useT();
   useOwnPhoneChrome();
   const online = useOnline();
-  // The thread sits just above the input, so a new answer lands next to where the student typed.
-  const turns = vm.thread.length;
-  const send = (text?: string) => { if (online) void vm.send(text); };
-  const canSend = online && vm.canSend;
+  const inset = wide ? 0 : space.gutterPhone;
+  const gutter = wide ? undefined : styles.gutter;
 
+  const header = (
+    <View style={[styles.header, wide ? styles.headerWide : null]}>
+      <RoundButton icon="arrow-left" label={t('m2.ask.back')} onPress={links.back} testID="m2-ask-back" />
+      <Orb />
+      <View style={styles.grow}>
+        <View style={styles.titleRow}>
+          <M2Heading level={1} style={styles.title}>{t('m2.ask.title')}</M2Heading>
+          <View style={styles.beta}><Text style={styles.betaText}>{t('m2.ask.beta')}</Text></View>
+        </View>
+        <Text style={m2Text.meta}>{t('m2.ask.sub')}</Text>
+      </View>
+      <M2HeaderSos testID="m2-ask-sos" />
+    </View>
+  );
+  const banner = (
+    <View style={[styles.banner, wide ? styles.bannerWide : null]} testID="m2-ask-banner">
+      <Icon name="shield" size={18} color={color.text2} />
+      <Text style={[styles.bannerText, styles.grow]}>{t('m2.ask.noRecords')}</Text>
+    </View>
+  );
+  const offline = !online ? <View style={gutter}><OfflineBanner message={t('m2.ask.offline')} /></View> : null;
+  const thread = <AyushThread vm={vm} online={online} links={links} inset={inset} wide={wide} />;
+
+  if (wide) {
+    return (
+      <M2WideColumn testID="m2-ask-ayush">
+        {header}
+        <WideBody chat={<>{banner}{offline}{thread}</>} side={<SideColumn links={links} />} />
+      </M2WideColumn>
+    );
+  }
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled" testID="m2-ask-ayush">
       <View pointerEvents="none" style={styles.glow} />
-      <View style={styles.header}>
-        <RoundButton icon="arrow-left" label={t('m2.ask.back')} onPress={links.back} testID="m2-ask-back" />
-        <Orb />
-        <View style={styles.grow}>
-          <View style={styles.titleRow}>
-            <M2Heading level={1} style={styles.title}>{t('m2.ask.title')}</M2Heading>
-            <View style={styles.beta}><Text style={styles.betaText}>{t('m2.ask.beta')}</Text></View>
-          </View>
-          <Text style={m2Text.meta}>{t('m2.ask.sub')}</Text>
-        </View>
-        <SosButton label={t('m2.sos')} spoken={t('m2.sosSpoken')} onPress={links.sos} testID="m2-ask-sos" />
-      </View>
-
-      <View style={[styles.gutter, styles.banner]} testID="m2-ask-banner">
-        <Icon name="shield" size={18} color={color.text2} />
-        <Text style={[styles.bannerText, styles.grow]}>{t('m2.ask.noRecords')}</Text>
-      </View>
-
-      {!online ? <View style={styles.gutter}><OfflineBanner message={t('m2.ask.offline')} /></View> : null}
-
-      <View style={[styles.gutter, styles.thread]} aria-live="polite" testID="m2-ask-thread" {...webAttrs({ 'aria-label': t('assist.ayush.conversationLabel') })}>
-        {turns === 0 ? (
-          <Rise>
-            <View style={[styles.bubble, styles.theirs]} testID="m2-ask-greeting">
-              <Text style={styles.theirText}>{t('m2.ask.greeting')}</Text>
-            </View>
-          </Rise>
-        ) : null}
-        {vm.thread.map(({ question, reply }, index) => (
-          <Rise key={`${vm.conversationId}-${index}`}>
-            <View style={styles.turn}>
-              <Gradient colors={[color.brandNavyLight, color.brandNavy]} angle={150} style={[styles.bubble, styles.mine]}>
-                <Text style={styles.mineText}>{question}</Text>
-              </Gradient>
-              <Answer reply={reply} links={links} />
-            </View>
-          </Rise>
-        ))}
-        {vm.sending ? <TypingDots label={t('m2.ask.typing')} /> : null}
-        {vm.error ? <Text accessibilityRole="alert" style={styles.error} testID="m2-ask-error">{t(vm.error)}</Text> : null}
-        {turns === 0 && vm.history.length > 0 ? (
-          <View style={styles.history} testID="m2-ask-history">
-            <Text style={m2Text.eyebrow}>{t('assist.ayush.historyTitle')}</Text>
-            <Text style={m2Text.meta}>{t('assist.ayush.historyPrivate')}</Text>
-            {vm.history.slice(-5).reverse().map((turn) => <Text key={turn.id} style={styles.historyItem}>{turn.question}</Text>)}
-          </View>
-        ) : null}
-      </View>
-
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.suggestions} keyboardShouldPersistTaps="handled" testID="m2-ask-suggestions">
-        {SUGGESTIONS.map((key) => (
-          <Pressable key={key} role="button" accessibilityRole="button" accessibilityLabel={t(key)} aria-label={t(key)} disabled={!online || vm.sending}
-            onPress={() => send(t(key))} style={({ focused }: PressState) => [styles.suggestion, focused ? focusRing : null]}>
-            <Text style={styles.suggestionText}>{t(key)}</Text>
-          </Pressable>
-        ))}
-      </ScrollView>
-
-      <View style={[styles.gutter]}>
-        <View style={styles.crisisLine} testID="m2-ask-crisis-line">
-          <Icon name="phone" size={18} color={color.danger} />
-          <Text style={[styles.crisisLineText, styles.grow]}>{t('m2.ask.crisisLine')}</Text>
-          <Pressable role="link" accessibilityRole="link" accessibilityLabel={t('m2.ask.callSpoken', { number: TELE_MANAS_NUMBER })} aria-label={t('m2.ask.callSpoken', { number: TELE_MANAS_NUMBER })}
-            onPress={() => void Linking.openURL(`tel:${TELE_MANAS_NUMBER}`)} testID="m2-ask-call" style={({ focused }: PressState) => [styles.call, focused ? focusRing : null]}>
-            <Text style={styles.callText}>{t('m2.ask.call', { number: TELE_MANAS_NUMBER })}</Text>
-          </Pressable>
-        </View>
-      </View>
-
-      <View style={styles.gutter}>
-        <View style={styles.input}>
-          <TextInput
-            testID="m2-ask-input"
-            accessibilityLabel={t('m2.ask.inputLabel')}
-            aria-label={t('m2.ask.inputLabel')}
-            value={vm.question}
-            onChangeText={vm.setQuestion}
-            onSubmitEditing={() => { if (canSend) send(); }}
-            placeholder={t('m2.ask.placeholder')}
-            placeholderTextColor={color.text3}
-            maxLength={1000}
-            returnKeyType="send"
-            editable={online}
-            style={[styles.inputText, webOnly({ outlineStyle: 'none' as const })]}
-          />
-          <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('m2.ask.send')} aria-label={t('m2.ask.send')} disabled={!canSend}
-            accessibilityState={{ disabled: !canSend, busy: vm.sending }} onPress={() => send()} testID="m2-ask-send"
-            style={({ focused }: PressState) => [styles.sendWrap, !canSend ? styles.sendOff : null, focused ? focusRing : null]}>
-            <Gradient colors={[color.brandNavyLight, color.brandNavy]} angle={150} style={styles.send}>
-              <Icon name="arrow-right" size={18} color={color.onHero} strokeWidth={2.4} />
-            </Gradient>
-          </Pressable>
-        </View>
-        <Text style={styles.footer}>{t('m2.ask.footer')}</Text>
-      </View>
+      {header}
+      {banner}
+      <View style={styles.gutter}><LimitsCard /></View>
+      {offline}
+      {thread}
     </ScrollView>
   );
 });
@@ -250,7 +184,6 @@ const styles = StyleSheet.create({
   gutter: { paddingHorizontal: space.gutterPhone },
   grow: { flex: 1, minWidth: 0 },
   header: { paddingTop: space.s16, paddingHorizontal: space.gutterPhone, flexDirection: 'row', alignItems: 'center', gap: space.s12 },
-  orb: { width: 40, height: 40, borderRadius: radius.full },
   titleRow: { flexDirection: 'row', alignItems: 'center', gap: space.s6 },
   title: { fontFamily: font.family.sans, fontSize: 19, fontWeight: fontWeight(font.weight.heavy), color: color.text },
   beta: { paddingHorizontal: space.s8, paddingVertical: space.s2, borderRadius: radius.full, backgroundColor: color.neutralBg },
@@ -260,47 +193,23 @@ const styles = StyleSheet.create({
     backgroundColor: color.surface, ...shadowStyle(shadow.hairline),
   },
   bannerText: { fontFamily: font.family.sans, fontSize: 11.5, lineHeight: 16, fontWeight: fontWeight(font.weight.strong), color: color.text2 },
-  thread: { gap: space.s12, paddingTop: space.s4, minHeight: 220 },
-  turn: { gap: space.s12 },
-  bubble: { maxWidth: 290, paddingVertical: 11, paddingHorizontal: space.s14 },
-  mine: { alignSelf: 'flex-end', borderTopLeftRadius: 20, borderTopRightRadius: 20, borderBottomLeftRadius: 20, borderBottomRightRadius: 6 },
-  theirs: { alignSelf: 'flex-start', borderTopLeftRadius: 20, borderTopRightRadius: 20, borderBottomRightRadius: 20, borderBottomLeftRadius: 6, backgroundColor: color.surface, ...shadowStyle(shadow.hairline) },
-  mineText: { fontFamily: font.family.sans, fontSize: 13.5, lineHeight: 19, fontWeight: fontWeight(font.weight.strong), color: color.onHero },
-  theirText: { fontFamily: font.family.sans, fontSize: 13.5, lineHeight: 19, fontWeight: fontWeight(font.weight.strong), color: color.text },
-  refusal: { marginTop: space.s8, fontFamily: font.family.sans, fontSize: font.size.caption, lineHeight: 17, fontWeight: fontWeight(font.weight.strong), color: color.text2 },
-  sources: { marginTop: space.s8, flexDirection: 'row', flexWrap: 'wrap', gap: space.s6 },
-  source: { flexDirection: 'row', alignItems: 'center', gap: space.s4, paddingHorizontal: space.s8, paddingVertical: space.s2, borderRadius: radius.full, backgroundColor: color.positiveBg },
-  nextRow: { marginTop: space.s8, flexDirection: 'row', flexWrap: 'wrap', gap: space.s8 },
-  next: {
-    minHeight: size.touchTarget, paddingHorizontal: space.s12, borderRadius: radius.full, flexDirection: 'row', alignItems: 'center', gap: space.s4,
-    borderWidth: 1, borderColor: color.rule, backgroundColor: color.surface,
+  headerWide: { paddingHorizontal: 0 },
+  bannerWide: { marginHorizontal: 0 },
+  split: { flexDirection: 'row', alignItems: 'flex-start', gap: space.s24 },
+  stack: { gap: space.s12 },
+  chatColumn: { flex: 1, minWidth: 0, maxWidth: size.panelMax + space.s40 + space.s40 },
+  sideColumn: { width: size.phoneWidth, flexShrink: 0 },
+  side: { gap: space.s16 },
+  sideCard: { padding: space.s16, gap: space.s10, borderRadius: radius.xl },
+  limits: { gap: space.s12 },
+  limit: { flexDirection: 'row', alignItems: 'flex-start', gap: space.s10 },
+  limitIcon: { width: 28, height: 28, borderRadius: radius.md, alignItems: 'center', justifyContent: 'center', backgroundColor: color.neutralBg },
+  limitsCard: { paddingHorizontal: space.s14, paddingVertical: space.s4, borderRadius: radius.lg, gap: space.s8, ...shadowStyle(shadow.hairline) },
+  limitsHead: { minHeight: size.touchTarget, flexDirection: 'row', alignItems: 'center', gap: space.s8 },
+  link: { minHeight: size.touchTarget, justifyContent: 'center', alignSelf: 'flex-start' },
+  personCall: {
+    minHeight: size.touchTarget, alignSelf: 'flex-start', paddingHorizontal: space.s14, borderRadius: radius.full, flexDirection: 'row', alignItems: 'center', gap: space.s8,
+    borderWidth: 1.5, borderColor: color.action,
   },
-  nextText: { fontFamily: font.family.sans, fontSize: 12.5, fontWeight: fontWeight(font.weight.heavy), color: color.action },
-  sourceText: { fontFamily: font.family.sans, fontSize: 11, fontWeight: fontWeight(font.weight.strong), color: color.positive },
-  typing: { flexDirection: 'row', gap: 5, paddingVertical: space.s12 },
-  typingDot: { width: 7, height: 7, borderRadius: radius.full, backgroundColor: color.action },
-  error: { fontFamily: font.family.sans, fontSize: font.size.caption, lineHeight: 17, fontWeight: fontWeight(font.weight.strong), color: color.danger },
-  history: { gap: space.s4, paddingTop: space.s8 },
-  historyItem: { fontFamily: font.family.sans, fontSize: font.size.caption, fontWeight: fontWeight(font.weight.strong), color: color.text2 },
-  crisis: { borderRadius: 22, padding: space.s14, gap: space.s10, backgroundColor: color.dangerBg, borderWidth: 2, borderColor: color.danger },
-  crisisTitle: { fontFamily: font.family.sans, fontSize: font.size.body, fontWeight: fontWeight(font.weight.heavy), color: color.danger },
-  crisisText: { fontFamily: font.family.sans, fontSize: 13.5, lineHeight: 19, fontWeight: fontWeight(font.weight.strong), color: color.text },
-  crisisCall: { minHeight: size.touchTarget, borderRadius: radius.full, paddingHorizontal: space.s14, flexDirection: 'row', alignItems: 'center', gap: space.s8, backgroundColor: color.dangerFill },
-  crisisCallText: { fontFamily: font.family.sans, fontSize: font.size.bodySm, fontWeight: fontWeight(font.weight.heavy), color: color.onDangerFill },
-  suggestions: { paddingHorizontal: space.gutterPhone, gap: space.s8 },
-  suggestion: { minHeight: size.touchTarget, paddingHorizontal: space.s14, borderRadius: radius.full, justifyContent: 'center', borderWidth: 1, borderColor: color.rule, backgroundColor: color.surface },
-  suggestionText: { fontFamily: font.family.sans, fontSize: 12.5, fontWeight: fontWeight(font.weight.strong), color: color.action },
-  crisisLine: { paddingVertical: space.s8, paddingLeft: space.s12, paddingRight: space.s4, borderRadius: radius.lg, flexDirection: 'row', alignItems: 'center', gap: space.s10, backgroundColor: color.dangerBg },
-  crisisLineText: { fontFamily: font.family.sans, fontSize: 11.5, lineHeight: 16, fontWeight: fontWeight(font.weight.strong), color: color.text },
-  call: { minHeight: size.touchTarget, minWidth: size.touchTarget, paddingHorizontal: space.s10, justifyContent: 'center' },
-  callText: { fontFamily: font.family.sans, fontSize: 12.5, fontWeight: fontWeight(font.weight.heavy), color: color.danger },
-  input: {
-    minHeight: 56, borderRadius: radius.full, paddingLeft: space.s16, paddingRight: space.s6, flexDirection: 'row', alignItems: 'center', gap: space.s8,
-    backgroundColor: color.surface, ...shadowStyle(shadow.card),
-  },
-  inputText: { flex: 1, minWidth: 0, paddingVertical: space.s10, fontFamily: font.family.sans, fontSize: 14, fontWeight: fontWeight(font.weight.strong), color: color.text },
-  sendWrap: { borderRadius: radius.full },
-  sendOff: { opacity: 0.5 },
-  send: { width: size.touchTarget, height: size.touchTarget, borderRadius: radius.full, alignItems: 'center', justifyContent: 'center' },
-  footer: { marginTop: space.s8, textAlign: 'center', fontFamily: font.family.sans, fontSize: 10.5, lineHeight: 15, fontWeight: fontWeight(font.weight.strong), color: color.text3 },
+  personCallText: { fontFamily: font.family.sans, fontSize: font.size.bodySm, fontWeight: fontWeight(font.weight.heavy), color: color.action },
 });

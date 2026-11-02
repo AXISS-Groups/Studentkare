@@ -58,7 +58,7 @@ describe('registry lists: one entry per line, sorted, no duplicates', () => {
   it('keeps every route and public route on its own line', () => {
     for (const path of ['src/lib/utils/routes/routePaths.ts', 'src/lib/utils/routes/publicRoutes.ts']) {
       const [block] = findBlocks(readFileSync(join(root, path), 'utf8'));
-      expect(block.lines.filter((line) => !/^ {2}'[^']+',$/.test(line))).toEqual([]);
+      expect(block.lines.map((line) => line.replace(/\r$/, '')).filter((line) => !/^ {2}'[^']+',$/.test(line))).toEqual([]);
     }
   });
 });

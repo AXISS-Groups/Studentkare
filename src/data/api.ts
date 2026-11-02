@@ -8,7 +8,7 @@ import { apiBaseUrl, allowOfflineAuth } from '../core/env';
 const API_BASE_URL = apiBaseUrl();
 const ALLOW_OFFLINE_AUTH = allowOfflineAuth();
 
-export interface AuthResponse {
+interface AuthResponse {
   success: boolean;
   token?: string;
   user?: StudentProfile;

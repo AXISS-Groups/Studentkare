@@ -41,7 +41,7 @@ from sqlalchemy.orm import Session
 
 from core import workflow_models as M
 from core.settings_registry import setting
-from services import ops_feed
+from services import ops_feed, wallet_passes
 from services.workflow_auth import StrictModel, authenticated_user, require_super_admin, workflow_db
 
 router = APIRouter(prefix="/api", tags=["Erasure"])
@@ -270,7 +270,12 @@ def request_deletion(user=Depends(authenticated_user), db: Session = Depends(wor
                      summary=f"Erasure request received — scheduled in {grace_days(db)} days unless cancelled",
                      actor_id=user["id"], actor_role=user.get("role", ""), subject_id=user["id"],
                      resource_type="deletion_request", resource_id=user["id"])
+    # The emergency card leaves every phone wallet now, not at erasure: a live pass
+    # must not outlast the grace period (plan tier1-emergency-card-wallet-2026-10-24).
+    # Cancelling the deletion does not bring it back; the student adds it again.
+    wallet_passes.revoke(db, user["id"], wallet_passes.ACCOUNT_DELETION)
     db.commit()
+    wallet_passes.deliver(db, user["id"])
     return _request_payload(request, db)
 
 

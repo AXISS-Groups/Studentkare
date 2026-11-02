@@ -104,7 +104,7 @@ export function mapSchedule(bookings: Booking[], now: Date, t: T): ConsoleTableD
   };
 }
 
-export function bookingsScheduleSource(t: T, load: BookingsLoader = loadBookings, now: () => Date = () => new Date()): ConsoleTableSource {
+function bookingsScheduleSource(t: T, load: BookingsLoader = loadBookings, now: () => Date = () => new Date()): ConsoleTableSource {
   return { load: async () => mapSchedule(await load(), now(), t) };
 }
 

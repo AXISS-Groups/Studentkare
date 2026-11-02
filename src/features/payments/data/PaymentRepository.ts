@@ -39,7 +39,7 @@ export interface MockCheckoutResult {
   testMode: true;
 }
 
-export type OrderPaymentStatus = 'UNPAID' | 'PAID' | 'PARTIALLY_REFUNDED' | 'REFUNDED' | 'EXPIRED' | 'CANCELLED';
+type OrderPaymentStatus = 'UNPAID' | 'PAID' | 'PARTIALLY_REFUNDED' | 'REFUNDED' | 'EXPIRED' | 'CANCELLED';
 
 /** GET /api/orders/{id}/payment */
 export interface PaymentStatus {

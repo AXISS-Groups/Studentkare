@@ -1,5 +1,5 @@
 {
-  "$description": "Cover colours for the newsroom share image (services/newsroom_cover.py). Copied from design/tokens/studentkare.tokens.json (light scheme); tests/test_newsroom.py fails if they drift.",
+  "$description": "Cover colours for the newsroom share images (services/newsroom_cover.py): per template, and per hue for a series' own cover style. Copied from design/tokens/studentkare.tokens.json (light scheme); tests/test_newsroom.py fails if they drift.",
   "templates": {
     "HEALTH_TIP": {
       "hue": "green",
@@ -40,6 +40,62 @@
         "brand-navy"
       ],
       "glow": "service-blue"
+    },
+    "MOTIVATION": {
+      "hue": "orange",
+      "stops": [
+        "service-orange-deep",
+        "service-orange-shade"
+      ],
+      "glow": "service-orange"
+    },
+    "SERIES_EPISODE": {
+      "hue": "teal",
+      "stops": [
+        "service-teal-deep",
+        "brand-navy"
+      ],
+      "glow": "service-teal"
+    },
+    "EVENT": {
+      "hue": "rose",
+      "stops": [
+        "service-rose-deep",
+        "service-rose-shade"
+      ],
+      "glow": "service-rose"
+    },
+    "CAMPUS_SPOTLIGHT": {
+      "hue": "sky",
+      "stops": [
+        "service-sky-deep",
+        "brand-navy"
+      ],
+      "glow": "service-sky"
+    },
+    "EXPLAINER": {
+      "hue": "blue",
+      "stops": [
+        "service-blue-deep",
+        "brand-navy"
+      ],
+      "glow": "service-blue"
+    },
+    "MYTH_FACT": {
+      "hue": "violet",
+      "stops": [
+        "service-violet-deep",
+        "service-violet-shade"
+      ],
+      "glow": "service-violet"
+    },
+    "QUICK_CARD": {
+      "hue": "indigo",
+      "stops": [
+        "brand-navy-light",
+        "brand-navy"
+      ],
+      "glow": "service-indigo"
     }
   },
   "colors": {
@@ -55,8 +111,83 @@
     "service-green-deep": "#047857",
     "service-green-shade": "#065F46",
     "service-indigo": "#6D5BFF",
+    "service-orange": "#FB923C",
+    "service-orange-deep": "#C2410C",
+    "service-orange-shade": "#9A3412",
+    "service-rose": "#F472B6",
+    "service-rose-deep": "#BE185D",
+    "service-rose-shade": "#9D174D",
+    "service-sky": "#38BDF8",
+    "service-sky-deep": "#0369A1",
+    "service-teal": "#14B8A6",
+    "service-teal-deep": "#0F766E",
     "service-violet": "#A78BFA",
     "service-violet-deep": "#6D28D9",
     "service-violet-shade": "#4C1D95"
+  },
+  "hues": {
+    "green": {
+      "stops": [
+        "service-green-deep",
+        "service-green-shade"
+      ],
+      "glow": "service-green"
+    },
+    "violet": {
+      "stops": [
+        "service-violet-deep",
+        "service-violet-shade"
+      ],
+      "glow": "service-violet"
+    },
+    "amber": {
+      "stops": [
+        "service-amber-deep",
+        "service-amber-shade"
+      ],
+      "glow": "service-amber"
+    },
+    "indigo": {
+      "stops": [
+        "brand-navy-light",
+        "brand-navy"
+      ],
+      "glow": "service-indigo"
+    },
+    "blue": {
+      "stops": [
+        "service-blue-deep",
+        "brand-navy"
+      ],
+      "glow": "service-blue"
+    },
+    "orange": {
+      "stops": [
+        "service-orange-deep",
+        "service-orange-shade"
+      ],
+      "glow": "service-orange"
+    },
+    "rose": {
+      "stops": [
+        "service-rose-deep",
+        "service-rose-shade"
+      ],
+      "glow": "service-rose"
+    },
+    "teal": {
+      "stops": [
+        "service-teal-deep",
+        "brand-navy"
+      ],
+      "glow": "service-teal"
+    },
+    "sky": {
+      "stops": [
+        "service-sky-deep",
+        "brand-navy"
+      ],
+      "glow": "service-sky"
+    }
   }
 }

@@ -38,6 +38,17 @@ x-app-env: &app-env
   LIVEKIT_URL: ${LIVEKIT_URL:-}
   LIVEKIT_API_KEY: ${LIVEKIT_API_KEY:-}
   LIVEKIT_API_SECRET: ${LIVEKIT_API_SECRET:-}
+  # Emergency card in the phone wallet (docs/guides/wallet-passes.md). Empty = that wallet
+  # is not offered; both also stay off in settings until legal and the clinical lead sign.
+  APPLE_WALLET_PASS_TYPE_ID: ${APPLE_WALLET_PASS_TYPE_ID:-}
+  APPLE_WALLET_TEAM_ID: ${APPLE_WALLET_TEAM_ID:-}
+  APPLE_WALLET_CERT_PEM: ${APPLE_WALLET_CERT_PEM:-}
+  APPLE_WALLET_KEY_PEM: ${APPLE_WALLET_KEY_PEM:-}
+  APPLE_WALLET_KEY_PASSWORD: ${APPLE_WALLET_KEY_PASSWORD:-}
+  APPLE_WALLET_WWDR_PEM: ${APPLE_WALLET_WWDR_PEM:-}
+  APPLE_WALLET_AUTH_SECRET: ${APPLE_WALLET_AUTH_SECRET:-}
+  GOOGLE_WALLET_ISSUER_ID: ${GOOGLE_WALLET_ISSUER_ID:-}
+  GOOGLE_WALLET_SERVICE_ACCOUNT_JSON: ${GOOGLE_WALLET_SERVICE_ACCOUNT_JSON:-}
   # Agent Ayush (docs/guides/ayush-operations.md). On-prem Ollama only (Rule-C). Empty
   # OLLAMA_URL = answers are quotes and retrieval is keyword matching, said so in Admin › Knowledge.
   OLLAMA_URL: ${OLLAMA_URL:-}

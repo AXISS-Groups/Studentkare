@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Icon, Icon3d } from '@/design-system/icons';
-import { Gradient, LiftCard, M2SectionHead, NAVY_STOPS, heroStops, m2Text } from '@/design-system/m2';
+import { Gradient, LiftCard, M2Grid, M2SectionHead, NAVY_STOPS, heroStops, m2Text } from '@/design-system/m2';
 import { color, font, fontWeight, radius, shadow, shadowStyle, space } from '@/design-system/theme';
 import { getSetting } from '@/data/services/config';
 import { useLanguage, useT } from '@/i18n';
@@ -96,7 +96,13 @@ export function M2BlogCard({ state, onOpen, onAll, onRetry }: { state: PostsStat
           <Text style={styles.emptyText}>{t('news.empty')}</Text>
         </View>
       ) : null}
-      {state.phase === 'ready' ? state.posts.map((post) => <M2PostCard key={post.id} post={post} onOpen={onOpen} testID={`m2-home-blog-${post.slug}`} />) : null}
+      {state.phase === 'ready' && state.posts.length > 1 ? (
+        <M2Grid columns={{ tablet: 1, desktop: 2 }}>
+          {state.posts.map((post) => <M2PostCard key={post.id} post={post} onOpen={onOpen} testID={`m2-home-blog-${post.slug}`} />)}
+        </M2Grid>
+      ) : state.phase === 'ready' ? (
+        state.posts.map((post) => <M2PostCard key={post.id} post={post} onOpen={onOpen} testID={`m2-home-blog-${post.slug}`} />)
+      ) : null}
     </View>
   );
 }

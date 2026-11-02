@@ -144,6 +144,31 @@ describe('M2Home', () => {
     expect(within(screen.getByRole('navigation', { name: 'Services' })).getAllByRole('link').map((l) => l.getAttribute('aria-label'))).toEqual(['For You', 'Medicines', 'Lab tests']);
   });
 
+  it('wide (desktop shell): the same board without the shell’s copies (bell, cart, SOS, account, search), the rail unscrolled, Today for you in one row', () => {
+    const links = homeLinks();
+    wrap(<M2HomeView wide name="Asha Rao" campus="VNR VJIET" verified data={DATA} links={links} recent={[]} cart={{ count: 2, add: vi.fn(), canAdd: () => true }} />);
+    expect(screen.getByRole('heading', { level: 1, name: 'Asha Rao' })).toBeInTheDocument();
+    for (const id of ['m2-home-bell', 'm2-home-cart', 'm2-home-avatar', 'm2-home-search']) expect(screen.queryByTestId(id)).toBeNull();
+    expect(screen.queryByRole('button', { name: 'SOS, get help now' })).toBeNull();
+    fireEvent.click(screen.getByRole('link', { name: 'Upload a prescription' }));
+    expect(links.uploadRx).toHaveBeenCalled();
+    expect(screen.getByTestId('m2-home-meds')).toBeInTheDocument();
+    expect(screen.getByTestId('m2-home-consult')).toBeInTheDocument();
+    expect(screen.getByTestId('m2-home-emergency')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('link', { name: 'Fever and cold' }));
+    expect(links.concern).toHaveBeenCalledWith({ query: 'fever' });
+  });
+
+  it('highlights only what is real: a listed lab package, Generics only when switched on, never a made-up offer', () => {
+    wrap(<M2HomeView name="A" campus="" verified={false} data={DATA} links={homeLinks()} recent={[]} />);
+    expect(screen.queryByTestId('hero-carousel-slide-check')).toBeNull();
+    expect(screen.queryByTestId('hero-carousel-slide-generics')).toBeNull();
+    expect(document.body.textContent).not.toMatch(/Three checks, one visit/);
+    cleanup();
+    wrap(<M2HomeView name="A" campus="" verified={false} data={{ ...DATA, featuredLab: pkg({ name: 'Complete Health Checkup' }), genericsHighlight: true }} links={homeLinks()} recent={[]} />);
+    expect(screen.getByTestId('hero-carousel-slide-check')).toHaveTextContent('Complete Health Checkup');
+  });
+
   it('has no axe violations', async () => {
     const { container } = wrap(<M2HomeView name="Asha Rao" campus="VNR VJIET" verified data={DATA} links={homeLinks()} recent={[]} />);
     const violations = await axeViolations(container);
