@@ -41,7 +41,17 @@ def reset_cache() -> None:
 
 
 def grants_required() -> bool:
-    return os.getenv("RULE_L_REQUIRE_GRANTS", "").strip().lower() in {"1", "true", "yes"}
+    """True when commerce requests must run under sk_commerce or be refused (fail closed).
+
+    In production (APP_ENV=production), fail closed is the default (AGENTS.md guardrails 1, 4).
+    RULE_L_REQUIRE_GRANTS=0 can be explicitly set as a temporary override during initial
+    DBA role provisioning. In development and testing, grants are required only when opted in
+    via RULE_L_REQUIRE_GRANTS=1.
+    """
+    raw = os.getenv("RULE_L_REQUIRE_GRANTS")
+    if raw is not None:
+        return raw.strip().lower() in {"1", "true", "yes"}
+    return is_production()
 
 
 def _usable(bind) -> bool:
