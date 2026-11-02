@@ -2,9 +2,9 @@ import React from 'react';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { ApiError } from '@/data/services/http';
-import { DoctorLabOrderViewModel } from '@/features/clinician/viewmodels/DoctorLabOrderViewModel';
-import type { OrderableLabTest, PlacedLabOrder } from '@/features/clinician/viewmodels/DoctorLabOrderViewModel';
-import type { StaffAppointment } from '@/features/clinician/viewmodels/PrescribeViewModel';
+import { DoctorLabOrderViewModel } from '@/features/clinician/viewmodel/DoctorLabOrderViewModel';
+import type { OrderableLabTest, PlacedLabOrder } from '@/features/clinician/viewmodel/DoctorLabOrderViewModel';
+import type { StaffAppointment } from '@/features/clinician/viewmodel/PrescribeViewModel';
 import { DoctorLabOrderDispatchScreen } from '../DoctorLabOrderDispatchScreen';
 
 type Requester = typeof import('@/data/services/http').apiRequest;

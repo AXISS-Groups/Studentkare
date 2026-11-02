@@ -9,7 +9,7 @@ import { navigate } from '@/lib/utils/workflowRouting';
 import type { RoutePath } from '@/lib/utils/workflowRouting';
 import { ClinicianConsoleFrame } from './ClinicianConsoleFrame';
 import { ClinicianEmptyState, ClinicianErrorState } from './ClinicianStates';
-import { LoadableViewModel } from '../viewmodels/LoadableViewModel';
+import { LoadableViewModel } from '../viewmodel/LoadableViewModel';
 import { OfflineNote } from './OfflineNote';
 import { dateOnly, waitedFor } from '../model/clinicalData';
 import type { T } from '../model/clinicalData';

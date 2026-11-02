@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import React from 'react';
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
-import { DoctorApplyViewModel } from '../../viewmodels/DoctorApplyViewModel';
+import { DoctorApplyViewModel } from '../../viewmodel/DoctorApplyViewModel';
 import { DoctorApplyView } from '../DoctorApplyView';
 import { closedApplySource, sampleApplySource } from '../../model/applySource';
 import type { DoctorApplySource } from '../../model/applySource';

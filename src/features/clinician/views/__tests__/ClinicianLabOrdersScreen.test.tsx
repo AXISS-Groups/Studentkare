@@ -1,7 +1,7 @@
 import React, { StrictMode } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen, within } from '@testing-library/react';
-import { DoctorLabOrderViewModel } from '../../viewmodels/DoctorLabOrderViewModel';
+import { DoctorLabOrderViewModel } from '../../viewmodel/DoctorLabOrderViewModel';
 import { ClinicianLabOrdersScreen } from '../ClinicianLabOrdersScreen';
 
 vi.mock('@/data/contexts/AuthContext', () => ({ useAuth: () => ({ user: { id: 'doc', fullName: 'Dr Rao', role: 'NMC_DOCTOR' }, logout: vi.fn() }) }));

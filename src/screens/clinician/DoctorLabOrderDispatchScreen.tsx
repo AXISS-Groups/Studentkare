@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { EmptyState, Field, FormError } from '../../components/interface/WorkflowUI';
 import { Icon } from '@/design-system/icons';
-import { DoctorLabOrderViewModel, INDICATION_MAX, INDICATION_MIN } from '@/features/clinician/viewmodels/DoctorLabOrderViewModel';
+import { DoctorLabOrderViewModel, INDICATION_MAX, INDICATION_MIN } from '@/features/clinician/viewmodel/DoctorLabOrderViewModel';
 import { useT, type MessageKey, type Vars } from '@/i18n';
 import '../../theme/workflows.css';
 

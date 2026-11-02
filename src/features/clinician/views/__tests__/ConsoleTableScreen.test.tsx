@@ -15,7 +15,7 @@ import type { MessageKey, Vars } from '@/i18n';
 import { mapSchedule, scheduleConfig as scheduleConfigFor } from '../ClinicianScheduleScreen';
 import { earningsConfig as earningsConfigFor, mapEarnings } from '../ClinicianEarningsConsoleScreen';
 import { muted, pill, strong } from '../../model/cells';
-import { bookingsFor } from '../../viewmodels/__tests__/queueFixture';
+import { bookingsFor } from '../../viewmodel/__tests__/queueFixture';
 import { chronicConfig as chronicConfigFor, chronicSample } from '../ClinicianChronicConsoleScreen';
 
 const en = (key: MessageKey, vars?: Vars) => translate('en', key, vars);

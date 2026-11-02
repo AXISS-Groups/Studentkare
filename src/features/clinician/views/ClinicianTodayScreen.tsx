@@ -4,7 +4,7 @@ import { useAuth } from '@/data/contexts/AuthContext';
 import { navigate } from '@/lib/utils/workflowRouting';
 import { ClinicianConsoleFrame } from './ClinicianConsoleFrame';
 import { BookingRequestsPanel } from './BookingRequestsPanel';
-import { ClinicianTodayViewModel } from '../viewmodels/ClinicianTodayViewModel';
+import { ClinicianTodayViewModel } from '../viewmodel/ClinicianTodayViewModel';
 import { ClinicianTodayView } from './ClinicianTodayView';
 import { defaultTodaySource } from '../model/todaySource';
 import type { ClinicianTodaySource } from '../model/todaySource';

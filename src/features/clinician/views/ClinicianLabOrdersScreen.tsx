@@ -14,8 +14,8 @@ import { cell, muted, pill, strong } from '../model/cells';
 import { OfflineNote } from './OfflineNote';
 import { dateOnly } from '../model/clinicalData';
 import type { Request, T } from '../model/clinicalData';
-import { DoctorLabOrderViewModel, INDICATION_MAX, INDICATION_MIN } from '../viewmodels/DoctorLabOrderViewModel';
-import type { PlacedLabOrder } from '../viewmodels/DoctorLabOrderViewModel';
+import { DoctorLabOrderViewModel, INDICATION_MAX, INDICATION_MIN } from '../viewmodel/DoctorLabOrderViewModel';
+import type { PlacedLabOrder } from '../viewmodel/DoctorLabOrderViewModel';
 import './lab-orders.css';
 
 /**

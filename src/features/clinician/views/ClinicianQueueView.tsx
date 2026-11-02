@@ -5,7 +5,7 @@ import { Icon } from '@/design-system/icons';
 import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
 import type { RoutePath } from '@/lib/utils/workflowRouting';
-import type { ClinicianQueueViewModel } from '../viewmodels/ClinicianQueueViewModel';
+import type { ClinicianQueueViewModel } from '../viewmodel/ClinicianQueueViewModel';
 import type { ConsentState, QueueAction, QueueData, QueueEntry, RecordAccessItem } from '../model/queueModel';
 import { actionFor, confirmedCount, initialsOf, waitingCount, waitingMinutes } from '../model/queueModel';
 import { clock24, shortName } from '../model/appointmentsSource';

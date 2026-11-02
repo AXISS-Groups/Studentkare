@@ -1,13 +1,13 @@
 import { describe, expect, it, vi } from 'vitest';
 import React from 'react';
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
-import { ClinicianTodayViewModel } from '../../viewmodels/ClinicianTodayViewModel';
+import { ClinicianTodayViewModel } from '../../viewmodel/ClinicianTodayViewModel';
 import { ClinicianTodayView } from '../ClinicianTodayView';
 import { bookingsTodaySource } from '../../model/todaySource';
 import type { ClinicianTodaySource } from '../../model/todaySource';
 import { REVIEW_ROUTES } from '../../model/reviewRoutes';
-import { bookingsFor } from '../../viewmodels/__tests__/queueFixture';
-import { fullDay } from '../../viewmodels/__tests__/todayFixture';
+import { bookingsFor } from '../../viewmodel/__tests__/queueFixture';
+import { fullDay } from '../../viewmodel/__tests__/todayFixture';
 
 const NOW = new Date(2026, 8, 24, 9, 46);
 

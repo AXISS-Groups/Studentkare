@@ -4,7 +4,7 @@ import { SkButton } from '@/design-system';
 import { BrandLogo, Icon } from '@/design-system/icons';
 import { useT } from '@/i18n';
 import type { RoutePath } from '@/lib/utils/workflowRouting';
-import type { DoctorApplyViewModel } from '../viewmodels/DoctorApplyViewModel';
+import type { DoctorApplyViewModel } from '../viewmodel/DoctorApplyViewModel';
 import type { ApplyField } from '../model/applyModel';
 import { APPLY_TRACK } from '../model/applyModel';
 import './doctor-apply.css';

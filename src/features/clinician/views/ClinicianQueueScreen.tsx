@@ -3,7 +3,7 @@ import { useT } from '@/i18n';
 import { navigate } from '@/lib/utils/workflowRouting';
 import { ClinicianConsoleFrame } from './ClinicianConsoleFrame';
 import { BookingRequestsPanel } from './BookingRequestsPanel';
-import { ClinicianQueueViewModel } from '../viewmodels/ClinicianQueueViewModel';
+import { ClinicianQueueViewModel } from '../viewmodel/ClinicianQueueViewModel';
 import { ClinicianQueueView } from './ClinicianQueueView';
 import { defaultQueueSource } from '../model/queueSource';
 import type { ClinicianQueueSource } from '../model/queueSource';

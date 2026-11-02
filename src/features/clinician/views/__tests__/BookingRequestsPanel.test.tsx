@@ -2,7 +2,7 @@ import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import type { StaffAppointment } from '@/data/types/workflowTypes';
-import type { DoctorAppointmentsRepository } from '../../viewmodels/DoctorAppointmentsViewModel';
+import type { DoctorAppointmentsRepository } from '../../viewmodel/DoctorAppointmentsViewModel';
 import { BookingRequestsPanel } from '../BookingRequestsPanel';
 
 const appt = (id: string, status: string, customer: string): StaffAppointment => ({

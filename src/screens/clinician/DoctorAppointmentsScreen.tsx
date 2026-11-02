@@ -6,8 +6,8 @@ import { DataState, EmptyState, FormError } from '@/components/interface/Workflo
 import { ConfirmDialog } from '@/components/interface/ConfirmDialog';
 import { workRepository } from '@/features/admin/model/workRepository';
 import type { AppointmentTransition } from '@/features/admin/model/types';
-import { DoctorAppointmentsViewModel } from '@/features/clinician/viewmodels/DoctorAppointmentsViewModel';
-import type { DoctorAppointmentsRepository } from '@/features/clinician/viewmodels/DoctorAppointmentsViewModel';
+import { DoctorAppointmentsViewModel } from '@/features/clinician/viewmodel/DoctorAppointmentsViewModel';
+import type { DoctorAppointmentsRepository } from '@/features/clinician/viewmodel/DoctorAppointmentsViewModel';
 import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
 import '../../theme/workflows.css';

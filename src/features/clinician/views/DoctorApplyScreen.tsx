@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { navigate } from '@/lib/utils/workflowRouting';
-import { DoctorApplyViewModel } from '../viewmodels/DoctorApplyViewModel';
+import { DoctorApplyViewModel } from '../viewmodel/DoctorApplyViewModel';
 import { DoctorApplyView } from './DoctorApplyView';
 import { defaultApplySource } from '../model/applySource';
 import type { DoctorApplySource } from '../model/applySource';

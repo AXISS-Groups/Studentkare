@@ -5,8 +5,8 @@ import { displayDate } from '@/data/types/workflowTypes';
 import { SkButton } from '@/design-system/primitives';
 import { ConfirmDialog } from '@/components/interface/ConfirmDialog';
 import { workRepository } from '@/features/admin/model/workRepository';
-import { DoctorAppointmentsViewModel } from '../viewmodels/DoctorAppointmentsViewModel';
-import type { DoctorAppointmentsRepository } from '../viewmodels/DoctorAppointmentsViewModel';
+import { DoctorAppointmentsViewModel } from '../viewmodel/DoctorAppointmentsViewModel';
+import type { DoctorAppointmentsRepository } from '../viewmodel/DoctorAppointmentsViewModel';
 import './booking-requests.css';
 
 /**

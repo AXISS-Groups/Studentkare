@@ -7,7 +7,7 @@ import { navigate } from '@/lib/utils/workflowRouting';
 import type { RoutePath } from '@/lib/utils/workflowRouting';
 import { ClinicianConsoleFrame } from './ClinicianConsoleFrame';
 import { ClinicianEmptyState, ClinicianErrorState } from './ClinicianStates';
-import { LoadableViewModel } from '../viewmodels/LoadableViewModel';
+import { LoadableViewModel } from '../viewmodel/LoadableViewModel';
 import { OfflineNote } from './OfflineNote';
 import { dateOnly, slotLabel } from '../model/clinicalData';
 import type { CareAppointment, T } from '../model/clinicalData';

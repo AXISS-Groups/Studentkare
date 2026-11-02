@@ -1,12 +1,12 @@
 import { describe, expect, it, vi } from 'vitest';
 import React from 'react';
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
-import { ClinicianQueueViewModel } from '../../viewmodels/ClinicianQueueViewModel';
+import { ClinicianQueueViewModel } from '../../viewmodel/ClinicianQueueViewModel';
 import { ClinicianQueueView } from '../ClinicianQueueView';
 import { bookingsQueueSource } from '../../model/queueSource';
 import type { ClinicianQueueSource } from '../../model/queueSource';
 import { REVIEW_ROUTES } from '../../model/reviewRoutes';
-import { bookingsFor, consentQueue } from '../../viewmodels/__tests__/queueFixture';
+import { bookingsFor, consentQueue } from '../../viewmodel/__tests__/queueFixture';
 
 const NOW = new Date(2026, 8, 24, 10, 0);
 

@@ -6,7 +6,7 @@ import { translate } from '@/i18n';
 import type { MessageKey, Vars } from '@/i18n';
 import type { CareAppointment, Request } from '../../model/clinicalData';
 
-import { CriticalResultsViewModel } from '../../viewmodels/CriticalResultsViewModel';
+import { CriticalResultsViewModel } from '../../viewmodel/CriticalResultsViewModel';
 import { CriticalResultsView } from '../CriticalResultsScreen';
 import { bySeverity, criticalApiSource, mapCritical } from '../../model/criticalModel';
 import type { CriticalApiItem, CriticalData, CriticalResult, CriticalSource, UncollectedApiItem } from '../../model/criticalModel';
@@ -15,7 +15,7 @@ import { EncounterNoteView, EncounterNoteViewModel } from '../EncounterNoteScree
 import { SignedElsewhere, encounterApiSource } from '../../model/encounterModel';
 import type { EncounterData, EncounterNoteApi, EncounterSource } from '../../model/encounterModel';
 
-import { PrescribeViewModel } from '../../viewmodels/PrescribeConsoleViewModel';
+import { PrescribeViewModel } from '../../viewmodel/PrescribeConsoleViewModel';
 import { PrescribeView } from '../PrescribeScreen';
 import { prescribeApiSource } from '../../model/prescribeModel';
 import type { DrugEntry, IssueRequest, IssueResult, PrescribeData, PrescribeSource } from '../../model/prescribeModel';

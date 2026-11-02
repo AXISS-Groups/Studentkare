@@ -7,7 +7,7 @@ import type { SkIconName } from '@/design-system/icons';
 import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
 import type { RoutePath } from '@/lib/utils/workflowRouting';
-import type { ClinicianTodayViewModel } from '../viewmodels/ClinicianTodayViewModel';
+import type { ClinicianTodayViewModel } from '../viewmodel/ClinicianTodayViewModel';
 import type { CampDuty, NextConsult, SlotKind, TodayData, TodaySlot, WaitingItem } from '../model/todayModel';
 import { cardDate, dayCounts, greetingKey, initialsOf, surname } from '../model/todayModel';
 import { ClinicianEmptyState, ClinicianErrorState } from './ClinicianStates';
