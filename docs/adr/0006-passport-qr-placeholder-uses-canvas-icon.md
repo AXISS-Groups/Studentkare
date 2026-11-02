@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-11-02
-- **Deciders:** designer (approval relayed in the Phase 5 Batch A integration; name not recorded here)
+- **Deciders:** Design owner
 
 ## Context
 `src/features/digital_id/views/HealthPassportQRScreen.tsx` shows a QR-sized graphic when no
