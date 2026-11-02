@@ -73,9 +73,9 @@ export const AuthenticatedFlowScreen = observer(function AuthenticatedFlowScreen
     vm.setChannel(demoChan);
     vm.setIdentifier(demoId);
     vm.setCode('123456');
-    void vm.sendCode().then(() => {
+    vm.sendCode().then(() => {
       vm.setCode('123456');
-      void vm.verify(accept);
+      return vm.verify(accept);
     });
   };
 

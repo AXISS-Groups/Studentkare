@@ -21,7 +21,7 @@ export function PermissionsScreen(): React.ReactElement {
       onDone={() => {
         // The route needs a session, so a user is expected here. If the
         // session went away mid-screen, sign-in is the right place to land.
-        void navigate(auth.user ? `/${homeForRole(auth.user.role)}` : '/login');
+        void navigate(auth.user ? (homeForRole(auth.user.role) ? `/${homeForRole(auth.user.role)}` : '') : '/login');
       }}
     />
   );

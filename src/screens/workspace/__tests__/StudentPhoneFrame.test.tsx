@@ -48,7 +48,7 @@ describe('student pill nav (Mobile 2.0, approved 2026-10-21)', () => {
   });
 
   it('maps each destination to its route; the store boards show Home as current', () => {
-    expect(Object.values(STUDENT_NAV_ROUTES)).toEqual(['health', 'orders', 'ayush', 'your-care', 'profile']);
+    expect(Object.values(STUDENT_NAV_ROUTES)).toEqual(['home', 'orders', 'ayush', 'your-care', 'profile']);
     expect(studentNavFor('health')).toBe('home');
     expect(studentNavFor('your-care')).toBe('health');
     for (const mine of ['health/medicines', 'health/water'] as const) expect(studentNavFor(mine)).toBe('health');

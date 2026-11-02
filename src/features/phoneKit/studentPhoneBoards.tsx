@@ -31,7 +31,8 @@ const ReportInsightsRoute = lazy(() => import('@/features/insights/views/ReportI
 const ReturnRequestRoute = lazy(() => import('@/features/requests/views/ReturnRequestView').then((m) => ({ default: m.ReturnRequestRoute })));
 const SearchRoute = lazy(() => import('@/features/discover/views/SearchRoute').then((m) => ({ default: m.SearchRoute })));
 const ShopPhoneRoute = lazy(() => import('@/features/shopPhone/views/ShopPhoneRoute').then((m) => ({ default: m.ShopPhoneRoute })));
-const VisitSummaryRoute = lazy(() => import('@/features/vault/views/VisitSummaryView').then((m) => ({ default: m.VisitSummaryRoute })));
+const VisitSummaryRoute = lazy(() => import('@/features/vault/views/VisitSummaryWebRoute').then((m) => ({ default: m.VisitSummaryRoute })));
+export const LeaveCampusRoute = lazy(() => import('@/features/campus/views/LeaveCampusView').then((m) => ({ default: m.LeaveCampusRoute })));
 // keep-sorted end
 
 export interface PhoneBoard {
@@ -53,6 +54,8 @@ export interface PhoneBoard {
  */
 export function studentPhoneBoard(route: RoutePath): PhoneBoard | null {
   switch (route) {
+    case '':
+    case 'home':
     case 'health': return { node: <M2HomeRoute />, title: 'm2.nav.home', ownBack: true };
     case 'lab-tests': return { node: <M2LabsRoute />, title: 'm2.labs.title', ownBack: true };
     case 'care': return { node: <M2ConsultsRoute />, title: 'm2.doc.eyebrow', ownBack: true };

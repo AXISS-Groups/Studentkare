@@ -43,7 +43,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const controller = new AbortController();
     setStatus('loading');
     apiRequest<SessionResponse>('/auth/session', { signal: controller.signal }).then(result => { if (!controller.signal.aborted) acceptSession(result); }).catch(reason => {
-      if (!controller.signal.aborted) { setError(reason.message); setErrorStatus(reason instanceof ApiError ? reason.status : 0); setStatus('error'); setUser(null); setCsrfToken(''); }
+      if (!controller.signal.aborted) {
+        setError(reason.message); setErrorStatus(reason instanceof ApiError ? reason.status : 0); setStatus('error'); setUser(null); setCsrfToken('');
+      }
     });
     return () => controller.abort();
   }, [version, acceptSession]);
@@ -55,6 +57,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [acceptSession]);
 
   const logout = async (choice?: SignOutChoice) => {
+    if (typeof sessionStorage !== 'undefined') {
+      sessionStorage.removeItem('care_demo_session');
+    }
     // This browser's pushes stop with the session (the server revokes them too).
     await stopWebPushOnSignOut();
     await apiRequest('/auth/logout', { method: 'POST', body: choice?.remember ? JSON.stringify(choice) : undefined });

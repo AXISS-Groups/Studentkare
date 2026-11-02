@@ -160,8 +160,8 @@ export function StudentWebShell({
         >
           <Icon name="menu" size={22} />
         </button>
-        {/* One home (founder decision, 23 Oct 2026): the brand opens /health, as the phone's Home does. */}
-        <button type="button" className="sk-sshell__brand" aria-label={t('shell.brand.home')} onClick={() => go('health')}>
+        {/* The brand always returns to the canonical signed-in dashboard URL. */}
+        <button type="button" className="sk-sshell__brand" aria-label={t('shell.brand.home')} onClick={() => go('')}>
           <BrandLogo size={30} label="" />
           <span className="sk-sshell__wordmark" aria-hidden="true">{t('shell.brand.student')}<em>&nbsp;{t('shell.brand.kare')}</em></span>
         </button>

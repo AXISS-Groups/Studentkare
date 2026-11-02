@@ -41,8 +41,11 @@ const RIGHTS: readonly Right[] = [
  * the published GRIEVANCE_OFFICER document (Super admin → Legal documents);
  * until one is published the page says "not published yet" and points to
  * Help. No name is ever written here. React Native, so Expo can register it.
+ *
+ * `onNavigate` defaults to the web's own `navigate()` (DOM-only), so web is
+ * unchanged; native (phase 4, approved 2026-11-01) passes its own resolver.
  */
-export function DataRightsView({ loadLegal = privacyRepository.legal, wide = false }: { loadLegal?: (kind: LegalKind) => Promise<LegalDocument>; wide?: boolean }): React.ReactElement {
+export function DataRightsView({ loadLegal = privacyRepository.legal, wide = false, onNavigate = navigate }: { loadLegal?: (kind: LegalKind) => Promise<LegalDocument>; wide?: boolean; onNavigate?: (route: RoutePath) => void }): React.ReactElement {
   const t = useT();
   const { lang } = useLanguage();
   useOwnPhoneChrome();
@@ -62,7 +65,7 @@ export function DataRightsView({ loadLegal = privacyRepository.legal, wide = fal
       <View style={styles.actions}>
         {right.actions.map((action) => (
           <Button key={action.route} label={t(action.label)} variant={action.tone === 'danger' ? 'dangerOutline' : action.tone === 'primary' ? 'primary' : 'secondary'}
-            disabled={!online && action.route === 'data-export'} onPress={() => navigate(action.route)}
+            disabled={!online && action.route === 'data-export'} onPress={() => onNavigate(action.route)}
             icon={<Icon name={action.icon} size={16} color={action.tone === 'danger' ? color.danger : action.tone === 'primary' ? color.onAction : color.action} />} />
         ))}
       </View>
@@ -88,7 +91,7 @@ export function DataRightsView({ loadLegal = privacyRepository.legal, wide = fal
       </View>
       <View style={styles.actions}>
         {grievance.status === 'error' ? <Button label={t('common.tryAgain')} variant="secondary" onPress={grievance.retry} /> : null}
-        <Button label={t('privacy.rights.grievance.help')} variant="secondary" onPress={() => navigate('support')} icon={<Icon name="help-circle" size={16} color={color.action} />} />
+        <Button label={t('privacy.rights.grievance.help')} variant="secondary" onPress={() => onNavigate('support')} icon={<Icon name="help-circle" size={16} color={color.action} />} />
       </View>
     </M2EdgeCard>
   );
@@ -99,7 +102,7 @@ export function DataRightsView({ loadLegal = privacyRepository.legal, wide = fal
   if (wide) {
     return (
       <M2WideColumn testID="data-rights">
-        <M2Header backLabel={t('common.back')} onBack={() => navigate('privacy-consent')} title={t('privacy.rights.title')} testID="rights-header" />
+        <M2Header backLabel={t('common.back')} onBack={() => onNavigate('privacy-consent')} title={t('privacy.rights.title')} testID="rights-header" />
         {hero}
         {offline}
         <M2Grid columns={{ desktop: 4, tablet: 2 }}>{cards}</M2Grid>
@@ -109,7 +112,7 @@ export function DataRightsView({ loadLegal = privacyRepository.legal, wide = fal
   }
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content} testID="data-rights">
-      <M2Header backLabel={t('common.back')} onBack={() => navigate('privacy-consent')} title={t('privacy.rights.title')} testID="rights-header" />
+      <M2Header backLabel={t('common.back')} onBack={() => onNavigate('privacy-consent')} title={t('privacy.rights.title')} testID="rights-header" />
       <View style={[styles.gutter, styles.column]}>
         {hero}
         {offline}

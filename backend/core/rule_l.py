@@ -182,6 +182,7 @@ TABLE_PLANES: dict[str, str] = {
     "care_announcements": PLATFORM,               # super-admin campus pushes: checked non-health text, counts only
     "care_setting_overrides": PLATFORM,           # business settings (core/settings_registry.py)
     "care_setting_override_history": PLATFORM,    # append-only: who changed a setting, when, why
+    "care_hitl_actions": PLATFORM,                # held high-stakes AI actions awaiting clinician sign-off (audit M2)
 }
 
 # Where each wellness log lives (services/wellness_api.py, the meds endpoints).

@@ -15,7 +15,7 @@ const isTab = (value: string | null): value is ResultsTab => value !== null && (
 /** Leave search: back where the student came from, or Discover. */
 function leave(): void {
   if (typeof window !== 'undefined' && window.history.length > 1) window.history.back();
-  else navigate('health');
+  else navigate('');
 }
 
 /**

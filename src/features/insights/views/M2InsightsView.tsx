@@ -470,7 +470,7 @@ export const M2InsightsView = observer(function M2InsightsView({ vm, name, links
         {showSystems ? (
           <Rise index={3}>
             {systemsTitle}
-            <M2Grid columns={{ tablet: 2, desktop: 4 }} testID="m2-ins-systems">
+            <M2Grid columns={{ tablet: 2, desktop: 3 }} testID="m2-ins-systems">
               {values.bodySystems.map((row) => <SystemTile key={row.bodySystem} row={row} onPress={links.trends} fill />)}
             </M2Grid>
           </Rise>

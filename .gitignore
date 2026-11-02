@@ -101,3 +101,13 @@ studentkare-build-kit/
 
 # Vite writes these next to the config while it starts; never commit them.
 vite.config.ts.timestamp-*
+
+# Local demo credentials & configs (never pushed to GitHub)
+*.local.json
+*.local.js
+*.local.ts
+demo-credentials.local.json
+config/demo-credentials.local.json
+
+*.local.bat
+run-local.bat

@@ -185,7 +185,7 @@ export function LiveMarketplaceScreen({ care = false, checkout = false, shop = f
           <button type="button" onClick={() => navigate('pricing')}><ShieldCheck size={16} aria-hidden="true" />{t('shopweb.nav.plans')}</button>
         </nav>
         <div className="shop-header-tools">
-          <button type="button" className="shop-account" onClick={() => navigate(user ? homeForRole(user.role) : 'login')}>
+          <button type="button" className="shop-account" onClick={() => navigate(user ? (homeForRole(user.role) || '') : 'login')}>
             <UserRound size={18} aria-hidden="true" />
             <span>{user ? t('shopweb.account.workspace') : t('shopweb.account.signIn')}</span>
           </button>
@@ -476,7 +476,7 @@ export function LiveMarketplaceScreen({ care = false, checkout = false, shop = f
           </div>
           <div>
             <h4>{t('shopweb.footer.account')}</h4>
-            <button type="button" onClick={() => navigate('health')}>{t('shopweb.footer.health')}</button>
+            <button type="button" onClick={() => navigate('')}>{t('shopweb.footer.health')}</button>
             <button type="button" onClick={() => navigate('orders')}>{t('shopweb.footer.orders')}</button>
             <button type="button" onClick={() => navigate('pricing')}>{t('shopweb.footer.plans')}</button>
             <button type="button" onClick={() => navigate('support')}>{t('shopweb.footer.support')}</button>

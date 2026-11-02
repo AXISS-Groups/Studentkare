@@ -23,7 +23,7 @@ import type { RoutePath } from '@/lib/utils/workflowRouting';
  * The old tabs' shop and lab tests are on Home's service rail.
  */
 export const STUDENT_NAV_ROUTES: Readonly<Record<PillNavKey, RoutePath>> = {
-  home: 'health',
+  home: 'home',
   orders: 'orders',
   ayush: 'ayush',
   health: 'your-care',
@@ -64,6 +64,7 @@ const PROFILE_ROUTES: ReadonlySet<RoutePath> = new Set<RoutePath>([
 
 /** The pill-nav destination a route belongs to (null: none is current). */
 export function studentNavFor(route: RoutePath): PillNavKey | null {
+  if (route === 'health') return 'home';
   const key = (Object.keys(STUDENT_NAV_ROUTES) as PillNavKey[]).find((k) => STUDENT_NAV_ROUTES[k] === route);
   if (key) return key;
   if (HEALTH_ROUTES.has(route)) return 'health';
@@ -95,7 +96,7 @@ export interface StudentPhoneFrameProps {
 
 function goBack(): void {
   if (typeof window !== 'undefined' && window.history.length > 1) window.history.back();
-  else navigate('health');
+  else navigate('');
 }
 
 /**

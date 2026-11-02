@@ -15,7 +15,7 @@ export function AuthLayout({ mode, step, children }: { mode: 'login' | 'signup';
   const steps = stepsByMode[mode].map(key => t(key));
   const login = mode === 'login';
   return <main className={`care-auth-layout care-auth-${mode}`}>
-    <header className="care-auth-header"><StudentKareLogo size={33} showStrapline={false} onClick={() => navigate('shop')} /><span>{login ? t('shopweb.auth.loginTagline') : t('shopweb.auth.signupTagline')}</span></header>
+    <header className="care-auth-header"><StudentKareLogo size={33} showStrapline={false} onClick={() => navigate('')} /><span>{login ? t('shopweb.auth.loginTagline') : t('shopweb.auth.signupTagline')}</span></header>
     <div className="care-auth-grid">
       <aside className="care-auth-story">
         <span className="care-eyebrow">{t('shopweb.auth.eyebrow')}</span>

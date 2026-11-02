@@ -86,7 +86,7 @@ function RouterShell() {
   }, []);
 
   const section = routePath.startsWith('admin') ? 'Operations' : ['shop', 'care', 'checkout'].includes(routePath) ? 'Marketplace' : routePath === 'login' ? 'Sign in' : routePath === 'signup' ? 'Create an account' : 'Your care workspace';
-  const isLandingPage = routePath === 'shop' || location.pathname === '/' || location.pathname === '/shop';
+  const isLandingPage = !auth.user && (routePath === 'shop' || location.pathname === '/' || location.pathname === '/shop');
   const isVendorRoute = isVendorPath(location.pathname);
   const hasOwnChrome = consoleHasOwnChrome(location.pathname, auth.user?.role ?? null);
   const isPublicView =

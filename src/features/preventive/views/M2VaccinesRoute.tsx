@@ -24,7 +24,7 @@ export function M2VaccinesRoute({ wide = false }: { wide?: boolean } = {}): Reac
   return (
     <>
       <M2VaccinesView wide={wide} vm={vm} links={{
-        back: () => navigate('health'),
+        back: () => navigate(''),
         myHealth: () => navigate('your-care'),
         camp: () => navigate('health-camp'),
         more: () => setMore(true),

@@ -25,7 +25,7 @@ export function M2LabsRoute({ wide = false }: { wide?: boolean } = {}): React.Re
         retry={labs.reload}
         block={profile.data?.hostelBlock ?? ''}
         links={{
-          back: () => navigate('health'),
+          back: () => navigate(''),
           reports: () => navigate('records'),
           rx: () => navigate('prescriptions'),
           book: (pkg) => setBooking(pkg.id),
