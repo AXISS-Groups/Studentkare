@@ -9,7 +9,7 @@ const apiAnswers: Record<string, () => Promise<unknown>> = {};
 const apiRequest = vi.fn((path: string, _init?: RequestInit) => apiAnswers[path]?.() ?? new Promise(() => undefined));
 vi.mock('../../../data/services/http', async importOriginal => ({ ...(await importOriginal<typeof import('../../../data/services/http')>()), apiRequest: (path: string, init?: RequestInit) => apiRequest(path, init) }));
 
-import { superAdminScreen } from '../admin/SuperAdminScreens';
+import { superAdminScreen } from '@/features/admin/SuperAdminScreens';
 
 const ROLES = ['STUDENT', 'NMC_DOCTOR', 'VENDOR', 'CAMPUS_ADMIN', 'COUNSELLOR', 'SUPER_ADMIN', 'LAB_COLLECTOR'] as const;
 const countPath = (role: string) => `/ops/accounts?limit=1&role=${role}`;

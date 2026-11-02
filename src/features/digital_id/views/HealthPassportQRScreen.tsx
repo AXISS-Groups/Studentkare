@@ -1,10 +1,10 @@
 import React from 'react';
-import { QrCode } from 'lucide-react';
-import type { MemberProfile } from '../../data/types/workflowTypes';
-import { useApiResource } from '../../hooks/api/useApiResource';
-import { DataState } from '../../components/interface/WorkflowUI';
+import { Icon } from '@/design-system/icons';
+import type { MemberProfile } from '@/data/types/workflowTypes';
+import { useApiResource } from '@/hooks/api/useApiResource';
+import { DataState } from '@/components/interface/WorkflowUI';
 import { useT } from '@/i18n';
-import '../../theme/workflows.css';
+import '@/theme/workflows.css';
 
 /**
  * Emergency health passport. Every value shown comes from the member's own saved
@@ -81,7 +81,7 @@ function PassportCard({ profile }: { profile: MemberProfile }) {
       <div className="wf-card" style={{ padding: 24, textAlign: 'center' }}>
         <span className="care-eyebrow">{t('member.passport.scanEyebrow')}</span>
         <div aria-hidden="true" style={{ background: 'var(--sk-color-surface-2)', padding: 16, borderRadius: 12, border: '1px solid var(--sk-color-rule)', margin: '12px 0 16px', display: 'inline-block', opacity: 0.4 }}>
-          <QrCode size={160} style={{ margin: '0 auto', color: 'var(--sk-color-text)' }} />
+          <Icon name="qr-code" size={160} style={{ margin: '0 auto', color: 'var(--sk-color-text)' }} />
         </div>
         <p role="status" style={{ fontSize: 12, color: 'var(--sk-color-text-2)', marginBottom: 0 }}>
           {t('member.passport.qrUnavailable')}

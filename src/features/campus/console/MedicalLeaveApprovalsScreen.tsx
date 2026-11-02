@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { EmptyState } from '../../components/interface/WorkflowUI';
+import { EmptyState } from '@/components/interface/WorkflowUI';
 import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
-import '../../theme/workflows.css';
+import '@/theme/workflows.css';
 
 interface LeaveRequest {
   id: string;

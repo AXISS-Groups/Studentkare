@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { PhoneCall, ShieldAlert, Trash2 } from 'lucide-react';
-import { useApiResource } from '../../hooks/api/useApiResource';
-import { apiRequest } from '../../data/services/http';
-import { useAuth } from '../../data/contexts/AuthContext';
-import { DataState, EmptyState, Field, FormError, SubmitButton, useMutation } from '../../components/interface/WorkflowUI';
-import { ShopDialog } from '../../components/marketplace/ShopDialog';
+import { useApiResource } from '@/hooks/api/useApiResource';
+import { apiRequest } from '@/data/services/http';
+import { useAuth } from '@/data/contexts/AuthContext';
+import { DataState, EmptyState, Field, FormError, SubmitButton, useMutation } from '@/components/interface/WorkflowUI';
+import { ShopDialog } from '@/components/marketplace/ShopDialog';
 import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
 

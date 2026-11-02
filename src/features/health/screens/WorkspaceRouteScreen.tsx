@@ -60,7 +60,7 @@ const CLINICIAN_SCREENS: Partial<Record<RoutePath, React.ComponentType>> = {
 const ClinicalReviewPanel = lazy(() => import('@/screens/workspace/ClinicalReviewPanel').then(module => ({ default: module.ClinicalReviewPanel })));
 const PreventiveReviewScreen = lazy(() => import('@/features/preventive/screens/PreventiveReviewScreen').then(module => ({ default: module.PreventiveReviewScreen })));
 const NotificationInboxPanel = lazy(() => import('@/screens/workspace/NotificationInboxPanel').then(module => ({ default: module.NotificationInboxPanel })));
-const SupportPanel = lazy(() => import('@/screens/workspace/MemberPanels').then(module => ({ default: () => <module.SupportPanel /> })));
+const SupportPanel = lazy(() => import('@/features/support/views/SupportPanel').then(module => ({ default: () => <module.SupportPanel /> })));
 const EncounterNotesPanel = lazy(() => import('@/screens/workspace/EncounterNotesPanel').then(module => ({ default: module.EncounterNotesPanel })));
 
 /**

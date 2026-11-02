@@ -10,7 +10,8 @@ import { SERVICE_HUES } from './servicePalette';
 import type { ServiceHue } from './servicePalette';
 import { isWide, m2Gutter, useM2Layout } from './m2Layout';
 import type { M2Layout } from './m2Layout';
-import { M2HeaderSos } from './m2Sos';
+import { useM2Sos } from './m2Sos';
+import { useT } from '@/i18n';
 
 /**
  * Small pieces every Mobile 2.0 board shares (canvas page 9): the round
@@ -135,6 +136,19 @@ export function SosButton({ label, spoken, onPress, testID = 'm2-sos' }: { label
     </View>
   );
 }
+
+/** The red SOS pill for a board's own header, bound to the shell's SOS. Draws nothing where the shell has its own. */
+export function M2HeaderSos({ onPress, push = false, testID = 'm2-header-sos' }: { onPress?: () => void; push?: boolean; testID?: string }) {
+  const t = useT();
+  const shell = useM2Sos();
+  const open = onPress ?? shell;
+  if (!open) return null;
+  const button = <SosButton label={t('m2.sos')} spoken={t('m2.sosSpoken')} onPress={open} testID={testID} />;
+  // `push`: the header row has no spacer, so SOS takes the far end itself.
+  return push ? <View style={headerSosStyles.push}>{button}</View> : button;
+}
+
+const headerSosStyles = StyleSheet.create({ push: { marginLeft: 'auto' } });
 
 /**
  * A store board's header: the round back button, a small line over the title,

@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { Activity, CheckCircle2, RefreshCw, Server, ShieldCheck } from 'lucide-react';
-import { useApiResource } from '../../hooks/api/useApiResource';
-import { ApiError, apiRequest } from '../../data/services/http';
-import { FormError, useMutation } from '../../components/interface/WorkflowUI';
-import { DataState, EmptyState } from '../../components/interface/WorkflowUI';
-import { useT } from '../../i18n';
-import type { MessageKey } from '../../i18n';
-import '../../theme/workflows.css';
+import { useApiResource } from '@/hooks/api/useApiResource';
+import { ApiError, apiRequest } from '@/data/services/http';
+import { FormError, useMutation } from '@/components/interface/WorkflowUI';
+import { DataState, EmptyState } from '@/components/interface/WorkflowUI';
+import { useT } from '@/i18n';
+import type { MessageKey } from '@/i18n';
+import '@/theme/workflows.css';
 
 interface Job { key: string; name: string; enabled: boolean; intervalSeconds: number; lastRunAt: number | null; nextRunAt: number | null; lastStatus: string; lastError: string | null; }
 interface HealthCheck { name: string; configured: boolean; reachable: boolean | null; status: string; detail: string; checked_at: number; }

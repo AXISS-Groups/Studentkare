@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import React from 'react';
 import { fireEvent, render, screen, within } from '@testing-library/react';
-import { SuperAdminShell } from '../admin/SuperAdminShell';
-import { SUPER_ADMIN_NAVIGATION } from '../admin/superAdminNavigation';
+import { SuperAdminShell } from '@/features/admin/shell/SuperAdminShell';
+import { SUPER_ADMIN_NAVIGATION } from '@/features/admin/shell/superAdminNavigation';
 
 const onNavigate = vi.fn();
 const onSignOut = vi.fn();

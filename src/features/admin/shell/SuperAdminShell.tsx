@@ -1,15 +1,15 @@
 import React, { ReactNode, useEffect, useRef, useState } from 'react';
-import { Icon } from '../../../design-system/icons';
-import { ConsoleBrand, ConsoleNav, ConsoleSidebarLink } from '../../../design-system/console-shell/ConsoleShell';
-import type { ConsoleNavGroup } from '../../../design-system/console-shell/ConsoleShell';
-import type { AccountRole } from '../../../data/types/workflowTypes';
-import { canAccessRoute, RoutePath } from '../../../lib/utils/workflowRouting';
-import { useTheme } from '../../../theme/tokens/theme';
-import { FormError } from '../../../components/interface/WorkflowUI';
-import { SUPER_ADMIN_NAVIGATION } from './superAdminNavigation';
-import { useT } from '../../../i18n';
-import { TeamBadge } from '../../../features/team-accounts/TeamBadge';
-import './super-admin-shell.css';
+import { Icon } from '@/design-system/icons';
+import { ConsoleBrand, ConsoleNav, ConsoleSidebarLink } from '@/design-system/console-shell/ConsoleShell';
+import type { ConsoleNavGroup } from '@/design-system/console-shell/ConsoleShell';
+import type { AccountRole } from '@/data/types/workflowTypes';
+import { canAccessRoute, RoutePath } from '@/lib/utils/workflowRouting';
+import { useTheme } from '@/theme/tokens/theme';
+import { FormError } from '@/components/interface/WorkflowUI';
+import { SUPER_ADMIN_NAVIGATION } from '@/features/admin/shell/superAdminNavigation';
+import { useT } from '@/i18n';
+import { TeamBadge } from '@/features/team-accounts/TeamBadge';
+import '@/features/admin/shell/super-admin-shell.css';
 
 interface SuperAdminShellProps {
   route: RoutePath;
