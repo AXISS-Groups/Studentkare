@@ -15,7 +15,7 @@ import { translate } from '@/i18n';
 import type { MessageKey, Vars } from '@/i18n';
 import { mapSchedule, scheduleConfig as scheduleConfigFor } from '../ClinicianScheduleScreen';
 import { earningsConfig as earningsConfigFor, mapEarnings } from '../ClinicianEarningsConsoleScreen';
-import { muted, pill, strong } from '../../model/cells';
+import { muted, pill, strong } from '../../viewmodel/cells';
 import { bookingsFor } from '../../viewmodel/__tests__/queueFixture';
 import { chronicConfig as chronicConfigFor, chronicSample } from '../ClinicianChronicConsoleScreen';
 

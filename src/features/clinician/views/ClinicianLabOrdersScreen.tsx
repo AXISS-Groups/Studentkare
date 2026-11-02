@@ -11,7 +11,7 @@ import { ConsoleTableView } from './ConsoleTableScreen';
 import { ConsoleTableViewModel } from '../viewmodel/ConsoleTableViewModel';
 import type { ConsoleTableData, ConsoleTableSource } from '../viewmodel/ConsoleTableViewModel';
 import type { ConsoleTableConfig } from './consoleTableConfig';
-import { cell, muted, pill, strong } from '../model/cells';
+import { cell, muted, pill, strong } from '../viewmodel/cells';
 import { OfflineNote } from './OfflineNote';
 import { dateOnly } from '../model/clinicalData';
 import type { Request, T } from '../model/clinicalData';

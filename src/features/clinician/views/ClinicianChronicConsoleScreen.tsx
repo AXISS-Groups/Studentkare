@@ -6,7 +6,7 @@ import type { DataTableRow } from '@/design-system';
 import { ConsoleTableScreen } from './ConsoleTableScreen';
 import type { ConsoleTableData, ConsoleTableSource } from '../viewmodel/ConsoleTableViewModel';
 import type { ConsoleTableConfig } from './consoleTableConfig';
-import { cell, muted, pill, strong } from '../model/cells';
+import { cell, muted, pill, strong } from '../viewmodel/cells';
 import type { Request, T } from '../model/clinicalData';
 
 /**

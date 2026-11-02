@@ -7,8 +7,8 @@ import { FormError, useMutation } from '@/components/interface/WorkflowUI';
 import { SignOutConsequences } from '@/features/auth/views/SignOutConsequences';
 import { ClinicianShell } from '@/design-system';
 import type { ClinicianNavId } from '@/design-system';
-import { defaultConsoleSummarySource } from '../model/consoleSummary';
-import type { ConsoleSummary, ConsoleSummarySource } from '../model/consoleSummary';
+import { defaultConsoleSummarySource } from '../viewmodel/consoleSummary';
+import type { ConsoleSummary, ConsoleSummarySource } from '../viewmodel/consoleSummary';
 import { initialsOf } from '../model/names';
 import { TeamBadge } from '@/features/team-accounts/TeamBadge';
 

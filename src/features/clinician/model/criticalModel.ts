@@ -1,5 +1,4 @@
 import { apiRequest } from '@/data/services/http';
-import type { Stat } from '@/design-system';
 import { translate } from '@/i18n';
 import type { Loadable } from './loadable';
 import { careAppointments, namesByPatient, waitedFor } from './clinicalData';
@@ -43,8 +42,17 @@ export interface CriticalResult {
   ackText: string;
 }
 
+/** One of the four figures above the results; the view draws it as a design-system Stat. */
+export interface CriticalFigure {
+  /** `null` = no source reports this figure yet: shown as "—", never as 0. */
+  value: string | null;
+  label: string;
+  tone?: 'text' | 'danger';
+  meta?: string;
+}
+
 export interface CriticalData {
-  stats: Stat[];
+  stats: CriticalFigure[];
   results: CriticalResult[];
 }
 

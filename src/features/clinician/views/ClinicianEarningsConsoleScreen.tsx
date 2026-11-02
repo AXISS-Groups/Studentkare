@@ -8,7 +8,7 @@ import { navigate } from '@/lib/utils/workflowRouting';
 import { ConsoleTableScreen } from './ConsoleTableScreen';
 import type { ConsoleTableData, ConsoleTableSource } from '../viewmodel/ConsoleTableViewModel';
 import type { ConsoleTableConfig } from './consoleTableConfig';
-import { muted, pill, strong } from '../model/cells';
+import { muted, pill, strong } from '../viewmodel/cells';
 
 type T = (key: MessageKey, vars?: Vars) => string;
 

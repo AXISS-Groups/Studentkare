@@ -4,7 +4,7 @@ import { ConsoleTableScreen } from './ConsoleTableScreen';
 import { sampleInDevelopment } from '../viewmodel/ConsoleTableViewModel';
 import type { ConsoleTableData, ConsoleTableSource } from '../viewmodel/ConsoleTableViewModel';
 import type { ConsoleTableConfig } from './consoleTableConfig';
-import { cell, pill, strong } from '../model/cells';
+import { cell, pill, strong } from '../viewmodel/cells';
 import type { T } from '../model/clinicalData';
 
 /**
