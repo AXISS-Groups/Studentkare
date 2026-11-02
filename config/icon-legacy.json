@@ -38,7 +38,6 @@
   "src/screens/vendor/LabQueueScreen.tsx",
   "src/screens/vendor/PartnerStaffScreen.tsx",
   "src/screens/vendor/VendorReturnsScreen.tsx",
-  "src/screens/vendor/VendorWorkspaceHub.tsx",
   "src/screens/wellbeing/ExerciseLibraryScreen.tsx",
   "src/screens/wellbeing/WellnessTrainingScreen.tsx",
   "src/screens/workspace/AgentAyushPanel.tsx",

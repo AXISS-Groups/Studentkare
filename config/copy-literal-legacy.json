@@ -35,7 +35,6 @@
   "src/screens/vendor/PharmacyInventoryScreen.tsx",
   "src/screens/vendor/PincodeCoverageScreen.tsx",
   "src/screens/vendor/VendorShell.tsx",
-  "src/screens/vendor/VendorWorkspaceHub.tsx",
   "src/screens/workspace/DigitalIdPanel.tsx",
   "src/screens/workspace/admin/SuperAdminScreens.tsx"
 ]
