@@ -3214,11 +3214,14 @@ def my_visit_summary(note_id: str, response: Response, user=Depends(authenticate
 # records clinical decisions, so only the super admin reads or releases them
 # (audit M2). There is no clinical-reviewer role yet; partners never see them.
 @router.get("/ops/approvals")
-def get_pending_approvals(user=Depends(require_super_admin)):
+def get_pending_approvals(user=Depends(require_super_admin), db: Session = Depends(workflow_db)):
     # The pending actions are about real students; a team account sees none (core/team_scope.py).
     if team_sandboxed(user):
         return {"pending_actions": []}
-    actions = hitl_approval_agent.get_pending_actions()
+    # Held actions are scoped to their campus and patient; the reader only sees
+    # what their scope allows. The super admin's scope is None = every campus.
+    campus = campus_scope(user, db)
+    actions = hitl_approval_agent.get_pending_actions(db, campus=campus)
     return {"pending_actions": [a.model_dump() for a in actions]}
 
 
@@ -3231,8 +3234,11 @@ def approve_pending_action(body: ApproveActionInput, user=Depends(require_super_
     if team_sandboxed(user):
         raise HTTPException(403, "Team accounts can't approve actions about real students.")
     # Only authorized staff (clinician/admin) may approve. Uses the server-derived
-    # fullName, never a hard-coded doctor name.
-    result = hitl_approval_agent.approve_action(body.actionId, user.get("fullName") or user.get("full_name") or "Staff")
+    # fullName, never a hard-coded doctor name. The queue is scoped to this staff
+    # member's campus; a super admin (scope None) may release anything.
+    campus = campus_scope(user, db)
+    result = hitl_approval_agent.approve_action(
+        db, body.actionId, user.get("fullName") or user.get("full_name") or "Staff", campus=campus)
     if result.get("status") != "SUCCESS":
         raise HTTPException(404, "Unknown or already-processed action.")
     audit(db, user, "HITL_ACTION_APPROVED", body.actionId)
