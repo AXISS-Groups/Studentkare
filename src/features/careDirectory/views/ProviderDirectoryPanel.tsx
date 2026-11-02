@@ -17,7 +17,7 @@ export function ProviderDirectoryPanel({ kind }: { kind: 'PHARMACY' | 'LAB' }) {
     <div className="wf-panel-heading"><div>
       <span className="care-eyebrow">{kind === 'PHARMACY' ? t('admin.fulfil.nearbyPharmacies') : t('admin.fulfil.nearbyLabs')}</span>
       <h3 style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        {kind === "LAB" ? <Icon name="flask" size={20} /> : null}
+        {kind === 'LAB' ? <Icon name="flask" size={20} /> : null}
         {t('admin.fulfil.findNear')}
       </h3>
     </div></div>
