@@ -2,7 +2,7 @@ import React from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { observer } from 'mobx-react-lite';
 import { OfflineBanner, Rise, Skeleton } from '@/design-system';
-import { Gradient, M2Card, M2Heading, M2_NAV_CLEARANCE, RoundButton, SosButton, heroStops, m2Text, useOwnPhoneChrome, webAttrs } from '@/design-system/m2';
+import { Gradient, M2Card, M2Grid, M2Heading, M2WideColumn, M2_NAV_CLEARANCE, RoundButton, SosButton, heroStops, m2Text, useOwnPhoneChrome, webAttrs } from '@/design-system/m2';
 import { color, font, fontWeight, radius, size, space } from '@/design-system/theme';
 import { say, useLanguage, useT } from '@/i18n';
 import { clockLabel } from '@/features/phoneboards/format';
@@ -50,100 +50,139 @@ export const M2WaterView = observer(function M2WaterView({ vm, reminders, online
     </View>
   );
 
-  return (
-    <ScrollView style={styles.screen} contentContainerStyle={[styles.content, wide ? styles.contentWide : null]} testID="m2-water">
-      {header}
-      {!online ? <View style={styles.gutter}><OfflineBanner message={t('m2r.water.offlineAction')} /></View> : null}
+  const gutter = wide ? undefined : styles.gutter;
 
-      <Rise style={styles.gutter}>
-        {vm.today.phase === 'error' ? <CardError title={t('m2r.water.title')} onRetry={vm.load} testID="m2-water-today-error" /> : (
-          <Gradient colors={heroStops('sky')} angle={150} style={[styles.hero, wide ? styles.heroWide : null]} testID="m2-water-hero">
-            {!today ? <Skeleton label={t('m2r.water.loading')} lines={['50%', '80%']} /> : (
-              <>
-                <View accessible accessibilityLabel={t('m2r.water.ofGoal', { consumed: ml(today.consumedMl), goal: ml(today.goalMl) })}
-                  aria-live="polite" testID="m2-water-total">
-                  <Text style={styles.heroValue}>{t('m2r.water.heroMl', { ml: ml(today.consumedMl) })}</Text>
-                  <Text style={styles.heroSub}>
-                    {t(today.goalSource === 'OWNER' ? 'm2r.water.heroOfGoal' : 'm2r.water.heroOfDefault', { goal: ml(today.goalMl) })}
-                  </Text>
-                </View>
-                <FillBar value={vm.fill} track={color.onHeroTrack} fill={color.onHero} height={space.s10} />
-                <View style={styles.heroActions}>
-                  <PillButton icons={['plus', 'glass']} tone="hero" label={vm.busy === 'add' ? t('m2r.water.adding') : t('m2r.water.addGlass', { ml: ml(vm.glassMl) })}
-                    spoken={t('m2r.water.addGlassSpoken', { ml: ml(vm.glassMl) })} disabled={!vm.canAdd} busy={vm.busy === 'add'}
-                    onPress={() => void vm.addGlass()} testID="m2-water-add" />
-                  <PillButton icons={['undo']} tone="heroVeil" label={vm.busy === 'undo' ? t('m2r.water.undoing') : t('m2r.water.undo')}
-                    spoken={t('m2r.water.undoSpoken')} disabled={!vm.canUndo} busy={vm.busy === 'undo'}
-                    onPress={() => void vm.undo()} testID="m2-water-undo" />
-                </View>
-              </>
-            )}
-          </Gradient>
-        )}
-        {error ? <Text role="alert" style={[styles.error, styles.afterHero]} testID="m2-water-error">{error}</Text> : null}
-      </Rise>
-
-      {today ? (
-        <Rise index={1} style={styles.gutter}>
-          <M2Card style={styles.card} testID="m2-water-entries">
-            <M2Heading style={m2Text.cardTitle}>{t('m2r.water.today')}</M2Heading>
-            {today.entries.length === 0 ? <Text style={m2Text.body}>{t('m2r.water.todayEmpty')}</Text> : (
-              [...today.entries].reverse().map((entry) => (
-                <Text key={entry.id} style={styles.entry}>{t('m2r.water.entry', { time: clockLabel(entry.recordedAt), ml: ml(entry.amountMl) })}</Text>
-              ))
-            )}
-          </M2Card>
-        </Rise>
-      ) : null}
-
-      <Rise index={2} style={styles.gutter}>
-        {vm.goal.phase === 'error' ? <CardError title={t('m2r.water.goalTitle')} onRetry={vm.load} testID="m2-water-goal-error" /> : (
-          <M2Card style={styles.card} testID="m2-water-goal">
-            <M2Heading style={m2Text.cardTitle}>{t('m2r.water.goalTitle')}</M2Heading>
-            {!goal ? <Skeleton label={t('m2r.water.goalTitle')} lines={['40%']} /> : vm.goalDraft === null ? (
-              <View style={styles.goalRow}>
-                <View style={styles.grow}>
-                  <Text style={styles.goalValue}>{t('m2r.water.goalMl', { ml: ml(goal.goalMl) })}</Text>
-                  <Text style={m2Text.meta}>{t(goal.goalSource === 'OWNER' ? 'm2r.water.goalYours' : 'm2r.water.goalSuggested')}</Text>
-                </View>
-                <PillButton icons={[]} label={t('m2r.water.change')} spoken={t('m2r.water.changeSpoken')} tone="soft"
-                  disabled={!online || vm.busy !== null} onPress={vm.startGoalEdit} testID="m2-water-goal-change" />
+  const heroCard = (
+    <Rise style={gutter}>
+      {vm.today.phase === 'error' ? <CardError title={t('m2r.water.title')} onRetry={vm.load} testID="m2-water-today-error" /> : (
+        <Gradient colors={heroStops('sky')} angle={150} style={[styles.hero, wide ? styles.heroWide : null]} testID="m2-water-hero">
+          {!today ? <Skeleton label={t('m2r.water.loading')} lines={['50%', '80%']} /> : (
+            <>
+              <View accessible accessibilityLabel={t('m2r.water.ofGoal', { consumed: ml(today.consumedMl), goal: ml(today.goalMl) })}
+                aria-live="polite" testID="m2-water-total">
+                <Text style={styles.heroValue}>{t('m2r.water.heroMl', { ml: ml(today.consumedMl) })}</Text>
+                <Text style={styles.heroSub}>
+                  {t(today.goalSource === 'OWNER' ? 'm2r.water.heroOfGoal' : 'm2r.water.heroOfDefault', { goal: ml(today.goalMl) })}
+                </Text>
               </View>
-            ) : (
-              <>
-                <Stepper label={t('m2r.water.goalTitle')} value={t('m2r.water.goalMl', { ml: ml(vm.goalDraft) })} testID="m2-water-goal-step"
-                  canLess={vm.canGoalDown} canMore={vm.canGoalUp} onLess={() => vm.stepGoal(-1)} onMore={() => vm.stepGoal(1)}
-                  lessLabel={t('m2r.water.goalLess', { ml: ml(vm.glassMl) })} moreLabel={t('m2r.water.goalMore', { ml: ml(vm.glassMl) })} />
-                <Text style={m2Text.meta}>{t('m2r.water.goalRange', { min: ml(vm.goalBounds.min), max: ml(vm.goalBounds.max) })}</Text>
-                <View style={styles.row}>
-                  <PillButton icons={[]} label={vm.busy === 'goal' ? t('m2r.water.saving') : t('m2r.water.save')} spoken={t('m2r.water.save')}
-                    disabled={!online || vm.busy !== null} busy={vm.busy === 'goal'} onPress={() => void vm.saveGoal()} testID="m2-water-goal-save" />
-                  <PillButton icons={[]} label={t('m2r.water.cancel')} spoken={t('m2r.water.cancel')} tone="soft" disabled={vm.busy === 'goal'}
-                    onPress={vm.cancelGoalEdit} testID="m2-water-goal-cancel" />
-                </View>
-              </>
-            )}
-          </M2Card>
+              <FillBar value={vm.fill} track={color.onHeroTrack} fill={color.onHero} height={space.s10} />
+              <View style={styles.heroActions}>
+                <PillButton icons={['plus', 'glass']} tone="hero" label={vm.busy === 'add' ? t('m2r.water.adding') : t('m2r.water.addGlass', { ml: ml(vm.glassMl) })}
+                  spoken={t('m2r.water.addGlassSpoken', { ml: ml(vm.glassMl) })} disabled={!vm.canAdd} busy={vm.busy === 'add'}
+                  onPress={() => void vm.addGlass()} testID="m2-water-add" />
+                <PillButton icons={['undo']} tone="heroVeil" label={vm.busy === 'undo' ? t('m2r.water.undoing') : t('m2r.water.undo')}
+                  spoken={t('m2r.water.undoSpoken')} disabled={!vm.canUndo} busy={vm.busy === 'undo'}
+                  onPress={() => void vm.undo()} testID="m2-water-undo" />
+              </View>
+            </>
+          )}
+        </Gradient>
+      )}
+      {error ? <Text role="alert" style={[styles.error, styles.afterHero]} testID="m2-water-error">{error}</Text> : null}
+    </Rise>
+  );
+
+  const entriesCard = today ? (
+    <Rise index={1} style={gutter}>
+      <M2Card style={styles.card} testID="m2-water-entries">
+        <M2Heading style={m2Text.cardTitle}>{t('m2r.water.today')}</M2Heading>
+        {today.entries.length === 0 ? <Text style={m2Text.body}>{t('m2r.water.todayEmpty')}</Text> : (
+          [...today.entries].reverse().map((entry) => (
+            <Text key={entry.id} style={styles.entry}>{t('m2r.water.entry', { time: clockLabel(entry.recordedAt), ml: ml(entry.amountMl) })}</Text>
+          ))
         )}
-      </Rise>
+      </M2Card>
+    </Rise>
+  ) : null;
 
-      <Rise index={3} style={styles.gutter}>
-        {vm.days.phase === 'error' ? <CardError title={t('m2r.water.weekFailed')} onRetry={vm.loadWeek} testID="m2-water-week-error" /> : (
-          <M2Card style={styles.card} testID="m2-water-week">
-            <M2Heading style={m2Text.cardTitle}>{t('m2r.water.week', { count: vm.days.data?.days.length ?? '' })}</M2Heading>
-            {!vm.days.data ? <Skeleton label={t('m2r.water.weekLoading')} lines={['100%', '100%']} /> : (
-              <WeekBars days={vm.days.data.days} goalMl={vm.days.data.goalMl} locale={locale} />
-            )}
-          </M2Card>
-        )}
-      </Rise>
+  const goalCard = (
+    <Rise index={2} style={gutter}>
+      {vm.goal.phase === 'error' ? <CardError title={t('m2r.water.goalTitle')} onRetry={vm.load} testID="m2-water-goal-error" /> : (
+        <M2Card style={styles.card} testID="m2-water-goal">
+          <M2Heading style={m2Text.cardTitle}>{t('m2r.water.goalTitle')}</M2Heading>
+          {!goal ? <Skeleton label={t('m2r.water.goalTitle')} lines={['40%']} /> : vm.goalDraft === null ? (
+            <View style={styles.goalRow}>
+              <View style={styles.grow}>
+                <Text style={styles.goalValue}>{t('m2r.water.goalMl', { ml: ml(goal.goalMl) })}</Text>
+                <Text style={m2Text.meta}>{t(goal.goalSource === 'OWNER' ? 'm2r.water.goalYours' : 'm2r.water.goalSuggested')}</Text>
+              </View>
+              <PillButton icons={[]} label={t('m2r.water.change')} spoken={t('m2r.water.changeSpoken')} tone="soft"
+                disabled={!online || vm.busy !== null} onPress={vm.startGoalEdit} testID="m2-water-goal-change" />
+            </View>
+          ) : (
+            <>
+              <Stepper label={t('m2r.water.goalTitle')} value={t('m2r.water.goalMl', { ml: ml(vm.goalDraft) })} testID="m2-water-goal-step"
+                canLess={vm.canGoalDown} canMore={vm.canGoalUp} onLess={() => vm.stepGoal(-1)} onMore={() => vm.stepGoal(1)}
+                lessLabel={t('m2r.water.goalLess', { ml: ml(vm.glassMl) })} moreLabel={t('m2r.water.goalMore', { ml: ml(vm.glassMl) })} />
+              <Text style={m2Text.meta}>{t('m2r.water.goalRange', { min: ml(vm.goalBounds.min), max: ml(vm.goalBounds.max) })}</Text>
+              <View style={styles.row}>
+                <PillButton icons={[]} label={vm.busy === 'goal' ? t('m2r.water.saving') : t('m2r.water.save')} spoken={t('m2r.water.save')}
+                  disabled={!online || vm.busy !== null} busy={vm.busy === 'goal'} onPress={() => void vm.saveGoal()} testID="m2-water-goal-save" />
+                <PillButton icons={[]} label={t('m2r.water.cancel')} spoken={t('m2r.water.cancel')} tone="soft" disabled={vm.busy === 'goal'}
+                  onPress={vm.cancelGoalEdit} testID="m2-water-goal-cancel" />
+              </View>
+            </>
+          )}
+        </M2Card>
+      )}
+    </Rise>
+  );
 
-      <Rise index={4} style={styles.gutter}>
-        <WaterRemindersPanel vm={reminders} onOpenSettings={links.openSettings} />
-      </Rise>
+  const weekCard = (
+    <Rise index={3} style={gutter}>
+      {vm.days.phase === 'error' ? <CardError title={t('m2r.water.weekFailed')} onRetry={vm.loadWeek} testID="m2-water-week-error" /> : (
+        <M2Card style={styles.card} testID="m2-water-week">
+          <M2Heading style={m2Text.cardTitle}>{t('m2r.water.week', { count: vm.days.data?.days.length ?? '' })}</M2Heading>
+          {!vm.days.data ? <Skeleton label={t('m2r.water.weekLoading')} lines={['100%', '100%']} /> : (
+            <WeekBars days={vm.days.data.days} goalMl={vm.days.data.goalMl} locale={locale} />
+          )}
+        </M2Card>
+      )}
+    </Rise>
+  );
 
-      <Text style={[styles.gutter, styles.note]}>{t('m2r.water.noScore')}</Text>
+  const remindersCard = (
+    <Rise index={4} style={gutter}>
+      <WaterRemindersPanel vm={reminders} onOpenSettings={links.openSettings} />
+    </Rise>
+  );
+
+  const board = (
+    <>
+      {header}
+      {!online ? <View style={gutter}><OfflineBanner message={t('m2r.water.offlineAction')} /></View> : null}
+
+      {wide ? (
+        <M2Grid columns={{ tablet: 1, desktop: 2 }} gap={space.s16}>
+          <View style={styles.column}>
+            {heroCard}
+            {entriesCard}
+          </View>
+          <View style={styles.column}>
+            {goalCard}
+            {weekCard}
+            {remindersCard}
+          </View>
+        </M2Grid>
+      ) : (
+        <>
+          {heroCard}
+          {entriesCard}
+          {goalCard}
+          {weekCard}
+          {remindersCard}
+        </>
+      )}
+
+      <Text style={[gutter, styles.note]}>{t('m2r.water.noScore')}</Text>
       <View {...webAttrs({ 'aria-hidden': 'true' })} style={styles.spacer} />
+    </>
+  );
+
+  if (wide) return <M2WideColumn testID="m2-water">{board}</M2WideColumn>;
+  return (
+    <ScrollView style={styles.screen} contentContainerStyle={styles.content} testID="m2-water">
+      {board}
     </ScrollView>
   );
 });
@@ -174,7 +213,8 @@ function WeekBars({ days, goalMl, locale }: { days: readonly { date: string; con
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: color.canvas },
+  screen: { flex: 1, backgroundColor: color.canvas },
+  column: { gap: space.s16 },
   content: { paddingBottom: M2_NAV_CLEARANCE, gap: space.s16, width: '100%', maxWidth: size.phoneFrameMax, alignSelf: 'center' },
   contentWide: { maxWidth: size.webContentMax - size.webSidebar * 2, paddingBottom: space.s40 },
   grow: { flex: 1, minWidth: 0, gap: space.s2 },

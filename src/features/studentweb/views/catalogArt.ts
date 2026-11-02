@@ -31,7 +31,7 @@ export function reorderArt(item: Pick<LiveCatalogItem, 'pack' | 'category'> | un
 }
 
 /** WebProduct hero and WebCheckout cart thumbnails. */
-function productArt(item: Art): SkIconName {
+export function productArt(item: Art): SkIconName {
   if (item.category === 'ayurveda' || item.category === 'nutrition' || item.category === 'vitamins') return 'leaf-3';
   if (item.category === 'skin' || isTube(item.pack)) return 'droplet-2';
   if (isBottle(item.pack)) return 'leaf-2';
@@ -39,6 +39,6 @@ function productArt(item: Art): SkIconName {
 }
 
 /** Checkout thumbnails use the lighter line set of the WebCheckout board. */
-function checkoutArt(item: Art): SkIconName {
+export function checkoutArt(item: Art): SkIconName {
   return item.category === 'skin' || isTube(item.pack) ? 'droplet-2' : 'leaf-2';
 }

@@ -81,7 +81,7 @@ export interface OpsFeed { items: OpsFeedEvent[]; total: number; critical: numbe
 type IntegrationStatus = 'online' | 'unavailable' | 'degraded' | 'unknown';
 export interface IntegrationCheck { name: string; configured: boolean; reachable: boolean | null; status: IntegrationStatus; detail: string; checked_at: number }
 /** GET /ops/jobs */
-interface ScheduledJob { key: string; name: string; enabled: boolean; intervalSeconds: number; lastRunAt: number | null; nextRunAt: number | null; lastStatus: string; lastError: string | null }
+export interface ScheduledJob { key: string; name: string; enabled: boolean; intervalSeconds: number; lastRunAt: number | null; nextRunAt: number | null; lastStatus: string; lastError: string | null }
 export interface IntegrationHealth { summary: { checked_at: number; interval_seconds: number; checks: IntegrationCheck[]; overall: 'operational' | 'degraded' } }
 interface HomeContentItem { key: string; title: string; eyebrow: string; body: string; summary: string; action: string; target: string; icon: string; color: string; sort: number }
 export interface HomeArticle { id: string; tag: string; title: string; readTime: string; color: string; body: string[] }

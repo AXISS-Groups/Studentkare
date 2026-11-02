@@ -16,4 +16,4 @@ export const phoneArt: { doctorOnScreen: ArtSource; orderPlaced: ArtSource } = {
 };
 
 /** video-379108.mp4 — the ShopHome refill card loop (web only). */
-const refillVideoUrl: string = refillVideo;
+export const refillVideoUrl: string = refillVideo;

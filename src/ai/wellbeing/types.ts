@@ -8,7 +8,7 @@
  * See the architecture tests in __tests__/wellbeingArchitecture.test.ts.
  */
 
-type WellnessLanguage = 'EN' | 'TE';
+export type WellnessLanguage = 'EN' | 'TE';
 
 export type ContentKind = 'GUIDANCE' | 'SUGGESTION' | 'ACTIVITY' | 'NUTRITION';
 
@@ -134,7 +134,7 @@ export interface ScreeningResult {
   sensitive: boolean;
 }
 
-interface CampusActivityOption {
+export interface CampusActivityOption {
   id: string;
   name: string;
   kind: 'FACILITY' | 'ROUTE' | 'GROUP' | 'REFERRAL';
@@ -142,7 +142,7 @@ interface CampusActivityOption {
   institutionConfigurable: boolean;
 }
 
-interface ActivityGuidance {
+export interface ActivityGuidance {
   /** Population recommendation for adults — NOT a plan generated for this student. */
   populationGuidance: string;
   sources: string[];

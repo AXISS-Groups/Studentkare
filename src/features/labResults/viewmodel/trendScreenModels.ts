@@ -128,7 +128,7 @@ export function rangeBar(v: Pick<LabValue, 'valueNumeric' | 'refLow' | 'refHigh'
   return { zones: ['low', 'range'], marker };
 }
 
-const toneOfState = (state: RangeState): ValueTone => toneOf(state);
+export const toneOfState = (state: RangeState): ValueTone => toneOf(state);
 
 // ── The doctor's steps (D-M2-11) ─────────────────────────────────────────────
 

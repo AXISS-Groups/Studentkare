@@ -27,6 +27,13 @@ describe('the session check', () => {
     expect(screen.getByTestId('probe').textContent).not.toMatch(/^authenticated/);
   });
 
+  it('does not restore an unsigned local demo profile when the server session check fails', async () => {
+    sessionStorage.setItem('care_demo_session', JSON.stringify({ id: 'demo-student', fullName: 'Demo Student', role: 'STUDENT' }));
+    respond(503, { detail: 'Session unavailable.' });
+    render(<AuthProvider><Probe /></AuthProvider>);
+    await waitFor(() => expect(screen.getByTestId('probe')).toHaveTextContent('error|503|Session unavailable.'));
+  });
+
   it('accepts a lab collector’s session (live-run audit #6), and still refuses a role it does not know', async () => {
     respond(200, { user: { id: 'c1', fullName: 'Demo Collector', role: 'LAB_COLLECTOR' }, csrfToken: 'csrf' });
     const { unmount } = render(<AuthProvider><Probe /></AuthProvider>);

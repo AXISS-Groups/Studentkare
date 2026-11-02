@@ -9,7 +9,7 @@ type BreakGlassReason =
 
 type SensitiveCategory = 'MENTAL_HEALTH' | 'REPRODUCTIVE' | 'HIV' | 'NONE';
 
-interface BreakGlassSession {
+export interface BreakGlassSession {
   id: string;
   studentId: string;
   requestedByAdminId: string;
@@ -27,7 +27,7 @@ interface BreakGlassSession {
   auditEntryId: string;
 }
 
-interface AuditEntry {
+export interface AuditEntry {
   id: string;
   timestamp: string;
   actorId: string;

@@ -34,7 +34,7 @@ export function ShopPhoneRoute({ route }: { route: 'shop' | 'checkout' }): React
   const cart: CartPort = useMemo(() => ({ lines: live.lines, add: live.add, setQuantity: live.setQuantity, clear: live.clear }), [live]);
 
   const links: ShopLinks = {
-    exit: () => navigate('health'),
+    exit: () => navigate(''),
     openMyHealth: () => navigate('your-care'),
     openSearch: () => navigate('search'),
     openRewards: () => navigate('rewards'),

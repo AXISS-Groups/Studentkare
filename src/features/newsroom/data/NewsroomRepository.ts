@@ -22,7 +22,7 @@ export type PostBlock =
   | { type: 'mythfact'; myth: string; fact: string }
   | { type: 'stat'; value: string; label: string };
 
-type BlockOf<T extends BlockType> = Extract<PostBlock, { type: T }>;
+export type BlockOf<T extends BlockType> = Extract<PostBlock, { type: T }>;
 
 export interface PostTeaser {
   id: string;

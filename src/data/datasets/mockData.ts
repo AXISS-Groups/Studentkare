@@ -82,9 +82,9 @@ const mockStudents: StudentProfile[] = [
   },
 ];
 
-const initialStudent: StudentProfile = mockStudents[0];
+export const initialStudent: StudentProfile = mockStudents[0];
 
-const initialRecords: HealthRecord[] = [
+export const initialRecords: HealthRecord[] = [
   {
     id: 'REC-01',
     title: 'Complete Blood Count (CBC) & Lipid Profile',
@@ -247,7 +247,7 @@ const initialRecords: HealthRecord[] = [
   },
 ];
 
-const initialCamp: HealthCamp = {
+export const initialCamp: HealthCamp = {
   id: 'CAMP-2026-MONSOON',
   campName: 'Monsoon Term Annual Health Checkup',
   institution: 'IIT Hyderabad (Kandi Campus)',
@@ -326,7 +326,7 @@ const initialCamp: HealthCamp = {
 };
 
 // VERTICAL C — Health Services Fabric Initial Data (M19-M21)
-const initialFabricProviders: FabricProvider[] = [
+export const initialFabricProviders: FabricProvider[] = [
   {
     id: 'PROV-101',
     name: 'Dr. Lal PathLabs · Central Hub',
@@ -389,7 +389,7 @@ const initialFabricProviders: FabricProvider[] = [
   },
 ];
 
-const initialFabricOrders: FabricOrder[] = [
+export const initialFabricOrders: FabricOrder[] = [
   {
     id: 'ORD-FAB-8901',
     partnerId: 'PARTNER-CAMPUS-CORE',

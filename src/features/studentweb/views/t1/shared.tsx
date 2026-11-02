@@ -12,7 +12,7 @@ export const shortDate = (seconds: number): string =>
   new Date(seconds * 1000).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
 
 /** A note with an icon (info by default; attention or danger when it carries that meaning). */
-function IconNote({ icon, tone = 'info', children, role }: { icon: SkIconName; tone?: 'info' | 'attention' | 'danger'; children: React.ReactNode; role?: 'status' | 'alert' }) {
+export function IconNote({ icon, tone = 'info', children, role }: { icon: SkIconName; tone?: 'info' | 'attention' | 'danger'; children: React.ReactNode; role?: 'status' | 'alert' }) {
   return (
     <p className={`sk-swt-note${tone === 'info' ? '' : ` is-${tone}`}`} role={role}>
       <Icon name={icon} size={18} />

@@ -13,7 +13,7 @@ export function AuthRouteScreen() {
   const next = readReturnPath(location.search);
   if (auth.status === 'authenticated' && auth.user) {
     const target = next && canAccessRoute(next, auth.user.role) ? next : homeForRole(auth.user.role);
-    return <Navigate to={`/${target}`} replace />;
+    return <Navigate to={target ? `/${target}` : '/'} replace />;
   }
   return <AuthenticatedFlowScreen mode={mode} next={next} />;
 }

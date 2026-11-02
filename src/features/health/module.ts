@@ -198,6 +198,7 @@ const workspacePaths: { path: string; access?: (role: AccountRole | null) => boo
 
 /** True for a URL drawn by the member workspace (WorkspaceRouteScreen). */
 export function isWorkspacePath(pathname: string): boolean {
+  if (pathname === '/' || pathname === '/home') return true;
   return workspacePaths.some((entry) => entry.path === pathname);
 }
 

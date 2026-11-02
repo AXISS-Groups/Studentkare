@@ -105,6 +105,6 @@ export function postJsonLd(post: PostDetail, origin: string, publisher: string):
   };
 }
 
-function teaserKey(post: PostTeaser): string {
+export function teaserKey(post: PostTeaser): string {
   return `${post.section}/${post.slug}`;
 }

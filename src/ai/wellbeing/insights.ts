@@ -67,7 +67,7 @@ export function restateValue(observation: FHIRObservation, record: HealthRecord)
 }
 
 /** I-3.3 A series over time. No trend lines with commentary, no projection. */
-function buildTrendSeries(records: HealthRecord[], code: string): TrendSeries | null {
+export function buildTrendSeries(records: HealthRecord[], code: string): TrendSeries | null {
   const range = getReferenceRange(code);
   const points = records
     .flatMap((r) => r.observations.filter((o) => o.code === code).map((o) => ({ date: r.date, value: o.value, unit: o.unit })))
@@ -82,7 +82,7 @@ function buildTrendSeries(records: HealthRecord[], code: string): TrendSeries | 
 }
 
 /** I-3.4 Record completeness: present, missing, due. The safest, most useful surface. */
-function computeRecordCompleteness(
+export function computeRecordCompleteness(
   records: HealthRecord[],
   camp: HealthCamp | null,
   student: StudentProfile,

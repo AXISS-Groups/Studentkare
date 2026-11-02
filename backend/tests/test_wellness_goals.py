@@ -4,11 +4,11 @@ import time
 from pathlib import Path
 
 import pytest
+from test_workflow_api import harness, login, register  # noqa: F401
 
 from core import rule_l
 from core import workflow_models as M
 from services.member_profile_api import ACTIVITY_LEVELS, PRIMARY_GOALS, SETUP_ANSWERS_STUDENT_ONLY
-from tests.test_workflow_api import harness, login, register  # noqa: F401
 
 
 def test_nothing_answered_reads_as_empty_not_as_a_default(harness):

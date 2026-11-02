@@ -17,7 +17,7 @@
  * needs no backend to be correct.
  */
 
-interface BloodUnitStock {
+export interface BloodUnitStock {
   bloodType: 'A+' | 'A-' | 'B+' | 'B-' | 'AB+' | 'AB-' | 'O+' | 'O-';
   unitsAvailable: number;
   lastUpdated: string;

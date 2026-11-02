@@ -22,7 +22,7 @@ interface AuthResponse {
   fallbackTargetMasked?: string;
 }
 
-const authApi = {
+export const authApi = {
   async sendOtp(
     identifier: string,
     channel: 'WHATSAPP' | 'EMAIL' = 'WHATSAPP',
@@ -147,7 +147,7 @@ const authApi = {
   },
 };
 
-const adminApi = {
+export const adminApi = {
   async getTelemetry(token?: string) {
     try {
       const res = await fetch(`${API_BASE_URL}/admin/telemetry`, {
@@ -300,7 +300,7 @@ export const publicConfigApi = {
   },
 };
 
-const twoFactorApi = {
+export const twoFactorApi = {
   async setup(token: string) {
     const res = await fetch(`${API_BASE_URL}/auth/2fa/setup`, {
       method: 'POST',
@@ -468,7 +468,7 @@ export const agentApi = {
   },
 };
 
-const telemetryApi = {
+export const telemetryApi = {
   async ingest(deviceId: string, deviceType: string, readings: Record<string, unknown>, studentId?: string) {
     try {
       const res = await fetch(`${API_BASE_URL}/telemetry/sensors`, {

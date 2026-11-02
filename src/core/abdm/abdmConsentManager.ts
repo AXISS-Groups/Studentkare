@@ -5,7 +5,7 @@
  * validates signed consent artifacts, and provides a non-ABHA registration fallback.
  */
 
-interface AbdmConsentRequest {
+export interface AbdmConsentRequest {
   consentRequestId: string;
   patientAbhaId: string;
   purpose: 'DIAGNOSTICS' | 'TREATMENT' | 'WELLNESS';

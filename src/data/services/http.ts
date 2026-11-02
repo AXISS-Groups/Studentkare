@@ -2,7 +2,7 @@ import { apiBaseUrl } from '../../core/env';
 
 let csrfToken = '';
 export const setCsrfToken = (value: string) => { csrfToken = value; };
-const getCsrfToken = () => csrfToken;
+export const getCsrfToken = () => csrfToken;
 const apiBase = apiBaseUrl();
 
 /**

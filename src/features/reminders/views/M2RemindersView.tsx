@@ -3,7 +3,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { observer } from 'mobx-react-lite';
 import { ErrorState, OfflineBanner, Rise, Skeleton } from '@/design-system';
 import { Icon } from '@/design-system/icons';
-import { cardLabel, Gradient, M2Card, M2Heading, M2_NAV_CLEARANCE, RoundButton, SoftIcon, SosButton, heroStops, m2Text, useOwnPhoneChrome, webAttrs } from '@/design-system/m2';
+import { cardLabel, Gradient, M2Card, M2Grid, M2Heading, M2WideColumn, M2_NAV_CLEARANCE, RoundButton, SoftIcon, SosButton, heroStops, m2Text, useOwnPhoneChrome, webAttrs } from '@/design-system/m2';
 import type { PressState } from '@/design-system/m2';
 import { color, focusRing, font, fontWeight, radius, size, space } from '@/design-system/theme';
 import { say, useT } from '@/i18n';
@@ -106,20 +106,22 @@ export const M2RemindersView = observer(function M2RemindersView({ vm, reminders
     );
   }
 
-  return (
-    <ScrollView style={styles.screen} contentContainerStyle={[styles.content, wide ? styles.contentWide : null]} testID="m2-reminders">
-      {header}
-      <Rise style={styles.gutter}>
-        <Gradient colors={heroStops('teal')} angle={150} style={[styles.hero, wide ? styles.heroWide : null]} testID="m2-rem-hero">
-          <Text style={styles.heroEyebrow}>{t('m2r.meds.heroEyebrow')}</Text>
-          {headline ? <Text style={styles.heroLine} aria-live="polite" testID="m2-rem-headline">{headline}</Text> : null}
-          {!vm.today.data && vm.today.phase === 'loading' ? <Skeleton label={t('m2r.meds.loading')} lines={['70%']} /> : null}
-          <Text style={styles.heroNote}>{t('m2r.meds.noScore')}</Text>
-        </Gradient>
-      </Rise>
-      {!online ? <View style={styles.gutter}><OfflineBanner message={t('m2r.meds.offlineAction')} /></View> : null}
-      {body}
-      <Rise index={2} style={styles.gutter}>
+  const gutter = wide ? undefined : styles.gutter;
+
+  const heroCard = (
+    <Rise style={gutter}>
+      <Gradient colors={heroStops('teal')} angle={150} style={[styles.hero, wide ? styles.heroWide : null]} testID="m2-rem-hero">
+        <Text style={styles.heroEyebrow}>{t('m2r.meds.heroEyebrow')}</Text>
+        {headline ? <Text style={styles.heroLine} aria-live="polite" testID="m2-rem-headline">{headline}</Text> : null}
+        {!vm.today.data && vm.today.phase === 'loading' ? <Skeleton label={t('m2r.meds.loading')} lines={['70%']} /> : null}
+        <Text style={styles.heroNote}>{t('m2r.meds.noScore')}</Text>
+      </Gradient>
+    </Rise>
+  );
+
+  const linksCard = (
+    <>
+      <Rise index={2} style={gutter}>
         <Pressable role="link" accessibilityRole="link" {...cardLabel(t('m2r.meds.waterLink'))} onPress={links.water}
           testID="m2-rem-water" style={({ focused }: PressState) => [styles.link, focused ? focusRing : null]}>
           <View style={styles.linkTile}><Icon name="glass" size={18} color={color.serviceSkyInk} strokeWidth={2.1} /></View>
@@ -131,7 +133,7 @@ export const M2RemindersView = observer(function M2RemindersView({ vm, reminders
         </Pressable>
       </Rise>
       {links.refills ? (
-        <Rise index={3} style={styles.gutter}>
+        <Rise index={3} style={gutter}>
           <Pressable role="link" accessibilityRole="link" {...cardLabel(t('refill.link.fromMeds'))} onPress={links.refills}
             testID="m2-rem-refills" style={({ focused }: PressState) => [styles.link, focused ? focusRing : null]}>
             <View style={[styles.linkTile, styles.refillTile]}><Icon name="repeat" size={18} color={color.serviceTealInk} strokeWidth={2.1} /></View>
@@ -143,13 +145,47 @@ export const M2RemindersView = observer(function M2RemindersView({ vm, reminders
           </Pressable>
         </Rise>
       ) : null}
+    </>
+  );
+
+  const board = (
+    <>
+      {header}
+      {!online ? <View style={gutter}><OfflineBanner message={t('m2r.meds.offlineAction')} /></View> : null}
+
+      {wide ? (
+        <M2Grid columns={{ tablet: 1, desktop: 2 }} gap={space.s16}>
+          <View style={styles.column}>
+            {heroCard}
+            {body}
+          </View>
+          <View style={styles.column}>
+            {linksCard}
+          </View>
+        </M2Grid>
+      ) : (
+        <>
+          {heroCard}
+          {body}
+          {linksCard}
+        </>
+      )}
+
       <View {...webAttrs({ 'aria-hidden': 'true' })} style={styles.spacer} />
+    </>
+  );
+
+  if (wide) return <M2WideColumn testID="m2-reminders">{board}</M2WideColumn>;
+  return (
+    <ScrollView style={styles.screen} contentContainerStyle={styles.content} testID="m2-reminders">
+      {board}
     </ScrollView>
   );
 });
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: color.canvas },
+  screen: { flex: 1, backgroundColor: color.canvas },
+  column: { gap: space.s16 },
   content: { paddingBottom: M2_NAV_CLEARANCE, gap: space.s16, width: '100%', maxWidth: size.phoneFrameMax, alignSelf: 'center' },
   contentWide: { maxWidth: size.webContentMax - size.webSidebar * 2, paddingBottom: space.s40 },
   grow: { flex: 1, minWidth: 0, gap: space.s2 },

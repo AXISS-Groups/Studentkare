@@ -11,11 +11,11 @@ import { ApiError, apiRequest } from './http';
  */
 
 /** What the server accepts. It reads the type from the file's bytes, so this is a hint for pickers, not a check. */
-const PRESCRIPTION_ACCEPT = [
+export const PRESCRIPTION_ACCEPT = [
   'image/jpeg', 'image/png', 'image/heic', 'image/heif', 'image/webp', 'application/pdf', 'image/tiff',
 ] as const;
 type PrescriptionMimeType = (typeof PRESCRIPTION_ACCEPT)[number];
-const PRESCRIPTION_MAX_BYTES = 10 * 1024 * 1024;
+export const PRESCRIPTION_MAX_BYTES = 10 * 1024 * 1024;
 
 type RxUploadReviewStatus = 'PENDING' | 'RX_VERIFIED' | 'REJECTED' | 'WITHDRAWN';
 
@@ -50,7 +50,7 @@ interface PrescriptionUpload extends StoredPrescription {
 }
 
 /** One uploaded prescription in a pharmacist's queue: no student details, file name or title. */
-interface RxUploadQueueItem {
+export interface RxUploadQueueItem {
   reviewId: string;
   receivedAt: number;
   mimeType: PrescriptionMimeType;
@@ -100,7 +100,7 @@ export function uploadPrescription(file: PrescriptionFile, title = 'Prescription
   return apiRequest('/health/prescription-uploads', { method: 'POST', body: form });
 }
 
-function listPrescriptionUploads(): Promise<{ items: PrescriptionUpload[]; total: number }> {
+export function listPrescriptionUploads(): Promise<{ items: PrescriptionUpload[]; total: number }> {
   return apiRequest('/health/prescription-uploads');
 }
 
@@ -128,7 +128,7 @@ export function approveRxUpload(reviewId: string, pharmacistName: string, checks
   });
 }
 
-function rejectRxUpload(reviewId: string, reason: string): Promise<RxUploadOutcome> {
+export function rejectRxUpload(reviewId: string, reason: string): Promise<RxUploadOutcome> {
   return apiRequest(`/v1/pharmacy/rx-uploads/${enc(reviewId)}/reject`, {
     method: 'POST', body: JSON.stringify({ reason }),
   });

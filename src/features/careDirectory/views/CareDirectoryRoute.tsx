@@ -23,7 +23,7 @@ export function CareDirectoryRoute({ wide = false }: { wide?: boolean }): React.
   return (
     <>
       <FindCare vm={vm} wide={wide} links={{
-        back: () => navigate(wide ? 'home' : 'health'),
+        back: () => navigate(''),
         sos: () => (slot?.openSos ? slot.openSos() : navigate('sos')),
         book: (service) => setBooking(service.id),
       }} />

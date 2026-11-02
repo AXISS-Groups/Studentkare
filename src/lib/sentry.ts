@@ -95,7 +95,7 @@ export function initSentry(): void {
   }
 }
 
-function setSentryUser(userId: string, role: string, email?: string): void {
+export function setSentryUser(userId: string, role: string, email?: string): void {
   if (!initialized) return;
   Sentry.setUser({
     id: userId,
@@ -104,12 +104,12 @@ function setSentryUser(userId: string, role: string, email?: string): void {
   });
 }
 
-function clearSentryUser(): void {
+export function clearSentryUser(): void {
   if (!initialized) return;
   Sentry.setUser(null);
 }
 
-function captureSentryMessage(message: string, level: Sentry.SeverityLevel = "info"): void {
+export function captureSentryMessage(message: string, level: Sentry.SeverityLevel = "info"): void {
   if (!initialized) return;
   if (containsPhi(message)) {
     console.warn("[Sentry] Refused to capture message: PHI detected");
@@ -127,7 +127,7 @@ export function captureSentryException(error: Error, context?: Record<string, an
   Sentry.captureException(error, { extra: context ? scrubPhi(context) : undefined });
 }
 
-function addSentryBreadcrumb(
+export function addSentryBreadcrumb(
   category: string,
   message: string,
   level: Sentry.SeverityLevel = "info",

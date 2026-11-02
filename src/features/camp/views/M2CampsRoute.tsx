@@ -80,7 +80,7 @@ export const M2CampsRoute = observer(function M2CampsRoute({ wide = false }: { w
 
   return (
     <M2CampsView wide={wide} vm={vm} links={{
-      back: () => navigate('health'),
+      back: () => navigate(''),
       campDay: (campId) => setDayCampId(campId),
       verifyCampus: () => navigate('verify'),
       findCare: () => navigate('find-care'),

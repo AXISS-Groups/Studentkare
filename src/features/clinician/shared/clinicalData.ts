@@ -27,7 +27,7 @@ export function waitedFor(seconds: number, t: T): string {
 }
 
 /** "21 Oct 2026, 10:02" in the viewer's locale, from epoch seconds. */
-function dateTime(epochSeconds: number): string {
+export function dateTime(epochSeconds: number): string {
   return new Date(epochSeconds * 1000).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 }
 

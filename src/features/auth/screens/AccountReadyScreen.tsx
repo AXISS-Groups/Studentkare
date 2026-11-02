@@ -12,7 +12,7 @@ export function AccountReadyScreen(): React.ReactElement {
   return (
     <AccountReadyView
       onEnter={() => {
-        void navigate(auth.user ? `/${homeForRole(auth.user.role)}` : '/login');
+        void navigate(auth.user ? (homeForRole(auth.user.role) ? `/${homeForRole(auth.user.role)}` : '') : '/login');
       }}
       onHelp={auth.user ? () => void navigate('/support') : undefined}
       onAddPasscode={auth.user?.role === 'STUDENT' && getSetting('auth.passcode_login_enabled') ? () => void navigate('/set-passcode') : undefined}

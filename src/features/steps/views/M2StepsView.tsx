@@ -5,8 +5,8 @@ import { Icon } from '@/design-system/icons';
 import type { SkIconName } from '@/design-system/icons';
 import { Button, OfflineBanner, Rise, Sheet, Skeleton, TextField, useOnline } from '@/design-system';
 import {
-  Gradient, M2Card, M2Heading, M2WideColumn, M2_NAV_CLEARANCE, RoundButton, SERVICE_HUES, floatTransform, heroStops, m2Text,
-  useAmbientMotion, useLoop, useOwnPhoneChrome,
+  Gradient, M2Card, M2Grid, M2Heading, M2WideColumn, M2_NAV_CLEARANCE, RoundButton, SERVICE_HUES, floatTransform, heroStops, m2Text,
+  useAmbientMotion, useLoop, useM2Layout, useOwnPhoneChrome,
   M2HeaderSos,
 } from '@/design-system/m2';
 import type { PressState } from '@/design-system/m2';
@@ -145,9 +145,11 @@ const Hero = observer(function Hero({ vm, links, wide }: { vm: StepsViewModel; l
 
 function WeekChart({ bars }: { bars: readonly WeekBar[] }) {
   const t = useT();
+  const layout = useM2Layout();
+  const desktop = layout === 'desktop';
   const max = Math.max(0, ...bars.map((b) => b.steps ?? 0));
   return (
-    <View role="list" accessibilityLabel={t('steps.week.chartLabel')} aria-label={t('steps.week.chartLabel')} style={styles.chart} testID="m2-steps-week">
+    <View role="list" accessibilityLabel={t('steps.week.chartLabel')} aria-label={t('steps.week.chartLabel')} style={[styles.chart, desktop ? styles.chartDesktop : null]} testID="m2-steps-week">
       {bars.map((bar) => {
         const day = bar.isToday ? t('steps.week.today') : weekdayShort(bar.date);
         const spoken = bar.steps === null
@@ -156,11 +158,11 @@ function WeekChart({ bars }: { bars: readonly WeekBar[] }) {
         const share = bar.steps !== null && max > 0 ? bar.steps / max : 0;
         return (
           <View key={bar.date} role="listitem" accessible accessibilityLabel={spoken} aria-label={spoken} style={styles.barCol} testID={`m2-steps-bar-${bar.date}`}>
-            <Text style={styles.barValue} numberOfLines={1}>{bar.steps === null ? '' : stepsText(bar.steps)}</Text>
-            <View style={[styles.barTrack, bar.steps === null ? styles.barTrackEmpty : null]}>
+            <Text style={[styles.barValue, desktop ? styles.barValueDesktop : null]} numberOfLines={1}>{bar.steps === null ? '' : stepsText(bar.steps)}</Text>
+            <View style={[styles.barTrack, bar.steps === null ? styles.barTrackEmpty : null, desktop ? styles.barTrackDesktop : null]}>
               {bar.steps !== null ? <View style={[styles.barFill, { height: `${Math.max(share * 100, bar.steps > 0 ? MIN_BAR_PERCENT : 0)}%` }]} /> : null}
             </View>
-            <Text style={[styles.barDay, bar.isToday ? styles.barDayToday : null]} numberOfLines={1}>{day}</Text>
+            <Text style={[styles.barDay, bar.isToday ? styles.barDayToday : null, desktop ? styles.barDayDesktop : null]} numberOfLines={1}>{day}</Text>
           </View>
         );
       })}
@@ -278,43 +280,84 @@ export const M2StepsView = observer(function M2StepsView({ vm, links, wide = fal
         </M2Card>
       </Rise>
 
-      <Rise index={3} style={gutter}>
-        {vm.automatic ? (
-          <M2Card style={styles.card} testID="m2-steps-sources">
-            <M2Heading style={m2Text.section}>{t('steps.sources.title')}</M2Heading>
-            {vm.connectors.map((c) => <SourceRow key={c.provider} connector={c} vm={vm} />)}
-            <View style={styles.note}>
-              <Icon name="info" size={16} color={color.info} strokeWidth={2.2} />
-              <Text style={[m2Text.meta, styles.grow]}>{t('steps.sources.order')}</Text>
-            </View>
-          </M2Card>
-        ) : (
-          <M2Card style={[styles.card, styles.row, styles.top]} testID="m2-steps-web">
-            <View style={[styles.sourceIcon, { backgroundColor: TEAL.soft }]}><Icon name="devices" size={20} color={TEAL.ink} strokeWidth={2.1} /></View>
-            <View style={styles.grow}>
-              <M2Heading style={m2Text.cardTitle}>{t('steps.sources.webTitle')}</M2Heading>
-              <Text style={m2Text.body}>{t('steps.sources.webBody')}</Text>
-            </View>
-          </M2Card>
-        )}
-      </Rise>
+      {wide ? (
+        <Rise index={3}>
+          <M2Grid columns={{ tablet: 1, desktop: 2 }} testID="m2-steps-grid">
+            {vm.automatic ? (
+              <M2Card style={styles.card} fill testID="m2-steps-sources">
+                <M2Heading style={m2Text.section}>{t('steps.sources.title')}</M2Heading>
+                {vm.connectors.map((c) => <SourceRow key={c.provider} connector={c} vm={vm} />)}
+                <View style={styles.note}>
+                  <Icon name="info" size={16} color={color.info} strokeWidth={2.2} />
+                  <Text style={[m2Text.meta, styles.grow]}>{t('steps.sources.order')}</Text>
+                </View>
+              </M2Card>
+            ) : (
+              <M2Card style={[styles.card, styles.row, styles.top]} fill testID="m2-steps-web">
+                <View style={[styles.sourceIcon, { backgroundColor: TEAL.soft }]}><Icon name="devices" size={20} color={TEAL.ink} strokeWidth={2.1} /></View>
+                <View style={styles.grow}>
+                  <M2Heading style={m2Text.cardTitle}>{t('steps.sources.webTitle')}</M2Heading>
+                  <Text style={m2Text.body}>{t('steps.sources.webBody')}</Text>
+                </View>
+              </M2Card>
+            )}
+            <M2Card style={styles.card} fill testID="m2-steps-typed">
+              <View style={styles.row}>
+                <View style={[styles.sourceIcon, { backgroundColor: color.surface3 }]}><Icon name="pencil" size={18} color={color.action} strokeWidth={2.2} /></View>
+                <M2Heading style={[m2Text.section, styles.grow]}>{t('steps.typed.title')}</M2Heading>
+              </View>
+              <TextField label={t('steps.typed.label')} value={vm.typed} onChangeText={vm.setTyped} keyboardType="numeric" maxLength={String(vm.typedMax).length}
+                hint={t('steps.typed.hint', { max: stepsText(vm.typedMax) })} error={vm.typedState === 'error' && vm.typedError ? say(t, vm.typedError) : undefined}
+                disabled={vm.typedState === 'saving'} testID="m2-steps-typed-input" />
+              <Button label={vm.typedState === 'saving' ? t('steps.typed.saving') : t('steps.typed.save')} onPress={() => void vm.saveTyped()}
+                busy={vm.typedState === 'saving'} disabled={!online || vm.typed.trim() === ''} fullWidth testID="m2-steps-typed-save" />
+              <View aria-live="polite">
+                {vm.typedState === 'saved' ? <Text style={styles.saved} testID="m2-steps-typed-saved">{t('steps.typed.saved')}</Text> : null}
+              </View>
+            </M2Card>
+          </M2Grid>
+        </Rise>
+      ) : (
+        <>
+          <Rise index={3} style={gutter}>
+            {vm.automatic ? (
+              <M2Card style={styles.card} testID="m2-steps-sources">
+                <M2Heading style={m2Text.section}>{t('steps.sources.title')}</M2Heading>
+                {vm.connectors.map((c) => <SourceRow key={c.provider} connector={c} vm={vm} />)}
+                <View style={styles.note}>
+                  <Icon name="info" size={16} color={color.info} strokeWidth={2.2} />
+                  <Text style={[m2Text.meta, styles.grow]}>{t('steps.sources.order')}</Text>
+                </View>
+              </M2Card>
+            ) : (
+              <M2Card style={[styles.card, styles.row, styles.top]} testID="m2-steps-web">
+                <View style={[styles.sourceIcon, { backgroundColor: TEAL.soft }]}><Icon name="devices" size={20} color={TEAL.ink} strokeWidth={2.1} /></View>
+                <View style={styles.grow}>
+                  <M2Heading style={m2Text.cardTitle}>{t('steps.sources.webTitle')}</M2Heading>
+                  <Text style={m2Text.body}>{t('steps.sources.webBody')}</Text>
+                </View>
+              </M2Card>
+            )}
+          </Rise>
 
-      <Rise index={4} style={gutter}>
-        <M2Card style={styles.card} testID="m2-steps-typed">
-          <View style={styles.row}>
-            <View style={[styles.sourceIcon, { backgroundColor: color.surface3 }]}><Icon name="pencil" size={18} color={color.action} strokeWidth={2.2} /></View>
-            <M2Heading style={[m2Text.section, styles.grow]}>{t('steps.typed.title')}</M2Heading>
-          </View>
-          <TextField label={t('steps.typed.label')} value={vm.typed} onChangeText={vm.setTyped} keyboardType="numeric" maxLength={String(vm.typedMax).length}
-            hint={t('steps.typed.hint', { max: stepsText(vm.typedMax) })} error={vm.typedState === 'error' && vm.typedError ? say(t, vm.typedError) : undefined}
-            disabled={vm.typedState === 'saving'} testID="m2-steps-typed-input" />
-          <Button label={vm.typedState === 'saving' ? t('steps.typed.saving') : t('steps.typed.save')} onPress={() => void vm.saveTyped()}
-            busy={vm.typedState === 'saving'} disabled={!online || vm.typed.trim() === ''} fullWidth testID="m2-steps-typed-save" />
-          <View aria-live="polite">
-            {vm.typedState === 'saved' ? <Text style={styles.saved} testID="m2-steps-typed-saved">{t('steps.typed.saved')}</Text> : null}
-          </View>
-        </M2Card>
-      </Rise>
+          <Rise index={4} style={gutter}>
+            <M2Card style={styles.card} testID="m2-steps-typed">
+              <View style={styles.row}>
+                <View style={[styles.sourceIcon, { backgroundColor: color.surface3 }]}><Icon name="pencil" size={18} color={color.action} strokeWidth={2.2} /></View>
+                <M2Heading style={[m2Text.section, styles.grow]}>{t('steps.typed.title')}</M2Heading>
+              </View>
+              <TextField label={t('steps.typed.label')} value={vm.typed} onChangeText={vm.setTyped} keyboardType="numeric" maxLength={String(vm.typedMax).length}
+                hint={t('steps.typed.hint', { max: stepsText(vm.typedMax) })} error={vm.typedState === 'error' && vm.typedError ? say(t, vm.typedError) : undefined}
+                disabled={vm.typedState === 'saving'} testID="m2-steps-typed-input" />
+              <Button label={vm.typedState === 'saving' ? t('steps.typed.saving') : t('steps.typed.save')} onPress={() => void vm.saveTyped()}
+                busy={vm.typedState === 'saving'} disabled={!online || vm.typed.trim() === ''} fullWidth testID="m2-steps-typed-save" />
+              <View aria-live="polite">
+                {vm.typedState === 'saved' ? <Text style={styles.saved} testID="m2-steps-typed-saved">{t('steps.typed.saved')}</Text> : null}
+              </View>
+            </M2Card>
+          </Rise>
+        </>
+      )}
 
       <Sheet visible={explaining !== null} title={t('steps.explain.title', { name: explainName })} onClose={vm.cancelExplain} testID="m2-steps-explain">
         {explaining ? (
@@ -369,6 +412,10 @@ const styles = StyleSheet.create({
   card: { padding: space.s16, gap: space.s12, borderRadius: 24 },
   liveCount: { fontFamily: font.family.sans, fontSize: font.size.body, fontWeight: fontWeight(font.weight.heavy), color: color.text, fontVariant: ['tabular-nums'] },
   chart: { flexDirection: 'row', alignItems: 'flex-end', gap: space.s6, paddingTop: space.s4 },
+  chartDesktop: { gap: space.s16, paddingTop: space.s8 },
+  barTrackDesktop: { maxWidth: 54, height: 148 },
+  barValueDesktop: { fontSize: font.size.caption },
+  barDayDesktop: { fontSize: font.size.bodySm },
   barCol: { flex: 1, minWidth: 0, alignItems: 'center', gap: space.s4 },
   barValue: { fontFamily: font.family.sans, fontSize: 10, fontWeight: fontWeight(font.weight.heavy), color: color.text2, fontVariant: ['tabular-nums'] },
   barTrack: { width: '100%', maxWidth: 30, height: BAR_HEIGHT, borderRadius: radius.md, backgroundColor: color.surface2, justifyContent: 'flex-end', overflow: 'hidden' },

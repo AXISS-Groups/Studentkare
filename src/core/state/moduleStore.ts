@@ -55,7 +55,7 @@ export function createModuleStore<T>(initialState: T): ModuleStore<T> {
  * React hook to subscribe to a module store or a derived slice.
  * Uses React 18's useSyncExternalStore under the hood for safe concurrent rendering.
  */
-function useModuleStore<T, S = T>(
+export function useModuleStore<T, S = T>(
   store: ModuleStore<T>,
   selector?: (state: T) => S
 ): S {

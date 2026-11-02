@@ -19,7 +19,7 @@ export function M2InsuranceRoute({ manage, wide = false }: { manage?: () => void
   }, [vm]);
   return (
     <M2InsuranceView wide={wide} vm={vm} links={{
-      back: () => navigate('health'),
+      back: () => navigate(''),
       sos: () => (slot?.openSos ? slot.openSos() : navigate('sos')),
       manage,
     }} />
