@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { navigate } from '@/lib/utils/workflowRouting';
-import { STUDENT_NAV_ROUTES } from '@/screens/workspace/StudentPhoneFrame';
+import { STUDENT_NAV_ROUTES } from '@/design-system/student-shell/studentPillNav';
 import { StepsViewModel } from '../viewmodel/StepsViewModel';
 import { M2StepsView } from './M2StepsView';
 

@@ -11,7 +11,6 @@ import { NotificationViewModel } from '@/features/notifications/viewmodel/Notifi
 import { AccountDetailsBoard } from '@/features/account/views/AccountDetailsBoard';
 import { DataExportBoard } from '@/features/account/views/DataExportBoard';
 import type { RecordsExport } from '@/features/account/views/DataExportBoard';
-import { DigitalIdRoute } from '@/features/digital_id/views/DigitalIdNativeView';
 import { ScreenLoading } from '@/design-system/feedback/ScreenLoading';
 import { M2InsuranceRoute } from '@/features/m2store/views/M2InsuranceRoute';
 import { HelpCentreBoard } from '@/features/support/views/HelpCentreBoard';
@@ -20,13 +19,10 @@ import { useExerciseStore } from '@/data/contexts/ExerciseStore';
 import { IceContactsRoute } from '@/features/emergency/views/IceContactsBoard';
 import { DeleteAccountRoute } from '@/features/account/views/DeleteAccountView';
 import { PlanBillingBoard } from '@/features/billing/views/PlanBillingBoard';
-import { recordsArt } from '@/features/vault/views/recordsArt';
 
 const ExerciseLibraryScreen = lazy(() => import('../wellbeing/ExerciseLibraryScreen').then((module) => ({ default: module.ExerciseLibraryScreen })));
 
 const MemberProfilePanel = lazy(() => import('./MemberProfilePanel').then((module) => ({ default: module.MemberProfilePanel })));
-const ABHALinkScreen = lazy(() => import('../digital_id/ABHALinkScreen').then((module) => ({ default: module.ABHALinkScreen as React.ComponentType })));
-const HealthPassportQRScreen = lazy(() => import('../digital_id/HealthPassportQRScreen').then((module) => ({ default: module.HealthPassportQRScreen })));
 
 /** The existing web form for a tab of the profile, opened under a board (edit details, link ABHA). */
 function WebPanel({ tab }: { tab: 'profile' | 'insurance' }): React.ReactElement {
@@ -70,25 +66,6 @@ export function AccountDetailsPage(): React.ReactElement {
 
 export function DataExportPage(): React.ReactElement {
   return <DataExportBoard links={{ save: saveExport, deleteAccount: () => navigate('delete-account') }} />;
-}
-
-/**
- * Digital ID at both widths (Tier 1 parity plan 2026-10-24 §12): the one view
- * on `DigitalIdViewModel`; the ABHA link form and the desktop-only Health
- * passport open as the existing screens under the board (not through the
- * older `DigitalIdPanel`).
- */
-export function DigitalIdPage({ wide = false }: { wide?: boolean } = {}): React.ReactElement {
-  const [abha, openAbha] = usePanel();
-  const [passport, openPassport] = usePanel();
-  return (
-    <>
-      <DigitalIdRoute wide={wide} art={wide ? recordsArt.idVerified : undefined}
-        links={{ back: wide ? undefined : () => navigate('profile'), pass: () => navigate('pass'), abha: openAbha, insurance: () => navigate('insurance'), passport: wide ? openPassport : undefined }} />
-      {abha ? <div id="board-panel-abha"><Suspense fallback={<ScreenLoading />}><ABHALinkScreen /></Suspense></div> : null}
-      {passport ? <div id="board-panel-passport"><Suspense fallback={<ScreenLoading />}><HealthPassportQRScreen /></Suspense></div> : null}
-    </>
-  );
 }
 
 /** Mobile 2.0 Insurance (M2Insurance, replaces ClaimsHub); "Manage" opens the full insurance page under it. */

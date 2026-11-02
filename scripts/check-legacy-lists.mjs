@@ -9,6 +9,16 @@
  * old path was on the list at the base, and the old path is gone from the list.
  * The list never grows; any other new entry still fails.
  *
+ * Two list shapes are supported. A plain array (e.g. icon-coverage-legacy.json's
+ * file arrays) holds bare paths, so an entry IS the path a rename replaces.
+ * An object-keyed list (e.g. architecture-legacy.json) holds composite keys —
+ * "layer:runtime <from> -> <to>" or "cycle:runtime <file1> | <file2>" — where a
+ * renamed path is only a substring of the key. Both shapes are checked the same
+ * way: an entry not present at the base is still accepted if swapping a renamed
+ * path's new name back to its old one, anywhere the entry contains it, produces
+ * a key that WAS on the list at the base and is no longer present now (so the
+ * old key isn't double-counted as both "renamed" and "still there").
+ *
  * In CI (CI set) the base must be readable, or the check fails. Locally a missing
  * base only warns, so the check still runs without a fetch.
  *
@@ -82,11 +92,21 @@ for (const name of lists) {
     const now = new Set(entries);
     for (const entry of entries) {
       if (before.has(entry)) continue;
-      const from = renames.get(entry);
-      if (from && before.has(from) && !now.has(from)) {
-        console.log(`${path}: ${from} -> ${entry} (renamed)`);
-        continue;
+      // A bare-path entry (array lists) is itself the renamed path; a composite
+      // key (object lists) only contains it as a substring. Try every rename
+      // the same way: swap the new name back to the old one inside the entry
+      // and see if that reconstructs a key the base list actually had.
+      let carried = false;
+      for (const [newPath, oldPath] of renames) {
+        if (!entry.includes(newPath)) continue;
+        const asBefore = entry.split(newPath).join(oldPath);
+        if (before.has(asBefore) && !now.has(asBefore)) {
+          console.log(`${path}: ${asBefore} -> ${entry} (renamed)`);
+          carried = true;
+          break;
+        }
       }
+      if (carried) continue;
       problems.push(`${path}: ${entry} was added; legacy lists may only shrink`);
     }
   }

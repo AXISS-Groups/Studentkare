@@ -91,7 +91,7 @@
       "src/design-system/navigation/PhoneHeader.tsx"
     ],
     "AbhaLink": [
-      "src/screens/digital_id/ABHALinkScreen.tsx",
+      "src/features/digital_id/views/ABHALinkScreen.tsx",
       "src/design-system/navigation/PhoneHeader.tsx"
     ],
     "OnboardingConsent": [

@@ -6,7 +6,7 @@ import { pickReturnPhoto } from '@/features/requests/views/pickReturnPhoto.web';
 
 // keep-sorted start
 const CareDirectoryRoute = lazy(() => import('@/features/careDirectory/views/CareDirectoryRoute').then((m) => ({ default: m.CareDirectoryRoute })));
-const DigitalIdPage = lazy(() => import('@/screens/workspace/PhoneBoards').then((m) => ({ default: m.DigitalIdPage })));
+const DigitalIdPage = lazy(() => import('@/features/digital_id/views/DigitalIdPageRoute').then((m) => ({ default: m.DigitalIdPage })));
 const HealthVaultRoute = lazy(() => import('@/features/vault/views/HealthVaultRoute').then((m) => ({ default: m.HealthVaultRoute })));
 const IdentityVerifyView = lazy(() => import('@/features/auth/views/IdentityVerifyView').then((m) => ({ default: m.IdentityVerifyView })));
 const M2AskAyushRoute = lazy(() => import('@/features/chat/views/M2AskAyushRoute').then((m) => ({ default: m.M2AskAyushRoute })));

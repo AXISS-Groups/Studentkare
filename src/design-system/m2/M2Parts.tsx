@@ -1,16 +1,16 @@
 import React, { useState } from 'react';
-import { Animated, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import type { StyleProp, TextStyle, ViewStyle } from 'react-native';
 import { Icon } from '../icons';
 import type { SkIconName } from '../icons';
 import { useReducedMotion } from '../motion';
 import { color, focusRing, font, fontWeight, motion, radius, shadow, shadowStyle, size, space, webOnly } from '../theme';
-import { useAmbientMotion, useLoop } from './m2Motion';
 import { SERVICE_HUES } from './servicePalette';
 import type { ServiceHue } from './servicePalette';
 import { isWide, m2Gutter, useM2Layout } from './m2Layout';
 import type { M2Layout } from './m2Layout';
 import { M2HeaderSos } from './m2Sos';
+import { SosButton } from './M2SosButton';
 
 /**
  * Small pieces every Mobile 2.0 board shares (canvas page 9): the round
@@ -117,25 +117,6 @@ export function RoundButton({ icon, label, onPress, badge, onHero = false, testI
 }
 
 /** SOS, always one tap away (DESIGN.md §2.4): the red pill with a soft pulse that stops under reduced motion. */
-export function SosButton({ label, spoken, onPress, testID = 'm2-sos' }: { label: string; spoken: string; onPress: () => void; testID?: string }) {
-  const ambient = useAmbientMotion();
-  const pulse = useLoop(ambient, motion.duration.ambient / 2);
-  const ring = {
-    opacity: pulse.interpolate({ inputRange: [0, 1], outputRange: [0.45, 0] }),
-    transform: [{ scale: pulse.interpolate({ inputRange: [0, 1], outputRange: [1, 1.3] }) }],
-  };
-  return (
-    <View style={styles.sosWrap}>
-      {ambient ? <Animated.View style={[styles.sosRing, ring, { pointerEvents: 'none' }]} /> : null}
-      <Pressable role="button" accessibilityRole="button" accessibilityLabel={spoken} aria-label={spoken} onPress={onPress} testID={testID}
-        style={({ focused }: PressState) => [styles.sos, focused ? focusRing : null]}>
-        <Icon name="shield-alert" size={16} color={color.onDangerFill} strokeWidth={2.4} />
-        <Text style={styles.sosText}>{label}</Text>
-      </Pressable>
-    </View>
-  );
-}
-
 /**
  * A store board's header: the round back button, a small line over the title,
  * and its own controls. Wider than a phone it sits in the page's own gutter, with a
@@ -330,13 +311,6 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center', backgroundColor: color.action, borderWidth: 2, borderColor: color.canvas,
   },
   badgeText: { fontFamily: font.family.sans, fontSize: 10, fontWeight: fontWeight(font.weight.heavy), color: color.onAction },
-  sosWrap: { position: 'relative' },
-  sosRing: { ...StyleSheet.absoluteFillObject, borderRadius: radius.full, backgroundColor: color.dangerFill },
-  sos: {
-    minHeight: size.touchTarget, paddingHorizontal: space.s14, borderRadius: radius.full, flexDirection: 'row', alignItems: 'center', gap: space.s6,
-    backgroundColor: color.dangerFill,
-  },
-  sosText: { fontFamily: font.family.sans, fontSize: font.size.bodySm, fontWeight: fontWeight(font.weight.heavy), color: color.onDangerFill },
   header: { flexDirection: 'row', alignItems: 'center', gap: space.s12, paddingHorizontal: space.gutterPhone, paddingTop: space.s16 },
   headerEyebrow: { fontFamily: font.family.sans, fontSize: font.size.caption, fontWeight: fontWeight(font.weight.regular), color: color.text3 },
   headerTitle: { fontFamily: font.family.sans, fontSize: font.size.title, fontWeight: fontWeight(font.weight.heavy), letterSpacing: -0.5, color: color.text },

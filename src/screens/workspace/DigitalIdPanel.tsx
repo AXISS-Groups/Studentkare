@@ -6,13 +6,13 @@ import type { IdentitySummary, MemberIdentity } from '../../data/types/workflowT
 import { useApiResource } from '../../hooks/api/useApiResource';
 import { DataState, Field, FormError, SubmitButton, useMutation } from '../../components/interface/WorkflowUI';
 import { ShopDialog } from '../../components/marketplace/ShopDialog';
-import { ABHALinkScreen } from '../digital_id/ABHALinkScreen';
-import { HealthPassportQRScreen } from '../digital_id/HealthPassportQRScreen';
+import { ABHALinkScreen } from '@/features/digital_id/views/ABHALinkScreen';
+import { HealthPassportQRScreen } from '@/features/digital_id/views/HealthPassportQRScreen';
 import { useLivePass } from '@/features/digital_id/viewmodel/livePass';
 import { QrCells } from '@/features/digital_id/views/DigitalIdNativeView';
 import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
-import './member-profile.css';
+import '@/design-system/styles/member-profile.css';
 import '../../theme/workflows.css';
 
 const CAMPUS_LABEL: Record<IdentitySummary['campusStatus'], MessageKey> = { VERIFIED: 'member.digitalId.campus.VERIFIED', PENDING: 'member.digitalId.campus.PENDING', NOT_SUBMITTED: 'member.digitalId.campus.NOT_SUBMITTED', REJECTED: 'member.digitalId.campus.REJECTED' };

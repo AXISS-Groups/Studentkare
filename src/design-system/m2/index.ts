@@ -14,11 +14,12 @@ export type { HeroSlide, HeroCarouselProps } from './HeroCarousel';
 export { GradientHeroCard } from './GradientHeroCard';
 export type { GradientHeroCardProps } from './GradientHeroCard';
 export {
-  cardLabel, LiftCard, M2Card, M2Header, M2Heading, M2SearchField, M2SectionHead, M2_BOTTOM_SPACE, NotYetTile, RoundButton, SoftIcon, SoftTileGrid, SosButton,
+  cardLabel, LiftCard, M2Card, M2Header, M2Heading, M2SearchField, M2SectionHead, M2_BOTTOM_SPACE, NotYetTile, RoundButton, SoftIcon, SoftTileGrid,
   m2Text, useLift, webAttrs,
 } from './M2Parts';
 export type { M2SearchFieldProps, PressState, SoftTileItem } from './M2Parts';
 export { SOFT_TILE_COLUMNS } from './M2Parts';
+export { SosButton } from './M2SosButton';
 export { M2EmptyState, M2ListRow, M2ProductCard } from './M2Blocks';
 export type { M2EmptyStateProps, M2ListRowProps, M2ProductCardProps } from './M2Blocks';
 export { M2HeaderSos, M2SosProvider, useM2Sos } from './m2Sos';

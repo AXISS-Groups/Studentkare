@@ -9,6 +9,7 @@ import { useT } from '@/i18n';
 import { EmergencyHelplinesDialog } from '@/components/interface/InterfaceBar';
 import { navigate } from '@/lib/utils/workflowRouting';
 import type { RoutePath } from '@/lib/utils/workflowRouting';
+import { STUDENT_NAV_ROUTES } from '@/design-system/student-shell/studentPillNav';
 
 /**
  * The Mobile 2.0 pill nav on the web (canvas page 9, approved 2026-10-21): Home
@@ -22,13 +23,7 @@ import type { RoutePath } from '@/lib/utils/workflowRouting';
  * - Profile (M2Profile) opens /profile.
  * The old tabs' shop and lab tests are on Home's service rail.
  */
-export const STUDENT_NAV_ROUTES: Readonly<Record<PillNavKey, RoutePath>> = {
-  home: 'home',
-  orders: 'orders',
-  ayush: 'ayush',
-  health: 'your-care',
-  profile: 'profile',
-};
+export { STUDENT_NAV_ROUTES };
 
 /** The store boards opened from Home's rail: the boards draw Home as current there. */
 const HOME_STORE_ROUTES: ReadonlySet<RoutePath> = new Set<RoutePath>([
