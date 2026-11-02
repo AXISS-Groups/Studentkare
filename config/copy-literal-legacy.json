@@ -24,7 +24,6 @@
   "src/features/landing/views/landingNativeKit.tsx",
   "src/features/legal/views/LegalView.tsx",
   "src/screens/admin/IntegrationsSettingsModule.tsx",
-  "src/screens/auth/AuthenticatedFlowScreen.tsx",
   "src/screens/marketplace/LiveMarketplaceScreen.tsx",
   "src/screens/vendor/AutomatedReorderRulesScreen.tsx",
   "src/screens/vendor/BulkHealthCampIntakeScreen.tsx",
