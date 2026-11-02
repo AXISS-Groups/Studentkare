@@ -16,7 +16,7 @@ const blankEntry = (): DrugEntry => ({
  * patient, no send; offline, no send; a line the allergy check refused is
  * never sent again; the row changes to "signed" only after the server issues it.
  */
-export class PrescribeViewModel extends LoadableViewModel<PrescribeData> {
+export class PrescribeConsoleViewModel extends LoadableViewModel<PrescribeData> {
   patientId = '';
   encounterId = '';
   lines: RxLine[] = [];
@@ -29,7 +29,7 @@ export class PrescribeViewModel extends LoadableViewModel<PrescribeData> {
 
   constructor(private readonly source: PrescribeSource, private readonly t: T, private preferred: { patientId?: string; encounterId?: string } | null = null) {
     super(source);
-    makeObservable<PrescribeViewModel, 'afterLoad'>(this, {
+    makeObservable<PrescribeConsoleViewModel, 'afterLoad'>(this, {
       patientId: observable, encounterId: observable, lines: observable, drawerOpen: observable, entry: observable,
       signing: observable, issuedId: observable, online: observable,
       patients: computed, patientName: computed, patientNotes: computed, blockedLines: computed, allergyBlock: computed,

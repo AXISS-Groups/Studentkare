@@ -11,7 +11,7 @@ import { ClinicianEmptyState, ClinicianErrorState } from './ClinicianStates';
 import { OfflineNote } from './OfflineNote';
 import { dateOnly } from '../model/clinicalData';
 import { takeHandoff } from '../model/handoff';
-import { PrescribeViewModel } from '../viewmodel/PrescribeConsoleViewModel';
+import { PrescribeConsoleViewModel } from '../viewmodel/PrescribeConsoleViewModel';
 import type { EditableField } from '../viewmodel/PrescribeConsoleViewModel';
 import { RX_LIMITS, SCHEDULES, prescribeApiSource } from '../model/prescribeModel';
 import type { DrugSchedule, PrescribeSource, RxLine } from '../model/prescribeModel';
@@ -27,7 +27,7 @@ const SCHEDULE_NOTE: Record<DrugSchedule, 'clinRx.schedule.OTC' | 'clinRx.schedu
  * 2026-10-21. The "name match only" disclosure is part of every allergy block
  * and is never hidden.
  */
-export const PrescribeView = observer(function PrescribeView({ viewModel, onNavigate }: { viewModel: PrescribeViewModel; onNavigate: (route: RoutePath) => void }): React.ReactElement {
+export const PrescribeView = observer(function PrescribeView({ viewModel, onNavigate }: { viewModel: PrescribeConsoleViewModel; onNavigate: (route: RoutePath) => void }): React.ReactElement {
   const t = useT();
   const { status } = viewModel;
   let body: React.ReactNode;
@@ -96,7 +96,7 @@ export const PrescribeView = observer(function PrescribeView({ viewModel, onNavi
   return <>{body}<Toast message={viewModel.toast} onDone={viewModel.clearToast} /></>;
 });
 
-const PatientPicker = observer(function PatientPicker({ viewModel }: { viewModel: PrescribeViewModel }): React.ReactElement {
+const PatientPicker = observer(function PatientPicker({ viewModel }: { viewModel: PrescribeConsoleViewModel }): React.ReactElement {
   const t = useT();
   const notes = viewModel.patientNotes;
   return (
@@ -117,7 +117,7 @@ const PatientPicker = observer(function PatientPicker({ viewModel }: { viewModel
   );
 });
 
-const LineRow = observer(function LineRow({ line, viewModel }: { line: RxLine; viewModel: PrescribeViewModel }): React.ReactElement {
+const LineRow = observer(function LineRow({ line, viewModel }: { line: RxLine; viewModel: PrescribeConsoleViewModel }): React.ReactElement {
   const t = useT();
   const blocked = line.blocked;
   const field = (name: EditableField, label: string) => (
@@ -163,7 +163,7 @@ const LineRow = observer(function LineRow({ line, viewModel }: { line: RxLine; v
   );
 });
 
-const AddDrugDrawer = observer(function AddDrugDrawer({ viewModel }: { viewModel: PrescribeViewModel }): React.ReactElement | null {
+const AddDrugDrawer = observer(function AddDrugDrawer({ viewModel }: { viewModel: PrescribeConsoleViewModel }): React.ReactElement | null {
   const t = useT();
   if (!viewModel.drawerOpen) return null;
   const e = viewModel.entry;
@@ -216,7 +216,7 @@ const AddDrugDrawer = observer(function AddDrugDrawer({ viewModel }: { viewModel
 export function PrescribeScreen({ source }: { source?: PrescribeSource }): React.ReactElement {
   const t = useT();
   const online = useOnline();
-  const [viewModel] = useState(() => new PrescribeViewModel(source ?? prescribeApiSource(), t, takeHandoff()));
+  const [viewModel] = useState(() => new PrescribeConsoleViewModel(source ?? prescribeApiSource(), t, takeHandoff()));
   useEffect(() => { void viewModel.load(); }, [viewModel]);
   useEffect(() => { viewModel.setOnline(online); }, [viewModel, online]);
   return (

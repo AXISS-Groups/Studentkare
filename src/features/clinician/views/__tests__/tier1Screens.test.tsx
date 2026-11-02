@@ -15,7 +15,7 @@ import { EncounterNoteView, EncounterNoteViewModel } from '../EncounterNoteScree
 import { SignedElsewhere, encounterApiSource } from '../../model/encounterModel';
 import type { EncounterData, EncounterNoteApi, EncounterSource } from '../../model/encounterModel';
 
-import { PrescribeViewModel } from '../../viewmodel/PrescribeConsoleViewModel';
+import { PrescribeConsoleViewModel } from '../../viewmodel/PrescribeConsoleViewModel';
 import { PrescribeView } from '../PrescribeScreen';
 import { prescribeApiSource } from '../../model/prescribeModel';
 import type { DrugEntry, IssueRequest, IssueResult, PrescribeData, PrescribeSource } from '../../model/prescribeModel';
@@ -287,7 +287,7 @@ const entry = (over: Partial<DrugEntry> = {}): DrugEntry => ({
 });
 const prescribeData = (): PrescribeData => ({ appointments: [appt()], notes: [{ id: 'n1', appointmentId: 'a1', patientId: 'p1', status: 'FINAL', createdAt: 1790000000 }] });
 
-function addDrug(vm: PrescribeViewModel, drug: DrugEntry): void {
+function addDrug(vm: PrescribeConsoleViewModel, drug: DrugEntry): void {
   vm.openDrawer();
   (Object.keys(drug) as (keyof DrugEntry)[]).forEach((key) => vm.setEntry(key, drug[key]));
   vm.add();
@@ -295,7 +295,7 @@ function addDrug(vm: PrescribeViewModel, drug: DrugEntry): void {
 
 describe('prescribe', () => {
   it('fails closed: no student, an incomplete line, or offline means nothing can be signed', async () => {
-    const vm = await loaded(new PrescribeViewModel({ load: async () => prescribeData(), issue: async () => ({ kind: 'issued', id: 'rx1' }) }, en));
+    const vm = await loaded(new PrescribeConsoleViewModel({ load: async () => prescribeData(), issue: async () => ({ kind: 'issued', id: 'rx1' }) }, en));
     addDrug(vm, entry());
     expect(vm.canSign).toBe(false);
     vm.selectPatient('p1');
@@ -316,7 +316,7 @@ describe('prescribe', () => {
         ? { kind: 'conflict', conflicts: [{ genericName: 'Amoxicillin', conflicts: [{ substance: 'Penicillin', flag: 'x' }] }] }
         : { kind: 'issued', id: 'rx1' };
     });
-    const vm = await loaded(new PrescribeViewModel({ load: async () => prescribeData(), issue }, en, { patientId: 'p1' }));
+    const vm = await loaded(new PrescribeConsoleViewModel({ load: async () => prescribeData(), issue }, en, { patientId: 'p1' }));
     addDrug(vm, entry());
     addDrug(vm, entry({ genericName: 'Amoxicillin', scheduleClass: 'H' }));
     await vm.sign();
@@ -329,7 +329,7 @@ describe('prescribe', () => {
   });
 
   it('records a Schedule X drug as blocked: the consult is not reported as in person', async () => {
-    const vm = await loaded(new PrescribeViewModel({ load: async () => prescribeData(), issue: async () => ({ kind: 'issued', id: 'rx1' }) }, en, { patientId: 'p1' }));
+    const vm = await loaded(new PrescribeConsoleViewModel({ load: async () => prescribeData(), issue: async () => ({ kind: 'issued', id: 'rx1' }) }, en, { patientId: 'p1' }));
     addDrug(vm, entry({ genericName: 'Controlled', scheduleClass: 'X' }));
     expect(vm.lines[0].blocked).toEqual({ kind: 'schedule-x' });
     expect(vm.canSign).toBe(false);
@@ -348,7 +348,7 @@ describe('prescribe', () => {
 
   it('shows the block with the mandatory "name match only" disclosure, as an alert', async () => {
     const source: PrescribeSource = { load: async () => prescribeData(), issue: async () => ({ kind: 'conflict', conflicts: [{ genericName: 'Amoxicillin', conflicts: [{ substance: 'Penicillin', flag: 'x' }] }] }) };
-    const vm = new PrescribeViewModel(source, en, { patientId: 'p1' });
+    const vm = new PrescribeConsoleViewModel(source, en, { patientId: 'p1' });
     render(<PrescribeView viewModel={vm} onNavigate={vi.fn()} />);
     await act(async () => { await vm.load(); });
     act(() => addDrug(vm, entry({ genericName: 'Amoxicillin' })));
@@ -362,7 +362,7 @@ describe('prescribe', () => {
   });
 
   it('the add-a-drug drawer says search is not connected and adds only a complete drug', async () => {
-    const vm = new PrescribeViewModel({ load: async () => prescribeData(), issue: async () => ({ kind: 'issued', id: 'rx1' }) }, en, { patientId: 'p1' });
+    const vm = new PrescribeConsoleViewModel({ load: async () => prescribeData(), issue: async () => ({ kind: 'issued', id: 'rx1' }) }, en, { patientId: 'p1' });
     render(<PrescribeView viewModel={vm} onNavigate={vi.fn()} />);
     await act(async () => { await vm.load(); });
     fireEvent.click(screen.getByRole('button', { name: 'Add a drug' }));
@@ -379,7 +379,7 @@ describe('prescribe', () => {
   });
 
   it('empty when there is nobody in the doctor’s care', async () => {
-    const vm = new PrescribeViewModel({ load: async () => ({ appointments: [], notes: [] }) }, en);
+    const vm = new PrescribeConsoleViewModel({ load: async () => ({ appointments: [], notes: [] }) }, en);
     render(<PrescribeView viewModel={vm} onNavigate={vi.fn()} />);
     await act(async () => { await vm.load(); });
     expect(screen.getByRole('heading', { name: 'No one to prescribe for yet.' })).toBeInTheDocument();
