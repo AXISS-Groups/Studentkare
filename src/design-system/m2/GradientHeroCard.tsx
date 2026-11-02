@@ -8,6 +8,7 @@ import { Gradient } from './Gradient';
 import { floatTransform, useAmbientMotion, useLoop } from './m2Motion';
 import { cardLabel, useLift } from './M2Parts';
 import type { PressState } from './M2Parts';
+import { isWide, useM2Layout } from './m2Layout';
 
 /**
  * The Mobile 2.0 gradient hero card (Home highlights, the Labs hero, the
@@ -15,6 +16,10 @@ import type { PressState } from './M2Parts';
  * whole length, two soft rings for depth, an eyebrow chip on the darker end,
  * the title, a line of body, a white call to action and a floating glyph.
  * The whole card is one link; the floating glyph is decoration.
+ *
+ * Wider than a phone (inside `<M2Responsive>`) the card is taller, the title
+ * and body may run wider, and on a desktop the title is a size up. It fills its
+ * cell's width; the art stays in the corner.
  */
 export interface GradientHeroCardProps {
   /** `heroStops(hue)` or NAVY_STOPS: never a light stop under white text. */
@@ -35,19 +40,25 @@ export interface GradientHeroCardProps {
   onPress: () => void;
   /** Accessible name of the whole card. */
   label: string;
+  /** Card height. Default 214 on a phone (the boards), 240 wider. */
   height?: number;
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }
 
-export function GradientHeroCard({ stops, chipFill, eyebrow, title, body, cta, aside, icon, art, onPress, label, height = 214, style, testID }: GradientHeroCardProps) {
+const HEIGHT_PHONE = 214;
+const HEIGHT_WIDE = 240;
+
+export function GradientHeroCard({ stops, chipFill, eyebrow, title, body, cta, aside, icon, art, onPress, label, height, style, testID }: GradientHeroCardProps) {
+  const layout = useM2Layout();
+  const wide = isWide(layout);
   const ambient = useAmbientMotion();
   const float = useLoop(ambient, motion.duration.ambient);
   const lift = useLift();
   return (
     <Pressable role="link" accessibilityRole="link" {...cardLabel(label)} onPress={onPress} testID={testID}
       style={(state: PressState) => [styles.press, style, lift(state)]}>
-      <Gradient colors={stops} style={[styles.card, { height }]}>
+      <Gradient colors={stops} style={[styles.card, wide ? styles.cardWide : null, { height: height ?? (wide ? HEIGHT_WIDE : HEIGHT_PHONE) }]}>
         <View pointerEvents="none" style={styles.ringBig} />
         <View pointerEvents="none" style={styles.ringSmall} />
         {art ?? (icon ? (
@@ -58,8 +69,8 @@ export function GradientHeroCard({ stops, chipFill, eyebrow, title, body, cta, a
         <View style={[styles.chip, { backgroundColor: chipFill }]}>
           <Text style={styles.chipText}>{eyebrow}</Text>
         </View>
-        <Text style={styles.title}>{title}</Text>
-        {body ? <Text style={styles.body}>{body}</Text> : null}
+        <Text style={[styles.title, wide ? styles.titleWide : null, layout === 'desktop' ? styles.titleDesktop : null]}>{title}</Text>
+        {body ? <Text style={[styles.body, wide ? styles.bodyWide : null]}>{body}</Text> : null}
         <View style={styles.foot}>
           {aside ? <Text style={styles.aside}>{aside}</Text> : null}
           {cta ? (
@@ -77,6 +88,10 @@ export function GradientHeroCard({ stops, chipFill, eyebrow, title, body, cta, a
 const styles = StyleSheet.create({
   press: { borderRadius: 28, ...shadowStyle(shadow.float) },
   card: { borderRadius: 28, padding: space.s20, gap: space.s8, overflow: 'hidden' },
+  cardWide: { padding: space.s24 },
+  titleWide: { maxWidth: 420 },
+  titleDesktop: { fontSize: font.size.heading, lineHeight: 32 },
+  bodyWide: { maxWidth: 400 },
   ringBig: { position: 'absolute', right: -40, bottom: -60, width: 190, height: 190, borderRadius: radius.full, borderWidth: 26, borderColor: color.onHeroRule },
   ringSmall: { position: 'absolute', right: 40, top: -50, width: 120, height: 120, borderRadius: radius.full, backgroundColor: color.onHeroVeil },
   glyph: {

@@ -5,7 +5,8 @@ import { Icon } from '@/design-system/icons';
 import { ErrorState, OfflineBanner, Rise, Skeleton } from '@/design-system';
 import { TestTrendChart } from '@/design-system/charts';
 import {
-  M2Card, M2Heading, M2_NAV_CLEARANCE, RoundButton, SoftIcon, m2Text, useOwnPhoneChrome, webAttrs,
+  M2Card, M2Heading, M2_NAV_CLEARANCE, RoundButton, SoftIcon, m2Text, useM2Layout, useOwnPhoneChrome, webAttrs,
+  M2HeaderSos, M2WideColumn,
 } from '@/design-system/m2';
 import type { PressState } from '@/design-system/m2';
 import { color, focusRing, font, fontWeight, radius, shadow, shadowStyle, size, space } from '@/design-system/theme';
@@ -53,6 +54,11 @@ export interface M2TrendsViewProps {
   reviews: readonly ReportReview[] | null;
   online: boolean;
   links: M2TrendsLinks;
+  /**
+   * Laid out wide in the desktop web shell (Tier 1 parity plan 2026-10-24 §4): the test chips become a list on the
+   * left (same chip, same spoken state), the selected test's card and the doctor's steps on the right.
+   */
+  wide?: boolean;
 }
 
 const TONE_INK: Record<ValueTone, string> = { attention: color.attention, positive: color.positive, neutral: color.text2 };
@@ -67,16 +73,16 @@ function ValueChip({ tone, text, testID }: { tone: ValueTone; text: string; test
   );
 }
 
-function TestChip({ test, selected, onPress }: { test: TestWithValues; selected: boolean; onPress: () => void }) {
+function TestChip({ test, selected, onPress, row = false }: { test: TestWithValues; selected: boolean; onPress: () => void; row?: boolean }) {
   const t = useT();
   const tone = toneOf(test.latestRangeState);
   const spoken = t('m2v.tr.chipSpoken', { test: test.testName, state: t(stateKey(test.latestRangeState)) });
   return (
     <Pressable role="button" accessibilityRole="button" accessibilityLabel={spoken} aria-label={spoken} aria-pressed={selected}
       accessibilityState={{ selected }} onPress={onPress} testID={`m2-trends-chip-${test.testKey}`}
-      style={({ focused }: PressState) => [styles.chip, selected ? styles.chipOn : null, focused ? focusRing : null]}>
+      style={({ focused }: PressState) => [styles.chip, row ? styles.chipRow : null, selected ? styles.chipOn : null, focused ? focusRing : null]}>
       <View style={[styles.dot, { backgroundColor: TONE_DOT[tone] }]} />
-      <Text numberOfLines={1} style={[styles.chipText, selected ? styles.chipTextOn : null]}>{test.testName}</Text>
+      <Text numberOfLines={row ? 2 : 1} style={[styles.chipText, row ? styles.grow : null, selected ? styles.chipTextOn : null]}>{test.testName}</Text>
     </Pressable>
   );
 }
@@ -138,13 +144,14 @@ function TrendTable({ rows }: { rows: readonly LabValue[] }) {
 
 function StepsSection({ steps }: { steps: DoctorSteps }) {
   const t = useT();
+  const gutter = useGutter();
   const locale = dateLocale(useLanguage().lang);
   const count = steps.steps.length;
   const from = steps.doctorName
     ? t('m2v.tr.stepsFrom', { name: steps.doctorName })
     : t('m2v.tr.stepsReviewed', { date: fullDateFromEpoch(steps.reviewedAt, locale) });
   return (
-    <Rise index={3} style={styles.gutter}>
+    <Rise index={3} style={gutter}>
       <View style={styles.stepsCard} testID="m2-trends-steps">
         <View style={styles.stepsHead}>
           <M2Heading style={m2Text.section}>{count === 1 ? t('m2v.tr.stepsOne') : t('m2v.tr.steps', { count })}</M2Heading>
@@ -172,7 +179,12 @@ function StepsSection({ steps }: { steps: DoctorSteps }) {
   );
 }
 
-export const M2TrendsView = observer(function M2TrendsView({ vm, reviews, online, links }: M2TrendsViewProps) {
+/** The phone gutter on a phone; wider, the web shell's column already has its own. */
+function useGutter() {
+  return useM2Layout() === 'phone' ? styles.gutter : undefined;
+}
+
+export const M2TrendsView = observer(function M2TrendsView({ vm, reviews, online, links, wide = false }: M2TrendsViewProps) {
   const t = useT();
   const locale = dateLocale(useLanguage().lang);
   useOwnPhoneChrome();
@@ -188,9 +200,10 @@ export const M2TrendsView = observer(function M2TrendsView({ vm, reviews, online
   const steps = reviews && vm.trend ? stepsForTest(reviews, items) : null;
   const allTyped = items.every((v) => v.source === 'STUDENT_CONFIRMED');
   const bookmarkLabel = t('m2v.tr.bookmark', { test: testName });
+  const gutter = wide ? undefined : styles.gutter;
 
   const header = (
-    <View style={styles.header} testID="m2-trends-header">
+    <View style={[styles.header, wide ? styles.headerWide : null]} testID="m2-trends-header">
       <RoundButton icon="arrow-left" label={t('m2v.tr.back')} onPress={links.back} testID="m2-trends-back" />
       <View style={styles.grow}>
         {eyebrow ? <Text numberOfLines={1} style={styles.eyebrow} testID="m2-trends-span">{eyebrow}</Text> : null}
@@ -204,21 +217,22 @@ export const M2TrendsView = observer(function M2TrendsView({ vm, reviews, online
           <Icon name="bookmark" size={size.navIcon} color={vm.selectedPinned ? color.onAction : color.text} strokeWidth={2.3} />
         </Pressable>
       ) : null}
+      <M2HeaderSos />
     </View>
   );
 
   let body: React.ReactNode;
   if (vm.phase === 'loading') {
-    body = <View style={styles.gutter}><Skeleton label={t('m2v.tr.loading')} lines={['60%', '100%', '100%', '80%']} /></View>;
+    body = <View style={gutter}><Skeleton label={t('m2v.tr.loading')} lines={['60%', '100%', '100%', '80%']} /></View>;
   } else if (vm.phase === 'error') {
     body = (
-      <View style={styles.gutter}>
+      <View style={gutter}>
         <ErrorState title={t('m2v.tr.errorTitle')} body={t('m2v.tr.errorBody')} retryLabel={t('m2v.retry')} onRetry={() => void vm.load()} />
       </View>
     );
   } else if (vm.phase === 'empty') {
     body = (
-      <Rise style={styles.gutter}>
+      <Rise style={gutter}>
         <M2Card style={styles.empty} testID="m2-trends-empty">
           <SoftIcon icon="flask" hue="indigo" tile={52} iconSize={24} />
           <M2Heading style={m2Text.section}>{t('m2v.tr.emptyTitle')}</M2Heading>
@@ -231,20 +245,16 @@ export const M2TrendsView = observer(function M2TrendsView({ vm, reviews, online
       </Rise>
     );
   } else {
-    body = (
-      <>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips} testID="m2-trends-chips"
-          {...webAttrs({ role: 'group', 'aria-label': t('m2v.tr.tests') })}>
-          {vm.tests.map((test) => (
-            <TestChip key={test.testKey} test={test} selected={test.testKey === vm.selectedKey} onPress={() => void vm.select(test.testKey)} />
-          ))}
-        </ScrollView>
-        {vm.pinError ? (
-          <Text role="alert" accessibilityLiveRegion="polite" style={[styles.gutter, styles.pinError]} testID="m2-trends-pin-error">
-            {vm.pinError === 'error' ? t('m2v.tr.pinError') : vm.pinError}
-          </Text>
-        ) : null}
-        <Rise index={1} style={styles.gutter}>
+    const chips = vm.tests.map((test) => (
+      <TestChip key={test.testKey} test={test} selected={test.testKey === vm.selectedKey} onPress={() => void vm.select(test.testKey)} row={wide} />
+    ));
+    const pinError = vm.pinError ? (
+      <Text role="alert" accessibilityLiveRegion="polite" style={[gutter, styles.pinError]} testID="m2-trends-pin-error">
+        {vm.pinError === 'error' ? t('m2v.tr.pinError') : vm.pinError}
+      </Text>
+    ) : null;
+    const card = (
+        <Rise index={1} style={gutter}>
           <M2Card style={styles.card} testID="m2-trends-card">
             {vm.trendPhase === 'loading' || vm.trendPhase === 'idle' ? (
               <Skeleton label={t('m2v.tr.loadingTest')} lines={['40%', '100%', '100%']} />
@@ -275,7 +285,8 @@ export const M2TrendsView = observer(function M2TrendsView({ vm, reviews, online
                 </View>
                 {mode === 'graph' ? (
                   view.points.length > 0 ? (
-                    <View style={styles.chart}>
+                    // trendGeometry draws at one fixed width and the SVG scales: wider, the chart keeps about its phone size (same points, same labels).
+                    <View style={[styles.chart, wide ? styles.chartWide : null]}>
                       <TestTrendChart
                         points={chartPoints(view.points, locale)}
                         band={view.band}
@@ -303,19 +314,55 @@ export const M2TrendsView = observer(function M2TrendsView({ vm, reviews, online
             )}
           </M2Card>
         </Rise>
-        {steps && vm.trendPhase === 'ready' ? <StepsSection steps={steps} /> : null}
+    );
+    const stepsNode = steps && vm.trendPhase === 'ready' ? <StepsSection steps={steps} /> : null;
+    body = wide ? (
+      <WideSplit
+        side={<View style={styles.testList} testID="m2-trends-chips" {...webAttrs({ role: 'group', 'aria-label': t('m2v.tr.tests') })}>{chips}</View>}
+        main={<>{pinError}{card}{stepsNode}</>}
+      />
+    ) : (
+      <>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips} testID="m2-trends-chips"
+          {...webAttrs({ role: 'group', 'aria-label': t('m2v.tr.tests') })}>
+          {chips}
+        </ScrollView>
+        {pinError}
+        {card}
+        {stepsNode}
       </>
     );
   }
 
+  const offline = !online ? <View style={gutter}><OfflineBanner message={t('m2v.offline')} /></View> : null;
+  if (wide) {
+    return (
+      <M2WideColumn testID="m2-trends">
+        {header}
+        {offline}
+        {body}
+      </M2WideColumn>
+    );
+  }
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content} testID="m2-trends">
       {header}
-      {!online ? <View style={styles.gutter}><OfflineBanner message={t('m2v.offline')} /></View> : null}
+      {offline}
       {body}
     </ScrollView>
   );
 });
+
+/** Desktop: the test list beside the selected test; narrower (a tablet column), the list sits above it. */
+function WideSplit({ side, main }: { side: React.ReactNode; main: React.ReactNode }) {
+  const desktop = useM2Layout() === 'desktop';
+  return (
+    <View style={desktop ? styles.split : styles.stack} testID="m2-trends-split">
+      <View style={desktop ? styles.splitSide : null}>{side}</View>
+      <View style={[styles.stack, desktop ? styles.splitMain : null]}>{main}</View>
+    </View>
+  );
+}
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.canvas },
@@ -323,6 +370,13 @@ const styles = StyleSheet.create({
   grow: { flex: 1, minWidth: 0 },
   gutter: { paddingHorizontal: space.gutterPhone },
   header: { flexDirection: 'row', alignItems: 'center', gap: space.s12, paddingHorizontal: space.gutterPhone, paddingTop: space.s16 },
+  headerWide: { paddingHorizontal: 0 },
+  split: { flexDirection: 'row', alignItems: 'flex-start', gap: space.s24 },
+  splitSide: { width: size.webSidebar },
+  splitMain: { flex: 1, minWidth: 0 },
+  stack: { gap: space.s16 },
+  testList: { gap: space.s8 },
+  chipRow: { borderRadius: radius.lg, paddingVertical: space.s10 },
   eyebrow: { fontFamily: font.family.sans, fontSize: font.size.caption, fontWeight: fontWeight(font.weight.strong), color: color.text3 },
   title: { fontFamily: font.family.sans, fontSize: font.size.title, fontWeight: fontWeight(font.weight.heavy), letterSpacing: -0.5, color: color.text },
   bookmark: {
@@ -362,6 +416,7 @@ const styles = StyleSheet.create({
   segmentText: { fontFamily: font.family.sans, fontSize: font.size.bodySm, fontWeight: fontWeight(font.weight.heavy), color: color.text3 },
   segmentTextOn: { color: color.text },
   chart: { gap: space.s4 },
+  chartWide: { width: '100%', maxWidth: size.phoneFrameMax, alignSelf: 'center' },
   centre: { textAlign: 'center' },
   chartNone: { paddingVertical: space.s16, textAlign: 'center' },
   foot: { color: color.text2 },

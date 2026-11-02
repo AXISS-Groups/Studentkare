@@ -13,11 +13,11 @@ import { apiRequest } from '@/data/services/http';
  */
 
 export type RangeState = 'IN_RANGE' | 'ABOVE' | 'BELOW' | 'NO_RANGE';
-export const RANGE_STATES: readonly RangeState[] = ['IN_RANGE', 'ABOVE', 'BELOW', 'NO_RANGE'];
+const RANGE_STATES: readonly RangeState[] = ['IN_RANGE', 'ABOVE', 'BELOW', 'NO_RANGE'];
 /** LAB_REPORT: printed by a StudentKare lab with the released report. TYPED_FROM_REPORT: copied by the student. */
-export type RangeSource = 'LAB_REPORT' | 'TYPED_FROM_REPORT';
-export type ValueSource = 'LAB_RELEASED' | 'STUDENT_CONFIRMED';
-export type ValueStatus = 'DRAFT' | 'CONFIRMED';
+type RangeSource = 'LAB_REPORT' | 'TYPED_FROM_REPORT';
+type ValueSource = 'LAB_RELEASED' | 'STUDENT_CONFIRMED';
+type ValueStatus = 'DRAFT' | 'CONFIRMED';
 export type BodySystem =
   | 'HEART_BLOOD' | 'BLOOD_SUGAR' | 'VITAMINS' | 'THYROID' | 'KIDNEY' | 'LIVER' | 'BLOOD_COUNT' | 'OTHER';
 
@@ -49,7 +49,7 @@ export interface LabValue {
   confirmedAt: number | null;
 }
 
-export type RangeCounts = Record<RangeState, number>;
+type RangeCounts = Record<RangeState, number>;
 
 export interface LabReportGroup {
   key: string;

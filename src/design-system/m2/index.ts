@@ -18,6 +18,17 @@ export {
   m2Text, useLift, webAttrs,
 } from './M2Parts';
 export type { M2SearchFieldProps, PressState, SoftTileItem } from './M2Parts';
+export { SOFT_TILE_COLUMNS } from './M2Parts';
+export { M2EmptyState, M2ListRow, M2ProductCard } from './M2Blocks';
+export type { M2EmptyStateProps, M2ListRowProps, M2ProductCardProps } from './M2Blocks';
+export { M2HeaderSos, M2SosProvider, useM2Sos } from './m2Sos';
+export { GlossTile, HeroButton, M2HeroPanel, M2Note, M2Pill, M2StatCard } from './M2Surfaces';
+export type { M2HeroPanelProps, M2NoteTone, M2PillTone, M2StatCardProps } from './M2Surfaces';
+export { M2Table, M2Tabs, M2Timeline, M2TimerRing, m2TableText } from './M2Structure';
+export type { M2Tab, M2TableColumn, M2TimelineItem } from './M2Structure';
+export { isWide, layoutFor, M2Grid, m2Gutter, M2Responsive, M2WideColumn, useM2Layout } from './m2Layout';
+export { M2Screen } from './M2Screen';
+export type { M2GridProps, M2Layout } from './m2Layout';
 export { SERVICE_HUES, NAVY_STOPS, ORB_STOPS, heroStops, tileStops } from './servicePalette';
 export type { HueTokens, ServiceHue } from './servicePalette';
 export { M2ActiveProvider, floatTransform, useAmbientMotion, useAutoAdvance, useLoop, useOnScreen, usePageVisible } from './m2Motion';
@@ -25,3 +36,5 @@ export type { AutoAdvance } from './m2Motion';
 export { useOwnPhoneChrome } from '../navigation/BoardHeader';
 export { ProgressRing, clampRing } from './ProgressRing';
 export type { ProgressRingProps } from './ProgressRing';
+export { M2Callout, M2Countdown, M2EdgeCard, M2ListLine, M2PageHero, M2Tile3d, M2Timeline as M2ConsentTimeline, M2TimelineRow } from './M2Tier1';
+export type { CalloutTone, M2PageHeroProps, M2TimelineItem as M2ConsentTimelineItem, M2TimelineLabels, TileHue3d } from './M2Tier1';

@@ -25,7 +25,7 @@ export interface PointsSummary {
 }
 
 /** The fixed medal catalogue from backend/services/medals.py, in display order. */
-export const MEDAL_IDS = [
+const MEDAL_IDS = [
   'PROFILE_VERIFIED',
   'EMERGENCY_CARD_COMPLETE',
   'FIRST_HEALTH_CAMP',

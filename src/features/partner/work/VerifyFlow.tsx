@@ -49,7 +49,7 @@ type Reason = 'different' | 'unclear' | 'refused';
 const REASONS: Reason[] = ['different', 'unclear', 'refused'];
 
 /** Maps a status code to what the counter sees. Anything unexpected is an error: never a pass. */
-export function failureStep(error: unknown): VerifyStep {
+function failureStep(error: unknown): VerifyStep {
   const status = error instanceof ApiError ? error.status : 0;
   if (status === 410) return 'expired';
   if (status === 404) return 'notFound';

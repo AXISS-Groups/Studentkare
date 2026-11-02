@@ -1,6 +1,7 @@
 import React from 'react';
 import { useT } from '@/i18n';
-import { BrandLogo, Icon, Icon3d } from '@/design-system/icons';
+import { AnimatedIcon, BrandLogo, Icon, Icon3d } from '@/design-system/icons';
+import type { ServiceHue } from '@/design-system/m2';
 import type { SkIcon3dName } from '@/design-system/icons';
 import { TEMPLATES } from '../model/templates';
 import type { PostTemplate } from '../model/templates';
@@ -16,6 +17,8 @@ export interface PostCoverProps {
   size: 'hero' | 'card' | 'mini';
   /** The post's own heading: drawn inside the hero cover (as the page's h1). */
   children?: React.ReactNode;
+  /** A series' own cover style, in place of the template's hue. */
+  hue?: ServiceHue | null;
 }
 
 function isArt(template: PostTemplate, art: string | null): art is SkIcon3dName {
@@ -29,11 +32,12 @@ function isArt(template: PostTemplate, art: string | null): art is SkIcon3dName 
  * type and radius are tokens only (newsroom.css); nothing here is the author's.
  * The share image (backend services/newsroom_cover.py) draws the same cover.
  */
-export function PostCover({ template, art, alt, size, children }: PostCoverProps): React.ReactElement {
+export function PostCover({ template, art, alt, size, children, hue }: PostCoverProps): React.ReactElement {
   const t = useT();
   const spec = TEMPLATES[template];
+  const tone = hue ?? spec.hue;
   return (
-    <div className={`sk-news-cover sk-news-cover--${size}`} data-hue={spec.hue} data-template={template}>
+    <div className={`sk-news-cover sk-news-cover--${size}`} data-hue={tone} data-template={template}>
       <span className="sk-news-cover__ring" aria-hidden="true" />
       <span className="sk-news-cover__ring sk-news-cover__ring--small" aria-hidden="true" />
       {size !== 'hero' ? <span className="sk-news-cover__alt" role="img" aria-label={alt} /> : null}
@@ -44,6 +48,11 @@ export function PostCover({ template, art, alt, size, children }: PostCoverProps
           {t(spec.label)}
         </span>
       </div>
+      {size === 'hero' && spec.anim ? (
+        <span className="sk-news-cover__anim" aria-hidden="true">
+          <AnimatedIcon name={spec.anim} variant="3d" hue={tone} size="tile" />
+        </span>
+      ) : null}
       {isArt(template, art) ? (
         <span className="sk-news-cover__art" aria-hidden="true">
           <Icon3d name={art} size={size === 'hero' ? 120 : size === 'card' ? 84 : 40} />

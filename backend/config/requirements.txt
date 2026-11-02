@@ -10,6 +10,11 @@ uvicorn==0.52.4
 pydantic==2.13.5
 python-multipart==0.0.31
 httpx==0.28.1
+# HTTP/2 for httpx: Apple Wallet pass-update pushes go to APNs, which speaks only HTTP/2
+# (services/wallet_apple.py). hpack and hyperframe are its own dependencies.
+h2==4.2.0
+hpack==4.2.0
+hyperframe==6.1.0
 dnspython==2.8.0
 python-dotenv==1.2.2
 # Direct dependency: Fernet in services/twofa_store.py, services/erasure.py and

@@ -15,7 +15,7 @@ export { initialsOf } from '../shared/names';
 export type SlotKind = 'done' | 'next' | 'booked' | 'requested' | 'missed' | 'video' | 'chat' | 'person' | 'break' | 'open' | 'camp';
 
 /** Whether the student has shared records for this consult. */
-export type SlotSharing = 'shared' | 'not-shared';
+type SlotSharing = 'shared' | 'not-shared';
 
 export interface TodaySlot {
   id: string;
@@ -45,7 +45,7 @@ export interface WaitingItem {
   count: number | null;
 }
 
-export interface WaitingOnYou {
+interface WaitingOnYou {
   criticalResults: WaitingItem;
   reportsToSign: WaitingItem;
   followUps: WaitingItem;
@@ -76,7 +76,7 @@ export interface TodayData {
 
 const CONSULT_KINDS: ReadonlySet<SlotKind> = new Set(['done', 'next', 'booked', 'requested', 'missed', 'video', 'chat', 'person']);
 
-export function isConsult(slot: TodaySlot): boolean {
+function isConsult(slot: TodaySlot): boolean {
   return CONSULT_KINDS.has(slot.kind);
 }
 

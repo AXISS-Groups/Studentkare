@@ -39,7 +39,7 @@ export const PERMISSION_CHOICES: readonly PermissionChoice[] = [
   },
 ] as const;
 
-export const ALWAYS_ON = {
+const ALWAYS_ON = {
   title: 'Crisis alerts and SOS',
   detail:
     'Always on. Crisis alerts reach your counsellor and emergency contact even when ' +

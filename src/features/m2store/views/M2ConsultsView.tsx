@@ -6,6 +6,7 @@ import { CrisisLinks, ErrorState, Rise, Skeleton } from '@/design-system';
 import {
   Gradient, LiftCard, M2Card, M2Heading, M2SectionHead, M2_NAV_CLEARANCE, NotYetTile, RoundButton, SERVICE_HUES, SoftIcon, floatTransform, heroStops,
   m2Text, useAmbientMotion, useLift, useLoop, useOwnPhoneChrome,
+  M2HeaderSos, M2Grid, M2WideColumn,
 } from '@/design-system/m2';
 import type { PressState, ServiceHue } from '@/design-system/m2';
 import { color, focusRing, font, fontWeight, motion, radius, shadow, shadowStyle, size, space, webOnly } from '@/design-system/theme';
@@ -99,7 +100,7 @@ function nextLine(option: ConsultOption, t: ReturnType<typeof useT>): string {
   return isToday(at) ? t('m2.doc.freeAt', { time: clockLabel(at) }) : t('m2.doc.freeOn', { day: dayLabel(at, t), time: clockLabel(at) });
 }
 
-function DoctorCard({ option, index, onBook }: { option: ConsultOption; index: number; onBook: () => void }) {
+function DoctorCard({ option, index, onBook, wide = false }: { option: ConsultOption; index: number; onBook: () => void; wide?: boolean }) {
   const t = useT();
   const hue = SERVICE_HUES[AVATAR_HUES[index % AVATAR_HUES.length] ?? 'blue'];
   const who = option.service.brand || option.service.name;
@@ -108,7 +109,7 @@ function DoctorCard({ option, index, onBook }: { option: ConsultOption; index: n
   const lift = useLift();
   return (
     <Pressable role="link" accessibilityRole="link" accessibilityLabel={label} aria-label={label} onPress={onBook} testID={`m2-doc-${option.service.id}`}
-      style={(state: PressState) => [styles.doctor, lift(state)]}>
+      style={(state: PressState) => [styles.doctor, wide ? styles.doctorWide : null, lift(state)]}>
       <View style={styles.doctorTop}>
         <View style={[styles.docAvatar, { backgroundColor: hue.soft }]}><Text style={[styles.docInitials, { color: hue.ink }]}>{initials(who.replace(/^dr\.?\s+/i, ''))}</Text></View>
         <View style={styles.grow}>
@@ -127,7 +128,7 @@ function DoctorCard({ option, index, onBook }: { option: ConsultOption; index: n
   );
 }
 
-export const M2ConsultsView = observer(function M2ConsultsView({ vm, links }: { vm: ConsultsViewModel; links: M2ConsultsLinks }) {
+export const M2ConsultsView = observer(function M2ConsultsView({ vm, links, wide = false }: { vm: ConsultsViewModel; links: M2ConsultsLinks; /** Laid out wide in the desktop web shell (parity phase 2). */ wide?: boolean }) {
   const t = useT();
   useOwnPhoneChrome();
   const [chip, setChip] = useState<string | null>(null);
@@ -137,10 +138,12 @@ export const M2ConsultsView = observer(function M2ConsultsView({ vm, links }: { 
   const mind = CHIPS.find((c) => c.key === chip)?.mind === true;
   const plusPrice = getSetting('billing.student_plus.monthly_inr');
 
-  return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content} testID="m2-consults">
+  // Wide, the shell's page column gives the gutter.
+  const gutter = wide ? undefined : styles.gutter;
+  const board = (
+    <>
       <Rise>
-        <Gradient colors={heroStops('blue')} angle={160} style={styles.hero}>
+        <Gradient colors={heroStops('blue')} angle={160} style={[styles.hero, wide ? styles.heroWide : null]}>
           <View pointerEvents="none" style={styles.heroRing} />
           <View style={styles.heroHead}>
             <RoundButton icon="arrow-left" label={t('m2.backHome')} onPress={links.back} onHero testID="m2-doc-back" />
@@ -148,6 +151,7 @@ export const M2ConsultsView = observer(function M2ConsultsView({ vm, links }: { 
             {vm.openToday > 0 ? (
               <View style={styles.live} testID="m2-doc-open-today"><LiveDot /><Text style={styles.liveText}>{t(vm.openToday === 1 ? 'm2.doc.openTodayOne' : 'm2.doc.openToday', { count: vm.openToday })}</Text></View>
             ) : null}
+            <M2HeaderSos push />
           </View>
           <Wave />
           <M2Heading level={1} style={styles.heroTitle}>{t('m2.doc.title')}</M2Heading>
@@ -163,7 +167,7 @@ export const M2ConsultsView = observer(function M2ConsultsView({ vm, links }: { 
         </Gradient>
       </Rise>
 
-      <Rise index={1} style={[styles.gutter, styles.row3]}>
+      <Rise index={1} style={[gutter, styles.row3]}>
         <M2Card style={styles.feature} testID="m2-doc-video">
           <SoftIcon icon="video-2" hue="blue" tile={34} iconSize={18} />
           <Text style={m2Text.cardTitle}>{t('m2.doc.video')}</Text>
@@ -176,7 +180,7 @@ export const M2ConsultsView = observer(function M2ConsultsView({ vm, links }: { 
       </Rise>
 
       {links.plus ? (
-      <Rise index={2} style={styles.gutter}>
+      <Rise index={2} style={gutter}>
         <LiftCard label={`${t('m2.doc.plus')}. ${t('m2.doc.plusBody', { price: plusPrice })}`} onPress={links.plus} testID="m2-doc-plus" style={styles.plus}>
           <Gradient colors={[color.serviceIndigo, color.brandNavy]} style={styles.plusIcon}><Icon name="shield" size={20} color={color.onHero} strokeWidth={2.1} /></Gradient>
           <View style={styles.grow}>
@@ -188,7 +192,7 @@ export const M2ConsultsView = observer(function M2ConsultsView({ vm, links }: { 
       </Rise>
       ) : null}
 
-      <Rise index={3} style={styles.gutter}>
+      <Rise index={3} style={gutter}>
         <M2Heading style={m2Text.section}>{t('m2.doc.concerns')}</M2Heading>
         <Text style={[m2Text.meta, styles.concernSub]}>{t('m2.doc.concernsSub')}</Text>
         <View style={styles.chips}>
@@ -217,8 +221,8 @@ export const M2ConsultsView = observer(function M2ConsultsView({ vm, links }: { 
       </Rise>
 
       <Rise index={4}>
-        <View style={styles.gutter}><M2SectionHead title={t('m2.doc.doctors')} /></View>
-        <View style={styles.gutter}>
+        <View style={gutter}><M2SectionHead title={t('m2.doc.doctors')} /></View>
+        <View style={gutter}>
           {vm.phase === 'loading' ? <Skeleton label={t('m2.doc.loading')} lines={['100%', '80%']} /> : null}
           {vm.phase === 'error' ? <ErrorState title={t('m2.doc.failedTitle')} body={t('m2.doc.failedBody')} retryLabel={t('common.tryAgain')} onRetry={() => void vm.load()} /> : null}
           {vm.phase === 'ready' && vm.options.length === 0 ? (
@@ -228,14 +232,19 @@ export const M2ConsultsView = observer(function M2ConsultsView({ vm, links }: { 
             </View>
           ) : null}
         </View>
-        {vm.options.length > 0 ? (
+        {vm.options.length > 0 && wide ? (
+          <M2Grid columns={{ tablet: 2, desktop: 3 }} testID="m2-doc-rail">
+            {vm.options.map((o, i) => <DoctorCard key={o.service.id} option={o} index={i} wide onBook={() => links.book(o.service)} />)}
+          </M2Grid>
+        ) : null}
+        {vm.options.length > 0 && !wide ? (
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.rail} testID="m2-doc-rail">
             {vm.options.map((o, i) => <DoctorCard key={o.service.id} option={o} index={i} onBook={() => links.book(o.service)} />)}
           </ScrollView>
         ) : null}
       </Rise>
 
-      <Rise index={5} style={styles.gutter}>
+      <Rise index={5} style={gutter}>
         <M2Card style={styles.faq} testID="m2-doc-faq">
           <View style={styles.faqHead}><M2Heading style={m2Text.cardTitle}>{t('m2.doc.faq')}</M2Heading></View>
           {FAQ.map((f, i) => {
@@ -254,8 +263,10 @@ export const M2ConsultsView = observer(function M2ConsultsView({ vm, links }: { 
           })}
         </M2Card>
       </Rise>
-    </ScrollView>
+    </>
   );
+  if (wide) return <M2WideColumn testID="m2-consults">{board}</M2WideColumn>;
+  return <ScrollView style={styles.screen} contentContainerStyle={styles.content} testID="m2-consults">{board}</ScrollView>;
 });
 
 const styles = StyleSheet.create({
@@ -264,6 +275,7 @@ const styles = StyleSheet.create({
   content: { paddingBottom: M2_NAV_CLEARANCE, gap: space.s16, width: '100%', maxWidth: size.phoneFrameMax, alignSelf: 'center', overflow: 'hidden' },
   gutter: { paddingHorizontal: space.gutterPhone },
   grow: { flex: 1, minWidth: 0, gap: space.s2 },
+  heroWide: { borderRadius: 36, paddingHorizontal: space.s32 },
   hero: { paddingTop: space.s16, paddingHorizontal: space.gutterPhone, paddingBottom: space.s24, borderBottomLeftRadius: 36, borderBottomRightRadius: 36, overflow: 'hidden', gap: space.s6 },
   heroRing: { position: 'absolute', right: -70, top: 40, width: 230, height: 230, borderRadius: radius.full, borderWidth: 30, borderColor: color.onHeroRule },
   heroHead: { flexDirection: 'row', alignItems: 'center', gap: space.s12, marginBottom: space.s14 },
@@ -302,6 +314,7 @@ const styles = StyleSheet.create({
   mindRow: { flexDirection: 'row', gap: space.s10 },
   mindText: { flex: 1, fontFamily: font.family.sans, fontSize: font.size.bodySm, lineHeight: 19, fontWeight: fontWeight(font.weight.strong), color: color.positive },
   rail: { paddingHorizontal: space.gutterPhone, paddingBottom: space.s8, gap: space.s12 },
+  doctorWide: { width: 'auto', flexGrow: 1 },
   doctor: { width: 250, borderRadius: 26, padding: space.s16, gap: space.s10, backgroundColor: color.surface, ...shadowStyle(shadow.card) },
   doctorTop: { flexDirection: 'row', alignItems: 'center', gap: space.s12 },
   docAvatar: { width: 52, height: 52, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },

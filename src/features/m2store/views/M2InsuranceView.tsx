@@ -5,8 +5,9 @@ import { Icon } from '@/design-system/icons';
 import type { SkIconName } from '@/design-system/icons';
 import { Button, ErrorState, Rise, Skeleton, useReducedMotion } from '@/design-system';
 import {
-  Gradient, M2Card, M2Header, M2Heading, M2_NAV_CLEARANCE, NAVY_STOPS, NotYetTile, SoftIcon, SosButton, heroStops, m2Text, useAmbientMotion, useLift, useLoop,
+  Gradient, M2Card, M2Header, M2Heading, M2_NAV_CLEARANCE, NAVY_STOPS, NotYetTile, SoftIcon, heroStops, m2Text, useAmbientMotion, useLift, useLoop,
   useOwnPhoneChrome,
+  M2WideColumn,
 } from '@/design-system/m2';
 import type { PressState } from '@/design-system/m2';
 import { color, focusRing, font, fontWeight, motion, radius, shadow, shadowStyle, size, space, webOnly } from '@/design-system/theme';
@@ -164,23 +165,25 @@ function ActionTile({ icon, label, onPress, testID }: { icon: SkIconName; label:
   );
 }
 
-export const M2InsuranceView = observer(function M2InsuranceView({ vm, links }: { vm: InsuranceViewModel; links: M2InsuranceLinks }) {
+export const M2InsuranceView = observer(function M2InsuranceView({ vm, links, wide = false }: { vm: InsuranceViewModel; links: M2InsuranceLinks; /** Laid out wide in the desktop web shell (parity phase 2). */ wide?: boolean }) {
   const t = useT();
   useOwnPhoneChrome();
   const [sheet, setSheet] = useState<'policy' | 'claim' | null>(null);
   const hasPolicy = vm.policy !== null;
   const startClaim = () => setSheet(hasPolicy ? 'claim' : 'policy');
 
-  return (
+  // Wide, the shell's page column gives the gutter (parity phase 2).
+  const gutter = wide ? undefined : styles.gutter;
+  const board = (
     <>
-      <ScrollView style={styles.screen} contentContainerStyle={styles.content} testID="m2-insurance">
-        {Platform.OS === 'web' ? <View pointerEvents="none" style={styles.glow} /> : null}
+        {Platform.OS === 'web' && !wide ? <View pointerEvents="none" style={styles.glow} /> : null}
         <Rise>
           <M2Header backLabel={t('m2.backHome')} onBack={links.back} eyebrow={t('m2.ins.eyebrow')} title={t('m2.ins.title')} testID="m2-ins-header"
-            trailing={<SosButton label={t('m2.sos')} spoken={t('m2.sosSpoken')} onPress={links.sos} />} />
+            // Wide, the web shell's top bar carries SOS on every page.
+            sos={wide ? false : { label: t('m2.sos'), spoken: t('m2.sosSpoken'), onPress: links.sos }} />
         </Rise>
 
-        <Rise index={1} style={styles.gutter}>
+        <Rise index={1} style={gutter}>
           {vm.phase === 'loading' ? <Skeleton label={t('m2.ins.loading')} lines={['100%', '60%', '100%']} /> : null}
           {vm.phase === 'error' ? (
             <ErrorState title={t('m2.ins.failedTitle')} body={t('m2.ins.failedBody')} retryLabel={t('common.tryAgain')} onRetry={() => void vm.load()} />
@@ -196,14 +199,14 @@ export const M2InsuranceView = observer(function M2InsuranceView({ vm, links }: 
           ) : null}
         </Rise>
 
-        <Rise index={2} style={[styles.gutter, styles.row3]}>
+        <Rise index={2} style={[gutter, styles.row3]}>
           <ActionTile icon="plus" label={t('m2.ins.startClaim')} onPress={startClaim} testID="m2-ins-start-claim" />
           <NotYetTile icon="card-lines" title={t('m2.ins.eCard')} note={t('m2.notYet')} style={styles.notYet} testID="m2-ins-ecard" />
           <NotYetTile icon="home-2" title={t('m2.ins.network')} note={t('m2.notYet')} style={styles.notYet} testID="m2-ins-network" />
         </Rise>
 
         {vm.phase === 'ready' ? (
-          <Rise index={3} style={styles.gutter}>
+          <Rise index={3} style={gutter}>
             <M2Card style={styles.claims} testID="m2-ins-claims">
               <M2Heading style={styles.claimsHead}>{t('m2.ins.claims')}</M2Heading>
               {vm.claimsFailed ? (
@@ -223,7 +226,7 @@ export const M2InsuranceView = observer(function M2InsuranceView({ vm, links }: 
           </Rise>
         ) : null}
 
-        <Rise index={4} style={styles.gutter}>
+        <Rise index={4} style={gutter}>
           <M2Heading style={m2Text.section}>{t('m2.ins.moreCover')}</M2Heading>
           <Text style={[m2Text.meta, styles.coverSub]}>{t('m2.ins.moreCoverSub')}</Text>
           <View style={styles.row3}>
@@ -236,7 +239,13 @@ export const M2InsuranceView = observer(function M2InsuranceView({ vm, links }: 
             ))}
           </View>
         </Rise>
-      </ScrollView>
+    </>
+  );
+  return (
+    <>
+      {wide ? <M2WideColumn testID="m2-insurance">{board}</M2WideColumn> : (
+        <ScrollView style={styles.screen} contentContainerStyle={styles.content} testID="m2-insurance">{board}</ScrollView>
+      )}
       <PolicySheet vm={vm} visible={sheet === 'policy'} onClose={() => setSheet(null)} />
       <ClaimSheet vm={vm} visible={sheet === 'claim'} onClose={() => setSheet(null)} />
     </>

@@ -10,6 +10,7 @@ import time
 from datetime import date, timedelta
 
 import pytest
+from clock import platform_today
 from sqlalchemy import select
 from test_workflow_api import harness, login, register  # noqa: F401 — pytest fixtures
 
@@ -17,7 +18,7 @@ from core import rule_l
 from core import workflow_models as M
 from services import lab_results
 
-TODAY = date.today()
+TODAY = platform_today()
 
 
 def staff(factory, account_id, role):

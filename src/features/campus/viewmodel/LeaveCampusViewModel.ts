@@ -4,10 +4,10 @@ import { apiRequest, ApiError } from '@/data/services/http';
 import type { ViewModel } from '@/core/store/ViewModel';
 
 export type DepartureReason = 'GRADUATING' | 'TRANSFERRING' | 'PAUSING';
-export type DepartureStatus = 'SCHEDULED' | 'COMPLETED' | 'CANCELLED';
+type DepartureStatus = 'SCHEDULED' | 'COMPLETED' | 'CANCELLED';
 
 /** GET /api/campus/departure (backend/services/campus_departure.py). */
-export interface Departure {
+interface Departure {
   id: string;
   university: string;
   reason: DepartureReason;

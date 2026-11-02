@@ -11,13 +11,13 @@ import { ApiError, apiRequest } from './http';
  */
 
 /** What the server accepts. It reads the type from the file's bytes, so this is a hint for pickers, not a check. */
-export const PRESCRIPTION_ACCEPT = [
+const PRESCRIPTION_ACCEPT = [
   'image/jpeg', 'image/png', 'image/heic', 'image/heif', 'image/webp', 'application/pdf', 'image/tiff',
 ] as const;
-export type PrescriptionMimeType = (typeof PRESCRIPTION_ACCEPT)[number];
-export const PRESCRIPTION_MAX_BYTES = 10 * 1024 * 1024;
+type PrescriptionMimeType = (typeof PRESCRIPTION_ACCEPT)[number];
+const PRESCRIPTION_MAX_BYTES = 10 * 1024 * 1024;
 
-export type RxUploadReviewStatus = 'PENDING' | 'RX_VERIFIED' | 'REJECTED' | 'WITHDRAWN';
+type RxUploadReviewStatus = 'PENDING' | 'RX_VERIFIED' | 'REJECTED' | 'WITHDRAWN';
 
 export interface PharmacyOption {
   id: string;
@@ -45,12 +45,12 @@ export interface PrescriptionReview {
   sentAt: number;
 }
 
-export interface PrescriptionUpload extends StoredPrescription {
+interface PrescriptionUpload extends StoredPrescription {
   reviews: PrescriptionReview[];
 }
 
 /** One uploaded prescription in a pharmacist's queue: no student details, file name or title. */
-export interface RxUploadQueueItem {
+interface RxUploadQueueItem {
   reviewId: string;
   receivedAt: number;
   mimeType: PrescriptionMimeType;
@@ -100,7 +100,7 @@ export function uploadPrescription(file: PrescriptionFile, title = 'Prescription
   return apiRequest('/health/prescription-uploads', { method: 'POST', body: form });
 }
 
-export function listPrescriptionUploads(): Promise<{ items: PrescriptionUpload[]; total: number }> {
+function listPrescriptionUploads(): Promise<{ items: PrescriptionUpload[]; total: number }> {
   return apiRequest('/health/prescription-uploads');
 }
 
@@ -128,7 +128,7 @@ export function approveRxUpload(reviewId: string, pharmacistName: string, checks
   });
 }
 
-export function rejectRxUpload(reviewId: string, reason: string): Promise<RxUploadOutcome> {
+function rejectRxUpload(reviewId: string, reason: string): Promise<RxUploadOutcome> {
   return apiRequest(`/v1/pharmacy/rx-uploads/${enc(reviewId)}/reject`, {
     method: 'POST', body: JSON.stringify({ reason }),
   });

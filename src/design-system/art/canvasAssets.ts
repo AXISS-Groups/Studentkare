@@ -12,6 +12,7 @@
 import clinicianVaccine from '@/assets/a-clinician-giving-a-vaccine-fe143c.png';
 import doctorOnScreen from '@/assets/a-doctor-on-a-screen-82be0f.png';
 import smallClinic from '@/assets/a-small-clinic-building-care-close-to-yo-a054b1.png';
+import image31444f from '@/assets/image-31444f.png';
 import image420a70 from '@/assets/image-420a70.png';
 import image44bf33 from '@/assets/image-44bf33.jpg';
 import image5aff5e from '@/assets/image-5aff5e.png';
@@ -34,6 +35,7 @@ export const canvasImages = {
   'a-clinician-giving-a-vaccine-fe143c.png': clinicianVaccine,
   'a-doctor-on-a-screen-82be0f.png': doctorOnScreen,
   'a-small-clinic-building-care-close-to-yo-a054b1.png': smallClinic,
+  'image-31444f.png': image31444f,
   'image-420a70.png': image420a70,
   'image-44bf33.jpg': image44bf33,
   'image-5aff5e.png': image5aff5e,

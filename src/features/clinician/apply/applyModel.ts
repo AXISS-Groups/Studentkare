@@ -10,7 +10,7 @@
  */
 import type { MessageKey } from '@/i18n';
 
-export interface ApplyOption {
+interface ApplyOption {
   id: string;
   label: MessageKey;
 }
@@ -123,7 +123,7 @@ export interface UploadedFile {
 export type ApplyValue = string | string[] | boolean | UploadedFile;
 export type ApplyValues = Record<string, ApplyValue | undefined>;
 
-export const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
+const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
 const UPLOAD_TYPES = /^(application\/pdf|image\/(jpeg|png|heic|heif|webp))$/;
 const MIN_TEXT = 2;
 

@@ -30,7 +30,7 @@ export function StatusPill({ tone, children, small, dot, className }: StatusPill
 
 /* -------------------------------------------------------------------- Button */
 
-export type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'on-hero';
+type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'on-hero';
 
 export interface SkButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'type'> {
   variant?: ButtonVariant;
@@ -120,7 +120,7 @@ export function Skeleton({ width = '100%', height, className }: { width?: number
 
 /* --------------------------------------------------------------- State views */
 
-export interface EmptyStateViewProps {
+interface EmptyStateViewProps {
   title: string;
   body: string;
   action?: { label: string; onClick: () => void };
@@ -145,7 +145,7 @@ export function EmptyStateView({ title, body, action, illustration = '/illustrat
   );
 }
 
-export interface ErrorStateViewProps {
+interface ErrorStateViewProps {
   title: string;
   body?: string;
   onRetry: () => void;

@@ -12,7 +12,7 @@ import { navigate } from '@/lib/utils/workflowRouting';
 import { useBoardLoad, useBoardRef } from './boardKit';
 import './campus-boards.css';
 
-export type CertificateStatus = 'TO_CHECK' | 'CHECK_FAILED' | 'ACCEPTED' | 'RETURNED';
+type CertificateStatus = 'TO_CHECK' | 'CHECK_FAILED' | 'ACCEPTED' | 'RETURNED';
 
 /** What a campus may see of a medical certificate: validity, never the diagnosis. */
 export interface CampusCertificate {
@@ -26,7 +26,7 @@ export interface CampusCertificate {
   checks: Array<{ label: string; passed: boolean }>;
 }
 
-export type CertificateDecision = 'ACCEPT' | 'RETURN';
+type CertificateDecision = 'ACCEPT' | 'RETURN';
 
 export interface CertificatesSource {
   /** `unconnected`: no certificate endpoint exists to read from. */
@@ -38,7 +38,7 @@ export interface CertificatesSource {
  * No endpoint receives or checks medical certificates yet, so the live source
  * says so; the board then shows its layout as "not connected" and never a row.
  */
-export const liveCertificatesSource: CertificatesSource = {
+const liveCertificatesSource: CertificatesSource = {
   load: async () => 'unconnected',
   decide: async () => { throw new Error('Certificate decisions are not connected.'); },
 };

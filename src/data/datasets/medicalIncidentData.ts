@@ -25,7 +25,7 @@
  */
 
 export type MedicalSeverity = 'CRITICAL_1' | 'URGENT_2' | 'MODERATE_3' | 'ROUTINE_4';
-export type IncidentCategory =
+type IncidentCategory =
   | 'FOOD_POISONING'
   | 'INJURY_ACCIDENT'
   | 'ALLERGIC_REACTION'
@@ -33,7 +33,7 @@ export type IncidentCategory =
   | 'RESPIRATORY_DISTRESS'
   | 'MENTAL_HEALTH_DISTRESS';
 
-export type IncidentStatus = 'REPORTED' | 'TRIAGED_BY_DOCTOR' | 'AMBULANCE_DISPATCHED' | 'RESOLVED';
+type IncidentStatus = 'REPORTED' | 'TRIAGED_BY_DOCTOR' | 'AMBULANCE_DISPATCHED' | 'RESOLVED';
 
 export interface MedicalIncident {
   id: string;

@@ -2,7 +2,7 @@ import type { SkColorRole } from '../../theme/tokens/generated/skTokens';
 
 export type ProductCategory = 'vitamins' | 'skin' | 'diabetes' | 'devices' | 'nutrition' | 'first-aid' | 'ayurveda' | 'medicines' | 'labs' | 'heart' | 'stomach' | 'liver' | 'bone-joint' | 'kidney' | 'respiratory' | 'eye' | 'vaccines';
 export type CatalogSort = 'featured' | 'price-low' | 'price-high' | 'rating' | 'discount';
-export type ArtworkShape = 'bottle' | 'tube' | 'box' | 'device' | 'jar' | 'lab';
+type ArtworkShape = 'bottle' | 'tube' | 'box' | 'device' | 'jar' | 'lab';
 /**
  * Decorative product/category art colour as a token NAME (art-tint-1…8,
  * DESIGN.md §3), never a value: the view resolves it with `color[tint]` from

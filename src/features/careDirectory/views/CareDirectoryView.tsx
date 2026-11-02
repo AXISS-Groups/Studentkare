@@ -177,7 +177,7 @@ const Results = observer(function Results({ vm, links, wide }: { vm: CareDirecto
   );
 });
 
-export const CareDirectoryView = observer(function CareDirectoryView({ vm, links, wide = false }: { vm: CareDirectoryViewModel; links: FindCareLinks; wide?: boolean }) {
+const CareDirectoryView = observer(function CareDirectoryView({ vm, links, wide = false }: { vm: CareDirectoryViewModel; links: FindCareLinks; wide?: boolean }) {
   const t = useT();
   useOwnPhoneChrome();
   const placeTab = vm.segment !== 'doctors';

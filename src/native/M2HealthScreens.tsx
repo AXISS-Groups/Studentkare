@@ -9,7 +9,7 @@ import { M2ActiveProvider } from '@/design-system/m2';
 import { color, font, fontWeight, radius, space } from '@/design-system/theme';
 import { useApiResource } from '@/hooks/api/useApiResource';
 import { useT } from '@/i18n';
-import { useCheckoutViewModel } from '@/modules/m16-checkout';
+import { useCheckoutViewModel } from '@/features/shopPhone/viewmodel/useCheckoutViewModel';
 import { InsightsViewModel } from '@/features/insights/viewmodel/InsightsViewModel';
 import { M2InsightsView } from '@/features/insights/views/M2InsightsView';
 import { ProfileViewModel } from '@/features/m2profile/viewmodel/ProfileViewModel';
@@ -88,7 +88,6 @@ export function InsightsScreen(): React.ReactElement {
   return (
     <Frame>
       <M2InsightsView vm={vm} name={user?.fullName ?? ''} stepsOnPhone links={{
-        sos: () => navigate('Emergency'),
         trends: () => navigate('Trends'),
         records: () => navigate('Vault'),
         reportUpload: () => navigate('ReportUpload'),
@@ -98,8 +97,8 @@ export function InsightsScreen(): React.ReactElement {
         addVaccineCard: () => navigate('CaptureRecord'),
         appointments: () => navigate('Appointments'),
         steps: () => navigate('Steps'),
-        emergencyCard: () => navigate('Emergency'),
-        pass: () => navigate('DigitalId'),
+        emergencyCard: () => navigate('EmergencyCard'),
+        pass: () => navigate('Pass'),
       }} />
     </Frame>
   );
@@ -133,14 +132,13 @@ export function ProfileScreen(): React.ReactElement {
   return (
     <Frame>
       <M2ProfileView vm={vm} links={{
-        sos: () => navigate('Emergency'),
         settings: () => navigate('More'),
-        emergencyCard: () => navigate('Emergency'),
-        pass: () => navigate('DigitalId'),
+        emergencyCard: () => navigate('EmergencyCard'),
+        pass: () => navigate('Pass'),
         documents: () => navigate('Vault'),
         addDocument: () => navigate('ReportUpload'),
         orders: () => navigate('Orders'),
-        privacy: () => navigate('DeleteAccount'),
+        privacy: () => navigate('Privacy'),
         signOut: () => setConfirm(true),
       }} />
       <Sheet visible={confirm} title={t('shell.logoutTitle')} onClose={() => setConfirm(false)} busy={busy}>
@@ -161,7 +159,7 @@ export function AskAyushScreen(): React.ReactElement {
   return (
     <Frame>
       <KeyboardAvoidingView style={styles.frame} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <M2AskAyushView vm={vm} links={{ back, sos: () => navigate('Emergency'), book: () => navigate('Consults') }} />
+        <M2AskAyushView vm={vm} links={{ back, book: () => navigate('Consults') }} />
       </KeyboardAvoidingView>
     </Frame>
   );

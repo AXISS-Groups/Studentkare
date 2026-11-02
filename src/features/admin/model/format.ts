@@ -43,7 +43,7 @@ export const safetyEventState = (event: OpsFeedEvent): { label: 'Open' | 'Acknow
 export const clockTime = (seconds: number) => new Date(seconds * 1000).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: false });
 
 /** Dot tone for a feed event's severity. */
-export const SEVERITY_TONE: Record<OpsSeverity, 'danger' | 'attention' | 'info'> = { CRITICAL: 'danger', ATTENTION: 'attention', INFO: 'info' };
+const SEVERITY_TONE: Record<OpsSeverity, 'danger' | 'attention' | 'info'> = { CRITICAL: 'danger', ATTENTION: 'attention', INFO: 'info' };
 
 /** One line on service health, worked out from the probes — never asserted. */
 export function describeServices(checks: IntegrationCheck[]): string {

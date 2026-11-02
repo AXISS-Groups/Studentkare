@@ -37,7 +37,7 @@ const CHANNELS: Readonly<Record<AuthChannel, { label: MessageKey; icon: SkIconNa
 };
 
 /** EN / తె / हि on the navy: the white pill is the selected one (DESIGN.md §3). */
-export function LanguagePills(): React.ReactElement {
+function LanguagePills(): React.ReactElement {
   const t = useT();
   const { lang, setLang } = useLanguage();
   return (
@@ -85,7 +85,7 @@ export interface AuthNativeFrameProps {
 }
 
 /** EXPO_PUBLIC_SITE_URL when it is a web address; otherwise the caller's own landing screen. */
-export function openPublicHome(fallback: () => void): void {
+function openPublicHome(fallback: () => void): void {
   const url = publicHomeUrl();
   if (/^https?:\/\//.test(url)) void Linking.openURL(url);
   else fallback();

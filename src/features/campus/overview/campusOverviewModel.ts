@@ -26,7 +26,7 @@ export interface CampusOverviewInput {
   sos: Part<OpenSosAlert[]>;
 }
 
-export type OverviewTone = 'positive' | 'attention' | 'danger' | 'action' | 'neutral';
+type OverviewTone = 'positive' | 'attention' | 'danger' | 'action' | 'neutral';
 
 export interface Phrase { key: MessageKey; vars?: Record<string, string | number> }
 

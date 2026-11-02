@@ -51,7 +51,7 @@ export function reminderTimes(plan: WaterReminderPlan, max: number): ClockTime[]
   return out;
 }
 
-export function defaultWaterPlan(): WaterReminderPlan {
+function defaultWaterPlan(): WaterReminderPlan {
   return {
     intervalMinutes: getSetting('wellness.water_reminder_interval_minutes_default'),
     startHour: getSetting('wellness.water_reminder_start_hour_default'),

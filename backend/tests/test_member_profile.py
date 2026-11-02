@@ -1,6 +1,6 @@
 """Persistent member editing and revocable, minimum-disclosure identity cards."""
 import time
-from datetime import date
+from datetime import date, datetime, timezone
 
 import pytest
 
@@ -47,7 +47,7 @@ def test_an_adult_cannot_edit_their_way_into_being_a_minor(harness):
     """
     client, factory, codes = harness
     user, headers = register(client, codes)
-    today = date.today()
+    today = datetime.now(timezone.utc).date()  # the 18+ check counts in UTC (workflow_auth.age_in_years)
     child = date(today.year - 10, today.month, today.day).isoformat()
 
     response = client.patch("/api/profile", headers=headers, json={"dob": child})
@@ -60,7 +60,7 @@ def test_an_adult_cannot_edit_their_way_into_being_a_minor(harness):
 def test_an_adult_may_still_correct_their_birth_date(harness):
     client, factory, codes = harness
     user, headers = register(client, codes)
-    today = date.today()
+    today = datetime.now(timezone.utc).date()  # the 18+ check counts in UTC (workflow_auth.age_in_years)
     adult = date(today.year - 24, today.month, today.day).isoformat()
 
     assert client.patch("/api/profile", headers=headers, json={"dob": adult}).status_code == 200

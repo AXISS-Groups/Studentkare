@@ -1,7 +1,7 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 import type { Page, VaccineOffering } from './models';
 
-export interface VaccineFilters { query: string; pincode: string; provider: string; offset: number; limit: number }
+interface VaccineFilters { query: string; pincode: string; provider: string; offset: number; limit: number }
 export type ListVaccines = (filters: VaccineFilters) => Promise<Page<VaccineOffering>>;
 
 /** Shared by native and web; networking is injected at the platform boundary. */

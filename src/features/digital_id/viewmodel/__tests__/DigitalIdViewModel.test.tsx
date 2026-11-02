@@ -49,7 +49,8 @@ describe('DigitalIdViewModel on /identity', () => {
     vm.askRevoke();
     await vm.revoke();
     expect(vm.identity?.issued).toBe(true);
-    expect(vm.error).toMatch(/still works/);
+    // The view says it (i18n `id.revokeFailed`: "Your QR wasn’t revoked. It still works — try again.").
+    expect(vm.error).toBe('revoke');
   });
 
   it('asks for the next code when this one expires, and hides it if that fails', async () => {

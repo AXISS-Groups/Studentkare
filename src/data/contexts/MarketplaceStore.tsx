@@ -4,7 +4,7 @@ import { CartAction, CartState, cartReducer, emptyCart } from '../datasets/marke
 const CartContext = createContext<CartState | null>(null);
 const CartDispatchContext = createContext<Dispatch<CartAction> | null>(null);
 
-export function MarketplaceProvider({ children }: { children: ReactNode }) {
+function MarketplaceProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(cartReducer, emptyCart);
   return <CartContext.Provider value={state}>
     <CartDispatchContext.Provider value={dispatch}>{children}</CartDispatchContext.Provider>

@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Button, ErrorState, Note, Sheet, Skeleton } from '@/design-system';
-import { BoardCard, BoardScreen, BoardSection, Pill, boardText } from '@/design-system/board/BoardKit';
-import { BoardHeader } from '@/design-system/navigation/BoardHeader';
-import { space } from '@/design-system/theme';
+import { BoardArt, BoardScreen, Pill } from '@/design-system/board/BoardKit';
+import { M2Card, M2Grid, M2Header, M2Heading, M2PageHero, M2SectionHead, M2Tile3d, M2WideColumn, m2Text, useM2Layout } from '@/design-system/m2';
+import { color, font, fontWeight, space } from '@/design-system/theme';
 import { apiRequest } from '@/data/services/http';
 import type { RecordShare } from '@/data/types/workflowTypes';
 import { useApiResource } from '@/hooks/api/useApiResource';
@@ -25,16 +25,19 @@ export function daysLeft(expiresAt: number, nowSeconds: number): number {
 
 /**
  * Consent inbox (canvas page 2: ConsentInbox, Tier 1 — approved by Krishna
- * Chintakayala, 2026-10-21). "Active now" is the student's real clinician
- * shares (GET /records/shares) with what they cover and when they end, and
- * "Revoke now" withdraws one at once (POST /records/shares/{id}/revoke).
+ * Chintakayala, 2026-10-21; Tier 1 look T1ConsentInbox / T1ConsentInboxDesktop
+ * / T1ConsentInboxConfirm, approved 2026-10-24, plan tier1-parity-2026-10-24
+ * §15). "Active now" is the student's real clinician shares (GET
+ * /records/shares) with what they cover and when they end, and "Revoke now"
+ * withdraws one at once (POST /records/shares/{id}/revoke) behind the same
+ * confirm, which names the clinician and the document.
  *
  * Not drawn (D6-13): requests awaiting a decision (no access-request API, so
  * "Awaiting you" says nothing can ask yet), lab "until done" grants and family
  * grants (no API). The campus row is a fixed fact: the campus sees enrolment
- * status, never records.
+ * status, never records. The hero art is the canvas picture `image-420a70.png`.
  */
-export function ConsentInboxBoard({ links, embedded = false }: { links: ConsentInboxLinks; embedded?: boolean }): React.ReactElement {
+export function ConsentInboxBoard({ links, embedded = false, wide = false }: { links: ConsentInboxLinks; embedded?: boolean; wide?: boolean }): React.ReactElement {
   const t = useT();
   const shares = useApiResource<{ items: RecordShare[] }>('/records/shares');
   const [asking, setAsking] = useState<RecordShare | null>(null);
@@ -54,71 +57,106 @@ export function ConsentInboxBoard({ links, embedded = false }: { links: ConsentI
       .finally(() => setRevoking(false));
   };
 
-  return (
-    <BoardScreen testID="consent-inbox">
-      {embedded ? null : <BoardHeader title={t('sf.consent.header')} backIcon="arrow-left" backLabel={t('common.back')} onBack={links.back} />}
-      <View style={styles.intro}>
-        <Text accessibilityRole="header" style={boardText.title}>{t('sf.consent.title')}</Text>
-        <Text style={boardText.body}>{t('sf.consent.intro')}</Text>
-      </View>
+  const awaiting = (
+    <View style={styles.section}>
+      <M2SectionHead title={t('sf.consent.awaiting')} />
+      <M2Card style={styles.card} testID="consent-awaiting-empty">
+        <View style={styles.row}>
+          <M2Tile3d icon="rows-split" hue="indigo" />
+          <Text style={[m2Text.body, styles.grow]}>{t('access.noRequests')}</Text>
+        </View>
+      </M2Card>
+      <M2Card style={styles.card}>
+        <View style={styles.row}>
+          <M2Tile3d icon="clock" hue="indigo" />
+          <Text style={[m2Text.body, styles.grow]}>{t('sf.consent.footnote')}</Text>
+        </View>
+      </M2Card>
+    </View>
+  );
 
-      <BoardSection label={t('sf.consent.awaiting')}>
-        <BoardCard testID="consent-awaiting-empty"><Text style={boardText.body}>{t('access.noRequests')}</Text></BoardCard>
-      </BoardSection>
-
-      <BoardSection label={t('sf.consent.active')}>
-        {shares.loading && !shares.data ? <Skeleton label={t('sf.consent.loading')} lines={['80%', '60%']} /> : null}
-        {shares.error && !shares.data ? <ErrorState title={t('sf.consent.failedTitle')} body={t('sf.consent.failedBody')} retryLabel={t('common.tryAgain')} onRetry={shares.reload} /> : null}
-        {failed && !asking ? <Note tone="danger">{t('sf.consent.revokeFailed')}</Note> : null}
-        {revoked ? <Note tone="positive">{t('sf.consent.revoked')}</Note> : null}
-        {shares.data && !active.length ? (
-          <BoardCard testID="consent-none">
-            <Text style={boardText.body}>{t('sf.consent.none')}</Text>
-            <Button label={t('access.openRecords')} variant="secondary" fullWidth onPress={links.records} />
-          </BoardCard>
-        ) : null}
-        {active.map((share) => {
-          const left = daysLeft(share.expiresAt, now);
-          return (
-            <BoardCard key={share.id} testID={`consent-share-${share.id}`}>
-              <View style={styles.head}>
-                <Text style={[boardText.strong, styles.flex]}>{share.clinician}</Text>
-                <Pill label={t('sf.consent.activePill')} tone="positive" />
+  const activeNow = (
+    <View style={styles.section}>
+      <M2SectionHead title={t('sf.consent.active')} />
+      {shares.loading && !shares.data ? <Skeleton label={t('sf.consent.loading')} lines={['80%', '60%']} /> : null}
+      {shares.error && !shares.data ? <ErrorState title={t('sf.consent.failedTitle')} body={t('sf.consent.failedBody')} retryLabel={t('common.tryAgain')} onRetry={shares.reload} /> : null}
+      {failed && !asking ? <Note tone="danger">{t('sf.consent.revokeFailed')}</Note> : null}
+      {revoked ? <Note tone="positive">{t('sf.consent.revoked')}</Note> : null}
+      {shares.data && !active.length ? (
+        <M2Card style={styles.card} testID="consent-none">
+          <Text style={m2Text.body}>{t('sf.consent.none')}</Text>
+          <Button label={t('access.openRecords')} variant="secondary" fullWidth onPress={links.records} />
+        </M2Card>
+      ) : null}
+      {active.map((share) => {
+        const left = daysLeft(share.expiresAt, now);
+        return (
+          <M2Card key={share.id} style={styles.card} testID={`consent-share-${share.id}`}>
+            <View style={styles.row}>
+              <M2Tile3d icon="stetho" hue="indigo" />
+              <View style={styles.grow}>
+                <M2Heading style={m2Text.cardTitle}>{share.clinician}</M2Heading>
+                <Text style={m2Text.body}>{t('sf.consent.what', { document: share.document })}</Text>
+                <Text style={styles.until}>{t('sf.consent.expires', { date: shortDate(share.expiresAt), days: left })}</Text>
               </View>
-              <Text style={boardText.body}>{t('sf.consent.what', { document: share.document })}</Text>
-              <Text style={boardText.meta}>{t('sf.consent.expires', { date: shortDate(share.expiresAt), days: left })}</Text>
-              <Button label={t('sf.consent.revoke')} variant="secondary" fullWidth onPress={() => { setFailed(false); setAsking(share); }}
+              <Pill label={t('sf.consent.activePill')} tone="positive" />
+            </View>
+            <View style={styles.actions}>
+              <Button label={t('sf.consent.revoke')} variant="dangerOutline" onPress={() => { setFailed(false); setAsking(share); }}
                 accessibilityLabel={t('sf.consent.revokeLabel', { name: share.clinician, document: share.document })} testID={`consent-revoke-${share.id}`} />
-            </BoardCard>
-          );
-        })}
-        <BoardCard testID="consent-campus">
-          <View style={styles.head}>
-            <Text style={[boardText.strong, styles.flex]}>{t('sf.consent.campus')}</Text>
-            <Pill label={t('sf.consent.required')} tone="neutral" />
+            </View>
+          </M2Card>
+        );
+      })}
+      <M2Card style={styles.card} testID="consent-campus">
+        <View style={styles.row}>
+          <M2Tile3d icon="graduation-cap" hue="amber" />
+          <View style={styles.grow}>
+            <M2Heading style={m2Text.cardTitle}>{t('sf.consent.campus')}</M2Heading>
+            <Text style={m2Text.body}>{t('sf.consent.campusWhat')}</Text>
+            <Text style={m2Text.meta}>{t('sf.consent.campusMeta')}</Text>
           </View>
-          <Text style={boardText.body}>{t('sf.consent.campusWhat')}</Text>
-          <Text style={boardText.meta}>{t('sf.consent.campusMeta')}</Text>
-        </BoardCard>
-      </BoardSection>
+          <Pill label={t('sf.consent.required')} tone="neutral" />
+        </View>
+      </M2Card>
+    </View>
+  );
 
-      <Text style={boardText.meta}>{t('sf.consent.footnote')}</Text>
-
+  const content = (
+    <>
+      {embedded ? null : <M2Header backLabel={t('common.back')} onBack={links.back} title={t('sf.consent.header')} testID="consent-header" />}
+      <M2PageHero hue="indigo" icon="eye" eyebrow={t('sf.consent.header')} title={t('sf.consent.title')} body={t('sf.consent.intro')} testID="consent-hero"
+        art={<BoardArt name="image-420a70.png" width={200} height={130} />} artOnPhone={false} />
+      <Wide activeNow={activeNow} awaiting={awaiting} />
       <Sheet visible={asking !== null} title={t('sf.consent.confirmTitle', { name: asking?.clinician ?? '' })} onClose={() => setAsking(null)} busy={revoking} testID="consent-sheet">
         <View style={styles.sheet}>
-          <Text style={boardText.body}>{t('sf.consent.confirmBody', { document: asking?.document ?? '' })}</Text>
+          <View style={styles.sheetArt}><M2Tile3d icon="eye-off" hue="danger" size={52} /></View>
+          <Text style={m2Text.body}>{t('sf.consent.confirmBody', { document: asking?.document ?? '' })}</Text>
           {failed ? <Note tone="danger">{t('sf.consent.revokeFailed')}</Note> : null}
-          <Button label={t('sf.consent.revoke')} size="cta" fullWidth busy={revoking} onPress={revoke} testID="consent-revoke-confirm" />
-          <Button label={t('sf.consent.keep')} variant="secondary" fullWidth onPress={() => setAsking(null)} />
+          <Button label={t('sf.consent.keep')} variant="secondary" size="cta" fullWidth onPress={() => setAsking(null)} />
+          <Button label={t('sf.consent.revoke')} variant="danger" size="cta" fullWidth busy={revoking} onPress={revoke} testID="consent-revoke-confirm" />
         </View>
       </Sheet>
-    </BoardScreen>
+    </>
   );
+  if (wide) return <M2WideColumn testID="consent-inbox">{content}</M2WideColumn>;
+  return <BoardScreen testID="consent-inbox">{content}</BoardScreen>;
+}
+
+/** Phone: awaiting first, then active (the board's order). Desktop: active left, awaiting right. */
+function Wide({ activeNow, awaiting }: { activeNow: React.ReactNode; awaiting: React.ReactNode }) {
+  const desktop = useM2Layout() === 'desktop';
+  if (!desktop) return <>{awaiting}{activeNow}</>;
+  return <M2Grid columns={{ desktop: 2 }}>{activeNow}{awaiting}</M2Grid>;
 }
 
 const styles = StyleSheet.create({
-  flex: { flex: 1, minWidth: 0 },
-  intro: { gap: space.s8 },
-  head: { flexDirection: 'row', alignItems: 'center', gap: space.s8 },
+  grow: { flex: 1, minWidth: 0, gap: space.s2 },
+  section: { gap: space.s12 },
+  card: { padding: space.s16, gap: space.s12 },
+  row: { flexDirection: 'row', alignItems: 'flex-start', gap: space.s12 },
+  until: { fontFamily: font.family.sans, fontSize: font.size.caption, fontWeight: fontWeight(font.weight.heavy), color: color.attention },
+  actions: { flexDirection: 'row', justifyContent: 'flex-end' },
   sheet: { gap: space.s12 },
+  sheetArt: { alignItems: 'flex-start' },
 });

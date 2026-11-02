@@ -87,6 +87,7 @@ from services.member_profile_api import router as member_profile_router
 from services.named_super_admins import router as named_super_admins_router
 from services.newsroom import router as newsroom_router
 from services.newsroom_autopilot import router as newsroom_autopilot_router
+from services.newsroom_content import router as newsroom_content_router
 from services.otp_delivery import available_channels, whatsapp_status
 from services.preventive_care import router as preventive_router
 from services.push_api import router as push_router
@@ -100,6 +101,7 @@ from services.student_invites import router as student_invites_router
 from services.student_passcode import router as student_passcode_router
 from services.student_requests import router as student_requests_router
 from services.team_accounts import router as team_accounts_router
+from services.wallet_passes import router as wallet_passes_router
 from services.wellness_api import router as wellness_router
 from services.workflow_api import router as workflow_router
 from services.workflow_auth import allowed_origins, require_super_admin, workflow_db
@@ -150,6 +152,9 @@ async def lifespan(app):
         from services.workflow_scheduler import ensure_scheduled_jobs, workflow_scheduler
         with _SL() as db:
             ensure_scheduled_jobs(db)
+            from services.newsroom_content import ensure_defaults as _newsroom_defaults
+            _newsroom_defaults(db)   # the default categories and the built-in series, once
+            db.commit()
             results = workflow_scheduler.run_due_jobs(db)
             if results:
                 print(f"[SCHEDULER] Ran due jobs: {results}", flush=True)
@@ -378,6 +383,7 @@ app.include_router(medicine_master_router)
 app.include_router(medicine_info_router)
 app.include_router(newsroom_router)
 app.include_router(newsroom_autopilot_router)
+app.include_router(newsroom_content_router)
 app.include_router(lab_booking_router)
 app.include_router(rx_uploads_router)
 app.include_router(lab_results_router)
@@ -391,6 +397,7 @@ app.include_router(account_contacts_router)
 app.include_router(signup_contacts_router)
 app.include_router(student_invites_router)
 app.include_router(consent_ledger_router)
+app.include_router(wallet_passes_router)
 app.include_router(legal_documents_router)
 app.include_router(named_super_admins_router)
 app.include_router(apilayer_router, dependencies=[Depends(require_super_admin)])

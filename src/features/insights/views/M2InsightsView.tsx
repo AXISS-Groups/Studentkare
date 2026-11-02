@@ -4,7 +4,7 @@ import { observer } from 'mobx-react-lite';
 import { Icon } from '@/design-system/icons';
 import type { SkIconName } from '@/design-system/icons';
 import { OfflineBanner, Rise, Skeleton, useOnline } from '@/design-system';
-import { Gradient, M2Card, M2Heading, M2_NAV_CLEARANCE, SosButton, m2Text, useLift, useOwnPhoneChrome, webAttrs } from '@/design-system/m2';
+import { Gradient, M2Card, M2Grid, M2Heading, M2HeaderSos, M2WideColumn, M2_NAV_CLEARANCE, m2Text, useLift, useOwnPhoneChrome, webAttrs } from '@/design-system/m2';
 import type { PressState } from '@/design-system/m2';
 import { color, focusRing, font, fontWeight, motion, radius, shadow, shadowStyle, size, space, webOnly } from '@/design-system/theme';
 import { useT } from '@/i18n';
@@ -33,7 +33,6 @@ import type { InsightsViewModel } from '../viewmodel/InsightsViewModel';
  * the vaccine record lives here as "not available yet" (D-M2-3).
  */
 export interface M2InsightsLinks {
-  sos: () => void;
   trends: () => void;
   records: () => void;
   reportUpload: () => void;
@@ -53,6 +52,10 @@ export interface M2InsightsLinks {
   devices?: () => void;
   emergencyCard?: () => void;
   pass?: () => void;
+  /** The Report insights page (all released reports), from "Reviewed lab reports". */
+  allReports?: () => void;
+  /** Open a released report's document by its id (an id, never a test name). */
+  downloadReport?: (documentId: string) => void;
 }
 
 const SYSTEM_STYLE: Record<BodySystem, { icon: SkIconName; label: MessageKey; fill: string; ink: string }> = {
@@ -76,7 +79,7 @@ const STATE_WORDS: Record<LabValue['rangeState'], MessageKey> = {
   ABOVE: 'm2.ins.above', BELOW: 'm2.ins.below', IN_RANGE: 'm2.ins.inside', NO_RANGE: 'm2.ins.noRangeShort',
 };
 
-export function valueText(v: LabValue): string {
+function valueText(v: LabValue): string {
   return v.valueNumeric !== null ? `${v.valueNumeric}${v.unit ? ` ${v.unit}` : ''}` : v.valueText;
 }
 
@@ -97,7 +100,7 @@ function ValueRow({ v, onPress }: { v: LabValue; onPress: () => void }) {
         <Text style={m2Text.cardTitle}>{v.testName}</Text>
         <Text style={m2Text.meta}>{rangeText(v, t)}</Text>
       </View>
-      <View style={[styles.chip, { backgroundColor: tone.fill }]}><Text style={[styles.chipText, { color: tone.ink }]}>{valueText(v)}</Text></View>
+      <View style={[styles.chip, { backgroundColor: tone.fill }]}><Text style={[styles.chipText, { color: tone.ink }]} testID={`m2-ins-value-chip-${v.id}`}>{valueText(v)}</Text></View>
       <Icon name="chevron-right" size={14} color={color.text3} strokeWidth={2.6} />
     </Pressable>
   );
@@ -115,7 +118,7 @@ function CountCard({ count, label, tone, pressed, onPress, testID }: { count: nu
   );
 }
 
-function SystemTile({ row, onPress }: { row: BodySystemRow; onPress: () => void }) {
+function SystemTile({ row, onPress, fill = false }: { row: BodySystemRow; onPress: () => void; fill?: boolean }) {
   const t = useT();
   const lift = useLift();
   const s = SYSTEM_STYLE[row.bodySystem];
@@ -130,7 +133,7 @@ function SystemTile({ row, onPress }: { row: BodySystemRow; onPress: () => void 
   ].slice(0, 8);
   return (
     <Pressable role="link" accessibilityRole="link" accessibilityLabel={`${t(s.label)}. ${summary}`} aria-label={`${t(s.label)}. ${summary}`} onPress={onPress}
-      testID={`m2-ins-system-${row.bodySystem}`} style={(state: PressState) => [styles.system, lift(state)]}>
+      testID={`m2-ins-system-${row.bodySystem}`} style={(state: PressState) => [styles.system, fill ? styles.systemFill : null, lift(state)]}>
       <TileIcon icon={s.icon} fill={s.fill} ink={s.ink} tile={38} />
       <Text style={m2Text.cardTitle}>{t(s.label)}</Text>
       <View style={styles.dots} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
@@ -184,10 +187,61 @@ function CareCard({ icon, fill, ink, title, lines, empty, action, testID }: {
   );
 }
 
-export const M2InsightsView = observer(function M2InsightsView({ vm, name, links, stepsOnPhone = false }: {
+/**
+ * "Reviewed lab reports" (Tier 1 parity plan 2026-10-24 §3, Q3): the newest
+ * released StudentKare lab report, the doctor's note verbatim (or the page's
+ * "no note" line), who wrote it and when, Download, and "All reports (n)" to
+ * the Report insights page. Hidden until a released report exists; its read
+ * (/lab-orders) failing is already shown, with a retry, on the "ordered" card.
+ */
+const ReviewedReportCard = observer(function ReviewedReportCard({ vm, links, online }: { vm: InsightsViewModel; links: M2InsightsLinks; online: boolean }) {
+  const t = useT();
+  const report = vm.reviewedReport;
+  if (!report || !report.reportDocumentId) return null;
+  const documentId = report.reportDocumentId;
+  const doctor = report.reviewedByDoctor ?? '';
+  const released = shortDate(report.reviewedAt ?? report.createdAt);
+  const tests = report.testPanel.join(', ') || t('swt.labs.fact.testUnknown');
+  const count = vm.releasedReportCount;
+  return (
+    <M2Card style={styles.reviewed} testID="m2-ins-reviewed">
+      <View style={styles.noteHead}>
+        <TileIcon icon="flask" fill={color.serviceGreenSoft} ink={color.serviceGreenInk} />
+        <View style={styles.grow}>
+          <Text style={m2Text.eyebrow}>{t('m2.ins.reviewedReports')}</Text>
+          <M2Heading style={m2Text.cardTitle}>{tests}</M2Heading>
+        </View>
+      </View>
+      <Text style={m2Text.meta} testID="m2-ins-reviewed-by">
+        {doctor ? t('swt.insights.writtenBy', { name: doctor, date: released }) : t('swt.insights.writtenOn', { date: released })}
+      </Text>
+      <Text style={report.reviewNote ? styles.noteText : m2Text.meta} testID="m2-ins-reviewed-note">{report.reviewNote || t('swt.insights.noNote')}</Text>
+      <View style={styles.reviewedActions}>
+        {links.downloadReport ? (online ? (
+          <Pressable role="link" accessibilityRole="link" accessibilityLabel={t('swt.insights.download')} aria-label={t('swt.insights.download')}
+            onPress={() => links.downloadReport?.(documentId)} testID="m2-ins-reviewed-download" style={({ focused }: PressState) => [styles.smallButton, focused ? focusRing : null]}>
+            <Text style={styles.smallButtonText}>{t('swt.insights.download')}</Text>
+          </Pressable>
+        ) : (
+          <Text style={m2Text.meta} testID="m2-ins-reviewed-offline">{`${t('swt.insights.download')}: ${t('m2v.up.needsConnection')}`}</Text>
+        )) : null}
+        {links.allReports ? (
+          <Pressable role="link" accessibilityRole="link" accessibilityLabel={t('m2.ins.allReports', { count })} aria-label={t('m2.ins.allReports', { count })}
+            onPress={links.allReports} testID="m2-ins-reviewed-all" style={({ focused }: PressState) => [styles.open, focused ? focusRing : null]}>
+            <Text style={m2Text.link}>{t('m2.ins.allReports', { count })}</Text>
+          </Pressable>
+        ) : null}
+      </View>
+    </M2Card>
+  );
+});
+
+export const M2InsightsView = observer(function M2InsightsView({ vm, name, links, stepsOnPhone = false, wide = false }: {
   vm: InsightsViewModel; name: string; links: M2InsightsLinks;
   /** True in the phone app, which can count steps itself; the web says to open the phone app. */
   stepsOnPhone?: boolean;
+  /** Laid out wide in the desktop web shell (Tier 1 parity plan 2026-10-24 §2): the same cards in rows. */
+  wide?: boolean;
 }) {
   const t = useT();
   useOwnPhoneChrome();
@@ -202,206 +256,275 @@ export const M2InsightsView = observer(function M2InsightsView({ vm, name, links
   const next = vm.next;
   const note = vm.note;
   const review = vm.latestReportReview;
+  const gutter = wide ? undefined : styles.gutter;
 
   const stat = (ready: boolean, failed: boolean, value: string) => (ready ? value : failed ? '–' : '…');
+  const stats = [
+    <HeroStat key="todo" value={stat(vm.toDo !== null, vm.refills.phase === 'error' || vm.labOrders.phase === 'error', String(vm.toDo ?? ''))} label={t('m2.ins.toDo')} tone={color.onHeroAttention} testID="m2-ins-stat-todo" />,
+    <HeroStat key="consult" value={stat(vm.appointments.ready, vm.appointments.phase === 'error', next ? `${dayLabel(next.slotStart, t)} ${clockLabel(next.slotStart)}` : t('m2.ins.none'))} label={t('m2.ins.nextConsult')} testID="m2-ins-stat-consult" />,
+    <HeroStat key="docs" value={stat(vm.documents.ready, vm.documents.phase === 'error', String(vm.documents.data?.total ?? ''))} label={t('m2.ins.documents')} tone={color.onHeroPositive} testID="m2-ins-stat-docs" />,
+    <HeroStat key="shared" value={stat(vm.activeShares !== null, vm.shares.phase === 'error', String(vm.activeShares ?? ''))} label={t('m2.ins.shared')} testID="m2-ins-stat-shared" />,
+  ];
+
+  const hero = (
+    <Rise>
+      <NavyHero style={wide ? styles.heroWide : undefined}>
+        <View style={styles.head}>
+          <View style={styles.avatar} accessibilityElementsHidden importantForAccessibility="no-hide-descendants"><Text style={styles.avatarText}>{initials(name)}</Text></View>
+          <View style={styles.grow}>
+            <Text style={styles.eyebrow}>{t('m2.insights.eyebrow')}</Text>
+            <M2Heading level={1} style={styles.title}>{t('m2.nav.health')}</M2Heading>
+          </View>
+          {/* SOS is the shell's (parity plan §1): the phone frame's helplines dialog, the app's Emergency screen; none on desktop, whose top bar has it. */}
+          <M2HeaderSos testID="m2-ins-sos" />
+        </View>
+        <Tabs links={links} />
+        {wide ? (
+          <View style={[styles.stats, styles.statRow]} testID="m2-ins-stats">{stats}</View>
+        ) : (
+          <View style={styles.stats} testID="m2-ins-stats">
+            <View style={styles.statRow}>{stats.slice(0, 2)}</View>
+            <View style={styles.statRow}>{stats.slice(2)}</View>
+          </View>
+        )}
+        <Text style={styles.noScore}>{t('m2.ins.noScore')}</Text>
+      </NavyHero>
+    </Rise>
+  );
+
+  const offline = !online ? (
+    <View style={[gutter, styles.offline]}>
+      <OfflineBanner message={t('m2h.offline')} />
+      <View style={styles.offlineLinks}>
+        {links.emergencyCard ? <Text accessibilityRole="link" onPress={links.emergencyCard} style={[m2Text.link, styles.offlineLink]}>{t('pb.offline.emergencyCard')}</Text> : null}
+        {links.pass ? <Text accessibilityRole="link" onPress={links.pass} style={[m2Text.link, styles.offlineLink]}>{t('pb.offline.pass')}</Text> : null}
+      </View>
+    </View>
+  ) : null;
+
+  const meds = <MedsTodayCard vm={vm.meds} onOpen={links.medicines} />;
+  const water = <WaterCard vm={vm.water} onOpen={links.water} />;
+
+  const report = (
+    <M2Card style={styles.report} fill={wide} testID="m2-ins-report">
+      {values.phase === 'loading' ? <Skeleton label={t('m2.ins.valuesLoading')} lines={['40%', '80%', '100%', '100%']} /> : null}
+      {values.phase === 'error' ? (
+        <View style={styles.reportState} accessibilityRole="alert">
+          <Text style={m2Text.cardTitle}>{t('m2.ins.valuesFailed')}</Text>
+          <Text accessibilityRole="button" onPress={() => void values.load()} style={[m2Text.link, styles.inlineLink]} testID="m2-ins-values-retry">{t('common.tryAgain')}</Text>
+        </View>
+      ) : null}
+      {values.phase === 'empty' ? (
+        <View style={styles.reportState} testID="m2-ins-first">
+          <M2Heading style={m2Text.section}>{t('m2.ins.firstTitle')}</M2Heading>
+          <Text style={m2Text.body}>{t('m2.ins.firstBody')}</Text>
+          <Pressable role="link" accessibilityRole="link" accessibilityLabel={t('m2.ins.addReport')} aria-label={t('m2.ins.addReport')} onPress={links.reportUpload}
+            testID="m2-ins-add-report" style={({ focused }: PressState) => [styles.primary, focused ? focusRing : null]}>
+            <Text style={styles.primaryText}>{t('m2.ins.addReport')}</Text>
+          </Pressable>
+        </View>
+      ) : null}
+      {values.phase === 'ready' && latest ? (
+        <>
+          <View style={styles.reportHead}>
+            <Text style={m2Text.eyebrow}>{t('m2.ins.latest', { date: shortDate(latest.collectedOn) })}</Text>
+            <Pressable role="link" accessibilityRole="link" accessibilityLabel={t('m2.ins.openTrends')} aria-label={t('m2.ins.openTrends')} onPress={links.trends}
+              testID="m2-ins-open" style={({ focused }: PressState) => [styles.open, focused ? focusRing : null]}>
+              <Text style={m2Text.link}>{t('m2.ins.open')}</Text>
+            </Pressable>
+          </View>
+          <M2Heading style={styles.reportTitle}>{latest.labName || t('m2.ins.yourReport')}</M2Heading>
+          <Text style={m2Text.meta} testID="m2-ins-source">
+            {latest.source === 'LAB_RELEASED' ? t('m2.ins.fromLab') : t('m2.ins.confirmedByYou', { lab: latest.labName || t('m2.ins.aLab') })}
+          </Text>
+          <View style={styles.counts}>
+            <CountCard count={values.needsLookCount} label={t('m2.ins.needLook')} tone="attention" pressed={values.filter === 'needsLook'} onPress={() => values.toggleFilter('needsLook')} testID="m2-ins-count-look" />
+            <CountCard count={values.inRangeCount} label={t('m2.ins.inRange')} tone="positive" pressed={values.filter === 'inRange'} onPress={() => values.toggleFilter('inRange')} testID="m2-ins-count-ok" />
+          </View>
+          <View aria-live="polite" style={styles.values} testID="m2-ins-values">
+            {values.rows.map((v) => <ValueRow key={v.id} v={v} onPress={links.trends} />)}
+            {values.rows.length === 0 ? <Text style={[m2Text.meta, styles.noRows]}>{t('m2.ins.noRows')}</Text> : null}
+          </View>
+          {latest.source === 'STUDENT_CONFIRMED' ? <Text style={styles.rangeNote}>{t('m2.ins.rangeTyped')}</Text> : null}
+        </>
+      ) : null}
+    </M2Card>
+  );
+
+  const noteParts = [
+    vm.reviews.phase === 'error' ? <CardError key="error" title={t('m2.ins.noteTitle')} onRetry={() => void vm.reviews.load()} testID="m2-ins-note-error" /> : null,
+    note ? (
+      <Gradient key="note" colors={[color.positiveBg, color.surface]} angle={160} style={styles.note} testID="m2-ins-note">
+        <View style={styles.noteHead}>
+          <Gradient colors={[color.serviceGreenSoft, color.serviceGreenSoft]} style={styles.noteAvatar}>
+            <Text style={styles.noteInitials}>{initials((note.reviewedByName ?? '').replace(/^dr\.?\s+/i, '')) || '·'}</Text>
+          </Gradient>
+          <View style={styles.grow}>
+            <M2Heading style={m2Text.cardTitle}>{t('m2.ins.noteTitle')}</M2Heading>
+            <Text style={m2Text.meta}>{t('m2.ins.noteBy', { name: note.reviewedByName || t('m2.ins.yourDoctor'), date: note.reviewedAt ? shortDate(note.reviewedAt) : '' })}</Text>
+          </View>
+        </View>
+        <Text style={styles.noteText} testID="m2-ins-note-text">{note.guidance?.summary}</Text>
+        {note.guidance && note.guidance.steps.length > 0 ? (
+          <Pressable role="link" accessibilityRole="link" accessibilityLabel={t('m2.ins.seeSteps', { count: note.guidance.steps.length })} aria-label={t('m2.ins.seeSteps', { count: note.guidance.steps.length })}
+            onPress={links.trends} testID="m2-ins-steps" style={({ focused }: PressState) => [styles.steps, focused ? focusRing : null]}>
+            <Text style={styles.stepsText}>{t('m2.ins.seeSteps', { count: note.guidance.steps.length })}</Text>
+          </Pressable>
+        ) : null}
+      </Gradient>
+    ) : null,
+    !note && review && (review.status === 'REQUESTED' || review.status === 'ASSIGNED') ? (
+      <M2Card key="status" style={styles.reviewState} testID="m2-ins-review-status">
+        <Icon name="stetho" size={20} color={color.action} />
+        <Text style={[m2Text.body, styles.grow]}>{t(review.status === 'ASSIGNED' ? 'm2.ins.reviewAssigned' : 'm2.ins.reviewRequested')}</Text>
+      </M2Card>
+    ) : null,
+    !note && vm.canAskReview ? (
+      <M2Card key="ask" style={styles.reviewState} testID="m2-ins-ask-review">
+        <View style={styles.grow}>
+          <Text style={m2Text.cardTitle}>{t('m2.ins.noNote')}</Text>
+          {vm.reviewAsk === 'error' ? <Text accessibilityRole="alert" style={styles.errorText}>{vm.reviewAskMessage || t('m2h.cardFailed')}</Text> : null}
+        </View>
+        <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('m2.ins.askDoctor')} aria-label={t('m2.ins.askDoctor')} disabled={vm.reviewAsk === 'sending'}
+          onPress={() => void vm.askReview()} testID="m2-ins-ask-review-button" style={({ focused }: PressState) => [styles.smallButton, focused ? focusRing : null]}>
+          <Text style={styles.smallButtonText}>{vm.reviewAsk === 'sending' ? t('m2.ins.asking') : t('m2.ins.askDoctor')}</Text>
+        </Pressable>
+      </M2Card>
+    ) : null,
+  ].filter(Boolean);
+  const reviewed = <ReviewedReportCard vm={vm} links={links} online={online} />;
+
+  const refills = vm.refills.phase === 'error' ? <CardError title={t('m2.ins.refills')} onRetry={() => void vm.refills.load()} testID="m2-ins-refills-error" /> : (
+    <CareCard icon="refresh" fill={color.surface3} ink={color.action} title={t('m2.ins.refills')} testID="m2-ins-refills"
+      lines={vm.refills.data ? vm.refills.data.items.map((p) => refillLine(p, (date) => t('m2.ins.refillDue', { date }), shortDate)) : null}
+      empty={t('m2.ins.refillsNone')} action={links.refill ? { label: t('m2.ins.requestRefill'), onPress: links.refill } : undefined} />
+  );
+  const ordered = vm.labOrders.phase === 'error' ? <CardError title={t('m2.ins.ordered')} onRetry={() => void vm.labOrders.load()} testID="m2-ins-ordered-error" /> : (
+    <CareCard icon="stetho" fill={color.serviceAmberSoft} ink={color.serviceAmberInk} title={t('m2.ins.ordered')} testID="m2-ins-ordered"
+      lines={vm.labOrders.data ? vm.ordered.map((o) => t('m2.ins.orderedLine', { tests: o.testPanel.join(', '), date: shortDate(o.createdAt) })) : null}
+      empty={t('m2.ins.orderedNone')} action={links.collection ? { label: t('m2.ins.pickTime'), onPress: links.collection } : undefined} />
+  );
+  const dueTitle = <M2Heading style={[m2Text.section, styles.sectionTitle]}>{t('m2.ins.due')}</M2Heading>;
+
+  const steps = links.steps ? <StepsCard week={vm.steps} onPhone={stepsOnPhone} onPress={links.steps} /> : null;
+  const showSystems = values.phase === 'ready' && values.bodySystems.length > 0;
+  const systemsTitle = <M2Heading style={[m2Text.section, styles.sectionTitle]}>{t('m2.ins.systems')}</M2Heading>;
+
+  const vaccines = (
+    <M2Card style={styles.vaccines} fill={wide} testID="m2-ins-vaccines">
+      <TileIcon icon="syringe" fill={color.serviceAmberSoft} ink={color.serviceAmberInk} />
+      <View style={styles.grow}>
+        <M2Heading style={m2Text.cardTitle}>{t('m2.ins.vaccineRecord')}</M2Heading>
+        <Text style={m2Text.meta}>{t('m2.ins.vaccineRecordNotYet')}</Text>
+      </View>
+      {links.addVaccineCard ? (
+        <Pressable role="link" accessibilityRole="link" accessibilityLabel={t('m2.ins.addCard')} aria-label={t('m2.ins.addCard')} onPress={links.addVaccineCard}
+          testID="m2-ins-add-card" style={({ focused }: PressState) => [styles.open, focused ? focusRing : null]}>
+          <Text style={m2Text.link}>{t('m2.ins.addCard')}</Text>
+        </Pressable>
+      ) : null}
+    </M2Card>
+  );
+
+  const more = (
+    <M2Card style={styles.more} fill={wide} testID="m2-ins-more">
+      {([
+        { key: 'appointments', icon: 'calendar-2', label: 'm2.ins.appointments', onPress: links.appointments },
+        { key: 'movement', icon: 'zap', label: 'm2.ins.movement', onPress: links.movement },
+        { key: 'devices', icon: 'activity-3', label: 'm2.ins.devices', onPress: links.devices },
+      ] as const).filter((r) => r.onPress).map((r) => (
+        <Pressable key={r.key} role="link" accessibilityRole="link" accessibilityLabel={t(r.label)} aria-label={t(r.label)} onPress={r.onPress} testID={`m2-ins-more-${r.key}`}
+          style={({ focused }: PressState) => [styles.moreRow, focused ? focusRing : null]}>
+          <Icon name={r.icon} size={18} color={color.action} />
+          <Text style={[m2Text.cardTitle, styles.grow]}>{t(r.label)}</Text>
+          <Icon name="chevron-right" size={16} color={color.text3} strokeWidth={2.4} />
+        </Pressable>
+      ))}
+    </M2Card>
+  );
+
+  if (wide) {
+    return (
+      <M2WideColumn testID="m2-insights">
+        {hero}
+        {offline}
+        <Rise index={1}>
+          {/* The report card keeps at least its phone width (plan §2 risks): two columns, the note and the reviewed reports stacked beside it. */}
+          <M2Grid columns={{ tablet: 1, desktop: 2 }} testID="m2-ins-row-report">
+            {report}
+            <View style={styles.noteCell}>
+              {noteParts}
+              {reviewed}
+            </View>
+          </M2Grid>
+        </Rise>
+        <Rise index={2}>
+          {dueTitle}
+          <M2Grid columns={{ tablet: 2, desktop: 4 }} testID="m2-ins-row-due">
+            {refills}
+            {ordered}
+            {meds}
+            {water}
+          </M2Grid>
+        </Rise>
+        {showSystems ? (
+          <Rise index={3}>
+            {systemsTitle}
+            <M2Grid columns={{ tablet: 2, desktop: 4 }} testID="m2-ins-systems">
+              {values.bodySystems.map((row) => <SystemTile key={row.bodySystem} row={row} onPress={links.trends} fill />)}
+            </M2Grid>
+          </Rise>
+        ) : null}
+        <Rise index={4}>
+          <M2Grid columns={{ tablet: 2, desktop: 3 }} testID="m2-ins-row-more">
+            {steps}
+            {vaccines}
+            {more}
+          </M2Grid>
+        </Rise>
+      </M2WideColumn>
+    );
+  }
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content} testID="m2-insights">
-      <Rise>
-        <NavyHero>
-          <View style={styles.head}>
-            <View style={styles.avatar} accessibilityElementsHidden importantForAccessibility="no-hide-descendants"><Text style={styles.avatarText}>{initials(name)}</Text></View>
-            <View style={styles.grow}>
-              <Text style={styles.eyebrow}>{t('m2.insights.eyebrow')}</Text>
-              <M2Heading level={1} style={styles.title}>{t('m2.nav.health')}</M2Heading>
-            </View>
-            <SosButton label={t('m2.sos')} spoken={t('m2.sosSpoken')} onPress={links.sos} testID="m2-ins-sos" />
-          </View>
-          <Tabs links={links} />
-          <View style={styles.stats}>
-            <View style={styles.statRow}>
-              <HeroStat value={stat(vm.toDo !== null, vm.refills.phase === 'error' || vm.labOrders.phase === 'error', String(vm.toDo ?? ''))} label={t('m2.ins.toDo')} tone={color.onHeroAttention} testID="m2-ins-stat-todo" />
-              <HeroStat value={stat(vm.appointments.ready, vm.appointments.phase === 'error', next ? `${dayLabel(next.slotStart, t)} ${clockLabel(next.slotStart)}` : t('m2.ins.none'))} label={t('m2.ins.nextConsult')} testID="m2-ins-stat-consult" />
-            </View>
-            <View style={styles.statRow}>
-              <HeroStat value={stat(vm.documents.ready, vm.documents.phase === 'error', String(vm.documents.data?.total ?? ''))} label={t('m2.ins.documents')} tone={color.onHeroPositive} testID="m2-ins-stat-docs" />
-              <HeroStat value={stat(vm.activeShares !== null, vm.shares.phase === 'error', String(vm.activeShares ?? ''))} label={t('m2.ins.shared')} testID="m2-ins-stat-shared" />
-            </View>
-          </View>
-          <Text style={styles.noScore}>{t('m2.ins.noScore')}</Text>
-        </NavyHero>
-      </Rise>
-
-      {!online ? (
-        <View style={[styles.gutter, styles.offline]}>
-          <OfflineBanner message={t('m2h.offline')} />
-          <View style={styles.offlineLinks}>
-            {links.emergencyCard ? <Text accessibilityRole="link" onPress={links.emergencyCard} style={[m2Text.link, styles.offlineLink]}>{t('pb.offline.emergencyCard')}</Text> : null}
-            {links.pass ? <Text accessibilityRole="link" onPress={links.pass} style={[m2Text.link, styles.offlineLink]}>{t('pb.offline.pass')}</Text> : null}
-          </View>
-        </View>
-      ) : null}
+      {hero}
+      {offline}
 
       <Rise index={1} style={[styles.gutter, styles.today]}>
-        <MedsTodayCard vm={vm.meds} onOpen={links.medicines} />
-        <WaterCard vm={vm.water} onOpen={links.water} />
+        {meds}
+        {water}
       </Rise>
 
-      <Rise index={1} style={styles.gutter}>
-        <M2Card style={styles.report} testID="m2-ins-report">
-          {values.phase === 'loading' ? <Skeleton label={t('m2.ins.valuesLoading')} lines={['40%', '80%', '100%', '100%']} /> : null}
-          {values.phase === 'error' ? (
-            <View style={styles.reportState} accessibilityRole="alert">
-              <Text style={m2Text.cardTitle}>{t('m2.ins.valuesFailed')}</Text>
-              <Text accessibilityRole="button" onPress={() => void values.load()} style={[m2Text.link, styles.inlineLink]} testID="m2-ins-values-retry">{t('common.tryAgain')}</Text>
-            </View>
-          ) : null}
-          {values.phase === 'empty' ? (
-            <View style={styles.reportState} testID="m2-ins-first">
-              <M2Heading style={m2Text.section}>{t('m2.ins.firstTitle')}</M2Heading>
-              <Text style={m2Text.body}>{t('m2.ins.firstBody')}</Text>
-              <Pressable role="link" accessibilityRole="link" accessibilityLabel={t('m2.ins.addReport')} aria-label={t('m2.ins.addReport')} onPress={links.reportUpload}
-                testID="m2-ins-add-report" style={({ focused }: PressState) => [styles.primary, focused ? focusRing : null]}>
-                <Text style={styles.primaryText}>{t('m2.ins.addReport')}</Text>
-              </Pressable>
-            </View>
-          ) : null}
-          {values.phase === 'ready' && latest ? (
-            <>
-              <View style={styles.reportHead}>
-                <Text style={m2Text.eyebrow}>{t('m2.ins.latest', { date: shortDate(latest.collectedOn) })}</Text>
-                <Pressable role="link" accessibilityRole="link" accessibilityLabel={t('m2.ins.openTrends')} aria-label={t('m2.ins.openTrends')} onPress={links.trends}
-                  testID="m2-ins-open" style={({ focused }: PressState) => [styles.open, focused ? focusRing : null]}>
-                  <Text style={m2Text.link}>{t('m2.ins.open')}</Text>
-                </Pressable>
-              </View>
-              <M2Heading style={styles.reportTitle}>{latest.labName || t('m2.ins.yourReport')}</M2Heading>
-              <Text style={m2Text.meta} testID="m2-ins-source">
-                {latest.source === 'LAB_RELEASED' ? t('m2.ins.fromLab') : t('m2.ins.confirmedByYou', { lab: latest.labName || t('m2.ins.aLab') })}
-              </Text>
-              <View style={styles.counts}>
-                <CountCard count={values.needsLookCount} label={t('m2.ins.needLook')} tone="attention" pressed={values.filter === 'needsLook'} onPress={() => values.toggleFilter('needsLook')} testID="m2-ins-count-look" />
-                <CountCard count={values.inRangeCount} label={t('m2.ins.inRange')} tone="positive" pressed={values.filter === 'inRange'} onPress={() => values.toggleFilter('inRange')} testID="m2-ins-count-ok" />
-              </View>
-              <View aria-live="polite" style={styles.values} testID="m2-ins-values">
-                {values.rows.map((v) => <ValueRow key={v.id} v={v} onPress={links.trends} />)}
-                {values.rows.length === 0 ? <Text style={[m2Text.meta, styles.noRows]}>{t('m2.ins.noRows')}</Text> : null}
-              </View>
-              {latest.source === 'STUDENT_CONFIRMED' ? <Text style={styles.rangeNote}>{t('m2.ins.rangeTyped')}</Text> : null}
-            </>
-          ) : null}
-        </M2Card>
-      </Rise>
+      <Rise index={1} style={styles.gutter}>{report}</Rise>
 
-      <Rise index={2} style={styles.gutter}>
-        {vm.reviews.phase === 'error' ? <CardError title={t('m2.ins.noteTitle')} onRetry={() => void vm.reviews.load()} testID="m2-ins-note-error" /> : null}
-        {note ? (
-          <Gradient colors={[color.positiveBg, color.surface]} angle={160} style={styles.note} testID="m2-ins-note">
-            <View style={styles.noteHead}>
-              <Gradient colors={[color.serviceGreenSoft, color.serviceGreenSoft]} style={styles.noteAvatar}>
-                <Text style={styles.noteInitials}>{initials((note.reviewedByName ?? '').replace(/^dr\.?\s+/i, '')) || '·'}</Text>
-              </Gradient>
-              <View style={styles.grow}>
-                <M2Heading style={m2Text.cardTitle}>{t('m2.ins.noteTitle')}</M2Heading>
-                <Text style={m2Text.meta}>{t('m2.ins.noteBy', { name: note.reviewedByName || t('m2.ins.yourDoctor'), date: note.reviewedAt ? shortDate(note.reviewedAt) : '' })}</Text>
-              </View>
-            </View>
-            <Text style={styles.noteText} testID="m2-ins-note-text">{note.guidance?.summary}</Text>
-            {note.guidance && note.guidance.steps.length > 0 ? (
-              <Pressable role="link" accessibilityRole="link" accessibilityLabel={t('m2.ins.seeSteps', { count: note.guidance.steps.length })} aria-label={t('m2.ins.seeSteps', { count: note.guidance.steps.length })}
-                onPress={links.trends} testID="m2-ins-steps" style={({ focused }: PressState) => [styles.steps, focused ? focusRing : null]}>
-                <Text style={styles.stepsText}>{t('m2.ins.seeSteps', { count: note.guidance.steps.length })}</Text>
-              </Pressable>
-            ) : null}
-          </Gradient>
-        ) : null}
-        {!note && review && (review.status === 'REQUESTED' || review.status === 'ASSIGNED') ? (
-          <M2Card style={styles.reviewState} testID="m2-ins-review-status">
-            <Icon name="stetho" size={20} color={color.action} />
-            <Text style={[m2Text.body, styles.grow]}>{t(review.status === 'ASSIGNED' ? 'm2.ins.reviewAssigned' : 'm2.ins.reviewRequested')}</Text>
-          </M2Card>
-        ) : null}
-        {!note && vm.canAskReview ? (
-          <M2Card style={styles.reviewState} testID="m2-ins-ask-review">
-            <View style={styles.grow}>
-              <Text style={m2Text.cardTitle}>{t('m2.ins.noNote')}</Text>
-              {vm.reviewAsk === 'error' ? <Text accessibilityRole="alert" style={styles.errorText}>{vm.reviewAskMessage || t('m2h.cardFailed')}</Text> : null}
-            </View>
-            <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('m2.ins.askDoctor')} aria-label={t('m2.ins.askDoctor')} disabled={vm.reviewAsk === 'sending'}
-              onPress={() => void vm.askReview()} testID="m2-ins-ask-review-button" style={({ focused }: PressState) => [styles.smallButton, focused ? focusRing : null]}>
-              <Text style={styles.smallButtonText}>{vm.reviewAsk === 'sending' ? t('m2.ins.asking') : t('m2.ins.askDoctor')}</Text>
-            </Pressable>
-          </M2Card>
-        ) : null}
+      <Rise index={2} style={[styles.gutter, styles.noteCell]}>
+        {noteParts}
+        {reviewed}
       </Rise>
 
       <Rise index={3} style={styles.gutter}>
-        <M2Heading style={[m2Text.section, styles.sectionTitle]}>{t('m2.ins.due')}</M2Heading>
+        {dueTitle}
         <View style={styles.pair}>
-          {vm.refills.phase === 'error' ? <View style={styles.half}><CardError title={t('m2.ins.refills')} onRetry={() => void vm.refills.load()} testID="m2-ins-refills-error" /></View> : (
-            <View style={styles.half}>
-              <CareCard icon="refresh" fill={color.surface3} ink={color.action} title={t('m2.ins.refills')} testID="m2-ins-refills"
-                lines={vm.refills.data ? vm.refills.data.items.map((p) => refillLine(p, (date) => t('m2.ins.refillDue', { date }), shortDate)) : null}
-                empty={t('m2.ins.refillsNone')} action={links.refill ? { label: t('m2.ins.requestRefill'), onPress: links.refill } : undefined} />
-            </View>
-          )}
-          {vm.labOrders.phase === 'error' ? <View style={styles.half}><CardError title={t('m2.ins.ordered')} onRetry={() => void vm.labOrders.load()} testID="m2-ins-ordered-error" /></View> : (
-            <View style={styles.half}>
-              <CareCard icon="stetho" fill={color.serviceAmberSoft} ink={color.serviceAmberInk} title={t('m2.ins.ordered')} testID="m2-ins-ordered"
-                lines={vm.labOrders.data ? vm.ordered.map((o) => t('m2.ins.orderedLine', { tests: o.testPanel.join(', '), date: shortDate(o.createdAt) })) : null}
-                empty={t('m2.ins.orderedNone')} action={links.collection ? { label: t('m2.ins.pickTime'), onPress: links.collection } : undefined} />
-            </View>
-          )}
+          <View style={styles.half}>{refills}</View>
+          <View style={styles.half}>{ordered}</View>
         </View>
       </Rise>
 
-      {links.steps ? (
-        <Rise index={4} style={styles.gutter}>
-          <StepsCard week={vm.steps} onPhone={stepsOnPhone} onPress={links.steps} />
-        </Rise>
-      ) : null}
+      {steps ? <Rise index={4} style={styles.gutter}>{steps}</Rise> : null}
 
-      {values.phase === 'ready' && values.bodySystems.length > 0 ? (
+      {showSystems ? (
         <Rise index={4} style={styles.gutter}>
-          <M2Heading style={[m2Text.section, styles.sectionTitle]}>{t('m2.ins.systems')}</M2Heading>
+          {systemsTitle}
           <View style={styles.systems} testID="m2-ins-systems">
             {values.bodySystems.map((row) => <SystemTile key={row.bodySystem} row={row} onPress={links.trends} />)}
           </View>
         </Rise>
       ) : null}
 
-      <Rise index={5} style={styles.gutter}>
-        <M2Card style={styles.vaccines} testID="m2-ins-vaccines">
-          <TileIcon icon="syringe" fill={color.serviceAmberSoft} ink={color.serviceAmberInk} />
-          <View style={styles.grow}>
-            <M2Heading style={m2Text.cardTitle}>{t('m2.ins.vaccineRecord')}</M2Heading>
-            <Text style={m2Text.meta}>{t('m2.ins.vaccineRecordNotYet')}</Text>
-          </View>
-          {links.addVaccineCard ? (
-            <Pressable role="link" accessibilityRole="link" accessibilityLabel={t('m2.ins.addCard')} aria-label={t('m2.ins.addCard')} onPress={links.addVaccineCard}
-              testID="m2-ins-add-card" style={({ focused }: PressState) => [styles.open, focused ? focusRing : null]}>
-              <Text style={m2Text.link}>{t('m2.ins.addCard')}</Text>
-            </Pressable>
-          ) : null}
-        </M2Card>
-      </Rise>
+      <Rise index={5} style={styles.gutter}>{vaccines}</Rise>
 
-      <Rise index={6} style={styles.gutter}>
-        <M2Card style={styles.more} testID="m2-ins-more">
-          {([
-            { key: 'appointments', icon: 'calendar-2', label: 'm2.ins.appointments', onPress: links.appointments },
-            { key: 'movement', icon: 'zap', label: 'm2.ins.movement', onPress: links.movement },
-            { key: 'devices', icon: 'activity-3', label: 'm2.ins.devices', onPress: links.devices },
-          ] as const).filter((r) => r.onPress).map((r) => (
-            <Pressable key={r.key} role="link" accessibilityRole="link" accessibilityLabel={t(r.label)} aria-label={t(r.label)} onPress={r.onPress} testID={`m2-ins-more-${r.key}`}
-              style={({ focused }: PressState) => [styles.moreRow, focused ? focusRing : null]}>
-              <Icon name={r.icon} size={18} color={color.action} />
-              <Text style={[m2Text.cardTitle, styles.grow]}>{t(r.label)}</Text>
-              <Icon name="chevron-right" size={16} color={color.text3} strokeWidth={2.4} />
-            </Pressable>
-          ))}
-        </M2Card>
-      </Rise>
+      <Rise index={6} style={styles.gutter}>{more}</Rise>
       <View {...webAttrs({ 'aria-hidden': 'true' })} style={styles.spacer} />
     </ScrollView>
   );
@@ -477,4 +600,9 @@ const styles = StyleSheet.create({
   more: { borderRadius: 22, paddingVertical: space.s4 },
   moreRow: { minHeight: size.touchTarget + space.s4, paddingHorizontal: space.s16, flexDirection: 'row', alignItems: 'center', gap: space.s12 },
   spacer: { height: space.s8 },
+  heroWide: { borderRadius: 36, paddingHorizontal: space.s32 },
+  noteCell: { gap: space.s12 },
+  systemFill: { width: '100%', flexGrow: 0, height: '100%' },
+  reviewed: { borderRadius: 26, padding: space.s16, gap: space.s10 },
+  reviewedActions: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: space.s12, marginTop: 'auto' },
 });

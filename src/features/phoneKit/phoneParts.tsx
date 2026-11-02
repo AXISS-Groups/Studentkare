@@ -31,7 +31,7 @@ export function Heading({ children, style, numberOfLines, testID }: { children: 
 /** Tile and tag colours by role. Status colours keep their meaning (DESIGN.md §3). */
 export type Tone = 'action' | 'positive' | 'attention' | 'danger' | 'neutral';
 
-export const TONE: Record<Tone, { bg: string; ink: string }> = {
+const TONE: Record<Tone, { bg: string; ink: string }> = {
   action: { bg: color.surface3, ink: color.action },
   positive: { bg: color.positiveBg, ink: color.positive },
   attention: { bg: color.attentionBg, ink: color.attention },

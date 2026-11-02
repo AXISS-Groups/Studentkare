@@ -40,6 +40,7 @@ export const privacyEn = {
   'privacy.optional.saving': 'Saving…',
   'privacy.optional.failed': 'That didn’t save, so nothing changed. Try again.',
   'privacy.optional.donorFirst': 'Register as a donor first',
+  'privacy.optional.walletFromCard': 'Add from your emergency card',
 
   'privacy.purpose.AYUSH_HISTORY.title': 'Keep my Ayush chats',
   'privacy.purpose.AYUSH_HISTORY.body': 'Keeps the words of your Ayush chats so it can follow up. Turning it off stops keeping them and erases the ones already kept.',
@@ -51,6 +52,8 @@ export const privacyEn = {
   'privacy.purpose.SEASONAL_EDUCATION.body': 'Saved for seasonal health education. Nothing is sent yet; turning it off keeps it off.',
   'privacy.purpose.PREVENTIVE_OFFERS.title': 'Vaccine and check-up offers',
   'privacy.purpose.PREVENTIVE_OFFERS.body': 'Saved for offers on vaccines and check-ups. Nothing is sent yet; turning it off keeps it off.',
+  'privacy.purpose.WALLET_GOOGLE.title': 'Emergency card in Google Wallet',
+  'privacy.purpose.WALLET_GOOGLE.body': 'Google keeps your emergency card pass on its servers. You turned this on when you added the card to Google Wallet. Turning it off removes the pass from Google Wallet.',
 
   'privacy.shares.title': 'Who can see your records',
   'privacy.shares.body': 'Doctors you shared your records with, and until when. Each share can be revoked.',
@@ -169,6 +172,7 @@ export const privacyTe: Record<keyof typeof privacyEn, string> = {
   'privacy.optional.saving': 'సేవ్ అవుతోంది…',
   'privacy.optional.failed': 'సేవ్ కాలేదు, కాబట్టి ఏదీ మారలేదు. మళ్లీ ప్రయత్నించండి.',
   'privacy.optional.donorFirst': 'ముందు దాతగా నమోదు చేసుకోండి',
+  'privacy.optional.walletFromCard': 'మీ ఎమర్జెన్సీ కార్డు నుండి జోడించండి',
 
   'privacy.purpose.AYUSH_HISTORY.title': 'నా Ayush చాట్‌లను ఉంచు',
   'privacy.purpose.AYUSH_HISTORY.body': 'Ayush ఫాలో అప్ చేయడానికి మీ చాట్‌లలోని మాటలను ఉంచుతుంది. ఆఫ్ చేస్తే ఉంచడం ఆగిపోతుంది, ఇప్పటికే ఉంచినవి చెరిపేస్తాం.',
@@ -180,6 +184,8 @@ export const privacyTe: Record<keyof typeof privacyEn, string> = {
   'privacy.purpose.SEASONAL_EDUCATION.body': 'సీజనల్ ఆరోగ్య అవగాహన కోసం సేవ్ చేస్తాం. ఇప్పటికి ఏదీ పంపడం లేదు; ఆఫ్ చేస్తే ఆఫ్‌లోనే ఉంటుంది.',
   'privacy.purpose.PREVENTIVE_OFFERS.title': 'టీకా, చెకప్ ఆఫర్లు',
   'privacy.purpose.PREVENTIVE_OFFERS.body': 'టీకాలు, చెకప్‌లపై ఆఫర్ల కోసం సేవ్ చేస్తాం. ఇప్పటికి ఏదీ పంపడం లేదు; ఆఫ్ చేస్తే ఆఫ్‌లోనే ఉంటుంది.',
+  'privacy.purpose.WALLET_GOOGLE.title': 'Google Walletలో ఎమర్జెన్సీ కార్డు',
+  'privacy.purpose.WALLET_GOOGLE.body': 'మీ ఎమర్జెన్సీ కార్డు పాస్‌ను Google తన సర్వర్లలో ఉంచుతుంది. కార్డును Google Walletకి జోడించినప్పుడు మీరు దీన్ని ఆన్ చేశారు. ఆఫ్ చేస్తే పాస్ Google Wallet నుండి తీసివేయబడుతుంది.',
 
   'privacy.shares.title': 'మీ రికార్డులను ఎవరు చూడగలరు',
   'privacy.shares.body': 'మీరు రికార్డులు పంచుకున్న డాక్టర్లు, ఎప్పటి వరకు. ప్రతి షేర్‌ను రద్దు చేయవచ్చు.',
@@ -298,6 +304,7 @@ export const privacyHi: Record<keyof typeof privacyEn, string> = {
   'privacy.optional.saving': 'सहेज रहे हैं…',
   'privacy.optional.failed': 'सहेजा नहीं जा सका, इसलिए कुछ नहीं बदला। फिर कोशिश करें।',
   'privacy.optional.donorFirst': 'पहले दाता के रूप में पंजीकरण करें',
+  'privacy.optional.walletFromCard': 'अपने इमरजेंसी कार्ड से जोड़ें',
 
   'privacy.purpose.AYUSH_HISTORY.title': 'मेरी Ayush चैट रखें',
   'privacy.purpose.AYUSH_HISTORY.body': 'Ayush फ़ॉलो-अप कर सके, इसलिए आपकी चैट के शब्द रखता है। बंद करने पर रखना बंद होता है और पहले से रखे शब्द मिटा दिए जाते हैं।',
@@ -309,6 +316,8 @@ export const privacyHi: Record<keyof typeof privacyEn, string> = {
   'privacy.purpose.SEASONAL_EDUCATION.body': 'मौसमी स्वास्थ्य जानकारी के लिए सहेजा जाता है। अभी कुछ नहीं भेजा जाता; बंद करने पर बंद रहता है।',
   'privacy.purpose.PREVENTIVE_OFFERS.title': 'टीके और जाँच के ऑफ़र',
   'privacy.purpose.PREVENTIVE_OFFERS.body': 'टीकों और जाँच के ऑफ़र के लिए सहेजा जाता है। अभी कुछ नहीं भेजा जाता; बंद करने पर बंद रहता है।',
+  'privacy.purpose.WALLET_GOOGLE.title': 'Google Wallet में इमरजेंसी कार्ड',
+  'privacy.purpose.WALLET_GOOGLE.body': 'Google आपके इमरजेंसी कार्ड पास को अपने सर्वर पर रखता है। कार्ड को Google Wallet में जोड़ते समय आपने इसे चालू किया था। बंद करने पर पास Google Wallet से हटा दिया जाता है।',
 
   'privacy.shares.title': 'आपके रिकॉर्ड कौन देख सकता है',
   'privacy.shares.body': 'जिन डॉक्टरों के साथ आपने रिकॉर्ड साझा किए, और कब तक। हर साझा वापस लिया जा सकता है।',

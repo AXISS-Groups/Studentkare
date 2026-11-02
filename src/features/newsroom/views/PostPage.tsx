@@ -7,8 +7,10 @@ import { NewsroomRepository, absoluteUrl } from '../data/NewsroomRepository';
 import type { PostDetail } from '../data/NewsroomRepository';
 import { TEMPLATES } from '../model/templates';
 import type { SectionPath } from '../model/templates';
-import { formatDate, postJsonLd, shareUrl } from '../model/share';
-import type { ShareTarget } from '../model/share';
+import { formatDate, postJsonLd } from '../model/share';
+import { getSetting } from '@/data/services/config';
+import { ContentRepository } from '../data/ContentRepository';
+import { ShareBar } from './ShareBar';
 import { PostCover } from './PostCover';
 import { PostBody } from './PostBody';
 import { PostCard, PostChips, PostMeta } from './PostCard';
@@ -67,49 +69,41 @@ function usePostHead(post: PostDetail | null, publisher: string): void {
   }, [post, publisher]);
 }
 
-/** Copy link, WhatsApp, LinkedIn and X: plain links, no third-party script. */
-export function ShareLinks({ post }: { post: PostDetail }): React.ReactElement {
+/** Tele-MANAS 14416 and 112, always on a Mental health post (template-fixed: an author can't remove it). */
+export function CrisisLines({ onOpen }: { onOpen: (path: string) => void }): React.ReactElement {
   const t = useT();
-  const [copied, setCopied] = useState<'idle' | 'done' | 'failed'>('idle');
-  const url = typeof window !== 'undefined' ? `${window.location.origin}${post.path}` : post.path;
-  const copy = async () => {
-    try {
-      await navigator.clipboard.writeText(url);
-      setCopied('done');
-    } catch {
-      setCopied('failed');
-    }
-  };
-  const targets: readonly { id: ShareTarget; icon: 'message-circle-2' | 'brand-linkedin' | 'x-2'; label: 'news.shareWhatsapp' | 'news.shareLinkedin' | 'news.shareX' }[] = [
-    { id: 'whatsapp', icon: 'message-circle-2', label: 'news.shareWhatsapp' },
-    { id: 'linkedin', icon: 'brand-linkedin', label: 'news.shareLinkedin' },
-    { id: 'x', icon: 'x-2', label: 'news.shareX' },
-  ];
   return (
-    <section className="sk-news-share" aria-label={t('news.share')}>
-      <span className="sk-news-share__title"><Icon name="share" size={16} />{t('news.share')}</span>
-      <div className="sk-news-share__row">
-        <button type="button" className="sk-news-share__btn" onClick={() => void copy()} data-testid="news-copy-link">
-          <Icon name={copied === 'done' ? 'check' : 'copy'} size={18} />{t('news.copyLink')}
-        </button>
-        {targets.map((target) => (
-          <a key={target.id} className="sk-news-share__btn" href={shareUrl(target.id, url, post.title)} target="_blank" rel="noopener noreferrer"
-            aria-label={t(target.label)} data-testid={`news-share-${target.id}`}>
-            <Icon name={target.icon} size={18} />
-          </a>
-        ))}
-      </div>
-      <p className="sk-news-share__status" role="status">
-        {copied === 'done' ? t('news.copied') : copied === 'failed' ? t('news.copyFailed') : ''}
+    <aside className="sk-news-post__crisis" aria-label={t('cms.crisis.aria')} data-testid="news-crisis-lines">
+      <p className="sk-news-post__crisis-title"><Icon name="phone-call" size={18} />{t('cms.crisis.title')}</p>
+      <p>
+        <a className="sk-news-post__crisis-line" href="tel:14416">{t('cms.crisis.telemanas')}</a>
+        {' · '}
+        <a className="sk-news-post__crisis-line" href="tel:112">{t('cms.crisis.emergency')}</a>
+        {' · '}
+        <a href="/crisis" onClick={(e) => { e.preventDefault(); onOpen('/crisis'); }}>{t('news.healthNoteCrisis')}</a>
       </p>
-    </section>
+    </aside>
+  );
+}
+
+/** "Episode 3 of Health series", linking to the series page. */
+export function SeriesLine({ post, onOpen }: { post: PostDetail; onOpen: (path: string) => void }): React.ReactElement | null {
+  const t = useT();
+  if (!post.series) return null;
+  const path = `/series/${post.series.slug}`;
+  return (
+    <p className="sk-news-post__series" data-testid="news-series-line">
+      <Icon name="repeat" size={16} />
+      <a href={path} onClick={(e) => { e.preventDefault(); onOpen(path); }}>
+        {t('cms.series.episodeOf', { n: post.series.episode, name: post.series.name })}
+      </a>
+    </p>
   );
 }
 
 export function PostArticle({ post, onOpen }: { post: PostDetail; onOpen: (path: string) => void }): React.ReactElement {
   const t = useT();
   const { lang } = useLanguage();
-  const spec = TEMPLATES[post.template];
   const back = post.section === 'blog' ? 'news.backBlog' : 'news.backNews';
   return (
     <article className="sk-news-post" data-template={post.template} data-testid="news-post">
@@ -118,7 +112,7 @@ export function PostArticle({ post, onOpen }: { post: PostDetail; onOpen: (path:
           <Icon name="arrow-left" size={16} />{t(back)}
         </a>
       </nav>
-      <PostCover template={post.template} art={post.coverArt} alt={post.coverAlt} size="hero">
+      <PostCover template={post.template} art={post.coverArt} alt={post.coverAlt} size="hero" hue={post.series?.hue}>
         <PostChips post={post} />
         <h1 className="sk-news-post__title">{post.title}</h1>
         {post.summary ? <p className="sk-news-post__summary">{post.summary}</p> : null}
@@ -134,8 +128,10 @@ export function PostArticle({ post, onOpen }: { post: PostDetail; onOpen: (path:
             </p>
           ) : null}
           {post.sample ? <p className="sk-news-post__sample"><Icon name="info" size={16} />{t('news.sampleNote')}</p> : null}
+          <SeriesLine post={post} onOpen={onOpen} />
+          {post.crisisLines ? <CrisisLines onOpen={onOpen} /> : null}
           <PostBody template={post.template} blocks={post.body} onOpen={onOpen} />
-          {spec.review ? (
+          {post.healthNote || TEMPLATES[post.template].review ? (
             <aside className="sk-news-post__note" aria-label={t('news.healthNoteAria')}>
               <Icon name="info" size={18} />
               <p>
@@ -168,7 +164,7 @@ export function PostArticle({ post, onOpen }: { post: PostDetail; onOpen: (path:
           ) : null}
         </div>
         <aside className="sk-news-post__side">
-          <ShareLinks post={post} />
+          <ShareBar post={post} />
         </aside>
       </div>
 
@@ -184,6 +180,14 @@ export function PostArticle({ post, onOpen }: { post: PostDetail; onOpen: (path:
   );
 }
 
+/** Count one view of a published post (a number only; nothing about the reader). Samples are never counted. */
+function useViewCount(post: PostDetail | null): void {
+  useEffect(() => {
+    if (!post || post.sample || !getSetting('content.stats_enabled')) return;
+    new ContentRepository().hit(post.section, post.slug, 'view').catch(() => undefined);
+  }, [post]);
+}
+
 /**
  * /blog/:slug and /news/:slug (WebPost): one published post in its template,
  * with share links, related posts and the newsletter band. A draft or a wrong
@@ -196,6 +200,7 @@ export function PostPage({ section }: { section: SectionPath }): React.ReactElem
   const [state, setState] = useState<{ phase: 'loading' | 'ready' | 'missing' | 'error'; post: PostDetail | null }>({ phase: 'loading', post: null });
   const [attempt, setAttempt] = useState(0);
   usePostHead(state.post, t('news.publisher'));
+  useViewCount(state.post);
 
   useEffect(() => {
     let live = true;

@@ -4,7 +4,7 @@ import { apiRequest } from '@/data/services/http';
 export type AnnouncementKind = 'ANNOUNCEMENT' | 'OFFER';
 export type AnnouncementStatus = 'SCHEDULED' | 'SENDING' | 'SENT' | 'CANCELLED';
 
-export interface AnnouncementCounts {
+interface AnnouncementCounts {
   devices: number;
   sent: number;
   delivered: number;

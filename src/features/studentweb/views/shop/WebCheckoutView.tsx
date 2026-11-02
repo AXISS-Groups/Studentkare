@@ -15,8 +15,12 @@ import { orderRef } from '@/features/phoneKit/orderRef';
 import { plural } from '@/features/phoneKit/plural';
 import { PayStepView } from '@/features/payments/views/PayStepView';
 import { navigate } from '@/lib/utils/workflowRouting';
+import { Rise } from '@/design-system';
+import { SoftIcon } from '@/design-system/m2';
 import { EmptyPanel } from '../parts';
-import { CartLines, cartUnits, rise } from './m2WebParts';
+import { CartLines } from './ShopCartRail';
+import { cartUnits } from './shopShared';
+
 
 const PAID = new Set(['PAID', 'PARTIALLY_REFUNDED', 'REFUNDED']);
 
@@ -58,13 +62,15 @@ export const WebCheckoutView = observer(function WebCheckoutView() {
   }, [paidNow, vm, cart]);
 
   const head = (
-    <div className="sk-m2w-checkout__head sk-m2w-rise">
-      <div>
-        <span className="sk-m2w-eyebrow">{t('m2.med.eyebrow')}</span>
-        <h1 className="sk-m2w-h1">{t('sw.checkout.title')}</h1>
+    <Rise index={0}>
+      <div className="sk-m2w-checkout__head">
+        <div>
+          <span className="sk-m2w-eyebrow">{t('m2.med.eyebrow')}</span>
+          <h1 className="sk-m2w-h1">{t('sw.checkout.title')}</h1>
+        </div>
+        <span className="sk-m2w-secure"><Icon name="lock-3" size={16} color="var(--sk-color-positive)" />{t('sw.checkout.secure')}</span>
       </div>
-      <span className="sk-m2w-secure"><Icon name="lock-3" size={16} color="var(--sk-color-positive)" />{t('sw.checkout.secure')}</span>
-    </div>
+    </Rise>
   );
   const track = (order: LiveOrder) => routerNavigate(`/orders?order=${encodeURIComponent(order.id)}`);
 
@@ -110,62 +116,68 @@ export const WebCheckoutView = observer(function WebCheckoutView() {
       <div className="sk-m2w-cq">
       <form className="sk-m2w-checkout" onSubmit={(event) => { event.preventDefault(); void vm.placeOrder(cart); }}>
         <div className="sk-m2w-checkout__main">
-          <section className="sk-m2w-panel sk-m2w-step sk-m2w-rise" style={rise(1)} aria-labelledby="sk-m2w-step1">
-            <h2 id="sk-m2w-step1" className="sk-m2w-h3">{t('sw.checkout.step1')}</h2>
-            <div className="sk-m2w-options" role="radiogroup" aria-label={t('shopweb.checkout.arrangement')}>
-              {(['pickup', 'delivery'] as const).map((mode) => (
-                <label key={mode} className={`sk-m2w-option sk-m2w-lift${d.mode === mode ? ' is-on' : ''}`}>
-                  <input type="radio" name="sk-m2w-mode" value={mode} checked={d.mode === mode} onChange={() => vm.setDelivery({ mode })} />
-                  <span className="sk-m2w-option__icon" aria-hidden="true"><Icon name={mode === 'pickup' ? 'house-outline' : 'truck-2'} size={20} /></span>
-                  <span className="sk-m2w-option__text"><strong>{mode === 'pickup' ? t('cart.pickup') : t('cart.delivery')}</strong><small>{mode === 'pickup' ? t('sw.checkout.pickupMeta') : t('sw.checkout.deliveryMeta')}</small></span>
-                </label>
-              ))}
-            </div>
-            <div className="sk-m2w-fields">
-              {d.mode === 'delivery' ? (
-                <label className="sk-m2w-field sk-m2w-field--wide">
-                  <span>{t('cart.address')}</span>
-                  <textarea required minLength={10} maxLength={300} value={d.address} onChange={(event) => vm.setDelivery({ address: event.target.value })} />
-                </label>
-              ) : null}
-              <label className="sk-m2w-field">
-                <span>{t('cart.city')}</span>
-                <input required minLength={2} maxLength={100} value={d.city} onChange={(event) => vm.setDelivery({ city: event.target.value })} />
-              </label>
-              <label className="sk-m2w-field">
-                <span>{t('cart.pincode')}</span>
-                <input required inputMode="numeric" pattern="[1-9][0-9]{5}" maxLength={6} value={d.pincode} onChange={(event) => vm.setDelivery({ pincode: event.target.value })} />
-              </label>
-            </div>
-            <p className="sk-m2w-meta">{t('phone.checkout.whereNote')}</p>
-          </section>
-
-          <section className="sk-m2w-panel sk-m2w-step sk-m2w-rise" style={rise(2)} aria-labelledby="sk-m2w-step2">
-            <h2 id="sk-m2w-step2" className="sk-m2w-h3">{t('sw.checkout.step2')}</h2>
-            {needsSlot ? (
-              <>
-                <p className="sk-m2w-meta">{t('phone.checkout.whenMeta')}</p>
-                <div className="sk-m2w-fields">
-                  <label className="sk-m2w-field">
-                    <span>{t('m2w.checkout.date')}</span>
-                    <input required type="date" value={vm.slotDate} onChange={(event) => vm.setSlot(event.target.value, vm.slotTime)} />
+          <Rise index={1}>
+            <section className="sk-m2w-panel sk-m2w-step" aria-labelledby="sk-m2w-step1">
+              <h2 id="sk-m2w-step1" className="sk-m2w-h3">{t('sw.checkout.step1')}</h2>
+              <div className="sk-m2w-options" role="radiogroup" aria-label={t('shopweb.checkout.arrangement')}>
+                {(['pickup', 'delivery'] as const).map((mode) => (
+                  <label key={mode} className={`sk-m2w-option${d.mode === mode ? ' is-on' : ''}`}>
+                    <input type="radio" name="sk-m2w-mode" value={mode} checked={d.mode === mode} onChange={() => vm.setDelivery({ mode })} />
+                    <span className="sk-m2w-option__icon" aria-hidden="true"><Icon name={mode === 'pickup' ? 'house-outline' : 'truck-2'} size={20} /></span>
+                    <span className="sk-m2w-option__text"><strong>{mode === 'pickup' ? t('cart.pickup') : t('cart.delivery')}</strong><small>{mode === 'pickup' ? t('sw.checkout.pickupMeta') : t('sw.checkout.deliveryMeta')}</small></span>
                   </label>
-                  <label className="sk-m2w-field">
-                    <span>{t('m2w.checkout.time')}</span>
-                    <input required type="time" value={vm.slotTime} onChange={(event) => vm.setSlot(vm.slotDate, event.target.value)} />
+                ))}
+              </div>
+              <div className="sk-m2w-fields">
+                {d.mode === 'delivery' ? (
+                  <label className="sk-m2w-field sk-m2w-field--wide">
+                    <span>{t('cart.address')}</span>
+                    <textarea required minLength={10} maxLength={300} value={d.address} onChange={(event) => vm.setDelivery({ address: event.target.value })} />
                   </label>
-                </div>
-                <p className="sk-m2w-meta">{t('phone.checkout.whenNote')}</p>
-              </>
-            ) : (
-              <p className="sk-m2w-meta">{t('sw.checkout.slotProvider')}</p>
-            )}
-          </section>
+                ) : null}
+                <label className="sk-m2w-field">
+                  <span>{t('cart.city')}</span>
+                  <input required minLength={2} maxLength={100} value={d.city} onChange={(event) => vm.setDelivery({ city: event.target.value })} />
+                </label>
+                <label className="sk-m2w-field">
+                  <span>{t('cart.pincode')}</span>
+                  <input required inputMode="numeric" pattern="[1-9][0-9]{5}" maxLength={6} value={d.pincode} onChange={(event) => vm.setDelivery({ pincode: event.target.value })} />
+                </label>
+              </div>
+              <p className="sk-m2w-meta">{t('phone.checkout.whereNote')}</p>
+            </section>
+          </Rise>
 
-          <section className="sk-m2w-panel sk-m2w-step sk-m2w-rise" style={rise(3)} aria-labelledby="sk-m2w-step3">
-            <h2 id="sk-m2w-step3" className="sk-m2w-h3">{t('sw.checkout.step3')}</h2>
-            <p className="sk-m2w-meta">{t('sw.checkout.payLater')}</p>
-          </section>
+          <Rise index={2}>
+            <section className="sk-m2w-panel sk-m2w-step" aria-labelledby="sk-m2w-step2">
+              <h2 id="sk-m2w-step2" className="sk-m2w-h3">{t('sw.checkout.step2')}</h2>
+              {needsSlot ? (
+                <>
+                  <p className="sk-m2w-meta">{t('phone.checkout.whenMeta')}</p>
+                  <div className="sk-m2w-fields">
+                    <label className="sk-m2w-field">
+                      <span>{t('m2w.checkout.date')}</span>
+                      <input required type="date" value={vm.slotDate} onChange={(event) => vm.setSlot(event.target.value, vm.slotTime)} />
+                    </label>
+                    <label className="sk-m2w-field">
+                      <span>{t('m2w.checkout.time')}</span>
+                      <input required type="time" value={vm.slotTime} onChange={(event) => vm.setSlot(vm.slotDate, event.target.value)} />
+                    </label>
+                  </div>
+                  <p className="sk-m2w-meta">{t('phone.checkout.whenNote')}</p>
+                </>
+              ) : (
+                <p className="sk-m2w-meta">{t('sw.checkout.slotProvider')}</p>
+              )}
+            </section>
+          </Rise>
+
+          <Rise index={3}>
+            <section className="sk-m2w-panel sk-m2w-step" aria-labelledby="sk-m2w-step3">
+              <h2 id="sk-m2w-step3" className="sk-m2w-h3">{t('sw.checkout.step3')}</h2>
+              <p className="sk-m2w-meta">{t('sw.checkout.payLater')}</p>
+            </section>
+          </Rise>
         </div>
 
         <aside className="sk-m2w-checkout__side">
@@ -221,26 +233,28 @@ function OrderPlaced({ order, savedPaise, onTrack, onShop }: { order: LiveOrder;
     { key: 'points', icon: 'sparkle', title: t('phone.success.points'), meta: t('phone.shop.pointsNote') },
   ];
   return (
-    <section className="sk-m2w-panel sk-m2w-placed sk-m2w-rise" aria-labelledby="sk-m2w-placed-title" data-testid="m2w-order-placed">
-      <span className="sk-m2w-placed__tick" aria-hidden="true"><Icon name="check" size={28} strokeWidth={3} /></span>
-      <div role="status" className="sk-m2w-placed__head">
-        <h2 id="sk-m2w-placed-title" className="sk-m2w-h1">{t('phone.success.title')}</h2>
-        <p className="sk-m2w-meta">{paid ? t('phone.success.body') : t('phone.success.bodyUnpaid')}</p>
-        <span className="sk-m2w-ref">{t('phone.success.order')} <strong>{orderRef(order.id)}</strong></span>
-      </div>
-      <ul className="sk-m2w-placed__rows">
-        {rows.map((row) => (
-          <li key={row.key}>
-            <span className="sk-m2w-soft sk-m2w-soft--sm" aria-hidden="true"><Icon name={row.icon} size={18} /></span>
-            <span><strong>{row.title}</strong>{row.meta ? <small>{row.meta}</small> : null}</span>
-          </li>
-        ))}
-      </ul>
-      <div className="sk-m2w-placed__ctas">
-        <button type="button" className="sk-m2w-btn sk-m2w-btn--primary" onClick={() => onTrack(order)}>{t('phone.success.track')}<Icon name="arrow-right" size={16} /></button>
-        <button type="button" className="sk-m2w-btn sk-m2w-btn--outline" onClick={onShop}>{t('phone.success.backToShop')}</button>
-        <button type="button" className="sk-m2w-btn sk-m2w-btn--ghost" onClick={() => navigate('orders')}>{t('sw.checkout.orders')}</button>
-      </div>
-    </section>
+    <Rise index={0}>
+      <section className="sk-m2w-panel sk-m2w-placed" aria-labelledby="sk-m2w-placed-title" data-testid="m2w-order-placed">
+        <span className="sk-m2w-placed__tick" aria-hidden="true"><Icon name="check" size={28} strokeWidth={3} /></span>
+        <div role="status" className="sk-m2w-placed__head">
+          <h2 id="sk-m2w-placed-title" className="sk-m2w-h1">{t('phone.success.title')}</h2>
+          <p className="sk-m2w-meta">{paid ? t('phone.success.body') : t('phone.success.bodyUnpaid')}</p>
+          <span className="sk-m2w-ref">{t('phone.success.order')} <strong>{orderRef(order.id)}</strong></span>
+        </div>
+        <ul className="sk-m2w-placed__rows">
+          {rows.map((row) => (
+            <li key={row.key}>
+              <SoftIcon icon={row.icon} hue="indigo" tile={40} iconSize={18} />
+              <span><strong>{row.title}</strong>{row.meta ? <small>{row.meta}</small> : null}</span>
+            </li>
+          ))}
+        </ul>
+        <div className="sk-m2w-placed__ctas">
+          <button type="button" className="sk-m2w-btn sk-m2w-btn--primary" onClick={() => onTrack(order)}>{t('phone.success.track')}<Icon name="arrow-right" size={16} /></button>
+          <button type="button" className="sk-m2w-btn sk-m2w-btn--outline" onClick={onShop}>{t('phone.success.backToShop')}</button>
+          <button type="button" className="sk-m2w-btn sk-m2w-btn--ghost" onClick={() => navigate('orders')}>{t('sw.checkout.orders')}</button>
+        </div>
+      </section>
+    </Rise>
   );
 }

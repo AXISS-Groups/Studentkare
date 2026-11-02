@@ -24,7 +24,7 @@ export const SHOP_KINDS: readonly ShopKind[] = ['all', 'product', 'lab', 'consul
 export const asShopKind = (value: string | null): ShopKind => (SHOP_KINDS as readonly string[]).includes(value ?? '') ? value as ShopKind : 'all';
 
 /** Categories the catalogue uses (`shopweb.category.<id>` labels). */
-export const CATEGORIES = ['vitamins', 'skin', 'devices', 'nutrition', 'first-aid', 'ayurveda', 'medicines', 'labs', 'general-care', 'diabetes', 'heart', 'stomach', 'liver', 'bone-joint', 'kidney', 'respiratory', 'eye', 'vaccines'] as const;
+const CATEGORIES = ['vitamins', 'skin', 'devices', 'nutrition', 'first-aid', 'ayurveda', 'medicines', 'labs', 'general-care', 'diabetes', 'heart', 'stomach', 'liver', 'bone-joint', 'kidney', 'respiratory', 'eye', 'vaccines'] as const;
 
 const KIND_ICON: Record<ShopKind, SkIconName> = { all: 'search-2', product: 'pill-2', lab: 'flask-2', consultation: 'doctor-2', vaccine: 'pipette' };
 const SORT_LABEL: Record<SortOrder, MessageKey> = { name: 'sw.search.sort.name', priceLow: 'sw.search.sort.priceLow', priceHigh: 'sw.search.sort.priceHigh' };

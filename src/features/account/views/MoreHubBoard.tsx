@@ -20,9 +20,9 @@ export interface MoreAccount {
 }
 
 /** A destination on the board; omitted where the platform has no such screen (the row is then not drawn). */
-export type MoreDestination =
+type MoreDestination =
   | 'account' | 'records' | 'orders' | 'requests' | 'notifications' | 'pass' | 'verify' | 'campus' | 'profile'
-  | 'permissions' | 'ayush' | 'crisis' | 'plan' | 'help' | 'joinClinician' | 'joinPartner' | 'website';
+  | 'permissions' | 'security' | 'ayush' | 'crisis' | 'plan' | 'help' | 'joinClinician' | 'joinPartner' | 'website';
 
 export interface MoreHubLinks {
   open: Partial<Record<MoreDestination, () => void>>;
@@ -45,6 +45,7 @@ const ROWS: readonly Row[] = [
   { key: 'campus', icon: 'house-outline', tone: 'action', title: 'pb.more.campus', meta: 'pb.more.campusMeta' },
   { key: 'profile', icon: 'map-pin', tone: 'danger', title: 'pb.more.profile', meta: 'pb.more.profileMeta' },
   { key: 'permissions', icon: 'shield-2', tone: 'positive', title: 'pb.more.permissions', meta: 'pb.more.permissionsMeta' },
+  { key: 'security', icon: 'lock-4', tone: 'action', title: 'nav.security', meta: 'pb.more.securityMeta' },
   { key: 'ayush', icon: 'sparkle', tone: 'action', title: 'pb.more.ayush', meta: 'pb.more.ayushMeta' },
   { key: 'crisis', icon: 'phone-2', tone: 'attention', title: 'pb.more.crisis', meta: 'pb.more.crisisMeta' },
   { key: 'plan', icon: 'briefcase', tone: 'action', title: 'pb.more.plan', meta: 'pb.more.planMeta' },

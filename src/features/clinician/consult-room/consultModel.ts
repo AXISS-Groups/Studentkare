@@ -19,7 +19,7 @@ import type { EncounterNoteApi } from '../encounter-note/encounterModel';
  * on the server is "closed" by it, and the screen does not claim otherwise.
  */
 
-export interface ConsultState {
+interface ConsultState {
   status: string;
   studentJoined: boolean;
   providerJoined: boolean;
@@ -27,7 +27,7 @@ export interface ConsultState {
   liveMedia: boolean;
 }
 
-export interface ConsultPrescription {
+interface ConsultPrescription {
   id: string;
   encounterId: string;
   patientId: string;

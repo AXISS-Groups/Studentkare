@@ -141,7 +141,7 @@ export function mapCritical(
  * escalation, in English, because it is part of the clinical record rather
  * than of this screen's language.
  */
-export function escalationNote(escalation: Escalation): string {
+function escalationNote(escalation: Escalation): string {
   const key = escalation === 'call' ? 'clinCritical.record.call' : escalation === 'clinic' ? 'clinCritical.record.clinic' : 'clinCritical.record.followUp';
   return translate('en', key);
 }

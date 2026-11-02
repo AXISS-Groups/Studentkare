@@ -4,7 +4,27 @@ import type { MessageKey } from '@/i18n';
 import { Icon } from '@/design-system/icons';
 import { useLiveCart } from '@/data/contexts/LiveCartContext';
 import type { LiveCatalogItem } from '@/data/types/workflowTypes';
+import type { CartLine } from '@/features/shopPhone/viewmodel/PhoneShopViewModel';
+import { labArt, productArt } from '@/features/m2store/data/storeArt';
+import type { Art } from '@/features/m2store/data/storeArt';
 import { navigate } from '@/lib/utils/workflowRouting';
+import './webshop.css';
+
+/**
+ * The drawing on a listing, as the phone boards draw it (`storeArt`): products
+ * and labs by name and category; consults and vaccines by their service.
+ * Decoration only: it follows the listing, never anything about the person
+ * looking (Rule L).
+ */
+export function itemArt(item: Pick<LiveCatalogItem, 'kind' | 'name' | 'category'>): Art {
+  if (item.kind === 'lab') return labArt(item.name);
+  if (item.kind === 'consultation') return { icon: 'stetho', hue: 'blue' };
+  if (item.kind === 'vaccine') return { icon: 'syringe', hue: 'amber' };
+  return productArt(item);
+}
+
+export const cartUnits = (lines: readonly CartLine[]): number => lines.reduce((sum, line) => sum + line.quantity, 0);
+export const cartPaise = (lines: readonly CartLine[]): number => lines.reduce((sum, line) => sum + line.item.pricePaise * line.quantity, 0);
 
 /** How long the "added" message stays on screen. */
 const NOTICE_MS = 3000;

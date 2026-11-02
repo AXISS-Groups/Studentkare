@@ -8,7 +8,7 @@ import { CAMPUS_MIN_GROUP, groupFigure, useBoardLoad, useBoardRef } from './boar
 import './campus-boards.css';
 
 /** One sitting of a wellness session, as GET /wellness/timetable returns it. */
-export interface WellnessSitting {
+interface WellnessSitting {
   slotId: string;
   slotStart: string;
   slotEnd: string;
@@ -31,7 +31,7 @@ export interface WellnessSession {
 export interface WellnessSource { load(): Promise<WellnessSession[]> }
 
 /** The same timetable the student screen reads: what students see is what the campus sees. */
-export const liveWellnessSource: WellnessSource = {
+const liveWellnessSource: WellnessSource = {
   load: () => apiRequest<WellnessSession[]>('/wellness/timetable'),
 };
 

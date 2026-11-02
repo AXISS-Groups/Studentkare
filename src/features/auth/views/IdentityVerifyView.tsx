@@ -16,7 +16,7 @@ import { CampusVerifyView } from './CampusVerifyView';
  * number to the campus, GET/POST /campus/verification) in a sheet; closing it
  * reloads GET /identity, so the row only changes when the server says so.
  */
-export function IdentityVerifyView(): React.ReactElement {
+export function IdentityVerifyView({ wide }: { wide?: boolean } = {}): React.ReactElement {
   const t = useT();
   const go = useNavigate();
   const phone = usePhoneFrame();
@@ -30,7 +30,7 @@ export function IdentityVerifyView(): React.ReactElement {
     <>
       <IdentityVerifyPanel
         viewModel={vm}
-        wide={!phone}
+        wide={wide ?? !phone}
         links={{
           openCampusVerification: () => setCampusOpen(true),
           openCrisis: () => go('/crisis'),

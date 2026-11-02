@@ -7,7 +7,7 @@ import {
   ClaimAdjudication,
 } from '../../types';
 
-export const mockStudents: StudentProfile[] = [
+const mockStudents: StudentProfile[] = [
   {
     id: 'STU-2026-9812',
     fullName: 'Rohit Sharma',
@@ -82,9 +82,9 @@ export const mockStudents: StudentProfile[] = [
   },
 ];
 
-export const initialStudent: StudentProfile = mockStudents[0];
+const initialStudent: StudentProfile = mockStudents[0];
 
-export const initialRecords: HealthRecord[] = [
+const initialRecords: HealthRecord[] = [
   {
     id: 'REC-01',
     title: 'Complete Blood Count (CBC) & Lipid Profile',
@@ -247,7 +247,7 @@ export const initialRecords: HealthRecord[] = [
   },
 ];
 
-export const initialCamp: HealthCamp = {
+const initialCamp: HealthCamp = {
   id: 'CAMP-2026-MONSOON',
   campName: 'Monsoon Term Annual Health Checkup',
   institution: 'IIT Hyderabad (Kandi Campus)',
@@ -326,7 +326,7 @@ export const initialCamp: HealthCamp = {
 };
 
 // VERTICAL C — Health Services Fabric Initial Data (M19-M21)
-export const initialFabricProviders: FabricProvider[] = [
+const initialFabricProviders: FabricProvider[] = [
   {
     id: 'PROV-101',
     name: 'Dr. Lal PathLabs · Central Hub',
@@ -389,7 +389,7 @@ export const initialFabricProviders: FabricProvider[] = [
   },
 ];
 
-export const initialFabricOrders: FabricOrder[] = [
+const initialFabricOrders: FabricOrder[] = [
   {
     id: 'ORD-FAB-8901',
     partnerId: 'PARTNER-CAMPUS-CORE',

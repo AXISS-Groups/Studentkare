@@ -3,6 +3,7 @@ import time
 from datetime import date, timedelta
 
 import pytest
+from clock import platform_today
 from sqlalchemy import select
 from test_workflow_api import harness, login, register  # noqa: F401 — pytest fixtures
 
@@ -40,7 +41,7 @@ def place(factory, name, kind="HOSPITAL", campus="", verified=0, active=True, **
             address="Road 1", area="Kandi", pincode="502285", latitude=extra.pop("latitude", 17.59),
             longitude=extra.pop("longitude", 78.12), phone=extra.pop("phone", "+91 40 2301 6000"),
             emergency_24x7=extra.pop("emergency", False), hours_text="Mon–Sat 9–5", source="Called the front desk",
-            source_url="", verified_on=None if verified is None else date.today() - timedelta(days=verified),
+            source_url="", verified_on=None if verified is None else platform_today() - timedelta(days=verified),
             campus=campus, active=active, created_at=time.time(), updated_at=time.time(), **extra)
         db.add(row)
         db.commit()
@@ -109,7 +110,7 @@ def test_detail_follows_the_same_rules(harness):
     detail = client.get(f"{ROOT}/{shown}").json()
     assert detail["departments"] == ["Emergency", "Orthopaedics"]
     assert detail["coordinates"] == {"latitude": 17.59, "longitude": 78.12}
-    assert detail["verifiedOn"] == date.today().isoformat() and detail["sourceNote"] == "Called the front desk"
+    assert detail["verifiedOn"] == platform_today().isoformat() and detail["sourceNote"] == "Called the front desk"
     assert client.get(f"{ROOT}/{hidden}").status_code == 404
     assert client.get(f"{ROOT}/{campus_only}").status_code == 404
     assert client.get(f"{ROOT}/nonsense").status_code == 404
@@ -158,7 +159,7 @@ def test_curation_roles_and_scope(harness):
     client, factory, codes = harness
     body = {"kind": "HOSPITAL", "name": "Area Hospital", "source": "Called the front desk", "phone": "040 2301 6000",
             "latitude": 17.5, "longitude": 78.3, "departments": ["Emergency", " Emergency ", "Paediatrics"],
-            "verifiedOn": date.today().isoformat()}
+            "verifiedOn": platform_today().isoformat()}
     assert client.post(OPS, json=body).status_code == 401
     _, student_headers = student(client, codes)
     assert client.post(OPS, headers=student_headers, json=body).status_code == 403
@@ -204,7 +205,7 @@ def test_a_campus_admin_with_no_campus_is_refused(harness):
 
 
 @pytest.mark.parametrize("change", [
-    {"verifiedOn": (date.today() + timedelta(days=2)).isoformat()},
+    {"verifiedOn": (platform_today() + timedelta(days=2)).isoformat()},
     {"latitude": 17.5},
     {"latitude": 0.0, "longitude": 0.0},
     {"phone": "call reception"},
@@ -228,11 +229,11 @@ def test_unverifying_a_place_takes_it_off_the_directory(harness):
     account(factory, "admin", "SUPER_ADMIN")
     headers = login(client, codes, "admin@example.test")
     created = client.post(OPS, headers=headers, json={"kind": "PHARMACY", "name": "Night Pharmacy", "source": "Visited",
-                                                      "verifiedOn": date.today().isoformat()}).json()
+                                                      "verifiedOn": platform_today().isoformat()}).json()
     assert names(client.get(ROOT)) == ["Night Pharmacy"]
     assert client.patch(f"{OPS}/{created['id']}", headers=headers, json={"verifiedOn": None}).json()["status"] == "UNVERIFIED"
     assert names(client.get(ROOT)) == []
-    stale = (date.today() - timedelta(days=setting("care_directory.verification_max_age_days") + 5)).isoformat()
+    stale = (platform_today() - timedelta(days=setting("care_directory.verification_max_age_days") + 5)).isoformat()
     assert client.patch(f"{OPS}/{created['id']}", headers=headers, json={"verifiedOn": stale}).json()["status"] == "STALE"
     assert names(client.get(ROOT)) == []
 

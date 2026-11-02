@@ -14,8 +14,9 @@ import { M2HomeView } from './M2HomeView';
 import type { ServiceKey } from './M2HomeView';
 
 /**
- * Mobile 2.0 Home on the web: /health for a signed-in student at phone width,
- * inside the student phone frame. Each part hands off to the route that does
+ * Mobile 2.0 Home on the web: /health for a signed-in student, inside the
+ * student phone frame at phone width and, `wide`, in the desktop shell's page
+ * column (parity phase 2: it replaces the old Your Care dashboard there). Each part hands off to the route that does
  * the job today; SOS opens the frame's helplines, the avatar its More panel.
  */
 /** The shop opened on a filter (`/shop?category=` or `?q=`), as ShopPhoneRoute reads it. */
@@ -27,7 +28,7 @@ const SERVICE_ROUTES = {
   medicines: 'shop', labs: 'lab-tests', consults: 'care', nearMe: 'find-care', vaccines: 'preventive-care', insurance: 'insurance', campus: 'digital-id',
 } as const satisfies Record<Exclude<ServiceKey, 'you'>, string>;
 
-export function M2HomeRoute(): React.ReactElement {
+export function M2HomeRoute({ wide = false }: { wide?: boolean } = {}): React.ReactElement {
   const { user } = useAuth();
   const routerNavigate = useNavigate();
   const slot = usePhoneHeaderSlot();
@@ -38,6 +39,7 @@ export function M2HomeRoute(): React.ReactElement {
   const count = cart ? cart.lines.reduce((sum, line) => sum + line.quantity, 0) : 0;
   return (
     <M2HomeView
+      wide={wide}
       name={user?.fullName ?? ''}
       campus={user?.university ?? ''}
       verified={user?.isVerifiedStudent === true}

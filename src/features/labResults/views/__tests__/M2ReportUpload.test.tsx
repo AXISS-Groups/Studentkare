@@ -231,3 +231,64 @@ describe('M2ReportUpload · Check and Saved', () => {
     expect(violations, describeViolations(violations)).toEqual([]);
   });
 });
+
+// ── Wide (Tier 1 parity plan 2026-10-24 §1, §5) ────────────────────────────────
+
+describe('M2ReportUpload wide (desktop web shell)', () => {
+  function view(vm: ReportUploadViewModel, wide: boolean, online = true) {
+    return <LanguageProvider><M2ReportUploadView vm={vm} sources={{ photo: vi.fn(), pdf: vi.fn() }} online={online} links={{ back: vi.fn(), trends: vi.fn() }} wide={wide} /></LanguageProvider>;
+  }
+
+  it('puts the stepper and the sources on the left and the step’s card on the right, with no SOS of its own', async () => {
+    const { request, repo } = setup(checkRoutes());
+    const { container } = render(view(new ReportUploadViewModel('Lab report', request, repo), true));
+    const split = screen.getByTestId('m2-upload-split');
+    expect(split).toContainElement(screen.getByTestId('m2-upload-stepper'));
+    expect(split).toContainElement(screen.getByTestId('m2-upload-photo'));
+    expect(split).toContainElement(screen.getByTestId('m2-upload-hero'));
+    expect(screen.queryByRole('button', { name: /SOS/i })).toBeNull();
+    const violations = await axeViolations(container);
+    expect(violations, describeViolations(violations)).toEqual([]);
+  });
+
+  it('offline disables all three sources at the desktop layout', () => {
+    const { request, repo } = setup(checkRoutes());
+    render(view(new ReportUploadViewModel('Lab report', request, repo), true, false));
+    expect(screen.queryByRole('button', { name: /^Take a photo|^Upload a PDF|^From a StudentKare lab/ })).toBeNull();
+    expect(screen.getByTestId('m2-upload-lab')).toHaveAttribute('aria-label', expect.stringContaining('Needs a connection'));
+  });
+
+  it('keeps a half-filled Check form when the layout changes, and Save stays off until a row is valid at both layouts', async () => {
+    const { request, repo } = setup(checkRoutes());
+    const vm = new ReportUploadViewModel('Lab report', request, repo);
+    const { rerender } = render(view(vm, false));
+    await act(async () => { await vm.upload(picked); });
+    fireEvent.click(screen.getByRole('button', { name: 'Add the first value' }));
+    type('m2-upload-date', '2026-06-20');
+    type('m2-upload-test-0', 'HbA1c');
+    type('m2-upload-value-0', '7.6');
+    expect(screen.getByTestId('m2-upload-save')).toHaveAttribute('aria-disabled', 'true');
+    rerender(view(vm, true));
+    expect(screen.getByTestId('m2-upload-split')).toContainElement(screen.getByTestId('m2-upload-row-0'));
+    expect(screen.getByTestId('m2-upload-test-0')).toHaveValue('HbA1c');
+    expect(screen.getByTestId('m2-upload-value-0')).toHaveValue('7.6');
+    expect(screen.getByTestId('m2-upload-date')).toHaveValue('2026-06-20');
+    expect(screen.getByTestId('m2-upload-save')).toHaveAttribute('aria-disabled', 'true');
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Save HbA1c' }));
+    type('m2-upload-unit-0', '%');
+    await waitFor(() => expect(screen.getByTestId('m2-upload-save')).not.toHaveAttribute('aria-disabled', 'true'));
+    rerender(view(vm, false));
+    expect(screen.queryByTestId('m2-upload-split')).toBeNull();
+    expect(screen.getByTestId('m2-upload-value-0')).toHaveValue('7.6');
+    expect(screen.getByTestId('m2-upload-save')).not.toHaveAttribute('aria-disabled', 'true');
+  });
+
+  it('an invalid report date is called out at the desktop layout', async () => {
+    const { request, repo } = setup(checkRoutes());
+    const vm = new ReportUploadViewModel('Lab report', request, repo);
+    render(view(vm, true));
+    await act(async () => { await vm.upload(picked); });
+    type('m2-upload-date', '2026-13-40');
+    expect(screen.getByText('Enter the date as year-month-day, for example 2026-06-20.')).toBeInTheDocument();
+  });
+});

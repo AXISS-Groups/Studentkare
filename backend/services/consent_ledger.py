@@ -21,6 +21,11 @@ Two kinds of purpose:
   - ``BLOOD_DONOR_CONTACT``: the donor record's ``visible`` flag, which
     blood_emergency_agent.campus_donors requires before a donor is listed to campus
     staff or messaged by a blood SOS.
+  - ``WALLET_GOOGLE``: the emergency card in Google Wallet, whose contents Google
+    stores (services/wallet_passes.py). The flag is this ledger itself: a Google pass
+    is written only while an active record exists. It is given on the emergency card
+    after the student picks the fields (never from the privacy page), with its own
+    wording version; withdrawing it voids every Google pass.
 
 The ledger is ``care_consent_records``, append-only: giving an optional consent adds
 a row (purpose, wording version, time); withdrawing it stamps ``withdrawn_at`` on
@@ -55,6 +60,10 @@ router = APIRouter(prefix="/api/privacy", tags=["Privacy and consent"])
 # src/i18n/areas/privacy.ts). Change that copy → change this, so each record says
 # which wording was agreed to.
 OPTIONAL_CONSENT_VERSION = "optional-2026-10-23"
+# "wlt.google.consent*" in src/i18n/areas/wallet.ts and "privacy.purpose.WALLET_GOOGLE.*"
+# (plan tier1-emergency-card-wallet-2026-10-24; legal review owed).
+WALLET_GOOGLE = "WALLET_GOOGLE"
+WALLET_GOOGLE_CONSENT_VERSION = "wallet-google-2026-10-24"
 REQUIRED_FOR_SERVICE = "REQUIRED_FOR_SERVICE"
 NOT_REGISTERED = "BLOOD_DONOR_NOT_REGISTERED"
 
@@ -107,6 +116,8 @@ class OptionalPurpose:
     write: Callable[[DBSession, str, bool], None]
     # Whether the privacy page can turn it on (False: it needs its own screen first).
     grantable_here: Callable[[DBSession, str], bool]
+    # The wording version recorded when it is given.
+    version: str = OPTIONAL_CONSENT_VERSION
 
 
 def _read_notif(field: str) -> Callable[[DBSession, str], bool]:
@@ -161,6 +172,23 @@ def _always(_db: DBSession, _account_id: str) -> bool:
     return True
 
 
+def _never(_db: DBSession, _account_id: str) -> bool:
+    return False
+
+
+def _read_wallet_google(db: DBSession, account_id: str) -> bool:
+    return any(not row.withdrawn_at for row in _for_purpose(_rows(db, account_id), WALLET_GOOGLE))
+
+
+def _write_wallet_google(db: DBSession, account_id: str, on: bool) -> None:
+    if on:
+        raise HTTPException(409, {"code": "WALLET_FROM_CARD",
+                                  "message": "Add the card to Google Wallet from your emergency card."})
+    from services import wallet_passes  # the wallet service imports this module
+
+    wallet_passes.revoke(db, account_id, wallet_passes.CONSENT_WITHDRAWN, platform="GOOGLE")
+
+
 OPTIONAL_PURPOSES: dict[str, OptionalPurpose] = {
     p.key: p for p in (
         OptionalPurpose("AYUSH_HISTORY", _read_notif("ayush_history_enabled"), _write_notif("ayush_history_enabled"), _always),
@@ -168,6 +196,7 @@ OPTIONAL_PURPOSES: dict[str, OptionalPurpose] = {
         OptionalPurpose("PICKUP_LOCATION", _read_notif("pickup_location_enabled"), _write_notif("pickup_location_enabled"), _always),
         OptionalPurpose("PREVENTIVE_OFFERS", _read_prev("promotions_enabled"), _write_prev("promotions_enabled"), _always),
         OptionalPurpose("SEASONAL_EDUCATION", _read_prev("seasonal_education_enabled"), _write_prev("seasonal_education_enabled"), _always),
+        OptionalPurpose(WALLET_GOOGLE, _read_wallet_google, _write_wallet_google, _never, WALLET_GOOGLE_CONSENT_VERSION),
     )
 }
 
@@ -193,7 +222,7 @@ def record_change(db: DBSession, actor_id: str, account_id: str, purpose: str, g
     now = time.time()
     active = [row for row in _for_purpose(_rows(db, account_id), purpose) if not row.withdrawn_at]
     if granted and not active:
-        row = M.ConsentRecord(id=str(uuid.uuid4()), account_id=account_id, version=OPTIONAL_CONSENT_VERSION,
+        row = M.ConsentRecord(id=str(uuid.uuid4()), account_id=account_id, version=OPTIONAL_PURPOSES[purpose].version,
                               purposes=[purpose], language=language, recorded_at=now, withdrawn_at=0.0)
         db.add(row)
         _audit(db, actor_id, f"CONSENT_GIVEN_{purpose}", row.id)
@@ -264,4 +293,8 @@ def change_consent(purpose: str, body: ConsentChange, response: Response, user=D
         raise HTTPException(404, "No such consent.")
     set_optional(db, user["id"], user["id"], purpose, body.granted, body.language)
     db.commit()
+    if purpose == WALLET_GOOGLE:
+        from services import wallet_passes
+
+        wallet_passes.deliver(db, user["id"])
     return view(db, user["id"])

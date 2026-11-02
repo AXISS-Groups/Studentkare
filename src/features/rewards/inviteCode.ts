@@ -6,7 +6,7 @@
  */
 
 /** No 0/O, 1/I/L, so a code read aloud or typed from a screenshot is unambiguous. */
-export const INVITE_CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+const INVITE_CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 export const INVITE_CODE_LENGTH = 8;
 /** The query parameter of the sign-up link that carries a code (/signup?ref=CODE). */
 export const INVITE_CODE_PARAM = 'ref';

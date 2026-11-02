@@ -142,7 +142,7 @@ export interface HealthKitModule {
 const METRES_PER_KM = 1000;
 
 /** Local noon of a YYYY-MM-DD day: a moment inside that day in any timezone the phone is in. */
-export function middayOf(date: string): Date | null {
+function middayOf(date: string): Date | null {
   const [y, m, d] = date.split('-').map(Number);
   if (!y || !m || !d) return null;
   return new Date(y, m - 1, d, 12);
@@ -188,7 +188,7 @@ export function createHealthKitConnector(health: HealthKitModule, options: { ope
 
 // --- Google Health Connect (read only) -------------------------------------------------------------
 
-export type HealthConnectSdk = 'available' | 'unavailable' | 'update_required';
+type HealthConnectSdk = 'available' | 'unavailable' | 'update_required';
 export type HealthConnectRecord = 'Steps' | 'Distance';
 export interface HealthConnectModule {
   sdkStatus(): Promise<HealthConnectSdk>;

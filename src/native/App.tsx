@@ -4,7 +4,7 @@ import * as Notifications from 'expo-notifications';
 import { LanguageProvider, useLanguage, useT } from '@/i18n';
 import { color } from '@/design-system/theme';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { AppStoresProvider } from '@/store/AppStores';
 import { NavigationProvider, useNavigate } from './navigation';
@@ -36,9 +36,13 @@ import {
   VerifyGateScreen,
 } from './AuthScreens';
 import { HealthVaultRoute } from '@/features/vault/views/HealthVaultNativeView';
-import { EmergencySosNativeView } from '@/modules/m04-emergency/view/EmergencySosNativeView';
+import type { VaultTab } from '@/features/vault/views/HealthVaultView';
+import { VisitSummaryView } from '@/features/vault/views/VisitSummaryView';
+import { VisitSummaryViewModel } from '@/features/vault/viewmodel/VisitSummaryViewModel';
+import { nativePhoneArt } from './phoneArt';
+import { EmergencySosNativeView } from '@/features/emergency/views/EmergencySosNativeView';
 import { DigitalIdRoute as DigitalIdScreen } from '@/features/digital_id/views/DigitalIdNativeView';
-import { CartCheckoutNativeView } from '@/modules/m16-checkout/view/CartCheckoutNativeView';
+import { CartCheckoutNativeView } from '@/features/shopPhone/views/CartCheckoutNativeView';
 import { AppointmentBookingNativeView } from '@/features/appointments/views/AppointmentBookingNativeView';
 import { AppointmentBookingViewModel } from '@/features/appointments/viewmodel/AppointmentBookingViewModel';
 import { ShopRoute } from '@/features/marketplace/views/ShopNativeView';
@@ -50,6 +54,11 @@ import { NotificationViewModel } from '@/features/notifications/viewmodel/Notifi
 import { NotificationSettingsRoute } from '@/features/notifications/views/NotificationSettingsView';
 import { LeaveCampusRoute } from '@/features/campus/views/LeaveCampusView';
 import { DeleteAccountRoute } from '@/features/account/views/DeleteAccountView';
+import { SignInSecurityRoute } from '@/features/account/views/SignInSecurityView';
+import { PrivacyConsentView } from '@/features/privacy/PrivacyConsentView';
+import { DataRightsView } from '@/features/privacy/DataRightsView';
+import type { RoutePath } from '@/lib/utils/workflowRouting';
+import { MyPassRoute } from '@/features/digital_id/views/MyPassBoard';
 import { RewardsRoute } from '@/features/rewards/views/RewardsView';
 import { MyRequestsRoute, NewRequestRoute } from '@/features/requests/views/RequestsViews';
 import { ReturnRequestBoardScreen, SearchScreen } from './PhoneBoardsScreens';
@@ -86,6 +95,8 @@ import { AppointmentsBoard } from '@/features/appointments/views/AppointmentsBoa
 import { MoreHubBoard } from '@/features/account/views/MoreHubBoard';
 import { BoardScreen } from '@/design-system/board/BoardKit';
 import { LegalLinksNative } from '@/features/auth/views/LegalLinksNative';
+import { EmergencyCardRoute as EmergencyCardBoardRoute } from '@/features/emergency/views/EmergencyCardBoard';
+import { IceContactsRoute } from '@/features/emergency/views/IceContactsBoard';
 
 export type RootStackParamList = {
   // keep-sorted start
@@ -103,12 +114,15 @@ export type RootStackParamList = {
   Consult: undefined;
   Consults: undefined;
   CreateAccount: undefined;
+  DataRights: undefined;
   DeleteAccount: undefined;
   DigitalId: undefined;
   Emergency: undefined;
+  EmergencyCard: undefined;
   FindCare: { segment?: 'hospitals' | 'pharmacies' | 'ambulance' | 'doctors'; placeId?: string } | undefined;
   Home: undefined;
   HostelVisit: undefined;
+  IceContacts: undefined;
   Insights: undefined;
   Insurance: undefined;
   LabList: undefined;
@@ -127,8 +141,10 @@ export type RootStackParamList = {
   Notifications: undefined;
   Orders: { orderId?: string } | undefined;
   Partnerships: undefined;
+  Pass: undefined;
   Plans: undefined;
   PreventiveCare: undefined;
+  Privacy: undefined;
   Product: { itemId: string };
   Profile: undefined;
   Programs: undefined;
@@ -138,15 +154,17 @@ export type RootStackParamList = {
   ReturnRequest: undefined;
   Rewards: undefined;
   Search: undefined;
+  Security: undefined;
   SignIn: undefined;
   Steps: undefined;
   Teleconsult: undefined;
   Trends: undefined;
   TwoFactorSetup: undefined;
   Vaccines: undefined;
-  Vault: undefined;
+  Vault: { tab?: VaultTab } | undefined;
   Verify: undefined;
   VerifyGate: undefined;
+  VisitSummaries: undefined;
   Water: undefined;
   Wellness: undefined;
   YourCare: undefined;
@@ -166,12 +184,21 @@ function CampRoute() {
 
 function VaultRoute() {
   const navigate = useNavigate();
+  const route = useRoute();
+  const params = (route.params ?? {}) as { tab?: VaultTab };
   // Coming back from photographing a record shows it: each visit loads afresh.
   const [visit, setVisit] = useState(0);
   useFocusEffect(useCallback(() => setVisit((v) => v + 1), []));
   return (
     <SafeAreaView edges={['left', 'right', 'bottom']} style={{ flex: 1 }}>
-      <HealthVaultRoute key={visit} onCapture={() => navigate('CaptureRecord')} />
+      <HealthVaultRoute
+        key={visit}
+        initialTab={params.tab}
+        onCapture={() => navigate('CaptureRecord')}
+        onEmergencyCard={() => navigate('EmergencyCard')}
+        onVisitSummaries={() => navigate('VisitSummaries')}
+        art={{ hero: nativePhoneArt.vaultRecords, empty: nativePhoneArt.doctorOnScreen, rx: nativePhoneArt.rxPills }}
+      />
     </SafeAreaView>
   );
 }
@@ -199,6 +226,34 @@ function EmergencyRoute() {
         back: () => navigation.goBack(),
         nearestHospitals: () => navigate('FindCare', { segment: 'hospitals' }),
       }} />
+    </BoardFrame>
+  );
+}
+
+/**
+ * The emergency card and its contacts on Expo (plan tier1-emergency-card-wallet-2026-10-24):
+ * the same phone boards as the web, so the student can add the card to the phone's
+ * wallet here. Call 112 stays on the card in every state.
+ */
+function EmergencyCardRoute() {
+  const navigate = useNavigate();
+  const navigation = useNavigation();
+  return (
+    <BoardFrame>
+      <EmergencyCardBoardRoute links={{
+        back: () => navigation.goBack(),
+        contacts: () => navigate('IceContacts'),
+        nearestHospitals: () => navigate('FindCare', { segment: 'hospitals' }),
+      }} />
+    </BoardFrame>
+  );
+}
+
+function IceContactsScreenRoute() {
+  const navigation = useNavigation();
+  return (
+    <BoardFrame>
+      <IceContactsRoute links={{ back: () => navigation.goBack() }} />
     </BoardFrame>
   );
 }
@@ -256,6 +311,7 @@ function MoreRoute() {
               notifications: () => navigate('NotificationSettings'),
               campus: () => navigate('DigitalId'),
               crisis: () => navigate('Emergency'),
+              security: () => navigate('Security'),
             },
             signOut: () => { setSigningOut(true); return signOut().finally(() => setSigningOut(false)); },
             signingOut,
@@ -387,13 +443,114 @@ function RefillRequestScreen() {
 
 function DeleteAccountScreen() {
   const navigation = useNavigation();
-  return <BoardFrame><DeleteAccountRoute links={{ back: () => navigation.goBack() }} /></BoardFrame>;
+  // `shares` isn't wired on web either (no Consent-inbox destination has been
+  // decided since it moved into the Vault's "Who can see" tab), so the
+  // combined "worried?" sentence stays dark here too — matches web, not a gap.
+  return <BoardFrame><DeleteAccountRoute links={{ back: () => navigation.goBack(), security: () => navigation.navigate('Security') }} /></BoardFrame>;
 }
 
 function LeaveCampusScreen() {
   const navigate = useNavigate();
   const navigation = useNavigation();
   return <BoardFrame><LeaveCampusRoute links={{ openRecords: () => navigate('Vault'), back: () => navigation.goBack() }} /></BoardFrame>;
+}
+
+function SecurityScreen() {
+  const navigation = useNavigation();
+  return <BoardFrame><SignInSecurityRoute onBack={() => navigation.goBack()} /></BoardFrame>;
+}
+
+/**
+ * Privacy & consent (§13): the same `PrivacyConsentView` the web draws, with
+ * every `navigate()` call (web's own DOM-only router) replaced by this
+ * stack's navigation — phase 4, approved 2026-11-01. `lifeshare` (the blood-
+ * donor-contact "give it on its own page first" link) has no native target:
+ * that screen (`LifeShareExchangeScreen`) is itself an unreviewed Tier 1
+ * screen per its own file comment, so it stays a no-op here rather than
+ * wiring into something not cleared for native. "Export my data" is the same
+ * — the web data-export flow is still DOM-only and hasn't been rebuilt for
+ * native, so it's a no-op pending that follow-up, not a crash.
+ */
+function PrivacyScreen() {
+  const navigate = useNavigate();
+  const navigation = useNavigation();
+  return (
+    <BoardFrame>
+      <PrivacyConsentView links={{
+        back: () => navigation.goBack(),
+        delete: () => navigate('DeleteAccount'),
+        emergencyCard: () => navigate('EmergencyCard'),
+        shares: () => navigate('Vault', { tab: 'who' }),
+        dataRights: () => navigate('DataRights'),
+        export: () => {},
+        lifeshare: () => {},
+      }} />
+    </BoardFrame>
+  );
+}
+
+/**
+ * Check-in pass (§22, Tier 1 — approved by Krishna Chintakayala 2026-10-21):
+ * the same `MyPassRoute`/`MyPassBoard` the web draws. Already pure RN with
+ * no DOM/router calls of its own, so it drops in exactly as-is — phase 4
+ * registration only, approved 2026-11-01.
+ */
+function PassScreen() {
+  const navigation = useNavigation();
+  const navigate = useNavigate();
+  return <BoardFrame><MyPassRoute links={{ back: () => navigation.goBack(), digitalId: () => navigate('DigitalId') }} /></BoardFrame>;
+}
+
+/**
+ * Your data rights (§14): the same `DataRightsView` the web draws, resolving
+ * its generic `RoutePath` actions to this stack instead of web's `navigate()`
+ * — phase 4, approved 2026-11-01. `data-export` and `support` have no native
+ * screen yet (the web pages behind them are still DOM-only, unrebuilt), so
+ * they're no-ops here pending that follow-up, not crashes.
+ */
+function DataRightsScreen() {
+  const navigate = useNavigate();
+  const resolve = (route: RoutePath) => {
+    if (route === 'profile') return navigate('Profile');
+    if (route === 'emergency-card') return navigate('EmergencyCard');
+    if (route === 'delete-account') return navigate('DeleteAccount');
+    if (route === 'privacy-consent') return navigate('Privacy');
+    // 'data-export', 'support', and anything else: no native screen yet.
+  };
+  return (
+    <BoardFrame>
+      <DataRightsView onNavigate={resolve} />
+    </BoardFrame>
+  );
+}
+
+/**
+ * Visit summaries (§8): the same `VisitSummaryView` the web draws, on its own
+ * view-model — native-specific route (not the web `VisitSummaryRoute`, which
+ * reads `?id=` off `@/core/navigation`'s web-only router) since there's no
+ * notification deep-link into one summary yet; opening the list and picking a
+ * visit works the same as web from there.
+ */
+function VisitSummariesScreen() {
+  const navigate = useNavigate();
+  const navigation = useNavigation();
+  const [vm] = useState(() => new VisitSummaryViewModel());
+  useEffect(() => {
+    void vm.load();
+    return () => vm.dispose();
+  }, [vm]);
+  return (
+    <SafeAreaView edges={['left', 'right', 'bottom']} style={{ flex: 1 }}>
+      <VisitSummaryView
+        viewModel={vm}
+        links={{
+          openPrescriptions: () => navigate('Vault', { tab: 'prescriptions' }),
+          openAppointments: () => navigate('Appointments'),
+          back: () => navigation.goBack(),
+        }}
+      />
+    </SafeAreaView>
+  );
 }
 
 function NotificationSettingsScreen() {
@@ -430,7 +587,7 @@ function RootNavigator() {
       initialRouteName={held ? 'TwoFactorSetup' : signedIn ? 'Home' : 'Landing'}
       screenOptions={{ animation: 'none', headerTintColor: color.action }}
       layout={isStudent ? ({ state, navigation, children }) => (
-        <StudentShell currentRoute={state.routes[state.index]?.name ?? ''} navigate={(route) => navigation.navigate(route)}>
+        <StudentShell currentRoute={state.routes[state.index]?.name ?? ''} navigate={(route) => navigation.navigate(route)} onSos={() => navigation.navigate('Emergency')}>
           {children}
         </StudentShell>
       ) : undefined}
@@ -466,6 +623,8 @@ function RootNavigator() {
           <Stack.Screen name="Appointments" component={AppointmentsRoute} options={{ title: t('nav.appointments'), headerShown: false }} />
           <Stack.Screen name="BookAppointment" component={BookAppointmentRoute} options={{ title: t('care.appts.book') }} />
           <Stack.Screen name="DigitalId" component={DigitalIdRoute} options={{ title: t('onboard.nav.healthId'), headerShown: false }} />
+          <Stack.Screen name="EmergencyCard" component={EmergencyCardRoute} options={{ title: t('sf.card.title'), headerShown: false }} />
+          <Stack.Screen name="IceContacts" component={IceContactsScreenRoute} options={{ title: t('sf.card.contactsLink'), headerShown: false }} />
           <Stack.Screen name="Checkout" component={CheckoutRoute} options={{ title: t('onboard.nav.checkout') }} />
           <Stack.Screen name="Teleconsult" component={TeleconsultRoute} options={{ title: t('onboard.nav.videoConsult') }} />
           {/* A student gets Mobile 2.0 Ask Ayush (general mode); other roles keep the plain chat. */}
@@ -475,6 +634,11 @@ function RootNavigator() {
           <Stack.Screen name="Appearance" component={AppearanceRoute} options={{ title: t('appearance.title') }} />
           <Stack.Screen name="LeaveCampus" component={LeaveCampusScreen} options={{ title: t('onboard.nav.leaveCampus'), headerShown: false }} />
           <Stack.Screen name="DeleteAccount" component={DeleteAccountScreen} options={{ title: t('onboard.nav.deleteAccount'), headerShown: false }} />
+          <Stack.Screen name="Security" component={SecurityScreen} options={{ title: t('nav.security'), headerShown: false }} />
+          <Stack.Screen name="Privacy" component={PrivacyScreen} options={{ title: t('privacy.title'), headerShown: false }} />
+          <Stack.Screen name="DataRights" component={DataRightsScreen} options={{ title: t('privacy.rights.title'), headerShown: false }} />
+          <Stack.Screen name="Pass" component={PassScreen} options={{ title: t('pass.title'), headerShown: false }} />
+          <Stack.Screen name="VisitSummaries" component={VisitSummariesScreen} options={{ title: t('care.visit.listTitle'), headerShown: false }} />
           <Stack.Screen name="Rewards" component={RewardsRoute} options={{ title: t('nav.rewards') }} />
           <Stack.Screen name="MyRequests" component={MyRequestsScreen} options={{ title: t('nav.myRequests'), headerShown: false }} />
           <Stack.Screen name="ReturnRequest" component={ReturnRequestBoardScreen} options={{ title: t('onboard.nav.returnRequest') }} />

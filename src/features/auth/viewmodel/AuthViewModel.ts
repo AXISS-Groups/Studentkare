@@ -32,7 +32,7 @@ function isChannel(value: unknown): value is Channel {
 }
 
 /** Reads the 503 detail ({ code, channel, channels }); anything else is treated as the chosen channel failing. */
-export function channelFailureFrom(error: ApiError, chosen: Channel, known: Channel[]): ChannelFailure {
+function channelFailureFrom(error: ApiError, chosen: Channel, known: Channel[]): ChannelFailure {
   const detail = error.detail;
   if (detail && typeof detail === 'object' && !Array.isArray(detail)) {
     const record = detail as { channel?: unknown; channels?: unknown };
