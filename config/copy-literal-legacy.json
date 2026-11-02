@@ -17,7 +17,7 @@
   "src/features/auth/views/CreateAccountNativeView.tsx",
   "src/features/auth/views/ProfileSetupView.tsx",
   "src/features/chat/views/AyushChatNativeView.tsx",
-  "src/features/clinician/shared/ClinicianConsoleFrame.tsx",
+  "src/features/clinician/views/ClinicianConsoleFrame.tsx",
   "src/features/dev/views/IconGalleryView.tsx",
   "src/features/emergency/views/EmergencySosNativeView.tsx",
   "src/features/emergency/views/EmergencySosWebView.tsx",

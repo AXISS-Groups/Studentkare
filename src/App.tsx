@@ -20,7 +20,7 @@ import { configurePostHog, initPostHog } from './lib/analytics/posthog';
 import { AppRouter } from './app/Router';
 import { isPublicPath } from './core/routing/registry';
 import { isVendorPath } from './screens/vendor/vendorRoutes';
-import { isClinicianConsolePath } from './features/clinician/shared/clinicianRoutes';
+import { isClinicianConsolePath } from './features/clinician/model/clinicianRoutes';
 import { isWorkspacePath } from './features/health/module';
 import { usePhoneFrame } from './design-system/navigation/usePhoneFrame';
 import { isCampusConsolePath, opensInCampusConsole } from './features/campus/console/campusConsoleRoutes';
