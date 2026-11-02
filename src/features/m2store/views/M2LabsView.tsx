@@ -67,7 +67,7 @@ function TestTube() {
     transform: [{ translateY: v.interpolate({ inputRange: [0, 1], outputRange: [0, -46] }) }],
   });
   return (
-    <View pointerEvents="none" style={styles.tube}>
+    <View style={[styles.tube, { pointerEvents: 'none' }]}>
       <View style={styles.tubeFill} />
       {ambient ? <Animated.View style={[styles.bubble, styles.bubbleA, bubble(rise)]} /> : null}
       {ambient ? <Animated.View style={[styles.bubble, styles.bubbleB, bubble(rise2)]} /> : null}
@@ -100,8 +100,8 @@ function Steps() {
     <M2Card style={styles.how} testID="m2-labs-how">
       <M2SectionHead title={t('m2.labs.how')} />
       <View style={styles.steps}>
-        <View pointerEvents="none" style={styles.track} />
-        <Animated.View pointerEvents="none" style={[styles.trackFill, { width }]} />
+        <View style={[styles.track, { pointerEvents: 'none' }]} />
+        <Animated.View style={[styles.trackFill, { width, pointerEvents: 'none' }]} />
         {STEPS.map((key, i) => (
           <View key={key} style={styles.step}>
             <Gradient colors={heroStops('violet')} style={styles.stepNo}><Text style={styles.stepNoText}>{i + 1}</Text></Gradient>
@@ -225,7 +225,7 @@ export function M2LabsView({ links, phase, packages, retry, block, wide = false 
   return (
     <View style={styles.screen}>
       <ScrollView style={styles.screen} contentContainerStyle={styles.content} testID="m2-labs">
-        <Gradient colors={[SERVICE_HUES.violet.soft, color.canvas]} radial={{ x: 0.5, y: 0.5 }} style={styles.glow} pointerEvents="none" />
+        <Gradient colors={[SERVICE_HUES.violet.soft, color.canvas]} radial={{ x: 0.5, y: 0.5 }} style={[styles.glow, { pointerEvents: 'none' }]} />
         {board}
       </ScrollView>
     </View>

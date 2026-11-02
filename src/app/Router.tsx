@@ -1,8 +1,8 @@
 import React, { Suspense } from 'react';
 import { Navigate, Route, Routes, useLocation } from '@/core/navigation';
-import { getModules, resolveAccess, joinPath } from './registry';
-import type { FeatureRoute } from './registry';
-import { ScreenLoading } from '@/components/health/ScreenLoading';
+import { getModules, resolveAccess, joinPath } from '@/core/routing/registry';
+import type { FeatureRoute } from '@/core/routing/registry';
+import { ScreenLoading } from '@/design-system/feedback/ScreenLoading';
 import { useAuth } from '@/data/contexts/AuthContext';
 import { homeForRole } from '@/lib/utils/workflowRouting';
 import { useT } from '@/i18n';

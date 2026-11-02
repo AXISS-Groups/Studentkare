@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/data/contexts/AuthContext';
 import { useLocation } from '@/core/navigation';
-import { ScreenLoading } from '@/components/health/ScreenLoading';
+import { ScreenLoading } from '@/design-system/feedback/ScreenLoading';
 import { WorkspaceRouteScreen } from '@/features/health/screens/WorkspaceRouteScreen';
 import { useApiResource } from '@/hooks/api/useApiResource';
 import { useT } from '@/i18n';

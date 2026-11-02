@@ -37,7 +37,7 @@ function baseReadable() {
 
 function atBase(path) {
   try {
-    return JSON.parse(execFileSync('git', ['show', `${base}:${path}`], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }));
+    return JSON.parse(execFileSync('git', ['show', `${base}:${path.replace(/\\/g, '/')}`], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }));
   } catch {
     return null; // the list is new since the base: nothing to compare with
   }

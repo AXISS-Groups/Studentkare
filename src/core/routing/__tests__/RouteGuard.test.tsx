@@ -12,9 +12,9 @@ vi.mock('@/core/navigation', () => ({
   Route: () => null,
   Routes: () => null,
 }));
-vi.mock('@/components/health/ScreenLoading', () => ({ ScreenLoading: () => <p>Loading…</p> }));
+vi.mock('@/design-system/feedback/ScreenLoading', () => ({ ScreenLoading: () => <p>Loading…</p> }));
 
-import { RouteGuard } from '../Router';
+import { RouteGuard } from '@/app/Router';
 import { resolveAccess } from '../registry';
 import '@/features/health/module';
 

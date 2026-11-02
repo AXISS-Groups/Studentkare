@@ -6,7 +6,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { skTokens } from '../generated/skTokens';
 import { cssVarName } from '@/design-system/theme';
 import { ThemeProvider, useTheme } from '../theme';
-import { AppearanceSetting } from '@/components/interface/AppearanceSetting';
+import { AppearanceSetting } from '@/features/account/views/AppearanceSetting';
 
 const css = readFileSync(resolve(process.cwd(), 'src/theme/tokens/generated/sk-tokens.css'), 'utf8');
 const block = (selector: string) => css.slice(css.indexOf(selector), css.indexOf('}', css.indexOf(selector)));

@@ -1,6 +1,6 @@
 import React, { Suspense, lazy } from 'react';
 import { useAuth } from '@/data/contexts/AuthContext';
-import { ScreenLoading } from '@/components/health/ScreenLoading';
+import { ScreenLoading } from '@/design-system/feedback/ScreenLoading';
 
 const WorkspaceScreen = lazy(() => import('@/screens/workspace/WorkspaceScreen').then((m) => ({ default: m.WorkspaceScreen })));
 const PublicMedicineInfoPage = lazy(() => import('../views/PublicMedicineInfoPage').then((m) => ({ default: m.PublicMedicineInfoPage })));

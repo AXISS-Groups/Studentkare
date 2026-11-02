@@ -3,7 +3,7 @@ import { useRoutePath } from '@/core/navigation';
 import { LiveMarketplaceScreen } from '@/screens/marketplace/LiveMarketplaceScreen';
 import { asRoutePath } from '@/lib/utils/workflowRouting';
 import { useAuth } from '@/data/contexts/AuthContext';
-import { ScreenLoading } from '@/components/health/ScreenLoading';
+import { ScreenLoading } from '@/design-system/feedback/ScreenLoading';
 
 // Loaded only for a signed-in student, so the public shop does not carry the workspace.
 const WorkspaceScreen = lazy(() => import('@/screens/workspace/WorkspaceScreen').then((m) => ({ default: m.WorkspaceScreen })));

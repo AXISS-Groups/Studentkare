@@ -59,10 +59,10 @@ export function GradientHeroCard({ stops, chipFill, eyebrow, title, body, cta, a
     <Pressable role="link" accessibilityRole="link" {...cardLabel(label)} onPress={onPress} testID={testID}
       style={(state: PressState) => [styles.press, style, lift(state)]}>
       <Gradient colors={stops} style={[styles.card, wide ? styles.cardWide : null, { height: height ?? (wide ? HEIGHT_WIDE : HEIGHT_PHONE) }]}>
-        <View pointerEvents="none" style={styles.ringBig} />
-        <View pointerEvents="none" style={styles.ringSmall} />
+        <View style={[styles.ringBig, { pointerEvents: 'none' }]} />
+        <View style={[styles.ringSmall, { pointerEvents: 'none' }]} />
         {art ?? (icon ? (
-          <Animated.View pointerEvents="none" style={[styles.glyph, { transform: floatTransform(float, space.s6) }]}>
+          <Animated.View style={[styles.glyph, { pointerEvents: 'none', transform: floatTransform(float, space.s6) }]}>
             <Icon name={icon} size={32} color={color.onHero} strokeWidth={1.9} />
           </Animated.View>
         ) : null)}

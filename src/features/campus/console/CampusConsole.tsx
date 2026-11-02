@@ -8,7 +8,7 @@ import type { RoutePath } from '@/lib/utils/workflowRouting';
 import { ConfirmDialog } from '@/components/interface/ConfirmDialog';
 import { FormError, useMutation } from '@/components/interface/WorkflowUI';
 import { PageTransition } from '@/components/interface/PageTransition';
-import { ScreenLoading } from '@/components/health/ScreenLoading';
+import { ScreenLoading } from '@/design-system/feedback/ScreenLoading';
 import { SignOutConsequences } from '@/features/auth/views/SignOutConsequences';
 import { initialsOf } from '@/features/clinician/shared/names';
 import { CAMPUS_PAGES } from './campusPages';

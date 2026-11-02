@@ -5,7 +5,7 @@ import * as http from '@/data/services/http';
 import type { Account } from '@/data/types/workflowTypes';
 import { AuthProvider } from '@/data/contexts/AuthContext';
 import { ThemeProvider, applyCachedTheme } from '@/theme/tokens/theme';
-import { AppearanceSetting } from '@/components/interface/AppearanceSetting';
+import { AppearanceSetting } from '@/features/account/views/AppearanceSetting';
 import { AccountAppearanceProvider } from '../AccountAppearanceSync';
 
 const student: Account = {

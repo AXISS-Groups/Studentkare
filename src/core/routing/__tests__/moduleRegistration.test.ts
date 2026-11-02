@@ -78,7 +78,7 @@ describe('feature modules survive tree-shaking', () => {
 });
 
 describe('the root is a route, not a redirect', () => {
-  const router = readFileSync(join(root, 'src/core/routing/Router.tsx'), 'utf-8');
+  const router = readFileSync(join(root, 'src/app/Router.tsx'), 'utf-8');
   const landingModule = readFileSync(join(root, 'src/features/landing/module.ts'), 'utf-8');
 
   it('does not bounce / to another path', () => {

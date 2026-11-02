@@ -1,5 +1,5 @@
-import { pushDevicesApi } from '@/features/notifications/data/pushDevice';
-import type { PushDeviceController, PushDeviceState } from '@/features/notifications/data/pushDevice';
+import { pushDevicesApi } from '@/data/services/pushDevice';
+import type { PushDeviceController, PushDeviceState } from '@/data/services/pushDevice';
 
 /**
  * Web Push for the student web app (public/sw.js shows the push and opens the

@@ -400,7 +400,7 @@ def test_commerce_code_never_imports_lab_results():
     from services import commerce_session  # noqa: F401 — the module commerce paths run through
     backend = pathlib.Path(lab_results.__file__).resolve().parent.parent
     commerce_modules = [p for p in (backend / "services").glob("*.py")
-                        if "commerce_db" in p.read_text() and p.name not in {"commerce_session.py", "workflow_api.py"}]
+                        if "commerce_db" in p.read_text(encoding="utf-8") and p.name not in {"commerce_session.py", "workflow_api.py"}]
     for path in commerce_modules:
-        text = path.read_text()
+        text = path.read_text(encoding="utf-8")
         assert "lab_results" not in text and "LabResult" not in text, path.name

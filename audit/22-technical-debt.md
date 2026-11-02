@@ -95,7 +95,7 @@ Difficulty: S (≤1 day), M (≤1 week), L (multi-week). Priority: P0 now, P1 be
 - **Previous assessment:** CRITICAL, OPEN: no roles or grants in any migration.
 - **Change since last audit:** verified new code (`c7e0685`, `2ad0862`, `6314c67`).
 - **Remaining gaps:**
-  1. **Fail-open default.** When the role is not usable, `commerce_db` passes the ordinary full-privilege session through. Refusing requests needs `RULE_L_REQUIRE_GRANTS=1`, and no compose file, Helm value or env example sets it.
+  1. **Fail-open default.** RESOLVED in application code (`commerce_session.py:grants_required()` now defaults to failing closed whenever `APP_ENV=production`, refusing requests with 503 unless `sk_commerce` is in force; `RULE_L_REQUIRE_GRANTS=0` is retained only as an explicit DBA provisioning override). Deployment templates (`.env.prod.example`, `docker-compose.prod.yml`, Helm `production.yaml`) also inject `RULE_L_REQUIRE_GRANTS=1`.
   2. **Only commerce paths are restricted.** Every other route uses `workflow_db` as the app login, which can still read every table. `sk_clinical` is created but nothing runs as it.
   3. **Unverified grants.** If the deploy user lacks CREATEROLE, the migration only logs a warning. Whether production has the grants can only be learned from `GET /api/ops/rule-l`.
   4. **Doc claim.** AGENTS.md guardrail 4 says "Enforced at Postgres grants and at the repository boundary". That is now true for commerce endpoints on a correctly provisioned database, and only there.

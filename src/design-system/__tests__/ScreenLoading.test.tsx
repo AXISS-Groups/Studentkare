@@ -1,7 +1,7 @@
 import React from 'react';
 import { act, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { ScreenLoading } from '../ScreenLoading';
+import { ScreenLoading } from '../feedback/ScreenLoading';
 
 beforeEach(() => vi.useFakeTimers());
 afterEach(() => vi.useRealTimers());

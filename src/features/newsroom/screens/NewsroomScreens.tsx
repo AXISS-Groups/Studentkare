@@ -1,5 +1,5 @@
 import React, { Suspense, lazy } from 'react';
-import { ScreenLoading } from '@/components/health/ScreenLoading';
+import { ScreenLoading } from '@/design-system/feedback/ScreenLoading';
 
 const NewsroomListPage = lazy(() => import('../views/NewsroomListPage').then((m) => ({ default: m.NewsroomListPage })));
 const PostPage = lazy(() => import('../views/PostPage').then((m) => ({ default: m.PostPage })));

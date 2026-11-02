@@ -403,7 +403,7 @@
     "NotificationSettings": [
       "src/features/notifications/views/NotificationSettingsView.tsx",
       "src/features/notifications/viewmodel/NotificationSettingsViewModel.ts",
-      "src/features/notifications/data/pushDevice.ts",
+      "src/data/services/pushDevice.ts",
       "src/native/hardware/push.ts"
     ],
     "ConsultSummary": [
@@ -690,7 +690,7 @@
       "src/design-system/student-shell/studentNav.ts",
       "src/design-system/overlays/ConfirmDialog.tsx",
       "src/lib/webPush.ts",
-      "src/features/notifications/data/pushDevice.ts"
+      "src/data/services/pushDevice.ts"
     ],
     "WebRequests": [
       "src/features/studentweb/views/t1/WebRequestsView.tsx",
@@ -2226,18 +2226,19 @@
       "source": "docs/plans/tier1-parity-2026-10-24.md \u00a720 (Q1, Q2: one Leave campus view laid out wide)",
       "redirects": {}
     },
+    "ShopHome": {
+      "by": [
+        "M2Medicines"
+      ],
+      "source": "design/screens/mobile-2-supersedes.md §1 (M2Medicines replaces ShopHome, ProductList)",
+      "redirects": {}
+    },
     "ProductDetail": {
       "by": [
         "M2Product"
       ],
-      "source": "design/screens/mobile-2-supersedes.md (M2Product replaces ProductDetail)"
-    },
-    "ShopHome": {
-      "by": [
-        "M2Home",
-        "M2Medicines"
-      ],
-      "source": "design/screens/mobile-2-supersedes.md (M2Home and M2Medicines replace ShopHome)"
+      "source": "design/screens/mobile-2-supersedes.md §1 (M2Product replaces ProductDetail)",
+      "redirects": {}
     }
   },
   "retiredIcons": {
