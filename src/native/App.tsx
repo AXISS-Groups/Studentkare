@@ -442,11 +442,12 @@ function RefillRequestScreen() {
 }
 
 function DeleteAccountScreen() {
+  const navigate = useNavigate();
   const navigation = useNavigation();
   // `shares` isn't wired on web either (no Consent-inbox destination has been
   // decided since it moved into the Vault's "Who can see" tab), so the
   // combined "worried?" sentence stays dark here too — matches web, not a gap.
-  return <BoardFrame><DeleteAccountRoute links={{ back: () => navigation.goBack(), security: () => navigation.navigate('Security') }} /></BoardFrame>;
+  return <BoardFrame><DeleteAccountRoute links={{ back: () => navigation.goBack(), security: () => navigate('Security') }} /></BoardFrame>;
 }
 
 function LeaveCampusScreen() {
