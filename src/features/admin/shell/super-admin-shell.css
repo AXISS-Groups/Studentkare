@@ -59,11 +59,17 @@
 
 /* Top right of the page: Alerts and the theme toggle */
 .sk-admin-shell .sk-admin-topbar {
+  position: relative;
+  z-index: 20;
   display: flex;
   align-items: center;
   justify-content: flex-end;
   gap: var(--sk-space-8);
   margin-bottom: var(--sk-space-8);
+  pointer-events: none;
+}
+.sk-admin-shell .sk-admin-topbar > * {
+  pointer-events: auto;
 }
 /* On the new screens the controls share the title's row, like the design's top-right
    pill. Older admin pages keep their own heading buttons there, so they get a row. */
@@ -76,8 +82,9 @@
     top: var(--sk-space-32);
     right: var(--sk-space-40);
     margin: 0;
+    z-index: 20;
   }
-  .sk-admin-shell .sk-admin-main:has(.sk-ops-console, .sk-admin-page) :is(.sk-ops-header, .sk-admin-page-header, .sk-admin-page .sk-ctp-head) {
+  .sk-admin-shell .sk-admin-main:has(.sk-ops-console, .sk-admin-page) :is(.sk-ops-header, .sk-admin-page-header, .sk-admin-page .sk-ctp-head, .sk-ctp-head) {
     padding-right: 340px;
   }
 }
