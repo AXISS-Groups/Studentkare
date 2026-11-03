@@ -1,7 +1,7 @@
 import React, { createContext, useContext } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useT } from '@/i18n';
-import { SosButton } from './M2Parts';
+import { SosButton } from './M2SosButton';
 
 /**
  * SOS in the header of every Mobile 2.0 board (founder decision, 23 Oct 2026,

@@ -13,7 +13,7 @@ import { useAuth } from '@/data/contexts/AuthContext';
 import { useApiResource } from '@/hooks/api/useApiResource';
 import type { IdentitySummary, MemberProfile } from '@/data/types/workflowTypes';
 import type { NotificationPreferences } from '@/features/notifications/viewmodel/NotificationSettingsViewModel';
-import { ProfileForm } from '@/screens/workspace/MemberProfilePanel';
+import { ProfileForm } from './ProfileForm';
 import { CardError, TileIcon } from '@/features/m2health/HealthParts';
 
 /**

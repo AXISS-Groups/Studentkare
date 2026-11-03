@@ -44,7 +44,7 @@ describe('Authenticated workspace routing', () => {
     const roles: AccountRole[] = ['STUDENT', 'VENDOR', 'NMC_DOCTOR', 'CAMPUS_ADMIN', 'COUNSELLOR', 'SUPER_ADMIN'];
     expect(new Set(routePaths).size).toBe(routePaths.length);
     for (const role of roles) expect(canAccessRoute(homeForRole(role), role)).toBe(true);
-    expect(homeForRole('STUDENT')).toBe('');
+    expect(homeForRole('STUDENT')).toBe('health');
     expect(homeForRole('VENDOR')).toBe('vendor');
     expect(homeForRole('NMC_DOCTOR')).toBe('clinician');
     expect(canAccessRoute('vendor', 'STUDENT')).toBe(false);

@@ -4,6 +4,7 @@ import * as Notifications from 'expo-notifications';
 import { LanguageProvider, useLanguage, useT } from '@/i18n';
 import { color } from '@/design-system/theme';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { AppStoresProvider } from '@/store/AppStores';
@@ -442,7 +443,7 @@ function RefillRequestScreen() {
 }
 
 function DeleteAccountScreen() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   // `shares` isn't wired on web either (no Consent-inbox destination has been
   // decided since it moved into the Vault's "Who can see" tab), so the
   // combined "worried?" sentence stays dark here too — matches web, not a gap.

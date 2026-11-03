@@ -1,16 +1,21 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import React from 'react';
 import { act, fireEvent, render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import * as http from '@/data/services/http';
+import { AuthProvider } from '@/data/contexts/AuthContext';
 import { LandingView, kindLabel, rupees } from '../LandingView';
 import { LandingCampusView } from '../LandingCampusView';
 import { LandingClinicianView } from '../LandingClinicianView';
 import { LandingPartnershipsView } from '../LandingPartnershipsView';
 import { LandingLabTestsView } from '../LandingLabTestsView';
 
-vi.mock('@/data/services/http', () => ({ apiRequest: vi.fn() }));
+vi.mock('@/data/services/http', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/data/services/http')>();
+  return { ...actual, apiRequest: vi.fn() };
+});
 const mocked = vi.mocked(http.apiRequest);
 
 function codeOf(path: string): string {
@@ -66,9 +71,17 @@ const item = (over: Partial<Record<string, unknown>> = {}) => ({
   ...over,
 });
 
+// LandingView reads useAuth (to skip straight to the workspace for a signed-in
+// visitor) and useLocation (to know it's mounted at '/'), so it needs both an
+// AuthProvider and a router context, not just the plain render() every other
+// landing page here uses.
+function renderLandingView() {
+  return render(<MemoryRouter initialEntries={['/']}><AuthProvider><LandingView /></AuthProvider></MemoryRouter>);
+}
+
 async function openLanding(body: unknown = { items: [item()], total: 1 }) {
   mocked.mockImplementation(() => Promise.resolve(body));
-  render(<LandingView />);
+  renderLandingView();
   await act(async () => {
     await Promise.resolve();
     await Promise.resolve();
@@ -178,7 +191,7 @@ describe('the student landing page', () => {
 
   it('drops the section on a failure rather than showing sample stock', async () => {
     (http as { apiRequest: unknown }).apiRequest = () => Promise.reject(new Error('down'));
-    render(<LandingView />);
+    renderLandingView();
     await act(async () => {
       await Promise.resolve();
       await Promise.resolve();

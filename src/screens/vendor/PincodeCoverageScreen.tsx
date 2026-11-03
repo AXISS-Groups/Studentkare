@@ -1,5 +1,5 @@
 import React from 'react';
-import { ProviderDirectoryPanel } from '../workspace/FulfilmentQueuePanel';
+import { ProviderDirectoryPanel } from '@/features/vault/views/ProviderDirectoryPanel';
 import { EmptyState } from '../../components/interface/WorkflowUI';
 import '../../theme/workflows.css';
 
