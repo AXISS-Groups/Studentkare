@@ -131,11 +131,9 @@ describe('public site links', () => {
     for (const href of hrefs) if (href !== ART_CREDIT.href) expect(routes.has(href), href).toBe(true);
   });
 
-  it('credit Shakuro for the medical illustrations, as their licence asks', () => {
+  it('does not render medical illustrations credit in the footer', () => {
     render(<PublicSiteFooter />);
-    const credit = screen.getByRole('link', { name: 'Medical illustrations by Shakuro' });
-    expect(credit).toHaveAttribute('href', 'https://shakuro.com');
-    expect(credit).toHaveAttribute('rel', 'noopener noreferrer');
+    expect(screen.queryByRole('link', { name: /Medical illustrations by Shakuro/i })).toBeNull();
   });
 
   it('give every link a 44 px target class', () => {

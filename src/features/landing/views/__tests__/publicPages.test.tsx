@@ -16,6 +16,8 @@ import { LandingPartnershipsView } from '../LandingPartnershipsView';
 import { ART_CREDIT } from '@/design-system/public-site/publicSiteNav';
 
 vi.mock('@/data/services/http', () => ({ apiRequest: vi.fn() }));
+vi.mock('@/data/contexts/AuthContext', () => ({ useAuth: () => ({ user: null, status: 'anonymous' }) }));
+vi.mock('@/core/navigation', () => ({ useLocation: () => ({ pathname: '/discover' }) }));
 vi.mock('@/components/clinical/ComprehensiveHealthCalculators', () => ({ ComprehensiveHealthCalculators: () => null }));
 const mocked = vi.mocked(http.apiRequest);
 
