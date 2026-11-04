@@ -39,6 +39,7 @@ from services.workflow_auth import (
     require_super_admin,
     session_payload,
     two_factor_required,
+    two_factor_setup_required,
     two_factor_setup_user,
     workflow_db,
 )
@@ -322,7 +323,8 @@ def status_2fa(response: Response, user: dict = Depends(two_factor_setup_user), 
     enabled = twofa_store.is_enabled(db, user["id"])
     account = db.get(M.Account, user["id"])
     required = account is not None and two_factor_required(db, account)
-    return {"enabled": enabled, "required": required, "setupRequired": required and not enabled}
+    setup_required = account is not None and two_factor_setup_required(db, account)
+    return {"enabled": enabled, "required": required, "setupRequired": setup_required}
 
 
 @router.post("/auth/2fa/setup")
@@ -449,4 +451,4 @@ def reset_2fa(account_id: str, body: TwoFactorResetInput, user: dict = Depends(r
                     resource_type="account", resource_id=account_id)
     db.commit()
     return {"id": account_id, "sessionsEnded": ended,
-            "setupRequired": two_factor_required(db, account)}
+            "setupRequired": two_factor_setup_required(db, account)}

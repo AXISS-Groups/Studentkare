@@ -134,7 +134,7 @@ function RouterShell() {
   return (
     <div className="wf-application" style={{ background: 'var(--sk-color-canvas)', minHeight: '100vh', width: '100%', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', flex: '1 0 auto' }}>
       <SEOHead />
-      {!isPublicView && <AmbientBackground />}
+      {!isPublicView && !hasOwnChrome && <AmbientBackground />}
       <a className="wf-skip-link" href="#main-content" onClick={event => {
         event.preventDefault();
         mainContent.current?.removeAttribute('data-route-focus');
@@ -210,7 +210,7 @@ const STAFF_SHELL_ROLES: ReadonlySet<string> = new Set(['COUNSELLOR', 'LAB_COLLE
 
 /** One key each for the /admin area, the partner, clinician, campus and student workspaces, so no shell is remounted between sections. */
 export function pageTransitionKey(pathname: string, role: string | null = null): string {
-  if (/^\/admin(\/|$)/.test(pathname)) return 'admin';
+  if (/^\/admin(\/|$)/.test(pathname) || role === 'SUPER_ADMIN') return 'admin';
   // A campus admin's notifications and help open in the campus console, so they share its key.
   if (isCampusConsolePath(pathname) || opensInCampusConsole(pathname, role)) return 'campus';
   // A student's workspace pages share one key: keyed by path, every nav click remounted the
