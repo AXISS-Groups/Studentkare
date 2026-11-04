@@ -21,7 +21,7 @@ a:focus-visible,button:focus-visible{outline:3px solid #6D5BFF;outline-offset:3p
 @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
 </style>
 </helmet>
-<div style="width: 390px; height: 1300px; box-sizing: border-box; background: #FAF8FF; position: relative; overflow: hidden;">
+<div style="width: 390px; height: 1620px; box-sizing: border-box; background: #FAF8FF; position: relative; overflow: hidden;">
 
   <div style="position: relative; height: 300px; background: linear-gradient(160deg, #CCFBF1 0%, #99F6E4 55%, #5EEAD4 100%); border-radius: 0 0 36px 36px; overflow: hidden;">
     <span aria-hidden="true" style="position: absolute; left: -60px; bottom: -80px; width: 240px; height: 240px; border-radius: 999px; border: 30px solid rgba(255,255,255,.35);"></span>
@@ -77,6 +77,23 @@ a:focus-visible,button:focus-visible{outline:3px solid #6D5BFF;outline-offset:3p
     </sc-for>
   </section>
 
+  <section aria-labelledby="fbt" style="margin: 16px 20px 0; padding: 16px; border-radius: 26px; background: #FFFFFF; box-shadow: 0 6px 18px rgba(12,4,148,.06); animation: skRise .55s .22s both;">
+    <h2 id="fbt" style="margin: 0 0 4px; font-size: 15px; font-weight: 800;">Often added with this</h2>
+    <p style="margin: 0 0 10px; font-size: 12px; font-weight: 600; color: #6B6980;">Other students picked these too — nothing here is suggested from your reports.</p>
+    <sc-for list="{{ fbt }}" as="f" hint-placeholder-count="2">
+      <label style="display: flex; align-items: center; gap: 10px; padding: 10px 0; border-top: 1px solid #EEF2FF;">
+        <input type="checkbox" checked="{{ f.checked }}" onChange="{{ f.toggle }}" aria-label="Include {{ f.name }}" style="width: 18px; height: 18px; accent-color: #0C0494; flex-shrink: 0;">
+        <span style="{{ f.tile }}"><svg aria-hidden="true" width="40" height="40" viewBox="0 0 24 24" fill="{{ f.ink }}" fill-rule="evenodd" style="position: absolute; right: -6px; bottom: -6px; opacity: .22;"><path d="{{ f.icon }}"></path></svg><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="{{ f.ink }}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="position: relative;"><path d="{{ f.icon }}"></path></svg></span>
+        <span style="flex-grow: 1; display: flex; flex-direction: column; gap: 1px;"><span style="font-size: 13px; font-weight: 700;">{{ f.name }}</span><span style="font-size: 11px; font-weight: 600; color: #6B6980;">{{ f.meta }}</span></span>
+        <span style="font-size: 13.5px; font-weight: 800;">{{ f.price }}</span>
+      </label>
+    </sc-for>
+    <div style="margin-top: 10px; padding-top: 12px; border-top: 1px solid #EEF2FF; display: flex; align-items: center; justify-content: space-between;">
+      <span style="font-size: 12.5px; font-weight: 700; color: #464555;">{{ fbtCount }} selected · ₹[price] total</span>
+      <a href="Orders.dc.html" style="height: 38px; padding: 0 16px; border-radius: 999px; background: #0C0494; color: #FFFFFF; font-size: 12.5px; font-weight: 800; display: flex; align-items: center;">Add selected</a>
+    </div>
+  </section>
+
   <section aria-labelledby="about" style="margin: 16px 20px 0; border-radius: 26px; background: #FFFFFF; box-shadow: 0 6px 18px rgba(12,4,148,.06); overflow: hidden; animation: skRise .55s .25s both;">
     <h2 id="about" style="margin: 0; padding: 16px 16px 4px; font-size: 15px; font-weight: 800;">About this medicine</h2>
     <sc-for list="{{ about }}" as="q" hint-placeholder-count="3">
@@ -94,20 +111,32 @@ a:focus-visible,button:focus-visible{outline:3px solid #6D5BFF;outline-offset:3p
   </div>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1300}}'>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1620}}'>
 class Component extends DCLogic {
-  constructor(props) { super(props); this.state = { qty: 1, open: 'uses' }; }
+  constructor(props) { super(props); this.state = { qty: 1, open: 'uses', fbt: { ors: true, vitc: true } }; }
   renderVals() {
     const s = this.state;
+    const f = s.fbt;
     const rows = [
       ['uses', 'What it is used for', 'Fever and mild to moderate pain, such as headache and body ache.'],
       ['side', 'Common side effects', 'Usually well tolerated. Rarely nausea or a rash. Stop and ask a doctor if a rash appears.'],
       ['avoid', 'Do not take with', 'Other medicines that also contain paracetamol (many cold remedies do). Avoid alcohol.']
     ];
+    const fbtItem = (key, name, meta, ink, bg, icon) => ({
+      name, meta, ink, icon, price: '₹[price]',
+      tile: 'position: relative; overflow: hidden; width: 38px; height: 38px; flex-shrink: 0; border-radius: 12px; display: flex; align-items: center; justify-content: center; background: ' + bg + ';',
+      checked: f[key] ? 'true' : 'false',
+      toggle: () => this.setState({ fbt: { ...f, [key]: !f[key] } })
+    });
     return {
       qty: s.qty,
       inc: () => this.setState({ qty: Math.min(9, s.qty + 1) }),
       dec: () => this.setState({ qty: Math.max(1, s.qty - 1) }),
+      fbt: [
+        fbtItem('ors', 'ORS rehydration sachet', 'Pack of 5', '#0369A1', '#E0F2FE', 'M4 12h11a3 3 0 1 0-3-3M4 16h14a3 3 0 1 1-3 3'),
+        fbtItem('vitc', 'Vitamin C effervescent', '10 tablets', '#A16207', '#FEF9C3', 'M9 3h6v3H9zM7 6h10v13a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2z')
+      ],
+      fbtCount: 1 + (f.ors ? 1 : 0) + (f.vitc ? 1 : 0),
       alts: [
         { name: '[Generic maker A] Paracetamol 650', meta: 'Strip of 15', price: '₹[price]', lowest: true },
         { name: '[Generic maker B] Paracetamol 650', meta: 'Strip of 15', price: '₹[price]', lowest: false },
