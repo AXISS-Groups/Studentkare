@@ -41,6 +41,10 @@ Tier 2 (consult booking). Tier 1 part: the counsellor / Tele-MANAS note shown fo
 
 - Hero runs `service-blue-deep` → `brand-navy` (the `#3B82F6` light stop is gone). Doctor avatars end on a lighter tint so the initials stay AA.
 
+## Design changes (founder, 2026-11-04): reviewed against Tata 1mg, no change needed
+
+- Checked during the Tata 1mg sweep against the "Consult a doctor" video-consult flow: concern chips, doctor cards (specialty, experience, languages, next slot, registration number), "doctors available today," and an FAQ accordion are all already present, plus the Tier-1 counsellor/Tele-MANAS safety note this app has and Tata's doesn't. The one thing Tata adds that this board doesn't — a star rating per doctor — was deliberately left out: StudentKare has no real rating data yet, and DESIGN.md rules out invented numbers, so a fabricated rating isn't an option here. No code changes made.
+
 ## Missing icons
 
 None. The drawings this board had with no manifest icon were drawn into the kit on 2026-10-21 (house line style) and are in the list above:

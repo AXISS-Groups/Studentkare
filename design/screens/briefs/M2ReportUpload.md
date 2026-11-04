@@ -41,6 +41,10 @@ Tier 1: values read from a report, confirmed by the student before saving.
 
 - Hero runs `service-orange-deep` → `service-orange-shade`; the done tick circle runs `service-green-deep` → `service-green-shade`.
 
+## Design changes (founder, 2026-11-04): re-checked against Tata 1mg, no change needed
+
+- Re-confirmed during the Tata 1mg sweep (this board was reviewed earlier and found to already match Tata's OCR confirm-before-save pattern; re-checked now that the sweep covers every screen in this canvas page, not just the first five). Source picker, scan animation, per-value confirm-and-edit with range chips, and the saved state all already match the pattern, plus the explicit "Nothing is saved until you confirm" framing Tata doesn't have. No code changes made.
+
 ## Missing icons
 
 None. The drawings this board had with no manifest icon were drawn into the kit on 2026-10-21 (house line style) and are in the list above:
