@@ -23,7 +23,7 @@ a:focus-visible,button:focus-visible{outline:3px solid #6D5BFF;outline-offset:3p
 @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
 </style>
 </helmet>
-<div style="width: 390px; height: 1400px; box-sizing: border-box; background: #FAF8FF; position: relative; overflow: hidden;">
+<div style="width: 390px; height: 1560px; box-sizing: border-box; background: #FAF8FF; position: relative; overflow: hidden;">
 
   <div style="position: relative; padding: 18px 20px 24px; border-radius: 0 0 36px 36px; background: linear-gradient(160deg, #B45309 0%, #92400E 100%); overflow: hidden; animation: skRise .5s both;">
     <span aria-hidden="true" style="position: absolute; left: -60px; bottom: -90px; width: 240px; height: 240px; border-radius: 999px; border: 30px solid rgba(255,255,255,.14);"></span>
@@ -78,6 +78,17 @@ a:focus-visible,button:focus-visible{outline:3px solid #6D5BFF;outline-offset:3p
     </div>
   </section>
 
+  <section aria-labelledby="about" style="margin: 16px 20px 0; border-radius: 26px; background: #FFFFFF; box-shadow: 0 6px 18px rgba(12,4,148,.06); overflow: hidden; animation: skRise .55s .25s both;">
+    <h2 id="about" style="margin: 0; padding: 16px 16px 4px; font-size: 15px; font-weight: 800;">About the {{ sel.name }} vaccine</h2>
+    <sc-for list="{{ about }}" as="q" hint-placeholder-count="2">
+      <div style="border-top: 1px solid #EEF2FF;">
+        <button type="button" onClick="{{ q.toggle }}" aria-expanded="{{ q.expanded }}" style="width: 100%; border: 0; background: none; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; font-size: 13.5px; font-weight: 700; color: #131B2E; cursor: pointer; text-align: left;">{{ q.k }}<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#131B2E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="{{ q.chev }}"><path d="M6 9l6 6 6-6"></path></svg></button>
+        <sc-if value="{{ q.open }}" hint-placeholder-val="{{ false }}"><p style="margin: 0; padding: 0 16px 14px; font-size: 12.5px; line-height: 19px; font-weight: 600; color: #464555; animation: skRise .3s both;">{{ q.v }}</p></sc-if>
+      </div>
+    </sc-for>
+    <p style="margin: 0; padding: 10px 16px 14px; font-size: 11.5px; font-weight: 600; color: #6B6980; border-top: 1px solid #EEF2FF;">Source: [approved vaccine information source] · the nurse checks against your own history before giving it</p>
+  </section>
+
   <section aria-labelledby="steps" style="margin: 18px 20px 0; padding: 16px; border-radius: 26px; background: linear-gradient(160deg, #FFFBEB, #FFFFFF); animation: skRise .55s .3s both;">
     <h2 id="steps" style="margin: 0 0 12px; font-size: 15px; font-weight: 800;">How it works</h2>
     <sc-for list="{{ steps }}" as="s" hint-placeholder-count="3">
@@ -97,9 +108,9 @@ a:focus-visible,button:focus-visible{outline:3px solid #6D5BFF;outline-offset:3p
   </nav>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1400}}'>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1560}}'>
 class Component extends DCLogic {
-  constructor(props) { super(props); this.state = { v: 'flu', admin: true }; }
+  constructor(props) { super(props); this.state = { v: 'flu', admin: true, open: 'side' }; }
   renderVals() {
     const s = this.state;
     const pill = (k) => 'flex-shrink: 0; padding: 4px 9px; border-radius: 999px; font-size: 10.5px; font-weight: 800; ' + (k === 'done' ? 'background: #ECFDF5; color: #047857;' : k === 'due' ? 'background: #FFFBEB; color: #92400E;' : 'background: #F1F5F9; color: #475569;');
@@ -119,6 +130,12 @@ class Component extends DCLogic {
     };
     const sel = vacs[s.v];
     const seg = (on) => 'height: 40px; border: 0; border-radius: 999px; cursor: pointer; font-size: 12.5px; font-weight: 800; transition: all .25s; ' + (on ? 'background: #FFFFFF; color: #131B2E; box-shadow: 0 4px 12px rgba(12,4,148,.10);' : 'background: transparent; color: #6B6980;');
+    const faqs = {
+      flu: [['side', 'Common side effects', 'A sore arm for a day or two. Rarely a mild fever. Serious reactions are very rare.'], ['avoid', 'Who should check with a doctor first', 'A severe egg allergy, or a past severe reaction to a flu shot.']],
+      hpv: [['side', 'Common side effects', 'Soreness at the injection site, mild fever, or a headache for a day.'], ['avoid', 'Who should check with a doctor first', 'Pregnancy, or a past severe allergic reaction to a dose.']],
+      hepb: [['side', 'Common side effects', 'A sore arm, mild tiredness. Serious reactions are very rare.'], ['avoid', 'Who should check with a doctor first', 'A past severe allergic reaction to a dose, or active illness with fever.']],
+      typh: [['side', 'Common side effects', 'A sore arm, mild fever or headache for a day.'], ['avoid', 'Who should check with a doctor first', 'A past severe allergic reaction to this vaccine, or active illness with fever.']]
+    };
     return {
       record: rec.map(([name, meta, k, state], i) => ({ name, meta, state, done: k === 'done', line: i < rec.length - 1, dot: dot(k), pill: pill(k) })),
       vaccines: Object.keys(vacs).map((id) => ({
@@ -131,6 +148,11 @@ class Component extends DCLogic {
       pickAdmin: () => this.setState({ admin: true }), pickMed: () => this.setState({ admin: false }),
       adminStyle: seg(s.admin), medStyle: seg(!s.admin),
       priceNote: s.admin ? 'Vaccine plus a nurse at the clinic' : 'Collect it; a clinic must give it',
+      about: faqs[s.v].map(([id, k, v]) => ({
+        k, v, open: s.open === id, expanded: s.open === id ? 'true' : 'false',
+        toggle: () => this.setState({ open: s.open === id ? '' : id }),
+        chev: 'transition: transform .25s; transform: rotate(' + (s.open === id ? '180deg' : '0deg') + ');'
+      })),
       steps: [
         { n: '1', k: 'Pick the vaccine and a slot', v: 'Campus clinic times, this week and next' },
         { n: '2', k: 'Show your check-in pass', v: 'The nurse checks it is you' },
