@@ -28,7 +28,7 @@ from services.contact_store import (
     verified_contact,
 )
 from services.db_sql import SessionLocal
-from services.demo_seed import is_demo_identifier
+from services.demo_seed import demo_accounts_enabled, is_demo_identifier
 from services.email_deliverability import check_email_deliverable
 from services.integration_config import INTEGRATIONS_DB
 from services.otp_delivery import available_channels, dispatch_otp
@@ -220,6 +220,17 @@ def is_named_super_admin(db: DBSession, account_id: str) -> bool:
     return db.get(M.NamedSuperAdmin, account_id) is not None
 
 
+def is_demo_account(account: M.Account) -> bool:
+    """True if this account is a seeded demo account and demo accounts are enabled."""
+    if not demo_accounts_enabled():
+        return False
+    if account.id.startswith("demo-") or account.id.startswith("seed-"):
+        return True
+    if is_demo_identifier(account.identifier):
+        return True
+    return bool(account.identifier and account.identifier.endswith("@studentkare.test"))
+
+
 def two_factor_required(db: DBSession, account: M.Account) -> bool:
     """Whether this account must use an authenticator.
 
@@ -232,6 +243,8 @@ def two_factor_required(db: DBSession, account: M.Account) -> bool:
 
 def two_factor_setup_required(db: DBSession, account: M.Account) -> bool:
     """True while an account that must use 2FA has not turned it on."""
+    if is_demo_account(account):
+        return False
     return two_factor_required(db, account) and not twofa_store.is_enabled(db, account.id)
 
 
