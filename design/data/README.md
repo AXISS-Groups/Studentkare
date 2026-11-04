@@ -48,6 +48,26 @@ confirmed exact figure.
   2022-era pricing and should be re-checked before any real use. See each category's
   notes section below for the fuller caveat list.
 
+## Sources checked for an "add all" re-sourcing pass (2026-11-04) and found not usable
+
+Asked to swap the AI-research pass for official open datasets wherever possible, these
+were checked and ruled out — recorded here so the next person doesn't re-check them:
+
+- **NRCES Common Drug Codes for India / SNOMED CT India Drug Extension** (the government
+  drug-code standard behind ABDM) — not a free public download. The flat-file package is
+  TSV with no visible unauthenticated link, and the SNOMED CT-integrated package requires
+  an Affiliate Licence via SNOMED International's MLDS. Would need Student Kare's own
+  SNOMED/ABDM registration to pull, not something fetchable from here.
+- **Jan Aushadhi (PMBI) official price list** — PMBI's own published PDF
+  (pharma-dept.gov.in) is a narrative scheme overview with no price table; the actual
+  per-product price list lives behind the janaushadhi.gov.in product-search portal
+  (dynamic, not a flat file/API reachable by this session).
+- **LOINC** (lab test naming standard) — full database requires a LOINC/UMLS licence
+  login to download in bulk; not pullable here either.
+
+The one source that *was* real, open and fetchable this session: MoHFW's National
+Immunization Schedule PDF above, now cited directly in the 9 UIP vaccine entries.
+
 ## Known gaps
 
 - NLEM 2022's full list is 384 medicines across 27 sections; this file covers sections
@@ -97,7 +117,12 @@ Student Kare actually contracts with.
 <details>
 <summary>Vaccines — sources</summary>
 
-- 1mg, Medindia — pharmacy drug-price listings
+- **MoHFW National Immunization Schedule** (official, fetched and cross-checked
+  2026-11-04): https://www.mohfw.gov.in/sites/default/files/National%20Immunization%20Schedule.pdf —
+  the 9 UIP entries' `dose_schedule` and timing are taken directly from this document,
+  not estimated. It gives timing only, never a price.
+- 1mg, Medindia — pharmacy drug-price listings (for the 13 non-UIP adult/traveler
+  vaccines' prices; MoHFW's schedule doesn't cover these)
 - ThePrint, Business Standard — Indian health journalism (incl. HPV vaccine comparative
   pricing)
 - PharmEasy, Cloudnine, myUpchar — consumer health explainer blogs

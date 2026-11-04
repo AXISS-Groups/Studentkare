@@ -4,99 +4,99 @@
     "category": "vaccine",
     "name": "BCG (Tuberculosis)",
     "recommended_for": "UIP context only — given at birth; not relevant to current students, included for schedule completeness",
-    "dose_schedule": "Single dose, at birth",
+    "dose_schedule": "Single dose, at birth or as early as possible (official schedule allows up to 1 year of age)",
     "price_range_inr": [0, 0],
     "price_basis": "Free under India's Universal Immunization Programme (UIP) at government facilities; private clinics may add a nominal administration fee (approx. 100-300 INR)",
     "common_side_effects": ["Small local ulcer/scar at injection site", "Mild swelling of local lymph node"],
-    "source_note": "Standard UIP schedule, widely documented by MoHFW/UNICEF; not specifically re-verified by live price search since it is not sold as a discrete adult product."
+    "source_note": "Timing matches the official MoHFW National Immunization Schedule (https://www.mohfw.gov.in/sites/default/files/National%20Immunization%20Schedule.pdf), fetched and cross-checked 2026-11-04; price is not from that document (it only lists what's given, not a price) and is general market knowledge, not independently re-verified this session."
   },
   {
     "id": "uip-opv",
     "category": "vaccine",
     "name": "OPV (Oral Polio Vaccine)",
     "recommended_for": "UIP context only — infant doses plus National Immunization Days; not applicable to student-age population",
-    "dose_schedule": "Birth dose + 3 primary doses + boosters per UIP calendar",
+    "dose_schedule": "OPV-0 at birth or within the first 15 days; OPV-1, 2, 3 at 6, 10 and 14 weeks (can be given up to 5 years); OPV booster at 16-24 months",
     "price_range_inr": [0, 0],
     "price_basis": "Free under UIP; not sold as a standalone retail product for adults/students",
     "common_side_effects": ["Generally very well tolerated", "Rare mild gastrointestinal upset"],
-    "source_note": "Standard UIP schedule reference; included for completeness only."
+    "source_note": "Timing matches the official MoHFW National Immunization Schedule (https://www.mohfw.gov.in/sites/default/files/National%20Immunization%20Schedule.pdf), fetched and cross-checked 2026-11-04."
   },
   {
     "id": "uip-ipv",
     "category": "vaccine",
     "name": "IPV (Inactivated Polio Vaccine)",
     "recommended_for": "UIP context only — infant doses; not applicable to student-age population",
-    "dose_schedule": "2 doses in infancy per UIP calendar",
+    "dose_schedule": "2 fractional doses in infancy, at 6 and 14 weeks, per UIP calendar",
     "price_range_inr": [0, 0],
     "price_basis": "Free under UIP; private IPV where purchased separately is typically low-cost (approx. 300-600 INR/dose)",
     "common_side_effects": ["Mild soreness/redness at injection site", "Low-grade fever"],
-    "source_note": "Standard UIP schedule reference; included for completeness only."
+    "source_note": "Timing matches the official MoHFW National Immunization Schedule (https://www.mohfw.gov.in/sites/default/files/National%20Immunization%20Schedule.pdf), fetched and cross-checked 2026-11-04."
   },
   {
     "id": "uip-pentavalent",
     "category": "vaccine",
     "name": "Pentavalent (DPT-Hep B-Hib)",
     "recommended_for": "UIP context only — infant doses; not applicable to student-age population",
-    "dose_schedule": "3 primary doses in infancy per UIP calendar",
+    "dose_schedule": "3 primary doses in infancy, at 6, 10 and 14 weeks, per UIP calendar",
     "price_range_inr": [0, 0],
     "price_basis": "Free under UIP at government centres",
     "common_side_effects": ["Fever", "Soreness/swelling at injection site", "Irritability (in infants)"],
-    "source_note": "Standard UIP schedule reference; included for completeness only."
+    "source_note": "Timing matches the official MoHFW National Immunization Schedule (https://www.mohfw.gov.in/sites/default/files/National%20Immunization%20Schedule.pdf), fetched and cross-checked 2026-11-04."
   },
   {
     "id": "uip-rotavirus",
     "category": "vaccine",
     "name": "Rotavirus Vaccine",
     "recommended_for": "UIP context only — infant doses; not applicable to student-age population",
-    "dose_schedule": "2-3 oral doses in infancy depending on brand, per UIP calendar",
+    "dose_schedule": "3 oral doses in infancy, at 6, 10 and 14 weeks (can be given up to 1 year), per UIP calendar",
     "price_range_inr": [0, 0],
     "price_basis": "Free under UIP at government centres; private brands (Rotavac/Rotasiil) typically 800-1200 INR/dose",
     "common_side_effects": ["Mild diarrhoea", "Irritability", "Rare intussusception (monitored risk)"],
-    "source_note": "Standard UIP schedule reference; private price range from general market knowledge, not independently re-verified this session."
+    "source_note": "Timing matches the official MoHFW National Immunization Schedule (https://www.mohfw.gov.in/sites/default/files/National%20Immunization%20Schedule.pdf), fetched and cross-checked 2026-11-04 — that document notes rotavirus is in phased introduction, not yet universal in every state; private price range is general market knowledge, not independently re-verified this session."
   },
   {
     "id": "uip-pcv",
     "category": "vaccine",
     "name": "PCV (Pneumococcal Conjugate Vaccine)",
     "recommended_for": "UIP context only — infant doses; not applicable to student-age population",
-    "dose_schedule": "3 doses in infancy per UIP calendar",
+    "dose_schedule": "2 primary doses (6 and 14 weeks) plus 1 booster (9-12 months) per UIP calendar",
     "price_range_inr": [0, 0],
     "price_basis": "Free under UIP at government centres; private market price commonly cited around 2000-3500 INR/dose",
     "common_side_effects": ["Soreness at injection site", "Fever", "Fussiness (in infants)"],
-    "source_note": "Standard UIP schedule reference; private price range from general market knowledge, not independently re-verified this session."
+    "source_note": "Timing matches the official MoHFW National Immunization Schedule (https://www.mohfw.gov.in/sites/default/files/National%20Immunization%20Schedule.pdf), fetched and cross-checked 2026-11-04 — that document notes PCV is in phased introduction, not yet universal in every state; private price range is general market knowledge, not independently re-verified this session."
   },
   {
     "id": "uip-mr",
     "category": "vaccine",
     "name": "MR (Measles-Rubella)",
     "recommended_for": "UIP context only — doses at 9-12 months and 16-24 months; relevant mainly as a catch-up check for students with incomplete records",
-    "dose_schedule": "2 doses in childhood per UIP calendar",
+    "dose_schedule": "1st dose at 9-12 months (can be given up to 5 years), 2nd dose at 16-24 months, per UIP calendar",
     "price_range_inr": [0, 0],
     "price_basis": "Free under UIP at government centres",
     "common_side_effects": ["Mild fever", "Rash", "Soreness at injection site"],
-    "source_note": "Standard UIP schedule reference; included for completeness and as a catch-up/verification item."
+    "source_note": "Timing matches the official MoHFW National Immunization Schedule (https://www.mohfw.gov.in/sites/default/files/National%20Immunization%20Schedule.pdf), fetched and cross-checked 2026-11-04; included for completeness and as a catch-up/verification item."
   },
   {
     "id": "uip-je-childhood",
     "category": "vaccine",
     "name": "JE (Japanese Encephalitis) — UIP childhood dose",
     "recommended_for": "UIP context only — given in JE-endemic districts in childhood; relevant as a catch-up check for students from/moving to endemic areas",
-    "dose_schedule": "1-2 doses in childhood in endemic districts per UIP calendar",
+    "dose_schedule": "JE-1 at 9-12 months, JE-2 at 16-24 months, in notified endemic districts per UIP calendar",
     "price_range_inr": [0, 0],
     "price_basis": "Free under UIP in notified endemic districts",
     "common_side_effects": ["Mild fever", "Soreness at injection site", "Headache"],
-    "source_note": "Standard UIP schedule reference. See separate adult/traveler JE entry for private pricing."
+    "source_note": "Timing matches the official MoHFW National Immunization Schedule (https://www.mohfw.gov.in/sites/default/files/National%20Immunization%20Schedule.pdf), fetched and cross-checked 2026-11-04 — that document notes JE is given in 230 endemic districts, after campaign introduction, not nationwide. See separate adult/traveler JE entry for private pricing."
   },
   {
     "id": "uip-td-booster",
     "category": "vaccine",
     "name": "Td (Tetanus-Diphtheria) School-age Booster",
     "recommended_for": "UIP context — boosters at 10 and 16 years; relevant as the last government-provided booster before adult Tdap",
-    "dose_schedule": "Single booster dose at 10 years, another at 16 years",
+    "dose_schedule": "Single booster dose at 10 years, another at 16 years (the official schedule also lists separate DPT boosters at 16-24 months and 5-6 years, which are distinct from this Td/TT pair)",
     "price_range_inr": [0, 0],
     "price_basis": "Free under UIP at government/school-based sessions; private Td/TT shot typically 150-400 INR/dose",
     "common_side_effects": ["Soreness at injection site", "Mild fever", "Headache"],
-    "source_note": "Standard UIP schedule reference; private price range from general market knowledge."
+    "source_note": "Timing matches the official MoHFW National Immunization Schedule (https://www.mohfw.gov.in/sites/default/files/National%20Immunization%20Schedule.pdf), fetched and cross-checked 2026-11-04; private price range is general market knowledge."
   },
   {
     "id": "influenza",
