@@ -59,6 +59,11 @@ a:focus-visible,button:focus-visible{outline:3px solid #6D5BFF;outline-offset:3p
             </li>
           </sc-for>
         </ol>
+        <a href="Profile.dc.html" style="margin-top: 4px; padding-top: 14px; border-top: 1px solid #EEF2FF; display: flex; align-items: center; gap: 10px; color: #131B2E;">
+          <span style="width: 34px; height: 34px; flex-shrink: 0; border-radius: 12px; background: #F2F3FF; display: flex; align-items: center; justify-content: center;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#0C0494" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-12.4 7.4L3 20.5l1.6-5.4A8.4 8.4 0 1 1 21 11.5z"></path></svg></span>
+          <span style="flex-grow: 1; font-size: 13px; font-weight: 800;">Need help with this order?</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6B6980" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
+        </a>
       </div>
     </section>
   </sc-if>
@@ -68,7 +73,7 @@ a:focus-visible,button:focus-visible{outline:3px solid #6D5BFF;outline-offset:3p
       <sc-for list="{{ past }}" as="p" hint-placeholder-count="3">
         <div class="sk-card" style="border-radius: 24px; padding: 16px; background: #FFFFFF; box-shadow: 0 6px 18px rgba(12,4,148,.06); display: flex; flex-direction: column; gap: 10px; animation: skRise .35s both;">
           <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 10px;"><span style="display: flex; flex-direction: column; gap: 2px;"><span style="font-size: 14px; font-weight: 800;">{{ p.title }}</span><span style="font-size: 11.5px; font-weight: 600; color: #6B6980;">{{ p.meta }}</span></span><span style="padding: 4px 10px; border-radius: 999px; background: #F1F5F9; color: #475569; font-size: 10.5px; font-weight: 800;">{{ p.state }}</span></div>
-          <div style="display: flex; gap: 8px;"><a href="Product.dc.html" style="height: 36px; padding: 0 14px; border-radius: 999px; background: #0C0494; color: #FFFFFF; font-size: 12.5px; font-weight: 800; display: flex; align-items: center;">Buy again</a><a href="Profile.dc.html" style="height: 36px; padding: 0 14px; border-radius: 999px; border: 1.5px solid #DAE2FD; color: #464555; font-size: 12.5px; font-weight: 800; display: flex; align-items: center;">{{ p.second }}</a></div>
+          <div style="display: flex; gap: 8px;"><a href="Product.dc.html" style="height: 36px; padding: 0 14px; border-radius: 999px; background: #0C0494; color: #FFFFFF; font-size: 12.5px; font-weight: 800; display: flex; align-items: center;">Buy again</a><a href="Profile.dc.html" style="height: 36px; padding: 0 14px; border-radius: 999px; border: 1.5px solid #DAE2FD; color: #464555; font-size: 12.5px; font-weight: 800; display: flex; align-items: center;">{{ p.second }}</a><sc-if value="{{ p.hasInvoice }}" hint-placeholder-val="{{ false }}"><a href="Profile.dc.html" style="height: 36px; padding: 0 14px; border-radius: 999px; border: 1.5px solid #DAE2FD; color: #464555; font-size: 12.5px; font-weight: 800; display: flex; align-items: center; gap: 6px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#464555" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M4 17v3h16v-3"></path></svg>Invoice</a></sc-if></div>
         </div>
       </sc-for>
     </div>
@@ -107,9 +112,9 @@ class Component extends DCLogic {
         titleStyle: 'font-size: 13.5px; font-weight: ' + (s === 'now' ? '800; color: #047857;' : '700; color: #131B2E;')
       })),
       past: [
-        { title: 'Cetirizine and ORS', meta: 'Delivered 2 Oct · ₹[amount]', state: 'Delivered', second: 'Return' },
-        { title: 'Complete blood count', meta: 'Report ready 15 Jun', state: 'Done', second: 'See report' },
-        { title: 'Vitamin D3 60K', meta: 'Picked up 8 Sep · ₹[amount]', state: 'Picked up', second: 'Return' }
+        { title: 'Cetirizine and ORS', meta: 'Delivered 2 Oct · ₹[amount]', state: 'Delivered', second: 'Return', hasInvoice: true },
+        { title: 'Complete blood count', meta: 'Report ready 15 Jun', state: 'Done', second: 'See report', hasInvoice: false },
+        { title: 'Vitamin D3 60K', meta: 'Picked up 8 Sep · ₹[amount]', state: 'Picked up', second: 'Return', hasInvoice: true }
       ]
     };
   }

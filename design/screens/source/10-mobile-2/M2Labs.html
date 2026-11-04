@@ -181,7 +181,7 @@ class Component extends DCLogic {
         style: 'flex-shrink: 0; height: 40px; padding: 0 16px; border-radius: 999px; cursor: pointer; font-size: 13px; font-weight: 800; transition: all .25s; ' + (who === id ? 'border: 0; background: #0C0494; color: #FFFFFF; box-shadow: 0 8px 18px rgba(12,4,148,.25);' : 'border: 1.5px solid #DAE2FD; background: #FFFFFF; color: #464555;')
       })),
       packages: current,
-      showCompare: cmp.length === 2 ? 'true' : 'false',
+      showCompare: cmp.length === 2,
       cmpA, cmpB,
       clearCompare: () => this.setState({ compare: [] }),
       steps: [{ n: '1', label: 'Pick tests and a slot' }, { n: '2', label: 'Collected at your block' }, { n: '3', label: 'Lab runs the tests' }, { n: '4', label: 'Report in your vault' }]
