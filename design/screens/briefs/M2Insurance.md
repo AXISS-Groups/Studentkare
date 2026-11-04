@@ -11,7 +11,7 @@
 
 ## Icons this screen must show (all of them)
 
-- **Line / solid icons (11):** `arrow-left`, `ayush-spark`, `box`, `card-lines`, `heart-3`, `home`, `home-2`, `plane`, `plus`, `shield-alert`, `user-5`
+- **Line / solid icons (14):** `arrow-left`, `ayush-spark`, `box`, `card-lines`, `droplet`, `heart-3`, `heart-pulse-2`, `home`, `home-2`, `plane`, `plus`, `shield-alert`, `shield-check-2`, `user-5`
 - **3D icon tiles (0):** —
 - **Small glyphs (0):** —
 - **Brand mark:** —
@@ -38,6 +38,11 @@ Tier 2 (cover and claims, like ClaimsHub).
 ## Design changes (founder, 2026-10-21)
 
 - "Start a claim" tile runs `service-green-deep` → `service-green-shade`.
+
+## Design changes (founder, 2026-11-04): richer "More cover" products
+
+- "More cover" grew from 3 dashed "Not yet" placeholder tiles to 5 Tata 1mg-style product cards (Diabetes cover, Cancer cover, Personal accident, Travel abroad, Health top-up), each with a benefit line and an indicative "From ~₹…" price. This is **not** the Rule L exception used on `M2Insights`/`M2Trends` — these cards carry no clinical value at all, so there's nothing to fire the firewall on.
+- Kept deliberately honest per DESIGN.md (no invented live purchase flow): since an insurance partner is still being chosen, each card's action is "Notify me" / "You're on the list" — expressing interest only, never a price the student can actually pay today. The section intro states this plainly instead of implying the covers are on sale.
 
 ## Missing icons
 

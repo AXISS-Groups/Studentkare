@@ -91,6 +91,24 @@ a:focus-visible,button:focus-visible{outline:3px solid #6D5BFF;outline-offset:3p
     </div>
   </section>
 
+  <sc-if value="{{ showReco }}" hint-placeholder-val="{{ true }}">
+    <section aria-labelledby="reco" style="margin: 16px 20px 0; animation: skRise .55s .25s both;">
+      <h2 id="reco" style="margin: 0 0 4px; font-size: 15px; font-weight: 800;">Recommended for this result</h2>
+      <p style="margin: 0 0 10px; font-size: 11.5px; line-height: 16px; font-weight: 600; color: #6B6980;">Suggested because {{ cur.recoLabel }} is {{ cur.stateLower }}. A pharmacist checks anything new against what you already take.</p>
+      <div class="sk-rail" style="display: flex; gap: 12px; overflow-x: auto; padding-bottom: 4px;">
+        <sc-for list="{{ reco }}" as="p" hint-placeholder-count="3">
+          <a href="Product.dc.html" style="flex-shrink: 0; width: 156px; border-radius: 22px; background: #FFFFFF; box-shadow: 0 6px 18px rgba(12,4,148,.06); padding: 12px; display: flex; flex-direction: column; gap: 6px; color: #131B2E;">
+            <span style="{{ p.art }}"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="{{ p.ink }}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{ p.icon }}"></path></svg></span>
+            <span style="font-size: 13px; font-weight: 800; line-height: 17px;">{{ p.name }}</span>
+            <span style="font-size: 11px; font-weight: 700; color: #047857;">{{ p.why }}</span>
+            <span style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 15px; font-weight: 800;">{{ p.price }}</span>
+            <span aria-hidden="true" style="height: 30px; padding: 0 12px; border-radius: 999px; border: 1.5px solid #0C0494; color: #0C0494; font-size: 12px; font-weight: 800; display: flex; align-items: center;">Add</span></span>
+          </a>
+        </sc-for>
+      </div>
+    </section>
+  </sc-if>
+
   <nav aria-label="Main" style="position: absolute; left: 16px; right: 16px; bottom: 22px; height: 70px; border-radius: 999px; background: linear-gradient(160deg, #1A10B5, #0C0494); box-shadow: 0 18px 40px rgba(12,4,148,.35); display: flex; align-items: center; justify-content: space-between; padding: 0 10px;">
     <a href="Main.dc.html" aria-label="Home" style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C7C3FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5L12 4l9 6.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"></path></svg></a>
     <a href="Orders.dc.html" aria-label="Orders" style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C7C3FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8l-9-5-9 5 9 5zM3 8v8l9 5 9-5V8M12 13v8"></path></svg></a>
@@ -110,6 +128,20 @@ class Component extends DCLogic {
       hdl: { label: 'HDL cholesterol', unit: 'mg/dL', lo: 40, hi: 60, min: 15, max: 70, range: '40–60 mg/dL', data: [['Dec 23', 23.5, 'City Lab'], ['Mar 25', 31, 'Campus clinic'], ['Jun 26', 26, 'City Lab']] },
       vitd: { label: 'Vitamin D', unit: 'ng/mL', lo: 30, hi: 100, min: 0, max: 110, range: '30–100 ng/mL', data: [['Dec 23', 14, 'City Lab'], ['Mar 25', 28, 'Campus clinic'], ['Jun 26', 41, 'City Lab']] },
       hb: { label: 'Haemoglobin', unit: 'g/dL', lo: 12, hi: 15.5, min: 9, max: 17, range: '12–15.5 g/dL', data: [['Dec 23', 12.8, 'City Lab'], ['Mar 25', 13.1, 'Campus clinic'], ['Jun 26', 13.4, 'City Lab']] }
+    };
+    const prodArt = (bg) => 'width: 100%; height: 56px; border-radius: 14px; background: ' + bg + '; display: flex; align-items: center; justify-content: center;';
+    const RECO = {
+      hba1c: [
+        { name: 'Methi (Fenugreek) Seeds 200g', why: 'Traditional support for sugar levels', price: '₹99', art: prodArt('#DBEAFE'), ink: '#1D4ED8', icon: 'M3.5 7.5 12 3l8.5 4.5v9L12 21l-8.5-4.5zM3.5 7.5 12 12l8.5-4.5M12 12v9' },
+        { name: 'Low-GI Millet Mix 500g', why: 'Slower-release carbs', price: '₹229', art: prodArt('#DBEAFE'), ink: '#1D4ED8', icon: 'M3.5 7.5 12 3l8.5 4.5v9L12 21l-8.5-4.5zM3.5 7.5 12 12l8.5-4.5M12 12v9' },
+        { name: 'Glucose Test Strips', why: 'Track between reports', price: '₹349', art: prodArt('#F2F3FF'), ink: '#0C0494', icon: 'M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.8 3h10.4A2 2 0 0 0 19 18l-5-9V3' }
+      ],
+      hdl: [
+        { name: 'Omega-3 Fish Oil 1000mg', why: 'Supports HDL levels', price: '₹399', art: prodArt('#FEF3C7'), ink: '#B45309', icon: 'M8 3h8M9 3v4h6V3M7 7h10l-1 14H8z' },
+        { name: 'Oats & Fibre Mix 500g', why: 'Soluble fibre, heart health', price: '₹249', art: prodArt('#DBEAFE'), ink: '#1D4ED8', icon: 'M3.5 7.5 12 3l8.5 4.5v9L12 21l-8.5-4.5zM3.5 7.5 12 12l8.5-4.5M12 12v9' },
+        { name: 'Vitamin E Softgels', why: 'Antioxidant support', price: '₹189', art: prodArt('#FEF3C7'), ink: '#B45309', icon: 'M8.5 15.5l7-7a4 4 0 0 0-5.7-5.7l-7 7a4 4 0 0 0 5.7 5.7zM6 6l6 6' }
+      ],
+      vitd: [], hb: []
     };
     const c = T[s.t];
     const W = 314, top = 16, bot = 160;
@@ -133,9 +165,11 @@ class Component extends DCLogic {
       }),
       cur: {
         date: last[0].toUpperCase(), value: String(last[1]), unit: c.unit, range: c.range, state: ok ? 'In range' : (last[1] < c.lo ? 'Below range' : 'Above range'),
+        recoLabel: c.label, stateLower: ok ? 'in range' : (last[1] < c.lo ? 'below range' : 'above range'),
         badge: 'padding: 6px 12px; border-radius: 999px; font-size: 12px; font-weight: 800; ' + (ok ? 'background: #ECFDF5; color: #047857;' : 'background: #FFFBEB; color: #92400E;'),
         marker: 'position: absolute; top: -5px; left: ' + pos + '%; margin-left: -10px; width: 20px; height: 20px; border-radius: 999px; background: #0C0494; border: 3px solid #FFFFFF; box-sizing: border-box; box-shadow: 0 4px 10px rgba(12,4,148,.35); transition: left .5s cubic-bezier(.2,.7,.3,1); animation: skSlide .9s .3s both cubic-bezier(.2,.7,.3,1);'
       },
+      showReco: !ok && RECO[s.t].length > 0, reco: RECO[s.t],
       isGraph: s.view === 'graph', isTable: s.view === 'table',
       graphChecked: s.view === 'graph' ? 'true' : 'false', tableChecked: s.view === 'table' ? 'true' : 'false',
       pickGraph: () => this.setState({ view: 'graph' }), pickTable: () => this.setState({ view: 'table' }),

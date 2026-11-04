@@ -64,14 +64,16 @@ a:focus-visible,button:focus-visible{outline:3px solid #6D5BFF;outline-offset:3p
 
   <section aria-labelledby="covers" style="padding: 22px 20px 0; animation: skRise .55s .2s both;">
     <h2 id="covers" style="margin: 0 0 4px; font-size: 17px; font-weight: 800; letter-spacing: -0.3px;">More cover</h2>
-    <p style="margin: 0 0 12px; font-size: 12.5px; font-weight: 600; color: #6B6980;">Coming with a licensed insurance partner.</p>
-    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px;">
-      <sc-for list="{{ covers }}" as="v" hint-placeholder-count="3">
-        <span style="border-radius: 20px; padding: 12px 10px; background: #FFFFFF; border: 1.5px dashed #DAE2FD; display: flex; flex-direction: column; gap: 8px; color: #464555;">
-          <span style="width: 38px; height: 38px; border-radius: 13px; background: #F1F5F9; display: flex; align-items: center; justify-content: center;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{ v.icon }}"></path></svg></span>
+    <p style="margin: 0 0 12px; font-size: 12.5px; line-height: 17px; font-weight: 600; color: #6B6980;">We're still choosing a licensed insurance partner, so these aren't on sale yet. Tell us you're interested and we'll email you the day they are — no purchase, no payment details.</p>
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px;">
+      <sc-for list="{{ covers }}" as="v" hint-placeholder-count="5">
+        <button type="button" aria-pressed="{{ v.pressed }}" onClick="{{ v.notify }}" style="border: 1.5px solid #EEF2FF; border-radius: 20px; padding: 12px; background: #FFFFFF; display: flex; flex-direction: column; gap: 6px; color: #464555; text-align: left; cursor: pointer;">
+          <span style="{{ v.tile }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="{{ v.ink }}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{ v.icon }}"></path></svg></span>
           <span style="font-size: 12.5px; font-weight: 800; line-height: 16px; color: #131B2E;">{{ v.name }}</span>
-          <span style="font-size: 10.5px; font-weight: 800; color: #475569;">Not yet</span>
-        </span>
+          <span style="font-size: 10.5px; line-height: 14px; font-weight: 600; color: #6B6980;">{{ v.benefit }}</span>
+          <span style="font-size: 11px; font-weight: 800; color: #0C0494;">{{ v.price }}</span>
+          <span style="{{ v.btn }}">{{ v.btnLabel }}</span>
+        </button>
       </sc-for>
     </div>
   </section>
@@ -87,18 +89,30 @@ a:focus-visible,button:focus-visible{outline:3px solid #6D5BFF;outline-offset:3p
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1200}}'>
 class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { notified: {} }; }
   renderVals() {
     const pill = (k) => 'flex-shrink: 0; padding: 4px 10px; border-radius: 999px; font-size: 10.5px; font-weight: 800; ' + (k === 'ok' ? 'background: #ECFDF5; color: #047857;' : 'background: #FFFBEB; color: #92400E;');
     const bar = (pct, k) => 'display: block; height: 100%; width: ' + pct + '%; border-radius: 999px; background: ' + (k === 'ok' ? 'linear-gradient(90deg, #34D399, #047857)' : 'linear-gradient(90deg, #FBBF24, #D97706)') + '; animation: skFill 1.2s .5s both cubic-bezier(.2,.7,.3,1);';
+    const n = this.state.notified;
+    const tile = (bg) => 'width: 36px; height: 36px; border-radius: 12px; display: flex; align-items: center; justify-content: center; background: ' + bg + ';';
+    const btn = (on) => 'margin-top: 2px; align-self: flex-start; height: 28px; padding: 0 10px; border-radius: 999px; font-size: 10.5px; font-weight: 800; display: flex; align-items: center; ' + (on ? 'background: #ECFDF5; color: #047857;' : 'background: #EEF2FF; color: #0C0494;');
+    const cover = (key, name, benefit, price, ink, bg, icon) => ({
+      name, benefit, price, ink, icon, tile: tile(bg),
+      pressed: n[key] ? 'true' : 'false',
+      notify: () => this.setState({ notified: { ...n, [key]: !n[key] } }),
+      btn: btn(n[key]), btnLabel: n[key] ? 'You’re on the list' : 'Notify me'
+    });
     return {
       claims: [
         { title: 'Consult and lab tests · Sep', meta: '₹[amount] · prepared 28 Sep', state: 'Prepared', pill: pill('wait'), bar: bar(25, 'wait') },
         { title: 'Physiotherapy · Jun', meta: '₹[amount] · paid 2 Jul', state: 'Paid', pill: pill('ok'), bar: bar(100, 'ok') }
       ],
       covers: [
-        { name: 'Accident cover', icon: 'M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6zM12 8v5M12 16h.01' },
-        { name: 'Health top-up', icon: 'M12 5v14M5 12h14' },
-        { name: 'Travel abroad', icon: 'M2 16l20-7-3-3-6 3-5-5-2 1 3 6-4 2-2-1-1 1z' }
+        cover('diabetes', 'Diabetes cover', 'Daily cash on diagnosis', 'From ~₹2/day', '#1D4ED8', '#DBEAFE', 'M12 3s6 7 6 11a6 6 0 0 1-12 0c0-4 6-11 6-11z'),
+        cover('cancer', 'Cancer cover', 'Lump sum on diagnosis', 'From ~₹3/day', '#BE185D', '#FCE7F3', 'M12 3l7.5 3v5.6c0 4.3-3 8.2-7.5 9.4-4.5-1.2-7.5-5.1-7.5-9.4V6z M9 12l2 2 4-4'),
+        cover('accident', 'Personal accident', 'Cover for accidental injury', 'From ~₹1.5/day', '#B45309', '#FEF3C7', 'M12 3l7.5 3v5.6c0 4.3-3 8.2-7.5 9.4-4.5-1.2-7.5-5.1-7.5-9.4V6z M12 9v4 M12 16h.01'),
+        cover('travel', 'Travel abroad', 'Cover for a semester overseas', 'From ~₹20/trip', '#0E7490', '#CFFAFE', 'M12 3c0.8 0 1.5 1 1.5 2.5V10l7.5 4.5V16l-7.5-2v4l2.5 2V21L12 20l-4 1v-1l2.5-2v-4L3 16v-1.5L10.5 10V5.5C10.5 4 11.2 3 12 3z'),
+        cover('topup', 'Health top-up', 'Raises your cover beyond the base plan', 'From ~₹4/day', '#047857', '#D1FAE5', 'M12 21s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.6-7 10-7 10z M8 11h2l1-2 2 4 1-2h2')
       ]
     };
   }

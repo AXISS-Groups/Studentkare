@@ -11,7 +11,7 @@
 
 ## Icons this screen must show (all of them)
 
-- **Line / solid icons (17):** `chevron-right`, `credit-card`, `doc`, `flask`, `lock-4`, `map-pin-2`, `message-circle-3`, `plus`, `plus-square`, `scan`, `settings`, `shield-2`, `sparkles`, `star`, `syringe`, `translate`, `user-5`
+- **Line / solid icons (18):** `chevron-right`, `credit-card`, `devices`, `doc`, `flask`, `lock-4`, `map-pin-2`, `message-circle-3`, `plus`, `plus-square`, `scan`, `settings`, `shield-2`, `sparkles`, `star`, `syringe`, `translate`, `user-5`
 - **3D icon tiles (0):** —
 - **Small glyphs (0):** —
 - **Brand mark:** —
@@ -56,3 +56,7 @@ Same object as the manifest icon, drawn a little differently on this board:
 ## Added 2026-10-23: What's new
 
 A "What's new" row (`sparkles`, "Changes in the app, from the team") above Help opens `M2WhatsNew` (/whats-new): the team's product update posts.
+
+## Added 2026-11-04: Connect a device
+
+A settings row (`devices`, "Apple Health, Health Connect, or a wearable") between "Orders and payments" and "Language" — the Tata-style wearable-sync entry point, placed here rather than a new screen. It is a placeholder like the other unwired rows on this board (Addresses, Orders and payments, Privacy and data, Help): tapping does nothing yet, there is no pairing flow built. Framed the same way as the Steps card on `M2Insights` — a wellness data source, not a clinical reading: no goal, ring, streak, or score language anywhere near it.
