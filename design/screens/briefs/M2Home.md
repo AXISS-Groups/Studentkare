@@ -44,6 +44,10 @@ Tier 2 (home, like HomeDiscover). Tier 1 parts inside it: the "Medicines today" 
 - Highlights 2 and 3 run `service-green-deep` → `service-green-shade` and `service-orange-deep` → `service-orange-shade`; the eyebrow chip is a dark veil and the body line is solid white, so every line is AA across the whole card.
 - "Sexual health" tile uses the rose family (`service-rose-soft` + `service-rose-ink`), not red.
 
+## Design changes (founder, 2026-11-04): icon watermark on "Recently viewed" cards (Tata 1mg sweep)
+
+- Added the same large, low-opacity filled-icon watermark used on the other reworked screens to the "Recently viewed" product cards (same manifest path, fill instead of stroke, no new icon). This board already covers the rest of the Tata-pattern set well (service tabs, rotating highlights, "Today for you," "Shop by concern," on-campus grid, SOS), so this was the one consistency gap.
+
 ## Missing icons
 
 None. The drawings this board had with no manifest icon were drawn into the kit on 2026-10-21 (house line style) and are in the list above:
