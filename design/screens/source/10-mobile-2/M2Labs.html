@@ -65,14 +65,43 @@ a:focus-visible,button:focus-visible{outline:3px solid #6D5BFF;outline-offset:3p
     </div>
     <div style="padding: 12px 20px 0; display: flex; flex-direction: column; gap: 10px;">
       <sc-for list="{{ packages }}" as="p" hint-placeholder-count="3">
-        <a href="Orders.dc.html" class="sk-card" style="border-radius: 22px; padding: 14px; background: #FFFFFF; box-shadow: 0 6px 18px rgba(12,4,148,.06); display: flex; align-items: center; gap: 12px; color: #131B2E; animation: skRise .35s both;">
-          <span style="{{ p.tile }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="{{ p.ink }}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{ p.icon }}"></path></svg></span>
-          <span style="flex-grow: 1; display: flex; flex-direction: column; gap: 3px;"><span style="font-size: 14px; font-weight: 800;">{{ p.name }}</span><span style="font-size: 11.5px; font-weight: 600; color: #6B6980;">{{ p.meta }}</span></span>
-          <span style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;"><span style="font-size: 14.5px; font-weight: 800;">₹[price]</span><span style="font-size: 11.5px; font-weight: 800; color: #0C0494;">Add</span></span>
-        </a>
+        <div class="sk-card" style="border-radius: 22px; padding: 14px; background: #FFFFFF; box-shadow: 0 6px 18px rgba(12,4,148,.06); display: flex; flex-direction: column; gap: 10px; color: #131B2E; animation: skRise .35s both;">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <span style="{{ p.tile }}"><svg aria-hidden="true" width="44" height="44" viewBox="0 0 24 24" fill="{{ p.ink }}" fill-rule="evenodd" style="position: absolute; right: -8px; bottom: -8px; opacity: .22;"><path d="{{ p.icon }}"></path></svg><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="{{ p.ink }}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="position: relative;"><path d="{{ p.icon }}"></path></svg></span>
+            <span style="flex-grow: 1; display: flex; flex-direction: column; gap: 3px;"><span style="font-size: 14px; font-weight: 800;">{{ p.name }}</span><span style="font-size: 11.5px; font-weight: 600; color: #6B6980;">{{ p.meta }}</span></span>
+            <a href="Orders.dc.html" style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px; color: #131B2E;"><span style="font-size: 14.5px; font-weight: 800;">₹[price]</span><span style="font-size: 11.5px; font-weight: 800; color: #0C0494;">Add</span></a>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="height: 24px; padding: 0 10px; border-radius: 999px; background: #F2F3FF; font-size: 10.5px; font-weight: 800; color: #464555; display: flex; align-items: center;">{{ p.fasting }}</span>
+            <button type="button" aria-pressed="{{ p.compared }}" onClick="{{ p.toggleCompare }}" style="{{ p.compareBtn }}">{{ p.compareLabel }}</button>
+          </div>
+        </div>
       </sc-for>
     </div>
   </section>
+
+  <sc-if value="{{ showCompare }}" hint-placeholder-val="{{ true }}">
+  <section aria-labelledby="cmp" style="margin: 14px 20px 0; padding: 16px; border-radius: 22px; background: #FFFFFF; box-shadow: 0 6px 18px rgba(12,4,148,.06); animation: skRise .4s both;">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+      <h2 id="cmp" style="margin: 0; font-size: 15px; font-weight: 800;">Comparing 2 packages</h2>
+      <button type="button" onClick="{{ clearCompare }}" style="font-size: 12px; font-weight: 800; color: #0C0494; background: none; border: 0; padding: 0; cursor: pointer;">Clear</button>
+    </div>
+    <div style="display: grid; grid-template-columns: 0.9fr 1fr 1fr; gap: 10px 8px; font-size: 12px;">
+      <span></span>
+      <span style="font-weight: 800; line-height: 15px;">{{ cmpA.name }}</span>
+      <span style="font-weight: 800; line-height: 15px;">{{ cmpB.name }}</span>
+      <span style="color: #6B6980; font-weight: 700;">Price</span>
+      <span>₹[price]</span>
+      <span>₹[price]</span>
+      <span style="color: #6B6980; font-weight: 700;">Tests</span>
+      <span>{{ cmpA.meta }}</span>
+      <span>{{ cmpB.meta }}</span>
+      <span style="color: #6B6980; font-weight: 700;">Fasting</span>
+      <span>{{ cmpA.fasting }}</span>
+      <span>{{ cmpB.fasting }}</span>
+    </div>
+  </section>
+  </sc-if>
 
   <section aria-labelledby="how" style="margin: 18px 20px 0; padding: 16px; border-radius: 26px; background: #FFFFFF; box-shadow: 0 6px 18px rgba(12,4,148,.06); animation: skRise .55s .3s both;">
     <h2 id="how" style="margin: 0 0 14px; font-size: 15px; font-weight: 800;">How collection works</h2>
@@ -111,19 +140,35 @@ a:focus-visible,button:focus-visible{outline:3px solid #6D5BFF;outline-offset:3p
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1640}}'>
 class Component extends DCLogic {
-  constructor(props) { super(props); this.state = { who: 'all' }; }
+  constructor(props) { super(props); this.state = { who: 'all', compare: [] }; }
   renderVals() {
     const who = this.state.who;
+    const cmp = this.state.compare;
     const q = (label, href, a, b, icon) => ({ label, href, icon, tile: 'width: 42px; height: 42px; border-radius: 15px; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle at 28% 22%, rgba(255,255,255,.5), rgba(255,255,255,0) 46%), linear-gradient(150deg, ' + a + ', ' + b + ');' });
     const auds = [['all', 'Everyone'], ['women', 'Women'], ['men', 'Men'], ['fitness', 'Fitness'], ['concern', 'By concern']];
-    const pk = (name, meta, ink, bg, icon) => ({ name, meta, ink, icon, tile: 'width: 46px; height: 46px; flex-shrink: 0; border-radius: 16px; display: flex; align-items: center; justify-content: center; background: ' + bg + ';' });
-    const lists = {
-      all: [pk('Full body check', '[n] tests · fasting 10 h', '#4C1D95', '#EDE9FE', 'M12 3a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM8 9h8l-1 6h-2v6h-2v-6H9z'), pk('Fever panel', '[n] tests · no fasting', '#C2410C', '#FFEDD5', 'M14 14.8V4a2 2 0 1 0-4 0v10.8a4 4 0 1 0 4 0z'), pk('Vitamin levels', 'Vitamin D and B12', '#B45309', '#FEF3C7', 'M9 3h6v3H9zM7 6h10v13a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2z')],
-      women: [pk('Women’s wellness', '[n] tests incl. thyroid, iron', '#BE185D', '#FCE7F3', 'M12 3a5 5 0 1 0 0 10 5 5 0 0 0 0-10zM12 13v8M9 18h6'), pk('PCOS panel', '[n] hormone tests', '#9D174D', '#FCE7F3', 'M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z'), pk('Iron and anaemia', 'Haemoglobin, ferritin', '#BE185D', '#FCE7F3', 'M12 21s-8-5.2-8-11.2A4.6 4.6 0 0 1 12 7a4.6 4.6 0 0 1 8 2.8C20 15.8 12 21 12 21z')],
-      men: [pk('Men’s wellness', '[n] tests incl. liver, kidney', '#1D4ED8', '#DBEAFE', 'M14 3h7v7M21 3l-8 8M10 21a6 6 0 1 1 0-12 6 6 0 0 1 0 12z'), pk('Lipid profile', 'Cholesterol panel', '#0369A1', '#E0F2FE', 'M4 14l6-6 4 4 6-6'), pk('Vitamin levels', 'Vitamin D and B12', '#B45309', '#FEF3C7', 'M9 3h6v3H9zM7 6h10v13a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2z')],
-      fitness: [pk('Sports fitness', '[n] tests for training', '#4338CA', '#E0E7FF', 'M4 14l6-6 4 4 6-6M14 6h6v6'), pk('Protein and muscle', 'Creatinine, CK and more', '#0F766E', '#CCFBF1', 'M6 12h12M4 9v6M20 9v6M8 7v10M16 7v10')],
-      concern: [pk('Thyroid', 'TSH, T3, T4', '#7C3AED', '#EDE9FE', 'M8 4c-2 3-2 13 4 16 6-3 6-13 4-16-1.5 2-6.5 2-8 0z'), pk('Diabetes check', 'HbA1c, fasting sugar', '#1D4ED8', '#DBEAFE', 'M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z'), pk('Allergy panel', 'Common triggers', '#047857', '#D1FAE5', 'M12 21c-5-3-8-7-8-12 4 0 7 2 8 5 1-3 4-5 8-5 0 5-3 9-8 12z')]
+    const compareBtnStyle = (on, disabled) => 'height: 24px; padding: 0 10px; border-radius: 999px; font-size: 10.5px; font-weight: 800; cursor: ' + (disabled ? 'default' : 'pointer') + '; ' + (on ? 'border: 0; background: #0C0494; color: #FFFFFF;' : disabled ? 'border: 1.5px solid #E3E6F7; background: #FFFFFF; color: #C7C3D6;' : 'border: 1.5px solid #DAE2FD; background: #FFFFFF; color: #464555;');
+    const pk = (id, name, meta, fasting, ink, bg, icon) => {
+      const on = cmp.includes(id);
+      const disabled = !on && cmp.length >= 2;
+      return {
+        name, meta, fasting, ink, icon, id,
+        tile: 'position: relative; overflow: hidden; width: 46px; height: 46px; flex-shrink: 0; border-radius: 16px; display: flex; align-items: center; justify-content: center; background: ' + bg + ';',
+        compared: on ? 'true' : 'false',
+        compareLabel: on ? 'Comparing' : 'Compare',
+        compareBtn: compareBtnStyle(on, disabled),
+        toggleCompare: disabled ? () => {} : () => this.setState({ compare: on ? cmp.filter(x => x !== id) : [...cmp, id] })
+      };
     };
+    const lists = {
+      all: [pk('all-1', 'Full body check', '[n] tests · fasting 10 h', 'Fasting 10h', '#4C1D95', '#EDE9FE', 'M12 3a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM8 9h8l-1 6h-2v6h-2v-6H9z'), pk('all-2', 'Fever panel', '[n] tests · no fasting', 'No fasting', '#C2410C', '#FFEDD5', 'M14 14.8V4a2 2 0 1 0-4 0v10.8a4 4 0 1 0 4 0z'), pk('all-3', 'Vitamin levels', 'Vitamin D and B12', 'No fasting', '#B45309', '#FEF3C7', 'M9 3h6v3H9zM7 6h10v13a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2z')],
+      women: [pk('women-1', 'Women’s wellness', '[n] tests incl. thyroid, iron', 'No fasting', '#BE185D', '#FCE7F3', 'M12 3a5 5 0 1 0 0 10 5 5 0 0 0 0-10zM12 13v8M9 18h6'), pk('women-2', 'PCOS panel', '[n] hormone tests', 'Fasting 10h', '#9D174D', '#FCE7F3', 'M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z'), pk('women-3', 'Iron and anaemia', 'Haemoglobin, ferritin', 'No fasting', '#BE185D', '#FCE7F3', 'M12 21s-8-5.2-8-11.2A4.6 4.6 0 0 1 12 7a4.6 4.6 0 0 1 8 2.8C20 15.8 12 21 12 21z')],
+      men: [pk('men-1', 'Men’s wellness', '[n] tests incl. liver, kidney', 'Fasting 10h', '#1D4ED8', '#DBEAFE', 'M14 3h7v7M21 3l-8 8M10 21a6 6 0 1 1 0-12 6 6 0 0 1 0 12z'), pk('men-2', 'Lipid profile', 'Cholesterol panel', 'Fasting 10h', '#0369A1', '#E0F2FE', 'M4 14l6-6 4 4 6-6'), pk('men-3', 'Vitamin levels', 'Vitamin D and B12', 'No fasting', '#B45309', '#FEF3C7', 'M9 3h6v3H9zM7 6h10v13a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2z')],
+      fitness: [pk('fit-1', 'Sports fitness', '[n] tests for training', 'No fasting', '#4338CA', '#E0E7FF', 'M4 14l6-6 4 4 6-6M14 6h6v6'), pk('fit-2', 'Protein and muscle', 'Creatinine, CK and more', 'No fasting', '#0F766E', '#CCFBF1', 'M6 12h12M4 9v6M20 9v6M8 7v10M16 7v10')],
+      concern: [pk('con-1', 'Thyroid', 'TSH, T3, T4', 'No fasting', '#7C3AED', '#EDE9FE', 'M8 4c-2 3-2 13 4 16 6-3 6-13 4-16-1.5 2-6.5 2-8 0z'), pk('con-2', 'Diabetes check', 'HbA1c, fasting sugar', 'Fasting 8h', '#1D4ED8', '#DBEAFE', 'M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z'), pk('con-3', 'Allergy panel', 'Common triggers', 'No fasting', '#047857', '#D1FAE5', 'M12 21c-5-3-8-7-8-12 4 0 7 2 8 5 1-3 4-5 8-5 0 5-3 9-8 12z')]
+    };
+    const current = lists[who];
+    const cmpA = cmp.length === 2 ? current.find(p => p.id === cmp[0]) : null;
+    const cmpB = cmp.length === 2 ? current.find(p => p.id === cmp[1]) : null;
     return {
       quick: [
         q('Full body', 'Orders.dc.html', '#A78BFA', '#6D28D9', 'M12 3a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM8 9h8l-1 6h-2v6h-2v-6H9z'),
@@ -132,10 +177,13 @@ class Component extends DCLogic {
         q('Reports', 'Insights.dc.html', '#34D399', '#047857', 'M4 19V5M4 19h16M8 15l3-4 3 2 4-6')
       ],
       audiences: auds.map(([id, label]) => ({
-        label, selected: who === id ? 'true' : 'false', pick: () => this.setState({ who: id }),
+        label, selected: who === id ? 'true' : 'false', pick: () => this.setState({ who: id, compare: [] }),
         style: 'flex-shrink: 0; height: 40px; padding: 0 16px; border-radius: 999px; cursor: pointer; font-size: 13px; font-weight: 800; transition: all .25s; ' + (who === id ? 'border: 0; background: #0C0494; color: #FFFFFF; box-shadow: 0 8px 18px rgba(12,4,148,.25);' : 'border: 1.5px solid #DAE2FD; background: #FFFFFF; color: #464555;')
       })),
-      packages: lists[who],
+      packages: current,
+      showCompare: cmp.length === 2 ? 'true' : 'false',
+      cmpA, cmpB,
+      clearCompare: () => this.setState({ compare: [] }),
       steps: [{ n: '1', label: 'Pick tests and a slot' }, { n: '2', label: 'Collected at your block' }, { n: '3', label: 'Lab runs the tests' }, { n: '4', label: 'Report in your vault' }]
     };
   }
