@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | Canvas page | 9 · Mobile 2.0 (approved 2026-10-21) |
-| Platform / frame | Phone · 390×1780 |
+| Platform / frame | Phone · 390×2200 |
 | Tier | 1 |
 | Ticket(s) | SK-047 |
 | Picture | `design/screens/screenshots/10-mobile-2/M2Insights.jpg` |
@@ -11,7 +11,7 @@
 
 ## Icons this screen must show (all of them)
 
-- **Line / solid icons (18):** `ayush-spark`, `bottle`, `box`, `check`, `chevron-right`, `droplet`, `glass`, `heart-3`, `home`, `pill-3`, `plus`, `refresh`, `skip-forward`, `stetho`, `thyroid`, `undo`, `user-5`, `walk`
+- **Line / solid icons (20):** `ayush-spark`, `bottle`, `box`, `brain`, `check`, `chevron-right`, `droplet`, `glass`, `heart-3`, `home`, `kidney`, `pill-3`, `plus`, `refresh`, `skip-forward`, `stetho`, `thyroid`, `undo`, `user-5`, `walk`
 - **3D icon tiles (0):** —
 - **Small glyphs (0):** —
 - **Brand mark:** —
@@ -25,7 +25,7 @@
 
 ## Where it links to
 
-`M2AskAyush`, `M2Home`, `M2Labs`, `M2Medicines`, `M2Orders`, `M2Profile`, `M2Reminders`, `M2Steps`, `M2Trends`, `M2Water` · also: SOS (href `#` on the canvas; the app opens the existing SOS flow, SosBeacon)
+`M2AskAyush`, `M2Home`, `M2Labs`, `M2Medicines`, `M2Orders`, `M2Product`, `M2Profile`, `M2Reminders`, `M2Steps`, `M2Trends`, `M2Water` · also: SOS (href `#` on the canvas; the app opens the existing SOS flow, SosBeacon)
 
 ## States shown in the design's preview switcher
 
@@ -41,6 +41,24 @@ Tier 1: lab values, in/out of range counts, doctor's note, refills due and the d
 
 - New "Due from your care" card pair under the doctor's note: "Refills due" (the student's refill dates, Tier 1, from `GET /refills/plans`) with "Refill in the store" → M2Medicines, and "Repeat test your doctor ordered" (from `GET /lab-orders`, Tier 1) with "Book in Lab tests" → M2Labs. The links open the store page only; the medicine or test is never passed into catalogue or commerce queries (Rule L).
 - Board is now 390×1780 to fit the pair. The doctor avatar runs `service-green-soft` → `#A7F3D0` with `service-green-shade` initials (AA); "Heart and blood" uses the rose family, not red.
+
+## Design changes (founder, 2026-11-04): board grows to 390×2200
+
+- The new "Recommended for your HDL result" rail and the two extra "By body system" cards add roughly 400px of content. Board height moved from 1780 to 2200 (and the preview's `$preview` height to match) so the bottom nav sits below the new content instead of overlapping it.
+
+## Design changes (founder, 2026-11-04): solid icon watermark on the recommendation cards
+
+- Each product card in "Recommended for your HDL result" now carries a large, low-opacity filled version of its own icon as a background watermark (same manifest path as the small line icon on top, just rendered with `fill` instead of `stroke` — not a new icon). Matches the same treatment added to `M2Trends.md`'s recommendation cards and `M2Insurance.md`'s cover cards.
+
+## Design changes (founder, 2026-11-04): Rule L exception — "Recommended for your HDL result"
+
+- New rail between "Due from your care" and "By body system": product cards (icon, name, one-line "why", price, Add) that link to `Product.dc.html` with no clinical value in the query or href. This **intentionally crosses Rule L** (a biomarker driving a commercial recommendation) — the founder approved it as a named, documented exception for this card only, modelled on Tata 1mg's biomarker → product pattern, rather than a silent change to the firewall. Nothing else on this screen (or elsewhere in the app) links a lab value to a product; any future card like this needs its own founder sign-off and its own brief note, not a precedent read off this one.
+- Framing stays calm per DESIGN.md: a sub-line states why the card appeared and that a pharmacist checks anything new against the student's existing meds; no discount badges, urgency copy, or "Buy now" styling. "Why these? Ask Ayush" routes to `M2AskAyush` for the explanation — Ayush still only explains, per its own guardrail (see `M2AskAyush.md`).
+- Enforcement note: this is a UI-only exception. The Postgres-grants / repository-boundary enforcement of Rule L (`AGENTS.md`) is untouched — the recommendation card still cannot read or write clinical tables from the commerce side; it is handed a static "reason" string at render time, same as the existing "Due from your care" cards.
+
+## Design changes (founder, 2026-11-04): untested systems in "By body system"
+
+- Added two cards for panels the student hasn't had tested: "Kidney function" (`kidney`) and "Brain and nerves" (`brain`). They carry a "Get this tested" chip instead of status dots, and link straight to `M2Labs` — same Rule-L-safe pattern as "Due from your care": the href carries no clinical data, just the store page.
 
 ## Today cards (reminders ticket, approved by the founder 2026-10-21; no board)
 

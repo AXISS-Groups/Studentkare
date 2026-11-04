@@ -41,6 +41,10 @@ Tier 1: AI answers about the student's own records, consent banner, crisis line.
 
 - The range bar's out-of-range segment is amber (`attention` family, `#FBBF24`), never red: DESIGN.md, a result outside range is attention.
 
+## Design changes (founder, 2026-11-04)
+
+- Two more suggestion chips ("What does HDL mean?", "Is my HbA1c serious?"), Tata 1mg-style open prompts. The AI-split guardrail is unchanged: every answer still ends by routing to "a doctor will guide you" rather than Ayush giving its own clinical verdict — this screen is explicitly *not* part of the Rule L / recommendation exception used on `M2Insights` and `M2Trends`.
+
 ## Missing icons
 
 None. Every drawing on this board has a manifest icon.
