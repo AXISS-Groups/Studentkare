@@ -41,6 +41,10 @@ Tier 2 (shop, like ShopHome). No personal health data on this board (Rule L): re
 - GENERICS card runs `service-green-deep` → `service-green-shade` (eyebrow `service-green-soft` on it, 4.8:1); the coin runs `#FDE68A` → `service-amber`.
 - "Sexual health" tile uses the rose family, not red.
 
+## Design changes (founder, 2026-11-04): solid icon watermark on deal cards (Tata 1mg sweep)
+
+- "Lower prices this week" cards now carry the same large, low-opacity filled icon watermark as the other reworked screens (same manifest path, fill instead of stroke, no new icon). This board already had most of the Tata-pattern gaps covered (generics compare table, delivery-time chips, categories grid, Rule-L-safe refills link), so this was the one consistency gap left.
+
 ## Missing icons
 
 None. The drawings this board had with no manifest icon were drawn into the kit on 2026-10-21 (house line style) and are in the list above:
