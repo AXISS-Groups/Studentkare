@@ -68,7 +68,7 @@ a:focus-visible,button:focus-visible{outline:3px solid #6D5BFF;outline-offset:3p
     <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px;">
       <sc-for list="{{ covers }}" as="v" hint-placeholder-count="5">
         <button type="button" aria-pressed="{{ v.pressed }}" onClick="{{ v.notify }}" style="border: 1.5px solid #EEF2FF; border-radius: 20px; padding: 12px; background: #FFFFFF; display: flex; flex-direction: column; gap: 6px; color: #464555; text-align: left; cursor: pointer;">
-          <span style="{{ v.tile }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="{{ v.ink }}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{ v.icon }}"></path></svg></span>
+          <span style="{{ v.tile }}"><svg aria-hidden="true" width="52" height="52" viewBox="0 0 24 24" fill="{{ v.ink }}" fill-rule="evenodd" style="position: absolute; right: -8px; bottom: -8px; opacity: .22;"><path d="{{ v.icon }}"></path></svg><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="{{ v.ink }}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="position: relative;"><path d="{{ v.icon }}"></path></svg></span>
           <span style="font-size: 12.5px; font-weight: 800; line-height: 16px; color: #131B2E;">{{ v.name }}</span>
           <span style="font-size: 10.5px; line-height: 14px; font-weight: 600; color: #6B6980;">{{ v.benefit }}</span>
           <span style="font-size: 11px; font-weight: 800; color: #0C0494;">{{ v.price }}</span>
@@ -94,7 +94,7 @@ class Component extends DCLogic {
     const pill = (k) => 'flex-shrink: 0; padding: 4px 10px; border-radius: 999px; font-size: 10.5px; font-weight: 800; ' + (k === 'ok' ? 'background: #ECFDF5; color: #047857;' : 'background: #FFFBEB; color: #92400E;');
     const bar = (pct, k) => 'display: block; height: 100%; width: ' + pct + '%; border-radius: 999px; background: ' + (k === 'ok' ? 'linear-gradient(90deg, #34D399, #047857)' : 'linear-gradient(90deg, #FBBF24, #D97706)') + '; animation: skFill 1.2s .5s both cubic-bezier(.2,.7,.3,1);';
     const n = this.state.notified;
-    const tile = (bg) => 'width: 36px; height: 36px; border-radius: 12px; display: flex; align-items: center; justify-content: center; background: ' + bg + ';';
+    const tile = (bg) => 'position: relative; overflow: hidden; width: 44px; height: 44px; border-radius: 13px; display: flex; align-items: center; justify-content: center; background: ' + bg + ';';
     const btn = (on) => 'margin-top: 2px; align-self: flex-start; height: 28px; padding: 0 10px; border-radius: 999px; font-size: 10.5px; font-weight: 800; display: flex; align-items: center; ' + (on ? 'background: #ECFDF5; color: #047857;' : 'background: #EEF2FF; color: #0C0494;');
     const cover = (key, name, benefit, price, ink, bg, icon) => ({
       name, benefit, price, ink, icon, tile: tile(bg),

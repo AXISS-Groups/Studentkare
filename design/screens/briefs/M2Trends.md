@@ -37,6 +37,10 @@ Table view: one row per report, newest first (date, lab, value chip). Switching 
 
 Tier 1: lab values over time, range bar, doctor's steps.
 
+## Design changes (founder, 2026-11-04): solid icon watermark on the recommendation cards
+
+- Same treatment as `M2Insights.md`: each card's icon also renders large and filled (low opacity) behind the small line icon, as a background watermark. Same manifest path, just a different fill treatment — no new icon.
+
 ## Design changes (founder, 2026-11-04): Rule L exception — "Recommended for this result"
 
 - New rail under "Your doctor's 3 steps," shown only when the selected test's latest value is out of range (HbA1c and HDL in the current mock data; nothing shown for Vitamin D or Haemoglobin while they're in range). Same product-card pattern and the same named, documented Rule L exception as `M2Insights.md`'s "Recommended for your HDL result" — see that brief for the founder's approval note; it is not a separate, independent exception. Links go to `M2Product` with no clinical value in the href.

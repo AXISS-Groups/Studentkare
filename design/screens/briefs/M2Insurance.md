@@ -43,6 +43,10 @@ Tier 2 (cover and claims, like ClaimsHub).
 
 - 5 fuller product cards (across 3 grid rows) need more room than the old 3 dashed placeholders. Board height moved from 1200 to 1480 (and the preview's `$preview` height to match) so the bottom nav clears the new content.
 
+## Design changes (founder, 2026-11-04): solid icon watermark on the cover cards
+
+- Each cover card's icon tile (44×44) now carries a large, low-opacity filled version of its own icon behind the small line icon, as a background watermark — same manifest path as the icon on top, just filled instead of stroked. The travel/`plane` icon needs `fill-rule="evenodd"` to render correctly filled (its path self-intersects); the others fill cleanly without it, but all five use it for consistency.
+
 ## Design changes (founder, 2026-11-04): richer "More cover" products
 
 - "More cover" grew from 3 dashed "Not yet" placeholder tiles to 5 Tata 1mg-style product cards (Diabetes cover, Cancer cover, Personal accident, Travel abroad, Health top-up), each with a benefit line and an indicative "From ~₹…" price. This is **not** the Rule L exception used on `M2Insights`/`M2Trends` — these cards carry no clinical value at all, so there's nothing to fire the firewall on.

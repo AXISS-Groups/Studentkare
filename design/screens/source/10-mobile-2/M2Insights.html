@@ -95,7 +95,7 @@ a:focus-visible,button:focus-visible{outline:3px solid #6D5BFF;outline-offset:3p
     <div class="sk-rail" style="display: flex; gap: 12px; overflow-x: auto; padding: 0 0 8px;">
       <sc-for list="{{ reco }}" as="p" hint-placeholder-count="3">
         <a href="Product.dc.html" class="sk-card" style="flex-shrink: 0; width: 156px; border-radius: 22px; background: #FFFFFF; box-shadow: 0 6px 18px rgba(12,4,148,.06); padding: 12px; display: flex; flex-direction: column; gap: 6px; color: #131B2E;">
-          <span style="{{ p.art }}"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="{{ p.ink }}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{ p.icon }}"></path></svg></span>
+          <span style="{{ p.art }}"><svg aria-hidden="true" width="64" height="64" viewBox="0 0 24 24" fill="{{ p.ink }}" fill-rule="evenodd" style="position: absolute; right: -10px; bottom: -10px; opacity: .22;"><path d="{{ p.icon }}"></path></svg><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="{{ p.ink }}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="position: relative;"><path d="{{ p.icon }}"></path></svg></span>
           <span style="font-size: 13px; font-weight: 800; line-height: 17px;">{{ p.name }}</span>
           <span style="font-size: 11px; font-weight: 700; color: #047857;">{{ p.why }}</span>
           <span style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 15px; font-weight: 800;">{{ p.price }}</span>
@@ -155,7 +155,7 @@ class Component extends DCLogic {
     const tile = (bg) => 'width: 38px; height: 38px; border-radius: 13px; display: flex; align-items: center; justify-content: center; background: ' + bg + ';';
     const sys = (name, ink, bg, icon, d, summary) => ({ name, ink, icon, summary, dots: dots(d), tile: tile(bg), href: 'Trends.dc.html', tested: 'true', untested: 'false' });
     const untestedSys = (name, ink, bg, icon) => ({ name, ink, icon, summary: '', dots: [], tile: tile(bg), href: 'Labs.dc.html', tested: 'false', untested: 'true' });
-    const prodArt = (bg) => 'width: 100%; height: 56px; border-radius: 14px; background: ' + bg + '; display: flex; align-items: center; justify-content: center;';
+    const prodArt = (bg) => 'position: relative; overflow: hidden; width: 100%; height: 56px; border-radius: 14px; background: ' + bg + '; display: flex; align-items: center; justify-content: center;';
     return {
       tabs: tabDefs.map(([label, href], i) => ({ label, href, sel: i === 0 ? 'true' : 'false', style: 'height: 38px; border-radius: 999px; display: flex; align-items: center; justify-content: center; font-size: 12.5px; font-weight: 800; ' + (i === 0 ? 'background: #FFFFFF; color: #0C0494;' : 'color: #E0DEFF;') })),
       lookPressed: show === 'look' ? 'true' : 'false', okPressed: show === 'ok' ? 'true' : 'false',

@@ -98,7 +98,7 @@ a:focus-visible,button:focus-visible{outline:3px solid #6D5BFF;outline-offset:3p
       <div class="sk-rail" style="display: flex; gap: 12px; overflow-x: auto; padding-bottom: 4px;">
         <sc-for list="{{ reco }}" as="p" hint-placeholder-count="3">
           <a href="Product.dc.html" style="flex-shrink: 0; width: 156px; border-radius: 22px; background: #FFFFFF; box-shadow: 0 6px 18px rgba(12,4,148,.06); padding: 12px; display: flex; flex-direction: column; gap: 6px; color: #131B2E;">
-            <span style="{{ p.art }}"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="{{ p.ink }}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{ p.icon }}"></path></svg></span>
+            <span style="{{ p.art }}"><svg aria-hidden="true" width="64" height="64" viewBox="0 0 24 24" fill="{{ p.ink }}" fill-rule="evenodd" style="position: absolute; right: -10px; bottom: -10px; opacity: .22;"><path d="{{ p.icon }}"></path></svg><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="{{ p.ink }}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="position: relative;"><path d="{{ p.icon }}"></path></svg></span>
             <span style="font-size: 13px; font-weight: 800; line-height: 17px;">{{ p.name }}</span>
             <span style="font-size: 11px; font-weight: 700; color: #047857;">{{ p.why }}</span>
             <span style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 15px; font-weight: 800;">{{ p.price }}</span>
@@ -129,7 +129,7 @@ class Component extends DCLogic {
       vitd: { label: 'Vitamin D', unit: 'ng/mL', lo: 30, hi: 100, min: 0, max: 110, range: '30–100 ng/mL', data: [['Dec 23', 14, 'City Lab'], ['Mar 25', 28, 'Campus clinic'], ['Jun 26', 41, 'City Lab']] },
       hb: { label: 'Haemoglobin', unit: 'g/dL', lo: 12, hi: 15.5, min: 9, max: 17, range: '12–15.5 g/dL', data: [['Dec 23', 12.8, 'City Lab'], ['Mar 25', 13.1, 'Campus clinic'], ['Jun 26', 13.4, 'City Lab']] }
     };
-    const prodArt = (bg) => 'width: 100%; height: 56px; border-radius: 14px; background: ' + bg + '; display: flex; align-items: center; justify-content: center;';
+    const prodArt = (bg) => 'position: relative; overflow: hidden; width: 100%; height: 56px; border-radius: 14px; background: ' + bg + '; display: flex; align-items: center; justify-content: center;';
     const RECO = {
       hba1c: [
         { name: 'Methi (Fenugreek) Seeds 200g', why: 'Traditional support for sugar levels', price: '₹99', art: prodArt('#DBEAFE'), ink: '#1D4ED8', icon: 'M3.5 7.5 12 3l8.5 4.5v9L12 21l-8.5-4.5zM3.5 7.5 12 12l8.5-4.5M12 12v9' },

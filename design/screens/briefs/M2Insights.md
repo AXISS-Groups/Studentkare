@@ -46,6 +46,10 @@ Tier 1: lab values, in/out of range counts, doctor's note, refills due and the d
 
 - The new "Recommended for your HDL result" rail and the two extra "By body system" cards add roughly 400px of content. Board height moved from 1780 to 2200 (and the preview's `$preview` height to match) so the bottom nav sits below the new content instead of overlapping it.
 
+## Design changes (founder, 2026-11-04): solid icon watermark on the recommendation cards
+
+- Each product card in "Recommended for your HDL result" now carries a large, low-opacity filled version of its own icon as a background watermark (same manifest path as the small line icon on top, just rendered with `fill` instead of `stroke` — not a new icon). Matches the same treatment added to `M2Trends.md`'s recommendation cards and `M2Insurance.md`'s cover cards.
+
 ## Design changes (founder, 2026-11-04): Rule L exception — "Recommended for your HDL result"
 
 - New rail between "Due from your care" and "By body system": product cards (icon, name, one-line "why", price, Add) that link to `Product.dc.html` with no clinical value in the query or href. This **intentionally crosses Rule L** (a biomarker driving a commercial recommendation) — the founder approved it as a named, documented exception for this card only, modelled on Tata 1mg's biomarker → product pattern, rather than a silent change to the firewall. Nothing else on this screen (or elsewhere in the app) links a lab value to a product; any future card like this needs its own founder sign-off and its own brief note, not a precedent read off this one.
