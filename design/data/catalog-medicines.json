@@ -1,0 +1,2546 @@
+[
+  {
+    "id": "nlem-001-ketamine-injection",
+    "category": "medicine",
+    "name": "Ketamine Injection",
+    "composition": "Ketamine 50mg/ml",
+    "form": "Injection",
+    "pack_size": "Vial of 10ml",
+    "typical_use": "General anaesthetic (hospital use)",
+    "price_range_inr": [
+      120,
+      350
+    ],
+    "price_basis": "Rough estimate for hospital/specialty formulation pricing in India based on general market reporting - wide range reflects brand/strength variation; not independently verified per SKU",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Anaesthesia",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-002-lignocaine-injection-2%",
+    "category": "medicine",
+    "name": "Lignocaine Injection 2%",
+    "composition": "Lignocaine Hydrochloride 2%",
+    "form": "Injection",
+    "pack_size": "Vial of 30ml",
+    "typical_use": "Local anaesthesia",
+    "price_range_inr": [
+      15,
+      60
+    ],
+    "price_basis": "Rough estimate for hospital/specialty formulation pricing in India based on general market reporting - wide range reflects brand/strength variation; not independently verified per SKU",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Anaesthesia",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-003-bupivacaine-injection",
+    "category": "medicine",
+    "name": "Bupivacaine Injection",
+    "composition": "Bupivacaine Hydrochloride 0.5%",
+    "form": "Injection",
+    "pack_size": "Ampoule of 20ml",
+    "typical_use": "Local/spinal anaesthesia",
+    "price_range_inr": [
+      40,
+      120
+    ],
+    "price_basis": "Rough estimate for hospital/specialty formulation pricing in India based on general market reporting - wide range reflects brand/strength variation; not independently verified per SKU",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Anaesthesia",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-004-atropine-injection",
+    "category": "medicine",
+    "name": "Atropine Injection",
+    "composition": "Atropine Sulphate 0.6mg/ml",
+    "form": "Injection",
+    "pack_size": "Ampoule of 1ml",
+    "typical_use": "Pre-anaesthetic medication, bradycardia, antidote",
+    "price_range_inr": [
+      5,
+      25
+    ],
+    "price_basis": "Rough estimate for hospital/specialty formulation pricing in India based on general market reporting - wide range reflects brand/strength variation; not independently verified per SKU",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Anaesthesia",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-005-midazolam-injection",
+    "category": "medicine",
+    "name": "Midazolam Injection",
+    "composition": "Midazolam 1mg/ml",
+    "form": "Injection",
+    "pack_size": "Ampoule of 5ml",
+    "typical_use": "Sedation, status epilepticus",
+    "price_range_inr": [
+      20,
+      80
+    ],
+    "price_basis": "Rough estimate for hospital/specialty formulation pricing in India based on general market reporting - wide range reflects brand/strength variation; not independently verified per SKU",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Anaesthesia",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-006-paracetamol",
+    "category": "medicine",
+    "name": "Paracetamol",
+    "composition": "Paracetamol 500mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 10 (also 15)",
+    "typical_use": "Fever, mild to moderate pain",
+    "price_range_inr": [
+      8,
+      25
+    ],
+    "price_basis": "Rough estimate from general Indian generic/PMBJP retail pricing patterns reported in press coverage (not pulled from a live PMBJP price-list CSV) - treat as indicative range, not exact MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Analgesics, NSAIDs, Gout",
+    "prescription_required": false
+  },
+  {
+    "id": "nlem-007-paracetamol-650mg",
+    "category": "medicine",
+    "name": "Paracetamol 650mg",
+    "composition": "Paracetamol 650mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 15",
+    "typical_use": "Fever, pain relief",
+    "price_range_inr": [
+      10,
+      30
+    ],
+    "price_basis": "Rough estimate from general Indian generic/PMBJP retail pricing patterns reported in press coverage (not pulled from a live PMBJP price-list CSV) - treat as indicative range, not exact MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Analgesics, NSAIDs, Gout",
+    "prescription_required": false
+  },
+  {
+    "id": "nlem-008-diclofenac",
+    "category": "medicine",
+    "name": "Diclofenac",
+    "composition": "Diclofenac Sodium 50mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 10 (also 15)",
+    "typical_use": "Pain, inflammation (musculoskeletal)",
+    "price_range_inr": [
+      15,
+      45
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Analgesics, NSAIDs, Gout",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-009-ibuprofen",
+    "category": "medicine",
+    "name": "Ibuprofen",
+    "composition": "Ibuprofen 400mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 10 (also 15)",
+    "typical_use": "Pain, fever, inflammation",
+    "price_range_inr": [
+      10,
+      35
+    ],
+    "price_basis": "Rough estimate from general Indian generic/PMBJP retail pricing patterns reported in press coverage (not pulled from a live PMBJP price-list CSV) - treat as indicative range, not exact MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Analgesics, NSAIDs, Gout",
+    "prescription_required": false
+  },
+  {
+    "id": "nlem-010-aspirin-(acetylsalicylic-acid)",
+    "category": "medicine",
+    "name": "Aspirin (Acetylsalicylic acid)",
+    "composition": "Aspirin 75mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 14",
+    "typical_use": "Antiplatelet (cardio-protection), low dose",
+    "price_range_inr": [
+      5,
+      20
+    ],
+    "price_basis": "Rough estimate from general Indian generic/PMBJP retail pricing patterns reported in press coverage (not pulled from a live PMBJP price-list CSV) - treat as indicative range, not exact MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Analgesics, NSAIDs, Gout",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-011-mefenamic-acid",
+    "category": "medicine",
+    "name": "Mefenamic Acid",
+    "composition": "Mefenamic Acid 500mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 10",
+    "typical_use": "Pain relief (menstrual, musculoskeletal)",
+    "price_range_inr": [
+      20,
+      50
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Analgesics, NSAIDs, Gout",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-012-tramadol",
+    "category": "medicine",
+    "name": "Tramadol",
+    "composition": "Tramadol Hydrochloride 50mg",
+    "form": "Capsule",
+    "pack_size": "Strip of 10",
+    "typical_use": "Moderate to severe pain",
+    "price_range_inr": [
+      20,
+      60
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Analgesics, NSAIDs, Gout",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-013-allopurinol",
+    "category": "medicine",
+    "name": "Allopurinol",
+    "composition": "Allopurinol 100mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 10 (also 15)",
+    "typical_use": "Gout, hyperuricemia maintenance",
+    "price_range_inr": [
+      15,
+      45
+    ],
+    "price_basis": "Rough estimate from general Indian generic/PMBJP retail pricing patterns reported in press coverage (not pulled from a live PMBJP price-list CSV) - treat as indicative range, not exact MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Analgesics, NSAIDs, Gout",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-014-colchicine",
+    "category": "medicine",
+    "name": "Colchicine",
+    "composition": "Colchicine 0.5mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 10",
+    "typical_use": "Acute gout flare",
+    "price_range_inr": [
+      30,
+      90
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Analgesics, NSAIDs, Gout",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-015-methotrexate",
+    "category": "medicine",
+    "name": "Methotrexate",
+    "composition": "Methotrexate 7.5mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 4 (weekly dosing)",
+    "typical_use": "Rheumatoid arthritis, DMARD",
+    "price_range_inr": [
+      40,
+      150
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Analgesics, NSAIDs, Gout",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-016-hydroxychloroquine",
+    "category": "medicine",
+    "name": "Hydroxychloroquine",
+    "composition": "Hydroxychloroquine 200mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 10 (also 15)",
+    "typical_use": "Rheumatoid arthritis, lupus",
+    "price_range_inr": [
+      40,
+      120
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Analgesics, NSAIDs, Gout",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-017-cetirizine",
+    "category": "medicine",
+    "name": "Cetirizine",
+    "composition": "Cetirizine Hydrochloride 10mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 10 (also 15)",
+    "typical_use": "Allergy, allergic rhinitis, urticaria",
+    "price_range_inr": [
+      8,
+      25
+    ],
+    "price_basis": "Rough estimate from general Indian generic/PMBJP retail pricing patterns reported in press coverage (not pulled from a live PMBJP price-list CSV) - treat as indicative range, not exact MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Antiallergics and Anaphylaxis",
+    "prescription_required": false
+  },
+  {
+    "id": "nlem-018-pheniramine",
+    "category": "medicine",
+    "name": "Pheniramine",
+    "composition": "Pheniramine Maleate 22.75mg/ml",
+    "form": "Injection",
+    "pack_size": "Ampoule of 2ml",
+    "typical_use": "Allergic reactions",
+    "price_range_inr": [
+      10,
+      35
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Antiallergics and Anaphylaxis",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-019-adrenaline-(epinephrine)-injection",
+    "category": "medicine",
+    "name": "Adrenaline (Epinephrine) Injection",
+    "composition": "Adrenaline 1mg/ml",
+    "form": "Injection",
+    "pack_size": "Ampoule of 1ml",
+    "typical_use": "Anaphylaxis, cardiac arrest",
+    "price_range_inr": [
+      5,
+      30
+    ],
+    "price_basis": "Rough estimate for hospital/specialty formulation pricing in India based on general market reporting - wide range reflects brand/strength variation; not independently verified per SKU",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Antiallergics and Anaphylaxis",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-020-dexamethasone",
+    "category": "medicine",
+    "name": "Dexamethasone",
+    "composition": "Dexamethasone 0.5mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 10 (also injection form)",
+    "typical_use": "Allergic/inflammatory conditions, steroid therapy",
+    "price_range_inr": [
+      10,
+      40
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Antiallergics and Anaphylaxis",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-021-carbamazepine",
+    "category": "medicine",
+    "name": "Carbamazepine",
+    "composition": "Carbamazepine 200mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 10",
+    "typical_use": "Epilepsy, trigeminal neuralgia",
+    "price_range_inr": [
+      20,
+      60
+    ],
+    "price_basis": "Rough estimate from general Indian generic/PMBJP retail pricing patterns reported in press coverage (not pulled from a live PMBJP price-list CSV) - treat as indicative range, not exact MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Neurological Disorders",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-022-phenytoin",
+    "category": "medicine",
+    "name": "Phenytoin",
+    "composition": "Phenytoin Sodium 100mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 10",
+    "typical_use": "Epilepsy (seizure control)",
+    "price_range_inr": [
+      15,
+      45
+    ],
+    "price_basis": "Rough estimate from general Indian generic/PMBJP retail pricing patterns reported in press coverage (not pulled from a live PMBJP price-list CSV) - treat as indicative range, not exact MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Neurological Disorders",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-023-sodium-valproate",
+    "category": "medicine",
+    "name": "Sodium Valproate",
+    "composition": "Sodium Valproate 200mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 10",
+    "typical_use": "Epilepsy, bipolar disorder",
+    "price_range_inr": [
+      20,
+      60
+    ],
+    "price_basis": "Rough estimate from general Indian generic/PMBJP retail pricing patterns reported in press coverage (not pulled from a live PMBJP price-list CSV) - treat as indicative range, not exact MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Neurological Disorders",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-024-levetiracetam",
+    "category": "medicine",
+    "name": "Levetiracetam",
+    "composition": "Levetiracetam 500mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 10",
+    "typical_use": "Epilepsy (adjunct/monotherapy)",
+    "price_range_inr": [
+      60,
+      180
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Neurological Disorders",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-025-clobazam",
+    "category": "medicine",
+    "name": "Clobazam",
+    "composition": "Clobazam 10mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 10 (also 14)",
+    "typical_use": "Epilepsy, anxiety (adjunct)",
+    "price_range_inr": [
+      15,
+      45
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Neurological Disorders",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-026-sumatriptan",
+    "category": "medicine",
+    "name": "Sumatriptan",
+    "composition": "Sumatriptan 50mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 1 (also 2/4)",
+    "typical_use": "Acute migraine attack",
+    "price_range_inr": [
+      60,
+      180
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Neurological Disorders",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-027-propranolol",
+    "category": "medicine",
+    "name": "Propranolol",
+    "composition": "Propranolol 40mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 10 (also 14)",
+    "typical_use": "Migraine prophylaxis, hypertension, anxiety",
+    "price_range_inr": [
+      10,
+      35
+    ],
+    "price_basis": "Rough estimate from general Indian generic/PMBJP retail pricing patterns reported in press coverage (not pulled from a live PMBJP price-list CSV) - treat as indicative range, not exact MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Neurological Disorders",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-028-levodopa-plus-carbidopa",
+    "category": "medicine",
+    "name": "Levodopa + Carbidopa",
+    "composition": "Levodopa 100mg + Carbidopa 25mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 10",
+    "typical_use": "Parkinson's disease",
+    "price_range_inr": [
+      30,
+      100
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Neurological Disorders",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-029-donepezil",
+    "category": "medicine",
+    "name": "Donepezil",
+    "composition": "Donepezil 5mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 10 (also 15)",
+    "typical_use": "Alzheimer's dementia",
+    "price_range_inr": [
+      40,
+      150
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Neurological Disorders",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-030-albendazole",
+    "category": "medicine",
+    "name": "Albendazole",
+    "composition": "Albendazole 400mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 1 (also 2)",
+    "typical_use": "Intestinal worm infestation (deworming)",
+    "price_range_inr": [
+      5,
+      20
+    ],
+    "price_basis": "Rough estimate from general Indian generic/PMBJP retail pricing patterns reported in press coverage (not pulled from a live PMBJP price-list CSV) - treat as indicative range, not exact MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Anti-infective Medicines",
+    "prescription_required": false
+  },
+  {
+    "id": "nlem-031-ivermectin",
+    "category": "medicine",
+    "name": "Ivermectin",
+    "composition": "Ivermectin 12mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 1 (also 2)",
+    "typical_use": "Scabies, strongyloidiasis, filariasis",
+    "price_range_inr": [
+      15,
+      45
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Anti-infective Medicines",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-032-amoxicillin",
+    "category": "medicine",
+    "name": "Amoxicillin",
+    "composition": "Amoxicillin 500mg",
+    "form": "Capsule",
+    "pack_size": "Strip of 10",
+    "typical_use": "Bacterial infections (respiratory, UTI etc.)",
+    "price_range_inr": [
+      25,
+      70
+    ],
+    "price_basis": "Rough estimate from general Indian generic/PMBJP retail pricing patterns reported in press coverage (not pulled from a live PMBJP price-list CSV) - treat as indicative range, not exact MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Anti-infective Medicines",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-033-amoxicillin-plus-clavulanic-acid",
+    "category": "medicine",
+    "name": "Amoxicillin + Clavulanic Acid",
+    "composition": "Amoxicillin 500mg + Clavulanic Acid 125mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 10",
+    "typical_use": "Broader-spectrum bacterial infections",
+    "price_range_inr": [
+      80,
+      220
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Anti-infective Medicines",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-034-ampicillin",
+    "category": "medicine",
+    "name": "Ampicillin",
+    "composition": "Ampicillin 500mg",
+    "form": "Capsule",
+    "pack_size": "Strip of 10",
+    "typical_use": "Bacterial infections",
+    "price_range_inr": [
+      30,
+      80
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Anti-infective Medicines",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-035-cefixime",
+    "category": "medicine",
+    "name": "Cefixime",
+    "composition": "Cefixime 200mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 10",
+    "typical_use": "Bacterial infections (respiratory, UTI, typhoid)",
+    "price_range_inr": [
+      60,
+      180
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Anti-infective Medicines",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-036-ceftriaxone-injection",
+    "category": "medicine",
+    "name": "Ceftriaxone Injection",
+    "composition": "Ceftriaxone 1g",
+    "form": "Injection (vial)",
+    "pack_size": "Vial of 1",
+    "typical_use": "Severe bacterial infections (hospital use)",
+    "price_range_inr": [
+      25,
+      90
+    ],
+    "price_basis": "Rough estimate for hospital/specialty formulation pricing in India based on general market reporting - wide range reflects brand/strength variation; not independently verified per SKU",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Anti-infective Medicines",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-037-azithromycin",
+    "category": "medicine",
+    "name": "Azithromycin",
+    "composition": "Azithromycin 500mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 3 (also 5/6)",
+    "typical_use": "Respiratory, STI, typhoid infections",
+    "price_range_inr": [
+      30,
+      120
+    ],
+    "price_basis": "Rough estimate from general Indian generic/PMBJP retail pricing patterns reported in press coverage (not pulled from a live PMBJP price-list CSV) - treat as indicative range, not exact MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Anti-infective Medicines",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-038-ciprofloxacin",
+    "category": "medicine",
+    "name": "Ciprofloxacin",
+    "composition": "Ciprofloxacin 500mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 10",
+    "typical_use": "Bacterial infections (UTI, GI, respiratory)",
+    "price_range_inr": [
+      25,
+      80
+    ],
+    "price_basis": "Rough estimate from general Indian generic/PMBJP retail pricing patterns reported in press coverage (not pulled from a live PMBJP price-list CSV) - treat as indicative range, not exact MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Anti-infective Medicines",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-039-doxycycline",
+    "category": "medicine",
+    "name": "Doxycycline",
+    "composition": "Doxycycline 100mg",
+    "form": "Capsule",
+    "pack_size": "Strip of 10",
+    "typical_use": "Bacterial infections, malaria prophylaxis",
+    "price_range_inr": [
+      15,
+      50
+    ],
+    "price_basis": "Rough estimate from general Indian generic/PMBJP retail pricing patterns reported in press coverage (not pulled from a live PMBJP price-list CSV) - treat as indicative range, not exact MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Anti-infective Medicines",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-040-metronidazole",
+    "category": "medicine",
+    "name": "Metronidazole",
+    "composition": "Metronidazole 400mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 10 (also 15)",
+    "typical_use": "Anaerobic/protozoal infections",
+    "price_range_inr": [
+      10,
+      35
+    ],
+    "price_basis": "Rough estimate from general Indian generic/PMBJP retail pricing patterns reported in press coverage (not pulled from a live PMBJP price-list CSV) - treat as indicative range, not exact MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Anti-infective Medicines",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-041-co-trimoxazole",
+    "category": "medicine",
+    "name": "Co-trimoxazole",
+    "composition": "Sulfamethoxazole 400mg + Trimethoprim 80mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 10",
+    "typical_use": "Bacterial infections, PCP prophylaxis",
+    "price_range_inr": [
+      15,
+      45
+    ],
+    "price_basis": "Rough estimate from general Indian generic/PMBJP retail pricing patterns reported in press coverage (not pulled from a live PMBJP price-list CSV) - treat as indicative range, not exact MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Anti-infective Medicines",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-042-nitrofurantoin",
+    "category": "medicine",
+    "name": "Nitrofurantoin",
+    "composition": "Nitrofurantoin 100mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 10",
+    "typical_use": "Urinary tract infections",
+    "price_range_inr": [
+      30,
+      90
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Anti-infective Medicines",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-043-clarithromycin",
+    "category": "medicine",
+    "name": "Clarithromycin",
+    "composition": "Clarithromycin 500mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 10",
+    "typical_use": "Respiratory infections, H. pylori regimen",
+    "price_range_inr": [
+      80,
+      220
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Anti-infective Medicines",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-044-clindamycin",
+    "category": "medicine",
+    "name": "Clindamycin",
+    "composition": "Clindamycin 300mg",
+    "form": "Capsule",
+    "pack_size": "Strip of 10",
+    "typical_use": "Anaerobic/skin and soft-tissue infections",
+    "price_range_inr": [
+      60,
+      180
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Anti-infective Medicines",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-045-rifampicin",
+    "category": "medicine",
+    "name": "Rifampicin",
+    "composition": "Rifampicin 450mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 10 (also combo FDCs)",
+    "typical_use": "Tuberculosis treatment (part of DOTS regimen)",
+    "price_range_inr": [
+      15,
+      50
+    ],
+    "price_basis": "Rough estimate from general Indian generic/PMBJP retail pricing patterns reported in press coverage (not pulled from a live PMBJP price-list CSV) - treat as indicative range, not exact MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Anti-infective Medicines",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-046-isoniazid",
+    "category": "medicine",
+    "name": "Isoniazid",
+    "composition": "Isoniazid 300mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 10",
+    "typical_use": "Tuberculosis treatment/prophylaxis",
+    "price_range_inr": [
+      8,
+      25
+    ],
+    "price_basis": "Rough estimate from general Indian generic/PMBJP retail pricing patterns reported in press coverage (not pulled from a live PMBJP price-list CSV) - treat as indicative range, not exact MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Anti-infective Medicines",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-047-ethambutol",
+    "category": "medicine",
+    "name": "Ethambutol",
+    "composition": "Ethambutol 800mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 10",
+    "typical_use": "Tuberculosis treatment (combination regimen)",
+    "price_range_inr": [
+      15,
+      45
+    ],
+    "price_basis": "Rough estimate from general Indian generic/PMBJP retail pricing patterns reported in press coverage (not pulled from a live PMBJP price-list CSV) - treat as indicative range, not exact MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Anti-infective Medicines",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-048-pyrazinamide",
+    "category": "medicine",
+    "name": "Pyrazinamide",
+    "composition": "Pyrazinamide 750mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 10",
+    "typical_use": "Tuberculosis treatment (combination regimen)",
+    "price_range_inr": [
+      20,
+      55
+    ],
+    "price_basis": "Rough estimate from general Indian generic/PMBJP retail pricing patterns reported in press coverage (not pulled from a live PMBJP price-list CSV) - treat as indicative range, not exact MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Anti-infective Medicines",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-049-fluconazole",
+    "category": "medicine",
+    "name": "Fluconazole",
+    "composition": "Fluconazole 150mg",
+    "form": "Capsule",
+    "pack_size": "Strip of 1 (also 2/4)",
+    "typical_use": "Fungal infections (candidiasis)",
+    "price_range_inr": [
+      10,
+      40
+    ],
+    "price_basis": "Rough estimate from general Indian generic/PMBJP retail pricing patterns reported in press coverage (not pulled from a live PMBJP price-list CSV) - treat as indicative range, not exact MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Anti-infective Medicines",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-050-clotrimazole-cream",
+    "category": "medicine",
+    "name": "Clotrimazole Cream",
+    "composition": "Clotrimazole 1%",
+    "form": "Cream",
+    "pack_size": "Tube of 15g",
+    "typical_use": "Topical fungal skin/vaginal infections",
+    "price_range_inr": [
+      25,
+      70
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Anti-infective Medicines",
+    "prescription_required": false
+  },
+  {
+    "id": "nlem-051-terbinafine",
+    "category": "medicine",
+    "name": "Terbinafine",
+    "composition": "Terbinafine 250mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 7 (also cream)",
+    "typical_use": "Fungal skin/nail infections",
+    "price_range_inr": [
+      30,
+      100
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Anti-infective Medicines",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-052-acyclovir",
+    "category": "medicine",
+    "name": "Acyclovir",
+    "composition": "Acyclovir 400mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 10 (also cream)",
+    "typical_use": "Herpes virus infections",
+    "price_range_inr": [
+      25,
+      80
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Anti-infective Medicines",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-053-tenofovir-disoproxil-fumarate-plus-lamivudine-plus-",
+    "category": "medicine",
+    "name": "Tenofovir Disoproxil Fumarate + Lamivudine + Dolutegravir",
+    "composition": "TDF 300mg + Lamivudine 300mg + Dolutegravir 50mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 30 (programme supply)",
+    "typical_use": "HIV antiretroviral therapy (first-line)",
+    "price_range_inr": [
+      0,
+      0
+    ],
+    "price_basis": "Supplied free under National AIDS Control Programme (ART centres) - no open retail MRP available; range intentionally left as N/A",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Anti-infective Medicines",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-054-sofosbuvir",
+    "category": "medicine",
+    "name": "Sofosbuvir",
+    "composition": "Sofosbuvir 400mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 28",
+    "typical_use": "Chronic Hepatitis C treatment",
+    "price_range_inr": [
+      400,
+      1200
+    ],
+    "price_basis": "Rough estimate for hospital/specialty formulation pricing in India based on general market reporting - wide range reflects brand/strength variation; not independently verified per SKU",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Anti-infective Medicines",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-055-chloroquine",
+    "category": "medicine",
+    "name": "Chloroquine",
+    "composition": "Chloroquine Phosphate 250mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 10",
+    "typical_use": "Malaria treatment/prophylaxis",
+    "price_range_inr": [
+      10,
+      35
+    ],
+    "price_basis": "Rough estimate from general Indian generic/PMBJP retail pricing patterns reported in press coverage (not pulled from a live PMBJP price-list CSV) - treat as indicative range, not exact MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Anti-infective Medicines",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-056-artemether-plus-lumefantrine",
+    "category": "medicine",
+    "name": "Artemether + Lumefantrine",
+    "composition": "Artemether 20mg + Lumefantrine 120mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 6 (also 24)",
+    "typical_use": "Uncomplicated falciparum malaria",
+    "price_range_inr": [
+      60,
+      160
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Anti-infective Medicines",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-057-primaquine",
+    "category": "medicine",
+    "name": "Primaquine",
+    "composition": "Primaquine 2.5mg / 7.5mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 10",
+    "typical_use": "Malaria radical cure (P. vivax)",
+    "price_range_inr": [
+      10,
+      30
+    ],
+    "price_basis": "Rough estimate from general Indian generic/PMBJP retail pricing patterns reported in press coverage (not pulled from a live PMBJP price-list CSV) - treat as indicative range, not exact MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Anti-infective Medicines",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-058-tamoxifen",
+    "category": "medicine",
+    "name": "Tamoxifen",
+    "composition": "Tamoxifen 20mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 10 (also 30)",
+    "typical_use": "Breast cancer hormonal therapy",
+    "price_range_inr": [
+      50,
+      160
+    ],
+    "price_basis": "Rough estimate for hospital/specialty formulation pricing in India based on general market reporting - wide range reflects brand/strength variation; not independently verified per SKU",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Anti-cancer, Immunosuppressives, Palliative Care",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-059-imatinib",
+    "category": "medicine",
+    "name": "Imatinib",
+    "composition": "Imatinib Mesylate 400mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 10",
+    "typical_use": "Chronic myeloid leukaemia (CML)",
+    "price_range_inr": [
+      300,
+      2500
+    ],
+    "price_basis": "Rough estimate for hospital/specialty formulation pricing in India based on general market reporting - wide range reflects brand/strength variation; not independently verified per SKU",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Anti-cancer, Immunosuppressives, Palliative Care",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-060-methotrexate-injection",
+    "category": "medicine",
+    "name": "Methotrexate Injection",
+    "composition": "Methotrexate 50mg/2ml",
+    "form": "Injection",
+    "pack_size": "Vial of 1",
+    "typical_use": "Chemotherapy (various cancers)",
+    "price_range_inr": [
+      80,
+      300
+    ],
+    "price_basis": "Rough estimate for hospital/specialty formulation pricing in India based on general market reporting - wide range reflects brand/strength variation; not independently verified per SKU",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Anti-cancer, Immunosuppressives, Palliative Care",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-061-cyclophosphamide",
+    "category": "medicine",
+    "name": "Cyclophosphamide",
+    "composition": "Cyclophosphamide 50mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 10 (also injection)",
+    "typical_use": "Chemotherapy, immunosuppression",
+    "price_range_inr": [
+      40,
+      150
+    ],
+    "price_basis": "Rough estimate for hospital/specialty formulation pricing in India based on general market reporting - wide range reflects brand/strength variation; not independently verified per SKU",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Anti-cancer, Immunosuppressives, Palliative Care",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-062-cyclosporine",
+    "category": "medicine",
+    "name": "Cyclosporine",
+    "composition": "Cyclosporine 100mg",
+    "form": "Capsule",
+    "pack_size": "Strip of 10 (also 15)",
+    "typical_use": "Organ transplant immunosuppression",
+    "price_range_inr": [
+      300,
+      900
+    ],
+    "price_basis": "Rough estimate for hospital/specialty formulation pricing in India based on general market reporting - wide range reflects brand/strength variation; not independently verified per SKU",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Anti-cancer, Immunosuppressives, Palliative Care",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-063-tacrolimus",
+    "category": "medicine",
+    "name": "Tacrolimus",
+    "composition": "Tacrolimus 1mg",
+    "form": "Capsule",
+    "pack_size": "Strip of 10",
+    "typical_use": "Organ transplant immunosuppression",
+    "price_range_inr": [
+      150,
+      500
+    ],
+    "price_basis": "Rough estimate for hospital/specialty formulation pricing in India based on general market reporting - wide range reflects brand/strength variation; not independently verified per SKU",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Anti-cancer, Immunosuppressives, Palliative Care",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-064-morphine-(oral)",
+    "category": "medicine",
+    "name": "Morphine (oral)",
+    "composition": "Morphine Sulphate 10mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 10",
+    "typical_use": "Severe pain, palliative care",
+    "price_range_inr": [
+      30,
+      100
+    ],
+    "price_basis": "Rough estimate for hospital/specialty formulation pricing in India based on general market reporting - wide range reflects brand/strength variation; not independently verified per SKU",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Anti-cancer, Immunosuppressives, Palliative Care",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-065-ondansetron",
+    "category": "medicine",
+    "name": "Ondansetron",
+    "composition": "Ondansetron 4mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 10",
+    "typical_use": "Chemotherapy-induced nausea/vomiting",
+    "price_range_inr": [
+      15,
+      50
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Anti-cancer, Immunosuppressives, Palliative Care",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-066-filgrastim-injection",
+    "category": "medicine",
+    "name": "Filgrastim Injection",
+    "composition": "Filgrastim (G-CSF) 300mcg",
+    "form": "Injection",
+    "pack_size": "Prefilled syringe of 1",
+    "typical_use": "Chemotherapy-induced neutropenia support",
+    "price_range_inr": [
+      400,
+      1200
+    ],
+    "price_basis": "Rough estimate for hospital/specialty formulation pricing in India based on general market reporting - wide range reflects brand/strength variation; not independently verified per SKU",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Anti-cancer, Immunosuppressives, Palliative Care",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-067-ferrous-salt-plus-folic-acid",
+    "category": "medicine",
+    "name": "Ferrous Salt + Folic Acid",
+    "composition": "Ferrous Fumarate 150mg equivalent + Folic Acid 0.5mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 10 (also 100)",
+    "typical_use": "Iron-deficiency anaemia",
+    "price_range_inr": [
+      10,
+      30
+    ],
+    "price_basis": "Rough estimate from general Indian generic/PMBJP retail pricing patterns reported in press coverage (not pulled from a live PMBJP price-list CSV) - treat as indicative range, not exact MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Medicines Affecting Blood / Blood Products",
+    "prescription_required": false
+  },
+  {
+    "id": "nlem-068-folic-acid",
+    "category": "medicine",
+    "name": "Folic Acid",
+    "composition": "Folic Acid 5mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 10 (also 100)",
+    "typical_use": "Folate deficiency, pregnancy supplementation",
+    "price_range_inr": [
+      5,
+      20
+    ],
+    "price_basis": "Rough estimate from general Indian generic/PMBJP retail pricing patterns reported in press coverage (not pulled from a live PMBJP price-list CSV) - treat as indicative range, not exact MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Medicines Affecting Blood / Blood Products",
+    "prescription_required": false
+  },
+  {
+    "id": "nlem-069-iron-sucrose-injection",
+    "category": "medicine",
+    "name": "Iron Sucrose Injection",
+    "composition": "Iron Sucrose 20mg/ml",
+    "form": "Injection",
+    "pack_size": "Ampoule of 5ml",
+    "typical_use": "IV iron therapy for anaemia",
+    "price_range_inr": [
+      120,
+      350
+    ],
+    "price_basis": "Rough estimate for hospital/specialty formulation pricing in India based on general market reporting - wide range reflects brand/strength variation; not independently verified per SKU",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Medicines Affecting Blood / Blood Products",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-070-warfarin",
+    "category": "medicine",
+    "name": "Warfarin",
+    "composition": "Warfarin Sodium 5mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 10",
+    "typical_use": "Anticoagulation (DVT, AF, valve replacement)",
+    "price_range_inr": [
+      15,
+      45
+    ],
+    "price_basis": "Rough estimate from general Indian generic/PMBJP retail pricing patterns reported in press coverage (not pulled from a live PMBJP price-list CSV) - treat as indicative range, not exact MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Medicines Affecting Blood / Blood Products",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-071-enoxaparin-injection",
+    "category": "medicine",
+    "name": "Enoxaparin Injection",
+    "composition": "Enoxaparin 40mg/0.4ml",
+    "form": "Injection",
+    "pack_size": "Prefilled syringe",
+    "typical_use": "Anticoagulation (DVT prophylaxis/treatment)",
+    "price_range_inr": [
+      150,
+      450
+    ],
+    "price_basis": "Rough estimate for hospital/specialty formulation pricing in India based on general market reporting - wide range reflects brand/strength variation; not independently verified per SKU",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Medicines Affecting Blood / Blood Products",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-072-tranexamic-acid",
+    "category": "medicine",
+    "name": "Tranexamic Acid",
+    "composition": "Tranexamic Acid 500mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 10",
+    "typical_use": "Bleeding control (menorrhagia, trauma)",
+    "price_range_inr": [
+      30,
+      90
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Medicines Affecting Blood / Blood Products",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-073-amlodipine",
+    "category": "medicine",
+    "name": "Amlodipine",
+    "composition": "Amlodipine 5mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 10 (also 15)",
+    "typical_use": "Hypertension",
+    "price_range_inr": [
+      10,
+      35
+    ],
+    "price_basis": "Rough estimate from general Indian generic/PMBJP retail pricing patterns reported in press coverage (not pulled from a live PMBJP price-list CSV) - treat as indicative range, not exact MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Cardiovascular Medicines",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-074-telmisartan",
+    "category": "medicine",
+    "name": "Telmisartan",
+    "composition": "Telmisartan 40mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 10 (also 15)",
+    "typical_use": "Hypertension",
+    "price_range_inr": [
+      30,
+      90
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Cardiovascular Medicines",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-075-enalapril",
+    "category": "medicine",
+    "name": "Enalapril",
+    "composition": "Enalapril 5mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 10 (also 14)",
+    "typical_use": "Hypertension, heart failure",
+    "price_range_inr": [
+      15,
+      45
+    ],
+    "price_basis": "Rough estimate from general Indian generic/PMBJP retail pricing patterns reported in press coverage (not pulled from a live PMBJP price-list CSV) - treat as indicative range, not exact MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Cardiovascular Medicines",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-076-ramipril",
+    "category": "medicine",
+    "name": "Ramipril",
+    "composition": "Ramipril 5mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 10 (also 15)",
+    "typical_use": "Hypertension, heart failure",
+    "price_range_inr": [
+      20,
+      60
+    ],
+    "price_basis": "Rough estimate from general Indian generic/PMBJP retail pricing patterns reported in press coverage (not pulled from a live PMBJP price-list CSV) - treat as indicative range, not exact MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Cardiovascular Medicines",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-077-metoprolol",
+    "category": "medicine",
+    "name": "Metoprolol",
+    "composition": "Metoprolol Tartrate 50mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 10 (also 15)",
+    "typical_use": "Hypertension, angina, arrhythmia",
+    "price_range_inr": [
+      15,
+      50
+    ],
+    "price_basis": "Rough estimate from general Indian generic/PMBJP retail pricing patterns reported in press coverage (not pulled from a live PMBJP price-list CSV) - treat as indicative range, not exact MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Cardiovascular Medicines",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-078-atorvastatin",
+    "category": "medicine",
+    "name": "Atorvastatin",
+    "composition": "Atorvastatin 10mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 10 (also 15)",
+    "typical_use": "High cholesterol (lipid lowering)",
+    "price_range_inr": [
+      20,
+      70
+    ],
+    "price_basis": "Rough estimate from general Indian generic/PMBJP retail pricing patterns reported in press coverage (not pulled from a live PMBJP price-list CSV) - treat as indicative range, not exact MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Cardiovascular Medicines",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-079-clopidogrel",
+    "category": "medicine",
+    "name": "Clopidogrel",
+    "composition": "Clopidogrel 75mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 10 (also 15)",
+    "typical_use": "Antiplatelet therapy (post-MI/stroke)",
+    "price_range_inr": [
+      20,
+      70
+    ],
+    "price_basis": "Rough estimate from general Indian generic/PMBJP retail pricing patterns reported in press coverage (not pulled from a live PMBJP price-list CSV) - treat as indicative range, not exact MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Cardiovascular Medicines",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-080-isosorbide-dinitrate",
+    "category": "medicine",
+    "name": "Isosorbide Dinitrate",
+    "composition": "Isosorbide Dinitrate 5mg",
+    "form": "Tablet (sublingual)",
+    "pack_size": "Strip of 10",
+    "typical_use": "Angina (acute relief)",
+    "price_range_inr": [
+      10,
+      30
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Cardiovascular Medicines",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-081-digoxin",
+    "category": "medicine",
+    "name": "Digoxin",
+    "composition": "Digoxin 0.25mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 10 (also 28)",
+    "typical_use": "Heart failure, atrial fibrillation rate control",
+    "price_range_inr": [
+      10,
+      35
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Cardiovascular Medicines",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-082-furosemide",
+    "category": "medicine",
+    "name": "Furosemide",
+    "composition": "Furosemide 40mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 10 (also 15)",
+    "typical_use": "Oedema, heart failure (diuretic)",
+    "price_range_inr": [
+      8,
+      30
+    ],
+    "price_basis": "Rough estimate from general Indian generic/PMBJP retail pricing patterns reported in press coverage (not pulled from a live PMBJP price-list CSV) - treat as indicative range, not exact MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Cardiovascular Medicines",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-083-spironolactone",
+    "category": "medicine",
+    "name": "Spironolactone",
+    "composition": "Spironolactone 25mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 10 (also 15)",
+    "typical_use": "Heart failure, fluid retention (potassium-sparing diuretic)",
+    "price_range_inr": [
+      20,
+      60
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Cardiovascular Medicines",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-084-hydrochlorothiazide",
+    "category": "medicine",
+    "name": "Hydrochlorothiazide",
+    "composition": "Hydrochlorothiazide 25mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 10 (also 14)",
+    "typical_use": "Hypertension (thiazide diuretic)",
+    "price_range_inr": [
+      10,
+      30
+    ],
+    "price_basis": "Rough estimate from general Indian generic/PMBJP retail pricing patterns reported in press coverage (not pulled from a live PMBJP price-list CSV) - treat as indicative range, not exact MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Cardiovascular Medicines",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-085-betamethasone-valerate-cream",
+    "category": "medicine",
+    "name": "Betamethasone Valerate Cream",
+    "composition": "Betamethasone Valerate 0.1%",
+    "form": "Cream",
+    "pack_size": "Tube of 20g",
+    "typical_use": "Inflammatory skin conditions (eczema, psoriasis)",
+    "price_range_inr": [
+      25,
+      70
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Dermatological Medicines (Topical)",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-086-fusidic-acid-cream",
+    "category": "medicine",
+    "name": "Fusidic Acid Cream",
+    "composition": "Fusidic Acid 2%",
+    "form": "Cream",
+    "pack_size": "Tube of 5g (also 10/20)",
+    "typical_use": "Bacterial skin infections",
+    "price_range_inr": [
+      50,
+      150
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Dermatological Medicines (Topical)",
+    "prescription_required": false
+  },
+  {
+    "id": "nlem-087-silver-sulphadiazine-cream",
+    "category": "medicine",
+    "name": "Silver Sulphadiazine Cream",
+    "composition": "Silver Sulphadiazine 1%",
+    "form": "Cream",
+    "pack_size": "Tube of 25g (also 500g jar)",
+    "typical_use": "Burns dressing (infection prevention)",
+    "price_range_inr": [
+      60,
+      180
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Dermatological Medicines (Topical)",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-088-benzoyl-peroxide-gel",
+    "category": "medicine",
+    "name": "Benzoyl Peroxide Gel",
+    "composition": "Benzoyl Peroxide 2.5%/5%",
+    "form": "Gel",
+    "pack_size": "Tube of 15g (also 20/30g)",
+    "typical_use": "Acne treatment",
+    "price_range_inr": [
+      80,
+      250
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Dermatological Medicines (Topical)",
+    "prescription_required": false
+  },
+  {
+    "id": "nlem-089-permethrin-lotion",
+    "category": "medicine",
+    "name": "Permethrin Lotion",
+    "composition": "Permethrin 5%",
+    "form": "Lotion",
+    "pack_size": "Bottle of 30ml (also 60ml)",
+    "typical_use": "Scabies treatment",
+    "price_range_inr": [
+      60,
+      180
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Dermatological Medicines (Topical)",
+    "prescription_required": false
+  },
+  {
+    "id": "nlem-090-calamine-lotion",
+    "category": "medicine",
+    "name": "Calamine Lotion",
+    "composition": "Calamine 8% (with other soothing agents)",
+    "form": "Lotion",
+    "pack_size": "Bottle of 100ml (also 200ml)",
+    "typical_use": "Itching, mild skin irritation, sunburn",
+    "price_range_inr": [
+      45,
+      120
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Dermatological Medicines (Topical)",
+    "prescription_required": false
+  },
+  {
+    "id": "nlem-091-chlorhexidine-solution",
+    "category": "medicine",
+    "name": "Chlorhexidine Solution",
+    "composition": "Chlorhexidine Gluconate 2%/5%",
+    "form": "Solution",
+    "pack_size": "Bottle of 100ml (also 500ml)",
+    "typical_use": "Skin/wound antisepsis",
+    "price_range_inr": [
+      40,
+      120
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Antiseptics and Disinfectants",
+    "prescription_required": false
+  },
+  {
+    "id": "nlem-092-povidone-iodine-solution",
+    "category": "medicine",
+    "name": "Povidone Iodine Solution",
+    "composition": "Povidone Iodine 5%/10%",
+    "form": "Solution",
+    "pack_size": "Bottle of 100ml",
+    "typical_use": "Wound/skin antisepsis",
+    "price_range_inr": [
+      35,
+      100
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Antiseptics and Disinfectants",
+    "prescription_required": false
+  },
+  {
+    "id": "nlem-093-hydrogen-peroxide-solution",
+    "category": "medicine",
+    "name": "Hydrogen Peroxide Solution",
+    "composition": "Hydrogen Peroxide 6%",
+    "form": "Solution",
+    "pack_size": "Bottle of 100ml",
+    "typical_use": "Wound cleaning",
+    "price_range_inr": [
+      25,
+      70
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Antiseptics and Disinfectants",
+    "prescription_required": false
+  },
+  {
+    "id": "nlem-094-xylometazoline-nasal-drops",
+    "category": "medicine",
+    "name": "Xylometazoline Nasal Drops",
+    "composition": "Xylometazoline 0.1%",
+    "form": "Nasal drops",
+    "pack_size": "Bottle of 10ml",
+    "typical_use": "Nasal congestion (decongestant)",
+    "price_range_inr": [
+      35,
+      90
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Ear, Nose and Throat",
+    "prescription_required": false
+  },
+  {
+    "id": "nlem-095-budesonide-nasal-spray",
+    "category": "medicine",
+    "name": "Budesonide Nasal Spray",
+    "composition": "Budesonide 50mcg/dose",
+    "form": "Nasal spray",
+    "pack_size": "Bottle of 100 doses",
+    "typical_use": "Allergic rhinitis",
+    "price_range_inr": [
+      120,
+      350
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Ear, Nose and Throat",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-096-ciprofloxacin-ear-drops",
+    "category": "medicine",
+    "name": "Ciprofloxacin Ear Drops",
+    "composition": "Ciprofloxacin 0.3%",
+    "form": "Ear drops",
+    "pack_size": "Bottle of 5ml (also 10ml)",
+    "typical_use": "Bacterial ear infections (otitis externa/media)",
+    "price_range_inr": [
+      45,
+      120
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Ear, Nose and Throat",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-097-omeprazole",
+    "category": "medicine",
+    "name": "Omeprazole",
+    "composition": "Omeprazole 20mg",
+    "form": "Capsule",
+    "pack_size": "Strip of 10 (also 15)",
+    "typical_use": "Acidity, GERD, peptic ulcer",
+    "price_range_inr": [
+      15,
+      50
+    ],
+    "price_basis": "Rough estimate from general Indian generic/PMBJP retail pricing patterns reported in press coverage (not pulled from a live PMBJP price-list CSV) - treat as indicative range, not exact MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Gastrointestinal Medicines",
+    "prescription_required": false
+  },
+  {
+    "id": "nlem-098-pantoprazole",
+    "category": "medicine",
+    "name": "Pantoprazole",
+    "composition": "Pantoprazole 40mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 10 (also 15)",
+    "typical_use": "Acidity, GERD, peptic ulcer",
+    "price_range_inr": [
+      20,
+      60
+    ],
+    "price_basis": "Rough estimate from general Indian generic/PMBJP retail pricing patterns reported in press coverage (not pulled from a live PMBJP price-list CSV) - treat as indicative range, not exact MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Gastrointestinal Medicines",
+    "prescription_required": false
+  },
+  {
+    "id": "nlem-099-domperidone",
+    "category": "medicine",
+    "name": "Domperidone",
+    "composition": "Domperidone 10mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 10 (also 15)",
+    "typical_use": "Nausea, vomiting, bloating",
+    "price_range_inr": [
+      15,
+      50
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Gastrointestinal Medicines",
+    "prescription_required": false
+  },
+  {
+    "id": "nlem-100-ondansetron-(gi-use)",
+    "category": "medicine",
+    "name": "Ondansetron (GI use)",
+    "composition": "Ondansetron 4mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 10",
+    "typical_use": "Nausea and vomiting",
+    "price_range_inr": [
+      15,
+      50
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Gastrointestinal Medicines",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-101-dicyclomine",
+    "category": "medicine",
+    "name": "Dicyclomine",
+    "composition": "Dicyclomine Hydrochloride 10mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 10 (also 15)",
+    "typical_use": "Abdominal cramps, IBS spasms",
+    "price_range_inr": [
+      10,
+      35
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Gastrointestinal Medicines",
+    "prescription_required": false
+  },
+  {
+    "id": "nlem-102-hyoscine-butylbromide",
+    "category": "medicine",
+    "name": "Hyoscine Butylbromide",
+    "composition": "Hyoscine Butylbromide 10mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 10",
+    "typical_use": "Abdominal cramps, spasms",
+    "price_range_inr": [
+      25,
+      70
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Gastrointestinal Medicines",
+    "prescription_required": false
+  },
+  {
+    "id": "nlem-103-bisacodyl",
+    "category": "medicine",
+    "name": "Bisacodyl",
+    "composition": "Bisacodyl 5mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 10",
+    "typical_use": "Constipation (stimulant laxative)",
+    "price_range_inr": [
+      10,
+      30
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Gastrointestinal Medicines",
+    "prescription_required": false
+  },
+  {
+    "id": "nlem-104-lactulose-syrup",
+    "category": "medicine",
+    "name": "Lactulose Syrup",
+    "composition": "Lactulose 10g/15ml",
+    "form": "Syrup/Solution",
+    "pack_size": "Bottle of 100ml (also 200ml)",
+    "typical_use": "Constipation (osmotic laxative)",
+    "price_range_inr": [
+      80,
+      180
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Gastrointestinal Medicines",
+    "prescription_required": false
+  },
+  {
+    "id": "nlem-105-ispaghula-husk",
+    "category": "medicine",
+    "name": "Ispaghula Husk",
+    "composition": "Psyllium (Ispaghula) Husk",
+    "form": "Granules/Powder",
+    "pack_size": "Pack of 100g (also 200/300g)",
+    "typical_use": "Constipation, fibre supplement",
+    "price_range_inr": [
+      80,
+      200
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Gastrointestinal Medicines",
+    "prescription_required": false
+  },
+  {
+    "id": "nlem-106-oral-rehydration-salts-(ors)",
+    "category": "medicine",
+    "name": "Oral Rehydration Salts (ORS)",
+    "composition": "Sodium Chloride, Potassium Chloride, Sodium Citrate, Glucose (WHO formula)",
+    "form": "Oral solution powder",
+    "pack_size": "Sachet of 21.8g (also 1L pack)",
+    "typical_use": "Dehydration from diarrhoea/vomiting, heat illness",
+    "price_range_inr": [
+      10,
+      25
+    ],
+    "price_basis": "Rough estimate from general Indian generic/PMBJP retail pricing patterns reported in press coverage (not pulled from a live PMBJP price-list CSV) - treat as indicative range, not exact MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Gastrointestinal Medicines",
+    "prescription_required": false
+  },
+  {
+    "id": "nlem-107-zinc-sulphate",
+    "category": "medicine",
+    "name": "Zinc Sulphate",
+    "composition": "Zinc Sulphate 20mg (elemental Zn)",
+    "form": "Tablet/Dispersible tablet",
+    "pack_size": "Strip of 10 (also syrup)",
+    "typical_use": "Adjunct therapy for diarrhoea in children; zinc deficiency",
+    "price_range_inr": [
+      20,
+      60
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Gastrointestinal Medicines",
+    "prescription_required": false
+  },
+  {
+    "id": "nlem-108-metformin",
+    "category": "medicine",
+    "name": "Metformin",
+    "composition": "Metformin Hydrochloride 500mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 10 (also 15)",
+    "typical_use": "Type 2 diabetes (first-line)",
+    "price_range_inr": [
+      10,
+      35
+    ],
+    "price_basis": "Rough estimate from general Indian generic/PMBJP retail pricing patterns reported in press coverage (not pulled from a live PMBJP price-list CSV) - treat as indicative range, not exact MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Hormones, Endocrine Medicines and Contraceptives",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-109-glimepiride",
+    "category": "medicine",
+    "name": "Glimepiride",
+    "composition": "Glimepiride 1mg/2mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 10 (also 15)",
+    "typical_use": "Type 2 diabetes (sulfonylurea)",
+    "price_range_inr": [
+      15,
+      50
+    ],
+    "price_basis": "Rough estimate from general Indian generic/PMBJP retail pricing patterns reported in press coverage (not pulled from a live PMBJP price-list CSV) - treat as indicative range, not exact MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Hormones, Endocrine Medicines and Contraceptives",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-110-teneligliptin",
+    "category": "medicine",
+    "name": "Teneligliptin",
+    "composition": "Teneligliptin 20mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 10 (also 15)",
+    "typical_use": "Type 2 diabetes (DPP-4 inhibitor)",
+    "price_range_inr": [
+      60,
+      150
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Hormones, Endocrine Medicines and Contraceptives",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-111-insulin-glargine",
+    "category": "medicine",
+    "name": "Insulin Glargine",
+    "composition": "Insulin Glargine 100 IU/ml",
+    "form": "Injection (pen/vial)",
+    "pack_size": "Vial of 10ml or Pen of 3ml",
+    "typical_use": "Diabetes (long-acting basal insulin)",
+    "price_range_inr": [
+      350,
+      900
+    ],
+    "price_basis": "Rough estimate for hospital/specialty formulation pricing in India based on general market reporting - wide range reflects brand/strength variation; not independently verified per SKU",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Hormones, Endocrine Medicines and Contraceptives",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-112-insulin-nph-(isophane)",
+    "category": "medicine",
+    "name": "Insulin NPH (Isophane)",
+    "composition": "Human Insulin Isophane (NPH) 40/100 IU/ml",
+    "form": "Injection (vial)",
+    "pack_size": "Vial of 10ml",
+    "typical_use": "Diabetes (intermediate-acting insulin)",
+    "price_range_inr": [
+      150,
+      400
+    ],
+    "price_basis": "Rough estimate for hospital/specialty formulation pricing in India based on general market reporting - wide range reflects brand/strength variation; not independently verified per SKU",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Hormones, Endocrine Medicines and Contraceptives",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-113-levothyroxine",
+    "category": "medicine",
+    "name": "Levothyroxine",
+    "composition": "Levothyroxine Sodium 50mcg/100mcg",
+    "form": "Tablet",
+    "pack_size": "Strip of 10 (also 15/100)",
+    "typical_use": "Hypothyroidism",
+    "price_range_inr": [
+      10,
+      35
+    ],
+    "price_basis": "Rough estimate from general Indian generic/PMBJP retail pricing patterns reported in press coverage (not pulled from a live PMBJP price-list CSV) - treat as indicative range, not exact MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Hormones, Endocrine Medicines and Contraceptives",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-114-carbimazole",
+    "category": "medicine",
+    "name": "Carbimazole",
+    "composition": "Carbimazole 5mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 10",
+    "typical_use": "Hyperthyroidism",
+    "price_range_inr": [
+      20,
+      60
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Hormones, Endocrine Medicines and Contraceptives",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-115-ethinylestradiol-plus-levonorgestrel",
+    "category": "medicine",
+    "name": "Ethinylestradiol + Levonorgestrel",
+    "composition": "Ethinylestradiol 0.03mg + Levonorgestrel 0.15mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 21 (combined OCP)",
+    "typical_use": "Oral contraception",
+    "price_range_inr": [
+      30,
+      100
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Hormones, Endocrine Medicines and Contraceptives",
+    "prescription_required": false
+  },
+  {
+    "id": "nlem-116-levonorgestrel-(emergency-contraceptive)",
+    "category": "medicine",
+    "name": "Levonorgestrel (Emergency Contraceptive)",
+    "composition": "Levonorgestrel 1.5mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 1",
+    "typical_use": "Emergency contraception",
+    "price_range_inr": [
+      50,
+      120
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Hormones, Endocrine Medicines and Contraceptives",
+    "prescription_required": false
+  },
+  {
+    "id": "nlem-117-medroxyprogesterone-acetate",
+    "category": "medicine",
+    "name": "Medroxyprogesterone Acetate",
+    "composition": "Medroxyprogesterone Acetate 150mg/ml (injectable) or 10mg (oral)",
+    "form": "Injection/Tablet",
+    "pack_size": "Vial of 1ml / Strip of 10",
+    "typical_use": "Contraception, menstrual disorders",
+    "price_range_inr": [
+      40,
+      150
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Hormones, Endocrine Medicines and Contraceptives",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-118-timolol-eye-drops",
+    "category": "medicine",
+    "name": "Timolol Eye Drops",
+    "composition": "Timolol Maleate 0.5%",
+    "form": "Eye drops",
+    "pack_size": "Bottle of 5ml",
+    "typical_use": "Glaucoma (lowers intraocular pressure)",
+    "price_range_inr": [
+      40,
+      110
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Ophthalmological Medicines",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-119-latanoprost-eye-drops",
+    "category": "medicine",
+    "name": "Latanoprost Eye Drops",
+    "composition": "Latanoprost 0.005%",
+    "form": "Eye drops",
+    "pack_size": "Bottle of 2.5ml",
+    "typical_use": "Glaucoma (prostaglandin analogue)",
+    "price_range_inr": [
+      150,
+      350
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Ophthalmological Medicines",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-120-ciprofloxacin-eye-drops",
+    "category": "medicine",
+    "name": "Ciprofloxacin Eye Drops",
+    "composition": "Ciprofloxacin 0.3%",
+    "form": "Eye drops",
+    "pack_size": "Bottle of 5ml (also 10ml)",
+    "typical_use": "Bacterial conjunctivitis/eye infections",
+    "price_range_inr": [
+      30,
+      90
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Ophthalmological Medicines",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-121-carboxymethylcellulose-eye-drops",
+    "category": "medicine",
+    "name": "Carboxymethylcellulose Eye Drops",
+    "composition": "Carboxymethylcellulose Sodium 0.5%/1%",
+    "form": "Eye drops",
+    "pack_size": "Bottle of 10ml",
+    "typical_use": "Dry eye, lubricant",
+    "price_range_inr": [
+      80,
+      180
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Ophthalmological Medicines",
+    "prescription_required": false
+  },
+  {
+    "id": "nlem-122-tropicamide-eye-drops",
+    "category": "medicine",
+    "name": "Tropicamide Eye Drops",
+    "composition": "Tropicamide 0.8% + Phenylephrine 5%",
+    "form": "Eye drops",
+    "pack_size": "Bottle of 5ml",
+    "typical_use": "Pupil dilation (diagnostic mydriatic)",
+    "price_range_inr": [
+      40,
+      100
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Ophthalmological Medicines",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-123-oxytocin-injection",
+    "category": "medicine",
+    "name": "Oxytocin Injection",
+    "composition": "Oxytocin 5 IU/ml / 10 IU/ml",
+    "form": "Injection",
+    "pack_size": "Ampoule of 1ml",
+    "typical_use": "Labour induction/augmentation, PPH prevention",
+    "price_range_inr": [
+      10,
+      40
+    ],
+    "price_basis": "Rough estimate for hospital/specialty formulation pricing in India based on general market reporting - wide range reflects brand/strength variation; not independently verified per SKU",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Oxytocics and Obstetric Medicines",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-124-misoprostol",
+    "category": "medicine",
+    "name": "Misoprostol",
+    "composition": "Misoprostol 200mcg",
+    "form": "Tablet",
+    "pack_size": "Strip of 4",
+    "typical_use": "Labour induction, PPH prevention/treatment, medical abortion (with mifepristone)",
+    "price_range_inr": [
+      30,
+      100
+    ],
+    "price_basis": "Rough estimate for hospital/specialty formulation pricing in India based on general market reporting - wide range reflects brand/strength variation; not independently verified per SKU",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Oxytocics and Obstetric Medicines",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-125-mifepristone",
+    "category": "medicine",
+    "name": "Mifepristone",
+    "composition": "Mifepristone 200mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 1",
+    "typical_use": "Medical termination of pregnancy (with misoprostol)",
+    "price_range_inr": [
+      120,
+      300
+    ],
+    "price_basis": "Rough estimate for hospital/specialty formulation pricing in India based on general market reporting - wide range reflects brand/strength variation; not independently verified per SKU",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Oxytocics and Obstetric Medicines",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-126-methylergometrine",
+    "category": "medicine",
+    "name": "Methylergometrine",
+    "composition": "Methylergometrine Maleate 0.2mg/ml",
+    "form": "Injection",
+    "pack_size": "Ampoule of 1ml",
+    "typical_use": "Postpartum haemorrhage control",
+    "price_range_inr": [
+      10,
+      35
+    ],
+    "price_basis": "Rough estimate for hospital/specialty formulation pricing in India based on general market reporting - wide range reflects brand/strength variation; not independently verified per SKU",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Oxytocics and Obstetric Medicines",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-127-nifedipine-(obstetric-use)",
+    "category": "medicine",
+    "name": "Nifedipine (Obstetric use)",
+    "composition": "Nifedipine 10mg",
+    "form": "Capsule/Tablet",
+    "pack_size": "Strip of 10",
+    "typical_use": "Preterm labour tocolysis, hypertension in pregnancy",
+    "price_range_inr": [
+      15,
+      45
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Oxytocics and Obstetric Medicines",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-128-haloperidol",
+    "category": "medicine",
+    "name": "Haloperidol",
+    "composition": "Haloperidol 5mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 10 (also injection)",
+    "typical_use": "Psychosis, schizophrenia",
+    "price_range_inr": [
+      15,
+      45
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Psychiatric Disorders",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-129-risperidone",
+    "category": "medicine",
+    "name": "Risperidone",
+    "composition": "Risperidone 2mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 10",
+    "typical_use": "Schizophrenia, psychotic disorders",
+    "price_range_inr": [
+      25,
+      80
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Psychiatric Disorders",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-130-clozapine",
+    "category": "medicine",
+    "name": "Clozapine",
+    "composition": "Clozapine 25mg/100mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 10",
+    "typical_use": "Treatment-resistant schizophrenia",
+    "price_range_inr": [
+      40,
+      150
+    ],
+    "price_basis": "Rough estimate for hospital/specialty formulation pricing in India based on general market reporting - wide range reflects brand/strength variation; not independently verified per SKU",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Psychiatric Disorders",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-131-escitalopram",
+    "category": "medicine",
+    "name": "Escitalopram",
+    "composition": "Escitalopram 10mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 10 (also 15)",
+    "typical_use": "Depression, anxiety disorders",
+    "price_range_inr": [
+      30,
+      90
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Psychiatric Disorders",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-132-fluoxetine",
+    "category": "medicine",
+    "name": "Fluoxetine",
+    "composition": "Fluoxetine 20mg",
+    "form": "Capsule",
+    "pack_size": "Strip of 10 (also 14)",
+    "typical_use": "Depression, OCD",
+    "price_range_inr": [
+      20,
+      70
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Psychiatric Disorders",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-133-amitriptyline",
+    "category": "medicine",
+    "name": "Amitriptyline",
+    "composition": "Amitriptyline 25mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 10 (also 14)",
+    "typical_use": "Depression, neuropathic pain, migraine prophylaxis",
+    "price_range_inr": [
+      10,
+      35
+    ],
+    "price_basis": "Rough estimate from general Indian generic/PMBJP retail pricing patterns reported in press coverage (not pulled from a live PMBJP price-list CSV) - treat as indicative range, not exact MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Psychiatric Disorders",
+    "prescription_required": true
+  },
+  {
+    "id": "nlem-134-lithium-carbonate",
+    "category": "medicine",
+    "name": "Lithium Carbonate",
+    "composition": "Lithium Carbonate 300mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 10 (also 15)",
+    "typical_use": "Bipolar disorder (mood stabilisation)",
+    "price_range_inr": [
+      15,
+      45
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "NLEM 2022 (Gazette S.O. 5249(E), 11-Nov-2022 / MoHFW press release, 13-Sep-2022) - Psychiatric Disorders",
+    "prescription_required": true
+  },
+  {
+    "id": "otc-001-ors-(electrolyte-powder)",
+    "category": "otc_wellness",
+    "name": "ORS (Electrolyte Powder)",
+    "composition": "Sodium Chloride, Potassium Chloride, Sodium Citrate, Glucose (WHO formula)",
+    "form": "Oral powder",
+    "pack_size": "Box of 10 sachets (21.8g each)",
+    "typical_use": "Rehydration after diarrhoea, vomiting, heat exposure, hangover",
+    "price_range_inr": [
+      80,
+      200
+    ],
+    "price_basis": "Rough estimate from general Indian generic/PMBJP retail pricing patterns reported in press coverage (not pulled from a live PMBJP price-list CSV) - treat as indicative range, not exact MRP",
+    "source": "Common OTC/retail product category (composition per standard formulation; not NLEM-listed)",
+    "prescription_required": false
+  },
+  {
+    "id": "otc-002-multivitamin-plus-multimineral-tablet",
+    "category": "otc_wellness",
+    "name": "Multivitamin + Multimineral Tablet",
+    "composition": "Vitamins B-complex, C, D3, E + Zinc, Selenium (typical daily-dose combination)",
+    "form": "Tablet",
+    "pack_size": "Strip/Bottle of 15-30",
+    "typical_use": "General nutrition supplementation, fatigue",
+    "price_range_inr": [
+      100,
+      350
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "Common OTC/retail product category (composition per standard formulation; not NLEM-listed)",
+    "prescription_required": false
+  },
+  {
+    "id": "otc-003-vitamin-d3-granules-sachet",
+    "category": "otc_wellness",
+    "name": "Vitamin D3 Granules/Sachet",
+    "composition": "Cholecalciferol 60,000 IU",
+    "form": "Sachet (granules)",
+    "pack_size": "Box of 4 sachets",
+    "typical_use": "Vitamin D deficiency, bone health",
+    "price_range_inr": [
+      90,
+      220
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "Common OTC/retail product category (composition per standard formulation; not NLEM-listed)",
+    "prescription_required": true
+  },
+  {
+    "id": "otc-004-vitamin-c-chewable-tablet",
+    "category": "otc_wellness",
+    "name": "Vitamin C Chewable Tablet",
+    "composition": "Ascorbic Acid 500mg",
+    "form": "Chewable tablet",
+    "pack_size": "Bottle/Strip of 10-20",
+    "typical_use": "Immunity support, mild vitamin C deficiency",
+    "price_range_inr": [
+      60,
+      180
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "Common OTC/retail product category (composition per standard formulation; not NLEM-listed)",
+    "prescription_required": false
+  },
+  {
+    "id": "otc-005-calcium-plus-vitamin-d3-tablet",
+    "category": "otc_wellness",
+    "name": "Calcium + Vitamin D3 Tablet",
+    "composition": "Calcium Carbonate 500mg + Vitamin D3 250 IU",
+    "form": "Tablet",
+    "pack_size": "Strip of 15",
+    "typical_use": "Bone health, calcium supplementation",
+    "price_range_inr": [
+      80,
+      220
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "Common OTC/retail product category (composition per standard formulation; not NLEM-listed)",
+    "prescription_required": false
+  },
+  {
+    "id": "otc-006-antacid-suspension",
+    "category": "otc_wellness",
+    "name": "Antacid Suspension",
+    "composition": "Aluminium Hydroxide + Magnesium Hydroxide (standard antacid combination)",
+    "form": "Oral suspension",
+    "pack_size": "Bottle of 170-200ml",
+    "typical_use": "Acidity, heartburn, indigestion",
+    "price_range_inr": [
+      90,
+      160
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "Common OTC/retail product category (composition per standard formulation; not NLEM-listed)",
+    "prescription_required": false
+  },
+  {
+    "id": "otc-007-antacid-chewable-tablet",
+    "category": "otc_wellness",
+    "name": "Antacid Chewable Tablet",
+    "composition": "Calcium Carbonate 500mg + Magnesium Hydroxide (standard antacid combination)",
+    "form": "Chewable tablet",
+    "pack_size": "Strip of 10-15",
+    "typical_use": "Acidity, heartburn",
+    "price_range_inr": [
+      20,
+      60
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "Common OTC/retail product category (composition per standard formulation; not NLEM-listed)",
+    "prescription_required": false
+  },
+  {
+    "id": "otc-008-cough-syrup-(expectorant)",
+    "category": "otc_wellness",
+    "name": "Cough Syrup (Expectorant)",
+    "composition": "Dextromethorphan/Guaifenesin-based cough formula (varies by brand)",
+    "form": "Syrup",
+    "pack_size": "Bottle of 100ml",
+    "typical_use": "Cough relief (dry/productive cough)",
+    "price_range_inr": [
+      80,
+      180
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "Common OTC/retail product category (composition per standard formulation; not NLEM-listed)",
+    "prescription_required": false
+  },
+  {
+    "id": "otc-009-throat-lozenges",
+    "category": "otc_wellness",
+    "name": "Throat Lozenges",
+    "composition": "Menthol + Eucalyptus oil (typical soothing lozenge formulation)",
+    "form": "Lozenge",
+    "pack_size": "Pack of 10-20",
+    "typical_use": "Sore throat, minor throat irritation",
+    "price_range_inr": [
+      30,
+      80
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "Common OTC/retail product category (composition per standard formulation; not NLEM-listed)",
+    "prescription_required": false
+  },
+  {
+    "id": "otc-010-pain-relief-gel-(topical)",
+    "category": "otc_wellness",
+    "name": "Pain Relief Gel (Topical)",
+    "composition": "Diclofenac Diethylamine 1.16% (common OTC analgesic gel formulation)",
+    "form": "Gel",
+    "pack_size": "Tube of 30g",
+    "typical_use": "Muscle/joint pain, sprains",
+    "price_range_inr": [
+      80,
+      180
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "Common OTC/retail product category (composition per standard formulation; not NLEM-listed)",
+    "prescription_required": false
+  },
+  {
+    "id": "otc-011-pain-relief-spray-(topical)",
+    "category": "otc_wellness",
+    "name": "Pain Relief Spray (Topical)",
+    "composition": "Methyl Salicylate + Menthol (common OTC analgesic spray formulation)",
+    "form": "Spray",
+    "pack_size": "Bottle of 100-150g",
+    "typical_use": "Muscle soreness, minor sprains",
+    "price_range_inr": [
+      120,
+      280
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "Common OTC/retail product category (composition per standard formulation; not NLEM-listed)",
+    "prescription_required": false
+  },
+  {
+    "id": "otc-012-hand-sanitizer",
+    "category": "otc_wellness",
+    "name": "Hand Sanitizer",
+    "composition": "Ethyl Alcohol 70-80% v/v",
+    "form": "Gel/Liquid",
+    "pack_size": "Bottle of 100-500ml",
+    "typical_use": "Hand hygiene, infection prevention",
+    "price_range_inr": [
+      40,
+      150
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "Common OTC/retail product category (composition per standard formulation; not NLEM-listed)",
+    "prescription_required": false
+  },
+  {
+    "id": "otc-013-antiseptic-liquid-(household)",
+    "category": "otc_wellness",
+    "name": "Antiseptic Liquid (household)",
+    "composition": "Chloroxylenol 4.8% (standard household antiseptic formulation)",
+    "form": "Liquid",
+    "pack_size": "Bottle of 100-500ml",
+    "typical_use": "Wound cleaning, household disinfection",
+    "price_range_inr": [
+      45,
+      180
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "Common OTC/retail product category (composition per standard formulation; not NLEM-listed)",
+    "prescription_required": false
+  },
+  {
+    "id": "otc-014-band-aid---adhesive-bandages",
+    "category": "otc_wellness",
+    "name": "Band-Aid / Adhesive Bandages",
+    "composition": "Non-woven fabric with adhesive and absorbent pad",
+    "form": "Bandage strips",
+    "pack_size": "Pack of 10-20",
+    "typical_use": "Minor cuts and wound covering",
+    "price_range_inr": [
+      25,
+      80
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "Common OTC/retail product category (composition per standard formulation; not NLEM-listed)",
+    "prescription_required": false
+  },
+  {
+    "id": "otc-015-nasal-decongestant-spray",
+    "category": "otc_wellness",
+    "name": "Nasal Decongestant Spray",
+    "composition": "Oxymetazoline 0.05%",
+    "form": "Nasal spray",
+    "pack_size": "Bottle of 10-15ml",
+    "typical_use": "Nasal congestion relief",
+    "price_range_inr": [
+      60,
+      140
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "Common OTC/retail product category (composition per standard formulation; not NLEM-listed)",
+    "prescription_required": false
+  },
+  {
+    "id": "otc-016-saline-nasal-drops",
+    "category": "otc_wellness",
+    "name": "Saline Nasal Drops",
+    "composition": "Sodium Chloride 0.9% (isotonic saline)",
+    "form": "Nasal drops/spray",
+    "pack_size": "Bottle of 10-15ml",
+    "typical_use": "Nasal dryness, mild congestion, sinus rinse",
+    "price_range_inr": [
+      50,
+      130
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "Common OTC/retail product category (composition per standard formulation; not NLEM-listed)",
+    "prescription_required": false
+  },
+  {
+    "id": "otc-017-eye-lubricant-drops-(otc)",
+    "category": "otc_wellness",
+    "name": "Eye Lubricant Drops (OTC)",
+    "composition": "Carboxymethylcellulose 0.5% or Polyethylene glycol-based tears",
+    "form": "Eye drops",
+    "pack_size": "Bottle of 10ml",
+    "typical_use": "Dry/tired eyes (screen fatigue)",
+    "price_range_inr": [
+      80,
+      180
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "Common OTC/retail product category (composition per standard formulation; not NLEM-listed)",
+    "prescription_required": false
+  },
+  {
+    "id": "otc-018-oral-rehydration-plus-electrolyte-drink-mix",
+    "category": "otc_wellness",
+    "name": "Oral Rehydration + Electrolyte Drink Mix",
+    "composition": "Sodium, Potassium, Glucose electrolyte blend (sports-drink style formulation)",
+    "form": "Powder sachet",
+    "pack_size": "Box of 6-10 sachets",
+    "typical_use": "Rehydration after exercise/mild dehydration",
+    "price_range_inr": [
+      100,
+      250
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "Common OTC/retail product category (composition per standard formulation; not NLEM-listed)",
+    "prescription_required": false
+  },
+  {
+    "id": "otc-019-probiotic-sachet-capsule",
+    "category": "otc_wellness",
+    "name": "Probiotic Sachet/Capsule",
+    "composition": "Lactobacillus/Bifidobacterium strains (standard probiotic blend, CFU varies by brand)",
+    "form": "Sachet/Capsule",
+    "pack_size": "Pack of 10",
+    "typical_use": "Gut health, post-antibiotic flora support",
+    "price_range_inr": [
+      150,
+      350
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "Common OTC/retail product category (composition per standard formulation; not NLEM-listed)",
+    "prescription_required": false
+  },
+  {
+    "id": "otc-020-omega-3-fish-oil-capsules",
+    "category": "otc_wellness",
+    "name": "Omega-3 Fish Oil Capsules",
+    "composition": "Fish Oil (EPA+DHA) 1000mg",
+    "form": "Softgel capsule",
+    "pack_size": "Bottle of 30-60",
+    "typical_use": "General wellness, heart/brain health supplementation",
+    "price_range_inr": [
+      200,
+      450
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "Common OTC/retail product category (composition per standard formulation; not NLEM-listed)",
+    "prescription_required": false
+  },
+  {
+    "id": "otc-021-iron-plus-folic-acid-supplement-(otc)",
+    "category": "otc_wellness",
+    "name": "Iron + Folic Acid Supplement (OTC)",
+    "composition": "Ferrous salt + Folic Acid (standard supplement dose, lower than prescription anaemia dose)",
+    "form": "Tablet",
+    "pack_size": "Strip/Bottle of 15-30",
+    "typical_use": "Mild iron supplementation, especially for menstruating students",
+    "price_range_inr": [
+      60,
+      150
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "Common OTC/retail product category (composition per standard formulation; not NLEM-listed)",
+    "prescription_required": false
+  },
+  {
+    "id": "otc-022-melatonin-tablet-(where-legally-sold)",
+    "category": "otc_wellness",
+    "name": "Melatonin Tablet (where legally sold)",
+    "composition": "Melatonin 3-5mg",
+    "form": "Tablet",
+    "pack_size": "Bottle of 30",
+    "typical_use": "Sleep aid / jet lag (availability varies by Indian state; check local regulation)",
+    "price_range_inr": [
+      150,
+      400
+    ],
+    "price_basis": "Rough estimate from general Indian generic-brand retail pricing patterns seen in market/news coverage - indicative range only, not a specific brand MRP",
+    "source": "Common OTC/retail product category (composition per standard formulation; not NLEM-listed)",
+    "prescription_required": true
+  },
+  {
+    "id": "otc-023-antihistamine-allergy-tablet-(otc)",
+    "category": "otc_wellness",
+    "name": "Antihistamine Allergy Tablet (OTC)",
+    "composition": "Cetirizine 10mg or Levocetirizine 5mg",
+    "form": "Tablet",
+    "pack_size": "Strip of 10",
+    "typical_use": "Seasonal allergies, mild hives",
+    "price_range_inr": [
+      10,
+      40
+    ],
+    "price_basis": "Rough estimate from general Indian generic/PMBJP retail pricing patterns reported in press coverage (not pulled from a live PMBJP price-list CSV) - treat as indicative range, not exact MRP",
+    "source": "Common OTC/retail product category (composition per standard formulation; not NLEM-listed)",
+    "prescription_required": false
+  },
+  {
+    "id": "otc-024-thermometer-(digital)",
+    "category": "otc_wellness",
+    "name": "Thermometer (Digital)",
+    "composition": "N/A - medical device, not a drug",
+    "form": "Device",
+    "pack_size": "1 unit",
+    "typical_use": "Body temperature measurement",
+    "price_range_inr": [
+      80,
+      250
+    ],
+    "price_basis": "Rough estimate from general Indian retail pricing for basic digital thermometers",
+    "source": "General retail device pricing (not NLEM/PMBJP; included as a commonly bundled student-health item)",
+    "prescription_required": false
+  },
+  {
+    "id": "otc-025-pulse-oximeter-(fingertip)",
+    "category": "otc_wellness",
+    "name": "Pulse Oximeter (Fingertip)",
+    "composition": "N/A - medical device, not a drug",
+    "form": "Device",
+    "pack_size": "1 unit",
+    "typical_use": "SpO2 and pulse monitoring",
+    "price_range_inr": [
+      350,
+      900
+    ],
+    "price_basis": "Rough estimate from general Indian retail pricing for basic fingertip oximeters",
+    "source": "General retail device pricing (not NLEM/PMBJP; included as a commonly bundled student-health item)",
+    "prescription_required": false
+  }
+]
