@@ -42,6 +42,16 @@ Tier 2 (lab catalogue and booking, like LabPackages). No personal health data on
 - Rule L: "Your doctor asked for a repeat test" is removed from the lab catalogue; it lives on M2Insights ("Due from your care").
 - Hero and step numbers run `service-violet-deep` → `service-violet-shade`; the tube art is rose, not red. PCOS and Iron packages use the rose family.
 
+## Design changes (founder, 2026-11-04): package compare + fasting chips (Tata 1mg sweep)
+
+- Each package card now shows a "Fasting Nh" / "No fasting" chip (derived from the existing `meta` copy, now split into its own field) and a "Compare" toggle button. Picking two packages opens a "Comparing 2 packages" table (Price, Tests, Fasting) between the package list and "How collection works"; a third pick is disabled until one is cleared. Switching the "Packages for" audience clears any in-progress compare, since the two picks would otherwise point at packages no longer shown.
+- No new trust/accreditation badges were added — the existing line ("Each test page names the lab that runs it, its accreditation and when the report is due") already covers that honestly without inventing a specific certification claim for this mock. Filter-by-attribute chips were likewise skipped in favour of the audience tabs already on this board, which cover the same "narrow the list" job Tata's chips do.
+- Icon watermark treatment (large, low-opacity filled icon behind the small line icon) added to package tiles, matching `M2Insights.md`/`M2Trends.md`/`M2Insurance.md` — same manifest paths, no new icons. Board height unchanged (390×1640 already had enough slack; verified via render, 24px clearance above the nav with the compare table open).
+
+## Design changes (founder, 2026-11-04): fixed the compare table showing by default
+
+- `showCompare` was set as the string `'false'` instead of a real boolean; `sc-if` treats any non-empty string as true, so the "Comparing 2 packages" table rendered (empty) on first load, before any package was picked. Fixed to pass a real boolean; verified via render that the table now only appears once two packages are selected.
+
 ## Missing icons
 
 None. The drawings this board had with no manifest icon were drawn into the kit on 2026-10-21 (house line style) and are in the list above:

@@ -56,6 +56,10 @@ Tier 1: lab values, in/out of range counts, doctor's note, refills due and the d
 - Framing stays calm per DESIGN.md: a sub-line states why the card appeared and that a pharmacist checks anything new against the student's existing meds; no discount badges, urgency copy, or "Buy now" styling. "Why these? Ask Ayush" routes to `M2AskAyush` for the explanation — Ayush still only explains, per its own guardrail (see `M2AskAyush.md`).
 - Enforcement note: this is a UI-only exception. The Postgres-grants / repository-boundary enforcement of Rule L (`AGENTS.md`) is untouched — the recommendation card still cannot read or write clinical tables from the commerce side; it is handed a static "reason" string at render time, same as the existing "Due from your care" cards.
 
+## Design changes (founder, 2026-11-04): fixed a render bug in the untested-system cards
+
+- The `tested`/`untested` flags driving the two `sc-if` blocks in each "By body system" card were set as the strings `'true'`/`'false'` instead of real booleans; since any non-empty string is truthy, both blocks rendered on every card (an untested card showing an empty dots row, a tested card showing a stray "Get this tested" chip). Caught during the Tata 1mg sweep while re-rendering other screens and fixed here; verified via render that each card now shows exactly one state.
+
 ## Design changes (founder, 2026-11-04): untested systems in "By body system"
 
 - Added two cards for panels the student hasn't had tested: "Kidney function" (`kidney`) and "Brain and nerves" (`brain`). They carry a "Get this tested" chip instead of status dots, and link straight to `M2Labs` — same Rule-L-safe pattern as "Due from your care": the href carries no clinical data, just the store page.

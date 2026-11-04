@@ -153,8 +153,8 @@ class Component extends DCLogic {
     };
     const dots = (arr) => arr.map((k) => ({ style: 'width: 22px; height: 6px; border-radius: 999px; background: ' + (k ? '#F59E0B' : '#34D399') + ';' }));
     const tile = (bg) => 'width: 38px; height: 38px; border-radius: 13px; display: flex; align-items: center; justify-content: center; background: ' + bg + ';';
-    const sys = (name, ink, bg, icon, d, summary) => ({ name, ink, icon, summary, dots: dots(d), tile: tile(bg), href: 'Trends.dc.html', tested: 'true', untested: 'false' });
-    const untestedSys = (name, ink, bg, icon) => ({ name, ink, icon, summary: '', dots: [], tile: tile(bg), href: 'Labs.dc.html', tested: 'false', untested: 'true' });
+    const sys = (name, ink, bg, icon, d, summary) => ({ name, ink, icon, summary, dots: dots(d), tile: tile(bg), href: 'Trends.dc.html', tested: true, untested: false });
+    const untestedSys = (name, ink, bg, icon) => ({ name, ink, icon, summary: '', dots: [], tile: tile(bg), href: 'Labs.dc.html', tested: false, untested: true });
     const prodArt = (bg) => 'position: relative; overflow: hidden; width: 100%; height: 56px; border-radius: 14px; background: ' + bg + '; display: flex; align-items: center; justify-content: center;';
     return {
       tabs: tabDefs.map(([label, href], i) => ({ label, href, sel: i === 0 ? 'true' : 'false', style: 'height: 38px; border-radius: 999px; display: flex; align-items: center; justify-content: center; font-size: 12.5px; font-weight: 800; ' + (i === 0 ? 'background: #FFFFFF; color: #0C0494;' : 'color: #E0DEFF;') })),
