@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | Canvas page | 9 · Mobile 2.0 (approved 2026-10-21) |
-| Platform / frame | Phone · 390×1780 |
+| Platform / frame | Phone · 390×2200 |
 | Tier | 1 |
 | Ticket(s) | SK-047 |
 | Picture | `design/screens/screenshots/10-mobile-2/M2Insights.jpg` |
@@ -41,6 +41,10 @@ Tier 1: lab values, in/out of range counts, doctor's note, refills due and the d
 
 - New "Due from your care" card pair under the doctor's note: "Refills due" (the student's refill dates, Tier 1, from `GET /refills/plans`) with "Refill in the store" → M2Medicines, and "Repeat test your doctor ordered" (from `GET /lab-orders`, Tier 1) with "Book in Lab tests" → M2Labs. The links open the store page only; the medicine or test is never passed into catalogue or commerce queries (Rule L).
 - Board is now 390×1780 to fit the pair. The doctor avatar runs `service-green-soft` → `#A7F3D0` with `service-green-shade` initials (AA); "Heart and blood" uses the rose family, not red.
+
+## Design changes (founder, 2026-11-04): board grows to 390×2200
+
+- The new "Recommended for your HDL result" rail and the two extra "By body system" cards add roughly 400px of content. Board height moved from 1780 to 2200 (and the preview's `$preview` height to match) so the bottom nav sits below the new content instead of overlapping it.
 
 ## Design changes (founder, 2026-11-04): Rule L exception — "Recommended for your HDL result"
 

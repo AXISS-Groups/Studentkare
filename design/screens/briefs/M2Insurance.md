@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | Canvas page | 9 · Mobile 2.0 (approved 2026-10-21) |
-| Platform / frame | Phone · 390×1200 |
+| Platform / frame | Phone · 390×1480 |
 | Tier | 2 |
 | Ticket(s) | SK-071 |
 | Picture | `design/screens/screenshots/10-mobile-2/M2Insurance.jpg` |
@@ -38,6 +38,10 @@ Tier 2 (cover and claims, like ClaimsHub).
 ## Design changes (founder, 2026-10-21)
 
 - "Start a claim" tile runs `service-green-deep` → `service-green-shade`.
+
+## Design changes (founder, 2026-11-04): board grows to 390×1480
+
+- 5 fuller product cards (across 3 grid rows) need more room than the old 3 dashed placeholders. Board height moved from 1200 to 1480 (and the preview's `$preview` height to match) so the bottom nav clears the new content.
 
 ## Design changes (founder, 2026-11-04): richer "More cover" products
 

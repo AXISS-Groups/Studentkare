@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | Canvas page | 9 · Mobile 2.0 (approved 2026-10-21) |
-| Platform / frame | Phone · 390×1400 |
+| Platform / frame | Phone · 390×1620 |
 | Tier | 1 |
 | Ticket(s) | SK-050, SK-057, SK-068 |
 | Picture | `design/screens/screenshots/10-mobile-2/M2Profile.jpg` |
@@ -56,6 +56,10 @@ Same object as the manifest icon, drawn a little differently on this board:
 ## Added 2026-10-23: What's new
 
 A "What's new" row (`sparkles`, "Changes in the app, from the team") above Help opens `M2WhatsNew` (/whats-new): the team's product update posts.
+
+## Design changes (founder, 2026-11-04): board grows to 390×1620
+
+- The extra settings row needs more room than the board had. Height moved from 1400 to 1620 (and the preview's `$preview` height to match) so "Sign out" and the bottom nav clear the longer rows list.
 
 ## Added 2026-11-04: Connect a device
 
