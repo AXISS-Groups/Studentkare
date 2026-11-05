@@ -68,16 +68,63 @@ fallback kept for the SQLite test harness (the existing test suite runs against 
 9. **Any model call still goes through `llm_gateway`** (Rule-C constitution + PII masking), same as every other
    AI path in this codebase — no new direct-to-model code path.
 
-## Open items for the reviewer (need a decision before code)
+## Status: approved 2026-11-05 by Krishna Chintakayala, as scoped below
 
-- **Consult notes & vaccination records:** build full Tier-1 schemas for both now, or ship Phase 1 with
-  prescriptions + lab reports only (both already have a home model) and raw-text-plus-classification for the
-  other two kinds until their schemas are designed? *Recommendation: Phase 1 = prescriptions + labs; raw text
-  stored and chunked for RAG either way, so nothing is lost — structured extraction for the other two kinds
-  catches up in a follow-on plan.*
-- **Consent purpose name/copy** — exact wording the student sees when asked to turn this on.
-- **Confirm:** rule 8's scope boundary (no AI-generated diet/exercise/dose output) stays as-is, unchanged from
-  the earlier chat decision this session.
+- Verified, signed-up users only — no document processing before signup/OTP + 18+ confirmation (not the
+  "process first, ask to sign up after" flow originally floated; consent has to come before processing, not
+  after).
+- Phase 1 = prescriptions + labs with their existing models; consult notes/vaccination records as raw-text-
+  plus-classification until a follow-on plan gives them schemas.
+- An uploaded image of a medicine/strip is read the same way `M2MedicineInfo`'s photo flow already works:
+  printed text extracted and matched against the database, confirmed by the student. Never identified by
+  appearance, never a dose inferred from the photo.
+- Rule 8's scope boundary (no AI-generated diet/exercise/dose/treatment output; no X-ray/imaging diagnosis)
+  stays exactly as written — explicitly reconfirmed in the 2026-11-05 chat request, not reopened.
+- Off-topic queries (anything that isn't about the student's own health records) get a plain refusal, not an
+  attempted answer — same pattern Agent Ayush's grounding/support check already enforces (`vector_store.py`):
+  no match clears the floor, nothing is returned.
+
+## Addition 1 — Ayush answers from the student's own records (personal-RAG retrieval, already in scope)
+
+"What's my medical history", "what did the doctor prescribe last time", "what medications am I on" are
+restatement/retrieval over the student's own `PersonalDocumentChunk` index — rule 8 already covers this, no
+new rule needed. Answers are grounded the same way Ayush's existing help-content answers are (support/overlap
+check against the retrieved passages), so an answer that isn't actually backed by the student's own documents
+doesn't get stated as fact.
+
+## Addition 2 — Super admin & doctor dashboards: aggregate analytics, not RAG, and not individual drill-down
+
+**Correction to how this was described:** "how many students, what diseases are most common, how many
+consultations" is a set of **counts over structured fields** (diagnosis category, consultation topic, document
+kind), not a text-retrieval problem — RAG is the wrong tool for it, and using it would make an auditable count
+into an ungrounded AI guess. This is a straightforward aggregation query/dashboard, optionally with a
+natural-language front end *that calls a defined, auditable count query* rather than free-floating retrieval.
+A super admin or campus dashboard with that kind of free-text access to individual patient narratives would
+also be the same "campus holds records like an employer" question already declined on 2026-11-04 — this
+addition is **aggregate counts only**, never an individual student's record, text, or document.
+
+**Open item needing a number before this ships:** a minimum cohort size below which a count is suppressed
+(standard public-health practice, e.g. "fewer than 5" shown as "<5" rather than an exact small number), so a
+rare condition in a small cohort can't be used to indirectly identify one student. *Recommendation: 5,
+matching common public-health small-cell suppression practice — confirm or set your own number.*
+
+A doctor's own dashboard (their own consultation count, topics, outcomes) is different: it's the doctor's own
+professional activity record, about patients they already have a real clinical relationship with through an
+actual consultation — not a third party gaining new visibility into someone else's data. No suppression
+threshold needed there; same account-scoping rule (rule 6) applies — a doctor's dashboard only ever queries
+that doctor's own consultations.
+
+## Addition 3 — Doctor's real prescription routes to the existing dispense flow (not new AI-generated content)
+
+Worth being precise about what this is, because it's a different and much safer thing than AI suggesting a
+medication: after a **real consultation with a licensed doctor**, the doctor's own prescription (a clinical
+decision made by a human clinician, same as any teleconsult today) should land in the student's record
+automatically, instead of needing to be re-typed or re-uploaded — then follow the **existing** prescription
+flow (`PrescriptionUpload` / dispense flow, referenced in `M2MedicineInfo`'s brief as "Send your prescription
+to a pharmacy") to route to a nearby/associated pharmacy. A student can independently send their own existing
+prescription into that same flow either way. **No new AI-generated medication content is introduced by this —
+it's wiring a real doctor's real output into a pathway that already exists**, which is squarely in scope and
+doesn't touch the Phase-8/SaMD line at all.
 
 ## What ships once approved
 
