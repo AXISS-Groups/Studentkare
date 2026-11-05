@@ -14,6 +14,9 @@ Two kinds of purpose:
 
   - ``AYUSH_HISTORY``: services/agent_ayush.history_kept reads the flag before any
     words are kept; withdrawing also clears the words already kept.
+  - ``DOCUMENT_AI_ANALYSIS``: gates whether an uploaded document is ever read, chunked
+    and embedded (docs/plans/tier1-document-rag-2026-11-04.md); withdrawing also
+    deletes every indexed chunk already stored, same shape as ``AYUSH_HISTORY``.
   - ``PICKUP_LOCATION``: stored only; nothing reads it today (a hostel pickup carries
     the block typed into that request). Withdrawing keeps it off for when something does.
   - ``SEASONAL_EDUCATION`` / ``PREVENTIVE_OFFERS``: stored only; no sender reads them
@@ -78,7 +81,8 @@ def _notification_prefs(db: DBSession, account_id: str, create: bool) -> M.Notif
     if row is None and create:
         row = M.NotificationPreference(account_id=account_id, email_enabled=True, push_enabled=True,
                                        reminders_enabled=True, timezone="", quiet_start="22:00", quiet_end="08:00",
-                                       pickup_location_enabled=False, ayush_history_enabled=False)
+                                       pickup_location_enabled=False, ayush_history_enabled=False,
+                                       document_ai_analysis_enabled=False)
         db.add(row)
     return row
 
@@ -107,6 +111,23 @@ def clear_ayush_words(db: DBSession, account_id: str) -> int:
     return cleared
 
 
+def clear_document_ai_chunks(db: DBSession, account_id: str) -> int:
+    """Analysis off means no indexed passage of a document survives, including those already made.
+
+    The documents themselves (care_documents) and anything already extracted into
+    lab_results/medicine matching are untouched — this clears only the retrieval index
+    built on top of them (care_personal_document_chunks), same shape as clear_ayush_words.
+    """
+    from sqlalchemy import delete
+
+    cleared = db.execute(
+        delete(M.PersonalDocumentChunk).where(M.PersonalDocumentChunk.account_id == account_id)
+    ).rowcount or 0
+    if cleared:
+        _audit(db, account_id, "DOCUMENT_AI_ANALYSIS_CLEARED", account_id)
+    return cleared
+
+
 @dataclass(frozen=True)
 class OptionalPurpose:
     key: str
@@ -131,8 +152,11 @@ def _write_notif(field: str) -> Callable[[DBSession, str, bool], None]:
     def write(db: DBSession, account_id: str, on: bool) -> None:
         row = _notification_prefs(db, account_id, True)
         setattr(row, field, on)
-        if field == "ayush_history_enabled" and not on:
-            clear_ayush_words(db, account_id)
+        if not on:
+            if field == "ayush_history_enabled":
+                clear_ayush_words(db, account_id)
+            elif field == "document_ai_analysis_enabled":
+                clear_document_ai_chunks(db, account_id)
     return write
 
 
@@ -192,6 +216,8 @@ def _write_wallet_google(db: DBSession, account_id: str, on: bool) -> None:
 OPTIONAL_PURPOSES: dict[str, OptionalPurpose] = {
     p.key: p for p in (
         OptionalPurpose("AYUSH_HISTORY", _read_notif("ayush_history_enabled"), _write_notif("ayush_history_enabled"), _always),
+        OptionalPurpose("DOCUMENT_AI_ANALYSIS", _read_notif("document_ai_analysis_enabled"),
+                        _write_notif("document_ai_analysis_enabled"), _always),
         OptionalPurpose("BLOOD_DONOR_CONTACT", _read_donor, _write_donor, lambda db, a: bool(_donors(db, a))),
         OptionalPurpose("PICKUP_LOCATION", _read_notif("pickup_location_enabled"), _write_notif("pickup_location_enabled"), _always),
         OptionalPurpose("PREVENTIVE_OFFERS", _read_prev("promotions_enabled"), _write_prev("promotions_enabled"), _always),

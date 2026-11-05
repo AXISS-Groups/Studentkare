@@ -167,6 +167,24 @@ def output_is_safe(answer: str) -> bool:
     return not any(pattern.search(answer) for pattern in _UNSAFE_OUTPUT)
 
 
+def compose_personal_extractive(passages: list[dict]) -> str:
+    """Answer a 'what's in my record' question by quoting the student's own document.
+
+    Same reasoning as compose_extractive: a quote cannot be wrong about the source, a
+    paraphrase can invent. These passages are a personal document, not an approved
+    knowledge source, so there is no title/category — only the matched text, labelled
+    plainly as coming from the student's own record and never generated.
+    """
+    lead = passages[0]
+    body = lead["content"].strip()
+    if len(body) > 900:
+        body = body[:900].rsplit(" ", 1)[0] + "…"
+    answer = f"From your own record:\n\n{body}"
+    if len(passages) > 1:
+        answer += f"\n\n(plus {len(passages) - 1} more matching passage{'s' if len(passages) > 2 else ''} in your records.)"
+    return answer
+
+
 def compose_extractive(question: str, passages: list[dict]) -> str:
     """Answer by quoting what was retrieved.
 
@@ -340,8 +358,30 @@ def ask(db, question: str, *, account_id: str = "", conversation_id: str = "",
         _record_turn(db, account_id, conversation_id, text, result, started)
         return result
 
-    # 3. The agent has no access to the clinical vault, by design.
+    # 3. Asks about the student's own record. Answered only by quoting the student's
+    #    own indexed documents (docs/plans/tier1-document-rag-2026-11-04.md, Addition 1)
+    #    — restatement of what was read, never an interpretation, and gated the same
+    #    way indexing is: no DOCUMENT_AI_ANALYSIS consent, no documents, no match, all
+    #    land on the same honest refusal, so a refusal here never reveals which.
     if asks_about_own_record(text):
+        personal_passages = []
+        if account_id:
+            from services import personal_document_rag
+            try:
+                personal_passages = personal_document_rag.search(db, account_id, text, limit=3)
+            except Exception:  # noqa: BLE001 — a retrieval failure refuses, never invents
+                personal_passages = []
+        if personal_passages:
+            personal_answer = compose_personal_extractive(personal_passages)
+            if output_is_safe(personal_answer):
+                result = _outcome(
+                    "ANSWERED", personal_answer, generator="extractive_personal",
+                    score=personal_passages[0]["score"],
+                    citations=[{"documentId": p["documentId"], "snippet": p["content"][:240], "score": p["score"]}
+                               for p in personal_passages],
+                )
+                _record_turn(db, account_id, conversation_id, text, result, started)
+                return result
         result = _outcome("REFUSED_PERSONAL", PERSONAL_RECORD_ANSWER, extra={"rule": RULE_NO_DIAGNOSIS})
         _record_turn(db, account_id, conversation_id, text, result, started)
         return result

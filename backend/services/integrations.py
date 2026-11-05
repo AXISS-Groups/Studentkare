@@ -211,6 +211,14 @@ def test_integration(provider: str, user: dict = Depends(require_super_admin)):
                 "message": {"READY": "The Tesseract reader is installed and on.",
                             "UNAVAILABLE": "Switched on, but the Tesseract program is not installed on this server.",
                             }.get(state, "Not switched on. Reading photos of medicine strips is off.")}
+    if provider == "document_ocr":
+        # Says whether an uploaded document's printed text can be read here; reads nothing.
+        from services import document_ocr
+        state = document_ocr.status()["state"]
+        return {"success": state == document_ocr.READY, "state": state,
+                "message": {"READY": "The Tesseract reader is installed and on.",
+                            "UNAVAILABLE": "Switched on, but the Tesseract program is not installed on this server.",
+                            }.get(state, "Not switched on. Reading uploaded documents' text is off.")}
     if provider in ("otp", "twofa"):
         return {"success": True, "message": f"{provider} policy valid", "config": sanitize(provider)}
     if provider == "platform":

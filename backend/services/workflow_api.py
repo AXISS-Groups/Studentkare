@@ -233,14 +233,18 @@ def upload_document(title: str = Form(..., min_length=1, max_length=160), catego
     audit(db, user, "DOCUMENT_UPLOADED", row.id)
     db.flush()
     # Auto-queue document intake for extraction (honest, no invented fields).
-    from services.document_intake import extract_fields as _extract  # noqa: F401
-    result = extract_fields(content, title.strip(), category)
+    result = extract_fields(content, title.strip(), category, file.content_type)
     intake_id = f"int_{new_id()[:10]}"
-    db.add(M.DocumentIntake(id=intake_id, document_id=row.id, account_id=user["id"], status="DRAFT",
-                            extractor="heuristic", draft=result, created_at=time.time()))
+    db.add(M.DocumentIntake(id=intake_id, document_id=row.id, account_id=user["id"],
+                            status=intake_status_for(result["draft"]),
+                            extractor="heuristic", draft={"draft": result["draft"], "fields": result["fields"]},
+                            created_at=time.time()))
     for field in result["fields"]:
         db.add(M.IntakeReviewItem(id=f"ir_{new_id()[:10]}", intake_id=intake_id, field=field["field"],
                                   value=field["value"], confidence=field["confidence"], status="PENDING"))
+    if result["draft"]["read"]["state"] == "OK":
+        from services import personal_document_rag
+        personal_document_rag.index_document(db, row.id, user["id"], result["text"])
     db.commit()
     return {"id": row.id, "intakeId": intake_id}
 
@@ -261,6 +265,8 @@ def delete_document(document_id: str, user=Depends(authenticated_user), db: Sess
         # A prescription sent to a pharmacist leaves that queue with its file.
         withdraw_reviews_for_document(db, document_id)
         lab_results.delete_for_document(db, user["id"], document_id)
+        from services import personal_document_rag
+        personal_document_rag.remove_document(db, document_id)
     changed = db.execute(delete(M.Document).where(M.Document.id == document_id, M.Document.account_id == user["id"])).rowcount
     if not changed:
         raise HTTPException(404, "Record not found.")
@@ -271,7 +277,7 @@ def delete_document(document_id: str, user=Depends(authenticated_user), db: Sess
 
 # --- Document intake & review queue ---
 
-from services.document_intake import extract_fields  # noqa: E402
+from services.document_intake import extract_fields, intake_status_for  # noqa: E402
 
 
 @router.post("/intake/{document_id}/process")
@@ -284,15 +290,20 @@ def process_document_intake(document_id: str, user=Depends(authenticated_user), 
     if existing:
         return {"id": existing.id, "status": existing.status, "fields": existing.draft.get("fields", [])}
     intake_id = f"int_{new_id()[:10]}"
-    result = extract_fields(doc.content, doc.title, doc.category)
-    db.add(M.DocumentIntake(id=intake_id, document_id=doc.id, account_id=user["id"], status="DRAFT",
-                            extractor="heuristic", draft=result, created_at=time.time()))
+    result = extract_fields(doc.content, doc.title, doc.category, doc.mime_type)
+    status = intake_status_for(result["draft"])
+    db.add(M.DocumentIntake(id=intake_id, document_id=doc.id, account_id=user["id"], status=status,
+                            extractor="heuristic", draft={"draft": result["draft"], "fields": result["fields"]},
+                            created_at=time.time()))
     for field in result["fields"]:
         db.add(M.IntakeReviewItem(id=f"ir_{new_id()[:10]}", intake_id=intake_id, field=field["field"],
                                   value=field["value"], confidence=field["confidence"], status="PENDING"))
+    if result["draft"]["read"]["state"] == "OK":
+        from services import personal_document_rag
+        personal_document_rag.index_document(db, doc.id, user["id"], result["text"])
     audit(db, user, "DOCUMENT_INTAKE_QUEUED", intake_id)
     db.commit()
-    return {"id": intake_id, "status": "DRAFT", "fields": result["fields"]}
+    return {"id": intake_id, "status": status, "fields": result["fields"]}
 
 
 @router.get("/intake/{intake_id}")
@@ -327,6 +338,62 @@ def intake_review_queue(user=Depends(require_super_admin), db: Session = Depends
     ).all()
     return {"items": [{"id": row.id, "kind": row.category, "status": row.status, "createdAt": row.created_at or None,
                        "processedAt": row.processed_at or None} for row in rows]}
+
+
+# Small-cell suppression (docs/plans/tier1-document-rag-2026-11-04.md, Addition 2):
+# a campus/admin aggregate never shows a count low enough to re-identify someone in
+# a small cohort. A doctor's own consultation dashboard is exempt — these are their
+# own patients, not a cohort they could re-identify from a published count.
+ANALYTICS_SUPPRESSION_THRESHOLD = 5
+
+
+def _suppress_small_cells(counts: dict[str, int]) -> dict[str, int | None]:
+    """None in place of any count under the threshold — never rounded, never dropped
+    silently, so the UI can say plainly 'fewer than 5' instead of showing a number
+    that could re-identify one of a small cohort."""
+    return {key: (count if count >= ANALYTICS_SUPPRESSION_THRESHOLD else None) for key, count in counts.items()}
+
+
+@router.get("/ops/analytics/documents")
+def analytics_documents(user=Depends(require_super_admin), db: Session = Depends(workflow_db)):
+    """Aggregate counts only — how many students, how many documents, by category.
+
+    No individual record, title, filename or extracted value is ever returned here,
+    same rule as /ops/intake/review above. Counts below ANALYTICS_SUPPRESSION_THRESHOLD
+    are suppressed (None) rather than shown, so a category only a handful of students
+    used can't be used to pick them out.
+
+    This does not include a disease/condition breakdown: nothing in this codebase
+    infers or codes a diagnosis from a document (by design — extraction never invents
+    a value, and AI diagnosis is out of scope per the medicine-info and document-rag
+    plans), so there is no structured field to aggregate one from. Open item for a
+    later plan if that's wanted — it would need a real coded-diagnosis source first.
+    """
+    students = db.scalar(select(func.count(func.distinct(M.Document.account_id))).select_from(M.Document))
+    by_category = dict(db.execute(select(M.Document.category, func.count()).group_by(M.Document.category)).all())
+    return {
+        "studentsWithDocuments": students if students >= ANALYTICS_SUPPRESSION_THRESHOLD else None,
+        "documentsByCategory": _suppress_small_cells({str(k): int(v) for k, v in by_category.items()}),
+        "suppressionThreshold": ANALYTICS_SUPPRESSION_THRESHOLD,
+    }
+
+
+@router.get("/ops/analytics/consultations")
+def analytics_consultations(user=Depends(require_clinician), db: Session = Depends(workflow_db)):
+    """A doctor's own consultation counts — their own patients, so no suppression.
+
+    Scoped to account_id == this doctor (M.EncounterNote.account_id is the authoring
+    clinician, M.EncounterNote.patient_id the patient) — never another clinician's.
+    """
+    patients = db.scalar(select(func.count(func.distinct(M.EncounterNote.patient_id)))
+                         .where(M.EncounterNote.account_id == user["id"]))
+    by_status = dict(db.execute(select(M.EncounterNote.status, func.count())
+                                .where(M.EncounterNote.account_id == user["id"])
+                                .group_by(M.EncounterNote.status)).all())
+    return {
+        "patientsSeen": int(patients or 0),
+        "consultationsByStatus": {str(k): int(v) for k, v in by_status.items()},
+    }
 
 
 # --- Records privacy: export, consent sharing, and deletion requests ---

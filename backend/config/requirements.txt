@@ -39,3 +39,12 @@ defusedxml==0.7.1
 # Video consults: signs LiveKit join tokens (services/livekit_media.py). Brings
 # PyJWT, protobuf, livekit-protocol and aiohttp; only AccessToken is used.
 livekit-api==1.2.1
+# Personal-record RAG (docs/plans/tier1-document-rag-2026-11-04.md) and the existing
+# Agent Ayush knowledge index (services/vector_store.py) store embeddings in a real
+# pgvector column on Postgres, via Column(...).with_variant(JSON, "sqlite") so the
+# same model still runs on the sqlite test harness. https://github.com/pgvector/pgvector
+pgvector==0.5.1
+# Real text extraction from an uploaded PDF (services/document_ocr.py, same plan):
+# pure-Python, no system binary, text-only (never images-to-text — that stays
+# Tesseract, same as medicine_ocr.py).
+pypdf==6.21.4
