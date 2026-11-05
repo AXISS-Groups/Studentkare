@@ -126,9 +126,33 @@ prescription into that same flow either way. **No new AI-generated medication co
 it's wiring a real doctor's real output into a pathway that already exists**, which is squarely in scope and
 doesn't touch the Phase-8/SaMD line at all.
 
+## Implementation note (2026-11-05) — reconciled with the pre-existing document pipeline
+
+While starting on rule 4, found that `care_documents` (`Document`), `care_document_intake`
+(`DocumentIntake`), and `care_intake_review_items` (`IntakeReviewItem`) already exist and are already
+`CLINICAL` in `core/rule_l.py` — a full, shipped upload/classify/extract/review-gate pipeline
+(`services/workflow_api.py`'s `/health/documents` + `/intake/*`, `services/document_intake.py`'s
+`extract_fields`). This is exactly the "existing models" rule 3 says to reuse, so an earlier draft of
+this implementation that added a second, parallel `PersonalDocument` table was a mistake and has been
+removed before any migration was written. The design now is:
+
+- `Document`/`DocumentIntake`/`IntakeReviewItem` are unchanged and keep doing what they already do
+  (storage, category, heuristic field extraction, human review).
+- `PersonalDocumentChunk` (rule 4) is the only new table. Its `document_id` FKs to `care_documents.id`,
+  not a new table — one upload, one record of itself. `account_id` stays denormalised on the chunk for
+  erasure/retrieval scoping, as already specified.
+- Rule 1 ("the document reader becomes real") now means improving `document_intake.py::extract_fields`'s
+  `_decode()` — currently plain UTF-8/Latin-1 byte decoding, so it silently produces garbage/empty text
+  for an actual image or binary PDF — to call `services/medicine_ocr.py`'s Tesseract reader for image
+  mime types and a real PDF-text extractor for PDFs, rather than building a second extractor.
+- Rule 2's 5-way classification reuses `Document.category`'s existing allowed set (`LAB`, `PRESCRIPTION`,
+  `VACCINE`, `CAMP_REPORT`, `DISCHARGE_SUMMARY`, `OTHER`) plus one addition, `CONSULT_NOTE`, since no
+  existing category covers a doctor's consult note. No second classification vocabulary is introduced.
+
 ## What ships once approved
 
-- Migration: `PersonalDocumentChunk` table + pgvector extension/column (prod), JSON fallback (sqlite tests).
+- Migration: `PersonalDocumentChunk` table (FK to `care_documents.id`) + pgvector extension/column (prod),
+  JSON fallback (sqlite tests).
 - Migration: `KnowledgeChunk.vector` → pgvector column type (same extension, no behavior change to Ayush).
 - `DOCUMENT_AI_ANALYSIS` consent purpose wired into `consent_ledger.py`.
 - Real OCR/extraction pipeline behind document upload, replacing `M2ReportUpload`'s unwired mock.
