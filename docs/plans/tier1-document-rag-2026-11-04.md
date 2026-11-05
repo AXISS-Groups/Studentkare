@@ -126,6 +126,16 @@ prescription into that same flow either way. **No new AI-generated medication co
 it's wiring a real doctor's real output into a pathway that already exists**, which is squarely in scope and
 doesn't touch the Phase-8/SaMD line at all.
 
+**Blocked, found 2026-11-05 — needs its own Tier-1 review, not covered by this plan's approval.**
+`services/rx_uploads.py`'s own module docstring says plainly: "What this does not do: no order, price or
+cart is made from a prescription. That is the Tier 1 prescription-to-order flow, waiting for design review."
+So the "existing dispense flow" this Addition assumed is reachable does not yet do prescription→order/pharmacy
+routing at all — that connection is itself a separate, not-yet-designed Tier-1 change the codebase already
+flags as pending its own review. Building it now, under this plan's general approval, would route around
+that already-stated process rather than through it. **Not built.** Needs a plan of its own, naming a
+reviewer, before any code — most naturally as a follow-up to this one, scoped to exactly what
+`rx_uploads.py` says is missing.
+
 ## Implementation note (2026-11-05) — reconciled with the pre-existing document pipeline
 
 While starting on rule 4, found that `care_documents` (`Document`), `care_document_intake`
@@ -141,21 +151,38 @@ removed before any migration was written. The design now is:
 - `PersonalDocumentChunk` (rule 4) is the only new table. Its `document_id` FKs to `care_documents.id`,
   not a new table — one upload, one record of itself. `account_id` stays denormalised on the chunk for
   erasure/retrieval scoping, as already specified.
-- Rule 1 ("the document reader becomes real") now means improving `document_intake.py::extract_fields`'s
-  `_decode()` — currently plain UTF-8/Latin-1 byte decoding, so it silently produces garbage/empty text
-  for an actual image or binary PDF — to call `services/medicine_ocr.py`'s Tesseract reader for image
-  mime types and a real PDF-text extractor for PDFs, rather than building a second extractor.
+- Rule 1 ("the document reader becomes real") is `services/document_ocr.py`: Tesseract for an image
+  (same approach as `medicine_ocr.py`, but its own switch — a whole health record is far more text and
+  far more sensitive than one medicine-strip name, so it gets its own AI-constitution-owner/DPO sign-off
+  rather than inheriting `medicine_ocr`'s), `pypdf` for a PDF's embedded text (no OCR fallback for a
+  scanned/image-only PDF — that's an honest `ReadFailed`, not a guess). Off by default, same as
+  `medicine_ocr`. `document_intake.py::extract_fields` calls it instead of the old plain byte-decode,
+  which only ever produced garbage/empty text for the image/PDF uploads this app actually accepts.
 - Rule 2's 5-way classification reuses `Document.category`'s existing allowed set (`LAB`, `PRESCRIPTION`,
   `VACCINE`, `CAMP_REPORT`, `DISCHARGE_SUMMARY`, `OTHER`) plus one addition, `CONSULT_NOTE`, since no
   existing category covers a doctor's consult note. No second classification vocabulary is introduced.
 
-## What ships once approved
+## What shipped (2026-11-05)
 
-- Migration: `PersonalDocumentChunk` table (FK to `care_documents.id`) + pgvector extension/column (prod),
-  JSON fallback (sqlite tests).
-- Migration: `KnowledgeChunk.vector` → pgvector column type (same extension, no behavior change to Ayush).
-- `DOCUMENT_AI_ANALYSIS` consent purpose wired into `consent_ledger.py`.
-- Real OCR/extraction pipeline behind document upload, replacing `M2ReportUpload`'s unwired mock.
-- Classifier + extractor into `lab_results`/medicine matching for prescriptions and labs.
-- Retrieval endpoint, account-scoped, feeding restatement/analytics only — no new generation surface for
-  dose/diet/exercise advice.
+- Migration `b7f3e8c1a2d4`: `care_personal_document_chunks` table (FK to `care_documents.id`), pgvector
+  extension/column on Postgres with JSON fallback on sqlite, `care_notification_preferences
+  .document_ai_analysis_enabled` column.
+- `services/document_ocr.py`: the real reader (Tesseract for images, `pypdf` for PDFs), its own
+  `document_ocr` integration switch, off by default.
+- `services/document_intake.py::extract_fields` calls the real reader instead of plain byte-decode;
+  records an honest read state (`OK`/`NOT_CONFIGURED`/`UNAVAILABLE`/`FAILED`) and the intake's status
+  follows it (`DRAFT`/`QUEUED`/`FAILED`) — reusing `DocumentIntake.status`'s `QUEUED`/`FAILED` states the
+  scheduler's `document_intake_reconcile` job already expected but nothing previously set.
+- `DOCUMENT_AI_ANALYSIS` consent purpose in `consent_ledger.py`, same shape as `AYUSH_HISTORY`
+  (withdrawing deletes every stored chunk, not just stops future indexing).
+- `services/personal_document_rag.py`: chunks and embeds a document's read text into
+  `PersonalDocumentChunk`, gated on that consent; `search()` is always account-scoped.
+- Addition 1: `services/agent_ayush.py`'s own-record question path now answers by quoting the student's
+  own indexed passages (restatement only) when consent + a match exist; otherwise falls back to the
+  existing refusal — the same refusal either way, so it never reveals which.
+- Addition 2: `GET /ops/analytics/documents` (super admin, suppression threshold 5) and
+  `GET /ops/analytics/consultations` (a doctor's own patients, no suppression needed). No disease/condition
+  breakdown — nothing in this codebase codes a diagnosis, so there's no field to aggregate one from; a real
+  open item if that's wanted later.
+- Addition 3: **not built** — see the blocked note above. Needs its own plan and reviewer.
+- `core/rule_l.py`: `care_personal_document_chunks` registered `CLINICAL`.
