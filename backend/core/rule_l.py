@@ -43,6 +43,11 @@ TABLE_PLANES: dict[str, str] = {
     "care_documents": CLINICAL,                   # health records
     "care_document_intake": CLINICAL,
     "care_intake_review_items": CLINICAL,
+    # Chunks of a student's own uploaded document, embedded for retrieval
+    # (docs/plans/tier1-document-rag-2026-11-04.md). Deliberately CLINICAL, never
+    # PLATFORM like care_knowledge_chunks: that index holds only approved,
+    # reviewed knowledge content, and this holds one person's private records.
+    "care_personal_document_chunks": CLINICAL,
     "care_record_shares": CLINICAL,               # consent grant to a clinician
     "care_exercise_sessions": CLINICAL,
     "care_preferences": CLINICAL,                 # saved exercises, wellness tasks, water goal

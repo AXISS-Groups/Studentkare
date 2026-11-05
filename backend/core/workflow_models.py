@@ -22,9 +22,26 @@ from sqlalchemy import (
 from sqlalchemy import (
     true as sa_true,
 )
+from pgvector.sqlalchemy import Vector
 from sqlalchemy.orm import Mapped, mapped_column
 
 from services.db_sql import Base
+from services.embeddings import LOCAL_DIMENSIONS
+
+# Both KnowledgeChunk and PersonalDocumentChunk store their embedding in a real
+# pgvector column (https://github.com/pgvector/pgvector) on Postgres, with a JSON
+# fallback on sqlite (the test harness) via Column(...).with_variant(JSON, "sqlite") —
+# same model code runs against both. pgvector's column type is fixed-width, unlike the
+# JSON column it replaces, so every row in one column must share this width: it is set
+# to the local hashing embedder's width (services/embeddings.py) since that is the only
+# embedder guaranteed always available. Adopting a semantic embedder with a *different*
+# native width is a real migration (ALTER COLUMN ... TYPE vector(n)), on top of the
+# reindex that changing embedders already requires in services/vector_store.py.
+VECTOR_DIMENSIONS = LOCAL_DIMENSIONS
+
+
+def vector_column():
+    return mapped_column(Vector(VECTOR_DIMENSIONS).with_variant(JSON, "sqlite"), default=list)
 
 
 class Account(Base):
@@ -881,6 +898,14 @@ class NotificationPreference(Base):
     # granted is not a consent, and DPDP asks for each purpose separately.
     pickup_location_enabled: Mapped[bool] = mapped_column(Boolean, default=False)
     ayush_history_enabled: Mapped[bool] = mapped_column(Boolean, default=False)
+    # Gates whether an uploaded document (care_documents) is ever read, chunked and
+    # embedded into care_personal_document_chunks (docs/plans/tier1-document-rag-2026-11-04.md).
+    # Separate from "store my documents" (RECORDS_STORAGE, required): feeding full
+    # document text as retrieval context is more exposure than showing the student
+    # their own structured values back, so it's asked for on its own. Withdrawing it
+    # deletes every chunk already stored, not just stops future indexing — same
+    # pattern as ayush_history_enabled above.
+    document_ai_analysis_enabled: Mapped[bool] = mapped_column(Boolean, default=False)
     # Per category, the channels the student chose (core/push_copy.CATEGORIES):
     # {"CARE": ["PUSH", "WHATSAPP"], ...}. A category missing here follows its
     # default; an empty list means every optional channel is off for it.
@@ -1868,7 +1893,39 @@ class KnowledgeChunk(Base):
     # replaces its chunks; a stale version here means the index needs rebuilding.
     source_version: Mapped[int] = mapped_column(Integer, default=1)
     embedder: Mapped[str] = mapped_column(String(40), default="")
-    vector: Mapped[dict] = mapped_column(JSON, default=list)
+    vector: Mapped[list] = vector_column()
+    created_at: Mapped[float] = mapped_column(Float, default=0.0)
+
+
+class PersonalDocumentChunk(Base):
+    """A retrievable passage from one student's own uploaded document, with its vector.
+
+    Chunks of ``Document`` (``care_documents``) — the document itself, its category and
+    bytes already have a home there, and ``DocumentIntake``/``IntakeReviewItem`` already
+    cover structured field extraction with a human-review gate. This table adds only what
+    did not already exist: free-text passages of the document's *read* content, embedded
+    for retrieval, per docs/plans/tier1-document-rag-2026-11-04.md. ``document_id`` points
+    at the existing ``Document`` row rather than a parallel table, so one upload has one
+    record of itself, not two.
+
+    Deliberately a separate table from KnowledgeChunk/KnowledgeSource: those hold only
+    approved, reviewed knowledge-base content, and mixing a person's own private health
+    documents into that index would break the "only approved sources are ever indexed"
+    guarantee Agent Ayush's answers already depend on. ``account_id`` is denormalised
+    (also reachable via ``document_id``) so retrieval and the erasure sweep both filter
+    on it directly without a join; services/erasure.py discovers and deletes this table
+    automatically by following the foreign key, same as every other personal table.
+    Gated by the DOCUMENT_AI_ANALYSIS consent purpose (services/consent_ledger.py):
+    withdrawing it deletes every row here, not just stops future indexing.
+    """
+    __tablename__ = "care_personal_document_chunks"
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    document_id: Mapped[str] = mapped_column(ForeignKey("care_documents.id"), index=True)
+    account_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"), index=True)
+    ordinal: Mapped[int] = mapped_column(Integer, default=0)
+    content: Mapped[str] = mapped_column(String(2000), default="")
+    embedder: Mapped[str] = mapped_column(String(40), default="")
+    vector: Mapped[list] = vector_column()
     created_at: Mapped[float] = mapped_column(Float, default=0.0)
 
 

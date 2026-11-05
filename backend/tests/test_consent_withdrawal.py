@@ -27,7 +27,7 @@ from services import consent_ledger
 from services.agent_ayush import history_kept
 
 OPTIONAL = {"AYUSH_HISTORY", "BLOOD_DONOR_CONTACT", "PICKUP_LOCATION", "PREVENTIVE_OFFERS", "SEASONAL_EDUCATION",
-            "WALLET_GOOGLE"}
+            "WALLET_GOOGLE", "DOCUMENT_AI_ANALYSIS"}
 
 
 def change(client, headers, purpose, granted):

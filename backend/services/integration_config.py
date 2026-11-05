@@ -96,6 +96,18 @@ INTEGRATIONS_DB: dict = {
         "engine": "tesseract",
         "binary": os.getenv("MEDICINE_OCR_TESSERACT", "tesseract"),
     },
+    # Reading the printed text of an uploaded health record (prescription, consult
+    # note, lab report, vaccination record, discharge summary), plan
+    # tier1-document-rag-2026-11-04, rule 1. Same Tesseract-on-our-own-server
+    # approach as medicine_ocr, but its own switch: this reads whole documents
+    # (far more text, far more sensitive) rather than one medicine strip's name,
+    # so it needs its own AI-constitution-owner/DPO sign-off, not medicine_ocr's.
+    # Off by default; the screen says so (services/document_ocr.py).
+    "document_ocr": {
+        "enabled": os.getenv("DOCUMENT_OCR_ENABLED", "false").lower() == "true",
+        "engine": "tesseract",
+        "binary": os.getenv("DOCUMENT_OCR_TESSERACT", "tesseract"),
+    },
     "apilayer": {
         "enabled": os.getenv("APILAYER_ENABLED", "false").lower() == "true",
         "api_key": os.getenv("APILAYER_API_KEY", ""),

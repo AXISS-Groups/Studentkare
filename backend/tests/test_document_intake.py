@@ -5,27 +5,58 @@ from sqlalchemy import select
 from test_workflow_api import harness, login, register
 
 from core import workflow_models as M
+from services import document_ocr
 
 
-def _upload(client, headers, content, name="report.txt", mime="application/pdf"):
-    # Use a fake PDF header so the MIME check passes.
+def _enable_document_ocr(monkeypatch, text: str):
+    """Turns the reader on and stubs it to return given text — same approach the
+    medicine_ocr tests use, so these tests exercise the heuristic matcher without
+    depending on pypdf's handling of a hand-built fixture file."""
+    from services.integration_config import INTEGRATIONS_DB
+
+    monkeypatch.setitem(INTEGRATIONS_DB, "document_ocr", {"enabled": True, "engine": "tesseract", "binary": "tesseract"})
+    monkeypatch.setattr(document_ocr, "status", lambda: {"provider": "document_ocr", "state": "READY"})
+    monkeypatch.setattr(document_ocr, "read_text", lambda content, mime_type, timeout=20: text)
+
+
+def _upload(client, headers, content, name="report.pdf", mime="application/pdf"):
+    # A fake PDF header so upload_files' own magic-number sniff passes; the real text
+    # is supplied by whatever the test stubs document_ocr.read_text to return.
     return client.post("/api/health/documents", headers=headers, data={"title": "Lab Report", "category": "LAB"},
                        files={"file": (name, b"%PDF-1.4\n" + content, mime)})
 
 
-def test_upload_queues_intake_and_review(harness):
+def test_upload_queues_intake_and_review(harness, monkeypatch):
     client, factory, codes = harness
+    _enable_document_ocr(monkeypatch, "Dr. Sharma 12/05/2026 Hemoglobin 12.0 g/dL Report")
     user, headers = register(client, codes, "owner@example.test")
     res = _upload(client, headers, b"Dr. Sharma 12/05/2026 Hemoglobin 12.0 g/dL Report")
     assert res.status_code == 201
     intake_id = res.json()["intakeId"]
 
     status = client.get(f"/api/intake/{intake_id}", headers=headers).json()
+    assert status["status"] == "DRAFT"
     assert status["extractor"] == "heuristic"
     # The provider "Sharma" must be extracted from text, not invented.
     fields = {f["field"]: f for f in status["fields"]}
     assert fields["provider"]["value"] == "Sharma"
     assert fields["document_date"]["value"] == "12/05/2026"
+
+
+def test_upload_without_a_real_reader_invents_nothing(harness):
+    """document_ocr is off by default (pending its own DPO/constitution sign-off,
+    same gate as medicine_ocr), so a document's text is never read, and no field is
+    guessed from unread content. The intake stays QUEUED, not silently DRAFT with
+    fields matched against garbage — that was the bug this reader replaces."""
+    client, _factory, codes = harness
+    _user, headers = register(client, codes, "owner6@example.test")
+    res = _upload(client, headers, b"Dr. Sharma 12/05/2026 Hemoglobin 12.0 g/dL Report")
+    assert res.status_code == 201
+    intake_id = res.json()["intakeId"]
+
+    status = client.get(f"/api/intake/{intake_id}", headers=headers).json()
+    assert status["status"] == "QUEUED"
+    assert status["fields"] == []
 
 
 def _admin(client, factory, codes):
@@ -35,8 +66,9 @@ def _admin(client, factory, codes):
     return login(client, codes, "admin@example.test")
 
 
-def test_super_admin_queue_shows_operational_state_only(harness):
+def test_super_admin_queue_shows_operational_state_only(harness, monkeypatch):
     client, factory, codes = harness
+    _enable_document_ocr(monkeypatch, "Dr. Sharma 12/05/2026 Hemoglobin 12.0 g/dL Report Paracetamol")
     _user, headers = register(client, codes, "owner3@example.test")
     res = _upload(client, headers, b"Dr. Sharma 12/05/2026 Hemoglobin 12.0 g/dL Report Paracetamol")
     intake_id, document_id = res.json()["intakeId"], res.json()["id"]
@@ -57,8 +89,9 @@ def test_super_admin_queue_shows_operational_state_only(harness):
         assert secret not in body
 
 
-def test_super_admin_cannot_read_or_write_extracted_fields(harness):
+def test_super_admin_cannot_read_or_write_extracted_fields(harness, monkeypatch):
     client, factory, codes = harness
+    _enable_document_ocr(monkeypatch, "Dr. Sharma 12/05/2026 Report")
     _user, headers = register(client, codes, "owner4@example.test")
     res = _upload(client, headers, b"Dr. Sharma 12/05/2026 Report")
     intake_id, document_id = res.json()["intakeId"], res.json()["id"]
@@ -89,12 +122,33 @@ def test_queue_is_super_admin_only(harness):
     assert client.get("/api/ops/intake/review", headers=headers).status_code == 403
 
 
-def test_intake_never_invents_medication(harness):
+def test_intake_never_invents_medication(harness, monkeypatch):
     client, _, codes = harness
+    _enable_document_ocr(monkeypatch, "No medication named in this document.")
     user, headers = register(client, codes, "owner2@example.test")
-    res = _upload(client, headers, b"No medication named in this document.", name="note.txt", mime="application/pdf")
+    res = _upload(client, headers, b"No medication named in this document.", name="note.pdf", mime="application/pdf")
     intake_id = res.json()["intakeId"]
     status = client.get(f"/api/intake/{intake_id}", headers=headers).json()
     meds = [f for f in status["fields"] if f["field"] == "medication"]
     # No fabricated medication entries.
     assert meds == []
+
+
+def test_a_scanned_pdf_with_no_embedded_text_fails_honestly(harness, monkeypatch):
+    """The real reader ran but found nothing to read (a scan) — FAILED, not a guess."""
+    from services.integration_config import INTEGRATIONS_DB
+
+    client, _, codes = harness
+    monkeypatch.setitem(INTEGRATIONS_DB, "document_ocr", {"enabled": True, "engine": "tesseract", "binary": "tesseract"})
+    monkeypatch.setattr(document_ocr, "status", lambda: {"provider": "document_ocr", "state": "READY"})
+
+    def _raise(*_a, **_k):
+        raise document_ocr.ReadFailed("PDF has no extractable text (likely a scan)")
+    monkeypatch.setattr(document_ocr, "read_text", _raise)
+
+    user, headers = register(client, codes, "owner7@example.test")
+    res = _upload(client, headers, b"irrelevant bytes")
+    intake_id = res.json()["intakeId"]
+    status = client.get(f"/api/intake/{intake_id}", headers=headers).json()
+    assert status["status"] == "FAILED"
+    assert status["fields"] == []
