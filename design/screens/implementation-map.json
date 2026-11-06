@@ -1633,6 +1633,7 @@
       "src/native/StudentHomeScreen.tsx",
       "src/design-system/m2/PillNav.tsx",
       "src/design-system/m2/M2Parts.tsx",
+      "src/design-system/m2/M2SosButton.tsx",
       "src/design-system/m2/Gradient.tsx",
       "src/design-system/m2/servicePalette.ts",
       "src/design-system/m2/m2Motion.ts",
@@ -1795,6 +1796,7 @@
       "src/native/hardware/notifications.ts",
       "src/design-system/m2/PillNav.tsx",
       "src/design-system/m2/M2Parts.tsx",
+      "src/design-system/m2/M2SosButton.tsx",
       "src/design-system/m2/Gradient.tsx",
       "src/design-system/m2/servicePalette.ts",
       "src/screens/workspace/StudentPhoneFrame.tsx",
@@ -1812,6 +1814,7 @@
       "src/native/hardware/notifications.ts",
       "src/design-system/m2/PillNav.tsx",
       "src/design-system/m2/M2Parts.tsx",
+      "src/design-system/m2/M2SosButton.tsx",
       "src/design-system/m2/Gradient.tsx",
       "src/design-system/m2/servicePalette.ts",
       "src/screens/workspace/StudentPhoneFrame.tsx",
@@ -1962,6 +1965,7 @@
       "src/native/M2RefillScreens.tsx",
       "src/features/phoneKit/studentPhoneBoards.tsx",
       "src/design-system/m2/M2Parts.tsx",
+      "src/design-system/m2/M2SosButton.tsx",
       "src/design-system/m2/Gradient.tsx",
       "src/design-system/m2/servicePalette.ts",
       "src/screens/workspace/StudentPhoneFrame.tsx",
@@ -1978,7 +1982,8 @@
       "src/features/payments/views/PayStepView.tsx",
       "src/features/reminders/views/ReminderParts.tsx",
       "src/native/M2RefillScreens.tsx",
-      "src/design-system/m2/M2Parts.tsx"
+      "src/design-system/m2/M2Parts.tsx",
+      "src/design-system/m2/M2SosButton.tsx"
     ],
     "SetPasscode": [
       "src/features/auth/screens/SetPasscodeScreen.tsx",
@@ -2240,14 +2245,14 @@
       "by": [
         "M2Medicines"
       ],
-      "source": "design/screens/mobile-2-supersedes.md §1 (M2Medicines replaces ShopHome, ProductList)",
+      "source": "design/screens/mobile-2-supersedes.md \u00a71 (M2Medicines replaces ShopHome, ProductList)",
       "redirects": {}
     },
     "ProductDetail": {
       "by": [
         "M2Product"
       ],
-      "source": "design/screens/mobile-2-supersedes.md §1 (M2Product replaces ProductDetail)",
+      "source": "design/screens/mobile-2-supersedes.md \u00a71 (M2Product replaces ProductDetail)",
       "redirects": {}
     }
   },

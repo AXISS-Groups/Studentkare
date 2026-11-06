@@ -1,0 +1,296 @@
+[
+  {
+    "id": "campus-student-health-3l",
+    "category": "insurance",
+    "name": "Campus/Student Group Health Plan (3L cover)",
+    "description": "The kind of group health policy many Indian colleges and universities arrange (often mandatorily) for enrolled students, typically bundled into fees or offered as an opt-in group scheme via a TPA.",
+    "sum_insured_inr": 300000,
+    "annual_premium_range_inr": [800, 3000],
+    "price_basis": "approx market range for a college-arranged group student scheme, from general research; actual price is set by the college's tie-up insurer and TPA, not a public retail rate",
+    "key_features": [
+      "Hospitalization cover for illness and accidents during the academic term",
+      "Often includes OPD/dispensary visits and ambulance cover",
+      "Usually cashless at a TPA network of hospitals",
+      "Sometimes bundled with personal accident cover for the student"
+    ],
+    "typical_exclusions": [
+      "Pre-existing conditions (often with limited or no waiver given short policy terms)",
+      "Cosmetic treatment, dental/vision unless specifically covered",
+      "Treatment outside the policy period (e.g. during long vacations, in some schemes)",
+      "Self-inflicted injury, intoxication-related claims"
+    ],
+    "waiting_period_note": "Group/student schemes often have shorter or waived waiting periods versus retail individual plans, but this varies by institution and insurer; always check the specific college policy document"
+  },
+  {
+    "id": "individual-health-3l",
+    "category": "insurance",
+    "name": "Individual Health Insurance (3L cover)",
+    "description": "An entry-level individual (retail) health insurance policy for a single young adult, covering hospitalization expenses up to 3 lakh rupees.",
+    "sum_insured_inr": 300000,
+    "annual_premium_range_inr": [2500, 5000],
+    "price_basis": "approx market range for an 18-25 year old non-smoker, from general comparison articles and advisory pages",
+    "key_features": [
+      "In-patient hospitalization cover",
+      "Pre- and post-hospitalization expense cover (typically 30/60 days)",
+      "Cashless treatment at network hospitals",
+      "No-claim bonus / cumulative bonus increasing sum insured over renewal years",
+      "Daycare procedures covered"
+    ],
+    "typical_exclusions": [
+      "Pre-existing diseases for an initial waiting period",
+      "Cosmetic and dental procedures (non-accident related)",
+      "OPD consultations (unless a rider is bought)",
+      "Self-inflicted injury, substance abuse related treatment",
+      "Experimental or unproven treatments"
+    ],
+    "waiting_period_note": "Pre-existing conditions typically excluded for 2-4 years; specific illnesses (e.g. cataract, hernia) often have a 1-2 year waiting period; initial 30-day waiting period for non-accident claims"
+  },
+  {
+    "id": "individual-health-5l",
+    "category": "insurance",
+    "name": "Individual Health Insurance (5L cover)",
+    "description": "A commonly recommended starting sum-insured tier for a young, healthy adult buying their first individual health policy in India.",
+    "sum_insured_inr": 500000,
+    "annual_premium_range_inr": [4000, 8000],
+    "price_basis": "approx market range for an 18-25 year old non-smoker, from general comparison and advisory articles (not any single insurer's quoted price)",
+    "key_features": [
+      "In-patient hospitalization cover",
+      "Pre- and post-hospitalization expense cover",
+      "Cashless treatment at a large network of hospitals",
+      "Restoration/refill of sum insured after a claim in some plans",
+      "No-claim bonus increasing effective cover over time"
+    ],
+    "typical_exclusions": [
+      "Pre-existing diseases during the waiting period",
+      "Cosmetic, dental and vision care not arising from an accident",
+      "OPD and routine check-ups (unless rider/add-on purchased)",
+      "Maternity (usually excluded or requires a separate waiting period/rider)",
+      "Non-allopathic treatment limits unless an AYUSH cover is included"
+    ],
+    "waiting_period_note": "Pre-existing conditions typically excluded for 2-4 years; a 30-day initial waiting period applies to most non-accident claims; specific disease waiting periods of 1-2 years are common"
+  },
+  {
+    "id": "individual-health-10l",
+    "category": "insurance",
+    "name": "Individual Health Insurance (10L cover)",
+    "description": "A higher sum-insured individual plan, increasingly recommended given rising healthcare costs, even for young policyholders, to avoid being underinsured for serious illness.",
+    "sum_insured_inr": 1000000,
+    "annual_premium_range_inr": [6000, 12000],
+    "price_basis": "approx market range for an 18-25 year old non-smoker, from general comparison and advisory articles",
+    "key_features": [
+      "Higher in-patient and post-hospitalization cover limits",
+      "Wider sub-limits or no sub-limits on room rent in many plans",
+      "Cashless network across most major hospitals",
+      "Often includes free annual health check-ups",
+      "May include modern/advanced treatment cover (e.g. robotic surgery) in some plans"
+    ],
+    "typical_exclusions": [
+      "Pre-existing diseases during waiting period",
+      "Cosmetic and elective procedures",
+      "OPD unless an add-on is purchased",
+      "Unproven/experimental treatments",
+      "Claims arising from war, nuclear risk, or self-inflicted harm"
+    ],
+    "waiting_period_note": "Pre-existing conditions typically excluded for 2-4 years; standard 30-day initial waiting period; specific ailment waiting periods of 1-2 years are common"
+  },
+  {
+    "id": "family-floater-5l",
+    "category": "insurance",
+    "name": "Family Floater Health Plan (5L cover)",
+    "description": "A single policy covering a student and immediate family members (e.g. parents or siblings) under one shared sum insured, often more cost-effective than separate individual policies when the family is young and healthy.",
+    "sum_insured_inr": 500000,
+    "annual_premium_range_inr": [8000, 18000],
+    "price_basis": "approx market range for a young family (2-4 members, youngest adult 18-25) from general comparison articles; premium depends heavily on the eldest member's age",
+    "key_features": [
+      "Shared sum insured usable by any covered family member",
+      "Pre- and post-hospitalization cover",
+      "Often cheaper per head than buying individual policies for each member",
+      "Cashless treatment at network hospitals",
+      "No-claim bonus benefits the whole floater"
+    ],
+    "typical_exclusions": [
+      "Pre-existing diseases during waiting period for each member",
+      "Cosmetic and dental procedures",
+      "OPD unless rider purchased",
+      "One member's large claim can deplete the shared sum insured for the whole family in that year"
+    ],
+    "waiting_period_note": "Pre-existing conditions typically excluded for 2-4 years per member; premium and waiting-period terms are generally driven by the oldest insured member's age and health, not the student's"
+  },
+  {
+    "id": "critical-illness-cover",
+    "category": "insurance",
+    "name": "Critical Illness Cover",
+    "description": "A lump-sum payout policy that pays a fixed amount on diagnosis of a listed serious illness (e.g. cancer, major organ failure, stroke), separate from and in addition to a regular hospitalization policy.",
+    "sum_insured_inr": 1000000,
+    "annual_premium_range_inr": [1200, 4000],
+    "price_basis": "approx market range for a young adult for a 10L lump-sum critical-illness benefit, from general comparison articles; cheaper entry plans with 1L cover exist for under Rs. 1,500/year",
+    "key_features": [
+      "One-time lump-sum payout on first diagnosis of a covered critical illness",
+      "Payout can be used for treatment, income replacement, or any purpose",
+      "Usually covers a defined list of illnesses (commonly 8-20+ conditions depending on plan)",
+      "Can be bought as a standalone policy or as a rider on a base health policy"
+    ],
+    "typical_exclusions": [
+      "Illnesses not on the policy's specific covered list",
+      "Pre-existing/previously diagnosed conditions",
+      "Survival period clause: no payout if the insured does not survive a specified number of days (commonly 15-30 days) after diagnosis",
+      "Illnesses diagnosed within the initial waiting period (commonly 90 days)"
+    ],
+    "waiting_period_note": "Typically a 90-day initial waiting period from policy start before any diagnosis is payable; survival period clauses (commonly 15-30 days post-diagnosis) also apply"
+  },
+  {
+    "id": "personal-accident-cover",
+    "category": "insurance",
+    "name": "Personal Accident Cover",
+    "description": "A policy that pays a lump sum or income benefit for accidental death, permanent total/partial disability, or (on some plans) temporary total disability — common for students doing internships, travel, sports, or two-wheeler commuting.",
+    "sum_insured_inr": 500000,
+    "annual_premium_range_inr": [300, 1500],
+    "price_basis": "approx market range for a young adult for roughly 5L accidental cover, from general comparison and advisory articles; personal accident premiums are generally low relative to health cover",
+    "key_features": [
+      "Lump-sum payout for accidental death or permanent disability",
+      "Partial payouts on a defined scale for specific disabilities (e.g. loss of limb, eyesight)",
+      "Some plans include weekly compensation for temporary total disability",
+      "Often available as a rider on a health policy or standalone",
+      "Low premium relative to sum insured since it covers accidents only, not illness"
+    ],
+    "typical_exclusions": [
+      "Death or disability from illness (not accident-related)",
+      "Suicide or self-inflicted injury",
+      "Accidents while under the influence of alcohol/drugs",
+      "Participation in hazardous sports/activities unless specifically covered",
+      "War, riot, or nuclear-related incidents"
+    ],
+    "waiting_period_note": "Personal accident covers are typically event-based (accident must occur after the policy start date) rather than having long pre-existing-condition style waiting periods"
+  },
+  {
+    "id": "opd-outpatient-addon",
+    "category": "insurance",
+    "name": "OPD / Outpatient Add-on Cover",
+    "description": "An add-on or rider (rarely sold standalone) that reimburses outpatient expenses not covered by standard hospitalization policies — doctor consultations, diagnostics, pharmacy, and dental/vision check-ups.",
+    "sum_insured_inr": 10000,
+    "annual_premium_range_inr": [500, 2500],
+    "price_basis": "approx market range for an OPD rider with roughly 10,000-25,000 annual OPD limit, from general comparison articles; pricing varies widely by insurer and sub-limits",
+    "key_features": [
+      "Reimbursement or cashless cover for doctor consultations",
+      "Diagnostic tests (blood work, imaging) cover",
+      "Pharmacy/medicine expense reimbursement",
+      "Dental and vision check-up cover in some plans",
+      "Often available only as an add-on to a base individual or family floater policy"
+    ],
+    "typical_exclusions": [
+      "Cosmetic consultations/treatments",
+      "Expenses beyond the annual OPD sub-limit",
+      "Alternative medicine consultations unless specifically included",
+      "Pre-existing chronic condition management in some plans"
+    ],
+    "waiting_period_note": "OPD add-ons commonly have their own waiting period (often 30-90 days) separate from the base policy's hospitalization waiting periods"
+  },
+  {
+    "id": "topup-health-plan",
+    "category": "insurance",
+    "name": "Top-up Health Insurance Plan",
+    "description": "A policy that activates only after a single hospitalization claim exceeds a defined 'deductible' threshold, used to cheaply raise total cover above a base policy on a per-claim basis.",
+    "sum_insured_inr": 1000000,
+    "annual_premium_range_inr": [1500, 4000],
+    "price_basis": "approx market range for a 10L top-up with a deductible of roughly 3-5L, for a young adult, from general comparison articles",
+    "key_features": [
+      "Large additional sum insured at a fraction of an equivalent base policy's premium",
+      "Deductible applies per claim/hospitalization event, not cumulatively across the year",
+      "Can be combined with an employer-provided or base individual policy",
+      "Useful for raising effective cover cheaply once past the deductible threshold"
+    ],
+    "typical_exclusions": [
+      "Any single claim below the deductible is not paid at all",
+      "Pre-existing disease waiting periods similar to base policies",
+      "OPD and non-hospitalization expenses",
+      "Pre-existing conditions during waiting period"
+    ],
+    "waiting_period_note": "Pre-existing conditions typically excluded for 2-4 years, similar to base individual policies; the deductible resets each policy year"
+  },
+  {
+    "id": "super-topup-health-plan",
+    "category": "insurance",
+    "name": "Super Top-up Health Insurance Plan",
+    "description": "Similar to a top-up plan but the deductible is applied on an aggregate basis across all hospitalizations in the policy year, not per single claim, making it pay out more readily after multiple smaller claims.",
+    "sum_insured_inr": 1000000,
+    "annual_premium_range_inr": [2000, 5000],
+    "price_basis": "approx market range for a 10L super top-up with a deductible of roughly 3-5L, for a young adult, from general comparison and advisory articles",
+    "key_features": [
+      "Deductible is calculated cumulatively across all claims in the policy year, not per event",
+      "Large additional sum insured at lower cost than an equivalent full base policy",
+      "Commonly recommended as a cost-efficient way to scale up cover over a base/family floater plan",
+      "Can often be bought independent of insurer of the base policy"
+    ],
+    "typical_exclusions": [
+      "Total claims in the year below the aggregate deductible are not paid",
+      "Pre-existing disease waiting periods similar to base policies",
+      "OPD and non-hospitalization expenses typically excluded",
+      "Maternity typically excluded or capped"
+    ],
+    "waiting_period_note": "Pre-existing conditions typically excluded for 2-4 years; deductible is tracked on a rolling/aggregate basis for the policy year, resetting at renewal"
+  },
+  {
+    "id": "student-travel-health-cover",
+    "category": "insurance",
+    "name": "Student Travel/Study-Abroad Health Cover",
+    "description": "A specialised policy for students travelling or studying outside India, combining overseas medical/hospitalization cover with trip-related benefits (baggage loss, study interruption, sponsor protection) and often required by the destination country's visa process.",
+    "sum_insured_inr": 5000000,
+    "annual_premium_range_inr": [8000, 25000],
+    "price_basis": "approx market range for a one-year overseas student health/travel policy, from general study-abroad advisory articles; actual cost depends heavily on destination country and duration",
+    "key_features": [
+      "Overseas emergency medical and hospitalization cover",
+      "Study interruption / loss of tuition fee cover in some plans",
+      "Sponsor protection cover if the paying sponsor becomes unable to pay",
+      "Baggage delay/loss and passport loss cover",
+      "Often meets visa-mandated minimum insurance requirements for study-abroad destinations"
+    ],
+    "typical_exclusions": [
+      "Pre-existing conditions unless specifically declared and accepted",
+      "Treatment in a country other than the one declared on the policy",
+      "Elective or cosmetic treatment",
+      "Claims after the policy/visa period has lapsed",
+      "Mental health treatment beyond a capped limit in many plans"
+    ],
+    "waiting_period_note": "Many study-abroad policies have minimal or no waiting period for acute illness/accidents given the short, fixed term, but pre-existing conditions are generally excluded unless separately declared and underwritten"
+  },
+  {
+    "id": "maternity-addon-rider",
+    "category": "insurance",
+    "name": "Maternity Cover Add-on",
+    "description": "An add-on or rider to a base health/family-floater policy that covers delivery and related maternity expenses, relevant to married students or young married couples rather than to typical single student cover.",
+    "sum_insured_inr": 100000,
+    "annual_premium_range_inr": [1500, 5000],
+    "price_basis": "approx market range for a maternity rider add-on premium on a base policy, from general comparison articles",
+    "key_features": [
+      "Covers normal and C-section delivery expenses up to a sub-limit",
+      "Pre- and post-natal consultation cover in some plans",
+      "Newborn baby cover for a limited period after birth in some plans"
+    ],
+    "typical_exclusions": [
+      "Only available after a long waiting period (commonly 2-4 years) from the policy/rider start",
+      "Complications beyond the maternity sub-limit",
+      "Fertility treatment and related procedures (usually excluded entirely)"
+    ],
+    "waiting_period_note": "Maternity cover typically requires a waiting period of 2-4 years of continuous policy renewal before becoming claimable"
+  },
+  {
+    "id": "opd-dental-vision-addon",
+    "category": "insurance",
+    "name": "Dental & Vision Add-on Cover",
+    "description": "A narrow add-on covering routine dental and vision expenses (check-ups, cleaning, spectacles/lenses) that standard hospitalization policies generally exclude.",
+    "sum_insured_inr": 15000,
+    "annual_premium_range_inr": [400, 1200],
+    "price_basis": "approx market range for a dental/vision rider, from general comparison articles; sold bundled with OPD riders in many plans",
+    "key_features": [
+      "Routine dental check-up and minor procedure cover",
+      "Spectacles/contact lens reimbursement up to a sub-limit",
+      "Often bundled into a broader OPD add-on rather than sold alone"
+    ],
+    "typical_exclusions": [
+      "Cosmetic dental procedures (e.g. whitening, veneers)",
+      "Orthodontic treatment (braces) usually excluded or heavily capped",
+      "Expenses beyond the annual sub-limit"
+    ],
+    "waiting_period_note": "Commonly has its own waiting period (often 30-90 days), separate from the base policy's waiting periods"
+  }
+]

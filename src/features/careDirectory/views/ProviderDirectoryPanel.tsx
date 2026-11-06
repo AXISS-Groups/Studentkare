@@ -3,7 +3,15 @@ import { Icon } from '@/design-system/icons';
 import { useApiResource } from '@/hooks/api/useApiResource';
 import { DataState, EmptyState, Field } from '@/components/interface/WorkflowUI';
 import { useT } from '@/i18n';
+import '@/theme/workflows.css';
 
+/**
+ * Nearby-provider lookup by pincode (pharmacies or labs), shown from the
+ * vault's "who can see" / directory tab. Moved out of
+ * screens/workspace/FulfilmentQueuePanel.tsx (architecture guardrail, phase
+ * 3): it is a standalone lookup, not part of the fulfilment queue, so it does
+ * not need to live alongside PharmacyQueuePanel/LabQueuePanel in screens/.
+ */
 export function ProviderDirectoryPanel({ kind }: { kind: 'PHARMACY' | 'LAB' }) {
   const t = useT();
   const [pincode, setPincode] = useState('');
@@ -17,7 +25,7 @@ export function ProviderDirectoryPanel({ kind }: { kind: 'PHARMACY' | 'LAB' }) {
     <div className="wf-panel-heading"><div>
       <span className="care-eyebrow">{kind === 'PHARMACY' ? t('admin.fulfil.nearbyPharmacies') : t('admin.fulfil.nearbyLabs')}</span>
       <h3 style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        {kind === 'LAB' ? <Icon name="flask" size={20} /> : null}
+        {kind === 'PHARMACY' ? <Icon name="pill" size={20} /> : <Icon name="flask" size={20} />}
         {t('admin.fulfil.findNear')}
       </h3>
     </div></div>
@@ -28,7 +36,7 @@ export function ProviderDirectoryPanel({ kind }: { kind: 'PHARMACY' | 'LAB' }) {
       </Field>
       <button className="health-button health-button-primary" type="submit"
         disabled={!/^[1-9][0-9]{5}$/.test(pincode)} style={{ minHeight: 44 }}>
-        {t('admin.audit.search')}
+        <Icon name="box" size={16} />{t('admin.audit.search')}
       </button>
     </form>
 

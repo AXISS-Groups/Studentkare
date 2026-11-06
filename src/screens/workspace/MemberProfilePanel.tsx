@@ -13,7 +13,6 @@ import { ProfileForm } from '@/features/m2profile/views/ProfileForm';
 import { useT } from '@/i18n';
 import '@/features/m2profile/views/member-profile.css';
 
-
 type ProfileTab = 'profile' | 'plan' | 'digital-id' | 'insurance' | 'orders' | 'campus' | 'support';
 
 export function MemberProfilePanel({ initialTab = 'profile' }: { initialTab?: 'profile' | 'plan' | 'digital-id' | 'insurance' }) {

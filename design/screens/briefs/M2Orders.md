@@ -11,7 +11,7 @@
 
 ## Icons this screen must show (all of them)
 
-- **Line / solid icons (8):** `ayush-spark`, `box`, `first-aid-kit`, `heart-3`, `home`, `home-2`, `scooter`, `user-5`
+- **Line / solid icons (11):** `ayush-spark`, `box`, `chevron-right`, `download`, `first-aid-kit`, `heart-3`, `home`, `home-2`, `message-circle`, `scooter`, `user-5`
 - **3D icon tiles (0):** —
 - **Small glyphs (0):** —
 - **Brand mark:** —
@@ -36,6 +36,12 @@ Past tab: three cards (Cetirizine and ORS · Delivered; Complete blood count · 
 ## Tier
 
 Tier 2 (orders and tracking). The handover code is a delivery code, not the check-in pass.
+
+## Design changes (founder, 2026-11-04): "Need help" row + invoice link (Tata 1mg sweep)
+
+- Active order card: a "Need help with this order?" row added under the tracking timeline, linking to Profile/Help (same destination as the header's existing "Help" button) — matches Tata's post-purchase support access.
+- Past order cards: a third "Invoice" action (download icon) added next to "Buy again"/"Return" for the two purchased items (Cetirizine and ORS; Vitamin D3 60K); the lab-report item ("Complete blood count") correctly has no invoice action, since it was never a paid delivery on this board.
+- Uses `message-circle` (same path as `M2Medicines.md`'s "Chat to order") and `download` from the manifest; `chevron-right` reused for the row's trailing arrow.
 
 ## Missing icons
 

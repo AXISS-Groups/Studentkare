@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | Canvas page | 9 · Mobile 2.0 (approved 2026-10-21) |
-| Platform / frame | Phone · 390×1400 |
+| Platform / frame | Phone · 390×1560 |
 | Tier | 1 |
 | Ticket(s) | SK-042 |
 | Picture | `design/screens/screenshots/10-mobile-2/M2Vaccines.jpg` |
@@ -40,6 +40,12 @@ Tier 1 under DESIGN.md §5: "Your vaccine record" shows the student's own doses 
 ## Design changes (founder, 2026-10-21)
 
 - Hero is `service-amber-deep` → `service-amber-shade` with white text and art (the yellow-to-brown hero put dark text on a 3.1:1 end). The selected vaccine badge and "Pick a slot" use the same pair.
+
+## Design changes (founder, 2026-11-04): "About the [vaccine] vaccine" FAQ (Tata 1mg sweep)
+
+- New accordion between the booking card and "How it works": "Common side effects" and "Who should check with a doctor first," generic per selected vaccine (same pattern as `M2Product.md`'s "About this medicine"). This is general vaccine information, not personalised: it doesn't read the student's own record (the Tier-1 "Your vaccine record" section above is untouched), and the source line makes clear a nurse still checks against the student's own history before giving it.
+- Booking is already Tier 2 per this brief's own Tier note; the record section (Tier 1) wasn't touched, so this addition proceeded under the same standing Tier-1 waiver noted on `M2Insights.md`/`M2Product.md` out of caution, even though nothing clinical or personal was added.
+- Board height moved from 1400 to 1560 (div + `$preview`) for the new section; verified via render, well-clear of the bottom nav.
 
 ## Missing icons
 

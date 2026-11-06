@@ -10,6 +10,7 @@
     "PAYMENT_MOCK_SIGNING_KEY": "Mock payment gateway only; production refuses PAYMENT_PROVIDER=mock.",
     "SCHEDULER_IN_PROCESS": "Production runs the separate worker; enabling this in the API replicas would double-run jobs.",
     "SEED_DEMO_DATA": "Demo seeding is refused unless APP_ENV is development/testing.",
+    "SEED_OPEN_DATA": "Dev site open-data loader only (scripts/open_data.py); refused unless APP_ENV is development/testing.",
     "SEED_SCENARIOS": "Staging seeding script only; refused unless APP_ENV=testing."
   },
   "backendDynamicReads": {

@@ -1,0 +1,1 @@
+export { DigitalIdPage } from './DigitalIdPage';

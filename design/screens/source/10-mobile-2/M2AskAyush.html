@@ -101,7 +101,7 @@ class Component extends DCLogic {
       thread: s.msgs.map((m, i) => ({ text: m.text,
         wrap: 'display: flex; justify-content: ' + (m.me ? 'flex-end' : 'flex-start') + '; animation: skRise .35s ' + (i * 0.08) + 's both;',
         bubble: 'max-width: 270px; padding: 11px 14px; font-size: 13.5px; line-height: 19px; font-weight: 600; ' + (m.me ? 'border-radius: 20px 20px 6px 20px; background: linear-gradient(150deg, #2B20C9, #0C0494); color: #FFFFFF;' : 'border-radius: 20px 20px 20px 6px; background: #FFFFFF; color: #131B2E; box-shadow: 0 4px 14px rgba(12,4,148,.06);') })),
-      suggestions: ['What changed since last time?', 'Explain my lipid profile', 'Which tests are due?', 'What did my doctor write?'].map((k) => ({ k, ask: () => this.ask(k) }))
+      suggestions: ['What changed since last time?', 'Explain my lipid profile', 'Which tests are due?', 'What did my doctor write?', 'What does HDL mean?', 'Is my HbA1c serious?'].map((k) => ({ k, ask: () => this.ask(k) }))
     };
   }
 }

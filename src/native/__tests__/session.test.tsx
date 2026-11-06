@@ -6,6 +6,11 @@ import { destinationsFor } from '../homeDestinations';
 import * as http from '@/data/services/http';
 import type { Account } from '@/data/types/workflowTypes';
 
+vi.mock('../hardware/push', () => ({
+  stopPushOnSignOut: vi.fn(),
+  pushDevice: { start: vi.fn(), stop: vi.fn() },
+}));
+
 const student: Account = {
   id: 'a1', fullName: 'Asha Rao', role: 'STUDENT', email: 'a@b.edu', phone: '', dob: '', university: '',
   rollNumber: '', bloodGroup: '', ageVerified: true, isVerifiedStudent: false,

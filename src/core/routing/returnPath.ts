@@ -5,5 +5,5 @@ import type { RoutePath } from '@/lib/utils/workflowRouting';
 export function readReturnPath(search: string): RoutePath | null {
   const values = new URLSearchParams(search).getAll('next');
   const value = values[0];
-  return values.length === 1 && isRoutePath(value) && !publicRoutes.includes(value) ? value : null;
+  return values.length === 1 && value !== '' && isRoutePath(value) && !publicRoutes.includes(value) ? value : null;
 }

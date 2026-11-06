@@ -11,6 +11,8 @@ import { navigate } from '@/lib/utils/workflowRouting';
 import type { RoutePath } from '@/lib/utils/workflowRouting';
 import { STUDENT_NAV_ROUTES } from '@/features/phoneKit/studentNavRoutes';
 
+export { STUDENT_NAV_ROUTES };
+
 /** The store boards opened from Home's rail: the boards draw Home as current there. */
 const HOME_STORE_ROUTES: ReadonlySet<RoutePath> = new Set<RoutePath>([
   // keep-sorted start

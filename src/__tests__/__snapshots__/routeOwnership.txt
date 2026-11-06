@@ -2,6 +2,7 @@
 # path | module | page component | anonymous STUDENT SUPER_ADMIN CAMPUS_ADMIN COUNSELLOR VENDOR NMC_DOCTOR LAB_COLLECTOR
 # page = renders the page; login = redirect to /login?next=…; home:/x = redirect to that role's home.
 /login | auth | AuthRouteScreen | page page page page page page page page
+/auth/login | auth | AuthRouteScreen | page page page page page page page page
 /signup | auth | AuthRouteScreen | page page page page page page page page
 /welcome | auth | WelcomeFlowView | page page page page page page page page
 /account-ready | auth | AccountReadyScreen | login page page page page page page page
@@ -40,6 +41,8 @@
 /blog/:slug | care | BlogPostScreen | page page page page page page page page
 /news | care | NewsScreen | page page page page page page page page
 /news/:slug | care | NewsPostScreen | page page page page page page page page
+/series | care | SeriesListScreen | page page page page page page page page
+/series/:slug | care | SeriesScreen | page page page page page page page page
 /checkout | care | CareScreen | login page page page page page page page
 /lifeshare | care | LifeShareExchangeScreenUnwrapped | page page page page page page page page
 /medical-incident | care | MedicalIncidentScreen | page page page page page page page page

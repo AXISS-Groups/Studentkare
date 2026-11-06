@@ -17,6 +17,14 @@ const editableProfile = (profile: MemberProfile) => ({
   allergies: profile.allergies.join('\n'), chronicConditions: profile.chronicConditions.join('\n'),
 });
 
+/**
+ * The student's editable profile form, with the identity/emergency-contact
+ * fields and the printable emergency card. Moved out of
+ * screens/workspace/MemberProfilePanel.tsx (architecture guardrail, phase 3):
+ * AccountDetailsCard (Profile's Edit drawer) was its only feature-layer
+ * consumer, and it does not depend on anything else private to
+ * MemberProfilePanel.tsx.
+ */
 export function ProfileForm({ initial, onOpenDigitalId }: { initial: MemberProfile; onOpenDigitalId: () => void }) {
   const t = useT();
   const { updateUser } = useAuth();

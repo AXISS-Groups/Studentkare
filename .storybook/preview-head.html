@@ -1,4 +1,14 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@500;700;800&display=swap" rel="stylesheet">
-<style>body { background: var(--sk-color-canvas); }</style>
+<style>body { background: var(--sk-color-canvas); }
+/* The 4 illustration-sparkline-* assets (design/illustrations/*.svg) ship with
+   a CSS line-draw animation keyed to "skDraw", but that keyframe is defined only
+   in src/features/landing/views/landing.css. Outside the Landing page (e.g. the
+   VitalTrends preview, a student-app phone screen) the animation never plays —
+   stroke-dashoffset stays at its initial value and only the endpoint dot shows.
+   Same keyframe, defined once here so any Storybook story using these renders
+   correctly. If VitalTrends is ever built for real outside Landing, the real app
+   needs this keyframe loaded globally too, not just here. */
+@keyframes skDraw { to { stroke-dashoffset: 0; } }
+</style>

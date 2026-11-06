@@ -24,7 +24,7 @@ a:focus-visible,button:focus-visible{outline:3px solid #6D5BFF;outline-offset:3p
 @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
 </style>
 </helmet>
-<div style="width: 390px; height: 1400px; box-sizing: border-box; background: #FAF8FF; position: relative; overflow: hidden;">
+<div style="width: 390px; height: 1620px; box-sizing: border-box; background: #FAF8FF; position: relative; overflow: hidden;">
 
   <section style="position: relative; padding: 18px 20px 26px; border-radius: 0 0 36px 36px; background: linear-gradient(160deg, #2B20C9 0%, #0C0494 100%); color: #FFFFFF; overflow: hidden;">
     <span aria-hidden="true" style="position: absolute; top: -70px; right: -60px; width: 220px; height: 220px; border-radius: 999px; background: rgba(255,255,255,.08); animation: skFloat 7s ease-in-out infinite;"></span>
@@ -112,7 +112,7 @@ a:focus-visible,button:focus-visible{outline:3px solid #6D5BFF;outline-offset:3p
   </nav>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1400}}'>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1620}}'>
 class Component extends DCLogic {
   constructor(props) { super(props); this.state = { ayush: true, share: false }; }
   renderVals() {
@@ -127,6 +127,7 @@ class Component extends DCLogic {
       { k: 'Share with family', v: 'Optional · adults only · coming soon', icon: 'M16 11a4 4 0 1 0-8 0M3 21a9 9 0 0 1 18 0', bg: '#EEF2FF', stroke: '#0C0494', sw: 'share' },
       { k: 'Addresses', v: 'Hostel B, Room 214', icon: 'M12 21s-7-6.2-7-12a7 7 0 0 1 14 0c0 5.8-7 12-7 12zM12 11a2 2 0 1 0 0-4 2 2 0 0 0 0 4z', bg: '#FFF7ED', stroke: '#C2410C' },
       { k: 'Orders and payments', v: 'Medicines, lab tests, plans', icon: 'M3 7h18v12H3zM3 11h18', bg: '#F5F3FF', stroke: '#6D28D9' },
+      { k: 'Connect a device', v: 'Apple Health, Health Connect, or a wearable', icon: 'M3 5h13v10H3zM15 9h6v11h-6zM6 19h7', bg: '#ECFEFF', stroke: '#0E7490' },
       { k: 'Language', v: 'English · తెలుగు · हिन्दी', icon: 'M4 5h10M9 3v2M6 5c1 4 4 7 8 8M12 5c-1 4-4 7-8 8M14 21l4-9 4 9M15.5 18h5', bg: '#EFF6FF', stroke: '#1D4ED8' },
       { k: 'Privacy and data', v: 'Download or delete your data', icon: 'M7 11V7a5 5 0 0 1 10 0v4M5 11h14v10H5z', bg: '#F1F5F9', stroke: '#334155' },
       { k: 'Help and support', v: 'Chat, call or email us', icon: 'M12 21a9 9 0 1 0-9-9c0 1.6.4 3.1 1.2 4.4L3 21l4.6-1.2A9 9 0 0 0 12 21z', bg: '#ECFEFF', stroke: '#0E7490' }
