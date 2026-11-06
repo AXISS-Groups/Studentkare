@@ -264,6 +264,19 @@ def upload_platform_asset(
     if len(content) > 3 * 1024 * 1024:
         raise HTTPException(413, "Asset file must be 3 MB or smaller.")
 
+    # The real type comes from the bytes, never the client's declared
+    # Content-Type: this asset is served back to every visitor, so trusting
+    # a declared type would let an attacker who can reach this endpoint make
+    # the browser interpret the response as something other than an image.
+    from services.upload_files import sniff_and_sanitize_svg, sniff_mime
+    mime = sniff_mime(content)
+    if mime is None:
+        sanitized_svg = sniff_and_sanitize_svg(content)
+        if sanitized_svg is not None:
+            mime, content = "image/svg+xml", sanitized_svg
+    if mime is None:
+        raise HTTPException(400, "Asset must be a PNG, JPEG, WEBP, ICO or SVG image.")
+
     # Virus scanning
     from services.security_scanner import scan_file_for_viruses
     scan_file_for_viruses(content)
@@ -272,7 +285,6 @@ def upload_platform_asset(
     import uuid
     doc_id = f"asset_{asset_type}_{uuid.uuid4().hex[:12]}"
     filename = file.filename or f"{asset_type}.png"
-    mime = file.content_type or "image/png"
 
     doc = M.CareDocument(
         id=doc_id,

@@ -20,6 +20,8 @@ WEBP = "image/webp"
 HEIC = "image/heic"
 HEIF = "image/heif"
 TIFF = "image/tiff"
+ICO = "image/x-icon"
+SVG = "image/svg+xml"
 
 # Formats the vault and lab reports have always taken.
 DOCUMENT_TYPES = frozenset({PDF, PNG, JPEG})
@@ -52,7 +54,46 @@ def sniff_mime(content: bytes) -> str | None:
         return None
     if content.startswith((b"II*\x00", b"MM\x00*")):
         return TIFF
+    if content.startswith((b"\x00\x00\x01\x00", b"\x00\x00\x02\x00")):  # ICO, CUR
+        return ICO
     return None
+
+
+# Elements/attributes that let an SVG carry a payload instead of just a picture.
+_SVG_DANGEROUS_TAGS = re.compile(
+    r"<\s*(script|foreignObject|iframe|embed|object|set|animate)\b.*?(?:/\s*>|>.*?<\s*/\s*\1\s*>)",
+    re.IGNORECASE | re.DOTALL,
+)
+_SVG_EVENT_ATTR = re.compile(r"\s+on[a-z]+\s*=\s*(\"[^\"]*\"|'[^']*'|[^\s>]+)", re.IGNORECASE)
+_SVG_JS_URI = re.compile(r"(href|xlink:href)\s*=\s*(\"|')\s*javascript:[^\"']*\2", re.IGNORECASE)
+_SVG_ROOT_TAG = re.compile(r"<svg[\s>]", re.IGNORECASE)
+_SVG_DOCTYPE_ENTITY = re.compile(r"<!DOCTYPE[^>]*\[.*?\]\s*>", re.IGNORECASE | re.DOTALL)
+
+
+def sniff_and_sanitize_svg(content: bytes) -> bytes | None:
+    """If `content` looks like an SVG, strip anything that would make it a
+    script carrier (inline <script>, foreignObject/iframe/embed/object, SMIL
+    `<set>`/`<animate>` attribute hijacking, `on*` event handlers, `javascript:`
+    URIs, and a DOCTYPE with an internal entity subset) and return the result.
+    Returns None if this isn't recognisable as SVG at all — an SVG whose
+    payload *is* its only content (all tags stripped) still comes back as
+    sanitized markup, not a reject, same as any other format here only
+    checking the type, not the content.
+    """
+    try:
+        text = content.decode("utf-8")
+    except UnicodeDecodeError:
+        return None
+    head = text[:4096]
+    if "<svg" not in head.lower() and "<?xml" not in head.lower():
+        return None
+    if not _SVG_ROOT_TAG.search(text):
+        return None
+    cleaned = _SVG_DOCTYPE_ENTITY.sub("", text)
+    cleaned = _SVG_DANGEROUS_TAGS.sub("", cleaned)
+    cleaned = _SVG_EVENT_ATTR.sub("", cleaned)
+    cleaned = _SVG_JS_URI.sub("", cleaned)
+    return cleaned.encode("utf-8")
 
 
 def read_capped(file: BinaryIO, max_bytes: int, message: str) -> bytes:
