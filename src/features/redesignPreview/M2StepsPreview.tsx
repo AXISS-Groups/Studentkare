@@ -1,11 +1,9 @@
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { Icon } from '@/design-system/icons';
-import { color, focusRing, font, fontWeight, radius, space } from '@/design-system/theme';
+import { color, font, fontWeight, radius, space } from '@/design-system/theme';
 import { M2Card, M2HeroPanel, M2Note, m2Text } from '@/design-system/m2';
-import type { PressState } from '@/design-system/m2';
 
-const noop = () => undefined;
 const BARS = [4200, 3100, 5600, 2800, 4900, 0, 0];
 const DAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 const MAX = 6000;

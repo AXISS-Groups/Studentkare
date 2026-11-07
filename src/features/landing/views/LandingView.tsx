@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import { useAuth } from '@/data/contexts/AuthContext';
-import { useLocation } from '@/core/navigation';
+import React, { useContext, useEffect, useState } from 'react';
+import { AuthContext } from '@/data/contexts/AuthContext';
+import { useInRouterContext, useLocation } from '@/core/navigation';
 import { ScreenLoading } from '@/design-system/feedback/ScreenLoading';
 import { WorkspaceRouteScreen } from '@/features/health/screens/WorkspaceRouteScreen';
 import { useApiResource } from '@/hooks/api/useApiResource';
@@ -112,14 +112,7 @@ function packIcon(pack: string): SkIconName {
  * perspectives articles (none is published, so the topics say so) and the
  * store badges and scan code (nothing is listed in either store).
  */
-export function LandingView(): React.ReactElement {
-  const { user, status } = useAuth();
-  const location = useLocation();
-
-  if (location.pathname === '/' || location.pathname === '') {
-    if (status === 'loading') return <ScreenLoading />;
-    if (user) return <WorkspaceRouteScreen />;
-  }
+function LandingContent(): React.ReactElement {
   const t = useT();
   const catalog = useApiResource<Catalog>('/catalog?limit=6');
   const labCatalog = useApiResource<Catalog>('/catalog?kind=lab&limit=4');
@@ -578,6 +571,25 @@ function LwBrandHeading(): React.ReactElement {
 }
 
 /** Paise to rupees. Integer paise in, no floating-point money arithmetic. */
+
+function RoutedLanding(): React.ReactElement {
+  const auth = useContext(AuthContext);
+  const location = useLocation();
+  if (location.pathname === '/' || location.pathname === '') {
+    if (auth?.status === 'loading') return <ScreenLoading />;
+    if (auth?.user) return <WorkspaceRouteScreen />;
+  }
+  return <LandingContent />;
+}
+
+export function LandingView(): React.ReactElement {
+  const inRouter = useInRouterContext();
+  if (inRouter) {
+    return <RoutedLanding />;
+  }
+  return <LandingContent />;
+}
+
 export function rupees(paise: number): string {
   const whole = Math.trunc(paise / 100);
   const remainder = Math.abs(paise % 100);

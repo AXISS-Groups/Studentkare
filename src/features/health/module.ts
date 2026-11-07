@@ -7,6 +7,7 @@ import type { AccountRole } from '@/data/types/workflowTypes';
 const hasRole = (...roles: AccountRole[]) => (role: AccountRole | null): boolean => (role ? roles.includes(role) : false);
 
 const workspacePaths: { path: string; access?: (role: AccountRole | null) => boolean; public?: boolean }[] = [
+  { path: '/dashboard', access: hasRole('STUDENT') },
   { path: '/health' },
   { path: '/profile' },
   { path: '/billing' },

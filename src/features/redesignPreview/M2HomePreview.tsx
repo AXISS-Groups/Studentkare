@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Icon } from '@/design-system/icons';
 import { color, focusRing, font, fontWeight, radius, space } from '@/design-system/theme';
 import {
-  M2Card, M2SearchField, M2_BOTTOM_SPACE, PillNav, RoundButton, ServiceRail, SoftTileGrid, m2Text, webAttrs,
+  M2Card, M2SearchField, PillNav, RoundButton, ServiceRail, SoftTileGrid, m2Text, webAttrs,
 } from '@/design-system/m2';
 import type { PressState, SoftTileItem } from '@/design-system/m2';
 

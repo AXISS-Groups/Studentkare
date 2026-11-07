@@ -333,7 +333,7 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
   const deleteAccountLinks = { exportData: () => navigate('data-export'), crisis: () => navigate('sos'), leaveCampus: () => navigate('leave-campus'), security: () => navigate('security'), support: () => navigate('support') };
   const studentWebPage = (): React.ReactNode => {
     if (user.role !== 'STUDENT') return null;
-    // One home (founder decision, 23 Oct 2026): /home is retired for a student; Home is /health, as on the phone.
+    // Dashboard is /dashboard; /health remains the separate health overview.
     // Medications is Medicines today (founder decision, 23 Oct 2026).
     if (route === 'medications') return <Navigate to="/health/medicines" replace />;
     if (route === 'buy-again') return <WebReorderView />;
@@ -348,8 +348,9 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
     switch (route) {
       // Home above phone width is Mobile 2.0 Home laid out wide (parity phase 2), as the phone draws it.
       case '':
-      case 'home':
-      case 'health': return <M2HomeRoute wide />;
+      case 'home': return <M2HomeRoute wide />;
+      case 'dashboard': return <M2HomeRoute wide />;
+      case 'health': return <MemberOverview />;
       case 'orders': return <WebOrdersHub />;
       // The one notifications inbox, opened from the bell: the phone's inbox in the page column.
       case 'notifications': return <NotificationsPage />;
@@ -504,7 +505,7 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
           }}
         /></div>}
       >
-        <Suspense fallback={<ScreenLoading />}><PageTransition key={route}>{phoneBoardFor(route) ?? content()}</PageTransition></Suspense>
+        <Suspense fallback={<ScreenLoading />}><PageTransition key={route}>{phoneBoardFor(route) ?? phoneBoard?.node ?? content()}</PageTransition></Suspense>
       </StudentPhoneFrame>
       {signOutDialog}
     </>;
@@ -574,6 +575,6 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
       <footer className="wf-workspace-footer">{t('ws.footer')}</footer>
     </main>
     {signOutDialog}
-    <nav className="wf-mobile-bottom-nav" aria-label={t('ws.quickNav')}><button aria-current={route === 'home' || route === '' || route === 'health' ? 'page' : undefined} onClick={() => open('')}><LayoutDashboard size={21} aria-hidden="true" /><span>{t('ws.tab.home')}</span></button><button aria-current={route === 'records' ? 'page' : undefined} onClick={() => open('records')}><FileText size={21} aria-hidden="true" /><span>{t('ws.tab.records')}</span></button><button aria-current={route === 'orders' ? 'page' : undefined} onClick={() => open('orders')}><Package size={21} aria-hidden="true" /><span>{t('ws.tab.requests')}</span></button><button onClick={() => { setMobileMenu(!mobileMenu); window.scrollTo({ top: 0, behavior: 'instant' }); }} aria-expanded={mobileMenu} aria-controls="workspace-sidebar"><Menu size={21} aria-hidden="true" /><span>{t('ws.tab.more')}</span></button></nav>
+    <nav className="wf-mobile-bottom-nav" aria-label={t('ws.quickNav')}><button aria-current={route === 'dashboard' || route === 'home' || route === '' ? 'page' : undefined} onClick={() => open('dashboard')}><LayoutDashboard size={21} aria-hidden="true" /><span>{t('ws.tab.home')}</span></button><button aria-current={route === 'records' ? 'page' : undefined} onClick={() => open('records')}><FileText size={21} aria-hidden="true" /><span>{t('ws.tab.records')}</span></button><button aria-current={route === 'orders' ? 'page' : undefined} onClick={() => open('orders')}><Package size={21} aria-hidden="true" /><span>{t('ws.tab.requests')}</span></button><button onClick={() => { setMobileMenu(!mobileMenu); window.scrollTo({ top: 0, behavior: 'instant' }); }} aria-expanded={mobileMenu} aria-controls="workspace-sidebar"><Menu size={21} aria-hidden="true" /><span>{t('ws.tab.more')}</span></button></nav>
   </div>;
 }

@@ -9,9 +9,9 @@ import type { RoutePath } from '@/lib/utils/workflowRouting';
  * instead of reaching into screens/.
  */
 export const STUDENT_NAV_ROUTES: Readonly<Record<PillNavKey, RoutePath>> = {
-  home: 'home',
+  home: 'dashboard',
   orders: 'orders',
   ayush: 'ayush',
-  health: 'your-care',
+  health: 'health',
   profile: 'profile',
 };

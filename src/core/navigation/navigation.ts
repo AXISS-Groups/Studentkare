@@ -13,6 +13,7 @@ export {
   Navigate,
   Route,
   Routes,
+  useInRouterContext,
   useLocation,
   useNavigate,
   useParams,

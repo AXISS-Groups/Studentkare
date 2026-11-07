@@ -74,7 +74,7 @@ describe('a session check that failed', () => {
 
 describe('authorisation: may this role open it?', () => {
   it.each([
-    ['STUDENT', '/health'],
+    ['STUDENT', '/dashboard'],
     ['VENDOR', '/vendor'],
     ['NMC_DOCTOR', '/clinician'],
     ['CAMPUS_ADMIN', '/campus'],

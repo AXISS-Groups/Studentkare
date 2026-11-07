@@ -1,6 +1,7 @@
 """Persistent account, clinical-self-service, and operational workflow tables."""
 from datetime import date
 
+from pgvector.sqlalchemy import Vector
 from sqlalchemy import (
     JSON,
     Boolean,
@@ -22,7 +23,6 @@ from sqlalchemy import (
 from sqlalchemy import (
     true as sa_true,
 )
-from pgvector.sqlalchemy import Vector
 from sqlalchemy.orm import Mapped, mapped_column
 
 from services.db_sql import Base
