@@ -189,25 +189,52 @@ def test_production_fails_closed_by_default_without_grants(monkeypatch):
     assert commerce_session.grants_required() is True
 
 
-def test_production_allows_explicit_provisioning_override(monkeypatch):
+@pytest.mark.parametrize("app_env", ["production", "staging", None])
+@pytest.mark.parametrize("raw", [None, "0", "false", "no", "", " ", "typo"])
+def test_production_refuses_unrestricted_commerce_for_every_configuration(monkeypatch, app_env, raw):
+    from fastapi import HTTPException
+
     from services import commerce_session
 
-    monkeypatch.setenv("APP_ENV", "production")
-    monkeypatch.setenv("RULE_L_REQUIRE_GRANTS", "0")
+    for name, value in (("APP_ENV", app_env), ("RULE_L_REQUIRE_GRANTS", raw)):
+        if value is None:
+            monkeypatch.delenv(name, raising=False)
+        else:
+            monkeypatch.setenv(name, value)
     engine = create_engine("sqlite://")
     with sessionmaker(bind=engine)() as db:
         gen = commerce_session.commerce_db(db)
-        yielded = next(gen)
-        assert yielded is db
-    assert commerce_session.grants_required() is False
+        with pytest.raises(HTTPException) as denied:
+            next(gen)
+    assert denied.value.status_code == 503
 
 
-def test_dev_mode_grants_not_required_by_default(monkeypatch):
+@pytest.mark.parametrize("app_env", ["development", "testing"])
+@pytest.mark.parametrize("raw, required", [
+    (None, False), ("0", False), (" FALSE ", False), ("no", False),
+    ("1", True), (" TRUE ", True), ("yes", True),
+    ("", True), (" ", True), ("typo", True),
+])
+def test_nonproduction_requires_grants_unless_explicitly_disabled(monkeypatch, app_env, raw, required):
+    from fastapi import HTTPException
+
     from services import commerce_session
 
-    monkeypatch.setenv("APP_ENV", "development")
-    monkeypatch.delenv("RULE_L_REQUIRE_GRANTS", raising=False)
-    assert commerce_session.grants_required() is False
+    monkeypatch.setenv("APP_ENV", app_env)
+    if raw is None:
+        monkeypatch.delenv("RULE_L_REQUIRE_GRANTS", raising=False)
+    else:
+        monkeypatch.setenv("RULE_L_REQUIRE_GRANTS", raw)
+    engine = create_engine("sqlite://")
+    with sessionmaker(bind=engine)() as db:
+        gen = commerce_session.commerce_db(db)
+        if required:
+            with pytest.raises(HTTPException) as denied:
+                next(gen)
+            assert denied.value.status_code == 503
+        else:
+            assert next(gen) is db
+            gen.close()
 
 
 def test_billing_and_returns_use_the_commerce_session():
@@ -582,7 +609,7 @@ def test_pg_no_createrole_and_not_owner_is_reported_not_fatal(pg_db, monkeypatch
             assert rule_l.rule_l_status(conn)["enforced"] is False
             monkeypatch.setattr(rule_l, "_role_exists", real_exists)
             assert conn.scalar(text("SELECT 1")) == 1
-            # It is not a member of sk_commerce, so commerce paths keep the app role.
+            # It is not a member of sk_commerce, so requests requiring grants are refused.
             assert rule_l.commerce_role_usable(conn) is False
     finally:
         weak.dispose()

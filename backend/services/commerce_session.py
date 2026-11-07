@@ -9,9 +9,10 @@ so a commerce query that reaches for a clinical table fails at Postgres with
 transaction, so the role never leaks onto a pooled (or PgBouncer) connection.
 
 When the grants are not in force (SQLite, or a host where the migration could
-not create the roles) it passes the ordinary session through, and
-GET /api/ops/rule-l says so. Set ``RULE_L_REQUIRE_GRANTS=1`` to refuse commerce
-requests instead (fail closed) once a deployment is known to have the roles.
+not create the roles), production refuses commerce requests. Only explicit
+development/testing may pass the ordinary session through: leave
+``RULE_L_REQUIRE_GRANTS`` unset or set it to ``0``, ``false`` or ``no``.
+Other values require grants. GET /api/ops/rule-l reports the database state.
 """
 from __future__ import annotations
 
@@ -43,15 +44,14 @@ def reset_cache() -> None:
 def grants_required() -> bool:
     """True when commerce requests must run under sk_commerce or be refused (fail closed).
 
-    In production (APP_ENV=production), fail closed is the default (AGENTS.md guardrails 1, 4).
-    RULE_L_REQUIRE_GRANTS=0 can be explicitly set as a temporary override during initial
-    DBA role provisioning. In development and testing, grants are required only when opted in
-    via RULE_L_REQUIRE_GRANTS=1.
+    Production always requires grants, including missing or unknown APP_ENV values
+    (AGENTS.md guardrails 1, 4). In explicit development/testing, an unset flag or
+    a recognised false value permits local fallback; malformed values fail closed.
     """
+    if is_production():
+        return True
     raw = os.getenv("RULE_L_REQUIRE_GRANTS")
-    if raw is not None:
-        return raw.strip().lower() in {"1", "true", "yes"}
-    return is_production()
+    return raw is not None and raw.strip().lower() not in {"0", "false", "no"}
 
 
 def _usable(bind) -> bool:
@@ -67,7 +67,7 @@ def _usable(bind) -> bool:
         if _cache.get(key, (0, None))[1] != usable:
             log = logger.info if usable else logger.warning
             log("[RULE L] commerce paths %s", f"run as {COMMERCE_ROLE}" if usable
-                else f"run as the app role: {COMMERCE_ROLE} is not usable on this database")
+                else f"cannot run as {COMMERCE_ROLE}: the role is not usable on this database")
         _cache[key] = (now, usable)
     return usable
 
