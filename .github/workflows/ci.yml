@@ -296,7 +296,7 @@ jobs:
 
     services:
       postgres:
-        image: postgres:${{ matrix.postgres }}
+        image: pgvector/pgvector:pg${{ matrix.postgres }}
         env:
           POSTGRES_USER: ci
           POSTGRES_PASSWORD: ci
