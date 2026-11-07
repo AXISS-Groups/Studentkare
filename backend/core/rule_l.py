@@ -435,8 +435,8 @@ def apply_grants(conn) -> ApplyResult:
         error = _try(conn, [f"GRANT {_q(COMMERCE_ROLE)} TO CURRENT_USER"])
         if error:
             result.warnings.append(
-                f"the database login cannot SET ROLE {COMMERCE_ROLE} ({error}); commerce paths keep the app role "
-                f"until a DBA runs: GRANT {COMMERCE_ROLE} TO <app login>")
+                f"the database login cannot SET ROLE {COMMERCE_ROLE} ({error}); commerce requests requiring grants "
+                f"are refused until a DBA runs: GRANT {COMMERCE_ROLE} TO <app login>")
     result.membership = can_assume(conn, COMMERCE_ROLE)
     _log(result)
     return result
