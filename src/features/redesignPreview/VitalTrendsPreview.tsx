@@ -1,4 +1,5 @@
 import React from 'react';
+import { useT } from '@/i18n';
 import { StyleSheet, Text, View } from 'react-native';
 import { Illustration } from '@/design-system/icons';
 import { color, font, fontWeight, radius, space } from '@/design-system/theme';
@@ -37,18 +38,19 @@ const CARDS: ReadonlyArray<{
  * NOTES.md.
  */
 export function VitalTrendsPreview(): React.ReactElement {
+  const t = useT();
   return (
     <View style={styles.screen} testID="preview-vital-trends">
       <View style={styles.header}>
         <RoundButton icon="arrow-left" label="Back" onPress={noop} />
-        <Text style={styles.headerTitle}>Trends</Text>
+        <Text style={styles.headerTitle}>{t('m2v.tr.title')}</Text>
       </View>
       <View style={styles.scroll}>
         <View style={styles.body}>
-          <Text style={styles.h1}>Your readings over time</Text>
-          <Text style={styles.intro}>Every number carries where it came from. A phone estimate and a clinic measurement are not the same thing and are never drawn as if they were.</Text>
+          <Text style={styles.h1}>{t('preview.yourReadingsOverTime')}</Text>
+          <Text style={styles.intro}>{t('preview.everyNumberCarriesWhereItCameFromA')}</Text>
 
-          <Text style={[m2Text.eyebrow, styles.sectionGap]}>LAST 90 DAYS</Text>
+          <Text style={[m2Text.eyebrow, styles.sectionGap]}>{t('preview.last90Days')}</Text>
 
           {CARDS.map((c) => (
             <View key={c.title} style={styles.card}>
@@ -62,13 +64,11 @@ export function VitalTrendsPreview(): React.ReactElement {
             </View>
           ))}
 
-          <M2Note tone="attention" icon="shield-alert" title="A trend is not a diagnosis">
-            These lines show change, not cause. Nothing here is interpreted for you, and nothing here is sent to a clinician unless you share it.
-          </M2Note>
+          <M2Note tone="attention" icon="shield-alert" title={t('preview.aTrendIsNotADiagnosis')}>{t('preview.theseLinesShowChangeNotCauseNothingHere')}</M2Note>
 
-          <View style={styles.shareBtn}><Text style={styles.shareBtnText}>Share these with a clinician</Text></View>
+          <View style={styles.shareBtn}><Text style={styles.shareBtnText}>{t('preview.shareTheseWithAClinician')}</Text></View>
 
-          <Text style={styles.footNote}>MEASURED comes from a device reading. MANUAL is a number you typed. ESTIMATE is inferred by a phone sensor and is the least reliable of the three.</Text>
+          <Text style={styles.footNote}>{t('preview.measuredComesFromADeviceReadingManualIs')}</Text>
         </View>
       </View>
     </View>

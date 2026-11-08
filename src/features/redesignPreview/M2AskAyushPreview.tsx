@@ -1,4 +1,5 @@
 import React from 'react';
+import { useT } from '@/i18n';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Icon } from '@/design-system/icons';
 import { color, focusRing, font, fontWeight, radius, space } from '@/design-system/theme';
@@ -17,31 +18,30 @@ const noop = () => undefined;
  * not replacing the real screen. See NOTES.md.
  */
 export function M2AskAyushPreview(): React.ReactElement {
+  const t = useT();
   return (
     <View style={styles.screen} testID="preview-m2-ask-ayush">
       <View style={styles.header}>
-        <Pressable role="button" accessibilityRole="button" accessibilityLabel="Back" onPress={noop} style={({ focused }: PressState) => [styles.backBtn, focused ? focusRing : null]}>
+        <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('common.back')} onPress={noop} style={({ focused }: PressState) => [styles.backBtn, focused ? focusRing : null]}>
           <Icon name="arrow-left" size={20} color={color.text} />
         </Pressable>
-        <Text style={styles.title}>Ask Ayush</Text>
-        <Pressable role="button" accessibilityRole="button" accessibilityLabel="Call" onPress={noop} style={({ focused }: PressState) => [styles.backBtn, focused ? focusRing : null]}>
+        <Text style={styles.title}>{t('dest.AiChat.label')}</Text>
+        <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('ebar.call')} onPress={noop} style={({ focused }: PressState) => [styles.backBtn, focused ? focusRing : null]}>
           <Icon name="phone" size={18} color={color.text2} />
         </Pressable>
       </View>
       <View style={styles.scroll}>
         <View style={styles.body}>
-          <M2Note tone="info" icon="shield" title="About your records">
-            Ayush can see your reports and medicines to answer. A doctor always guides what to do next.
-          </M2Note>
+          <M2Note tone="info" icon="shield" title={t('preview.aboutYourRecords')}>{t('preview.ayushCanSeeYourReportsAndMedicinesTo')}</M2Note>
           <View style={styles.reportCard}>
-            <Text style={m2Text.eyebrow}>LATEST REPORT</Text>
-            <Text style={styles.reportTitle}>[Lipid profile] · 14 Oct 2026</Text>
+            <Text style={m2Text.eyebrow}>{t('preview.latestReport')}</Text>
+            <Text style={styles.reportTitle}>{t('preview.lipidProfile14Oct2026')}</Text>
           </View>
           <View style={[styles.bubble, styles.studentBubble]}>
-            <Text style={styles.bubbleText}>What does HDL mean?</Text>
+            <Text style={styles.bubbleText}>{t('preview.whatDoesHdlMean')}</Text>
           </View>
           <View style={[styles.bubble, styles.ayushBubble]}>
-            <Text style={styles.bubbleText}>HDL is often called "good cholesterol" — it helps carry extra cholesterol away. A doctor will guide you on what your specific number means and what, if anything, to change.</Text>
+            <Text style={styles.bubbleText}>{t('preview.hdlIsOftenCalledGoodCholesterolItHelps')}</Text>
           </View>
           <View style={styles.chipRow}>
             {['Is my HbA1c serious?', 'What should I eat less of?'].map((chip) => (
@@ -53,8 +53,8 @@ export function M2AskAyushPreview(): React.ReactElement {
         </View>
       </View>
       <View style={styles.inputBar}>
-        <View style={styles.inputField}><Text style={styles.inputPlaceholder}>Ask about your records…</Text></View>
-        <Pressable role="button" accessibilityRole="button" accessibilityLabel="Send" onPress={noop} style={({ focused }: PressState) => [styles.sendBtn, focused ? focusRing : null]}>
+        <View style={styles.inputField}><Text style={styles.inputPlaceholder}>{t('preview.askAboutYourRecords')}</Text></View>
+        <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('m2.ask.send')} onPress={noop} style={({ focused }: PressState) => [styles.sendBtn, focused ? focusRing : null]}>
           <Icon name="arrow-right" size={18} color={color.onAction} />
         </Pressable>
       </View>

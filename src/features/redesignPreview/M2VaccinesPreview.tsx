@@ -1,4 +1,5 @@
 import React from 'react';
+import { useT } from '@/i18n';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Icon } from '@/design-system/icons';
 import { color, focusRing, font, fontWeight, radius, space } from '@/design-system/theme';
@@ -19,26 +20,27 @@ const VACCINES = ['Influenza', 'HPV', 'Hepatitis B', 'Typhoid'] as const;
  * replacing the real screen. See NOTES.md.
  */
 export function M2VaccinesPreview(): React.ReactElement {
+  const t = useT();
   return (
     <View style={styles.screen} testID="preview-m2-vaccines">
       <View style={styles.scroll}>
-        <M2HeroPanel eyebrow="Preventive care" title="Vaccines" sub="Your record, and booking the next one." icon="syringe" hue="amber" compact />
+        <M2HeroPanel eyebrow="Preventive care" title={t('assist.prev.topic.vaccines')} sub="Your record, and booking the next one." icon="syringe" hue="amber" compact />
         <View style={styles.body}>
           <View>
-            <Text style={[m2Text.section, styles.sectionGap]}>Your vaccine record</Text>
+            <Text style={[m2Text.section, styles.sectionGap]}>{t('m2.ins.vaccineRecord')}</Text>
             <M2Card>
               <View style={styles.recordRow}>
                 <View style={styles.recordTile}><Icon name="check" size={18} color={color.positive} /></View>
                 <View style={styles.flexShrink}>
-                  <Text style={styles.recordName}>[Vaccine], dose [N]</Text>
-                  <Text style={m2Text.meta}>Given at [clinic], [date] — a placeholder row; the real screen shows only doses the student actually has on record.</Text>
+                  <Text style={styles.recordName}>{t('preview.vaccineDoseN')}</Text>
+                  <Text style={m2Text.meta}>{t('preview.givenAtClinicDateAPlaceholderRowThe')}</Text>
                 </View>
               </View>
             </M2Card>
           </View>
 
           <View>
-            <Text style={[m2Text.section, styles.sectionGap]}>Book the next one</Text>
+            <Text style={[m2Text.section, styles.sectionGap]}>{t('preview.bookTheNextOne')}</Text>
             <View style={styles.chipRow}>
               {VACCINES.map((label, i) => (
                 <Pressable key={label} role="button" accessibilityRole="button" accessibilityLabel={label} onPress={noop}
@@ -49,13 +51,13 @@ export function M2VaccinesPreview(): React.ReactElement {
             </View>
             <M2Card style={styles.bookingCard}>
               <View style={styles.bookingHead}>
-                <Text style={styles.bookingTitle}>Influenza</Text>
+                <Text style={styles.bookingTitle}>{t('preview.influenza')}</Text>
                 <M2Pill label="Given at the clinic" tone="action" />
               </View>
-              <Text style={m2Text.body}>Pick a slot at the campus clinic. A nurse checks your record before giving it.</Text>
-              <Pressable role="button" accessibilityRole="button" accessibilityLabel="Pick a slot" onPress={noop}
+              <Text style={m2Text.body}>{t('preview.pickASlotAtTheCampusClinicA')}</Text>
+              <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('camps.pickSlot')} onPress={noop}
                 style={({ focused }: PressState) => [styles.fillBtn, focused ? focusRing : null]}>
-                <Text style={styles.fillBtnText}>Pick a slot</Text>
+                <Text style={styles.fillBtnText}>{t('camps.pickSlot')}</Text>
               </Pressable>
             </M2Card>
           </View>

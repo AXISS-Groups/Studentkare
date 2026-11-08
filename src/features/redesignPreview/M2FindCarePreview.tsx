@@ -1,4 +1,5 @@
 import React from 'react';
+import { useT } from '@/i18n';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Icon } from '@/design-system/icons';
 import { color, focusRing, font, fontWeight, radius, space } from '@/design-system/theme';
@@ -21,21 +22,22 @@ const TABS: readonly M2Tab<CareTab>[] = [
  * real screen. See NOTES.md.
  */
 export function M2FindCarePreview(): React.ReactElement {
+  const t = useT();
   return (
     <View style={styles.screen} testID="preview-m2-find-care">
       <View style={styles.scroll}>
-        <M2HeroPanel eyebrow="Find care" title="Care near you" sub="Hospitals, pharmacies and doctors, checked by StudentKare or your campus." icon="map-pin-2" hue="blue" compact />
+        <M2HeroPanel eyebrow="Find care" title={t('fc.title')} sub="Hospitals, pharmacies and doctors, checked by StudentKare or your campus." icon="map-pin-2" hue="blue" compact />
         <View style={styles.body}>
           <View style={styles.emergencyRow}>
             <View style={styles.emergencyCard}>
               <Icon name="phone" size={18} color={color.dangerFill} />
-              <Text style={styles.emergencyTitle}>Call 112</Text>
-              <Text style={m2Text.meta}>Police, fire, medical</Text>
+              <Text style={styles.emergencyTitle}>{t('crisis.call112')}</Text>
+              <Text style={m2Text.meta}>{t('fc.call112Sub')}</Text>
             </View>
             <View style={styles.emergencyCard}>
               <Icon name="ambulance" size={18} color={color.dangerFill} />
-              <Text style={styles.emergencyTitle}>Call 108</Text>
-              <Text style={m2Text.meta}>Ambulance</Text>
+              <Text style={styles.emergencyTitle}>{t('fc.call108')}</Text>
+              <Text style={m2Text.meta}>{t('helpline.108.name')}</Text>
             </View>
           </View>
 
@@ -58,11 +60,11 @@ export function M2FindCarePreview(): React.ReactElement {
                 </View>
               </View>
               <View style={styles.placeActions}>
-                <Pressable role="button" accessibilityRole="button" accessibilityLabel={`Call ${place.name}`} onPress={noop} style={({ focused }: PressState) => [styles.outlineBtn, focused ? focusRing : null]}>
-                  <Icon name="phone" size={15} color={color.action} /><Text style={styles.outlineBtnText}>Call</Text>
+                <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('campus.counsellor.call', { name: place.name })} onPress={noop} style={({ focused }: PressState) => [styles.outlineBtn, focused ? focusRing : null]}>
+                  <Icon name="phone" size={15} color={color.action} /><Text style={styles.outlineBtnText}>{t('ebar.call')}</Text>
                 </Pressable>
-                <Pressable role="button" accessibilityRole="button" accessibilityLabel={`Directions to ${place.name}`} onPress={noop} style={({ focused }: PressState) => [styles.outlineBtn, focused ? focusRing : null]}>
-                  <Icon name="directions" size={15} color={color.action} /><Text style={styles.outlineBtnText}>Directions</Text>
+                <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('preview.directionsToName', { name: place.name })} onPress={noop} style={({ focused }: PressState) => [styles.outlineBtn, focused ? focusRing : null]}>
+                  <Icon name="directions" size={15} color={color.action} /><Text style={styles.outlineBtnText}>{t('fc.directions')}</Text>
                 </Pressable>
               </View>
             </M2Card>

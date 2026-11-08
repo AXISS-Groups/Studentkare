@@ -1,9 +1,10 @@
 import React from 'react';
+import { useT } from '@/i18n';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Icon } from '@/design-system/icons';
 import { color, focusRing, font, fontWeight, radius, space } from '@/design-system/theme';
 import {
-  M2Card, M2SearchField, M2_BOTTOM_SPACE, PillNav, RoundButton, ServiceRail, SoftTileGrid, m2Text, webAttrs,
+  M2Card, M2SearchField, PillNav, RoundButton, ServiceRail, SoftTileGrid, m2Text, webAttrs,
 } from '@/design-system/m2';
 import type { PressState, SoftTileItem } from '@/design-system/m2';
 
@@ -19,6 +20,7 @@ const noop = () => undefined;
  * substitutions this screen makes and why.
  */
 export function M2HomePreview(): React.ReactElement {
+  const t = useT();
   const tiles: SoftTileItem[] = [
     { key: 'medicines', label: 'Medicines', icon: 'pill-3', hue: 'indigo', onPress: noop },
     { key: 'lab-tests', label: 'Lab tests', icon: 'lab', hue: 'violet', onPress: noop },
@@ -35,12 +37,12 @@ export function M2HomePreview(): React.ReactElement {
       <View style={styles.topGutter}>
         <View style={styles.greetingRow}>
           <View>
-            <Text style={m2Text.eyebrow}>GOOD MORNING</Text>
-            <Text style={styles.name}>Krishna</Text>
+            <Text style={m2Text.eyebrow}>{t('preview.goodMorning')}</Text>
+            <Text style={styles.name}>{t('preview.krishna')}</Text>
           </View>
           <RoundButton icon="bell" label="Notifications" onPress={noop} testID="preview-m2-home-bell" />
         </View>
-        <M2SearchField placeholder="Search medicines, tests, doctors" label="Search medicines, tests, doctors" onPress={noop} micUnavailable="Voice search isn't set up yet" />
+        <M2SearchField placeholder={t('m2.home.search')} label="Search medicines, tests, doctors" onPress={noop} micUnavailable="Voice search isn't set up yet" />
       </View>
 
       <View style={styles.rail}>
@@ -59,9 +61,9 @@ export function M2HomePreview(): React.ReactElement {
       <View style={styles.body}>
         <M2Card testID="preview-m2-home-order" style={styles.orderCard}>
           <View style={styles.orderHead}>
-            <Text style={m2Text.eyebrow}>SAMPLE COLLECTION</Text>
+            <Text style={m2Text.eyebrow}>{t('preview.sampleCollection')}</Text>
             <View style={styles.scheduledChip}>
-              <Text style={styles.scheduledChipText}>SCHEDULED</Text>
+              <Text style={styles.scheduledChipText}>{t('preview.scheduled')}</Text>
             </View>
           </View>
           <View style={styles.orderRow}>
@@ -69,20 +71,20 @@ export function M2HomePreview(): React.ReactElement {
               <Icon name="box" size={24} color={color.action} />
             </View>
             <View style={styles.flexShrink}>
-              <Text style={styles.orderTitle}>6 Nov, 6–7 AM</Text>
-              <Text style={m2Text.meta}>A collector is assigned 1 hour before.</Text>
+              <Text style={styles.orderTitle}>{t('preview.6Nov67Am')}</Text>
+              <Text style={m2Text.meta}>{t('preview.aCollectorIsAssigned1HourBefore')}</Text>
             </View>
           </View>
           <Pressable
-            role="button" accessibilityRole="button" accessibilityLabel="View order details" onPress={noop}
+            role="button" accessibilityRole="button" accessibilityLabel={t('preview.viewOrderDetails')} onPress={noop}
             style={({ focused }: PressState) => [styles.outlineBtn, focused ? focusRing : null]}
           >
-            <Text style={styles.outlineBtnText}>View order details</Text>
+            <Text style={styles.outlineBtnText}>{t('preview.viewOrderDetails')}</Text>
           </Pressable>
         </M2Card>
 
         <View>
-          <Text style={[m2Text.section, styles.sectionGap]}>Services</Text>
+          <Text style={[m2Text.section, styles.sectionGap]}>{t('camps.host.services')}</Text>
           <SoftTileGrid items={tiles} columns={4} testID="preview-m2-home-services" />
         </View>
       </View>

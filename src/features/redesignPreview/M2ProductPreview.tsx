@@ -1,4 +1,5 @@
 import React from 'react';
+import { useT } from '@/i18n';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Icon } from '@/design-system/icons';
 import { color, focusRing, font, fontWeight, radius, space } from '@/design-system/theme';
@@ -17,34 +18,35 @@ const noop = () => undefined;
  * NOTES.md.
  */
 export function M2ProductPreview(): React.ReactElement {
+  const t = useT();
   return (
     <View style={styles.screen} testID="preview-m2-product">
       <View style={styles.scroll}>
         <View style={styles.header}>
-          <Pressable role="button" accessibilityRole="button" accessibilityLabel="Back" onPress={noop} style={({ focused }: PressState) => [styles.backBtn, focused ? focusRing : null]}>
+          <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('common.back')} onPress={noop} style={({ focused }: PressState) => [styles.backBtn, focused ? focusRing : null]}>
             <Icon name="arrow-left" size={20} color={color.text} />
           </Pressable>
         </View>
         <View style={styles.body}>
           <GlossTile icon="flask" hue="indigo" size={64} />
-          <Text style={styles.name}>[Paracetamol 650 mg tablet]</Text>
-          <Text style={m2Text.meta}>[Generic] · Strip of 15 tablets</Text>
+          <Text style={styles.name}>{t('preview.paracetamol650MgTablet')}</Text>
+          <Text style={m2Text.meta}>{t('preview.genericStripOf15Tablets')}</Text>
 
           <View style={styles.qtyRow}>
-            <Text style={styles.qtyLabel}>Quantity</Text>
+            <Text style={styles.qtyLabel}>{t('clinRx.f.quantity')}</Text>
             <View style={styles.stepper}>
-              <Pressable role="button" accessibilityRole="button" accessibilityLabel="One fewer" onPress={noop} style={({ focused }: PressState) => [styles.stepBtn, focused ? focusRing : null]}>
+              <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('m2.prod.fewer')} onPress={noop} style={({ focused }: PressState) => [styles.stepBtn, focused ? focusRing : null]}>
                 <Icon name="minus" size={16} color={color.action} />
               </Pressable>
               <Text style={styles.qtyValue}>1</Text>
-              <Pressable role="button" accessibilityRole="button" accessibilityLabel="One more" onPress={noop} style={({ focused }: PressState) => [styles.stepBtn, focused ? focusRing : null]}>
+              <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('m2.prod.more')} onPress={noop} style={({ focused }: PressState) => [styles.stepBtn, focused ? focusRing : null]}>
                 <Icon name="plus" size={16} color={color.action} />
               </Pressable>
             </View>
           </View>
 
-          <Text style={styles.sectionTitle}>Often added with this</Text>
-          <Text style={m2Text.meta}>Nothing here is suggested from your reports.</Text>
+          <Text style={styles.sectionTitle}>{t('preview.oftenAddedWithThis')}</Text>
+          <Text style={m2Text.meta}>{t('preview.nothingHereIsSuggestedFromYourReports')}</Text>
           {[{ name: '[ORS rehydration sachet]', price: '₹20' }, { name: '[Vitamin C effervescent]', price: '₹99' }].map((item) => (
             <M2Card key={item.name} style={styles.companionCard}>
               <GlossTile icon="flask" hue="teal" size={36} />
@@ -63,9 +65,9 @@ export function M2ProductPreview(): React.ReactElement {
       </View>
       <View style={styles.footer}>
         <Text style={styles.footerPrice}>₹18</Text>
-        <Pressable role="button" accessibilityRole="button" accessibilityLabel="Add to cart" onPress={noop} style={({ focused }: PressState) => [styles.cartBtn, focused ? focusRing : null]}>
+        <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('shop.add')} onPress={noop} style={({ focused }: PressState) => [styles.cartBtn, focused ? focusRing : null]}>
           <Icon name="cart" size={16} color={color.onAction} />
-          <Text style={styles.cartBtnText}>Add to cart</Text>
+          <Text style={styles.cartBtnText}>{t('shop.add')}</Text>
         </Pressable>
       </View>
     </View>

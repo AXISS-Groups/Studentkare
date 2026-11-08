@@ -1,4 +1,5 @@
 import React from 'react';
+import { useT } from '@/i18n';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Icon } from '@/design-system/icons';
 import { color, focusRing, font, fontWeight, radius, space } from '@/design-system/theme';
@@ -26,21 +27,20 @@ const KINDS: ReadonlyArray<{ icon: SkIconName; label: string; hint: string }> = 
  * screen. See NOTES.md.
  */
 export function M2ReportUploadPreview(): React.ReactElement {
+  const t = useT();
   return (
     <View style={styles.screen} testID="preview-m2-report-upload">
       <View style={styles.scroll}>
         <View style={styles.header}>
-          <Pressable role="button" accessibilityRole="button" accessibilityLabel="Back" onPress={noop} style={({ focused }: PressState) => [styles.backBtn, focused ? focusRing : null]}>
+          <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('common.back')} onPress={noop} style={({ focused }: PressState) => [styles.backBtn, focused ? focusRing : null]}>
             <Icon name="arrow-left" size={20} color={color.text} />
           </Pressable>
-          <Text style={styles.title}>Add a document</Text>
+          <Text style={styles.title}>{t('swt.vault.add')}</Text>
         </View>
         <View style={styles.body}>
-          <M2Note tone="attention" icon="alert-triangle" title="Design concept, not yet built this way">
-            The real app has no document reader — you type the values yourself, so it never pretends to read something it isn't. This step is a concept, pending the same review before any of it is real.
-          </M2Note>
+          <M2Note tone="attention" icon="alert-triangle" title={t('preview.designConceptNotYetBuiltThisWay')}>{t('preview.theRealAppHasNoDocumentReaderYou')}</M2Note>
 
-          <Text style={styles.question}>What are you adding?</Text>
+          <Text style={styles.question}>{t('preview.whatAreYouAdding')}</Text>
           <View style={styles.grid}>
             {KINDS.map((kind) => (
               <Pressable key={kind.label} role="button" accessibilityRole="button" accessibilityLabel={kind.label} onPress={noop} style={({ focused }: PressState) => [styles.kindTile, focused ? focusRing : null]}>
@@ -50,7 +50,7 @@ export function M2ReportUploadPreview(): React.ReactElement {
               </Pressable>
             ))}
           </View>
-          <Text style={m2Text.meta}>Nothing is saved until you confirm.</Text>
+          <Text style={m2Text.meta}>{t('preview.nothingIsSavedUntilYouConfirm')}</Text>
         </View>
       </View>
     </View>

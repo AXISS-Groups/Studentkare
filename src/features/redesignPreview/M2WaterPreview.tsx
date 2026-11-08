@@ -1,4 +1,5 @@
 import React from 'react';
+import { useT } from '@/i18n';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Icon } from '@/design-system/icons';
 import { color, focusRing, font, fontWeight, radius, space } from '@/design-system/theme';
@@ -19,34 +20,35 @@ const GOAL = 2000;
  * real screen. See NOTES.md.
  */
 export function M2WaterPreview(): React.ReactElement {
+  const t = useT();
   return (
     <View style={styles.screen} testID="preview-m2-water">
       <View style={styles.scroll}>
-        <M2HeroPanel eyebrow="My health" title="600 ml today" sub="of your 2,000 ml goal" icon="glass" hue="sky" compact />
+        <M2HeroPanel eyebrow="My health" title={t('preview.600MlToday')} sub="of your 2,000 ml goal" icon="glass" hue="sky" compact />
         <View style={styles.body}>
           <View style={styles.actionRow}>
-            <Pressable role="button" accessibilityRole="button" accessibilityLabel="Add a glass" onPress={noop} style={({ focused }: PressState) => [styles.fillBtn, focused ? focusRing : null]}>
-              <Icon name="plus" size={16} color={color.onAction} /><Icon name="glass" size={16} color={color.onAction} /><Text style={styles.fillBtnText}>+ Glass · 200 ml</Text>
+            <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('preview.addAGlass')} onPress={noop} style={({ focused }: PressState) => [styles.fillBtn, focused ? focusRing : null]}>
+              <Icon name="plus" size={16} color={color.onAction} /><Icon name="glass" size={16} color={color.onAction} /><Text style={styles.fillBtnText}>{t('preview.glass200Ml')}</Text>
             </Pressable>
-            <Pressable role="button" accessibilityRole="button" accessibilityLabel="Undo last" onPress={noop} style={({ focused }: PressState) => [styles.outlineBtn, focused ? focusRing : null]}>
-              <Icon name="undo" size={16} color={color.action} /><Text style={styles.outlineBtnText}>Undo last</Text>
+            <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('preview.undoLast')} onPress={noop} style={({ focused }: PressState) => [styles.outlineBtn, focused ? focusRing : null]}>
+              <Icon name="undo" size={16} color={color.action} /><Text style={styles.outlineBtnText}>{t('preview.undoLast')}</Text>
             </Pressable>
           </View>
 
           <M2Card>
-            <Text style={styles.sectionTitle}>Today</Text>
+            <Text style={styles.sectionTitle}>{t('campusBoards.camps.status.today')}</Text>
             {['8:40 AM · 200 ml', '11:15 AM · 200 ml', '1:30 PM · 200 ml'].map((entry) => (
               <Text key={entry} style={m2Text.meta}>{entry}</Text>
             ))}
           </M2Card>
 
           <View style={styles.goalRow}>
-            <Text style={styles.goalText}>Daily goal: 2,000 ml</Text>
-            <Text style={styles.changeLink}>Change</Text>
+            <Text style={styles.goalText}>{t('preview.dailyGoal2000Ml')}</Text>
+            <Text style={styles.changeLink}>{t('admin.accounts.colChange')}</Text>
           </View>
 
           <M2Card>
-            <Text style={styles.sectionTitle}>Last 7 days</Text>
+            <Text style={styles.sectionTitle}>{t('preview.last7Days')}</Text>
             <View style={styles.chartRow}>
               {DAY_BARS.map((val, i) => (
                 <View key={i} style={styles.barCol}>
@@ -59,7 +61,7 @@ export function M2WaterPreview(): React.ReactElement {
             </View>
           </M2Card>
 
-          <Text style={m2Text.meta}>Water isn't scored here: no streaks, no medals, no comparisons.</Text>
+          <Text style={m2Text.meta}>{t('preview.waterIsnTScoredHereNoStreaksNo')}</Text>
         </View>
       </View>
     </View>

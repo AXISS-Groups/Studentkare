@@ -1,4 +1,5 @@
 import React from 'react';
+import { useT } from '@/i18n';
 import { StyleSheet, Text, View } from 'react-native';
 import { Icon } from '@/design-system/icons';
 import { color, font, fontWeight, radius, space } from '@/design-system/theme';
@@ -18,29 +19,30 @@ const BARS = [10, 18, 26, 16, 22, 12];
  * anything. See NOTES.md.
  */
 export function TeleconsultPreview(): React.ReactElement {
+  const t = useT();
   return (
     <View style={styles.screen} testID="preview-teleconsult">
       <View style={styles.topRow}>
         <View style={styles.liveBadge}>
           <View style={styles.liveDot} />
-          <Text style={styles.liveText}>LIVE · 04:12</Text>
+          <Text style={styles.liveText}>{t('preview.live0412')}</Text>
         </View>
         <View style={styles.youTile}>
-          <Text style={styles.youText}>You</Text>
+          <Text style={styles.youText}>{t('swt.labs.forYouOnly')}</Text>
         </View>
       </View>
 
       <View style={styles.center}>
-        <View style={styles.avatar}><Text style={styles.avatarText}>AR</Text></View>
-        <Text style={styles.docName}>Dr. Ananya Reddy</Text>
-        <Text style={styles.docMeta}>MD Internal Medicine · NMC verified</Text>
+        <View style={styles.avatar}><Text style={styles.avatarText}>{t('preview.ar')}</Text></View>
+        <Text style={styles.docName}>{t('preview.drAnanyaReddy')}</Text>
+        <Text style={styles.docMeta}>{t('preview.mdInternalMedicineNmcVerified')}</Text>
         <View style={styles.waveRow}>
           {BARS.map((h, i) => <View key={i} style={[styles.waveBar, { height: h }]} />)}
         </View>
       </View>
 
       <View style={styles.sharedCard}>
-        <Text style={styles.sharedEyebrow}>SHARED FOR THIS CONSULT</Text>
+        <Text style={styles.sharedEyebrow}>{t('preview.sharedForThisConsult')}</Text>
         {['Vitamin D Test — 20 Sep 2026', 'Complete Blood Count — 04 Aug 2026'].map((item) => (
           <View key={item} style={styles.sharedRow}>
             <Icon name="check" size={14} color={color.onHeroPositive} />
@@ -49,7 +51,7 @@ export function TeleconsultPreview(): React.ReactElement {
         ))}
         <View style={styles.sharedNoteRow}>
           <Icon name="lock-3" size={13} color={color.onHeroLabel} />
-          <Text style={styles.sharedNote}>Access ends when the consult ends. Nothing else in your vault is visible.</Text>
+          <Text style={styles.sharedNote}>{t('preview.accessEndsWhenTheConsultEndsNothingElse')}</Text>
         </View>
       </View>
 
@@ -60,7 +62,7 @@ export function TeleconsultPreview(): React.ReactElement {
         <View style={styles.actionBtn}><Icon name="message-circle-3" size={18} color={color.onHero} /></View>
         <View style={styles.actionBtn}><Icon name="plus" size={18} color={color.onHero} /></View>
       </View>
-      <View style={styles.endVisitBtn}><Text style={styles.endVisitText}>End and see the visit note</Text></View>
+      <View style={styles.endVisitBtn}><Text style={styles.endVisitText}>{t('preview.endAndSeeTheVisitNote')}</Text></View>
     </View>
   );
 }

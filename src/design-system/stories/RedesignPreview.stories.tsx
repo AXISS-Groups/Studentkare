@@ -1,6 +1,7 @@
 import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { View } from 'react-native';
+import { LanguageProvider } from '@/i18n';
 import { M2HomePreview } from '@/features/redesignPreview/M2HomePreview';
 import { M2MedicineInfoPreview } from '@/features/redesignPreview/M2MedicineInfoPreview';
 import { LabComparePreview } from '@/features/redesignPreview/LabComparePreview';
@@ -48,12 +49,20 @@ import { VitalTrendsPreview } from '@/features/redesignPreview/VitalTrendsPrevie
  * See src/features/redesignPreview/NOTES.md for what each screen maps to,
  * where it doesn't, and every icon substitution made.
  */
-const meta = { title: 'Redesign preview (for review)/1mg-inspired screens' } satisfies Meta;
+const meta = {
+  title: 'Redesign preview (for review)/1mg-inspired screens',
+  decorators: [(Story, context) => {
+    const lang = context.parameters.language === 'te' ? 'te' : context.parameters.language === 'hi' ? 'hi' : 'en';
+    return <LanguageProvider initial={lang} key={lang}><Story /></LanguageProvider>;
+  }],
+} satisfies Meta;
 export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Home: Story = { render: () => <View><M2HomePreview /></View> };
 export const MedicineInfo: Story = { render: () => <View><M2MedicineInfoPreview /></View> };
+export const MedicineInfoTelugu: Story = { ...MedicineInfo, parameters: { language: 'te' } };
+export const MedicineInfoHindi: Story = { ...MedicineInfo, parameters: { language: 'hi' } };
 export const LabCompare: Story = { render: () => <View><LabComparePreview /></View> };
 export const LabPrep: Story = { render: () => <View><LabPrepPreview /></View> };
 
@@ -71,6 +80,8 @@ export const Orders: Story = { render: () => <View><M2OrdersPreview /></View> };
 export const Camps: Story = { render: () => <View><M2CampsPreview /></View> };
 export const Refills: Story = { render: () => <View><M2RefillsPreview /></View> };
 export const FindCare: Story = { render: () => <View><M2FindCarePreview /></View> };
+export const FindCareTelugu: Story = { ...FindCare, parameters: { language: 'te' } };
+export const FindCareHindi: Story = { ...FindCare, parameters: { language: 'hi' } };
 export const Profile: Story = { render: () => <View><M2ProfilePreview /></View> };
 
 /**
@@ -109,6 +120,8 @@ export const WebDashboard: Story = { render: () => <WebDashboardPreview /> };
 export const WebShop: Story = { render: () => <WebShopPreview /> };
 export const WebProduct: Story = { render: () => <WebProductPreview /> };
 export const WebCheckout: Story = { render: () => <WebCheckoutPreview /> };
+export const WebCheckoutTelugu: Story = { ...WebCheckout, parameters: { language: 'te' } };
+export const WebCheckoutHindi: Story = { ...WebCheckout, parameters: { language: 'hi' } };
 export const WebOrders: Story = { render: () => <WebOrdersPreview /> };
 export const WebReorder: Story = { render: () => <WebReorderPreview /> };
 

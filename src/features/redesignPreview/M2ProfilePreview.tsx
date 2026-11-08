@@ -1,4 +1,5 @@
 import React from 'react';
+import { useT } from '@/i18n';
 import { Pressable, StyleSheet, Switch, Text, View } from 'react-native';
 import { Icon } from '@/design-system/icons';
 import { color, focusRing, font, fontWeight, radius, space } from '@/design-system/theme';
@@ -26,6 +27,7 @@ const SETTINGS: ReadonlyArray<{ icon: SkIconName; label: string }> = [
  * wired, not replacing the real screen. See NOTES.md.
  */
 export function M2ProfilePreview(): React.ReactElement {
+  const t = useT();
   return (
     <View style={styles.screen} testID="preview-m2-profile">
       <View style={styles.scroll}>
@@ -33,21 +35,21 @@ export function M2ProfilePreview(): React.ReactElement {
           <View style={styles.identityRow}>
             <View style={styles.avatar}><Icon name="user-5" size={28} color={color.action} /></View>
             <View style={styles.flexShrink}>
-              <Text style={styles.name}>[Student name]</Text>
-              <Text style={m2Text.meta}>[Blood group] · [Campus]</Text>
+              <Text style={styles.name}>{t('preview.studentName')}</Text>
+              <Text style={m2Text.meta}>{t('preview.bloodGroupCampus')}</Text>
             </View>
           </View>
 
           <M2Card>
-            <Text style={m2Text.eyebrow}>CONSENT</Text>
+            <Text style={m2Text.eyebrow}>{t('preview.consent')}</Text>
             <View style={styles.switchRow}>
-              <Text style={styles.switchLabel}>Ayush can read my records</Text>
+              <Text style={styles.switchLabel}>{t('m2.prof.ayush')}</Text>
               <Switch value={false} disabled trackColor={{ true: color.action, false: color.rule }} />
             </View>
             <View style={[styles.switchRow, styles.switchRowLast]}>
               <View>
-                <Text style={styles.switchLabel}>Share with family</Text>
-                <Text style={m2Text.meta}>Coming soon</Text>
+                <Text style={styles.switchLabel}>{t('m2.prof.family')}</Text>
+                <Text style={m2Text.meta}>{t('m2.soon')}</Text>
               </View>
               <Switch value={false} disabled trackColor={{ true: color.action, false: color.rule }} />
             </View>
@@ -56,18 +58,18 @@ export function M2ProfilePreview(): React.ReactElement {
           <View style={styles.grid}>
             <M2Card style={styles.docCard}>
               <GlossTile icon="doc" hue="green" size={36} />
-              <Text style={styles.docCount}>[N]</Text>
-              <Text style={m2Text.meta}>Documents</Text>
+              <Text style={styles.docCount}>{t('preview.n')}</Text>
+              <Text style={m2Text.meta}>{t('m2.ins.documents')}</Text>
             </M2Card>
             <M2Card style={styles.docCard}>
               <GlossTile icon="flask" hue="orange" size={36} />
-              <Text style={styles.docCount}>[N]</Text>
-              <Text style={m2Text.meta}>Lab reports</Text>
+              <Text style={styles.docCount}>{t('preview.n')}</Text>
+              <Text style={m2Text.meta}>{t('m2.prof.docLab')}</Text>
             </M2Card>
             <M2Card style={styles.docCard}>
               <GlossTile icon="syringe" hue="rose" size={36} />
-              <Text style={styles.docCount}>[N]</Text>
-              <Text style={m2Text.meta}>Vaccines</Text>
+              <Text style={styles.docCount}>{t('preview.n')}</Text>
+              <Text style={m2Text.meta}>{t('assist.prev.topic.vaccines')}</Text>
             </M2Card>
           </View>
 

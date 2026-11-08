@@ -1,4 +1,5 @@
 import React from 'react';
+import { useT } from '@/i18n';
 import { Pressable, StyleSheet, Switch, Text, View } from 'react-native';
 import { Icon } from '@/design-system/icons';
 import { color, focusRing, font, fontWeight, radius, space } from '@/design-system/theme';
@@ -16,57 +17,56 @@ const noop = () => undefined;
  * NOTES.md.
  */
 export function M2RefillsPreview(): React.ReactElement {
+  const t = useT();
   return (
     <View style={styles.screen} testID="preview-m2-refills">
       <View style={styles.scroll}>
-        <M2HeroPanel eyebrow="My health" title="Refills" sub="1 medicine runs out soon." icon="pill-3" hue="teal" compact />
+        <M2HeroPanel eyebrow="My health" title={t('m2.ins.refills')} sub="1 medicine runs out soon." icon="pill-3" hue="teal" compact />
         <View style={styles.body}>
           <M2Card>
             <View style={styles.row}>
               <GlossTile icon="pill-3" hue="teal" size={44} />
               <View style={styles.flexShrink}>
-                <Text style={styles.medName}>[Paracetamol 650 mg]</Text>
-                <Text style={m2Text.meta}>From your order</Text>
+                <Text style={styles.medName}>{t('preview.paracetamol650Mg')}</Text>
+                <Text style={m2Text.meta}>{t('refill.row.sourceOrder')}</Text>
               </View>
               <M2Pill label="5 days left" tone="attention" />
             </View>
             <View style={styles.metaRows}>
               <View style={styles.metaRow}>
                 <Icon name="box" size={16} color={color.text3} />
-                <Text style={m2Text.meta}>About 6 left · Runs out [date]</Text>
+                <Text style={m2Text.meta}>{t('preview.about6LeftRunsOutDate')}</Text>
               </View>
               <View style={styles.metaRow}>
                 <Icon name="clock" size={16} color={color.text3} />
-                <Text style={m2Text.meta}>1 each time · 2 times a day · pack of 15</Text>
+                <Text style={m2Text.meta}>{t('preview.1EachTime2TimesADayPack')}</Text>
               </View>
               <View style={styles.metaRow}>
                 <Icon name="calendar" size={16} color={color.text3} />
-                <Text style={m2Text.meta}>Reminder on [date] (3 days before)</Text>
+                <Text style={m2Text.meta}>{t('preview.reminderOnDate3DaysBefore')}</Text>
               </View>
             </View>
             <View style={styles.switchRow}>
-              <Text style={styles.switchLabel}>Remind me</Text>
+              <Text style={styles.switchLabel}>{t('refill.row.toggle')}</Text>
               <Switch value disabled trackColor={{ true: color.action, false: color.rule }} />
             </View>
             <View style={styles.actionRow}>
-              <Pressable role="button" accessibilityRole="button" accessibilityLabel="Reorder" onPress={noop} style={({ focused }: PressState) => [styles.fillBtn, focused ? focusRing : null]}>
+              <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('pb.yc.reorder')} onPress={noop} style={({ focused }: PressState) => [styles.fillBtn, focused ? focusRing : null]}>
                 <Icon name="repeat" size={16} color={color.onAction} />
-                <Text style={styles.fillBtnText}>Reorder</Text>
+                <Text style={styles.fillBtnText}>{t('pb.yc.reorder')}</Text>
               </Pressable>
-              <Pressable role="button" accessibilityRole="button" accessibilityLabel="Snooze" onPress={noop} style={({ focused }: PressState) => [styles.outlineBtn, focused ? focusRing : null]}>
+              <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('refill.row.snooze')} onPress={noop} style={({ focused }: PressState) => [styles.outlineBtn, focused ? focusRing : null]}>
                 <Icon name="bell-off" size={16} color={color.action} />
-                <Text style={styles.outlineBtnText}>Snooze</Text>
+                <Text style={styles.outlineBtnText}>{t('refill.row.snooze')}</Text>
               </Pressable>
             </View>
           </M2Card>
 
-          <M2Note tone="info" icon="info" title="We only count">
-            This is a count from the pack size and schedule you enter — never dosing advice.
-          </M2Note>
+          <M2Note tone="info" icon="info" title={t('preview.weOnlyCount')}>{t('preview.thisIsACountFromThePackSize')}</M2Note>
 
-          <Pressable role="button" accessibilityRole="button" accessibilityLabel="Track a refill" onPress={noop} style={({ focused }: PressState) => [styles.trackBtn, focused ? focusRing : null]}>
+          <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('refill.add')} onPress={noop} style={({ focused }: PressState) => [styles.trackBtn, focused ? focusRing : null]}>
             <Icon name="plus" size={18} color={color.action} />
-            <Text style={styles.trackBtnText}>Track a refill</Text>
+            <Text style={styles.trackBtnText}>{t('refill.add')}</Text>
           </Pressable>
         </View>
       </View>

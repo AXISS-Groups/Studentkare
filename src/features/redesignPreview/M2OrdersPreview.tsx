@@ -1,4 +1,5 @@
 import React from 'react';
+import { useT } from '@/i18n';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Icon } from '@/design-system/icons';
 import { color, focusRing, font, fontWeight, radius, space } from '@/design-system/theme';
@@ -34,11 +35,12 @@ function ItemThumbRow({ icons }: { icons: readonly SkIconName[] }): React.ReactE
  * NOTES.md.
  */
 export function M2OrdersPreview(): React.ReactElement {
+  const t = useT();
   return (
     <View style={styles.screen} testID="preview-m2-orders">
       <View style={styles.header}>
         <RoundButton icon="arrow-left" label="Back" onPress={noop} />
-        <Text style={m2Text.eyebrow}>MY ORDERS</Text>
+        <Text style={m2Text.eyebrow}>{t('preview.myOrders')}</Text>
       </View>
       <View style={styles.scroll}>
         <View style={styles.body}>
@@ -48,21 +50,21 @@ export function M2OrdersPreview(): React.ReactElement {
             <View style={styles.activeHead}>
               <View style={styles.riderTile}><Icon name="scooter" size={22} color={color.action} /></View>
               <View style={styles.flexShrink}>
-                <Text style={styles.orderTitle}>Cetirizine, ORS and 2 more</Text>
+                <Text style={styles.orderTitle}>{t('preview.cetirizineOrsAnd2More')}</Text>
                 <M2Pill label="Out for delivery" tone="action" />
               </View>
             </View>
             <ItemThumbRow icons={['pill', 'droplet', 'capsule', 'flask']} />
-            <Pressable role="link" accessibilityRole="link" accessibilityLabel="Need help with this order?" onPress={noop}
+            <Pressable role="link" accessibilityRole="link" accessibilityLabel={t('preview.needHelpWithThisOrder')} onPress={noop}
               style={({ focused }: PressState) => [styles.helpRow, focused ? focusRing : null]}>
               <Icon name="message-circle" size={18} color={color.action} />
-              <Text style={styles.helpText}>Need help with this order?</Text>
+              <Text style={styles.helpText}>{t('preview.needHelpWithThisOrder')}</Text>
               <Icon name="chevron-right" size={16} color={color.action} />
             </Pressable>
           </M2Card>
 
           <View>
-            <Text style={[m2Text.section, styles.sectionGap]}>Past (preview of the Past tab)</Text>
+            <Text style={[m2Text.section, styles.sectionGap]}>{t('preview.pastPreviewOfThePastTab')}</Text>
             {[
               { title: 'Cetirizine and ORS', status: 'Delivered', actions: ['Buy again', 'Invoice'], icons: ['pill', 'droplet'] as const },
               { title: 'Complete blood count', status: 'Done', actions: ['See report'], icons: ['flask'] as const },

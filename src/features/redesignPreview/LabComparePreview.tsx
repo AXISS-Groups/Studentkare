@@ -1,4 +1,5 @@
 import React from 'react';
+import { useT } from '@/i18n';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Icon } from '@/design-system/icons';
 import { color, focusRing, font, fontWeight, radius, space } from '@/design-system/theme';
@@ -23,15 +24,17 @@ function YesNo({ included }: { included: boolean }): React.ReactElement {
   );
 }
 
-const ROWS: readonly CompareRow[] = [
-  { key: 'tests', label: 'Tests included', a: <Text style={m2TableText.strong}>[N]</Text>, b: <Text style={m2TableText.strong}>[N]</Text> },
-  { key: 'report', label: 'Report in', a: <Text style={m2TableText.strong}>[hours]</Text>, b: <Text style={m2TableText.strong}>[hours]</Text> },
-  { key: 'fasting', label: 'Fasting needed', a: <Text style={m2TableText.strong}>[8–12 h]</Text>, b: <Text style={m2TableText.strong}>[8–12 h]</Text> },
+function rowsFor(t: ReturnType<typeof useT>): readonly CompareRow[] {
+  return [
+  { key: 'tests', label: 'Tests included', a: <Text style={m2TableText.strong}>{t('preview.n')}</Text>, b: <Text style={m2TableText.strong}>{t('preview.n')}</Text> },
+  { key: 'report', label: 'Report in', a: <Text style={m2TableText.strong}>{t('preview.hours')}</Text>, b: <Text style={m2TableText.strong}>{t('preview.hours')}</Text> },
+  { key: 'fasting', label: 'Fasting needed', a: <Text style={m2TableText.strong}>{t('preview.812H')}</Text>, b: <Text style={m2TableText.strong}>{t('preview.812H')}</Text> },
   { key: 'group-1', label: '[Test group 1]', a: <YesNo included={false} />, b: <YesNo included /> },
   { key: 'group-2', label: '[Test group 2]', a: <YesNo included />, b: <YesNo included /> },
   { key: 'group-3', label: '[Test group 3]', a: <YesNo included={false} />, b: <YesNo included /> },
   { key: 'group-4', label: '[Test group 4]', a: <YesNo included />, b: <YesNo included /> },
 ];
+}
 
 const COLUMNS: readonly M2TableColumn<CompareRow>[] = [
   { key: 'label', header: '', flex: 1.3, cell: (row) => <Text style={m2TableText.cell}>{row.label}</Text> },
@@ -47,34 +50,35 @@ const COLUMNS: readonly M2TableColumn<CompareRow>[] = [
  * full-page take on the same feature, not a new capability. See NOTES.md.
  */
 export function LabComparePreview(): React.ReactElement {
+  const t = useT();
   return (
     <View style={styles.screen} testID="preview-lab-compare">
       <View style={styles.header}>
         <RoundButton icon="arrow-left" label="Back" onPress={noop} testID="preview-lab-compare-back" />
-        <Text style={styles.h1}>Compare packages</Text>
+        <Text style={styles.h1}>{t('preview.comparePackages')}</Text>
       </View>
 
       <View style={styles.body}>
         <View style={styles.priceRow}>
           <View style={styles.priceCol}>
-            <Text style={styles.packageName}>[Package A]</Text>
-            <Text style={styles.packagePrice}>[₹ price]</Text>
+            <Text style={styles.packageName}>{t('preview.packageA')}</Text>
+            <Text style={styles.packagePrice}>{t('preview.price')}</Text>
           </View>
           <View style={styles.priceCol}>
-            <Text style={styles.packageName}>[Package B]</Text>
-            <Text style={styles.packagePrice}>[₹ price]</Text>
+            <Text style={styles.packageName}>{t('preview.packageB')}</Text>
+            <Text style={styles.packagePrice}>{t('preview.price')}</Text>
           </View>
         </View>
-        <M2Table caption="What it checks" label="Compare packages" columns={COLUMNS} rows={ROWS} rowKey={(row) => row.key} testID="preview-lab-compare-table" />
-        <Text style={m2Text.meta}>Compared from the catalogue only. Nothing here is chosen from your own reports.</Text>
+        <M2Table caption="What it checks" label="Compare packages" columns={COLUMNS} rows={rowsFor(t)} rowKey={(row) => row.key} testID="preview-lab-compare-table" />
+        <Text style={m2Text.meta}>{t('preview.comparedFromTheCatalogueOnlyNothingHereIs')}</Text>
       </View>
 
       <View style={styles.footer}>
-        <Pressable role="button" accessibilityRole="button" accessibilityLabel="Book A" onPress={noop} style={({ focused }: PressState) => [styles.fillBtn, focused ? focusRing : null]}>
-          <Text style={styles.fillBtnText}>Book A</Text>
+        <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('preview.bookA')} onPress={noop} style={({ focused }: PressState) => [styles.fillBtn, focused ? focusRing : null]}>
+          <Text style={styles.fillBtnText}>{t('preview.bookA')}</Text>
         </Pressable>
-        <Pressable role="button" accessibilityRole="button" accessibilityLabel="Book B" onPress={noop} style={({ focused }: PressState) => [styles.outlineBtn, focused ? focusRing : null]}>
-          <Text style={styles.outlineBtnText}>Book B</Text>
+        <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('preview.bookB')} onPress={noop} style={({ focused }: PressState) => [styles.outlineBtn, focused ? focusRing : null]}>
+          <Text style={styles.outlineBtnText}>{t('preview.bookB')}</Text>
         </Pressable>
       </View>
     </View>

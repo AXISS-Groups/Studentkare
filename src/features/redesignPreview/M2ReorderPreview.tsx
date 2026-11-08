@@ -1,4 +1,5 @@
 import React from 'react';
+import { useT } from '@/i18n';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Icon } from '@/design-system/icons';
 import { color, focusRing, font, fontWeight, radius, space } from '@/design-system/theme';
@@ -15,23 +16,24 @@ const noop = () => undefined;
  * screen. See NOTES.md.
  */
 export function M2ReorderPreview(): React.ReactElement {
+  const t = useT();
   return (
     <View style={styles.screen} testID="preview-m2-reorder">
       <View style={styles.scroll}>
         <View style={styles.header}>
-          <Pressable role="button" accessibilityRole="button" accessibilityLabel="Back" onPress={noop} style={({ focused }: PressState) => [styles.backBtn, focused ? focusRing : null]}>
+          <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('common.back')} onPress={noop} style={({ focused }: PressState) => [styles.backBtn, focused ? focusRing : null]}>
             <Icon name="arrow-left" size={20} color={color.text} />
           </Pressable>
-          <Text style={styles.title}>Reorder</Text>
+          <Text style={styles.title}>{t('pb.yc.reorder')}</Text>
         </View>
         <View style={styles.body}>
-          <M2Note tone="info" icon="clock">Today's price and stock, checked at 9:41 AM. You pay this, not what you paid last time.</M2Note>
+          <M2Note tone="info" icon="clock">{t('preview.todaySPriceAndStockCheckedAt9')}</M2Note>
 
           <M2Card style={styles.lineCard}>
             <View style={styles.lineRow}>
               <GlossTile icon="pill-3" hue="teal" size={44} />
               <View style={styles.flexShrink}>
-                <Text style={styles.lineName}>[Paracetamol 650 mg] · pack of 15 · qty 1</Text>
+                <Text style={styles.lineName}>{t('preview.paracetamol650MgPackOf15Qty1')}</Text>
                 <View style={styles.priceRow}>
                   <Text style={styles.linePrice}>₹18</Text>
                   <Text style={styles.lineMrp}>₹35</Text>
@@ -45,17 +47,17 @@ export function M2ReorderPreview(): React.ReactElement {
             <View style={styles.lineRow}>
               <GlossTile icon="first-aid-kit" hue="orange" size={44} />
               <View style={styles.flexShrink}>
-                <Text style={styles.lineName}>[ORS rehydration sachets] · box of 10</Text>
-                <Text style={m2Text.meta}>Needs a prescription</Text>
+                <Text style={styles.lineName}>{t('preview.orsRehydrationSachetsBoxOf10')}</Text>
+                <Text style={m2Text.meta}>{t('mi.rxNeeded')}</Text>
               </View>
               <M2Pill label="Needs Rx" tone="attention" icon="alert-triangle" />
             </View>
             <View style={styles.rxActions}>
-              <Pressable role="button" accessibilityRole="button" accessibilityLabel="Upload a prescription" onPress={noop} style={({ focused }: PressState) => [styles.outlineBtn, focused ? focusRing : null]}>
-                <Icon name="doc-upload" size={14} color={color.action} /><Text style={styles.outlineBtnText}>Upload prescription</Text>
+              <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('landing.labtests.quick.uploadRx')} onPress={noop} style={({ focused }: PressState) => [styles.outlineBtn, focused ? focusRing : null]}>
+                <Icon name="doc-upload" size={14} color={color.action} /><Text style={styles.outlineBtnText}>{t('preview.uploadPrescription')}</Text>
               </Pressable>
-              <Pressable role="button" accessibilityRole="button" accessibilityLabel="Book a consult" onPress={noop} style={({ focused }: PressState) => [styles.outlineBtn, focused ? focusRing : null]}>
-                <Icon name="stethoscope" size={14} color={color.action} /><Text style={styles.outlineBtnText}>Book a consult</Text>
+              <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('assist.ayush.noSource.book')} onPress={noop} style={({ focused }: PressState) => [styles.outlineBtn, focused ? focusRing : null]}>
+                <Icon name="stethoscope" size={14} color={color.action} /><Text style={styles.outlineBtnText}>{t('assist.ayush.noSource.book')}</Text>
               </Pressable>
             </View>
           </M2Card>
@@ -63,22 +65,22 @@ export function M2ReorderPreview(): React.ReactElement {
           <M2Card>
             <View style={styles.deliveryRow}>
               <Icon name="map-pin" size={18} color={color.text3} />
-              <Text style={styles.deliveryText}>Deliver to [Hostel block], Room [—]</Text>
+              <Text style={styles.deliveryText}>{t('preview.deliverToHostelBlockRoom')}</Text>
             </View>
             <View style={[styles.deliveryRow, styles.deliveryRowBorder]}>
               <Icon name="credit-card" size={18} color={color.text3} />
-              <Text style={styles.deliveryText}>Pay with UPI</Text>
+              <Text style={styles.deliveryText}>{t('preview.payWithUpi')}</Text>
             </View>
           </M2Card>
         </View>
       </View>
       <View style={styles.footer}>
         <View>
-          <Text style={styles.totalLabel}>Total (in-stock lines only)</Text>
+          <Text style={styles.totalLabel}>{t('preview.totalInStockLinesOnly')}</Text>
           <Text style={styles.totalValue}>₹18</Text>
         </View>
-        <Pressable role="button" accessibilityRole="button" accessibilityLabel="Pay" onPress={noop} style={({ focused }: PressState) => [styles.payBtn, focused ? focusRing : null]}>
-          <Icon name="lock" size={14} color={color.onAction} /><Text style={styles.payBtnText}>Pay ₹18</Text>
+        <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('preview.pay')} onPress={noop} style={({ focused }: PressState) => [styles.payBtn, focused ? focusRing : null]}>
+          <Icon name="lock" size={14} color={color.onAction} /><Text style={styles.payBtnText}>{t('preview.pay18')}</Text>
         </Pressable>
       </View>
     </View>

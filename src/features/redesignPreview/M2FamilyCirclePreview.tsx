@@ -1,6 +1,6 @@
 import React from 'react';
+import { useT } from '@/i18n';
 import { Pressable, StyleSheet, Switch, Text, View } from 'react-native';
-import { Icon } from '@/design-system/icons';
 import { color, focusRing, font, fontWeight, radius, space } from '@/design-system/theme';
 import { M2Card, M2Note, RoundButton, m2Text } from '@/design-system/m2';
 import type { PressState } from '@/design-system/m2';
@@ -38,28 +38,29 @@ const SHARED: ReadonlyArray<ShareRow> = [
  * NOTES.md.
  */
 export function M2FamilyCirclePreview(): React.ReactElement {
+  const t = useT();
   return (
     <View style={styles.screen} testID="preview-m2-family-circle">
       <View style={styles.header}>
         <RoundButton icon="arrow-left" label="Back" onPress={noop} />
-        <Text style={styles.headerTitle}>Care circle</Text>
+        <Text style={styles.headerTitle}>{t('sf.fam.header')}</Text>
       </View>
       <View style={styles.scroll}>
         <View style={styles.body}>
           <View style={styles.introGap}>
-            <Text style={styles.h1}>What Amma can see</Text>
-            <Text style={m2Text.body}>A guardian on your plan sees that you are looked after. They do not see what you were treated for.</Text>
+            <Text style={styles.h1}>{t('preview.whatAmmaCanSee')}</Text>
+            <Text style={m2Text.body}>{t('preview.aGuardianOnYourPlanSeesThatYou')}</Text>
           </View>
 
           <M2Card style={styles.guardianCard}>
-            <View style={styles.guardianAvatar}><Text style={styles.guardianAvatarText}>A</Text></View>
+            <View style={styles.guardianAvatar}><Text style={styles.guardianAvatarText}>{t('preview.a')}</Text></View>
             <View style={styles.flexShrink}>
-              <Text style={styles.guardianName}>Amma</Text>
-              <Text style={m2Text.meta}>Guardian · pays for Care Circle · added 12 Aug</Text>
+              <Text style={styles.guardianName}>{t('preview.amma')}</Text>
+              <Text style={m2Text.meta}>{t('preview.guardianPaysForCareCircleAdded12Aug')}</Text>
             </View>
           </M2Card>
 
-          <Text style={[m2Text.eyebrow, styles.sectionGap]}>SHARED WITH HER</Text>
+          <Text style={[m2Text.eyebrow, styles.sectionGap]}>{t('preview.sharedWithHer')}</Text>
           <M2Card style={styles.listCard}>
             {SHARED.map((row, i) => (
               <View key={row.title} style={[styles.row, i < SHARED.length - 1 ? styles.rowRule : null]}>
@@ -76,15 +77,13 @@ export function M2FamilyCirclePreview(): React.ReactElement {
             ))}
           </M2Card>
 
-          <M2Note tone="info" icon="shield-check-2" title="Paying for your plan does not buy access">
-            You are over 18, so these switches are yours alone. Amma cannot turn any of them on, and she is not told which ones are off.
-          </M2Note>
+          <M2Note tone="info" icon="shield-check-2" title={t('sf.fam.paysTitle')}>{t('preview.youAreOver18SoTheseSwitchesAre')}</M2Note>
 
-          <Pressable role="button" accessibilityRole="button" accessibilityLabel="Leave the care circle" onPress={noop}
+          <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('preview.leaveTheCareCircle')} onPress={noop}
             style={({ focused }: PressState) => [styles.leaveBtn, focused ? focusRing : null]}>
-            <Text style={styles.leaveBtnText}>Leave the care circle</Text>
+            <Text style={styles.leaveBtnText}>{t('preview.leaveTheCareCircle')}</Text>
           </Pressable>
-          <Text style={styles.footNote}>Leaving keeps your records and your plan until the month ends. Amma is told you left, because she is paying — she is not told why.</Text>
+          <Text style={styles.footNote}>{t('preview.leavingKeepsYourRecordsAndYourPlanUntil')}</Text>
         </View>
       </View>
     </View>

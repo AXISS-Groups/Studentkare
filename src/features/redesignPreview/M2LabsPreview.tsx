@@ -1,4 +1,5 @@
 import React from 'react';
+import { useT } from '@/i18n';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Icon } from '@/design-system/icons';
 import { color, focusRing, font, fontWeight, radius, space } from '@/design-system/theme';
@@ -22,11 +23,12 @@ const TABS: readonly M2Tab<Audience>[] = [
  * packages" table this screen can open — this is the list above it.)
  */
 export function M2LabsPreview(): React.ReactElement {
+  const t = useT();
   return (
     <View style={styles.screen} testID="preview-m2-labs">
       <View style={styles.scroll}>
         <View style={styles.body}>
-          <M2SearchField placeholder="Search tests and packages" label="Search tests and packages" onPress={noop} />
+          <M2SearchField placeholder={t('preview.searchTestsAndPackages')} label="Search tests and packages" onPress={noop} />
           <M2Tabs label="Packages for" tabs={TABS} current="women" onChange={noop} />
           {[
             { name: "Women's wellness", tests: '58 tests', price: '₹1,299', fasting: 'No fasting' },
@@ -44,13 +46,13 @@ export function M2LabsPreview(): React.ReactElement {
               </View>
               <View style={styles.chipRow}>
                 <M2Pill label={pkg.fasting} tone="neutral" />
-                <Pressable role="button" accessibilityRole="button" accessibilityLabel={`Compare ${pkg.name}`} onPress={noop} style={({ focused }: PressState) => [styles.compareBtn, focused ? focusRing : null]}>
-                  <Text style={styles.compareBtnText}>Compare</Text>
+                <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('preview.compareName', { name: pkg.name })} onPress={noop} style={({ focused }: PressState) => [styles.compareBtn, focused ? focusRing : null]}>
+                  <Text style={styles.compareBtnText}>{t('preview.compare')}</Text>
                 </Pressable>
               </View>
             </M2Card>
           ))}
-          <Text style={m2Text.meta}>Each test page names the lab that runs it, its accreditation and when the report is due.</Text>
+          <Text style={m2Text.meta}>{t('m2.labs.note')}</Text>
         </View>
       </View>
       <View style={styles.navBar}><PillNav current="health" onSelect={noop} /></View>

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useT } from '@/i18n';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Icon } from '@/design-system/icons';
 import { color, focusRing, font, fontWeight, radius, space } from '@/design-system/theme';
@@ -17,41 +18,42 @@ const noop = () => undefined;
  * Not wired, not replacing the real screen. See NOTES.md.
  */
 export function M2InsightsPreview(): React.ReactElement {
+  const t = useT();
   return (
     <View style={styles.screen} testID="preview-m2-insights">
       <View style={styles.scroll}>
         <View style={styles.body}>
-          <Text style={styles.eyebrow}>MY HEALTH</Text>
-          <Text style={styles.h1}>Insights</Text>
+          <Text style={styles.eyebrow}>{t('preview.myHealth')}</Text>
+          <Text style={styles.h1}>{t('m2.ins.tabInsights')}</Text>
 
           <View style={styles.todayRow}>
             <M2Card style={styles.todayCard}>
               <GlossTile icon="pill-3" hue="teal" size={36} />
-              <Text style={styles.todayTitle}>Medicines today</Text>
-              <Text style={m2Text.meta}>[1] of [2] taken</Text>
+              <Text style={styles.todayTitle}>{t('m2r.meds.title')}</Text>
+              <Text style={m2Text.meta}>{t('preview.1Of2Taken')}</Text>
               <View style={styles.todayActions}>
-                <Pressable role="button" accessibilityRole="button" accessibilityLabel="Taken" onPress={noop} style={({ focused }: PressState) => [styles.miniBtn, focused ? focusRing : null]}>
+                <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('campus.wellness.col.taken')} onPress={noop} style={({ focused }: PressState) => [styles.miniBtn, focused ? focusRing : null]}>
                   <Icon name="check" size={14} color={color.action} />
                 </Pressable>
-                <Pressable role="button" accessibilityRole="button" accessibilityLabel="Skip" onPress={noop} style={({ focused }: PressState) => [styles.miniBtn, focused ? focusRing : null]}>
+                <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('m2r.meds.skip')} onPress={noop} style={({ focused }: PressState) => [styles.miniBtn, focused ? focusRing : null]}>
                   <Icon name="skip-forward" size={14} color={color.text3} />
                 </Pressable>
               </View>
             </M2Card>
             <M2Card style={styles.todayCard}>
               <GlossTile icon="glass" hue="sky" size={36} />
-              <Text style={styles.todayTitle}>Water</Text>
-              <Text style={m2Text.meta}>[600] of [2000] ml</Text>
-              <Pressable role="button" accessibilityRole="button" accessibilityLabel="Add a glass" onPress={noop} style={({ focused }: PressState) => [styles.miniBtn, focused ? focusRing : null]}>
+              <Text style={styles.todayTitle}>{t('nav.water')}</Text>
+              <Text style={m2Text.meta}>{t('preview.600Of2000Ml')}</Text>
+              <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('preview.addAGlass')} onPress={noop} style={({ focused }: PressState) => [styles.miniBtn, focused ? focusRing : null]}>
                 <Icon name="plus" size={14} color={color.action} />
               </Pressable>
             </M2Card>
           </View>
 
           <M2Card style={styles.needLookCard}>
-            <Text style={m2Text.eyebrow}>LATEST REPORT</Text>
-            <Text style={styles.needLookTitle}>Needs a look</Text>
-            <Text style={m2Text.meta}>2 values outside range · [Lipid profile], 14 Oct 2026</Text>
+            <Text style={m2Text.eyebrow}>{t('preview.latestReport')}</Text>
+            <Text style={styles.needLookTitle}>{t('admin.kb.health.pill.attention')}</Text>
+            <Text style={m2Text.meta}>{t('preview.2ValuesOutsideRangeLipidProfile14Oct')}</Text>
             <View style={styles.needLookRow}>
               {['HbA1c 6.4', 'HDL 38', 'Vitamin B12 412'].map((v) => (
                 <M2Pill key={v} label={v} tone={v.startsWith('Vitamin') ? 'positive' : 'attention'} />
@@ -59,32 +61,30 @@ export function M2InsightsPreview(): React.ReactElement {
             </View>
           </M2Card>
 
-          <M2Note tone="neutral" icon="stetho" title="Your doctor's note">
-            Keep up the walk after meals. Repeat the lipid panel in 3 months.
-          </M2Note>
+          <M2Note tone="neutral" icon="stetho" title={t('preview.yourDoctorSNote')}>{t('preview.keepUpTheWalkAfterMealsRepeatThe')}</M2Note>
 
           <View style={styles.dueRow}>
             <M2Card style={styles.dueCard}>
               <GlossTile icon="refresh" hue="orange" size={36} />
-              <Text style={styles.dueTitle}>Refills due</Text>
-              <Text style={m2Text.meta}>[Paracetamol] in 5 days</Text>
+              <Text style={styles.dueTitle}>{t('preview.refillsDue')}</Text>
+              <Text style={m2Text.meta}>{t('preview.paracetamolIn5Days')}</Text>
             </M2Card>
             <M2Card style={styles.dueCard}>
               <GlossTile icon="flask" hue="violet" size={36} />
-              <Text style={styles.dueTitle}>Repeat test ordered</Text>
-              <Text style={m2Text.meta}>Lipid profile</Text>
+              <Text style={styles.dueTitle}>{t('preview.repeatTestOrdered')}</Text>
+              <Text style={m2Text.meta}>{t('preview.lipidProfile')}</Text>
             </M2Card>
           </View>
 
           <View>
-            <Text style={styles.sectionTitle}>Recommended for your HDL result</Text>
-            <Text style={m2Text.meta}>A pharmacist checks anything new against your existing medicines. Why these? Ask Ayush.</Text>
+            <Text style={styles.sectionTitle}>{t('preview.recommendedForYourHdlResult')}</Text>
+            <Text style={m2Text.meta}>{t('preview.aPharmacistChecksAnythingNewAgainstYourExisting')}</Text>
             {[{ name: '[Omega-3 fish oil]', icon: 'droplet' as const, price: '₹399' }].map((p) => (
               <M2Card key={p.name} style={styles.productCard}>
                 <GlossTile icon={p.icon} hue="rose" size={40} />
                 <View style={styles.flexShrink}>
                   <Text style={styles.productName}>{p.name}</Text>
-                  <Text style={m2Text.meta}>May help support HDL, per general guidance</Text>
+                  <Text style={m2Text.meta}>{t('preview.mayHelpSupportHdlPerGeneralGuidance')}</Text>
                 </View>
                 <Text style={styles.productPrice}>{p.price}</Text>
               </M2Card>
@@ -94,20 +94,20 @@ export function M2InsightsPreview(): React.ReactElement {
           <View style={styles.bodySystemRow}>
             <M2Card style={styles.bodyCard}>
               <Icon name="kidney" size={20} color={color.text3} />
-              <Text style={styles.bodyTitle}>Kidney function</Text>
+              <Text style={styles.bodyTitle}>{t('preview.kidneyFunction')}</Text>
               <M2Pill label="Get this tested" tone="action" />
             </M2Card>
             <M2Card style={styles.bodyCard}>
               <Icon name="brain" size={20} color={color.text3} />
-              <Text style={styles.bodyTitle}>Brain and nerves</Text>
+              <Text style={styles.bodyTitle}>{t('preview.brainAndNerves')}</Text>
               <M2Pill label="Get this tested" tone="action" />
             </M2Card>
           </View>
 
           <M2Card style={styles.stepsCard}>
             <Icon name="walk" size={22} color={color.serviceTealInk} />
-            <Text style={styles.stepsTitle}>Steps today</Text>
-            <Text style={m2Text.meta}>[4,210] · From this phone's motion sensor</Text>
+            <Text style={styles.stepsTitle}>{t('steps.todayLabel')}</Text>
+            <Text style={m2Text.meta}>{t('preview.4210FromThisPhoneSMotionSensor')}</Text>
           </M2Card>
         </View>
       </View>

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useT } from '@/i18n';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { color, focusRing, font, fontWeight, radius, space } from '@/design-system/theme';
 import { M2Note, M2Pill, M2Tabs, RoundButton, m2Text } from '@/design-system/m2';
@@ -28,17 +29,18 @@ const ASK_AYUSH_CHIPS = ['Directions to use', 'What to avoid', 'Interactions'] a
  * flow is unrelated to this tab layout. See NOTES.md.
  */
 export function M2MedicineInfoPreview(): React.ReactElement {
+  const t = useT();
   return (
     <View style={styles.screen} testID="preview-m2-medicine-info">
       <View style={styles.header}>
         <RoundButton icon="arrow-left" label="Back" onPress={noop} testID="preview-mi-back" />
-        <Text style={m2Text.eyebrow}>MEDICINE INFO</Text>
+        <Text style={m2Text.eyebrow}>{t('preview.medicineInfo')}</Text>
       </View>
 
       <View style={styles.body}>
         <View style={styles.titleBlock}>
-          <Text style={styles.h1}>[Paracetamol 650 mg tablet]</Text>
-          <Text style={m2Text.body}>[Salt name] · [Strip of 15] · [Manufacturer]</Text>
+          <Text style={styles.h1}>{t('preview.paracetamol650MgTablet')}</Text>
+          <Text style={m2Text.body}>{t('preview.saltNameStripOf15Manufacturer')}</Text>
           <View style={styles.pillRow}>
             <M2Pill label="VERIFIED" tone="positive" icon="shield-check" />
             <M2Pill label="SCHEDULE: OTC" tone="neutral" />
@@ -49,24 +51,22 @@ export function M2MedicineInfoPreview(): React.ReactElement {
 
         <View>
           <View style={styles.sideEffectRow}>
-            <Text style={m2Text.eyebrow}>COMMON</Text>
-            <Text style={[m2Text.body, styles.sideEffectBody]}>[Reviewed text from the medicine master appears here, written in plain words.]</Text>
+            <Text style={m2Text.eyebrow}>{t('preview.common')}</Text>
+            <Text style={[m2Text.body, styles.sideEffectBody]}>{t('preview.reviewedTextFromTheMedicineMasterAppearsHere')}</Text>
           </View>
           <View style={[styles.sideEffectRow, styles.sideEffectRowLast]}>
-            <Text style={m2Text.eyebrow}>SERIOUS: GET HELP</Text>
-            <Text style={[m2Text.body, styles.sideEffectBody]}>[Signs that need a doctor or emergency help.]</Text>
+            <Text style={m2Text.eyebrow}>{t('preview.seriousGetHelp')}</Text>
+            <Text style={[m2Text.body, styles.sideEffectBody]}>{t('preview.signsThatNeedADoctorOrEmergencyHelp')}</Text>
           </View>
         </View>
 
-        <M2Note tone="info" icon="shield-check" title="Last verified by [reviewer name, qualification] on [date]" testID="preview-mi-note">
-          Information only. Talk to a doctor before taking any medicine.
-        </M2Note>
-        <Pressable role="link" accessibilityRole="link" accessibilityLabel="Report an error" onPress={noop} style={({ focused }: PressState) => [styles.reportLink, focused ? focusRing : null]}>
-          <Text style={styles.reportLinkText}>Report an error</Text>
+        <M2Note tone="info" icon="shield-check" title={t('preview.lastVerifiedByReviewerNameQualificationOnDate')} testID="preview-mi-note">{t('preview.informationOnlyTalkToADoctorBeforeTaking')}</M2Note>
+        <Pressable role="link" accessibilityRole="link" accessibilityLabel={t('preview.reportAnError')} onPress={noop} style={({ focused }: PressState) => [styles.reportLink, focused ? focusRing : null]}>
+          <Text style={styles.reportLinkText}>{t('preview.reportAnError')}</Text>
         </Pressable>
 
         <View style={styles.askAyush}>
-          <Text style={m2Text.eyebrow}>ASK AYUSH</Text>
+          <Text style={m2Text.eyebrow}>{t('preview.askAyush')}</Text>
           <View style={styles.chipRow}>
             {ASK_AYUSH_CHIPS.map((label) => (
               <Pressable key={label} role="button" accessibilityRole="button" accessibilityLabel={label} onPress={noop}
@@ -80,11 +80,11 @@ export function M2MedicineInfoPreview(): React.ReactElement {
 
       <View style={styles.footer}>
         <View>
-          <Text style={styles.price}>[₹ price]</Text>
-          <Text style={m2Text.meta}>[Pack of 15] · from [partner pharmacy]</Text>
+          <Text style={styles.price}>{t('preview.price')}</Text>
+          <Text style={m2Text.meta}>{t('preview.packOf15FromPartnerPharmacy')}</Text>
         </View>
-        <Pressable role="button" accessibilityRole="button" accessibilityLabel="Add" onPress={noop} style={({ focused }: PressState) => [styles.addBtn, focused ? focusRing : null]}>
-          <Text style={styles.addBtnText}>Add</Text>
+        <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('ident.badge.add')} onPress={noop} style={({ focused }: PressState) => [styles.addBtn, focused ? focusRing : null]}>
+          <Text style={styles.addBtnText}>{t('ident.badge.add')}</Text>
         </Pressable>
       </View>
     </View>

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useT } from '@/i18n';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Icon } from '@/design-system/icons';
 import { color, focusRing, font, fontWeight, radius, space } from '@/design-system/theme';
@@ -15,13 +16,14 @@ const noop = () => undefined;
  * the real screen. See NOTES.md.
  */
 export function M2WhatsNewPreview(): React.ReactElement {
+  const t = useT();
   return (
     <View style={styles.screen} testID="preview-m2-whats-new">
       <View style={styles.header}>
-        <Pressable role="button" accessibilityRole="button" accessibilityLabel="Back" onPress={noop} style={({ focused }: PressState) => [styles.backBtn, focused ? focusRing : null]}>
+        <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('common.back')} onPress={noop} style={({ focused }: PressState) => [styles.backBtn, focused ? focusRing : null]}>
           <Icon name="arrow-left" size={20} color={color.text} />
         </Pressable>
-        <Text style={styles.title}>What's new</Text>
+        <Text style={styles.title}>{t('news.tpl.PRODUCT_UPDATE')}</Text>
       </View>
       <View style={styles.scroll}>
         <View style={styles.body}>
@@ -35,13 +37,13 @@ export function M2WhatsNewPreview(): React.ReactElement {
               </View>
               <Text style={styles.cardTitle}>{post.title}</Text>
               <Text style={m2Text.meta}>{post.summary}</Text>
-              <Text style={styles.cardMeta}>5 Nov 2026 · {post.read}</Text>
+              <Text style={styles.cardMeta}>{t('preview.5Nov2026')}{post.read}</Text>
             </Pressable>
           ))}
 
-          <Pressable role="link" accessibilityRole="link" accessibilityLabel="All StudentKare news" onPress={noop} style={({ focused }: PressState) => [styles.allRow, focused ? focusRing : null]}>
+          <Pressable role="link" accessibilityRole="link" accessibilityLabel={t('news.whatsNew.allNews')} onPress={noop} style={({ focused }: PressState) => [styles.allRow, focused ? focusRing : null]}>
             <Icon name="megaphone" size={18} color={color.action} />
-            <Text style={styles.allText}>All StudentKare news</Text>
+            <Text style={styles.allText}>{t('news.whatsNew.allNews')}</Text>
             <Icon name="chevron-right" size={16} color={color.text3} />
           </Pressable>
         </View>

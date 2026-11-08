@@ -1,4 +1,5 @@
 import React from 'react';
+import { useT } from '@/i18n';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Icon } from '@/design-system/icons';
 import { color, focusRing, font, fontWeight, radius, space } from '@/design-system/theme';
@@ -35,27 +36,28 @@ const INCLUDED: ReadonlyArray<{ icon: SkIconName; title: string; note: string }>
  * replacing the real screen. See NOTES.md.
  */
 export function M2InsurancePreview(): React.ReactElement {
+  const t = useT();
   return (
     <View style={styles.screen} testID="preview-m2-insurance">
       <View style={styles.scroll}>
-        <M2HeroPanel eyebrow="Insurance" title="Your cover" sub="Policy, claims and your e-card, in one place." icon="shield-check-2" hue="green" compact />
+        <M2HeroPanel eyebrow="Insurance" title={t('preview.yourCover')} sub="Policy, claims and your e-card, in one place." icon="shield-check-2" hue="green" compact />
         <View style={styles.body}>
           <M2Card>
-            <Text style={m2Text.eyebrow}>CURRENT POLICY</Text>
-            <Text style={styles.policyName}>[Student health cover, 2026–27]</Text>
-            <Text style={m2Text.body}>Policy no. [number] · Valid till [date]</Text>
+            <Text style={m2Text.eyebrow}>{t('preview.currentPolicy')}</Text>
+            <Text style={styles.policyName}>{t('preview.studentHealthCover202627')}</Text>
+            <Text style={m2Text.body}>{t('preview.policyNoNumberValidTillDate')}</Text>
             <View style={styles.policyRow}>
-              <Pressable role="button" accessibilityRole="button" accessibilityLabel="E-card" onPress={noop} style={({ focused }: PressState) => [styles.outlineBtn, focused ? focusRing : null]}>
-                <Text style={styles.outlineBtnText}>E-card</Text>
+              <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('m2.ins.eCard')} onPress={noop} style={({ focused }: PressState) => [styles.outlineBtn, focused ? focusRing : null]}>
+                <Text style={styles.outlineBtnText}>{t('m2.ins.eCard')}</Text>
               </Pressable>
-              <Pressable role="button" accessibilityRole="button" accessibilityLabel="Start a claim" onPress={noop} style={({ focused }: PressState) => [styles.fillBtn, focused ? focusRing : null]}>
-                <Text style={styles.fillBtnText}>Start a claim</Text>
+              <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('m2.ins.startClaim')} onPress={noop} style={({ focused }: PressState) => [styles.fillBtn, focused ? focusRing : null]}>
+                <Text style={styles.fillBtnText}>{t('m2.ins.startClaim')}</Text>
               </Pressable>
             </View>
           </M2Card>
 
           <View>
-            <Text style={[m2Text.section, styles.sectionGap]}>What's usually included</Text>
+            <Text style={[m2Text.section, styles.sectionGap]}>{t('preview.whatSUsuallyIncluded')}</Text>
             {INCLUDED.map((item, i) => (
               <View key={item.title} style={[styles.includedRow, i < INCLUDED.length - 1 ? styles.includedRule : null]}>
                 <View style={styles.includedIconTile}><Icon name={item.icon} size={18} color={color.action} /></View>
@@ -68,17 +70,17 @@ export function M2InsurancePreview(): React.ReactElement {
           </View>
 
           <View>
-            <Text style={[m2Text.section, styles.sectionGap]}>More cover</Text>
-            <Text style={[m2Text.meta, styles.sectionGap]}>We're still choosing a partner for these. Register interest — nothing is on sale yet.</Text>
+            <Text style={[m2Text.section, styles.sectionGap]}>{t('m2.ins.moreCover')}</Text>
+            <Text style={[m2Text.meta, styles.sectionGap]}>{t('preview.weReStillChoosingAPartnerForThese')}</Text>
             <View style={styles.grid}>
               {MORE_COVER.map((item) => (
                 <M2Card key={item.title} style={styles.coverCard}>
                   <GlossTile icon={item.icon} hue="indigo" size={40} />
                   <Text style={styles.coverTitle}>{item.title}</Text>
                   <Text style={m2Text.meta}>{item.note}</Text>
-                  <Pressable role="button" accessibilityRole="button" accessibilityLabel={`Notify me — ${item.title}`} onPress={noop}
+                  <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('preview.notifyMeTitle', { title: item.title })} onPress={noop}
                     style={({ focused }: PressState) => [styles.notifyBtn, focused ? focusRing : null]}>
-                    <Text style={styles.notifyBtnText}>Notify me</Text>
+                    <Text style={styles.notifyBtnText}>{t('preview.notifyMe')}</Text>
                   </Pressable>
                 </M2Card>
               ))}
