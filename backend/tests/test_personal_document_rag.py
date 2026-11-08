@@ -595,4 +595,3 @@ def test_ayush_api_refuses_when_consent_lookup_fails(harness):
         assert "synthetic consent lookup failure" not in response.text
     finally:
         event.remove(engine, "before_cursor_execute", fail_consent_select)
-
