@@ -29,10 +29,32 @@ from core import workflow_models as M
 from services import embeddings, vector_store
 
 
+def lock_analysis_account(db: DBSession, account_id: str, *, shared: bool = False) -> bool:
+    """Serialize document analysis and consent changes until commit/rollback.
+
+    The account always exists before its preferences, so a missing preference row
+    cannot bypass serialization. PostgreSQL writers take FOR NO KEY UPDATE:
+    unlike FOR UPDATE, it does not conflict with the account foreign-key lock an
+    upload has already acquired. Searches take FOR SHARE, allowing concurrent
+    reads while excluding consent/index writers. Database failures propagate;
+    callers must refuse analysis, never continue without the lock.
+    """
+    return db.scalar(
+        select(M.Account.id).where(M.Account.id == account_id)
+        .with_for_update(read=shared, key_share=not shared)
+    ) is not None
+
+
 def consent_given(db: DBSession, account_id: str) -> bool:
-    """Whether this account has switched on DOCUMENT_AI_ANALYSIS (consent_ledger.py)."""
-    prefs = db.get(M.NotificationPreference, account_id)
-    return bool(prefs and prefs.document_ai_analysis_enabled)
+    """Read current consent from storage, never a cached preference object.
+
+    Callers that process passages hold the account lock through their transaction.
+    Missing consent denies; an unreadable consent raises before any processing.
+    """
+    return db.scalar(
+        select(M.NotificationPreference.document_ai_analysis_enabled)
+        .where(M.NotificationPreference.account_id == account_id)
+    ) is True
 
 
 def _embed_all(chunks: list[str]) -> tuple[str, list[list[float]]]:
@@ -60,10 +82,16 @@ def index_document(db: DBSession, document_id: str, account_id: str, text: str) 
     """Chunk and embed one document's read text. Replaces any chunks it already had.
 
     A no-op (after clearing old chunks) when DOCUMENT_AI_ANALYSIS is off for this
-    account, or when there is nothing to index — never raises for either case, since
-    reading the document itself (structured field extraction) must still succeed
-    whether or not the student opted into this.
+    account, or when there is nothing to index. Missing/wrong-owner documents are
+    also denied without deleting another account's passages. Lock or database
+    failures propagate; this function never commits the caller's transaction.
     """
+    if not lock_analysis_account(db, account_id):
+        return 0
+    if db.scalar(select(M.Document.id).where(
+        M.Document.id == document_id, M.Document.account_id == account_id,
+    )) is None:
+        return 0
     remove_document(db, document_id)
     if not text or not consent_given(db, account_id):
         return 0
@@ -81,8 +109,14 @@ def index_document(db: DBSession, document_id: str, account_id: str, text: str) 
 
 
 def search(db: DBSession, account_id: str, query: str, limit: int = 5) -> list[dict]:
-    """The account's own passages, scored against ``query``. Never crosses accounts:
-    filtered on account_id here, not left to the caller."""
+    """The account's passages, authorized against current consent.
+
+    Authorization is serialized with withdrawal through the caller's transaction.
+    A withdrawal committed first denies; an already-authorized in-flight answer
+    cannot be recalled after transmission. Never crosses accounts.
+    """
+    if not lock_analysis_account(db, account_id, shared=True) or not consent_given(db, account_id):
+        return []
     rows = db.scalars(
         select(M.PersonalDocumentChunk).where(M.PersonalDocumentChunk.account_id == account_id)
     ).all()
