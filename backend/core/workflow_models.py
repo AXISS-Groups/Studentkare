@@ -41,7 +41,8 @@ VECTOR_DIMENSIONS = LOCAL_DIMENSIONS
 
 
 def vector_column():
-    return mapped_column(Vector(VECTOR_DIMENSIONS).with_variant(JSON, "sqlite"), default=list)
+    # The pgvector migration leaves existing chunks without embeddings until reindexing.
+    return mapped_column(Vector(VECTOR_DIMENSIONS).with_variant(JSON, "sqlite"), default=list, nullable=True)
 
 
 class Account(Base):
@@ -1893,7 +1894,7 @@ class KnowledgeChunk(Base):
     # replaces its chunks; a stale version here means the index needs rebuilding.
     source_version: Mapped[int] = mapped_column(Integer, default=1)
     embedder: Mapped[str] = mapped_column(String(40), default="")
-    vector: Mapped[list] = vector_column()
+    vector: Mapped[list[float] | None] = vector_column()
     created_at: Mapped[float] = mapped_column(Float, default=0.0)
 
 
@@ -1925,7 +1926,7 @@ class PersonalDocumentChunk(Base):
     ordinal: Mapped[int] = mapped_column(Integer, default=0)
     content: Mapped[str] = mapped_column(String(2000), default="")
     embedder: Mapped[str] = mapped_column(String(40), default="")
-    vector: Mapped[list] = vector_column()
+    vector: Mapped[list[float] | None] = vector_column()
     created_at: Mapped[float] = mapped_column(Float, default=0.0)
 
 

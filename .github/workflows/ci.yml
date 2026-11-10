@@ -292,11 +292,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        postgres: ["15", "16"]
+        include:
+          - postgres: "15"
+            image: pgvector/pgvector:0.8.1-pg15-bookworm@sha256:94aee7e88f98125114657cab98e28c5dfa8dd517a6bf83fd98b503439f1e3de6
+          - postgres: "16"
+            image: pgvector/pgvector:0.8.1-pg16-bookworm@sha256:33198da2828a14c30348d2ccb4750833d5ed9a44c88d840a0e523d7417120337
 
     services:
       postgres:
-        image: pgvector/pgvector:pg${{ matrix.postgres }}
+        image: ${{ matrix.image }}
         env:
           POSTGRES_USER: ci
           POSTGRES_PASSWORD: ci
