@@ -348,7 +348,8 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
     switch (route) {
       // Home above phone width is Mobile 2.0 Home laid out wide (parity phase 2), as the phone draws it.
       case '':
-      case 'home': return <M2HomeRoute wide />;
+      case 'home':
+      case 'dashboard': return <M2HomeRoute wide />;
       case 'health': return <MemberOverview />;
       case 'orders': return <WebOrdersHub />;
       // The one notifications inbox, opened from the bell: the phone's inbox in the page column.

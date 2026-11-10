@@ -121,7 +121,7 @@ describe('step counting permissions (Steps screen)', () => {
     });
     walk(resolve(process.cwd(), 'src'));
     const importers = files.filter((f) => /from '(expo-sensors|react-native-health|react-native-health-connect)'/.test(readFileSync(f, 'utf8')))
-      .map((f) => f.slice(process.cwd().length + 1));
+      .map((f) => f.slice(process.cwd().length + 1).replace(/\\/g, '/'));
     expect(importers).toEqual(['src/native/stepConnectors.ts']);
   });
 });

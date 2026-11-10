@@ -33,7 +33,10 @@ config.resolver.extraNodeModules = {
 const upstreamResolve = config.resolver.resolveRequest;
 config.resolver.resolveRequest = (context, moduleName, platform) => {
   if (moduleName === 'buffer') {
-    return context.resolveRequest(context, path.resolve(projectRoot, 'node_modules/buffer'), platform);
+    return {
+      filePath: require.resolve('buffer/'),
+      type: 'sourceFile',
+    };
   }
   const target = moduleName.startsWith('@/') ? path.join(srcRoot, moduleName.slice(2)) : moduleName;
   return upstreamResolve

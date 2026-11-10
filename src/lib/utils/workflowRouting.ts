@@ -8,7 +8,7 @@ export { routePaths, publicRoutes };
 export type RoutePath = typeof routePaths[number] | '';
 export const isRoutePath = (value: string): value is RoutePath => value === '' || routePaths.includes(value as typeof routePaths[number]);
 export const asRoutePath = (value: string): RoutePath => (value === '' || value === '/' ? '' : isRoutePath(value) ? value : ('shop' as RoutePath));
-export const homeForRole = (role: AccountRole): RoutePath => role === 'SUPER_ADMIN' ? 'admin' : role === 'VENDOR' ? 'vendor' : role === 'NMC_DOCTOR' ? 'clinician' : role === 'CAMPUS_ADMIN' ? 'campus' : role === 'COUNSELLOR' ? 'counsellor' : role === 'LAB_COLLECTOR' ? 'staff-collect' : 'health';
+export const homeForRole = (role: AccountRole): RoutePath => role === 'SUPER_ADMIN' ? 'admin' : role === 'VENDOR' ? 'vendor' : role === 'NMC_DOCTOR' ? 'clinician' : role === 'CAMPUS_ADMIN' ? 'campus' : role === 'COUNSELLOR' ? 'counsellor' : role === 'LAB_COLLECTOR' ? 'staff-collect' : 'dashboard';
 export function canAccessRoute(route: RoutePath, role: AccountRole | null) {
   if (route === '' || publicRoutes.includes(route as RoutePath)) return true;
   if (!role) return false;

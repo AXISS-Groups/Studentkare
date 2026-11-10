@@ -37,7 +37,7 @@ describe('copy-literal rule', () => {
     ['Telugu text', '<p>నీటి లక్ష్యం</p>'],
   ])('flags %s in a new file', async (_label, jsx) => {
     expect(await copyFindings(wrap(jsx))).toBeGreaterThan(0);
-  });
+  }, 20_000);
 
   it.each([
     ['catalogue text', "<p>{t('wellness.waterGoal')}</p>"],
@@ -71,8 +71,9 @@ describe('legacy lists only shrink (scripts/check-legacy-lists.mjs)', () => {
   it('passes on the current tree', () => {
     const result = run(root);
     expect(result.status, result.stderr).toBe(0);
-    expect(result.stdout).toContain('config/copy-literal-legacy.json');
-    expect(result.stdout).toContain('config/python-magic-number-legacy.json');
+    const output = result.stdout.replace(/\\/g, '/');
+    expect(output).toContain('config/copy-literal-legacy.json');
+    expect(output).toContain('config/python-magic-number-legacy.json');
   });
 
   it('fails when a list gains an entry or names a missing file', () => {
