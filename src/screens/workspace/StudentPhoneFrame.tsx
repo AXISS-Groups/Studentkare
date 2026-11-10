@@ -16,10 +16,10 @@ import { STUDENT_NAV_ROUTES } from '@/design-system/student-shell/studentPillNav
  * · Orders · Ask Ayush · My health · Profile, replacing the five-tab bar
  * (Discover · Wellness · Ayush AI · Lab Tests · Your Care). Destination, then
  * the web route it opens:
- * - Home (M2Home) opens /dashboard, the student dashboard.
+ * - Home (M2Home) opens /health, the student home.
  * - Orders (M2Orders) opens /orders.
  * - Ask Ayush (M2AskAyush) opens /ayush.
- * - My health opens /health. The existing /your-care insights route remains available.
+ * - My health (M2Insights) opens /your-care.
  * - Profile (M2Profile) opens /profile.
  * The old tabs' shop and lab tests are on Home's service rail.
  */
@@ -59,8 +59,7 @@ const PROFILE_ROUTES: ReadonlySet<RoutePath> = new Set<RoutePath>([
 
 /** The pill-nav destination a route belongs to (null: none is current). */
 export function studentNavFor(route: RoutePath): PillNavKey | null {
-  if (route === 'your-care') return null;
-  if (route === 'home' || route === '' || route === 'dashboard') return 'home';
+  if (route === 'health') return 'home';
   const key = (Object.keys(STUDENT_NAV_ROUTES) as PillNavKey[]).find((k) => STUDENT_NAV_ROUTES[k] === route);
   if (key) return key;
   if (HEALTH_ROUTES.has(route)) return 'health';

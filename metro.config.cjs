@@ -25,8 +25,16 @@ try {
   // No node_modules yet: Metro reports the missing packages itself.
 }
 
+config.resolver.extraNodeModules = {
+  ...(config.resolver.extraNodeModules ?? {}),
+  buffer: path.resolve(projectRoot, 'node_modules/buffer'),
+};
+
 const upstreamResolve = config.resolver.resolveRequest;
 config.resolver.resolveRequest = (context, moduleName, platform) => {
+  if (moduleName === 'buffer') {
+    return context.resolveRequest(context, path.resolve(projectRoot, 'node_modules/buffer'), platform);
+  }
   const target = moduleName.startsWith('@/') ? path.join(srcRoot, moduleName.slice(2)) : moduleName;
   return upstreamResolve
     ? upstreamResolve(context, target, platform)

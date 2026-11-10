@@ -1,8 +1,7 @@
 import { translate } from '@/i18n';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import React from 'react';
-import { configure, fireEvent, render, screen, within } from '@testing-library/react';
-configure({ asyncUtilTimeout: 5000 });
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import type { AccountRole } from '../../../data/types/workflowTypes';
 
 const auth: { user: { fullName: string; role: AccountRole; university?: string; isVerifiedStudent?: boolean } | null } = { user: null };
@@ -49,9 +48,9 @@ describe('student pill nav (Mobile 2.0, approved 2026-10-21)', () => {
   });
 
   it('maps each destination to its route; the store boards show Home as current', () => {
-    expect(Object.values(STUDENT_NAV_ROUTES)).toEqual(['dashboard', 'orders', 'ayush', 'health', 'profile']);
-    expect(studentNavFor('health')).toBe('health');
-    expect(studentNavFor('your-care')).toBeNull();
+    expect(Object.values(STUDENT_NAV_ROUTES)).toEqual(['home', 'orders', 'ayush', 'your-care', 'profile']);
+    expect(studentNavFor('health')).toBe('home');
+    expect(studentNavFor('your-care')).toBe('health');
     for (const mine of ['health/medicines', 'health/water'] as const) expect(studentNavFor(mine)).toBe('health');
     for (const store of ['shop', 'lab-tests', 'care'] as const) expect(studentNavFor(store)).toBe('home');
     expect(isStudentNavRoot('shop')).toBe(false);
@@ -62,7 +61,7 @@ describe('student pill nav (Mobile 2.0, approved 2026-10-21)', () => {
 
 describe('student workspace at phone width', () => {
   it('draws the pill nav instead of the desktop shell; Home draws its own header', async () => {
-    render(<WorkspaceScreen route="home" />);
+    render(<WorkspaceScreen route="health" />);
     const nav = screen.getByRole('navigation', { name: 'Main' });
     expect(within(nav).getAllByRole('link').map(link => link.getAttribute('aria-label'))).toEqual(['Home', 'Orders', 'Ask Ayush', 'My health', 'Profile']);
     expect(within(nav).getByRole('link', { name: 'Home' })).toHaveAttribute('aria-current', 'page');
@@ -80,7 +79,7 @@ describe('student workspace at phone width', () => {
     // jsdom has no modal dialogs.
     HTMLDialogElement.prototype.showModal = function showModal(this: HTMLDialogElement) { this.setAttribute('open', ''); };
     HTMLDialogElement.prototype.close = function close(this: HTMLDialogElement) { this.removeAttribute('open'); };
-    render(<WorkspaceScreen route="home" />);
+    render(<WorkspaceScreen route="health" />);
     await screen.findByTestId('m2-home');
     expect(screen.getByRole('button', { name: 'Notifications' })).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'SOS, get help now' }));
@@ -98,7 +97,7 @@ describe('student workspace at phone width', () => {
   });
 
   it('opens the account menu (More) from the avatar on Home', async () => {
-    render(<WorkspaceScreen route="home" />);
+    render(<WorkspaceScreen route="health" />);
     fireEvent.click(await screen.findByRole('button', { name: /, open your account menu$/ }));
     expect(screen.getByTestId('more-hub')).toBeInTheDocument();
   });
@@ -115,7 +114,7 @@ describe('student workspace at phone width', () => {
     fireEvent.click(screen.getByRole('link', { name: 'Orders' }));
     fireEvent.click(screen.getByRole('link', { name: 'My health' }));
     fireEvent.click(screen.getByRole('link', { name: 'Ask Ayush' }));
-    expect(nav.calls).toEqual(['orders', 'health', 'ayush']);
+    expect(nav.calls).toEqual(['orders', 'your-care', 'ayush']);
   });
 
   it('opens the More panel from Profile, Settings (no menu button in the header), with log out in reach and its own close', async () => {
@@ -160,15 +159,17 @@ describe('student workspace at phone width', () => {
 });
 
 describe('phone boards in the frame (WP-04)', () => {
-  it('draws the Health overview separately from Dashboard', async () => {
+  it('draws Mobile 2.0 Home on /health: SOS before search, and no health data beyond today’s medicines', async () => {
     render(<WorkspaceScreen route="health" />);
-    expect(await screen.findByText(translate('en', 'member.overview.nextTitle'))).toBeInTheDocument();
-    expect(screen.queryByTestId('m2-home')).toBeNull();
+    const board = await screen.findByTestId('m2-home');
+    const sos = within(board).getByRole('button', { name: 'SOS, get help now' });
+    const search = within(board).getByRole('search', { name: 'Open search' });
+    expect(sos.compareDocumentPosition(search) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
   it('lets a board with its own back control leave the header without one', async () => {
     render(<BrowserRouter><WorkspaceScreen route="search" /></BrowserRouter>);
-    await screen.findByTestId('search-entry', {}, { timeout: 5000 });
+    await screen.findByTestId('search-entry');
     expect(screen.getAllByRole('button', { name: 'Back' })).toHaveLength(1);
     expect(screen.getByRole('heading', { name: 'Search' })).toBeInTheDocument();
   });

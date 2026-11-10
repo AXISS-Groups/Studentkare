@@ -10,7 +10,7 @@ import { skIcons } from '../../icons/generated/skIconData';
 
 function renderShell(overrides: Partial<React.ComponentProps<typeof StudentWebShell>> = {}) {
   const props = {
-    route: 'dashboard' as const,
+    route: 'home' as const,
     student: { fullName: 'Krishna Chintakayala', campus: 'VNR VJIET', verified: true },
     cartCount: 2,
     onNavigate: vi.fn(),
@@ -33,7 +33,7 @@ describe('StudentWebShell', () => {
     const groups = within(nav).getAllByRole('group').filter((group) => group.getAttribute('aria-labelledby'));
     expect(groups.map((group) => group.getAttribute('aria-labelledby'))).toEqual(['sk-sshell-care', 'sk-sshell-services', 'sk-sshell-account']);
     expect(within(groups[0]).getAllByRole('button').map((button) => button.textContent)).toEqual([
-      'Home', 'My health', 'Health vault', 'Medicines today', 'Water', 'Emergency card', 'My check-in pass',
+      'Home', 'Health vault', 'Medicines today', 'Water', 'Emergency card', 'My check-in pass',
     ]);
     expect(within(groups[1]).getAllByRole('button').map((button) => button.textContent)).toEqual([
       'Orders', 'Buy again', 'My requests',
@@ -54,23 +54,20 @@ describe('StudentWebShell', () => {
     expect(props.onNavigate).toHaveBeenCalledWith('security');
   });
 
-  it('marks Home on the signed-in dashboard and My health on the health route', () => {
-    renderShell({ route: 'dashboard' });
+  it('marks the single Home item active on the signed-in dashboard route', () => {
+    renderShell({ route: 'home' });
     expect(within(sidebarNav()).getByRole('button', { name: 'Home' })).toHaveAttribute('aria-current', 'page');
-    expect(within(sidebarNav()).getByRole('button', { name: 'My health' })).not.toHaveAttribute('aria-current');
-    renderShell({ route: 'health' });
-    expect(within(screen.getAllByRole('navigation', { name: 'My Student Kare' })[1]).getByRole('button', { name: 'My health' })).toHaveAttribute('aria-current', 'page');
+    expect(within(sidebarNav()).queryByRole('button', { name: 'My health' })).toBeNull();
   });
 
-  it('opens the signed-in dashboard from Home and keeps Health separately navigable', () => {
+  it('opens the signed-in dashboard from the single Home entry and maps care detail screens to it', () => {
     const props = renderShell();
     fireEvent.click(within(sidebarNav()).getByRole('button', { name: 'Home' }));
-    expect(props.onNavigate).toHaveBeenCalledWith('dashboard');
-    fireEvent.click(within(sidebarNav()).getByRole('button', { name: 'My health' }));
-    expect(props.onNavigate).toHaveBeenCalledWith('health');
+    expect(props.onNavigate).toHaveBeenCalledWith('home');
+    expect(within(sidebarNav()).queryByRole('button', { name: 'My health' })).toBeNull();
     expect(within(sidebarNav()).queryByRole('button', { name: 'Report insights' })).toBeNull();
     expect(STUDENT_NAV.flatMap((g) => g.items).some((item) => item.route === 'report-insights')).toBe(false);
-    expect(studentNavIdFor('report-insights')).toBe('my-health');
+    expect(studentNavIdFor('report-insights')).toBe('home');
   });
 
   it('a bare board (WebAyush) keeps the top nav and SOS and marks the frame for no sidebar', () => {
@@ -116,7 +113,7 @@ describe('StudentWebShell', () => {
   it('takes the brand to the signed-in Home dashboard', () => {
     const props = renderShell();
     fireEvent.click(screen.getByRole('button', { name: 'Student Kare — Home' }));
-    expect(props.onNavigate).toHaveBeenCalledWith('dashboard');
+    expect(props.onNavigate).toHaveBeenCalledWith('');
   });
 
   it('has the store top nav, the one search box, the cart with its count and the account button; no My orders', () => {
@@ -205,9 +202,9 @@ describe('student nav data', () => {
   });
 
   it('maps related routes to their sidebar item', () => {
-    expect(studentNavIdFor('health')).toBe('my-health');
-    expect(studentNavIdFor('your-care')).toBe('my-health');
-    expect(studentNavIdFor('health/trends')).toBe('my-health');
+    expect(studentNavIdFor('health')).toBe('home');
+    expect(studentNavIdFor('your-care')).toBe('home');
+    expect(studentNavIdFor('health/trends')).toBe('home');
     expect(studentNavIdFor('my-lab-tests')).toBe('orders');
     expect(studentNavIdFor('medications')).toBe('medicines');
     expect(studentNavIdFor('notification-settings')).toBe('notifications');

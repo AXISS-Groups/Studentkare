@@ -121,7 +121,6 @@ export const routePaths = [
   'console',
   'counsellor',
   'crisis',
-  'dashboard',
   'data-export',
   'data-rights',
   'delete-account',
