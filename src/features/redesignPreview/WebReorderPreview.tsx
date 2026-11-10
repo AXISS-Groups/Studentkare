@@ -2,7 +2,7 @@ import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Icon, Illustration } from '@/design-system/icons';
 import { color, focusRing, font, fontWeight, radius, space } from '@/design-system/theme';
-import { GlossTile, M2Card, M2Note, M2Pill, m2Text } from '@/design-system/m2';
+import { GlossTile, M2Card, M2Note, m2Text } from '@/design-system/m2';
 import type { PressState } from '@/design-system/m2';
 import { WebShellPreview } from './WebShellPreview';
 import { BrandFooter } from './BrandFooter';

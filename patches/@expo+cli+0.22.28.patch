@@ -1,0 +1,26 @@
+diff --git a/node_modules/@expo/cli/build/src/utils/npm.js b/node_modules/@expo/cli/build/src/utils/npm.js
+index b861322..84ff17c 100644
+--- a/node_modules/@expo/cli/build/src/utils/npm.js
++++ b/node_modules/@expo/cli/build/src/utils/npm.js
+@@ -60,7 +60,7 @@ function _stream() {
+     return data;
+ }
+ function _tar() {
+-    const data = /*#__PURE__*/ _interopRequireDefault(require("tar"));
++    const data = { default: require("tar") };
+     _tar = function() {
+         return data;
+     };
+diff --git a/node_modules/@expo/cli/build/src/utils/tar.js b/node_modules/@expo/cli/build/src/utils/tar.js
+index 8bf12d8..ce1ba83 100644
+--- a/node_modules/@expo/cli/build/src/utils/tar.js
++++ b/node_modules/@expo/cli/build/src/utils/tar.js
+@@ -14,7 +14,7 @@ function _spawnAsync() {
+     return data;
+ }
+ function _tar() {
+-    const data = /*#__PURE__*/ _interopRequireDefault(require("tar"));
++    const data = { default: require("tar") };
+     _tar = function() {
+         return data;
+     };

@@ -2,7 +2,7 @@ import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Icon } from '@/design-system/icons';
 import { color, focusRing, font, fontWeight, radius, space } from '@/design-system/theme';
-import { M2Card, M2HeroPanel, M2Note, PillNav, RoundButton, m2Text } from '@/design-system/m2';
+import { M2Card, M2HeroPanel, M2Note, PillNav, m2Text } from '@/design-system/m2';
 import type { PressState } from '@/design-system/m2';
 
 const noop = () => undefined;

@@ -23,7 +23,7 @@ interface AuthContextValue {
   logout: (choice?: SignOutChoice) => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextValue | null>(null);
+export const AuthContext = createContext<AuthContextValue | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<Account | null>(null);
   const [status, setStatus] = useState<AuthContextValue['status']>('loading');
@@ -62,11 +62,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     // This browser's pushes stop with the session (the server revokes them too).
     await stopWebPushOnSignOut();
-    await apiRequest('/auth/logout', { method: 'POST', body: choice?.remember ? JSON.stringify(choice) : undefined });
-    // The signed-out screen confirms the session ended and keeps emergency
-    // help one tap away. Dropping the student on the shop said neither.
-    navigate('logged-out');
-    acceptSession({ user: null, csrfToken: '' });
+    try {
+      await apiRequest('/auth/logout', { method: 'POST', body: choice?.remember ? JSON.stringify(choice) : undefined });
+    } finally {
+      // Clear local auth even if the server session has already expired or the
+      // logout response is lost. The next request will still be unauthenticated.
+      acceptSession({ user: null, csrfToken: '' });
+      navigate('');
+    }
   };
   const updateUser = (updated: Account) => setUser(current => current?.id === updated.id ? updated : current);
   return <AuthContext.Provider value={{ user, status, error, errorStatus, acceptSession, refresh: () => setVersion(value => value + 1), updateUser, logout }}>{children}</AuthContext.Provider>;

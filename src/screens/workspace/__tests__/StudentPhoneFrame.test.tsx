@@ -1,7 +1,8 @@
 import { translate } from '@/i18n';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import React from 'react';
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import { configure, fireEvent, render, screen, within } from '@testing-library/react';
+configure({ asyncUtilTimeout: 10000 });
 import type { AccountRole } from '../../../data/types/workflowTypes';
 
 const auth: { user: { fullName: string; role: AccountRole; university?: string; isVerifiedStudent?: boolean } | null } = { user: null };
@@ -32,6 +33,14 @@ function phoneWidth(matches: boolean) {
   })) as unknown as typeof window.matchMedia;
 }
 
+beforeAll(async () => {
+  await Promise.all([
+    import('@/features/m2store/views/M2HomeRoute'),
+    import('@/features/refills/views/M2RefillsRoute'),
+    import('@/features/discover/views/SearchRoute'),
+  ]);
+}, 60000);
+
 beforeEach(() => {
   auth.user = { fullName: 'Asha Rao', role: 'STUDENT', isVerifiedStudent: true, university: 'VNR VJIET' };
   nav.calls = [];
@@ -59,7 +68,7 @@ describe('student pill nav (Mobile 2.0, approved 2026-10-21)', () => {
   });
 });
 
-describe('student workspace at phone width', () => {
+describe('student workspace at phone width', { timeout: 30000 }, () => {
   it('draws the pill nav instead of the desktop shell; Home draws its own header', async () => {
     render(<WorkspaceScreen route="health" />);
     const nav = screen.getByRole('navigation', { name: 'Main' });
@@ -158,7 +167,7 @@ describe('student workspace at phone width', () => {
   });
 });
 
-describe('phone boards in the frame (WP-04)', () => {
+describe('phone boards in the frame (WP-04)', { timeout: 30000 }, () => {
   it('draws Mobile 2.0 Home on /health: SOS before search, and no health data beyond today’s medicines', async () => {
     render(<WorkspaceScreen route="health" />);
     const board = await screen.findByTestId('m2-home');

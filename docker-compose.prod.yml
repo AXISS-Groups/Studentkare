@@ -93,6 +93,8 @@ x-app-env: &app-env
   # off until the AI-constitution owner and the DPO sign (Admin › Integrations wins).
   MEDICINE_OCR_ENABLED: ${MEDICINE_OCR_ENABLED:-false}
   MEDICINE_OCR_TESSERACT:
+  DOCUMENT_OCR_ENABLED: ${DOCUMENT_OCR_ENABLED:-false}
+  DOCUMENT_OCR_TESSERACT:
   # Agent Ayush tuning.
   LLM_ENABLED:
   LLM_PROVIDER:

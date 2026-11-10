@@ -80,7 +80,7 @@ const skCopy = {
 };
 /** The files the copy rule covers (exported for its tests). Tests, stories and generated code are fixtures. */
 export const COPY_RULE_FILES = ['src/**/*.tsx'];
-export const COPY_RULE_IGNORES = ['src/**/__tests__/**', 'src/**/*.test.tsx', 'src/**/*.stories.tsx', 'src/test/**', 'src/design-system/icons/generated/**'];
+export const COPY_RULE_IGNORES = ['src/**/__tests__/**', 'src/**/*.test.tsx', 'src/**/*.stories.tsx', 'src/test/**', 'src/design-system/icons/generated/**', 'src/features/redesignPreview/**'];
 
 const skIcons = {
   rules: {

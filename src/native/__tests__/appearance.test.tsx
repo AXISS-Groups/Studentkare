@@ -1,6 +1,6 @@
 import React from 'react';
 import { readFileSync, existsSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
+import { dirname, relative, resolve } from 'node:path';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { AppearanceView } from '../AppearanceScreen';
@@ -114,7 +114,7 @@ describe('native boot loads no palette before the appearance is known', () => {
         if (next) queue.push(next);
       }
     }
-    const reached = [...seen].map((f) => f.replace(`${root}/`, ''));
+    const reached = [...seen].map((f) => relative(root, f).replace(/\\/g, '/'));
     expect(reached).not.toContain('design-system/theme.ts');
     expect(reached).not.toContain('native/App.tsx');
     expect(reached).toContain('design-system/nativeScheme.ts');

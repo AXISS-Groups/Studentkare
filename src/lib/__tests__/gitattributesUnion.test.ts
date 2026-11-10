@@ -41,7 +41,7 @@ describe('.gitattributes: merge=union only on pure lists', () => {
     /^export const \w+(: [^=]+)? = [[{]$/, /^[\]}]( as const)?;$/,
   ];
   it.each(unionFiles)('%s holds no logic outside its lists', (path) => {
-    const lines = readFileSync(join(root, path), 'utf8').split('\n');
+    const lines = readFileSync(join(root, path), 'utf8').split(/\r?\n/);
     const inside = new Set(findBlocks(lines.join('\n')).flatMap((b) => Array.from({ length: b.end - b.start + 1 }, (_, i) => b.start + i)));
     const stray = lines.filter((line, i) => !inside.has(i) && !ALLOWED.some((re) => re.test(line)));
     expect(stray).toEqual([]);
