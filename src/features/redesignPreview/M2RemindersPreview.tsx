@@ -1,4 +1,5 @@
 import React from 'react';
+import { useT } from '@/i18n';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Icon } from '@/design-system/icons';
 import { color, focusRing, font, fontWeight, radius, space } from '@/design-system/theme';
@@ -16,27 +17,28 @@ const noop = () => undefined;
  * Not wired, not replacing the real screen. See NOTES.md.
  */
 export function M2RemindersPreview(): React.ReactElement {
+  const t = useT();
   return (
     <View style={styles.screen} testID="preview-m2-reminders">
       <View style={styles.scroll}>
-        <M2HeroPanel eyebrow="My health" title="Medicines today" sub="1 of 2 doses left today." icon="pill-3" hue="teal" compact />
+        <M2HeroPanel eyebrow="My health" title={t('m2r.meds.title')} sub="1 of 2 doses left today." icon="pill-3" hue="teal" compact />
         <View style={styles.body}>
-          <Text style={m2Text.meta}>Nothing here is scored, and no one is told if you miss one.</Text>
+          <Text style={m2Text.meta}>{t('m2r.meds.noScore')}</Text>
 
           <M2Card>
             <View style={styles.medRow}>
               <GlossTile icon="pill-3" hue="teal" size={44} />
               <View style={styles.flexShrink}>
-                <Text style={styles.medName}>[Paracetamol 650 mg]</Text>
-                <Text style={m2Text.meta}>1 of 2 taken today</Text>
+                <Text style={styles.medName}>{t('preview.paracetamol650Mg')}</Text>
+                <Text style={m2Text.meta}>{t('preview.1Of2TakenToday')}</Text>
               </View>
             </View>
             <View style={styles.actionRow}>
-              <Pressable role="button" accessibilityRole="button" accessibilityLabel="Taken" onPress={noop} style={({ focused }: PressState) => [styles.fillBtn, focused ? focusRing : null]}>
-                <Icon name="check" size={16} color={color.onAction} /><Text style={styles.fillBtnText}>Taken</Text>
+              <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('campus.wellness.col.taken')} onPress={noop} style={({ focused }: PressState) => [styles.fillBtn, focused ? focusRing : null]}>
+                <Icon name="check" size={16} color={color.onAction} /><Text style={styles.fillBtnText}>{t('campus.wellness.col.taken')}</Text>
               </Pressable>
-              <Pressable role="button" accessibilityRole="button" accessibilityLabel="Skip" onPress={noop} style={({ focused }: PressState) => [styles.outlineBtn, focused ? focusRing : null]}>
-                <Icon name="skip-forward" size={16} color={color.action} /><Text style={styles.outlineBtnText}>Skip</Text>
+              <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('m2r.meds.skip')} onPress={noop} style={({ focused }: PressState) => [styles.outlineBtn, focused ? focusRing : null]}>
+                <Icon name="skip-forward" size={16} color={color.action} /><Text style={styles.outlineBtnText}>{t('m2r.meds.skip')}</Text>
               </Pressable>
             </View>
             <View style={styles.remindRow}>
@@ -48,9 +50,9 @@ export function M2RemindersPreview(): React.ReactElement {
             </View>
           </M2Card>
 
-          <Pressable role="link" accessibilityRole="link" accessibilityLabel="Water reminders" onPress={noop} style={({ focused }: PressState) => [styles.waterRow, focused ? focusRing : null]}>
+          <Pressable role="link" accessibilityRole="link" accessibilityLabel={t('m2r.wrem.channel')} onPress={noop} style={({ focused }: PressState) => [styles.waterRow, focused ? focusRing : null]}>
             <Icon name="glass" size={18} color={color.serviceSkyInk} />
-            <Text style={styles.waterText}>Water reminders</Text>
+            <Text style={styles.waterText}>{t('m2r.wrem.channel')}</Text>
             <Icon name="chevron-right" size={16} color={color.text3} />
           </Pressable>
         </View>

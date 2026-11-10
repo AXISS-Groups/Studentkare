@@ -284,19 +284,23 @@ jobs:
     # services.db_sql's global engine and the Postgres-only schema tests hit a
     # real server. Most tests still build their own in-memory SQLite engines
     # (see tests/conftest.py); this job does not change that.
-    # Production runs postgres:16-alpine (docker-compose.yml); 15 stays in the
-    # matrix so the migrations keep working on the previous major too.
+    # The document RAG migration requires the pgvector server extension.
+    # Keep both supported Postgres majors, with immutable extension-enabled images.
     name: Backend on Postgres ${{ matrix.postgres }} (migrations from empty + drift check + pytest)
     runs-on: ubuntu-latest
 
     strategy:
       fail-fast: false
       matrix:
-        postgres: ["15", "16"]
+        include:
+          - postgres: "15"
+            image: pgvector/pgvector:0.8.1-pg15-bookworm@sha256:94aee7e88f98125114657cab98e28c5dfa8dd517a6bf83fd98b503439f1e3de6
+          - postgres: "16"
+            image: pgvector/pgvector:0.8.1-pg16-bookworm@sha256:33198da2828a14c30348d2ccb4750833d5ed9a44c88d840a0e523d7417120337
 
     services:
       postgres:
-        image: postgres:${{ matrix.postgres }}
+        image: ${{ matrix.image }}
         env:
           POSTGRES_USER: ci
           POSTGRES_PASSWORD: ci

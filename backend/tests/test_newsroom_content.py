@@ -264,7 +264,7 @@ def test_new_tables_have_a_plane_and_defaults_are_definitions():
     for table in ("care_post_categories", "care_post_series", "care_post_stats"):
         assert rule_l.TABLE_PLANES[table] == rule_l.PLATFORM
     import json
-    manifest = json.loads((REPO / "design/icons/icon-manifest.json").read_text())
+    manifest = json.loads((REPO / "design/icons/icon-manifest.json").read_text(encoding="utf-8"))
     icons = {i["name"] for i in manifest["icons"]}
     assert newsroom_content.CATEGORY_ICONS <= icons
     assert all(c["icon"] in newsroom_content.CATEGORY_ICONS and c["hue"] in newsroom_content.HUES

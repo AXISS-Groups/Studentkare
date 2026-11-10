@@ -1,4 +1,5 @@
 import React from 'react';
+import { useT } from '@/i18n';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Icon } from '@/design-system/icons';
 import { color, focusRing, font, fontWeight, radius, space } from '@/design-system/theme';
@@ -15,29 +16,30 @@ const noop = () => undefined;
  * anything. See NOTES.md.
  */
 export function WebCheckoutPreview(): React.ReactElement {
+  const t = useT();
   return (
     <WebShellPreview route="orders">
       <View style={styles.body}>
-        <Text style={styles.h1}>Checkout</Text>
+        <Text style={styles.h1}>{t('onboard.nav.checkout')}</Text>
         <View style={styles.row2}>
           <View style={styles.flexShrink}>
             <M2Card>
-              <View style={styles.rowItem}><Icon name="house-outline" size={18} color={color.text3} /><Text style={styles.rowText}>Deliver to [Hostel block], Room [—]</Text></View>
-              <View style={[styles.rowItem, styles.rowBorder]}><Icon name="credit-card-2" size={18} color={color.text3} /><Text style={styles.rowText}>Pay with UPI</Text></View>
-              <View style={[styles.rowItem, styles.rowBorder]}><Icon name="banknote-2" size={18} color={color.text3} /><Text style={styles.rowText}>₹18 — paracetamol 650mg × 1</Text></View>
+              <View style={styles.rowItem}><Icon name="house-outline" size={18} color={color.text3} /><Text style={styles.rowText}>{t('preview.deliverToHostelBlockRoom')}</Text></View>
+              <View style={[styles.rowItem, styles.rowBorder]}><Icon name="credit-card-2" size={18} color={color.text3} /><Text style={styles.rowText}>{t('preview.payWithUpi')}</Text></View>
+              <View style={[styles.rowItem, styles.rowBorder]}><Icon name="banknote-2" size={18} color={color.text3} /><Text style={styles.rowText}>{t('preview.18Paracetamol650mg1')}</Text></View>
             </M2Card>
             <View style={styles.trustRow}>
-              <View style={styles.trustItem}><Icon name="lock-3" size={14} color={color.text3} /><Text style={m2Text.meta}>Payment is encrypted</Text></View>
-              <View style={styles.trustItem}><Icon name="leaf-2" size={14} color={color.text3} /><Text style={m2Text.meta}>Nothing shared with advertisers</Text></View>
+              <View style={styles.trustItem}><Icon name="lock-3" size={14} color={color.text3} /><Text style={m2Text.meta}>{t('preview.paymentIsEncrypted')}</Text></View>
+              <View style={styles.trustItem}><Icon name="leaf-2" size={14} color={color.text3} /><Text style={m2Text.meta}>{t('preview.nothingSharedWithAdvertisers')}</Text></View>
             </View>
           </View>
           <M2Card style={styles.summaryCard}>
-            <Text style={styles.summaryTitle}>Order total</Text>
-            <View style={styles.summaryRow}><Text style={m2Text.meta}>Subtotal</Text><Text style={styles.summaryValue}>₹18</Text></View>
-            <View style={styles.summaryRow}><Text style={m2Text.meta}>Delivery</Text><Text style={styles.summaryValue}>Free</Text></View>
-            <View style={[styles.summaryRow, styles.summaryRowBorder]}><Text style={styles.summaryTotalLabel}>Total</Text><Text style={styles.summaryTotalValue}>₹18</Text></View>
-            <Pressable role="button" accessibilityRole="button" accessibilityLabel="Place order" onPress={noop} style={({ focused }: PressState) => [styles.payBtn, focused ? focusRing : null]}>
-              <Icon name="diamond" size={14} color={color.onAction} /><Text style={styles.payBtnText}>Place order</Text>
+            <Text style={styles.summaryTitle}>{t('preview.orderTotal')}</Text>
+            <View style={styles.summaryRow}><Text style={m2Text.meta}>{t('phone.cart.subtotal')}</Text><Text style={styles.summaryValue}>₹18</Text></View>
+            <View style={styles.summaryRow}><Text style={m2Text.meta}>{t('partner.vlab.staff.role.Delivery')}</Text><Text style={styles.summaryValue}>{t('assist.wellness.free')}</Text></View>
+            <View style={[styles.summaryRow, styles.summaryRowBorder]}><Text style={styles.summaryTotalLabel}>{t('phone.cart.total')}</Text><Text style={styles.summaryTotalValue}>₹18</Text></View>
+            <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('preview.placeOrder')} onPress={noop} style={({ focused }: PressState) => [styles.payBtn, focused ? focusRing : null]}>
+              <Icon name="diamond" size={14} color={color.onAction} /><Text style={styles.payBtnText}>{t('preview.placeOrder')}</Text>
             </Pressable>
           </M2Card>
         </View>

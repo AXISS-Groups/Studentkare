@@ -1,4 +1,5 @@
 import React from 'react';
+import { useT } from '@/i18n';
 import { StyleSheet, Text, View } from 'react-native';
 import { BrandLogo } from '@/design-system/icons';
 import { color, font, fontWeight, space } from '@/design-system/theme';
@@ -13,10 +14,11 @@ import { color, font, fontWeight, space } from '@/design-system/theme';
  * sit at a page's end. No tagline, no promotional copy. See NOTES.md.
  */
 export function BrandFooter(): React.ReactElement {
+  const t = useT();
   return (
     <View style={styles.row}>
       <BrandLogo size={18} />
-      <Text style={styles.text}>Student Kare</Text>
+      <Text style={styles.text}>{t('phone.brand')}</Text>
     </View>
   );
 }

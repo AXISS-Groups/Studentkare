@@ -1,8 +1,9 @@
 import React from 'react';
+import { useT } from '@/i18n';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Icon } from '@/design-system/icons';
 import { color, focusRing, font, fontWeight, radius, space } from '@/design-system/theme';
-import { M2Card, M2HeroPanel, M2Note, PillNav, RoundButton, m2Text } from '@/design-system/m2';
+import { M2Card, M2HeroPanel, M2Note, PillNav, m2Text } from '@/design-system/m2';
 import type { PressState } from '@/design-system/m2';
 
 const noop = () => undefined;
@@ -18,10 +19,11 @@ const CONCERNS = ['Fever', 'Stress or anxiety', 'Skin', 'Period pain', 'Cold and
  * replacing it. See NOTES.md.
  */
 export function M2ConsultsPreview(): React.ReactElement {
+  const t = useT();
   return (
     <View style={styles.screen} testID="preview-m2-consults">
       <View style={styles.scroll}>
-        <M2HeroPanel eyebrow="Doctors" title="What's the concern?" sub="Video or in-person, same day when there's a slot." icon="video-2" hue="blue" compact />
+        <M2HeroPanel eyebrow="Doctors" title={t('preview.whatSTheConcern')} sub="Video or in-person, same day when there's a slot." icon="video-2" hue="blue" compact />
         <View style={styles.body}>
           <View style={styles.chipRow}>
             {CONCERNS.map((label) => (
@@ -32,12 +34,10 @@ export function M2ConsultsPreview(): React.ReactElement {
             ))}
           </View>
 
-          <M2Note tone="positive" icon="heart-3" title="Free and private" testID="preview-consults-counsellor">
-            The campus counsellor is free and private. Need someone right now? Call Tele-MANAS 14416, any time.
-          </M2Note>
+          <M2Note tone="positive" icon="heart-3" title={t('preview.freeAndPrivate')} testID="preview-consults-counsellor">{t('preview.theCampusCounsellorIsFreeAndPrivateNeed')}</M2Note>
 
           <View>
-            <Text style={[m2Text.section, styles.sectionGap]}>Doctors available today</Text>
+            <Text style={[m2Text.section, styles.sectionGap]}>{t('preview.doctorsAvailableToday')}</Text>
             {[
               { name: 'Dr. Ananya Rao', spec: 'General physician · 8 yrs · Telugu, English', slot: 'Next slot 11:40 AM' },
               { name: 'Dr. Vikram Shah', spec: 'Dermatology · 11 yrs · Hindi, English', slot: 'Next slot 2:15 PM' },

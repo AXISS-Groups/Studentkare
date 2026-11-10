@@ -1,4 +1,5 @@
 import React from 'react';
+import { useT } from '@/i18n';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { color, focusRing, font, fontWeight, radius, space } from '@/design-system/theme';
 import { M2Card, RoundButton, m2Text } from '@/design-system/m2';
@@ -27,6 +28,7 @@ const STEPS = [
  * before it becomes a real ticket.
  */
 export function LabPrepPreview(): React.ReactElement {
+  const t = useT();
   return (
     <View style={styles.screen} testID="preview-lab-prep">
       <View style={styles.base}>
@@ -35,12 +37,12 @@ export function LabPrepPreview(): React.ReactElement {
         </View>
         <View style={styles.body}>
           <View>
-            <Text style={m2Text.eyebrow}>LAB TEST</Text>
-            <Text style={styles.h1}>[Test or package name]</Text>
-            <Text style={[m2Text.body, styles.metaGap]}>[N] tests · samples: [urine, blood]</Text>
+            <Text style={m2Text.eyebrow}>{t('preview.labTest')}</Text>
+            <Text style={styles.h1}>{t('preview.testOrPackageName')}</Text>
+            <Text style={[m2Text.body, styles.metaGap]}>{t('preview.nTestsSamplesUrineBlood')}</Text>
           </View>
           <View style={styles.slotBlock}>
-            <Text style={m2Text.eyebrow}>SAMPLE COLLECTION BETWEEN</Text>
+            <Text style={m2Text.eyebrow}>{t('preview.sampleCollectionBetween')}</Text>
             <View style={styles.slotRow}>
               {SLOTS.map((slot, index) => (
                 <Pressable key={slot} role="button" accessibilityRole="button" accessibilityLabel={slot} onPress={noop}
@@ -49,16 +51,16 @@ export function LabPrepPreview(): React.ReactElement {
                 </Pressable>
               ))}
             </View>
-            <Text style={m2Text.body}>Report ready in [hours]. You can change the slot at checkout.</Text>
+            <Text style={m2Text.body}>{t('preview.reportReadyInHoursYouCanChangeThe')}</Text>
           </View>
           <View style={styles.infoRow}>
             <M2Card style={styles.infoCard}>
-              <Text style={m2Text.eyebrow}>SAMPLES</Text>
-              <Text style={styles.infoValue}>[Urine, blood]</Text>
+              <Text style={m2Text.eyebrow}>{t('partner.vlab.camp.col.samples')}</Text>
+              <Text style={styles.infoValue}>{t('preview.urineBlood')}</Text>
             </M2Card>
             <M2Card style={styles.infoCard}>
-              <Text style={m2Text.eyebrow}>PREPARATION</Text>
-              <Text style={styles.infoValue}>[Fasting 8–12 h]</Text>
+              <Text style={m2Text.eyebrow}>{t('partner.vreg.run.thPrep')}</Text>
+              <Text style={styles.infoValue}>{t('preview.fasting812H')}</Text>
             </M2Card>
           </View>
         </View>
@@ -66,9 +68,9 @@ export function LabPrepPreview(): React.ReactElement {
 
       <View pointerEvents="none" style={styles.scrim} />
 
-      <View role="dialog" accessibilityLabel="Preparations" style={styles.sheet} testID="preview-lab-prep-sheet">
+      <View role="dialog" accessibilityLabel={t('preview.preparations')} style={styles.sheet} testID="preview-lab-prep-sheet">
         <View style={styles.sheetHead}>
-          <Text style={styles.sheetTitle}>Before your sample</Text>
+          <Text style={styles.sheetTitle}>{t('preview.beforeYourSample')}</Text>
           <RoundButton icon="x" label="Close" onPress={noop} testID="preview-lab-prep-close" />
         </View>
         <View>
@@ -81,8 +83,8 @@ export function LabPrepPreview(): React.ReactElement {
             </View>
           ))}
         </View>
-        <Pressable role="button" accessibilityRole="button" accessibilityLabel="Got it" onPress={noop} style={({ focused }: PressState) => [styles.fillBtn, focused ? focusRing : null]}>
-          <Text style={styles.fillBtnText}>Got it</Text>
+        <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('partner.vrx.returns.policy.understood')} onPress={noop} style={({ focused }: PressState) => [styles.fillBtn, focused ? focusRing : null]}>
+          <Text style={styles.fillBtnText}>{t('partner.vrx.returns.policy.understood')}</Text>
         </Pressable>
       </View>
     </View>

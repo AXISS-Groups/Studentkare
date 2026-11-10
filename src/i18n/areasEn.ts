@@ -41,6 +41,7 @@ import { phoneboardsEn } from './areas/phoneboards';
 import { phonestoreEn } from './areas/phonestore';
 import { privacyEn } from './areas/privacy';
 import { pushEn } from './areas/push';
+import { redesignPreviewEn } from './areas/redesignPreview';
 import { refillsEn } from './areas/refills';
 import { rewardsEn } from './areas/rewards';
 import { safetyEn } from './areas/safety';
@@ -106,6 +107,7 @@ export const areasEn = {
   ...phonestoreEn,
   ...privacyEn,
   ...pushEn,
+  ...redesignPreviewEn,
   ...refillsEn,
   ...rewardsEn,
   ...safetyEn,

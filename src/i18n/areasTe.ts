@@ -41,6 +41,7 @@ import { phoneboardsTe } from './areas/phoneboards';
 import { phonestoreTe } from './areas/phonestore';
 import { privacyTe } from './areas/privacy';
 import { pushTe } from './areas/push';
+import { redesignPreviewTe } from './areas/redesignPreview';
 import { refillsTe } from './areas/refills';
 import { rewardsTe } from './areas/rewards';
 import { safetyTe } from './areas/safety';
@@ -106,6 +107,7 @@ export const areasTe = {
   ...phonestoreTe,
   ...privacyTe,
   ...pushTe,
+  ...redesignPreviewTe,
   ...refillsTe,
   ...rewardsTe,
   ...safetyTe,

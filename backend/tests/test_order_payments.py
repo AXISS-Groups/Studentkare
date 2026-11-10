@@ -6,6 +6,7 @@ a wrong amount and a replay; production must refuse to start on the mock.
 import hashlib
 import hmac
 import json
+import os
 import subprocess
 import sys
 import time
@@ -525,7 +526,8 @@ def test_a_provider_refusing_a_refund_moves_nothing(harness, razorpay):
 # --- production never runs the mock ---------------------------------------------
 
 def _boot(env_extra):
-    env = {"PYTHONPATH": BACKEND, "OTP_HASH_SECRET": "x" * 40, "DATABASE_URL": "postgresql://u:p@h/db"}
+    env = {key: os.environ[key] for key in ("SYSTEMROOT",) if key in os.environ}
+    env.update({"PYTHONPATH": BACKEND, "OTP_HASH_SECRET": "x" * 40, "DATABASE_URL": "postgresql://u:p@h/db"})
     env.update(env_extra)
     return subprocess.run([sys.executable, "-c", "from app import main"], cwd=BACKEND, env=env,  # noqa: S603
                           capture_output=True, text=True)

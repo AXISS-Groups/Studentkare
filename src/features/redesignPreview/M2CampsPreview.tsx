@@ -1,9 +1,9 @@
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useT } from '@/i18n';
+import { StyleSheet, Text, View } from 'react-native';
 import { Icon } from '@/design-system/icons';
-import { color, focusRing, font, fontWeight, radius, space } from '@/design-system/theme';
+import { color, font, fontWeight, radius, space } from '@/design-system/theme';
 import { M2Card, M2HeroPanel, M2Note, M2Pill, PillNav, m2Text } from '@/design-system/m2';
-import type { PressState } from '@/design-system/m2';
 
 const noop = () => undefined;
 
@@ -15,23 +15,24 @@ const noop = () => undefined;
  * replacing the real screen. See NOTES.md.
  */
 export function M2CampsPreview(): React.ReactElement {
+  const t = useT();
   return (
     <View style={styles.screen} testID="preview-m2-camps">
       <View style={styles.scroll}>
-        <M2HeroPanel eyebrow="Campus health" title="Health camps" sub="Slots can be changed or cancelled up to the cutoff." icon="calendar-2" hue="sky" compact />
+        <M2HeroPanel eyebrow="Campus health" title={t('nav.healthCamp')} sub="Slots can be changed or cancelled up to the cutoff." icon="calendar-2" hue="sky" compact />
         <View style={styles.body}>
           <View>
-            <Text style={[m2Text.section, styles.sectionGap]}>Your bookings</Text>
+            <Text style={[m2Text.section, styles.sectionGap]}>{t('camps.yours')}</Text>
             <M2Card>
               <View style={styles.bookingRow}>
                 <View style={styles.dateTile}>
                   <Text style={styles.dateDay}>12</Text>
-                  <Text style={styles.dateMon}>NOV</Text>
+                  <Text style={styles.dateMon}>{t('preview.nov')}</Text>
                 </View>
                 <View style={styles.flexShrink}>
-                  <Text style={styles.campName}>[Camp name]</Text>
-                  <Text style={m2Text.meta}>10:00 AM · [Place]</Text>
-                  <Text style={styles.ref}>Ref [ABCD1234]</Text>
+                  <Text style={styles.campName}>{t('preview.campName')}</Text>
+                  <Text style={m2Text.meta}>{t('preview.1000AmPlace')}</Text>
+                  <Text style={styles.ref}>{t('preview.refAbcd1234')}</Text>
                 </View>
                 <M2Pill label="Booked" tone="positive" />
               </View>
@@ -39,17 +40,17 @@ export function M2CampsPreview(): React.ReactElement {
           </View>
 
           <View>
-            <Text style={[m2Text.section, styles.sectionGap]}>Upcoming camps</Text>
+            <Text style={[m2Text.section, styles.sectionGap]}>{t('camps.upcoming')}</Text>
             {[
               { name: '[Dental checkup camp]', chips: ['Dental'], left: '14 left' },
               { name: '[Blood donation drive]', chips: ['Blood donation'], left: 'Every slot is full' },
             ].map((camp) => (
               <M2Card key={camp.name} style={styles.campCard}>
                 <View style={styles.campRow}>
-                  <View style={styles.dateTile}><Text style={styles.dateDay}>18</Text><Text style={styles.dateMon}>NOV</Text></View>
+                  <View style={styles.dateTile}><Text style={styles.dateDay}>18</Text><Text style={styles.dateMon}>{t('preview.nov')}</Text></View>
                   <View style={styles.flexShrink}>
                     <Text style={styles.campName}>{camp.name}</Text>
-                    <Text style={m2Text.meta}>[Place] · Free</Text>
+                    <Text style={m2Text.meta}>{t('preview.placeFree')}</Text>
                     <View style={styles.chipRow}>
                       {camp.chips.map((c) => <M2Pill key={c} label={c} tone="action" />)}
                       <View style={styles.usersRow}>
@@ -63,9 +64,7 @@ export function M2CampsPreview(): React.ReactElement {
             ))}
           </View>
 
-          <M2Note tone="neutral" icon="lock" title="Private by design">
-            The campus and the partner see counts per slot, never who booked.
-          </M2Note>
+          <M2Note tone="neutral" icon="lock" title={t('preview.privateByDesign')}>{t('preview.theCampusAndThePartnerSeeCountsPer')}</M2Note>
         </View>
       </View>
       <View style={styles.navBar}><PillNav current="home" onSelect={noop} /></View>

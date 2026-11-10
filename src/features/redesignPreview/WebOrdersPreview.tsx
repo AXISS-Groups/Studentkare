@@ -1,4 +1,5 @@
 import React from 'react';
+import { useT } from '@/i18n';
 import { StyleSheet, Text, View } from 'react-native';
 import { Icon } from '@/design-system/icons';
 import { color, font, fontWeight, radius, space } from '@/design-system/theme';
@@ -27,16 +28,17 @@ function ItemThumbRow({ icons }: { icons: readonly SkIconName[] }): React.ReactE
  * (Tier 2). Not wired, not replacing anything. See NOTES.md.
  */
 export function WebOrdersPreview(): React.ReactElement {
+  const t = useT();
   return (
     <WebShellPreview route="orders">
       <View style={styles.body}>
-        <Text style={styles.h1}>My orders</Text>
+        <Text style={styles.h1}>{t('pb.more.orders')}</Text>
         <M2Card style={styles.orderCard}>
           <View style={styles.row}>
             <GlossTile icon="shopping-bag" hue="indigo" size={48} />
             <View style={styles.flexShrink}>
-              <Text style={styles.orderTitle}>Cetirizine and ORS</Text>
-              <Text style={m2Text.meta}>Ordered 4 Nov 2026</Text>
+              <Text style={styles.orderTitle}>{t('preview.cetirizineAndOrs')}</Text>
+              <Text style={m2Text.meta}>{t('preview.ordered4Nov2026')}</Text>
             </View>
             <M2Pill label="Delivered" tone="positive" icon="check" />
           </View>
@@ -46,8 +48,8 @@ export function WebOrdersPreview(): React.ReactElement {
           <View style={styles.row}>
             <GlossTile icon="flask" hue="violet" size={48} />
             <View style={styles.flexShrink}>
-              <Text style={styles.orderTitle}>Complete blood count</Text>
-              <Text style={m2Text.meta}>Booked 2 Nov 2026</Text>
+              <Text style={styles.orderTitle}>{t('preview.completeBloodCount')}</Text>
+              <Text style={m2Text.meta}>{t('preview.booked2Nov2026')}</Text>
             </View>
             <M2Pill label="Done" tone="positive" icon="check" />
           </View>
@@ -57,8 +59,8 @@ export function WebOrdersPreview(): React.ReactElement {
           <View style={styles.row}>
             <View style={styles.iconTile}><Icon name="shopping-bag" size={20} color={color.text3} /></View>
             <View style={styles.flexShrink}>
-              <Text style={styles.orderTitle}>Vitamin D3 60K</Text>
-              <Text style={m2Text.meta}>Ordered 28 Oct 2026</Text>
+              <Text style={styles.orderTitle}>{t('preview.vitaminD360k')}</Text>
+              <Text style={m2Text.meta}>{t('preview.ordered28Oct2026')}</Text>
             </View>
             <M2Pill label="Picked up" tone="neutral" />
           </View>
