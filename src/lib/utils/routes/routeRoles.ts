@@ -52,7 +52,6 @@ export const routeRoles: Readonly<Partial<Record<RoutePath, RouteRoles>>> = {
   'consent': STUDENT_ONLY,
   'console': PARTNER,
   'counsellor': COUNSELLOR_DESK, // crisis follow-up queue (names, contacts): counsellors, campus-scoped by the server
-  'dashboard': STUDENT_ONLY,
   'data-rights': STUDENT_ONLY,
   'delete-account': STUDENT_ONLY,
   'dispense-register': PARTNER,

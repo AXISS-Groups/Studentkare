@@ -56,6 +56,7 @@ export function studentPhoneBoard(route: RoutePath): PhoneBoard | null {
   switch (route) {
     case '':
     case 'home':
+    case 'health':
       return { node: <M2HomeRoute />, title: 'm2.nav.home', ownBack: true };
     case 'lab-tests': return { node: <M2LabsRoute />, title: 'm2.labs.title', ownBack: true };
     case 'care': return { node: <M2ConsultsRoute />, title: 'm2.doc.eyebrow', ownBack: true };

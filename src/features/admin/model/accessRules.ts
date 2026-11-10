@@ -34,7 +34,7 @@ export function clinicalAccess(role: AccountRole): { label: string; tone: string
 }
 
 /** Names for the workspace each role is sent to after sign-in (homeForRole). */
-const HOME_LABEL: Partial<Record<RoutePath, string>> = { '': 'Student portal', home: 'Student portal', health: 'Student portal', dashboard: 'Student portal', clinician: 'Clinical workspace', vendor: 'Vendor workspace', campus: 'Campus administration', counsellor: 'Counsellor queue', admin: 'Platform administration', 'staff-collect': 'Staff app (sample collection)' };
+const HOME_LABEL: Partial<Record<RoutePath, string>> = { '': 'Student portal', home: 'Student portal', health: 'Student portal', clinician: 'Clinical workspace', vendor: 'Vendor workspace', campus: 'Campus administration', counsellor: 'Counsellor queue', admin: 'Platform administration', 'staff-collect': 'Staff app (sample collection)' };
 
 /** The part of the app a role works in: its home route from the app's own routing. */
 export const appAccess = (role: AccountRole): string => HOME_LABEL[homeForRole(role)] ?? 'Workspace unavailable';
