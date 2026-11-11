@@ -22,10 +22,12 @@ SKIP_DIRS = {"tests", "alembic", "__pycache__", ".venv", "venv"}
 # scripts.seed_scenarios is run on a staging server only (docs/guides/staging-seed.md);
 # scripts.open_data on the dev site only (docs/guides/dev-environment.md).
 # scripts.load_help_pack is run by operators (docs/guides/ayush-operations.md).
+# scripts.import_otc_medicine_dataset is run by operators, by hand, against a one-off
+# CSV (docs/plans/catalog-expansion-2026-11-11.md); it never runs as part of the app.
 ENTRY_POINTS = ("app.main", "scripts.workflow_worker", "scripts.provision_account",
                 "scripts.seed_catalog", "scripts.seed_demo", "scripts.export_public_settings",
                 "scripts.team_accounts", "scripts.seed_scenarios", "scripts.load_help_pack",
-                "scripts.open_data")
+                "scripts.open_data", "scripts.import_otc_medicine_dataset")
 
 # Unreachable on purpose. Each entry needs a reason; remove it when the reason goes.
 ALLOWED_UNREACHABLE = {
