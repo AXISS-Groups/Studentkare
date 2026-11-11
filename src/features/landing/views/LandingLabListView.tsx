@@ -5,7 +5,7 @@ import { CanvasVideo } from '@/design-system/art';
 import { PublicSiteHeader, PublicSitePage } from '@/design-system/public-site';
 import { parseCatalogPage, rupees } from '../viewmodel/LandingViewModel';
 import type { LandingCatalogItem } from '../viewmodel/LandingViewModel';
-import { LwBanner, LwIconTile, LwLabSearch, LwLoadState, LwNote, offPercent } from './landingWebKit';
+import { LwBanner, LwFaq, LwIconTile, LwLabSearch, LwLoadState, LwNote, offPercent } from './landingWebKit';
 import './landingWeb.css';
 
 const LAB_QUERY = { kind: 'lab', limit: 24 } as const;
@@ -109,6 +109,14 @@ export function LandingLabListView(): React.ReactElement {
 
         <LwNote icon="info-3">{t('landing.lablist.disclaimer')}</LwNote>
       </div>
+
+      <LwFaq
+        title={t('landing.lablist.faq.title')}
+        items={[
+          { q: t('landing.lablist.faq.choose.q'), a: t('landing.lablist.disclaimer') },
+          { q: t('landing.lablist.faq.price.q'), a: t('landing.lablist.faq.price.a') },
+        ]}
+      />
     </PublicSitePage>
   );
 }
