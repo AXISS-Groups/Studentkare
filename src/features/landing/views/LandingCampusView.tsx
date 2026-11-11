@@ -3,7 +3,7 @@ import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
 import { Illustration } from '@/design-system/icons';
 import { PublicAudienceHeader, PublicSitePage } from '@/design-system/public-site';
-import { LwHeading, LwNote, LwRulesPanel } from './landingWebKit';
+import { LwFaq, LwHeading, LwNote, LwRulesPanel } from './landingWebKit';
 import './landingWeb.css';
 
 const TODAY: readonly MessageKey[] = ['landing.campus.today.enrolment', 'landing.campus.today.camps', 'landing.campus.today.noRecords'];
@@ -121,6 +121,15 @@ export function LandingCampusView(): React.ReactElement {
           ))}
         </ul>
       </section>
+
+      <LwFaq
+        title={t('landing.campus.faq.title')}
+        items={[
+          { q: t('landing.campus.faq.see.q'), a: `${t('landing.campus.boundary.body')} ${t('landing.campus.boundary.enrolment')}` },
+          { q: t('landing.campus.faq.cohort.q'), a: t('landing.campus.gap.body') },
+          { q: t('landing.campus.faq.start.q'), a: t('landing.campus.faq.start.a') },
+        ]}
+      />
 
       {/* The walkthrough button used to go to the sign-in page; the enquiry form is what reaches us. */}
       <section id="walkthrough" className="lw-start" aria-labelledby="lw-campus-walk">

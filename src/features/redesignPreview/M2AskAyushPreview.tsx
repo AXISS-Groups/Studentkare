@@ -38,7 +38,7 @@ export function M2AskAyushPreview(): React.ReactElement {
             <Text style={styles.reportTitle}>{t('preview.lipidProfile14Oct2026')}</Text>
           </View>
           <View style={[styles.bubble, styles.studentBubble]}>
-            <Text style={styles.bubbleText}>{t('preview.whatDoesHdlMean')}</Text>
+            <Text style={[styles.bubbleText, styles.studentBubbleText]}>{t('preview.whatDoesHdlMean')}</Text>
           </View>
           <View style={[styles.bubble, styles.ayushBubble]}>
             <Text style={styles.bubbleText}>{t('preview.hdlIsOftenCalledGoodCholesterolItHelps')}</Text>
@@ -75,6 +75,7 @@ const styles = StyleSheet.create({
   studentBubble: { alignSelf: 'flex-end', backgroundColor: color.action },
   ayushBubble: { alignSelf: 'flex-start', backgroundColor: color.surface },
   bubbleText: { fontFamily: font.family.sans, fontSize: font.size.bodySm, color: color.text, lineHeight: 20 },
+  studentBubbleText: { color: color.onAction },
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: space.s8, marginTop: space.s4 },
   chip: { paddingHorizontal: space.s12, height: 34, borderRadius: radius.full, borderWidth: 1, borderColor: color.actionSoft, alignItems: 'center', justifyContent: 'center' },
   chipText: { fontFamily: font.family.sans, fontSize: font.size.caption, fontWeight: fontWeight(font.weight.strong), color: color.action },

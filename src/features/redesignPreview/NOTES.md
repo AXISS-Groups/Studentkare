@@ -431,3 +431,1162 @@ line shapes, not squished boxes or bare dots.
   `M2Reminders`, `M2ReportUpload`, `M2Trends`), is what "later we can code"
   would need.
 - Nothing committed, pushed, or opened as a PR.
+
+## 2026-11-11 — `LabPackageDetailPreview.tsx`
+
+Reviewed reference-app screen recordings (Apollo 24|7's lab-package detail
+page) against this app and found a gap: a lab test "package" detail page
+with a social-proof badge, an accordion of included tests/FAQ, a
+doctor-recommendation card, a cross-sell banner and a star-rating feedback
+moment — none of which currently exist together on one screen here.
+`M2ProductPreview.tsx` covers single-item medicine detail and
+`LabComparePreview.tsx`/`LabPrepPreview.tsx` cover comparison and
+sample-collection prep; none of them is this page, and it has no
+`design/screens/briefs/*` entry yet.
+
+**Two genuinely new design-system primitives**, both added to
+`src/design-system/` in this same pass:
+- `Accordion` / `AccordionItem` (`src/design-system/Accordion.tsx`) — a real
+  expand/collapse row, modelled on `M2ProductPreview.tsx`'s old static
+  accordion rows (`What it is used for` / `Common side effects` / `Do not
+  take with`), which never actually opened.
+- `StarRating` (`src/design-system/StarRating.tsx`) — read-only (`value`
+  only) for an average-rating display, or interactive (`value` +
+  `onChange`) for a "rate your experience" moment. No shared component for
+  either existed before.
+
+**Everything else reused as-is:** `GradientHeroCard`, `M2Pill`, `M2Note`,
+`M2Card`, `GlossTile`, `m2Text`, `heroStops` from `@/design-system/m2`;
+`Icon` from `@/design-system/icons`; tokens only from
+`@/design-system/theme`. Icons used: `flask-2`, `doctor-alt`, `doctor`,
+`shield-check`, `percent`, `check-circle-2`, `cart`, `arrow-left`,
+`chevron-down`/`chevron-up` (inside `Accordion`), `star`/`star-filled`
+(inside `StarRating`) — all confirmed in
+`design/icons/icon-manifest.json`; no trophy icon exists there, so the
+"booked X times" social proof uses `shield-check` instead, as bracketed
+placeholder copy (`[Booked 12,000+ times]`), not a literal counter claim,
+per `AGENTS.md` rule 4 (commerce firewall — no gamification of body
+metrics, no advertising dressed as fact). The doctor-recommendation card
+also names no real clinician (`[Recommended by Dr. ...]`).
+
+Per this repo's own convention, lab/report content is treated as Tier 1
+(safety, consent, identity, clinical values) even on a commerce-adjacent
+page — flat and non-wired here, but a plan-first, named-reviewer pass is
+required before any of this is built for real, same caution as
+`M2ProductPreview.tsx` and `M2MedicineInfoPreview.tsx`.
+
+Not wired into navigation, routing, or `studentPhoneBoards.tsx`. No real
+data — all `[bracketed]` copy is this preview's own placeholder choice, not
+a real test list, price, rating count or doctor identity. No
+`design/screens/briefs/LabPackageDetail.md` yet, so no
+`check-icons.mjs --screen` run and no `design/screens/implementation-map.json`
+entry — this isn't a ticket yet. `tsc --noEmit` is clean across the repo.
+Added to `src/design-system/stories/RedesignPreview.stories.tsx` as
+`LabPackageDetail` and in the `AllScreens` composite. Nothing committed,
+pushed, or opened as a PR.
+
+## 2026-11-11 — `SecondOpinionPreview.tsx`
+
+Krishna asked, as part of the same gap-analysis pass, to preview a
+"surgery second opinion + cost estimator" flow seen in a reference app
+(Apollo 24|7's Surgery section) — what this COULD look like if
+StudentKare ever built one. **This caveat matters more than usual: a real
+version of this is not a UI pattern to restyle, it is a new clinical
+service line.** Surgical referrals and second-opinion review are a
+category of clinical work this platform does not currently do. Before any
+real engineering starts, this needs an explicit product +
+clinical-governance decision covering, at minimum: who reviews a
+submitted request (which clinician, what credentialing), what liability
+and consent language a student must see before a request is even
+accepted, and how the cost ranges shown would actually be sourced (which
+hospitals, how current, who is accountable for them being right). That is
+a heavier bar than the named-reviewer content check that gates an
+ordinary Tier 1 screen in this repo, and this preview does not claim that
+bar has been cleared.
+
+No `design/screens/briefs/SecondOpinion.md` exists — same footing as
+`LabPrep`, `DoctorCompare` and `ReferFriend`: a net-new concept with no
+brief or ticket, previewed only because it was explicitly asked for.
+
+**Built only from the approved pieces**, nothing invented:
+`M2Card`, `M2Note`, `GlossTile`, `m2Text`, `RoundButton` from
+`@/design-system/m2`; `StatusPill` from `@/design-system` for the
+"pending review" status; `Icon` from `@/design-system/icons`, limited to
+`doctor`, `doctor-alt`, `hospital`, `stethoscope`, `stethoscope-2`,
+`shield-check`, `cloud-upload`, `doc-upload`, `check-circle-2`, `percent`
+— all confirmed in `design/icons/icon-manifest.json`. No back-chevron icon
+is used: the allowed icon list for this screen has no left-facing arrow
+or chevron, and `CLAUDE.md` forbids both inventing a look-alike and using
+a text arrow in its place, so the header simply has no back control here
+rather than substitute one. Tokens only (`color`, `font`, `fontWeight`,
+`radius`, `space`) — no hex values.
+
+**What's on the screen:** an intro line, a textarea-styled `M2Card`
+labelled "[Describe your diagnosis or planned procedure]" (static
+placeholder text, not wired to state), an "[Upload existing reports
+(optional)]" row matching `M2ReportUploadPreview.tsx`'s upload pattern, a
+"[Submit for review]" button whose paired `M2Note` states plainly that a
+human clinician reviews every request — never an instant AI-generated
+opinion — a separate "[Estimate surgery cost]" section with 3 `M2Card`s
+each showing a placeholder procedure name and a bracketed cost **range**
+(never a single bindable number) under an `M2Note` (tone="info") stating
+the ranges are illustrative only, not a quote, and vary by hospital/
+surgeon/complexity, and a status section with a `StatusPill`
+(tone="attention") reading "[Pending review]" plus "[Typically reviewed
+within 3-5 business days]".
+
+Not wired into navigation, routing, or `studentPhoneBoards.tsx`. No real
+data anywhere — every procedure name, cost range and review timeline is
+bracketed placeholder copy, not a real price or clinical fact. No
+`check-icons.mjs --screen` run and no
+`design/screens/implementation-map.json` entry, since there is no brief
+or ticket yet. `tsc --noEmit` is clean across the repo. Added to
+`src/design-system/stories/RedesignPreview.stories.tsx` as
+`SecondOpinion` and in the `AllScreens` composite. Nothing committed,
+pushed, or opened as a PR.
+
+## 2026-11-11 — `AISkinScanPreview.tsx`
+
+Krishna asked, as part of the same gap-analysis pass, to preview a
+camera-based AI skin-analysis flow seen in a reference app (Apollo 24|7's
+"Clear Steps" feature) — what this COULD look like if StudentKare ever
+built one. This is the biggest-ticket, most sensitive of the 4 gap-fill
+previews in this pass: the other three (`LabPackageDetailPreview`,
+`SecondOpinionPreview`, and a commerce/UI pattern) are layout and
+service-line previews; this one previews a **biometric/AI-diagnostic
+capability** — capturing and algorithmically reading a photo of someone's
+face — which this codebase has no equivalent of today.
+
+**This caveat matters more than usual, and is stated here up front:**
+(a) this file is a UI-shape preview only — no camera capture and no AI/ML
+image analysis is implemented, or being proposed for implementation, in
+this file or anywhere in the app; (b) a real version of this feature
+would be a **new biometric/AI-diagnostic product capability**, not a
+restyle of an existing screen, and would need its own dedicated product
+review, its own clinical-safety review, and its own privacy review
+covering camera/biometric data capture specifically — before any real
+engineering work starts. That is a materially heavier bar than the
+Tier-1 named-reviewer content check this repo uses for an ordinary
+safety/consent/identity/clinical-value screen (CLAUDE.md), because no
+existing Tier-1 screen in this repo has had to clear a biometric-capture
+or AI-diagnostic-claim review; (c) this was built per Krishna's explicit
+request to preview this one specific reference pattern, with this
+caveat stated up front — the request was to preview it, not to build the
+real thing.
+
+No `design/screens/briefs/AISkinScan.md` exists — same footing as
+`LabPrep`, `DoctorCompare`, `ReferFriend` and `SecondOpinion`: a net-new
+concept with no brief or ticket, previewed only because it was explicitly
+asked for.
+
+**Built only from the approved pieces**, nothing invented: `Illustration`
+from `@/design-system/icons`, reusing `illustration-face-oval-guide` (the
+identity-verification face-framing illustration) for the capture-guide
+step, since no skin-scan-specific illustration exists in
+`design/icons/icon-manifest.json` and per `CLAUDE.md` none was invented;
+`M2Pill`, `M2Note`, `M2Card`, `GlossTile`, `m2Text`, `RoundButton` from
+`@/design-system/m2`; `StatusPill` from `@/design-system` for the 4
+result-severity badges; `Icon` from `@/design-system/icons`, limited to
+`camera`, `shield-check`, `shield-alert`, `share-nodes`, `clock` and
+`arrow-left` (the last for the standard back-button chrome, same
+convention as every other preview in this folder) — all confirmed in
+`design/icons/icon-manifest.json`. Tokens only (`color`, `font`,
+`fontWeight`, `radius`, `space`) — no hex values.
+
+**What's on the screen**, one scrollable preview (not a multi-screen
+flow, matching this folder's own single-static-screen convention): a
+"Capture" section with the face-oval-guide illustration, a
+"[Position your face in the frame]" instruction line, and a disabled-
+looking "[Start scan]" control (a non-interactive `View`, same `noop`
+convention this folder uses for every non-functional control, not a real
+button); a "Results" section shown as if a scan had already run
+(static only — no scan logic anywhere) with an `M2Note`
+(tone="attention", `announce`) stating plainly, near the top of the
+section, that this is not a diagnosis and does not replace seeing a
+dermatologist or clinician, followed by 4 `M2Card`s (`[Hydration]`,
+`[Texture]`, `[Even tone]`, `[Visible pores]`) each with a `StatusPill`
+severity badge (positive/attention/danger/neutral) and copy framed as "a
+pattern this photo shows" — never a diagnosis, clinical finding, or
+medical claim; per `AGENTS.md` rule 4 and `DESIGN.md` §2/§7 there is no
+numeric score out of 100, no comparison to other people, and no streak/
+history framing; a "Suggested routine" section with 3 step cards
+(`M2Card` + `GlossTile`), each a placeholder product **category** (never
+a real brand/product name) tagged AM/PM via `M2Pill`; and a
+"[Share with a clinician]" action row — clinician-facing framing, not a
+standalone consumer health-score product, matching the brief's own
+not-a-diagnosis note.
+
+Not wired into navigation, routing, or `studentPhoneBoards.tsx`. No real
+data anywhere — every metric, severity, routine step and category is
+bracketed placeholder copy, not a real scan result. No
+`check-icons.mjs --screen` run and no
+`design/screens/implementation-map.json` entry, since there is no brief
+or ticket yet. `tsc --noEmit` is clean across the repo. Added to
+`src/design-system/stories/RedesignPreview.stories.tsx` as `AISkinScan`
+and in the `AllScreens` composite. Nothing committed, pushed, or opened
+as a PR.
+
+## 2026-11-11 — `InsurancePlanBuilderPreview.tsx`
+
+Also part of the same 2026-11-11 gap-analysis pass: reviewing a reference
+app's (Apollo 24|7) insurance flow against this folder found that
+`M2InsurancePreview.tsx` only shows a static "your cover" screen (current
+policy, a generic "what's included" list, "More cover" cards that are
+"Notify me" only, per the real brief's 2026-11-04 founder note that no
+partner is chosen yet). There is no "build and compare a plan" flow
+anywhere — adult/child count steppers, a plan comparison table with
+BEST VALUE/RECOMMENDED ribbons, and a quote/price breakdown. This screen
+fills that gap. No `design/screens/briefs/InsurancePlanBuilder.md`
+exists — same footing as `LabPrep`, `DoctorCompare`, `ReferFriend`,
+`SecondOpinion` and `AISkinScan`: a net-new concept with no brief or
+ticket.
+
+**Built only from the approved pieces**, nothing invented: `M2Table`
+(from `src/design-system/m2/M2Structure.tsx`, read first for its exact
+`M2TableColumn`/`rowKey`/`cell` prop shape) reused as the plan comparison
+table — no new comparison-table component was built, the same way
+`DoctorComparePreview.tsx` reused it for doctors instead of lab packages.
+`M2Pill` for the BEST VALUE/RECOMMENDED ribbons, `M2Card`, `M2Note`,
+`GlossTile`, `m2Text`, `RoundButton` from `@/design-system/m2`; `Icon`
+from `@/design-system/icons`, limited to `arrow-left`, `plus`, `minus`,
+`check`, `shield-check-2` — all confirmed in
+`design/icons/icon-manifest.json`. Tokens only (`color`, `font`,
+`fontWeight`, `radius`, `space`) — no hex values.
+
+**What's on the screen:** a header with a `RoundButton` back control and
+the title "[Build your plan]"; an adults/children count section reusing
+`M2ProductPreview.tsx`'s exact `+`/`-` stepper pattern (two steppers, both
+`noop`-wired like every other preview control in this folder); a row of 3
+selectable coverage-amount chips (`[₹5L]`/`[₹10L]`/`[₹25L]`) with real,
+purely visual local `useState` selection (no other effect, matching
+`LabPackageDetailPreview.tsx`'s precedent of wiring a `useState` setter to
+a visual-only control rather than leaving it a dead prop); an `M2Table`
+with 3 columns (plan, monthly price, Covers OPD check/cross) × 3 rows,
+with an `M2Pill` ribbon next to the Plus (BEST VALUE) and Max
+(RECOMMENDED) plan names; a quote-breakdown `M2Card` (base price, add-ons,
+GST, total, right-aligned); and an `M2Note` (tone="info") stating plainly
+this is an illustrative quote only and a licensed advisor confirms the
+actual premium before purchase.
+
+**This caveat matters more than the usual Tier 1 content check, same
+reasoning as `SecondOpinionPreview.tsx`: a real insurance plan builder is
+a pricing/underwriting decision, not a UI pattern.** Before any real
+version of this is built, it needs an explicit product + compliance
+decision — at minimum, how a quote is actually computed, which insurer/
+partner underwrites it, what regulatory disclosures a plan comparison
+must carry, and who is accountable for the numbers shown being right.
+That is a heavier bar than the named-reviewer design sign-off that gates
+an ordinary Tier 1 screen in this repo, and this preview does not claim
+that bar has been cleared — every price, plan name and total on this
+screen is bracketed placeholder copy, not a real rate.
+
+Not wired into navigation, routing, or `studentPhoneBoards.tsx`. No real
+data anywhere. No `check-icons.mjs --screen` run and no
+`design/screens/implementation-map.json` entry, since there is no brief
+or ticket yet. `tsc --noEmit` is clean across the repo. Added to
+`src/design-system/stories/RedesignPreview.stories.tsx` as
+`InsurancePlanBuilder` and in the `AllScreens` composite. Nothing
+committed, pushed, or opened as a PR.
+
+## 2026-11-11 — `LabPackageSelectionPreview.tsx`
+
+Also part of the same 2026-11-11 gap-analysis pass: reviewing reference
+apps (Tata 1mg's "Full Body Packages" and Apollo 24|7's "Lab Tests"
+package-list screens) against this folder found that
+`LabPackageDetailPreview.tsx` only covers the page AFTER a package is
+already picked — it has no equivalent of the picker/browse screen that
+comes before it: a grid of package-selector cards plus a personalised
+recommendation card. This screen fills that gap. No
+`design/screens/briefs/LabPackageSelection.md` exists — same footing as
+`LabPrep`, `DoctorCompare`, `ReferFriend`, `SecondOpinion`, `AISkinScan`
+and `InsurancePlanBuilder`: a net-new concept with no brief or ticket.
+
+**Built only from the approved pieces**, nothing invented: `M2Card`,
+`GlossTile`, `m2Text`, `M2Pill`, `RoundButton`, `M2Note` from
+`@/design-system/m2`; `Accordion` from `@/design-system/Accordion` (the
+same expand/collapse primitive `LabPackageDetailPreview.tsx` introduced,
+reused here for the single "[Why is this recommended?]" row instead of a
+new disclosure pattern); `Icon` from `@/design-system/icons`, limited to
+`arrow-left`, `flask`, `flask-2`, `percent`, `check-circle-2`, `heart`,
+`heart-plus`, `clock` and `scan` — all confirmed in
+`design/icons/icon-manifest.json` before use. Tokens only (`color`,
+`font`, `fontWeight`, `radius`, `space`) — no hex values.
+
+**What's on the screen:** a header with a `RoundButton` back control and
+the title "[Choose a health package]"; a stack of 3 package-selector
+`M2Card`s — "[Popular Package]" with a POPULAR `M2Pill`, "[Build your
+own]" (custom/scan-based, using the `scan` icon for a "Scan & build"
+affordance), and "[Full Body Advanced]" with a NEW `M2Pill` — each
+showing a name, a bracketed description line, a test count, a price row
+(current price, struck-through MRP, and a %-off `M2Pill` where
+applicable) and a "Select" affordance; a separate "Recommended for you"
+`M2Card` below the grid with bracketed personalised copy and the
+`Accordion`-based "[Why is this recommended?]" row wrapping one short
+explanation, plus an `M2Note` (tone="info") stating plainly this
+suggestion is placeholder copy, not a real report, value or clinical
+judgement; and a simple "Continue" button in a sticky footer, matching
+this folder's own footer-button convention.
+
+Per `AGENTS.md` rule 4 (commerce firewall), the "POPULAR"/"[Booked ...]"-
+style and "Recommended for you" copy is deliberately bracketed
+placeholder text, not a literal counter claim or a real clinical
+inference. Like `LabPackageDetailPreview.tsx`, this repo treats lab/
+package content as Tier 1 (safety, consent, identity, clinical values)
+even on a commerce-adjacent page — flat and non-wired here, but a named-
+reviewer plan-first pass is required before any of this is built for
+real.
+
+Not wired into navigation, routing, or `studentPhoneBoards.tsx`. No real
+data anywhere — every name, description, price and recommendation is
+bracketed placeholder copy. No `check-icons.mjs --screen` run and no
+`design/screens/implementation-map.json` entry, since there is no brief
+or ticket yet. `tsc --noEmit` is clean across the repo. Added to
+`src/design-system/stories/RedesignPreview.stories.tsx` as
+`LabPackageSelection` and in the `AllScreens` composite. Nothing
+committed, pushed, or opened as a PR.
+
+## 2026-11-11 — `PaymentRetrySheetPreview.tsx`
+
+Also part of the same 2026-11-11 gap-analysis pass: two more still-missing
+reusable UI patterns, put on one preview screen rather than two files —
+(1) a payment-failure/retry bottom sheet, and (2) a loyalty/coins commerce
+card. Neither exists anywhere in this folder yet (every `*Checkout*`/
+`*Order*` preview so far shows the happy path only). No
+`design/screens/briefs/*` entry exists for either pattern — same footing
+as `LabPrep`, `DoctorCompare`, `ReferFriend`, `SecondOpinion`,
+`AISkinScan`, `InsurancePlanBuilder`: net-new, no brief or ticket.
+
+**Bottom sheet component used:** searched `src/design-system/` first, per
+the task's instruction to prefer an existing one. `Sheet.tsx`/
+`Sheet.native.tsx` (wrapping `Overlay`, variant `"sheet"`) and `Drawer.tsx`
+both exist, but both are real, stateful, focus-trapping overlays driven by
+`visible`/`open` + `onClose` — wiring one up would mean either giving this
+flat preview a live `useState` toggle (outside this round's "flat/static,
+always-visible" convention every sibling preview follows) or passing a
+fake no-op `onClose` into a component built to trap focus and handle Esc,
+which would misrepresent it as functional when it isn't. So, per the
+task's own fallback instruction, the sheet here is a local, non-reusable
+absolutely-positioned `View` — a `color.scrim` backdrop plus a
+rounded-top (`radius.xl`, top corners only) panel with `shadow.float`,
+matching `Overlay`'s own CSS (`overlays.css`: `sk-ov__scrim` /
+`sk-ov__panel` roundness and surface tint) and `shadow`/`radius` tokens —
+shown already open, no toggle, no new component file. If this pattern is
+wanted for real, it should be built as an actual `Sheet` usage with a real
+open/close state, not a copy of this local style object.
+
+**Built only from the approved pieces**, nothing invented: `GlossTile`,
+`M2Card`, `M2Note`, `M2Pill`, `RoundButton`, `m2Text` from
+`@/design-system/m2`; `Icon` from `@/design-system/icons`, limited to
+`arrow-left` (back button), `shield-alert` (payment-failure tile),
+`check-circle-2` (retry button), `clock` (support note and the loyalty
+card's bonus-expiry pill), `star-filled` (the loyalty/coins tile) — all
+confirmed in `design/icons/icon-manifest.json`. No `coin`, `wallet`, `gift`
+or `tag` icon exists in the manifest (checked by name before picking a
+substitute, per `CLAUDE.md`'s "never invent an icon" rule); `star-filled`
+was chosen as the loyalty/coins stand-in because it is the nearest
+rewards-shaped icon that already exists, not a guess at a missing one.
+Tokens only (`color`, `font`, `fontWeight`, `radius`, `shadow`, `space`) —
+no hex values.
+
+**What's on the screen:** a minimal `[Checkout]` header with a
+`RoundButton` back control; a background "screen" with an order-summary
+`M2Card` (`[2 items]` / `[₹486]` / delivery note) so the sheet has
+something to sit over; a loyalty card (`M2Card` + `GlossTile`) showing
+`[120 coins earned]`, `[Use coins on your next order]`, and an `M2Pill`
+bonus-expiry tag (`[2x bonus · ends in 3 days]`) — commerce-only, no
+streaks, scores or gamification of any health/clinical metric, per
+`AGENTS.md` rule 4; and the payment-retry sheet itself: `shield-alert`
+tile, `[Payment failed]` title, `[Your bank declined this transaction]`
+line, a primary `[Retry payment]` button, a secondary
+`[Use a different payment method]` link-style button, and an `M2Note`
+`[Need help? Contact support]` line.
+
+Not wired into navigation, routing, or `studentPhoneBoards.tsx`. No real
+data anywhere — every amount, balance and tag is bracketed placeholder
+copy. No `check-icons.mjs --screen` run and no
+`design/screens/implementation-map.json` entry, since there is no brief
+or ticket yet. `tsc --noEmit` is clean across the repo. Added to
+`src/design-system/stories/RedesignPreview.stories.tsx` as
+`PaymentRetrySheet` and in the `AllScreens` composite. Nothing committed,
+pushed, or opened as a PR.
+
+## 2026-11-11 — `StepDiagram.tsx` (shared component) and `CarePlanBenefitsPreview.tsx`
+
+Also part of the same 2026-11-11 gap-analysis pass. Two reference-video
+reviews independently surfaced the same UI shape — a Blinkit forex-card
+activation flow and an Apollo 24|7 insurance "How a Top-Up Works"
+explainer both use a vertical numbered step list (circled step number,
+connected to the next by a vertical rule, title + description beside it).
+Because it showed up twice, independently, it was built as a real shared
+component — `src/design-system/StepDiagram.tsx`, exporting
+`StepDiagram({ steps, testID })` — rather than drawn inline on one
+screen. It uses only `color`, `font`, `fontWeight`, `radius`, `space`
+from `@/design-system/theme`, no hex values, and is exported from
+`src/design-system/index.ts` alongside the other recent additions
+(`Accordion`/`AccordionItem`, `StarRating`).
+
+`CarePlanBenefitsPreview.tsx` is the flat, non-functional preview this
+component was built for: a membership/benefits screen modelled on a
+reference app's "My Care Plan" section. There is no existing brief or
+screen for this — same footing as the other net-new concepts in this
+folder (`LabPrep`, `DoctorCompare`, `ReferFriend`, `SecondOpinion`,
+`AISkinScan`, `InsurancePlanBuilder`): no `design/screens/briefs/
+CarePlanBenefits.md` exists, previewed only because it was explicitly
+asked for.
+
+**Built only from the approved pieces**, nothing invented: `M2Card`,
+`GlossTile`, `m2Text`, `M2Note`, `RoundButton` from `@/design-system/m2`;
+`StatusPill` from `@/design-system` for the membership status; the new
+`StepDiagram` for the "[How your benefits work]" 3-step explainer;
+`Accordion`/`AccordionItem` (reused, not rebuilt) for the FAQ; `Icon`
+from `@/design-system/icons`, limited to `check-circle-2`, `percent`,
+`clock`, `arrow-left` and `shield-check` — all confirmed in
+`design/icons/icon-manifest.json` (`chevron-down`/`chevron-up` are used
+inside the reused `Accordion`, not directly on this screen). Tokens only
+— no hex values.
+
+**Perforated "ticket" card — implementation choice:** built as a plain
+`View`/`StyleSheet` composition, no SVG and no new icon. Each benefit
+card is a row of three parts: a narrow icon "stub" on the left
+(`GlossTile`), a 1px-wide perforation column of small circular `View`s
+coloured to match the screen's canvas background (simulating punched
+holes against the card's `surface` fill), and the benefit title + usage
+counter on the right. This was simpler to implement correctly with plain
+RN primitives than a dashed-border divider (RN's `borderStyle: 'dashed'`
+support is inconsistent across platforms this app targets), and reads
+clearly as a coupon/ticket at this card size. Kept inline in this
+screen's `StyleSheet`, not extracted as a shared component — the
+perforation treatment is specific to this one card shape and wasn't
+asked for elsewhere.
+
+**What's on the screen:** a header with a `RoundButton` back control and
+the title "[My Care Plan]"; a membership status `M2Card` with a
+`StatusPill` (tone="positive") reading "[Active till Dec 2026]" and a
+short renewal note; a stacked row of 3 perforated ticket cards
+("[20% off next lab test]", "[Free home sample collection]",
+"[Priority support]"), each with a "[Used N of M times]" counter; a
+"[Use your benefits]" checklist of 5 rows, each a check-circle icon plus
+a benefit line; a "[How your benefits work]" `StepDiagram` inside an
+`M2Card`, in 3 steps (activate, use at checkout, track savings); an
+`M2Note` (tone="info") noting benefits reset each billing cycle; and a
+2-item FAQ `Accordion`.
+
+Not wired into navigation, routing, or `studentPhoneBoards.tsx`. No real
+data anywhere — every benefit name, usage count and date is bracketed
+placeholder copy, not a real entitlement. No `check-icons.mjs --screen`
+run and no `design/screens/implementation-map.json` entry, since there
+is no brief or ticket yet. `tsc --noEmit` is clean across the repo.
+Added to `src/design-system/stories/RedesignPreview.stories.tsx` as
+`CarePlanBenefits` and in the `AllScreens` composite. Nothing committed,
+pushed, or opened as a PR.
+
+## 2026-11-11 — `HomeCollectionStatusPreview.tsx` (gap-analysis pass, round 2)
+
+Also part of the 2026-11-11 gap-analysis pass, round 2 — three small card
+patterns from reference-app videos that aren't in this app yet, all natural
+to a "your home sample collection is on the way" status screen: a
+phlebotomist/home-visit staff credentials card, a testimonial card, and a
+compact secondary promo strip (distinct from the full gradient hero banners
+used elsewhere, e.g. `LabPackageDetailPreview.tsx`'s cross-sell card). No
+`design/screens/briefs/*` entry exists for this screen — same net-new
+footing as `LabPrep`, `DoctorCompare`, `ReferFriend`.
+
+This is commerce/logistics content, not clinical, so the caution in the
+file's own comment is lighter-weight, matching `ReferFriendPreview.tsx`.
+One thing is still called out deliberately: the phlebotomist's name,
+photo, "ID verified" badge and rating are bracketed placeholder copy
+standing in for a UI shape, not a real verified identity — if this is
+built for real, the verification badge must be backed by an actual
+checked credential and fail closed if that check can't complete, never a
+decorative icon.
+
+**Built only from the approved pieces**, nothing invented: `StatusPill`
+and `StarRating` from `@/design-system`; `GlossTile`, `M2Card`, `M2Note`,
+`RoundButton`, `m2Text` from `@/design-system/m2`; `Icon` from
+`@/design-system/icons`, limited to `arrow-left` (back button), `user`
+(photo-placeholder tile), `shield-check` (ID-verified badge), `phone` and
+`message-circle` (the non-functional call/message `RoundButton` row),
+`percent` and `chevron-right` (the promo strip), and `clock` (the closing
+`M2Note`) — all confirmed in `design/icons/icon-manifest.json` before use.
+Tokens only (`color`, `font`, `fontWeight`, `radius`, `space`) — no hex
+values.
+
+**What's on the screen:** a header with a `RoundButton`-style back control
+and the title "[Your sample collection]"; a status `M2Card` with a `live`
+`StatusPill` reading "[Technician on the way — ETA 20 mins]" and an
+address placeholder note; a phlebotomist credentials `M2Card` — photo
+`GlossTile`, "[Rohit K.]", "[Certified phlebotomist]", a `shield-check`
+"[ID verified]" badge, a read-only `StarRating` "(4.9)", and a
+non-functional call/message `RoundButton` row; a slim single-line promo
+strip (not a full hero card) reading "[Add a free follow-up consult and
+save more — ends today]" with a trailing chevron; and a testimonial
+`M2Card` with a read-only 5-star `StarRating`, an italic placeholder
+quote, and "[— Priya S., verified patient]".
+
+Not wired into navigation, routing, or `studentPhoneBoards.tsx`. No real
+data anywhere — every name, photo, badge, rating and quote is bracketed
+placeholder copy, not a real verified identity or review. No
+`check-icons.mjs --screen` run and no `design/screens/implementation-map.json`
+entry, since there is no brief or ticket yet. `tsc --noEmit` is clean
+across the repo. Added to `src/design-system/stories/RedesignPreview.stories.tsx`
+as `HomeCollectionStatus` and in the `AllScreens` composite. Nothing
+committed, pushed, or opened as a PR.
+
+## 2026-11-11 — `AskAyushOrderCardPreview.tsx` (round 2)
+
+Also part of the same 2026-11-11 gap-analysis pass. A reference app's AI
+chatbot flow ("Ask Apollo") renders a structured order-summary card
+inline inside the chat, not just a text reply — a pattern this repo's
+real AI-chat screen, `M2AskAyushPreview.tsx` (Tier 1), doesn't have yet.
+This preview demonstrates that ONE new card type on its own: it is a
+SEPARATE, ADDITIONAL screen, not an edit to `M2AskAyushPreview.tsx` — the
+real chat screen is untouched.
+
+**This is more than a visual tweak to an existing Tier 1 screen.** Letting
+an AI assistant render a confirm-and-transact card inside a health-records
+chat is a product decision about what Ask Ayush is allowed to add to a
+cart or place an order for on a student's behalf — under what consent,
+with what spending/category limits, and with what fallback if a check
+can't complete. None of that is decided here. Per `CLAUDE.md`'s Tier 1
+rule and `AGENTS.md`'s fail-closed/consent guardrails, this needs its own
+named-reviewer plan-first pass before any real build — this preview only
+shows the visual shape of the card, nothing about what it is permitted to
+transact.
+
+**Built only from the approved pieces**, nothing invented: `M2Card`,
+`GlossTile`, `m2Text`, `M2Note`, `RoundButton` from `@/design-system/m2`;
+`Icon` from `@/design-system/icons`, limited to `arrow-left` (back
+button), `cart` (order-card eyebrow tile), `clock` (ETA line),
+`check-circle-2` (confirm-order button), `percent` (the "apply discount"
+quick-reply chip), and `message-circle` (closing `M2Note`) — all
+confirmed in `design/icons/icon-manifest.json` before use.
+`message-circle-2`, `message-circle-3` and `cart-alt` also exist in the
+manifest but weren't needed. Tokens only (`color`, `font`, `fontWeight`,
+`radius`, `space`) — no hex values. Chat-bubble styling (user bubble vs.
+AI bubble background/alignment/radius, header layout) is copied from
+`M2AskAyushPreview.tsx` so the new card type reads as if it belongs in
+that same chat UI.
+
+**What's on the screen:** a header matching `M2AskAyushPreview.tsx`'s
+style, title "Ask Ayush"; a student chat bubble "[Can you order my usual
+vitamin D supplement?]"; an AI text bubble "[Sure — here's what I found
+and added to your cart:]"; then the new pattern — an inline order-summary
+`M2Card` sitting where a bot message would be, with 2 line items (name +
+qty + price), a delivery-address line, a `clock`-icon ETA line "[Delivery
+by 6 PM today]", a 3-line charges breakdown (items total / delivery fee /
+total), and a non-functional "[Confirm order]" button; a closing AI
+bubble "[Want me to apply your Care Plan discount?]" with 2 non-functional
+quick-reply chips ("[Yes, apply]" / "[No, thanks]"); and a closing
+`M2Note` restating that what this card can transact for the student is
+still an open product decision.
+
+Not wired into navigation, routing, or `studentPhoneBoards.tsx`. No real
+data anywhere — every item, price, address and ETA is bracketed
+placeholder copy, not a real order. No `check-icons.mjs --screen` run and
+no `design/screens/implementation-map.json` entry, since there is no
+brief or ticket yet. `tsc --noEmit` is clean across the repo. Added to
+`src/design-system/stories/RedesignPreview.stories.tsx` as
+`AskAyushOrderCard` and in the `AllScreens` composite. Nothing committed,
+pushed, or opened as a PR.
+
+## 2026-11-11 — `CategoryBrowsePreview.tsx`
+
+Also part of the same 2026-11-11 gap-analysis pass, round 2: 3 small
+commerce/browse card patterns found in reference-app videos that this
+repo's shared component set doesn't cover yet as a distinct reusable
+shape, even though a generic product card already exists — a category
+icon-tile grid where each tile can carry a ribbon badge, a persona/
+avatar selector row ("who are you shopping for on this order"), and a
+BOGO/family-offer promo tile pair. No `design/screens/briefs/*` entry
+exists for this — net-new, same footing as `ReferFriendPreview.tsx` and
+the other unticketed previews in this folder.
+
+**Persona selector vs. "Family Hub" — the distinction this screen is
+careful about.** NOTES.md Part 6 (2026-11-05) already covers why this
+repo rejected a 1mg-style family-avatar-switcher: it lets one account
+view another member's full record, which conflicts with this product's
+18+-only, student-owned-record architecture (AGENTS.md rule 8) — and
+this repo's real answer to "family" is `FamilyCircle` ("Care circle",
+Tier 1). `CategoryBrowsePreview.tsx`'s persona row is deliberately a much
+smaller thing: 4 plain chips ("[Myself]" / "[Partner]" / "[Parent]" /
+"[Add profile]"), one highlighted via local `useState`, with no profile-
+switching logic, no shared or visible health data across people, and no
+clinical content anywhere on the row. It only answers "who is this single
+commerce order for" — closer to a shipping-recipient picker on a shopping
+cart than a family profile system — and the file's own caution comment
+says so explicitly so it isn't mistaken for the rejected pattern later.
+
+**Built only from the approved pieces**, nothing invented: `GlossTile`,
+`M2Card`, `m2Text`, `M2Pill`, `RoundButton` from `@/design-system/m2`.
+Icons confirmed in `design/icons/icon-manifest.json` before use:
+`arrow-left` (back button), `user`/`user-2`/`user-3`/`plus` (persona
+chips), `capsule`/`droplet`/`heart-pulse`/`activity`/`box`/`devices`
+(the 6 category tiles), `percent` (promo discount pills), `users`
+(family-pack promo tile). The manifest has no `trending`, `flame`, or
+literal `new` icon, so two ribbon badges use the nearest existing
+stand-ins rather than an invented one: `trend-arrow` for "[Trending]"
+and `sparkle` for "[New]"; "[Best Seller]" uses `star-filled`, the
+substitute the task itself suggested. Tokens only (`color`, `font`,
+`fontWeight`, `radius`, `space`) — no hex values.
+
+**What's on the screen:** a header with a `RoundButton` back control and
+the title "[Shop by category]"; the persona chip row described above;
+a 6-tile category grid ("[Vitamins]", "[Skin Care]", "[Diabetes Care]",
+"[Pain Relief]", "[Baby Care]", "[Devices]") where 3 tiles carry a
+corner ribbon `M2Pill` ("[Trending]", "[Best Seller]", "[New]"); and a
+2-up promo row of compact `M2Card`s — "[Buy 1 Get 1 — Vitamins]" with a
+`[BOGO]` pill and "[Family pack — Save 30%]" with a `[30% off]` pill.
+
+Not wired into navigation, routing, or `studentPhoneBoards.tsx`. No real
+data anywhere — every category, badge and offer is bracketed placeholder
+copy. No `check-icons.mjs --screen` run and no
+`design/screens/implementation-map.json` entry, since there is no brief
+or ticket yet. `tsc --noEmit` is clean across the repo. Added to
+`src/design-system/stories/RedesignPreview.stories.tsx` as
+`CategoryBrowse` and in the `AllScreens` composite. Nothing committed,
+pushed, or opened as a PR.
+
+## 2026-11-11 — `DoctorBrowsePreview.tsx` (round 3)
+
+Also part of the 2026-11-11 gap-analysis pass, round 3: a reference app's
+doctor-browsing flow renders a horizontally-scrollable carousel of doctor
+profile cards for discovery, distinct from `DoctorComparePreview.tsx` in
+this same folder, which is a side-by-side table comparing two
+already-chosen doctors. `DoctorBrowsePreview` is the step before that —
+scanning a filtered list of doctors to find one worth comparing or
+booking. It is a SEPARATE, ADDITIONAL screen, not an edit to
+`DoctorComparePreview.tsx`, which is untouched.
+
+Doctor booking content here is adjacent to this repo's real appointments
+feature. If this direction is wanted for real, "Book" must route through
+the existing appointments/teleconsult booking logic (consent, slot
+availability, fail-closed checks per AGENTS.md) rather than reinventing
+it here — this preview only shows the visual shape of a browse/discovery
+carousel, with no booking logic, no real doctors, and no real
+availability.
+
+**Built only from the approved pieces**, nothing invented: `M2Card`,
+`GlossTile`, `m2Text`, `M2Pill`, `RoundButton`, `M2Note` from
+`@/design-system/m2`; `StarRating` from `@/design-system`; `Icon` from
+`@/design-system/icons`, limited to `arrow-left` (back button) and
+`doctor` (photo-placeholder tile and the "Book" `RoundButton`'s icon) —
+both confirmed in `design/icons/icon-manifest.json` before use.
+`doctor-alt`, `check-circle-2` and `shield-check` also exist in the
+manifest but weren't needed for this screen's content. Tokens only
+(`color`, `font`, `fontWeight`, `radius`, `space`) — no hex values.
+
+**What's on the screen:** a header with a round back button and the
+title "[Find a doctor]"; a horizontally-scrollable specialty filter chip
+row ("[General Physician]", "[Dermatologist]", "[Pediatrician]",
+"[Cardiologist]") with local `useState` selection, visual only; a
+horizontally-scrollable carousel of 5 doctor profile `M2Card`s, each with
+a `GlossTile` photo-placeholder, name, specialty line, years-of-experience
+line, a read-only `StarRating` with a review count, an `M2Pill`
+availability badge ("[Available today]" / "[Next slot tomorrow]"), and a
+non-functional "Book" `RoundButton`; and a closing "[Why book through
+StudentKare]" `M2Note` (tone="info") with a generic, explicitly
+placeholder mention of verified credentials — not a real compliance
+claim, per AGENTS.md rule 6.
+
+Not wired into navigation, routing, or `studentPhoneBoards.tsx`. No real
+data anywhere — every doctor name, specialty, rating, review count and
+availability badge is bracketed placeholder copy, not a real doctor or
+review. No `check-icons.mjs --screen` run and no
+`design/screens/implementation-map.json` entry, since there is no brief
+or ticket yet. `tsc --noEmit` is clean across the repo. Added to
+`src/design-system/stories/RedesignPreview.stories.tsx` as
+`DoctorBrowse` and in the `AllScreens` composite. Nothing committed,
+pushed, or opened as a PR.
+
+## 2026-11-11 — `CommerceExtrasPreview.tsx` (round 3)
+
+Also part of the same 2026-11-11 gap-analysis pass, round 3: 6 small
+commerce/checkout UI patterns found in reference-app screen recordings
+(Tata 1mg, Blinkit) that this repo's shared component set doesn't cover
+yet — a delivery-speed toggle, a "frequently bought together" horizontal
+carousel, a "plan applied" savings banner, a brand-logo strip, a
+"continue browsing" recently-viewed row with per-card dismiss, and a
+quick-add floating mini overlay. There is no `design/screens/briefs/*`
+entry for this screen — net-new, same footing as `ReferFriendPreview.tsx`
+and `CategoryBrowsePreview.tsx`.
+
+Deliberately Tier 3 / commerce only: no clinical content, no personal
+health data, no real brand names (every brand tile is bracketed
+placeholder copy, per the task's own instruction not to invent brand
+names), and no invented prices beyond placeholder figures. The "plan
+applied" savings banner is static only — no confetti or animation — kept
+deliberately understated rather than celebratory, consistent with
+AGENTS.md rule 4's commerce firewall even though a discount applied to a
+commerce order (not a clinical body metric) is in scope here.
+
+**Built only from the approved pieces**, nothing invented: `M2Card`,
+`GlossTile`, `m2Text`, `M2Pill`, `M2Note`, `RoundButton` from
+`@/design-system/m2`. Icons confirmed in `design/icons/icon-manifest.json`
+before use: `arrow-left` (back button), `zap` and `truck` (delivery-speed
+option icons), `cart` (quick-add mini overlay), `check-circle-2`
+(plan-applied savings banner), `percent` (available for discount pills),
+`capsule`, `droplet`, `heart-pulse`, `box`, `activity`, `devices`
+(product-card thumbnails). For the dismiss icon on each recently-viewed
+card, the manifest has a confirmed `x` entry and no separate `close` or
+`dismiss` entry, so `x` was used — the correct confirmed icon per the
+task's own fallback instruction. Tokens only (`color`, `font`,
+`fontWeight`, `radius`, `space`) — no hex values.
+
+**What's on the screen:** a header with a `RoundButton` back control and
+the title "[Checkout extras]"; (1) a 2-up delivery-speed toggle
+("[Faster — ₹29/patient, by 6 PM today]" vs "[Standard — Free, by
+tomorrow]") with local `useState` selection; (2) a "Frequently bought
+together" horizontal `ScrollView` of 3 small product cards (`GlossTile`
+thumbnail, name, price, non-functional "[Add]" button); (3) a slim
+"Plan applied" `M2Note` savings banner, visually distinct from a hero
+card, reading "[Care Plan discount applied — you saved ₹140]"; (4) a
+"[Top brands for you]" heading with a horizontal row of 5 placeholder
+brand `GlossTile` squares; (5) a "Continue browsing" recently-viewed row
+of 3 small product cards, each with a dismiss `x` icon-button in the
+top-right corner, backed by local `useState` so a tapped card visually
+disappears from this preview; (6) a small pill-shaped floating quick-add
+overlay near the bottom, above where a real footer would sit, showing
+"[2 items added]" with a mini `cart` icon and a "[View cart]" `M2Pill`,
+static/always-visible for this preview.
+
+Not wired into navigation, routing, or `studentPhoneBoards.tsx`. No real
+data anywhere — every name, price and brand label is bracketed
+placeholder copy. No `check-icons.mjs --screen` run and no
+`design/screens/implementation-map.json` entry, since there is no brief
+or ticket yet. `tsc --noEmit` is clean across the repo. Added to
+`src/design-system/stories/RedesignPreview.stories.tsx` as
+`CommerceExtras` and in the `AllScreens` composite. Nothing committed,
+pushed, or opened as a PR.
+
+## 2026-11-11 — `WebLabPackageSelectionPreview.tsx` and `WebLabPackageDetailPreview.tsx` (round 4)
+
+Also part of the 2026-11-11 gap-analysis pass, round 4: the web
+counterparts of this folder's two mobile lab-package screens,
+`LabPackageSelectionPreview.tsx` (the package-picker grid) and
+`LabPackageDetailPreview.tsx` (a single package's detail page), laid
+out for desktop width inside the real `StudentWebShell` via
+`WebShellPreview`, following the same convention as `WebProductPreview`,
+`WebShopPreview` and the other `Web*Preview` screens — not a straight
+copy-paste of the phone-frame layout.
+
+This repo has a real `studentweb` screen, `WebMyLabTestsView.tsx`
+(`src/features/studentweb/views/t1/WebMyLabTestsView.tsx`), which is
+Tier-1-approved for tracking the student's OWN existing lab orders and
+results. Confirmed by reading it: it does not cover browsing or picking
+a NEW lab package to book. These two web previews cover that separate
+browse/decide moment, so they do not duplicate it.
+
+`WebLabPackageSelectionPreview.tsx` lays the 3 package-selector cards
+(popular / build-your-own / advanced) out side-by-side in a desktop
+row inside the shell body, instead of the mobile version's vertical
+stack, and keeps the "Recommended for you" card with its `Accordion`
+"why recommended" row unchanged in content. `WebLabPackageDetailPreview.tsx`
+keeps the title/price/badge/`StarRating` block at the top, then splits
+into a two-column desktop layout: left column holds the "What's
+included" `Accordion`, the FAQ `Accordion` and the rating-feedback
+`StarRating`; right column holds the doctor-recommendation `M2Card` and
+the `GradientHeroCard` cross-sell banner, which sit stacked below each
+other on mobile but side of the accordions on desktop.
+
+**Built only from the approved pieces**, nothing invented: `Accordion`,
+`StarRating` from `@/design-system`; `GlossTile`, `M2Card`, `M2Note`,
+`M2Pill`, `GradientHeroCard`, `heroStops`, `m2Text` from
+`@/design-system/m2`; `Icon` from `@/design-system/icons`, limited to
+icons already used by the mobile versions (`flask-2`, `scan`, `flask`,
+`heart`, `heart-plus`, `percent`, `clock`, `check-circle-2`, `shield-check`,
+`doctor-alt`, `doctor`, `cart`) — all re-confirmed in
+`design/icons/icon-manifest.json` before use. `WebShellPreview` and
+`BrandFooter` reused as-is. Tokens only (`color`, `font`, `fontWeight`,
+`radius`, `space`) — no hex values.
+
+Used `WebShellPreview route="lab-tests"` for both — the real route in
+`src/lib/utils/routes/routePaths.ts` for browsing lab tests, distinct
+from `my-lab-tests` (the real `WebMyLabTestsView.tsx`'s route).
+
+Per AGENTS.md rule 4 (commerce firewall), the "Recommended for you"
+copy and the social-proof booked-count badge stay deliberately
+bracketed placeholder text, not a real clinical inference or a literal
+counter claim, and the doctor-recommendation card names no real
+clinician — unchanged from the mobile versions. Like the other
+Tier-1-adjacent previews in this folder, lab/package content is
+treated as Tier 1 even on this commerce-adjacent page — flat and
+non-wired here, but a named-reviewer plan-first pass is required
+before any of this is built for real.
+
+Not wired into navigation, routing, or `studentPhoneBoards.tsx`. No
+real data anywhere — every package, price, badge and review count is
+bracketed placeholder copy. No `check-icons.mjs --screen` run and no
+`design/screens/implementation-map.json` entry, since there is no
+brief or ticket yet (same footing as the mobile versions they mirror).
+`tsc --noEmit` is clean across the repo. Added to
+`src/design-system/stories/RedesignPreview.stories.tsx` as
+`WebLabPackageSelection` and `WebLabPackageDetail`, and in the
+`AllScreens` composite. Nothing committed, pushed, or opened as a PR.
+
+## 2026-11-11 — `WebCommerceExtrasPreview.tsx` and `WebCategoryBrowsePreview.tsx` (round 3)
+
+Also part of the same 2026-11-11 gap-analysis pass, round 3: the web
+counterparts of `CommerceExtrasPreview.tsx` and `CategoryBrowsePreview.tsx`,
+following the same `Web*Preview` convention as `WebProductPreview.tsx` and
+`WebShopPreview.tsx` — wrapped in `WebShellPreview route="shop"` (reusing
+the real `StudentWebShell`, not a hand-drawn header), laid out for a wider
+desktop body (`maxWidth` on the body style) instead of a 390px phone
+frame, and ending with `<BrandFooter />`. Both reuse their mobile source
+file's content, copy and icons verbatim — no new icon, no new design-
+system component, and no hex values; both are Tier 3 / non-clinical,
+same footing as the mobile versions.
+
+`WebCommerceExtrasPreview` shows the same 6 patterns as the mobile
+source — delivery-speed toggle, "frequently bought together", "plan
+applied" savings note, brand-logo strip, "continue browsing" dismissible
+cards, and the quick-add overlay — but with the "frequently bought
+together" row shown as 3 cards side by side instead of a horizontal
+scroll, since the desktop body is wide enough; "continue browsing" stays
+a horizontal scroll per card width. `WebCategoryBrowsePreview` shows the
+same persona chip row, category tile grid, and BOGO/family-offer promo
+tiles as the mobile source, with the 6 category tiles able to sit in one
+row on the wider desktop body instead of mobile's 3-column wrap. The
+persona row is unchanged from the mobile file's own caution comment: a
+plain visual chip selector only, not the family-avatar-switcher/"Family
+Hub" pattern this repo already rejected (AGENTS.md rule 8).
+
+Not wired into navigation or routing. No real data anywhere — every
+name, price, brand label and badge is the same bracketed placeholder
+copy as the mobile source files. No `check-icons.mjs --screen` run and
+no `design/screens/implementation-map.json` entry, since there is no
+brief or ticket yet (same footing as the mobile versions they mirror).
+`tsc --noEmit` is clean across the repo. Added to
+`src/design-system/stories/RedesignPreview.stories.tsx` as
+`WebCommerceExtras` and `WebCategoryBrowse`, and in the `AllScreens`
+composite. Nothing committed, pushed, or opened as a PR.
+
+## 2026-11-11 — `WebInsurancePlanBuilderPreview.tsx` and `WebDoctorBrowsePreview.tsx`
+
+Also part of the 2026-11-11 gap-analysis pass: the web counterparts of
+`InsurancePlanBuilderPreview.tsx` and `DoctorBrowsePreview.tsx`, following
+the same `Web*Preview` convention as `WebProductPreview.tsx` and
+`WebShopPreview.tsx` — wrapped in `WebShellPreview` (reusing the real
+`StudentWebShell`, not a hand-drawn header), laid out for a wider desktop
+body (`maxWidth` on the body style) instead of a 390px phone frame, and
+ending with `<BrandFooter />`. Both reuse their mobile source file's
+components, copy and icons verbatim — no new icon, no new design-system
+component, and no hex values. No `design/screens/briefs/WebInsurancePlanBuilder.md`
+or `WebDoctorBrowse.md` exists — same net-new footing as the mobile
+screens they mirror.
+
+`WebInsurancePlanBuilderPreview` reuses `M2Table`, `StepDiagram`,
+`M2Pill`, `M2Note`, `M2Card` and `RoundButton` from the mobile source,
+rearranged into two desktop columns instead of one stacked column: the
+adults/children steppers, coverage chips, "How a top-up works" step
+diagram and the "Talk to an advisor" action sit in a left column; the
+wider plan-comparison `M2Table`, the quote-breakdown card and the
+illustrative-quote `M2Note` sit beside it in a right column, so the table
+and the numbers it drives are visible together without scrolling. The
+same caution as the mobile file carries over verbatim and applies equally
+to this layout: a real insurance plan builder is a pricing/underwriting
+decision needing product + compliance (actuarial/underwriting) review,
+not just a named-reviewer design approval — nothing on this screen
+computes, quotes, or binds a real premium, and no additional review has
+happened for the web layout either.
+
+`WebDoctorBrowsePreview` reuses `M2Card`, `GlossTile`, `m2Text`, `M2Pill`,
+`RoundButton`, `M2Note` and `StarRating` from the mobile source, replacing
+the phone's horizontally-scrolling doctor carousel with a desktop grid
+(`flexDirection: 'row'`, `flexWrap: 'wrap'`) so more doctor cards are
+visible at once without scrolling; the specialty filter chip row and the
+closing trust `M2Note` are otherwise unchanged. The same caution as the
+mobile file carries over verbatim: doctor booking content here is
+adjacent to this repo's real appointments feature, and if this direction
+is wanted for real, "Book" must route through the existing
+appointments/teleconsult booking logic (consent, slot availability,
+fail-closed checks per AGENTS.md) rather than reinventing it here.
+
+`WebShellPreview` routes used: `"insurance"` (an existing route in
+`src/lib/utils/routes/routePaths.ts`, already insurance-adjacent) for the
+plan builder, and `"appointments"` (also an existing route, doctor/consult-
+adjacent) for the doctor browse screen.
+
+Not wired into navigation or routing. No real data anywhere — every
+price, plan name, doctor name, specialty, rating and availability badge
+is the same bracketed placeholder copy as the mobile source files. No
+`check-icons.mjs --screen` run and no
+`design/screens/implementation-map.json` entry, since there is no brief
+or ticket yet (same footing as the mobile versions they mirror). `tsc
+--noEmit` is clean across the repo. Added to
+`src/design-system/stories/RedesignPreview.stories.tsx` as
+`WebInsurancePlanBuilder` and `WebDoctorBrowse`, and in the `AllScreens`
+composite. Nothing committed, pushed, or opened as a PR.
+
+## 2026-11-11 — `WebCarePlanBenefitsPreview.tsx` and `WebSecondOpinionPreview.tsx`
+
+Also part of the 2026-11-11 gap-analysis pass: the web counterparts of
+`CarePlanBenefitsPreview.tsx` and `SecondOpinionPreview.tsx`, following
+the same `Web*Preview` convention as `WebProductPreview.tsx` and
+`WebShopPreview.tsx` — wrapped in `WebShellPreview` (reusing the real
+`StudentWebShell`, not a hand-drawn header), laid out for a wider desktop
+body (`maxWidth` on the body style) instead of a 390px phone frame, and
+ending with `<BrandFooter />`. Both reuse their mobile source file's
+components, copy and icons verbatim — no new icon, no new design-system
+component, and no hex values. No `design/screens/briefs/WebCarePlanBenefits.md`
+or `WebSecondOpinion.md` exists — same net-new footing as the mobile
+screens they mirror.
+
+`WebCarePlanBenefitsPreview` reuses `StepDiagram`, `Accordion`,
+`StatusPill`, `GlossTile`, `M2Card`, `M2Note` and `m2Text` from the mobile
+source, with only one layout change for the wider body: the three
+perforated, coupon-style benefit cards sit in a row instead of the
+mobile version's vertical stack. The membership status bar, benefits
+checklist, "how your benefits work" `StepDiagram` section and the FAQ
+`Accordion` keep the same single-column reading order as the mobile
+screen. The mobile file's own caution carries over unchanged: this is a
+commerce/membership pattern (perforated coupon cards, a membership
+status bar) that doesn't exist in this design system yet, and there is
+no existing brief or screen for it — if this direction is wanted for
+real it needs its own brief and ticket first, same caution as the other
+previews in this folder.
+
+`WebSecondOpinionPreview` reuses `M2Card`, `M2Note`, `GlossTile`,
+`RoundButton`, `StatusPill` and `m2Text` from the mobile source, with
+only one layout change for the wider body: the three illustrative
+cost-range cards sit side by side instead of a mobile stack. The
+describe-diagnosis text area, upload-reports row, submit-for-review
+button with its clinician-review `M2Note`, and the request `StatusPill`
+section keep the same single-column form order as the mobile screen,
+since a submission form doesn't benefit from being split into columns.
+
+The mobile file's clinical-governance caution carries over **verbatim**
+to this web layout, because it applies just as much here: this is a UI-
+shape preview only, nothing is wired and nothing reads or writes real
+data. A real "second opinion" / surgical cost-estimator feature is a NEW
+CLINICAL SERVICE LINE, not a UI pattern to restyle — before any real
+engineering starts it needs an explicit product + clinical-governance
+decision covering, at minimum: who reviews a submitted request (which
+clinician, what credentialing), what liability and consent language is
+required of the student before a request is even accepted, and how the
+cost ranges shown would actually be sourced (which hospitals, how
+current, who is accountable for them being right). That is a heavier bar
+than the named-reviewer content check that gates an ordinary Tier 1
+screen, and this screen — mobile or web — does not claim that bar has
+been cleared.
+
+`WebShellPreview` routes used: `"rewards"` (an existing route in
+`src/lib/utils/routes/routePaths.ts`; no route named "benefits" or "care
+plan" exists, and `rewards` is the closest existing match for a savings/
+perks surface) for the care-plan benefits screen, and `"care-navigator"`
+(also an existing route; no route named "second-opinion" or "surgery"
+exists, and `care-navigator` is the closest existing match for a
+getting-referred-to-care flow) for the second-opinion screen. Neither
+route collides with routes other `Web*Preview` files already claim
+(`shop`, `orders`, `appointments`, `buy-again`, `lab-tests`, `home`,
+`insurance`).
+
+Not wired into navigation or routing. No real data anywhere — every
+benefit, coupon, checklist item, diagnosis placeholder, cost range and
+status badge is the same bracketed placeholder copy as the mobile source
+files. No `check-icons.mjs --screen` run and no
+`design/screens/implementation-map.json` entry, since there is no brief
+or ticket yet (same footing as the mobile versions they mirror). `tsc
+--noEmit` is clean across the repo. Added to
+`src/design-system/stories/RedesignPreview.stories.tsx` as
+`WebCarePlanBenefits` and `WebSecondOpinion`, and in the `AllScreens`
+composite. Nothing committed, pushed, or opened as a PR.
+
+## 2026-11-11 — AskAyush contrast fix + landing-page audit follow-ups
+
+**Contrast bug fixed in the real, shipped screen.** The same dark-on-dark
+bug found and fixed earlier this round in `AskAyushOrderCardPreview.tsx`
+(student chat bubble using `color.action` background with `bubbleText`
+unconditionally set to `color.text`) was confirmed to pre-exist in
+`M2AskAyushPreview.tsx` — a real preview screen already in the repo, not
+part of this round's new builds. Fixed the same way: added a
+`studentBubbleText: { color: color.onAction }` style applied only to the
+student bubble's `Text`, leaving the Ayush bubble (light background,
+dark text) untouched. `tsc --noEmit` clean.
+
+**Landing-page FAQ/step-diagram gaps closed**, per the audit finding that
+4 of 8 public landing pages had no FAQ section and the Consult page had
+no step-by-step walkthrough, while sibling pages (Lab Tests, Plans,
+Programs) already use `LwFaq`/`LwSteps` for this. No new components or
+icons: both are existing shared primitives from `landingWebKit.tsx`
+(`LwFaq` already uses `chevron-down`, confirmed present in
+`icon-manifest.json`).
+
+- `LandingCampusView.tsx` — added `LwFaq` (3 Qs): what a campus admin can
+  see (reuses `campus.boundary.body`/`.enrolment` verbatim), whether
+  cohort/attendance reporting exists (reuses `campus.gap.body` verbatim —
+  already states it is not built), and how to get set up (new copy,
+  points at the existing enquiry form / admin console sign-in).
+- `LandingClinicianView.tsx` — added `LwFaq` (3 Qs), all reusing existing
+  translated copy verbatim: access scope (`clinician.access.body`), pay
+  and commission (`clinician.gap.payBody`), and joining
+  (`clinician.joining.body`).
+- `LandingLabListView.tsx` — added `LwFaq` (2 Qs): which test to book
+  (reuses `lablist.disclaimer` verbatim) and price accuracy (new copy,
+  states prices come straight from the public catalogue API, the same
+  one used at checkout).
+- `LandingPartnershipsView.tsx` — added `LwFaq` (2 Qs), both reusing
+  existing translated copy verbatim: paid placement
+  (`partners.nfs.search` + `partners.nfs.ads` concatenated) and what
+  happens after submitting (`partners.sent.body`).
+- `LandingConsultView.tsx` — added `LwSteps` ("How a consult works",
+  3 steps: pick a specialty, book a slot, consult and keep your
+  prescription — new copy, grounded only in facts the page already
+  states: fee shown before booking, prescription saved to vault, college
+  never told).
+
+New i18n keys added to **all three** locale blocks in
+`src/i18n/areas/landing.ts` (`landingEn`, `landingTe`, `landingHi`) so
+the `Record<keyof typeof landingEn, string>` type constraint holds:
+`landing.campus.faq.*`, `landing.clinician.faq.*`,
+`landing.lablist.faq.*`, `landing.partners.faq.*`,
+`landing.consult.howTitle`/`howLede`/`step1-3Title`/`step1-3Body`. Where
+an answer reuses an existing key verbatim, no new key was added for the
+answer — only for the question. Telugu and Hindi are first-draft
+translations by Claude, not reviewed by a native speaker (same
+unreviewed-first-draft status the file's header already documents for
+this file generally); new copy (not reused verbatim from elsewhere) is
+limited to the campus "how do I get set up" answer, the lablist price-
+accuracy answer, and the three consult steps.
+
+`tsc --noEmit` clean across the repo after all edits. Nothing committed,
+pushed, or opened as a PR.
+
+## 2026-11-11 — Round 4: remaining video re-watch findings
+
+3 new screens plus 2 refinements to existing round-3 screens, closing out
+the small/medium items from the deep video re-watch audit (full list
+presented to the user; the rating/CSAT item was deliberately left out,
+pending a product decision on scope).
+
+**New screens:**
+- `PaymentFailureScreenPreview.tsx` — a dedicated full-screen payment-
+  failure state, distinct from the existing `PaymentRetrySheetPreview.tsx`
+  bottom sheet (the Tata 1mg reference shows both shapes depending on
+  where in the flow the failure happens). Order-ID card, Retry/Cash-on-
+  Delivery buttons, support note. `shield-alert`, `check-circle-2`,
+  `credit-card-2` icons, all manifest-confirmed.
+- `InlineAyushSuggestionPreview.tsx` — an Ask Ayush suggestion embedded
+  inline in a content feed between two ordinary cards, distinct from the
+  full `M2AskAyushPreview.tsx` chat screen and from
+  `AskAyushOrderCardPreview.tsx` (an order card inside the chat). Carries
+  the same "pattern, not diagnosis, routes to a doctor" guardrail as the
+  other Ayush screens, plus a caution note that proactive/unprompted AI
+  surfacing in a feed is its own consent/frequency product decision, not
+  just a UI question. `sparkle`, `x`, `arrow-right` icons.
+- `PhysiotherapyAtHomeLandingPreview.tsx` — an entirely uncatalogued
+  concept surfaced by a second close re-watch of the reference videos: a
+  3-step `StepDiagram` ("tell us what hurts" → "matched with a
+  physiotherapist" → "session at your hostel or home") plus a 2x2 benefit
+  grid. Heaviest caution JSDoc in this batch — standing up a home-visit
+  allied-health service line is a new product/clinical-governance/
+  liability decision, flagged the same way as `AISkinScanPreview.tsx` and
+  `SecondOpinionPreview.tsx`. "[Licensed physiotherapists]" and
+  "[Credentials checked]" are explicitly placeholder copy, not a claim
+  that any verification exists yet (same discipline as the phlebotomist
+  "ID verified" badge in `HomeCollectionStatusPreview.tsx`). `home`,
+  `person-badge`, `activity`, `clock`, `dumbbell` icons.
+
+**Refinements to existing round-3 screens:**
+- `CommerceExtrasPreview.tsx` — added a 4th "frequently bought together"
+  card ("[Antibiotic course]") carrying an `M2Pill` "[Rx]" badge
+  (`tone="attention"`, `prescription-2` icon), matching the Rx-needed
+  badge on Blinkit's pharmacy grid cards. Reuses the existing `M2Pill`
+  component rather than a hand-built badge, so colour comes from the
+  pill's own tone map, not a one-off value.
+- `HomeCollectionStatusPreview.tsx` — added a "[Collection fulfilled by
+  Partner Lab]" attribution strip (`flask-2` icon) between the status
+  card and the phlebotomist card; a "[Preparations guide]" row built from
+  the shared `Accordion` component; and replaced the single testimonial
+  card with a horizontally-scrollable set of 2, with a dot-pagination row
+  below — matching the reference recording's paginated "rate your order"
+  strip rather than a single static card. The first dot-pagination attempt
+  used `color.ruleSoft` for inactive dots, which is nearly the same
+  lightness as `color.canvas` and was effectively invisible in a
+  screenshot; fixed to `color.ruleStrong` for real contrast.
+
+All 5 new/changed stories added to
+`src/design-system/stories/RedesignPreview.stories.tsx` (individual
+exports `PaymentFailureScreen`, `InlineAyushSuggestion`,
+`PhysiotherapyAtHomeLanding`, plus the `AllScreens` composite — 61 total
+stories now). Screenshotted via the established Playwright pipeline and
+visually verified before reporting back; the dot-contrast issue above was
+caught this way. `tsc --noEmit` clean across the repo. Nothing committed,
+pushed, or opened as a PR.
+
+## 2026-11-11 (later) — one more re-audit gap built; one deliberately blocked
+
+A fork re-checked all four video reports against the ground truth above
+(NOTES.md itself, implementation-map.json, the stories file) and found
+almost nothing survived — 61 stories already cover the four videos. Two
+items did survive:
+
+- `HealthPlansMarketplacePreview.tsx` — built. 1mg's "Health Plans" tab:
+  partner condition-management programs (diabetes, weight, stress, heart
+  risk), each a card with category `M2Pill`, bracketed "[Partner name —
+  not yet chosen]" line, price, and "[Learn more]"/"[Enroll]" CTAs.
+  Distinct from `InsurancePlanBuilderPreview.tsx` (insurance underwriting,
+  not third-party coaching programs). Same caution weight as
+  `PhysiotherapyAtHomeLandingPreview.tsx` — standing this up for real means
+  vetting actual partners and deciding StudentKare's liability in a
+  coaching relationship it doesn't clinically run itself; not solved here.
+  No program promises a number (no "lose X kg", no "lower HbA1c by Y%"),
+  consistent with AGENTS.md's no-gamification-of-body-metrics rule
+  extended to not overpromising outcomes. `droplet`, `activity`,
+  `brain-2`, `heart-plus`, `chevron-right`, `alert-circle-3` icons, all
+  confirmed in the manifest first.
+- Loyalty/rewards coin-balance card (Tata 1mg's NeuCoins pattern) —
+  **not built.** `design/icons/icon-manifest.json` has no coin, reward,
+  medal, trophy, gift, wallet or token icon anywhere across `icons`,
+  `icons3d` or `other`/illustrations (checked directly, not assumed).
+  CLAUDE.md is explicit: never invent an icon, never substitute a
+  look-alike silently. `star`/`star-filled` exist but aren't the same
+  concept and weren't substituted. This one stays blocked until a real
+  icon is added to the manifest in its own PR — a design-kit change, not
+  something to solve inside a screen file.
+
+Added `HealthPlansMarketplace` to
+`src/design-system/stories/RedesignPreview.stories.tsx` (individual
+export + the `AllScreens` composite — 62 total stories now). `tsc
+--noEmit` clean. No implementation-map.json entry (no brief/ticket, same
+as every other file in this directory). Nothing committed, pushed, or
+opened as a PR.
+
+## 2026-11-11 (later still) — OTC medicine identity-layer importer
+
+Built `backend/scripts/import_otc_medicine_dataset.py`: bulk-imports
+identity-only fields (brand, composition, pack, manufacturer) from an open
+dataset such as github.com/junioralive/indian-medicine-dataset into
+`care_medicines`/`care_medicine_ingredients`. See
+`docs/plans/catalog-expansion-2026-11-11.md` for why this exists.
+
+The dataset has no schedule/prescription-requirement column at all — real
+rows in a 2,000-row sample include prescription-only antibiotics
+(Augmentin, Azithral) with nothing to distinguish them from true OTC
+items. Guessing a schedule would be a patient-safety mistake, not a
+cosmetic one, so every row this script writes is locked: `schedule: H1`
+(strictest), `requires_prescription: true`, `active: false`, `source:
+"BULK_IMPORT_UNCLASSIFIED"` — nothing imported here is buyable, searchable
+to students, or shown with any schedule claim until a human reclassifies
+it via the existing `PATCH /api/ops/medicines/{id}`. The script never
+writes to `care_medicine_info_fields` (the pharmacist-reviewed monograph
+table) — there's nothing in this dataset to put there, and Rule 2 of
+`tier1-medicine-info-2026-10-22.md` ("no AI writes monograph text") is
+untouched.
+
+Dry-run against the real, full 253,973-row dataset: 211,388 rows
+(~83%) parse cleanly and would import under the lock above; the rest are
+skipped with a specific, printed reason (31,990 unparseable composition,
+7,905 discontinued, 2,069 unparseable dosage form, 485 unmapped strength
+unit, 136 out-of-range strength) rather than guessed. 12 new tests in
+`backend/tests/test_import_otc_medicine_dataset.py` cover the lock,
+cross-run dedup (a real bug caught and fixed: the first version only
+deduped within a single run), the --confirm gate, --limit, and the
+parsing rules against the dataset's actual formats. Also extended
+`backend/services/demo_seed.py` with sample (clearly `SAMPLE_NOTE`-tagged)
+entries for 4 new categories the founder confirmed as a real storefront
+expansion: wellness-fitness, cosmetics, apparel, footwear — apparel/
+footwear flagged as single-size placeholders, since the catalog model has
+no size/colour variants yet. `backend/tests/test_seed_demo.py` (24 tests)
+still passes. Not run against a real database — `services/db_sql.py` only
+allows Postgres outside test mode, so the actual bulk import still needs
+someone to run the script with a real `DATABASE_URL` set.

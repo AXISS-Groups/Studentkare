@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import React from 'react';
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -429,7 +429,10 @@ describe('the partnerships page', () => {
       await Promise.resolve();
       await Promise.resolve();
     });
-    expect(screen.getByText(/not going to promise you one/i)).toBeInTheDocument();
+    // The same confirmation copy is also reused verbatim as an FAQ answer further down
+    // the page (see LandingPartnershipsView), so scope the query to the confirmation
+    // status region rather than the whole document.
+    expect(within(screen.getByRole('status')).getByText(/not going to promise you one/i)).toBeInTheDocument();
   });
 });
 

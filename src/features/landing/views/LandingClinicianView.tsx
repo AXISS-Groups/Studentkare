@@ -3,7 +3,7 @@ import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
 import { CanvasImage } from '@/design-system/art';
 import { PublicAudienceHeader, PublicSitePage } from '@/design-system/public-site';
-import { LwHeading, LwNote, LwRulesPanel } from './landingWebKit';
+import { LwFaq, LwHeading, LwNote, LwRulesPanel } from './landingWebKit';
 import './landingWeb.css';
 
 type Flag = 'HH' | 'LL' | 'H' | 'N';
@@ -112,6 +112,15 @@ export function LandingClinicianView(): React.ReactElement {
           <strong>{t('landing.clinician.gap.payTitle')}</strong> {t('landing.clinician.gap.payBody')} {t('landing.clinician.joining.body')}
         </LwNote>
       </div>
+
+      <LwFaq
+        title={t('landing.clinician.faq.title')}
+        items={[
+          { q: t('landing.clinician.faq.access.q'), a: t('landing.clinician.access.body') },
+          { q: t('landing.clinician.faq.pay.q'), a: t('landing.clinician.gap.payBody') },
+          { q: t('landing.clinician.faq.join.q'), a: t('landing.clinician.joining.body') },
+        ]}
+      />
 
       <section className="lw-start" aria-labelledby="lw-clinician-cta">
         <CanvasImage name="a-friendly-doctor-waving-hello-b859fc.png" className="lw-recruit__art" />
