@@ -38,7 +38,7 @@ export function M2AskAyushPreview(): React.ReactElement {
             <Text style={styles.reportTitle}>[Lipid profile] · 14 Oct 2026</Text>
           </View>
           <View style={[styles.bubble, styles.studentBubble]}>
-            <Text style={styles.bubbleText}>What does HDL mean?</Text>
+            <Text style={[styles.bubbleText, styles.studentBubbleText]}>What does HDL mean?</Text>
           </View>
           <View style={[styles.bubble, styles.ayushBubble]}>
             <Text style={styles.bubbleText}>HDL is often called "good cholesterol" — it helps carry extra cholesterol away. A doctor will guide you on what your specific number means and what, if anything, to change.</Text>
@@ -75,6 +75,7 @@ const styles = StyleSheet.create({
   studentBubble: { alignSelf: 'flex-end', backgroundColor: color.action },
   ayushBubble: { alignSelf: 'flex-start', backgroundColor: color.surface },
   bubbleText: { fontFamily: font.family.sans, fontSize: font.size.bodySm, color: color.text, lineHeight: 20 },
+  studentBubbleText: { color: color.onAction },
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: space.s8, marginTop: space.s4 },
   chip: { paddingHorizontal: space.s12, height: 34, borderRadius: radius.full, borderWidth: 1, borderColor: color.actionSoft, alignItems: 'center', justifyContent: 'center' },
   chipText: { fontFamily: font.family.sans, fontSize: font.size.caption, fontWeight: fontWeight(font.weight.strong), color: color.action },
