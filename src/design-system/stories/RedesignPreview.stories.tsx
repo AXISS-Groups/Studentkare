@@ -38,6 +38,30 @@ import { M2FamilyCirclePreview } from '@/features/redesignPreview/M2FamilyCircle
 import { DevicesPreview } from '@/features/redesignPreview/DevicesPreview';
 import { TeleconsultPreview } from '@/features/redesignPreview/TeleconsultPreview';
 import { VitalTrendsPreview } from '@/features/redesignPreview/VitalTrendsPreview';
+import { InsurancePlanBuilderPreview } from '@/features/redesignPreview/InsurancePlanBuilderPreview';
+import { PaymentRetrySheetPreview } from '@/features/redesignPreview/PaymentRetrySheetPreview';
+import { AISkinScanPreview } from '@/features/redesignPreview/AISkinScanPreview';
+import { SecondOpinionPreview } from '@/features/redesignPreview/SecondOpinionPreview';
+import { LabPackageDetailPreview } from '@/features/redesignPreview/LabPackageDetailPreview';
+import { LabPackageSelectionPreview } from '@/features/redesignPreview/LabPackageSelectionPreview';
+import { CarePlanBenefitsPreview } from '@/features/redesignPreview/CarePlanBenefitsPreview';
+import { HomeCollectionStatusPreview } from '@/features/redesignPreview/HomeCollectionStatusPreview';
+import { AskAyushOrderCardPreview } from '@/features/redesignPreview/AskAyushOrderCardPreview';
+import { CategoryBrowsePreview } from '@/features/redesignPreview/CategoryBrowsePreview';
+import { DoctorBrowsePreview } from '@/features/redesignPreview/DoctorBrowsePreview';
+import { CommerceExtrasPreview } from '@/features/redesignPreview/CommerceExtrasPreview';
+import { WebLabPackageSelectionPreview } from '@/features/redesignPreview/WebLabPackageSelectionPreview';
+import { WebLabPackageDetailPreview } from '@/features/redesignPreview/WebLabPackageDetailPreview';
+import { WebInsurancePlanBuilderPreview } from '@/features/redesignPreview/WebInsurancePlanBuilderPreview';
+import { WebDoctorBrowsePreview } from '@/features/redesignPreview/WebDoctorBrowsePreview';
+import { WebCommerceExtrasPreview } from '@/features/redesignPreview/WebCommerceExtrasPreview';
+import { WebCategoryBrowsePreview } from '@/features/redesignPreview/WebCategoryBrowsePreview';
+import { WebCarePlanBenefitsPreview } from '@/features/redesignPreview/WebCarePlanBenefitsPreview';
+import { WebSecondOpinionPreview } from '@/features/redesignPreview/WebSecondOpinionPreview';
+import { PaymentFailureScreenPreview } from '@/features/redesignPreview/PaymentFailureScreenPreview';
+import { InlineAyushSuggestionPreview } from '@/features/redesignPreview/InlineAyushSuggestionPreview';
+import { PhysiotherapyAtHomeLandingPreview } from '@/features/redesignPreview/PhysiotherapyAtHomeLandingPreview';
+import { HealthPlansMarketplacePreview } from '@/features/redesignPreview/HealthPlansMarketplacePreview';
 
 /**
  * Flat, non-functional previews of the 4 screens in
@@ -141,6 +165,140 @@ export const Teleconsult: Story = { render: () => <View><TeleconsultPreview /></
  */
 export const VitalTrends: Story = { render: () => <View><VitalTrendsPreview /></View> };
 
+/**
+ * `LabPackageDetail` fills a gap found reviewing Apollo 24|7's lab-package
+ * detail page against this app (2026-11-11): a social-proof badge, an
+ * expandable included-tests/FAQ accordion, a doctor-recommendation card, a
+ * cross-sell banner and a star-rating feedback moment, none of which
+ * currently exist together on one screen here. Introduces `Accordion` and
+ * `StarRating` as new shared design-system primitives. See NOTES.md.
+ */
+export const LabPackageDetail: Story = { render: () => <View><LabPackageDetailPreview /></View> };
+
+/**
+ * `SecondOpinion` previews a "surgery second opinion + cost estimator"
+ * flow, modelled on Apollo 24|7's Surgery section, at Krishna's explicit
+ * request (2026-11-11 gap-analysis pass) to see what this COULD look like.
+ * UI-shape only — a real version is a NEW CLINICAL SERVICE LINE (surgical
+ * referrals/second opinions), needing an explicit product +
+ * clinical-governance decision (who reviews requests, what liability/
+ * consent language is needed, how cost ranges are sourced) before any real
+ * engineering starts — a heavier bar than the usual Tier 1 named-reviewer
+ * check. See NOTES.md.
+ */
+export const SecondOpinion: Story = { render: () => <View><SecondOpinionPreview /></View> };
+
+/**
+ * `AISkinScanPreview` previews a camera-based AI skin-analysis flow,
+ * modelled on Apollo 24|7's "Clear Steps" feature, at Krishna's explicit
+ * request (2026-11-11 gap-analysis pass) to see what this COULD look like.
+ * UI-shape only — no camera or AI capability is implemented or proposed
+ * here. A real version is a NEW BIOMETRIC/AI-DIAGNOSTIC PRODUCT CAPABILITY
+ * (camera/biometric data capture), needing its own dedicated product,
+ * clinical-safety, AND privacy review before any real engineering starts —
+ * a heavier bar than the usual Tier 1 named-reviewer check. See NOTES.md.
+ */
+export const AISkinScan: Story = { render: () => <View><AISkinScanPreview /></View> };
+
+/**
+ * Net-new concept, no existing brief: a "build and compare a plan"
+ * insurance flow, filling the gap found reviewing a reference app
+ * (Apollo 24|7) against this folder — `M2InsurancePreview` only shows a
+ * static policy/cover screen. Reuses `M2Table` as the comparison table.
+ * Needs product + compliance review before it becomes real, not just a
+ * design sign-off — see the file's own caution comment and NOTES.md.
+ */
+export const InsurancePlanBuilder: Story = { render: () => <View><InsurancePlanBuilderPreview /></View> };
+
+/**
+ * Two still-missing reusable UI patterns on one preview screen, from the
+ * same 2026-11-11 gap-analysis pass: a payment-failure/retry bottom sheet
+ * (shown already open, not toggleable) over a checkout/orders context, and
+ * a loyalty/coins commerce card. Commerce-only, not clinical — see the
+ * file's own caution comment and NOTES.md.
+ */
+export const PaymentRetrySheet: Story = { render: () => <View><PaymentRetrySheetPreview /></View> };
+
+/**
+ * `LabPackageSelection` previews the package-picker/browse screen that
+ * comes BEFORE `LabPackageDetail` — a grid of selectable package cards
+ * plus a personalised "Recommended for you" card — modelled on Tata
+ * 1mg's "Full Body Packages" and Apollo 24|7's "Lab Tests" package-list
+ * screens (2026-11-11 gap-analysis pass). See NOTES.md.
+ */
+export const LabPackageSelection: Story = { render: () => <View><LabPackageSelectionPreview /></View> };
+export const CarePlanBenefits: Story = { render: () => <View><CarePlanBenefitsPreview /></View> };
+
+/**
+ * `HomeCollectionStatus` previews a "your home sample collection is on the
+ * way" status screen demonstrating 3 small card patterns from reference-app
+ * videos this repo didn't have yet: a phlebotomist credentials card, a
+ * testimonial card, and a compact secondary promo strip (2026-11-11
+ * gap-analysis pass, round 2). See NOTES.md.
+ */
+export const HomeCollectionStatus: Story = { render: () => <View><HomeCollectionStatusPreview /></View> };
+
+/**
+ * `AskAyushOrderCard` previews ONE new card pattern found in a reference
+ * app's AI chatbot flow ("Ask Apollo"): a chat-embedded order-summary card,
+ * so the bot can render a structured order (items, address, ETA, charges)
+ * inline instead of only text (2026-11-11 gap-analysis pass, round 2). This
+ * is a NEW CARD TYPE for the existing Tier 1 `M2AskAyushPreview` chat
+ * screen, not an edit to it — see the file's own caution comment and
+ * NOTES.md for the product-decision caveat about what the AI assistant is
+ * allowed to transact on a student's behalf.
+ */
+export const AskAyushOrderCard: Story = { render: () => <View><AskAyushOrderCardPreview /></View> };
+
+/**
+ * `CategoryBrowse` previews 3 small commerce/browse card patterns from
+ * reference-app videos this repo didn't have yet: a category icon-tile
+ * grid with ribbon badges, a "who are you shopping for" persona/avatar
+ * chip row, and a BOGO/family-offer promo tile pair (2026-11-11
+ * gap-analysis pass, round 2). The persona row is a plain visual chip
+ * selector only — it is NOT the family-avatar-switcher/"Family Hub"
+ * pattern this repo already rejected. See the file's own caution comment
+ * and NOTES.md.
+ */
+export const CategoryBrowse: Story = { render: () => <View><CategoryBrowsePreview /></View> };
+
+/**
+ * `DoctorBrowse` previews a doctor-profile browsing carousel seen in
+ * reference-app videos (2026-11-11 gap-analysis pass, round 3): a
+ * horizontally-scrollable row of doctor cards for discovery, distinct from
+ * `DoctorComparePreview`'s side-by-side table of two already-chosen
+ * doctors. See the file's own caution comment and NOTES.md.
+ */
+export const DoctorBrowse: Story = { render: () => <View><DoctorBrowsePreview /></View> };
+
+export const CommerceExtras: Story = { render: () => <View><CommerceExtrasPreview /></View> };
+
+export const WebLabPackageSelection: Story = { render: () => <View><WebLabPackageSelectionPreview /></View> };
+export const WebLabPackageDetail: Story = { render: () => <View><WebLabPackageDetailPreview /></View> };
+
+export const WebInsurancePlanBuilder: Story = { render: () => <View><WebInsurancePlanBuilderPreview /></View> };
+export const WebDoctorBrowse: Story = { render: () => <View><WebDoctorBrowsePreview /></View> };
+
+/**
+ * Web counterparts of `CommerceExtrasPreview` and `CategoryBrowsePreview`,
+ * laid out for desktop width inside the real `StudentWebShell`
+ * (2026-11-11 gap-analysis pass, round 3). See NOTES.md.
+ */
+export const WebCommerceExtras: Story = { render: () => <View><WebCommerceExtrasPreview /></View> };
+export const WebCategoryBrowse: Story = { render: () => <View><WebCategoryBrowsePreview /></View> };
+
+/**
+ * Web counterparts of `CarePlanBenefitsPreview` and `SecondOpinionPreview`,
+ * laid out for desktop width inside the real `StudentWebShell`
+ * (2026-11-11 gap-analysis pass). See NOTES.md.
+ */
+export const WebCarePlanBenefits: Story = { render: () => <View><WebCarePlanBenefitsPreview /></View> };
+export const WebSecondOpinion: Story = { render: () => <View><WebSecondOpinionPreview /></View> };
+export const PaymentFailureScreen: Story = { render: () => <View><PaymentFailureScreenPreview /></View> };
+export const InlineAyushSuggestion: Story = { render: () => <View><InlineAyushSuggestionPreview /></View> };
+export const PhysiotherapyAtHomeLanding: Story = { render: () => <View><PhysiotherapyAtHomeLandingPreview /></View> };
+export const HealthPlansMarketplace: Story = { render: () => <View><HealthPlansMarketplacePreview /></View> };
+
 export const AllScreens: Story = {
   render: () => (
     <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 24 }}>
@@ -181,6 +339,30 @@ export const AllScreens: Story = {
       <DevicesPreview />
       <TeleconsultPreview />
       <VitalTrendsPreview />
+      <LabPackageDetailPreview />
+      <AISkinScanPreview />
+      <SecondOpinionPreview />
+      <InsurancePlanBuilderPreview />
+      <PaymentRetrySheetPreview />
+      <LabPackageSelectionPreview />
+      <CarePlanBenefitsPreview />
+      <HomeCollectionStatusPreview />
+      <AskAyushOrderCardPreview />
+      <CategoryBrowsePreview />
+      <DoctorBrowsePreview />
+      <CommerceExtrasPreview />
+      <WebLabPackageSelectionPreview />
+      <WebLabPackageDetailPreview />
+      <WebCommerceExtrasPreview />
+      <WebCategoryBrowsePreview />
+      <WebInsurancePlanBuilderPreview />
+      <WebDoctorBrowsePreview />
+      <WebCarePlanBenefitsPreview />
+      <WebSecondOpinionPreview />
+      <PaymentFailureScreenPreview />
+      <InlineAyushSuggestionPreview />
+      <PhysiotherapyAtHomeLandingPreview />
+      <HealthPlansMarketplacePreview />
     </View>
   ),
 };
