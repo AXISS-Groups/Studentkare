@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useT } from '@/i18n';
 import { Icon } from '@/design-system/icons';
 import { color, focusRing, font, fontWeight, radius, space } from '@/design-system/theme';
-import { GlossTile, M2Card, M2Note, M2Pill, M2Table, m2TableText, m2Text, RoundButton } from '@/design-system/m2';
+import { M2Card, M2Note, M2Pill, M2Table, m2TableText, m2Text, RoundButton } from '@/design-system/m2';
 import type { M2TableColumn, PressState } from '@/design-system/m2';
 import { StepDiagram } from '@/design-system';
 
@@ -82,8 +82,8 @@ const PLAN_COLUMNS: ReadonlyArray<M2TableColumn<PlanRow>> = [
  * See NOTES.md.
  */
 export function InsurancePlanBuilderPreview(): React.ReactElement {
-  const [adults, setAdults] = useState(1);
-  const [children, setChildren] = useState(0);
+  const [adults] = useState(1);
+  const [children] = useState(0);
   const [coverage, setCoverage] = useState(COVERAGE_OPTIONS[1]);
   const t = useT();
 

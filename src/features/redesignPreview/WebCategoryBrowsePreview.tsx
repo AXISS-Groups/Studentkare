@@ -8,8 +8,6 @@ import { color, focusRing, font, fontWeight, radius, space } from '@/design-syst
 import { WebShellPreview } from './WebShellPreview';
 import { BrandFooter } from './BrandFooter';
 
-const noop = () => undefined;
-
 interface Persona {
   id: string;
   label: string;

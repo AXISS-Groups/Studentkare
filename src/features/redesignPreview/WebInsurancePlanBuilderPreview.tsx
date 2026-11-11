@@ -90,8 +90,8 @@ const PLAN_COLUMNS: ReadonlyArray<M2TableColumn<PlanRow>> = [
  * table instead of stacked below it.
  */
 export function WebInsurancePlanBuilderPreview(): React.ReactElement {
-  const [adults, setAdults] = useState(1);
-  const [children, setChildren] = useState(0);
+  const [adults] = useState(1);
+  const [children] = useState(0);
   const [coverage, setCoverage] = useState(COVERAGE_OPTIONS[1]);
   const t = useT();
 
