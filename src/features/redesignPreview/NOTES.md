@@ -1658,3 +1658,22 @@ already real shipped screens (not previews — the 31 above plus
 `WebPartnerApply`, `WebAccount`, `WebHome` confirmed this round), and the
 3 genuine Tier-1 gaps now have flat previews. Nothing wired, committed,
 pushed, or opened as a PR this round.
+
+**Correction (2026-11-11, later the same day): `WebGuardianApprove` and
+`WebGuardianConsent` were wrong — reverted.** This Part's "3 genuine gaps"
+call used only `implementation-map.json` being empty as the test, without
+checking `DESIGN.md` first. `DESIGN.md` §9 "D4" (resolved 2026-09-26)
+already records `GuardianConsent`/`GuardianApprove` as **deliberately
+dropped** — AGENTS.md guardrail 8 makes Student Kare 18+ only, so there is
+no under-18/guardian-consent flow to preview, web or mobile. An empty map
+entry for this pair specifically means "correctly never built because
+it's out of scope," not "unbuilt gap."
+
+The mistake was caught while building the MOBILE `GuardianApprove`/
+`GuardianConsent` pair for task #66 later the same day (that pair was
+deleted before being committed — see the task #66 entry below) — by which
+point `WebGuardianApprovePreview.tsx`/`WebGuardianConsentPreview.tsx` had
+already been merged into `development` via PR #309. Both files, their
+Storybook wiring, and this entry's claim that they're in-scope gaps are
+removed/corrected here. `WebReportAssistant` is unaffected — it has no
+such conflict and remains a genuine Tier-1 gap.
