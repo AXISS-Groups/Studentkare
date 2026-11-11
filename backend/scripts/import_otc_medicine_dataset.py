@@ -50,6 +50,12 @@ from services.db_sql import DATABASE_URL, SessionLocal, create_all_tables  # noq
 SOURCE_TAG = "BULK_IMPORT_UNCLASSIFIED"
 BATCH_SIZE = 2000
 
+MIN_TEXT_FIELD_LENGTH = 2
+MAX_STRENGTH_VALUE = 100_000
+MAX_NAME_LENGTH = 160
+MAX_MANUFACTURER_LENGTH = 120
+MAX_PACK_LENGTH = 120
+
 # Longest/most specific words first so "tablets" doesn't get caught by a shorter
 # unrelated substring, and the match is tried against the whole product name.
 _DOSAGE_FORM_WORDS: tuple[tuple[str, str], ...] = (
@@ -82,7 +88,7 @@ class SkipRow(Exception):
 
 def clean_salt(raw: str) -> str:
     salt = " ".join(raw.split())
-    if len(salt) < 2 or not _SALT_PATTERN.match(salt):
+    if len(salt) < MIN_TEXT_FIELD_LENGTH or not _SALT_PATTERN.match(salt):
         raise SkipRow("bad_salt_name")
     return salt
 
@@ -103,7 +109,7 @@ def parse_ingredient(raw: str) -> tuple[str, float, str] | None:
         value = float(value_raw)
     except ValueError as exc:
         raise SkipRow("bad_strength_value") from exc
-    if not (0 < value <= 100000):
+    if not (0 < value <= MAX_STRENGTH_VALUE):
         raise SkipRow("strength_out_of_range")
     return clean_salt(salt_raw), value, unit
 
@@ -123,9 +129,9 @@ def parse_row(row: dict[str, str]) -> dict:
     name = " ".join(row.get("name", "").split())
     manufacturer = " ".join(row.get("manufacturer_name", "").split())
     pack = " ".join(row.get("pack_size_label", "").split()) or "Pack size not stated"
-    if len(name) < 2 or len(manufacturer) < 2:
+    if len(name) < MIN_TEXT_FIELD_LENGTH or len(manufacturer) < MIN_TEXT_FIELD_LENGTH:
         raise SkipRow("missing_identity_field")
-    if len(name) > 160 or len(manufacturer) > 120 or len(pack) > 120:
+    if len(name) > MAX_NAME_LENGTH or len(manufacturer) > MAX_MANUFACTURER_LENGTH or len(pack) > MAX_PACK_LENGTH:
         raise SkipRow("field_too_long")
 
     ingredients = []
