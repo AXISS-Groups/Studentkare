@@ -30,7 +30,7 @@ export function AccordionItem({ title, children, defaultOpen = false, testID }: 
         accessibilityLabel={title}
         accessibilityState={{ expanded: open }}
         onPress={() => setOpen((v) => !v)}
-        style={({ focused }: { focused?: boolean }) => [styles.row, focused ? focusRing : null]}
+        style={({ focused }: { pressed: boolean; focused?: boolean }) => [styles.row, focused ? focusRing : null]}
       >
         <Text style={styles.title}>{title}</Text>
         <Icon name={open ? 'chevron-up' : 'chevron-down'} size={16} color={color.text3} />
