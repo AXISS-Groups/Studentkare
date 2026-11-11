@@ -1590,3 +1590,71 @@ no size/colour variants yet. `backend/tests/test_seed_demo.py` (24 tests)
 still passes. Not run against a real database — `services/db_sql.py` only
 allows Postgres outside test mode, so the actual bulk import still needs
 someone to run the script with a real `DATABASE_URL` set.
+
+## Part 9 (2026-11-11): task #65's "45 Web* briefs" — almost all already real, same lesson as Part 8
+
+Re-reading task #65 ("build flat previews for the 45 `Web*.md` briefs"), 38
+had no `*Preview.tsx` here and looked unbuilt by that test. **That test is
+wrong, and Part 8 already said so.** 5 previews were built before this was
+caught (`WebSearchResults`, `WebLoggedOut`, `WebSignOut`, `WebClinicianApply`,
+`WebPartnerApply`) — all 5 turned out, on checking, to already be real,
+shipped screens (`WebSearchResultsView.tsx`, `LoggedOutView.tsx`,
+`SignOutConsequences.tsx`, `PartnerApplyScreen.tsx`, the clinician apply
+model). Deleted before committing; nothing redundant landed.
+
+Checking the real `src/features/` tree (not just this folder) for the
+remaining 33, confirmed via `design/screens/implementation-map.json`:
+
+- **31 already real** — `WebAccount` (= `M2Profile` wide), `WebHome` (=
+  `M2HomeRoute` wide, same pattern, `WorkspaceScreen.tsx`'s `case 'home'`),
+  `WebPartnerships`, `WebWellness`, `WebConsult`, `WebLabList`, `WebLabTests`,
+  `WebPrograms` (all real landing pages), `WebMyLabTests`, `WebPlans`,
+  `WebReportInsights`, `WebScanVerify`, `WebVerify`, `WebDeleteAccount`,
+  `WebEmergencyCard`, `WebFindCare`, `WebLeaveCampus`, `WebLostPhone`,
+  `WebNewsroom`, `WebNotifications`, `WebPost`, `WebRequests`, `WebSecurity`,
+  `WebSeries`, `WebSignIn`, `WebVault`, `WebVerifyGate`, `WebLegal`,
+  `WebConsultSummary`, `WebAyush`, `WebPass`.
+- **3 genuine gaps**, confirmed `[]` (empty) in implementation-map.json:
+  `WebGuardianApprove`, `WebGuardianConsent`, `WebReportAssistant`. All
+  three Tier 1. Built as flat previews, same caveat as every other Tier-1
+  preview here (no reviewer sign-off claimed).
+
+**`WebGuardianApprovePreview.tsx`** — the guardian's own page, opened from
+an SMS link, no account, no shell. Keeps the brief's consent boundary
+verbatim: approving gives the guardian none of the student's records,
+reports, chats, or counselling/sexual-health data — only that Student Kare
+keeps records and the student can book care. Passes `check-icons.mjs`
+clean (1 icon, brand mark via the real `<BrandLogo>`).
+
+**`WebGuardianConsentPreview.tsx`** — the under-18 student's own "ask a
+guardian" page, inside `WebShellPreview` (`route="verify"`). Does **not**
+pass `check-icons.mjs` clean (5 of the brief's 24 sidebar icons missing:
+`bar-chart`, `flask`, `map-pin`, `sparkle`, `user`) — not an oversight.
+`studentNav.ts`'s own doc comment records a 2026-10-23 parity decision that
+consolidated several sidebar items the brief's older screenshot still
+shows (My lab tests folded into Orders, Report insights moved to a card,
+no separate Account item). The real shipped shell can't draw icons it no
+longer has a nav item for, so a preview wrapping that real shell can't
+either. Flagging this rather than drawing fake sidebar rows just to pass
+the check.
+
+**`WebReportAssistantPreview.tsx`** — "Ayush report explainer", inside
+`WebShellPreview` (`route="report-insights"`). The one screen in this round
+that's also clinical-AI content, same caution class as `M2MedicineInfo`'s
+"no AI writes monograph text" rule. The brief's own copy already draws
+that line and is kept verbatim, not extended: Ayush explains a
+clinician-reviewed report ("I explain; I don't diagnose or prescribe")
+and routes anything needing a decision to a real consult, rather than
+answering it itself. Same `check-icons.mjs` gap as `WebGuardianConsent` and
+for the same reason (missing: most of the brief's 41-icon sidebar/system
+list, plus 2 of 3 small glyphs) — a representative subset of the health-
+system rows and the chat, not full coverage.
+
+Task #65 is now complete: of the original 45 `Web*.md` briefs, 6
+(`WebDashboard`, `WebShop`, `WebProduct`, `WebCheckout`, `WebOrders`,
+`WebReorder`) already had flat previews before this session, 36 are
+already real shipped screens (not previews — the 31 above plus
+`WebSearchResults`, `WebLoggedOut`, `WebSignOut`, `WebClinicianApply`,
+`WebPartnerApply`, `WebAccount`, `WebHome` confirmed this round), and the
+3 genuine Tier-1 gaps now have flat previews. Nothing wired, committed,
+pushed, or opened as a PR this round.
