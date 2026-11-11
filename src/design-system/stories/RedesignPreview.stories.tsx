@@ -35,8 +35,6 @@ import { WebProductPreview } from '@/features/redesignPreview/WebProductPreview'
 import { WebCheckoutPreview } from '@/features/redesignPreview/WebCheckoutPreview';
 import { WebOrdersPreview } from '@/features/redesignPreview/WebOrdersPreview';
 import { WebReorderPreview } from '@/features/redesignPreview/WebReorderPreview';
-import { WebGuardianApprovePreview } from '@/features/redesignPreview/WebGuardianApprovePreview';
-import { WebGuardianConsentPreview } from '@/features/redesignPreview/WebGuardianConsentPreview';
 import { WebReportAssistantPreview } from '@/features/redesignPreview/WebReportAssistantPreview';
 import { M2FamilyCirclePreview } from '@/features/redesignPreview/M2FamilyCirclePreview';
 import { DevicesPreview } from '@/features/redesignPreview/DevicesPreview';
@@ -321,14 +319,11 @@ export const HealthPlansMarketplace: Story = { render: () => <View><HealthPlansM
  * The genuine remainder of task #65's Web* sweep. Most of the 38 briefs
  * that looked unbuilt (no `*Preview.tsx`) turned out to already be real,
  * shipped screens under `src/features/` — same lesson as Part 8's
- * illustration sweep. These 3 are the actual gaps, confirmed empty in
- * `design/screens/implementation-map.json` (`WebGuardianApprove`,
- * `WebGuardianConsent`, `WebReportAssistant`). All three are Tier 1
- * (consent / clinical-AI) — flat previews only, no reviewer sign-off
- * implied. See NOTES.md.
+ * illustration sweep. `WebReportAssistant` is the one actual gap left
+ * here; `WebGuardianApprove`/`WebGuardianConsent` were removed — see
+ * NOTES.md for why (DESIGN.md's D4 already dropped the whole under-18/
+ * guardian-consent flow this pair previewed).
  */
-export const WebGuardianApprove: Story = { render: () => <WebGuardianApprovePreview /> };
-export const WebGuardianConsent: Story = { render: () => <WebGuardianConsentPreview /> };
 export const WebReportAssistant: Story = { render: () => <WebReportAssistantPreview /> };
 
 /**
@@ -420,8 +415,6 @@ export const AllScreens: Story = {
       <InlineAyushSuggestionPreview />
       <PhysiotherapyAtHomeLandingPreview />
       <HealthPlansMarketplacePreview />
-      <WebGuardianApprovePreview />
-      <WebGuardianConsentPreview />
       <WebReportAssistantPreview />
       <CheckinReceiptPreview />
       <PrescriptionUploadPreview />
