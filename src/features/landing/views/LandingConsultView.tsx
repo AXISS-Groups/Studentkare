@@ -4,7 +4,7 @@ import type { MessageKey } from '@/i18n';
 import { Icon, Illustration, type SkIconName } from '@/design-system/icons';
 import { CanvasImage } from '@/design-system/art';
 import { PublicSiteHeader, PublicSitePage } from '@/design-system/public-site';
-import { LwFaq, LwIconTile, LwRulesPanel } from './landingWebKit';
+import { LwFaq, LwIconTile, LwRulesPanel, LwSteps } from './landingWebKit';
 import './landingWeb.css';
 
 /**
@@ -32,6 +32,7 @@ const CONSULT_RULES = [
   { key: 'commerce', on: false },
 ] as const;
 const CONSULT_FAQS = ['eduId', 'rx', 'again', 'cancel', 'private', 'emergency'] as const;
+const CONSULT_STEPS = [1, 2, 3] as const;
 
 type Tone = 'action' | 'positive' | 'attention' | 'danger' | 'info';
 
@@ -120,6 +121,12 @@ export function LandingConsultView(): React.ReactElement {
           ))}
         </ul>
       </section>
+
+      <LwSteps
+        title={t('landing.consult.howTitle')}
+        lede={t('landing.consult.howLede')}
+        steps={CONSULT_STEPS.map((n) => ({ title: t(`landing.consult.step${n}Title` as MessageKey), body: t(`landing.consult.step${n}Body` as MessageKey) }))}
+      />
 
       <LwRulesPanel
         eyebrow={t('landing.consult.rules.eyebrow')}

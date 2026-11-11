@@ -5,7 +5,7 @@ import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
 import { Icon, Illustration, type SkIconName } from '@/design-system/icons';
 import { PublicAudienceHeader, PublicSitePage } from '@/design-system/public-site';
-import { LwIconTile, LwNote, LwRulesPanel } from './landingWebKit';
+import { LwFaq, LwIconTile, LwNote, LwRulesPanel } from './landingWebKit';
 import './landingWeb.css';
 
 const CATEGORIES = ['Laboratory', 'Pharmacy', 'Clinic', 'Campus', 'Insurer', 'Other'] as const;
@@ -124,6 +124,14 @@ export function LandingPartnershipsView(): React.ReactElement {
         title={t('landing.partners.firewall.heading')}
         lede={t('landing.partners.firewall.intro')}
         rules={NOT_FOR_SALE.map((key) => ({ label: t(key), tone: 'no', tag: t('landing.partners.notForSale') }))}
+      />
+
+      <LwFaq
+        title={t('landing.partners.faq.title')}
+        items={[
+          { q: t('landing.partners.faq.paid.q'), a: `${t('landing.partners.nfs.search')} ${t('landing.partners.nfs.ads')}` },
+          { q: t('landing.partners.faq.after.q'), a: t('landing.partners.sent.body') },
+        ]}
       />
 
       <section id="apply" className="lw-card lw-apply" aria-labelledby="lw-partners-apply">
