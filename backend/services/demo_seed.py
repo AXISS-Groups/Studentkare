@@ -144,6 +144,27 @@ DEMO_CATALOG = [
         {"id": "demo-kft", "kind": "lab", "name": "Kidney Function Test (KFT)", "brand": DEMO_LAB_BRAND, "category": "labs", "pack": "Includes 8 parameters", "price_paise": 49900, "mrp_paise": 79900, "stock": 0, "description": f"{SAMPLE_NOTE} Kidney panel concept covering common renal markers.", "preparation": "Sample preparation: hydration advice varies. Confirm with the actual lab."},
         {"id": "demo-cbc", "kind": "lab", "name": "Complete Blood Count (CBC)", "brand": DEMO_LAB_BRAND, "category": "labs", "pack": "Includes 21 parameters", "price_paise": 31900, "mrp_paise": 49900, "stock": 0, "description": f"{SAMPLE_NOTE} Complete blood count concept covering common cell indices.", "preparation": "Sample preparation: no fasting usually required. Confirm with the actual lab."},
         {"id": "demo-vitb12", "kind": "lab", "name": "Vitamin B12 & Folate Check", "brand": DEMO_LAB_BRAND, "category": "labs", "pack": "Includes 2 parameters", "price_paise": 74900, "mrp_paise": 119900, "stock": 0, "description": f"{SAMPLE_NOTE} Vitamin B12 and folate measurement concept.", "preparation": "Sample preparation: no fasting usually required. Confirm with the actual lab."},
+        # Wellness & fitness accessories — new-category proof-of-concept (docs/plans/catalog-expansion-2026-11-11.md).
+        # No open dataset exists for this category; these are sample entries in the same
+        # style as everything else above, standing in for the real path: a VENDOR account
+        # publishing real stock from the admin console (backend/scripts/seed_catalog.py).
+        {"id": "demo-yoga-mat", "kind": "product", "name": "Everyday Yoga & Wellness Mat", "brand": "Kare Essentials", "category": "wellness-fitness", "pack": "6 mm mat, 183 x 61 cm", "price_paise": 99900, "mrp_paise": 149900, "stock": 40, "description": f"{SAMPLE_NOTE} Non-slip exercise mat concept for stretching and floor workouts."},
+        {"id": "demo-resistance-bands", "kind": "product", "name": "Resistance Band Set · 3 Levels", "brand": "Kare Essentials", "category": "wellness-fitness", "pack": "Set of 3 bands with carry pouch", "price_paise": 59900, "mrp_paise": 89900, "stock": 55, "description": f"{SAMPLE_NOTE} Light/medium/heavy resistance band set concept for home strength work."},
+        {"id": "demo-foam-roller", "kind": "product", "name": "Muscle Recovery Foam Roller", "brand": "CareSense", "category": "wellness-fitness", "pack": "33 cm high-density roller", "price_paise": 79900, "mrp_paise": 119900, "stock": 35, "description": f"{SAMPLE_NOTE} Post-workout muscle-recovery roller concept. Stop if a technique causes pain and ask a physiotherapist."},
+        {"id": "demo-posture-strap", "kind": "product", "name": "Adjustable Posture Support Strap", "brand": "CareSense", "category": "wellness-fitness", "pack": "One size, adjustable straps", "price_paise": 44900, "mrp_paise": 64900, "stock": 45, "description": f"{SAMPLE_NOTE} Everyday posture-reminder strap concept, not a treatment for back or spine conditions."},
+        # Cosmetics & personal care — same new-category proof-of-concept. India regulates
+        # cosmetics labelling separately from drugs (BIS/Legal Metrology, not CDSCO schedules),
+        # so these carry no schedule/prescription claim at all — flagged in the plan doc as a
+        # compliance point to confirm for real inventory, not solved here.
+        {"id": "demo-lip-balm", "kind": "product", "name": "Daily Hydrating Lip Balm", "brand": "Kindskin", "category": "cosmetics", "pack": "Tube of 4.5 g balm", "price_paise": 14900, "mrp_paise": 19900, "stock": 70, "description": f"{SAMPLE_NOTE} Everyday lip-care concept. Patch-test real products."},
+        {"id": "demo-mens-facewash", "kind": "product", "name": "Men's Oil-Control Face Wash", "brand": "Kindskin", "category": "cosmetics", "pack": "Tube of 100 ml face wash", "price_paise": 24900, "mrp_paise": 34900, "stock": 60, "description": f"{SAMPLE_NOTE} Everyday men's grooming/facial-care concept. Patch-test real products."},
+        {"id": "demo-beard-oil", "kind": "product", "name": "Nourishing Beard Oil", "brand": "Kindskin", "category": "cosmetics", "pack": "Bottle of 30 ml oil", "price_paise": 29900, "mrp_paise": 39900, "stock": 50, "description": f"{SAMPLE_NOTE} Men's grooming concept. Check ingredients for known allergies."},
+        # Apparel & footwear — same proof-of-concept. Real inventory here needs size/colour
+        # variants the catalog model doesn't yet represent (every entry above is single-SKU);
+        # flagged in the plan doc as the next design decision once a real vendor/category owner
+        # is attached, not solved by these sample single-size placeholders.
+        {"id": "demo-gym-tee", "kind": "product", "name": "Breathable Everyday Gym T-Shirt", "brand": "Kare Essentials", "category": "apparel", "pack": "Single size sample, size range TBD", "price_paise": 59900, "mrp_paise": 79900, "stock": 30, "description": f"{SAMPLE_NOTE} Everyday athletic wear concept. Real listings need size and colour variants."},
+        {"id": "demo-walking-shoes", "kind": "product", "name": "Everyday Walking Shoes", "brand": "Kare Essentials", "category": "footwear", "pack": "Single size sample, size range TBD", "price_paise": 149900, "mrp_paise": 199900, "stock": 20, "description": f"{SAMPLE_NOTE} Everyday walking/athletic footwear concept. Real listings need size variants and a returns/fit policy."},
     ] + demo_medicine_listings()   # demo medicines, each linked to its demo master record
 
 
