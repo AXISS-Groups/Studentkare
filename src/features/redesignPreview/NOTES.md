@@ -1658,3 +1658,92 @@ already real shipped screens (not previews — the 31 above plus
 `WebPartnerApply`, `WebAccount`, `WebHome` confirmed this round), and the
 3 genuine Tier-1 gaps now have flat previews. Nothing wired, committed,
 pushed, or opened as a PR this round.
+
+## Part 10 (2026-11-11): task #65 follow-up — `CheckinReceipt`, `PrescriptionUpload`, mobile `GuardianApprove`/`GuardianConsent`; `Onboarding3` was NOT a gap
+
+Asked to build flat previews for 5 screens said to be "confirmed genuine
+gaps": `CheckinReceipt` (Tier 1), `Onboarding3` (Tier 3), `PrescriptionUpload`
+(Tier 1), `GuardianApprove` (Tier 1, mobile), `GuardianConsent` (Tier 1,
+mobile). Re-verified each against `implementation-map.json` and a repo-wide
+grep for the brief's exact copy, same test as Parts 8–9.
+
+**`Onboarding3` is NOT a gap — same lesson as Parts 8–9, again.** The "Ask
+Ayush before you Google it." slide is already real and shipped: the third
+panel (`id: 'ayush'`) of `src/features/auth/views/welcomeSlides.ts`,
+rendered by `WelcomeCarouselView.tsx`'s `AyushPanel`, word-for-word matching
+the brief's title and body. `implementation-map.json` already lists
+`WelcomeCarouselView.tsx` / `WelcomeFlowView.tsx` / `welcomeSlides.ts`
+against `Onboarding3` — not empty, which the task's instructions to read
+this file first would have caught. A flat `Onboarding3Preview.tsx` was
+built, discovered redundant, and **deleted before committing** — never
+wired into the stories file in its final state. No files changed for this
+screen.
+
+**The other 4 are genuine gaps**, confirmed empty `[]` in
+`implementation-map.json` and no matching copy anywhere under `src/`
+outside this folder (`CheckinReceipt`: no "Sealed bag" / "How you were
+checked" anywhere; `PrescriptionUpload`: no "registration number and
+signature" / "within the last 6 months" anywhere — the existing
+`uploadPrescription` handlers in Reminders/Refills route to
+`RecordCaptureScreen`, a generic multi-kind vault-capture screen with none
+of this brief's checklist copy, not this screen; `GuardianApprove` /
+`GuardianConsent` mobile: no hits, and `SignupConsent.tsx` has a comment
+confirming D4 deliberately removed the guardian branch from the real
+signup flow). Built as flat previews:
+
+**`CheckinReceiptPreview.tsx`** — the handover receipt after collecting an
+order, kept verbatim from the brief: the face photo used to verify pickup
+is deleted the next day, only the bag photo stays with the receipt.
+`check-icons.mjs` clean (`check`, `chevron-left`).
+
+**`PrescriptionUploadPreview.tsx`** — upload screen for a scheduled
+medicine's prescription. The commerce-firewall line is kept verbatim: the
+file goes to the student's vault for a pharmacist to review, never to the
+shop, never used to pick what's shown (AGENTS.md rule 4). No camera/file
+picker wired. `check-icons.mjs` clean (`arrow-left`, `camera`, `check`,
+`file-text`, `lock-5`, `share` — the brief's "share" is the Files button's
+upload-tray glyph, matching the HTML source's icon, not a social-share
+icon).
+
+**`GuardianApprovePreview.tsx` / `GuardianConsentPreview.tsx` (mobile) —
+built, then removed before this landed anywhere.** **DESIGN.md §9 "D4"**
+(resolved 2026-09-26) records, in these exact words, that `GuardianConsent`
+and `GuardianApprove` were **"Dropped. Its whole purpose is under-18
+registration"** and **"Dropped. The guardian's side of the same flow"** —
+because AGENTS.md guardrail 8 makes Student Kare 18+ only, and this
+brief's own title is literally "GuardianConsent — Under 18 — ask a
+guardian (student)". This is recorded as a settled, dated decision
+("Anyone reopening this is changing the constitution, not a screen"), not
+a stale or ambiguous signal — `implementation-map.json` listing these two
+as empty `[]` means "correctly never built because it's out of scope",
+not "unbuilt gap", for this pair specifically.
+
+The mobile pair was built first (same mistake as every prior round: an
+empty map entry read as "build it" without checking DESIGN.md), the
+conflict was caught, and both files were deleted — along with their
+Storybook wiring — before anything was committed. **This also means the
+`WebGuardianApprovePreview.tsx` / `WebGuardianConsentPreview.tsx` files
+from Part 9 above, covering the identical dropped under-18 flow, were a
+mistake under the same rule** — and those were already merged into
+`development` via PR #309 earlier the same day, before this conflict
+surfaced. That is now a real, open problem on the shared branch, not just
+a local one: flagged to Krishna directly rather than silently reverted or
+left in place, since reverting already-merged, already-public history is
+a call that belongs to him. No Guardian preview — mobile or web — should
+be treated as evidence this flow is in scope until that's resolved.
+
+**Icon manifest note:** `PrescriptionUpload`'s `lock-5` is a confirmed
+distinct entry in `icon-manifest.json` (the padlock-on-a-safe glyph for the
+vault note), not a typo for `lock` — used as named, not substituted.
+
+**Verification:** `npx tsc --noEmit` clean. `npx eslint --config
+config/eslint.config.js src` — 0 errors, repo-wide. `npx vitest run
+src/features/redesignPreview src/design-system` — 23 files, 777 tests,
+all passing (re-run after removing the Guardian mobile pair). `check-icons.mjs`
+clean for the 2 files that remain (`CheckinReceipt`, `PrescriptionUpload`).
+`git status` before and after touched only those 2 new `*Preview.tsx`
+files, this file,
+`src/i18n/areas/redesignPreview.ts` and
+`src/design-system/stories/RedesignPreview.stories.tsx` — nothing else in
+the working tree was touched. Nothing wired into the real app shell or
+router, nothing committed, nothing pushed.

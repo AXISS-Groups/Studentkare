@@ -66,6 +66,8 @@ import { PaymentFailureScreenPreview } from '@/features/redesignPreview/PaymentF
 import { InlineAyushSuggestionPreview } from '@/features/redesignPreview/InlineAyushSuggestionPreview';
 import { PhysiotherapyAtHomeLandingPreview } from '@/features/redesignPreview/PhysiotherapyAtHomeLandingPreview';
 import { HealthPlansMarketplacePreview } from '@/features/redesignPreview/HealthPlansMarketplacePreview';
+import { CheckinReceiptPreview } from '@/features/redesignPreview/CheckinReceiptPreview';
+import { PrescriptionUploadPreview } from '@/features/redesignPreview/PrescriptionUploadPreview';
 
 /**
  * Flat, non-functional previews of the 4 screens in
@@ -329,6 +331,31 @@ export const WebGuardianApprove: Story = { render: () => <WebGuardianApprovePrev
 export const WebGuardianConsent: Story = { render: () => <WebGuardianConsentPreview /> };
 export const WebReportAssistant: Story = { render: () => <WebReportAssistantPreview /> };
 
+/**
+ * 2 confirmed genuine gaps (empty `[]` in implementation-map.json, no real
+ * component anywhere under `src/features/`, `src/native/`,
+ * `src/design-system/` outside this folder): `CheckinReceipt` (Tier 1),
+ * `PrescriptionUpload` (Tier 1).
+ *
+ * `Onboarding3` was in the original task list but is NOT a gap: the same
+ * "Ask Ayush before you Google it." slide is already real and shipped as
+ * the third panel of `WelcomeCarouselView.tsx` (`welcomeSlides.ts`'s
+ * `ayush` entry, `implementation-map.json` already lists those 3 files).
+ * Same lesson as NOTES.md Parts 8–9: no `*Preview.tsx` existing is not
+ * proof of a gap. No Onboarding3Preview was committed.
+ *
+ * The MOBILE `GuardianApprove`/`GuardianConsent` pair was also in the
+ * original task list and was briefly built, then deleted: DESIGN.md's
+ * D4 (resolved 2026-09-26) explicitly drops both — StudentKare is 18+
+ * only, so there is no under-18/guardian-consent flow to preview, mobile
+ * or web. See NOTES.md for the full finding, including that the WEB
+ * versions above (`WebGuardianApprove`/`WebGuardianConsent`) were built
+ * and merged earlier under the same mistaken "empty implementation-map
+ * entry = genuine gap" reasoning, without checking DESIGN.md first.
+ */
+export const CheckinReceipt: Story = { render: () => <View><CheckinReceiptPreview /></View> };
+export const PrescriptionUpload: Story = { render: () => <View><PrescriptionUploadPreview /></View> };
+
 export const AllScreens: Story = {
   render: () => (
     <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 24 }}>
@@ -396,6 +423,8 @@ export const AllScreens: Story = {
       <WebGuardianApprovePreview />
       <WebGuardianConsentPreview />
       <WebReportAssistantPreview />
+      <CheckinReceiptPreview />
+      <PrescriptionUploadPreview />
     </View>
   ),
 };
