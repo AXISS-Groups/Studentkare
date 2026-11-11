@@ -150,8 +150,25 @@ def _read_notif(field: str) -> Callable[[DBSession, str], bool]:
 
 def _write_notif(field: str) -> Callable[[DBSession, str, bool], None]:
     def write(db: DBSession, account_id: str, on: bool) -> None:
+        if field == "document_ai_analysis_enabled":
+            from services.personal_document_rag import lock_analysis_account
+
+            if not lock_analysis_account(db, account_id):
+                raise ValueError("Document analysis requires an existing account")
         row = _notification_prefs(db, account_id, True)
-        setattr(row, field, on)
+        if field == "document_ai_analysis_enabled":
+            # Persist even when a cached object already equals the requested
+            # value: another transaction may have changed the stored flag.
+            # Flush this transaction's pending chunks too: withdrawal must
+            # delete them before commit (production disables autoflush).
+            db.flush()
+            db.execute(
+                update(M.NotificationPreference)
+                .where(M.NotificationPreference.account_id == account_id)
+                .values(document_ai_analysis_enabled=on)
+            )
+        else:
+            setattr(row, field, on)
         if not on:
             if field == "ayush_history_enabled":
                 clear_ayush_words(db, account_id)
@@ -227,9 +244,10 @@ OPTIONAL_PURPOSES: dict[str, OptionalPurpose] = {
 }
 
 
-def _rows(db: DBSession, account_id: str) -> list[M.ConsentRecord]:
+def _rows(db: DBSession, account_id: str, *, refresh: bool = False) -> list[M.ConsentRecord]:
     return list(db.scalars(select(M.ConsentRecord).where(M.ConsentRecord.account_id == account_id)
-                           .order_by(M.ConsentRecord.recorded_at.desc())).all())
+                           .order_by(M.ConsentRecord.recorded_at.desc())
+                           .execution_options(populate_existing=refresh)).all())
 
 
 def _for_purpose(rows: list[M.ConsentRecord], purpose: str) -> list[M.ConsentRecord]:
@@ -246,7 +264,12 @@ def record_change(db: DBSession, actor_id: str, account_id: str, purpose: str, g
     if purpose not in OPTIONAL_PURPOSES:
         raise ValueError(f"Not an optional purpose: {purpose}")
     now = time.time()
-    active = [row for row in _for_purpose(_rows(db, account_id), purpose) if not row.withdrawn_at]
+    refresh = purpose == "DOCUMENT_AI_ANALYSIS"
+    if refresh:
+        # The processing flag writer holds the account lock. Preserve this
+        # transaction's pending ledger writes before refreshing any cached rows.
+        db.flush()
+    active = [row for row in _for_purpose(_rows(db, account_id, refresh=refresh), purpose) if not row.withdrawn_at]
     if granted and not active:
         row = M.ConsentRecord(id=str(uuid.uuid4()), account_id=account_id, version=OPTIONAL_PURPOSES[purpose].version,
                               purposes=[purpose], language=language, recorded_at=now, withdrawn_at=0.0)
