@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useT } from '@/i18n';
 import { Accordion, StarRating, StatusPill } from '@/design-system';
 import { Icon } from '@/design-system/icons';
 import { color, focusRing, font, fontWeight, radius, space } from '@/design-system/theme';
@@ -59,38 +60,39 @@ const TESTIMONIALS: ReadonlyArray<Testimonial> = [
  */
 export function HomeCollectionStatusPreview(): React.ReactElement {
   const [activeTestimonial, setActiveTestimonial] = useState(0);
+  const t = useT();
   return (
     <View style={styles.screen} testID="preview-home-collection-status">
       <View style={styles.header}>
-        <Pressable role="button" accessibilityRole="button" accessibilityLabel="Back" onPress={noop} style={({ focused }: PressState) => [styles.backBtn, focused ? focusRing : null]}>
+        <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('preview.back')} onPress={noop} style={({ focused }: PressState) => [styles.backBtn, focused ? focusRing : null]}>
           <Icon name="arrow-left" size={20} color={color.text} />
         </Pressable>
-        <Text style={styles.title}>[Your sample collection]</Text>
+        <Text style={styles.title}>{t('preview.yourSampleCollection')}</Text>
       </View>
 
       <View style={styles.scroll}>
         <View style={styles.body}>
           <M2Card testID="preview-home-collection-status-card">
             <View style={styles.statusRow}>
-              <StatusPill tone="action" dot="live">[Technician on the way — ETA 20 mins]</StatusPill>
+              <StatusPill tone="action" dot="live">{t('preview.technicianOnTheWayEta20Mins')}</StatusPill>
             </View>
-            <Text style={m2Text.meta}>[Arriving at your saved address: Flat 4B, placeholder street, placeholder city.]</Text>
+            <Text style={m2Text.meta}>{t('preview.arrivingAtYourSavedAddressFlat4BPlaceholder')}</Text>
           </M2Card>
 
           <View style={styles.fulfillmentStrip} testID="preview-home-collection-fulfillment-strip">
             <Icon name="flask-2" size={16} color={color.text2} strokeWidth={2} />
-            <Text style={styles.fulfillmentText}>[Collection fulfilled by Partner Lab — placeholder name]</Text>
+            <Text style={styles.fulfillmentText}>{t('preview.collectionFulfilledByPartnerLabPlaceholderName')}</Text>
           </View>
 
           <M2Card style={styles.phlebCard} testID="preview-home-collection-phlebotomist">
             <View style={styles.phlebTop}>
               <GlossTile icon="user" hue="indigo" size={56} />
               <View style={styles.phlebWords}>
-                <Text style={styles.phlebName}>[Rohit K.]</Text>
-                <Text style={m2Text.meta}>[Certified phlebotomist]</Text>
+                <Text style={styles.phlebName}>{t('preview.rohitK')}</Text>
+                <Text style={m2Text.meta}>{t('preview.certifiedPhlebotomist')}</Text>
                 <View style={styles.verifyRow}>
                   <Icon name="shield-check" size={14} color={color.positive} strokeWidth={2.2} />
-                  <Text style={styles.verifyText}>[ID verified]</Text>
+                  <Text style={styles.verifyText}>{t('preview.idVerified')}</Text>
                 </View>
               </View>
             </View>
@@ -112,9 +114,9 @@ export function HomeCollectionStatusPreview(): React.ReactElement {
             ]}
           />
 
-          <Pressable role="button" accessibilityRole="button" accessibilityLabel="Add a free follow-up consult and save more — ends today" onPress={noop} style={({ focused }: PressState) => [styles.promoStrip, focused ? focusRing : null]} testID="preview-home-collection-promo-strip">
+          <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('preview.addAFreeFollowUpConsultAndSave')} onPress={noop} style={({ focused }: PressState) => [styles.promoStrip, focused ? focusRing : null]} testID="preview-home-collection-promo-strip">
             <Icon name="percent" size={16} color={color.action} strokeWidth={2.2} />
-            <Text style={styles.promoText}>[Add a free follow-up consult and save more — ends today]</Text>
+            <Text style={styles.promoText}>{t('preview.addAFreeFollowUpConsultAndSave2')}</Text>
             <Icon name="chevron-right" size={16} color={color.text3} />
           </Pressable>
 
@@ -144,7 +146,7 @@ export function HomeCollectionStatusPreview(): React.ReactElement {
           </View>
 
           <M2Note tone="info" icon="clock">
-            [Reports are usually ready within 24 hours of collection and appear in your account automatically.]
+            {t('preview.reportsAreUsuallyReadyWithin24HoursOf')}
           </M2Note>
         </View>
       </View>

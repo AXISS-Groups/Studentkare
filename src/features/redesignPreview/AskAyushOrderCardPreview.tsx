@@ -1,5 +1,6 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useT } from '@/i18n';
 import { Icon } from '@/design-system/icons';
 import { color, focusRing, font, fontWeight, radius, space } from '@/design-system/theme';
 import { GlossTile, M2Card, M2Note, RoundButton, m2Text } from '@/design-system/m2';
@@ -29,100 +30,101 @@ const noop = () => undefined;
  * order" and quick-reply buttons are `noop`.
  */
 export function AskAyushOrderCardPreview(): React.ReactElement {
+  const t = useT();
   return (
     <View style={styles.screen} testID="preview-ask-ayush-order-card">
       <View style={styles.header}>
         <RoundButton icon="arrow-left" label="Back" onPress={noop} testID="order-card-back" />
-        <Text style={styles.title}>Ask Ayush</Text>
+        <Text style={styles.title}>{t('preview.askAyush2')}</Text>
         <View style={styles.headerSpacer} />
       </View>
       <View style={styles.scroll}>
         <View style={styles.body}>
           <View style={[styles.bubble, styles.studentBubble]}>
-            <Text style={[styles.bubbleText, styles.studentBubbleText]}>[Can you order my usual vitamin D supplement?]</Text>
+            <Text style={[styles.bubbleText, styles.studentBubbleText]}>{t('preview.canYouOrderMyUsualVitaminDSupplement')}</Text>
           </View>
           <View style={[styles.bubble, styles.ayushBubble]}>
-            <Text style={styles.bubbleText}>[Sure — here's what I found and added to your cart:]</Text>
+            <Text style={styles.bubbleText}>{t('preview.sureHereSWhatIFoundAndAdded')}</Text>
           </View>
 
           {/* The new pattern: an inline order-summary card sitting where a bot message would be. */}
           <M2Card style={styles.orderCard} testID="order-card">
             <View style={styles.orderHeaderRow}>
               <GlossTile icon="cart" hue="indigo" size={34} iconSize={17} />
-              <Text style={m2Text.eyebrow}>ORDER SUMMARY</Text>
+              <Text style={m2Text.eyebrow}>{t('preview.orderSummary')}</Text>
             </View>
 
             <View style={styles.itemRow}>
-              <Text style={styles.itemName}>[Vitamin D3 60K · 1 strip]</Text>
-              <Text style={styles.itemMeta}>[Qty 1 · ₹142]</Text>
+              <Text style={styles.itemName}>{t('preview.vitaminD360K1Strip')}</Text>
+              <Text style={styles.itemMeta}>{t('preview.qty1142')}</Text>
             </View>
             <View style={styles.itemRow}>
-              <Text style={styles.itemName}>[Calcium + D3 Tablets]</Text>
-              <Text style={styles.itemMeta}>[Qty 1 · ₹198]</Text>
+              <Text style={styles.itemName}>{t('preview.calciumD3Tablets')}</Text>
+              <Text style={styles.itemMeta}>{t('preview.qty1198')}</Text>
             </View>
 
             <View style={styles.ruleSoft} />
 
-            <Text style={styles.detailLine}>[Deliver to: Hostel Block C, Room 214, SNIST Campus]</Text>
+            <Text style={styles.detailLine}>{t('preview.deliverToHostelBlockCRoom214Snist')}</Text>
             <View style={styles.etaRow}>
               <Icon name="clock" size={14} color={color.text2} strokeWidth={2.1} />
-              <Text style={styles.detailLine}>[Delivery by 6 PM today]</Text>
+              <Text style={styles.detailLine}>{t('preview.deliveryBy6PmToday')}</Text>
             </View>
 
             <View style={styles.ruleSoft} />
 
             <View style={styles.chargeRow}>
-              <Text style={styles.chargeLabel}>[Items total]</Text>
+              <Text style={styles.chargeLabel}>{t('preview.itemsTotal')}</Text>
               <Text style={styles.chargeValue}>[₹340]</Text>
             </View>
             <View style={styles.chargeRow}>
-              <Text style={styles.chargeLabel}>[Delivery fee]</Text>
+              <Text style={styles.chargeLabel}>{t('preview.deliveryFee')}</Text>
               <Text style={styles.chargeValue}>[₹20]</Text>
             </View>
             <View style={styles.chargeRow}>
-              <Text style={styles.chargeLabelTotal}>[Total]</Text>
+              <Text style={styles.chargeLabelTotal}>{t('preview.total')}</Text>
               <Text style={styles.chargeValueTotal}>[₹360]</Text>
             </View>
 
             <Pressable
               role="button"
               accessibilityRole="button"
-              accessibilityLabel="Confirm order"
+              accessibilityLabel={t('preview.confirmOrder')}
               onPress={noop}
               style={({ focused }: PressState) => [styles.confirmBtn, focused ? focusRing : null]}
             >
               <Icon name="check-circle-2" size={16} color={color.onAction} strokeWidth={2.1} />
-              <Text style={styles.confirmBtnText}>[Confirm order]</Text>
+              <Text style={styles.confirmBtnText}>{t('preview.confirmOrder2')}</Text>
             </Pressable>
           </M2Card>
 
           <View style={[styles.bubble, styles.ayushBubble]}>
-            <Text style={styles.bubbleText}>[Want me to apply your Care Plan discount?]</Text>
+            <Text style={styles.bubbleText}>{t('preview.wantMeToApplyYourCarePlanDiscount')}</Text>
           </View>
           <View style={styles.chipRow}>
             <Pressable
               role="button"
               accessibilityRole="button"
-              accessibilityLabel="Yes, apply discount"
+              accessibilityLabel={t('preview.yesApplyDiscount')}
               onPress={noop}
               style={({ focused }: PressState) => [styles.chip, styles.chipAction, focused ? focusRing : null]}
             >
               <Icon name="percent" size={14} color={color.onAction} strokeWidth={2.1} />
-              <Text style={styles.chipTextOnAction}>[Yes, apply]</Text>
+              <Text style={styles.chipTextOnAction}>{t('preview.yesApply')}</Text>
             </Pressable>
             <Pressable
               role="button"
               accessibilityRole="button"
-              accessibilityLabel="No thanks"
+              accessibilityLabel={t('preview.noThanks')}
               onPress={noop}
               style={({ focused }: PressState) => [styles.chip, focused ? focusRing : null]}
             >
-              <Text style={styles.chipText}>[No, thanks]</Text>
+              <Text style={styles.chipText}>{t('preview.noThanks2')}</Text>
             </Pressable>
           </View>
 
-          <M2Note tone="info" icon="message-circle" title="What this card can't do yet">
-            This preview only shows the shape of an order card in chat. What Ayush is allowed to buy or confirm for you is a decision still to be made.
+          <M2Note tone="info" icon="message-circle" title={t('preview.whatThisCardCanTDoYet')}>
+            {t('preview.thisPreviewOnlyShowsTheShapeOfAn')}
           </M2Note>
         </View>
       </View>

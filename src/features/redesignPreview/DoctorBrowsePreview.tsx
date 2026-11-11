@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useT } from '@/i18n';
 import { Icon } from '@/design-system/icons';
 import { color, focusRing, font, fontWeight, radius, space } from '@/design-system/theme';
 import { GlossTile, M2Card, M2Note, M2Pill, RoundButton, m2Text } from '@/design-system/m2';
@@ -64,6 +65,7 @@ const FILTERS: readonly string[] = ['[General Physician]', '[Dermatologist]', '[
  */
 export function DoctorBrowsePreview(): React.ReactElement {
   const [activeFilter, setActiveFilter] = useState<string>(FILTERS[0]);
+  const t = useT();
 
   return (
     <View style={styles.screen} testID="preview-doctor-browse">
@@ -71,13 +73,13 @@ export function DoctorBrowsePreview(): React.ReactElement {
         <Pressable
           role="button"
           accessibilityRole="button"
-          accessibilityLabel="Back"
+          accessibilityLabel={t('preview.back')}
           onPress={noop}
           style={({ focused }: PressState) => [styles.backBtn, focused ? focusRing : null]}
         >
           <Icon name="arrow-left" size={20} color={color.text} />
         </Pressable>
-        <Text style={styles.title}>[Find a doctor]</Text>
+        <Text style={styles.title}>{t('preview.findADoctor')}</Text>
       </View>
 
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterRow} contentContainerStyle={styles.filterRowContent}>
@@ -116,7 +118,7 @@ export function DoctorBrowsePreview(): React.ReactElement {
 
         <View style={styles.noteWrap}>
           <M2Note tone="info" icon="doctor">
-            [Why book through StudentKare] — every doctor shown here is placeholder copy; a real version of this screen would only ever surface doctors with verified credentials, checked the same way the rest of this app verifies identity.
+            {t('preview.whyBookThroughStudentkareEveryDoctorShownHere')}
           </M2Note>
         </View>
       </ScrollView>

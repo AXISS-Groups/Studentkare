@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useT } from '@/i18n';
 import { color, focusRing, font, fontWeight, radius, space } from '@/design-system/theme';
 import { GlossTile, M2Card, M2Note, M2Pill, RoundButton, m2Text } from '@/design-system/m2';
 import type { PressState } from '@/design-system/m2';
@@ -53,11 +54,12 @@ const FILTERS: readonly string[] = ['[General Physician]', '[Dermatologist]', '[
  */
 export function WebDoctorBrowsePreview(): React.ReactElement {
   const [activeFilter, setActiveFilter] = useState<string>(FILTERS[0]);
+  const t = useT();
 
   return (
     <WebShellPreview route="appointments">
       <View style={styles.body}>
-        <Text style={styles.pageTitle}>[Find a doctor]</Text>
+        <Text style={styles.pageTitle}>{t('preview.findADoctor')}</Text>
 
         <View style={styles.filterRow}>
           {FILTERS.map((filter) => {
@@ -93,7 +95,7 @@ export function WebDoctorBrowsePreview(): React.ReactElement {
         </View>
 
         <M2Note tone="info" icon="doctor">
-          [Why book through StudentKare] — every doctor shown here is placeholder copy; a real version of this screen would only ever surface doctors with verified credentials, checked the same way the rest of this app verifies identity.
+          {t('preview.whyBookThroughStudentkareEveryDoctorShownHere')}
         </M2Note>
         <BrandFooter />
       </View>

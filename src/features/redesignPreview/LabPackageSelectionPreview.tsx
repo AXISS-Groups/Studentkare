@@ -1,5 +1,6 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useT } from '@/i18n';
 import { Accordion } from '@/design-system/Accordion';
 import { Icon } from '@/design-system/icons';
 import { color, focusRing, font, fontWeight, radius, space } from '@/design-system/theme';
@@ -34,12 +35,13 @@ const WHY_RECOMMENDED: ReadonlyArray<{ id: string; title: string; content: strin
  * NOTES.md.
  */
 export function LabPackageSelectionPreview(): React.ReactElement {
+  const t = useT();
   return (
     <View style={styles.screen} testID="preview-lab-package-selection">
       <View style={styles.scroll}>
         <View style={styles.header}>
           <RoundButton icon="arrow-left" label="Back" onPress={noop} />
-          <Text style={styles.title}>[Choose a health package]</Text>
+          <Text style={styles.title}>{t('preview.chooseAHealthPackage')}</Text>
         </View>
 
         <View style={styles.body}>
@@ -49,17 +51,17 @@ export function LabPackageSelectionPreview(): React.ReactElement {
                 <GlossTile icon="flask-2" hue="indigo" size={48} />
                 <M2Pill label="[POPULAR]" tone="attention" icon="heart" />
               </View>
-              <Text style={styles.packageName}>[Popular Package]</Text>
-              <Text style={m2Text.meta}>[The most-booked annual screen among students on campus.]</Text>
-              <Text style={styles.testCount}>[45 tests]</Text>
+              <Text style={styles.packageName}>{t('preview.popularPackage')}</Text>
+              <Text style={m2Text.meta}>{t('preview.theMostBookedAnnualScreenAmongStudentsOn')}</Text>
+              <Text style={styles.testCount}>{t('preview.45Tests')}</Text>
               <View style={styles.priceRow}>
                 <Text style={m2Text.price}>₹999</Text>
                 <Text style={styles.priceStrike}>₹1,999</Text>
                 <M2Pill label="[50% off]" tone="positive" icon="percent" />
               </View>
-              <Pressable role="button" accessibilityRole="button" accessibilityLabel="Select Popular Package" onPress={noop}
+              <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('preview.selectPopularPackage')} onPress={noop}
                 style={({ focused }: PressState) => [styles.selectBtn, focused ? focusRing : null]}>
-                <Text style={styles.selectBtnText}>Select</Text>
+                <Text style={styles.selectBtnText}>{t('preview.select')}</Text>
               </Pressable>
             </M2Card>
 
@@ -67,15 +69,15 @@ export function LabPackageSelectionPreview(): React.ReactElement {
               <View style={styles.cardTop}>
                 <GlossTile icon="scan" hue="teal" size={48} />
               </View>
-              <Text style={styles.packageName}>[Build your own]</Text>
-              <Text style={m2Text.meta}>[Scan & build — pick only the tests you need from the full catalogue.]</Text>
-              <Text style={styles.testCount}>[Choose from 120+ tests]</Text>
+              <Text style={styles.packageName}>{t('preview.buildYourOwn')}</Text>
+              <Text style={m2Text.meta}>{t('preview.scanBuildPickOnlyTheTestsYouNeed')}</Text>
+              <Text style={styles.testCount}>{t('preview.chooseFrom120Tests')}</Text>
               <View style={styles.priceRow}>
-                <Text style={m2Text.price}>[From ₹199]</Text>
+                <Text style={m2Text.price}>{t('preview.from199')}</Text>
               </View>
-              <Pressable role="button" accessibilityRole="button" accessibilityLabel="Select Build your own" onPress={noop}
+              <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('preview.selectBuildYourOwn')} onPress={noop}
                 style={({ focused }: PressState) => [styles.selectBtn, focused ? focusRing : null]}>
-                <Text style={styles.selectBtnText}>Select</Text>
+                <Text style={styles.selectBtnText}>{t('preview.select')}</Text>
               </Pressable>
             </M2Card>
 
@@ -84,39 +86,39 @@ export function LabPackageSelectionPreview(): React.ReactElement {
                 <GlossTile icon="flask" hue="violet" size={48} />
                 <M2Pill label="[NEW]" tone="action" icon="heart-plus" />
               </View>
-              <Text style={styles.packageName}>[Full Body Advanced]</Text>
-              <Text style={m2Text.meta}>[A deeper panel for students with a family history worth tracking.]</Text>
-              <Text style={styles.testCount}>[78 tests]</Text>
+              <Text style={styles.packageName}>{t('preview.fullBodyAdvanced')}</Text>
+              <Text style={m2Text.meta}>{t('preview.aDeeperPanelForStudentsWithAFamily')}</Text>
+              <Text style={styles.testCount}>{t('preview.78Tests')}</Text>
               <View style={styles.priceRow}>
                 <Text style={m2Text.price}>₹1,499</Text>
                 <Text style={styles.priceStrike}>₹2,799</Text>
                 <M2Pill label="[46% off]" tone="positive" icon="percent" />
               </View>
-              <Pressable role="button" accessibilityRole="button" accessibilityLabel="Select Full Body Advanced" onPress={noop}
+              <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('preview.selectFullBodyAdvanced')} onPress={noop}
                 style={({ focused }: PressState) => [styles.selectBtn, focused ? focusRing : null]}>
-                <Text style={styles.selectBtnText}>Select</Text>
+                <Text style={styles.selectBtnText}>{t('preview.select')}</Text>
               </Pressable>
             </M2Card>
           </View>
 
-          <Text style={[m2Text.section, styles.sectionGap]}>Recommended for you</Text>
+          <Text style={[m2Text.section, styles.sectionGap]}>{t('preview.recommendedForYou')}</Text>
           <M2Card style={styles.recommendCard} testID="preview-lab-package-recommended">
             <View style={styles.cardTop}>
               <GlossTile icon="clock" hue="amber" size={44} />
-              <Text style={styles.packageName}>[Based on your last report, we suggest a thyroid re-check panel.]</Text>
+              <Text style={styles.packageName}>{t('preview.basedOnYourLastReportWeSuggestA')}</Text>
             </View>
             <Accordion items={WHY_RECOMMENDED} testID="preview-lab-package-recommend-why" />
-            <M2Note tone="info" icon="check-circle-2" title="[Not a diagnosis]">
-              [This suggestion is placeholder copy only — it does not reflect a real report, value or clinical judgement.]
+            <M2Note tone="info" icon="check-circle-2" title={t('preview.notADiagnosis')}>
+              {t('preview.thisSuggestionIsPlaceholderCopyOnlyItDoes')}
             </M2Note>
           </M2Card>
         </View>
       </View>
 
       <View style={styles.footer}>
-        <Pressable role="button" accessibilityRole="button" accessibilityLabel="Continue" onPress={noop}
+        <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('preview.continue')} onPress={noop}
           style={({ focused }: PressState) => [styles.fillBtn, focused ? focusRing : null]}>
-          <Text style={styles.fillBtnText}>Continue</Text>
+          <Text style={styles.fillBtnText}>{t('preview.continue')}</Text>
         </Pressable>
       </View>
     </View>

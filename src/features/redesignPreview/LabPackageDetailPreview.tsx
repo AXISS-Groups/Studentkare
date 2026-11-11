@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useT } from '@/i18n';
 import { Accordion } from '@/design-system/Accordion';
 import { StarRating } from '@/design-system/StarRating';
 import { Icon } from '@/design-system/icons';
@@ -44,19 +45,20 @@ const FAQ_ITEMS: ReadonlyArray<{ id: string; title: string; content: string }> =
  */
 export function LabPackageDetailPreview(): React.ReactElement {
   const [feedbackRating, setFeedbackRating] = useState(0);
+  const t = useT();
 
   return (
     <View style={styles.screen} testID="preview-lab-package-detail">
       <View style={styles.scroll}>
         <View style={styles.header}>
-          <Pressable role="button" accessibilityRole="button" accessibilityLabel="Back" onPress={noop} style={({ focused }: PressState) => [styles.backBtn, focused ? focusRing : null]}>
+          <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('preview.back')} onPress={noop} style={({ focused }: PressState) => [styles.backBtn, focused ? focusRing : null]}>
             <Icon name="arrow-left" size={20} color={color.text} />
           </Pressable>
         </View>
 
         <View style={styles.body}>
           <GlossTile icon="flask-2" hue="indigo" size={56} />
-          <Text style={styles.title}>[Full Body Checkup Advanced]</Text>
+          <Text style={styles.title}>{t('preview.fullBodyCheckupAdvanced')}</Text>
 
           <View style={styles.badgeRow}>
             <M2Pill label="[Booked 12,000+ times]" tone="positive" icon="shield-check" />
@@ -70,14 +72,14 @@ export function LabPackageDetailPreview(): React.ReactElement {
             <M2Pill label="[50% off]" tone="attention" icon="percent" />
           </View>
 
-          <Text style={[m2Text.section, styles.sectionGap]}>What's included</Text>
+          <Text style={[m2Text.section, styles.sectionGap]}>{t('preview.whatSIncluded')}</Text>
           <Accordion items={INCLUDED_ITEMS} testID="preview-lab-package-included" />
 
           <M2Card style={styles.doctorCard} testID="preview-lab-package-doctor-card">
             <GlossTile icon="doctor-alt" hue="teal" size={44} />
             <View style={styles.doctorWords}>
-              <Text style={styles.doctorTitle}>[Recommended by Dr. ...]</Text>
-              <Text style={m2Text.meta}>[One line on why this package suits your age group and history.]</Text>
+              <Text style={styles.doctorTitle}>{t('preview.recommendedByDr')}</Text>
+              <Text style={m2Text.meta}>{t('preview.oneLineOnWhyThisPackageSuitsYour')}</Text>
             </View>
           </M2Card>
 
@@ -85,7 +87,7 @@ export function LabPackageDetailPreview(): React.ReactElement {
             stops={heroStops('violet')}
             chipFill={color.onHeroVeil}
             eyebrow="[LIMITED TIME]"
-            title="[Add a free consult with this package]"
+            title={t('preview.addAFreeConsultWithThisPackage')}
             body="[Talk through your results with a doctor at no extra cost.]"
             cta={{ label: '[Add consult]', ink: color.action }}
             icon="doctor"
@@ -96,15 +98,15 @@ export function LabPackageDetailPreview(): React.ReactElement {
             testID="preview-lab-package-cross-sell"
           />
 
-          <Text style={[m2Text.section, styles.sectionGap]}>FAQs</Text>
+          <Text style={[m2Text.section, styles.sectionGap]}>{t('preview.faqs')}</Text>
           <Accordion items={FAQ_ITEMS} testID="preview-lab-package-faq" />
 
-          <Text style={[m2Text.section, styles.sectionGap]}>Rate this package</Text>
-          <Text style={m2Text.meta}>Only shown after you've used this package — not before.</Text>
+          <Text style={[m2Text.section, styles.sectionGap]}>{t('preview.rateThisPackage')}</Text>
+          <Text style={m2Text.meta}>{t('preview.onlyShownAfterYouVeUsedThisPackage')}</Text>
           <StarRating value={feedbackRating} onChange={setFeedbackRating} testID="preview-lab-package-feedback-rating" size={28} />
           {feedbackRating > 0 ? (
-            <M2Note tone="positive" icon="check-circle-2" title="Thanks for rating">
-              Your rating helps other students choose. It isn't shared outside this package's listing.
+            <M2Note tone="positive" icon="check-circle-2" title={t('preview.thanksForRating')}>
+              {t('preview.yourRatingHelpsOtherStudentsChooseItIsn')}
             </M2Note>
           ) : null}
         </View>
@@ -112,9 +114,9 @@ export function LabPackageDetailPreview(): React.ReactElement {
 
       <View style={styles.footer}>
         <Text style={styles.footerPrice}>₹999</Text>
-        <Pressable role="button" accessibilityRole="button" accessibilityLabel="Add to cart" onPress={noop} style={({ focused }: PressState) => [styles.cartBtn, focused ? focusRing : null]}>
+        <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('preview.addToCart')} onPress={noop} style={({ focused }: PressState) => [styles.cartBtn, focused ? focusRing : null]}>
           <Icon name="cart" size={16} color={color.onAction} />
-          <Text style={styles.cartBtnText}>Add to cart</Text>
+          <Text style={styles.cartBtnText}>{t('preview.addToCart')}</Text>
         </Pressable>
       </View>
     </View>

@@ -1,5 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import { useT } from '@/i18n';
 import { Illustration } from '@/design-system/icons';
 import { Icon } from '@/design-system/icons';
 import { StatusPill } from '@/design-system';
@@ -69,31 +70,32 @@ const ROUTINE: ReadonlyArray<{ icon: SkIconName; step: string; category: string;
  * NOTES.md.
  */
 export function AISkinScanPreview(): React.ReactElement {
+  const t = useT();
   return (
     <View style={styles.screen} testID="preview-ai-skin-scan">
       <View style={styles.header}>
         <RoundButton icon="arrow-left" label="Back" onPress={noop} />
-        <Text style={styles.headerTitle}>Skin check</Text>
+        <Text style={styles.headerTitle}>{t('preview.skinCheck')}</Text>
       </View>
       <View style={styles.scroll}>
         <View style={styles.body}>
           {/* 1. Capture */}
-          <Text style={m2Text.eyebrow}>CAPTURE</Text>
+          <Text style={m2Text.eyebrow}>{t('preview.capture')}</Text>
           <View style={styles.captureCard}>
             <Illustration name="illustration-face-oval-guide" width={220} height={220} />
-            <Text style={styles.captureInstruction}>[Position your face in the frame]</Text>
-            <Text style={m2Text.meta}>[Good, even light. Remove glasses if you can.]</Text>
+            <Text style={styles.captureInstruction}>{t('preview.positionYourFaceInTheFrame')}</Text>
+            <Text style={m2Text.meta}>{t('preview.goodEvenLightRemoveGlassesIfYouCan')}</Text>
             <View style={styles.startBtn}>
               <Icon name="camera" size={16} color={color.text3} />
-              <Text style={styles.startBtnText}>[Start scan]</Text>
+              <Text style={styles.startBtnText}>{t('preview.startScan')}</Text>
             </View>
           </View>
 
           {/* 2. Results */}
-          <Text style={[m2Text.eyebrow, styles.sectionGap]}>RESULTS</Text>
+          <Text style={[m2Text.eyebrow, styles.sectionGap]}>{t('preview.results')}</Text>
 
-          <M2Note tone="attention" icon="shield-alert" announce title="This is not a diagnosis">
-            A photo pattern is not a clinical finding. This does not replace seeing a dermatologist or clinician, and nothing here is interpreted for you beyond what's shown.
+          <M2Note tone="attention" icon="shield-alert" announce title={t('preview.thisIsNotADiagnosis')}>
+            {t('preview.aPhotoPatternIsNotAClinicalFinding')}
           </M2Note>
 
           {RESULTS.map((r) => (
@@ -107,8 +109,8 @@ export function AISkinScanPreview(): React.ReactElement {
           ))}
 
           {/* 3. Suggested routine */}
-          <Text style={[m2Text.eyebrow, styles.sectionGap]}>SUGGESTED ROUTINE</Text>
-          <Text style={m2Text.meta}>[General category suggestions only — not a prescription.]</Text>
+          <Text style={[m2Text.eyebrow, styles.sectionGap]}>{t('preview.suggestedRoutine')}</Text>
+          <Text style={m2Text.meta}>{t('preview.generalCategorySuggestionsOnlyNotAPrescription')}</Text>
 
           {ROUTINE.map((r) => (
             <M2Card key={r.step} style={styles.routineCard}>
@@ -124,10 +126,10 @@ export function AISkinScanPreview(): React.ReactElement {
           {/* 5. Share action */}
           <View style={styles.shareRow}>
             <Icon name="share-nodes" size={16} color={color.text} />
-            <Text style={styles.shareRowText}>[Share with a clinician]</Text>
+            <Text style={styles.shareRowText}>{t('preview.shareWithAClinician')}</Text>
           </View>
 
-          <Text style={styles.footNote}>[Placeholder results shown for preview only — no scan has run.]</Text>
+          <Text style={styles.footNote}>{t('preview.placeholderResultsShownForPreviewOnlyNoScan')}</Text>
         </View>
       </View>
     </View>

@@ -1,5 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import { useT } from '@/i18n';
 import { StepDiagram } from '@/design-system';
 import { Icon } from '@/design-system/icons';
 import type { SkIconName } from '@/design-system/icons';
@@ -68,31 +69,32 @@ const BENEFITS: ReadonlyArray<{ icon: SkIconName; title: string; body: string }>
  * brief or ticket yet. Not committed, pushed, or opened as a PR.
  */
 export function PhysiotherapyAtHomeLandingPreview(): React.ReactElement {
+  const t = useT();
   return (
     <View style={styles.screen} testID="preview-physiotherapy-at-home-landing">
       <View style={styles.header}>
         <RoundButton icon="arrow-left" label="Back" onPress={noop} />
-        <Text style={styles.headerTitle}>[Physiotherapy at Home]</Text>
+        <Text style={styles.headerTitle}>{t('preview.physiotherapyAtHome')}</Text>
       </View>
 
       <View style={styles.scroll}>
         <View style={styles.body}>
           <M2Note tone="attention" icon="alert-circle-3" testID="preview-physiotherapy-caution-note">
-            This is a concept preview, not a live service. Nothing on this screen can be booked yet.
+            {t('preview.thisIsAConceptPreviewNotALive')}
           </M2Note>
 
           <View style={styles.hero}>
             <GlossTile icon="dumbbell" hue="teal" size={56} iconSize={28} />
-            <Text style={styles.heroTitle}>[Recover without leaving campus]</Text>
-            <Text style={styles.heroSubtitle}>[A physiotherapist comes to your hostel or a common area — no clinic visit needed.]</Text>
+            <Text style={styles.heroTitle}>{t('preview.recoverWithoutLeavingCampus')}</Text>
+            <Text style={styles.heroSubtitle}>{t('preview.aPhysiotherapistComesToYourHostelOrA')}</Text>
           </View>
 
-          <Text style={m2Text.section}>[How it works]</Text>
+          <Text style={m2Text.section}>{t('preview.howItWorks')}</Text>
           <M2Card>
             <StepDiagram steps={STEPS} testID="preview-physiotherapy-steps" />
           </M2Card>
 
-          <Text style={[m2Text.section, styles.sectionGap]}>[Why students use it]</Text>
+          <Text style={[m2Text.section, styles.sectionGap]}>{t('preview.whyStudentsUseIt')}</Text>
           <View style={styles.benefitGrid} testID="preview-physiotherapy-benefit-grid">
             {BENEFITS.map((b) => (
               <M2Card key={b.title} style={styles.benefitCard} testID={`preview-physiotherapy-benefit-${b.title}`}>
@@ -104,7 +106,7 @@ export function PhysiotherapyAtHomeLandingPreview(): React.ReactElement {
           </View>
 
           <View style={styles.bookBtn} testID="preview-physiotherapy-book-btn">
-            <Text style={styles.bookBtnText}>[Book a session]</Text>
+            <Text style={styles.bookBtnText}>{t('preview.bookASession')}</Text>
           </View>
         </View>
       </View>

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useT } from '@/i18n';
 import { Icon } from '@/design-system/icons';
 import { color, focusRing, font, fontWeight, radius, space } from '@/design-system/theme';
 import { GlossTile, M2Card, M2Note, m2Text } from '@/design-system/m2';
@@ -42,17 +43,18 @@ const noop = () => undefined;
  * `design/icons/icon-manifest.json` before use. Tokens only.
  */
 export function InlineAyushSuggestionPreview(): React.ReactElement {
+  const t = useT();
   return (
     <View style={styles.screen} testID="preview-inline-ayush-suggestion">
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>[Home]</Text>
+        <Text style={styles.headerTitle}>{t('preview.home')}</Text>
       </View>
 
       <View style={styles.scroll}>
         <View style={styles.body}>
           <M2Card testID="preview-inline-ayush-feed-card-before">
-            <Text style={m2Text.eyebrow}>[UPCOMING]</Text>
-            <Text style={m2Text.body}>[Health camp at Block C — this Friday, 10 AM]</Text>
+            <Text style={m2Text.eyebrow}>{t('preview.upcoming')}</Text>
+            <Text style={m2Text.body}>{t('preview.healthCampAtBlockCThisFriday10')}</Text>
           </M2Card>
 
           {/* The new pattern: an Ayush suggestion sitting inline in the feed, not inside a chat. */}
@@ -60,13 +62,13 @@ export function InlineAyushSuggestionPreview(): React.ReactElement {
             <View style={styles.suggestionHeader}>
               <GlossTile icon="sparkle" hue="indigo" size={34} iconSize={17} />
               <View style={styles.suggestionHeaderWords}>
-                <Text style={m2Text.eyebrow}>[ASK AYUSH · OBSERVATION]</Text>
-                <Text style={styles.suggestionTitle}>[A pattern in your last 3 readings]</Text>
+                <Text style={m2Text.eyebrow}>{t('preview.askAyushObservation')}</Text>
+                <Text style={styles.suggestionTitle}>{t('preview.aPatternInYourLast3Readings')}</Text>
               </View>
               <Pressable
                 role="button"
                 accessibilityRole="button"
-                accessibilityLabel="[Dismiss]"
+                accessibilityLabel={t('preview.dismiss')}
                 onPress={noop}
                 style={({ focused }: PressState) => [styles.dismissBtn, focused ? focusRing : null]}
               >
@@ -75,28 +77,28 @@ export function InlineAyushSuggestionPreview(): React.ReactElement {
             </View>
 
             <Text style={styles.suggestionBody}>
-              [Your resting heart rate has run a little higher the last 3 mornings. This isn't a diagnosis — a doctor can tell you whether it's worth a closer look.]
+              {t('preview.yourRestingHeartRateHasRunALittle')}
             </Text>
 
             <Pressable
               role="button"
               accessibilityRole="button"
-              accessibilityLabel="[Ask a follow-up]"
+              accessibilityLabel={t('preview.askAFollowUp')}
               onPress={noop}
               style={({ focused }: PressState) => [styles.followUpBtn, focused ? focusRing : null]}
             >
-              <Text style={styles.followUpText}>[Ask a follow-up]</Text>
+              <Text style={styles.followUpText}>{t('preview.askAFollowUp')}</Text>
               <Icon name="arrow-right" size={14} color={color.action} />
             </Pressable>
           </M2Card>
 
           <M2Card testID="preview-inline-ayush-feed-card-after">
-            <Text style={m2Text.eyebrow}>[REMINDER]</Text>
-            <Text style={m2Text.body}>[Refill your Vitamin D3 strip — 4 tablets left]</Text>
+            <Text style={m2Text.eyebrow}>{t('preview.reminder')}</Text>
+            <Text style={m2Text.body}>{t('preview.refillYourVitaminD3Strip4TabletsLeft')}</Text>
           </M2Card>
 
-          <M2Note tone="info" icon="message-circle" title="What this card can't do yet">
-            This preview only shows the shape of an Ayush suggestion embedded in a feed. When and how often Ayush may surface one unprompted is a decision still to be made.
+          <M2Note tone="info" icon="message-circle" title={t('preview.whatThisCardCanTDoYet')}>
+            {t('preview.thisPreviewOnlyShowsTheShapeOfAn2')}
           </M2Note>
         </View>
       </View>
