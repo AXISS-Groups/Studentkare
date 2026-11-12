@@ -140,7 +140,9 @@ feature ViewModels in a non-DOM Node environment. Environment access is split th
   `deploy/Dockerfile` (frontend). `docker-compose.yml` adds Postgres 16, PgBouncer and
   the monitoring stack; `docker-compose.prod.yml` overrides for production. Helm chart:
   `deploy/helm/studentkare`.
-- **Node:** `package.json` pins `node` 20.x.
+- **Node/npm:** exact versions in `.nvmrc` and `package.json` engines, enforced by
+  `.npmrc`. CI reads `.nvmrc`; EAS and the frontend image use the same Node release.
+  Local, CI and Docker use `npm ci` with the existing Expo SDK 52 peer policy.
 - **CI** (`.github/workflows/ci.yml`): lint, icon checks, `tsc`, knip, Vitest, the
   production build, ruff, the backend suite on SQLite, gitleaks, the production
   start-up guard, a non-blocking `npm audit`, and compose validation; plus a

@@ -10,7 +10,8 @@
     "./src/**/*.css"
   ],
   "engines": {
-    "node": "20.x"
+    "node": "22.23.5",
+    "npm": "10.9.9"
   },
   "scripts": {
     "postinstall": "patch-package --error-on-fail",

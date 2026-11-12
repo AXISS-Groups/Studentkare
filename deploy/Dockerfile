@@ -2,13 +2,13 @@
 # Build-time contract: ARG VITE_API_BASE_URL (default /api, proxied to backend:8000 via deploy/nginx.conf).
 #                       ARG VITE_SENTRY_DSN (optional; empty = Sentry off, build still succeeds)
 #                       ARG VITE_APP_VERSION (optional; the Sentry release, e.g. sha-<12>)
-FROM node:20-alpine AS build
+FROM node:22.23.5-alpine@sha256:1314fb30ec37592d5845e5a160d522c0e680972aa534549940b8d73bde88481a AS build
 
 WORKDIR /app
 
-COPY package.json package-lock.json ./
+COPY package.json package-lock.json .npmrc ./
 COPY patches/ ./patches/
-RUN npm install --legacy-peer-deps
+RUN npm ci
 
 COPY . .
 
