@@ -151,3 +151,43 @@ def test_parse_dosage_form_from_name(name, expected_form):
 def test_parse_dosage_form_refuses_to_guess():
     with pytest.raises(importer.SkipRow):
         importer.parse_dosage_form("Mystery Product XJ9")
+
+
+@pytest.mark.parametrize("field,value,reason", [
+    ("name", "T", "missing_identity_field"),
+    ("manufacturer_name", "M", "missing_identity_field"),
+    ("name", "Tablet " + "A" * 154, "field_too_long"),
+    ("manufacturer_name", "M" * 121, "field_too_long"),
+    ("pack_size_label", "P" * 121, "field_too_long"),
+])
+def test_parse_row_rejects_outside_existing_identity_bounds(field, value, reason):
+    row = {**ROWS[0], field: value}
+    with pytest.raises(importer.SkipRow, match=reason):
+        importer.parse_row(row)
+
+
+@pytest.mark.parametrize("field,value,parsed_field", [
+    ("name", "Tablet " + "A" * 153, "name"),
+    ("manufacturer_name", "MM", "manufacturer"),
+    ("manufacturer_name", "M" * 120, "manufacturer"),
+    ("pack_size_label", "P" * 120, "pack"),
+])
+def test_parse_row_accepts_existing_identity_boundaries(field, value, parsed_field):
+    assert importer.parse_row({**ROWS[0], field: value})[parsed_field] == value
+
+
+def test_clean_salt_preserves_minimum_length():
+    with pytest.raises(importer.SkipRow, match="bad_salt_name"):
+        importer.clean_salt("A")
+    assert importer.clean_salt("AB") == "AB"
+
+
+@pytest.mark.parametrize("value", ["0", "100000.01"])
+def test_parse_ingredient_rejects_outside_existing_strength_bounds(value):
+    with pytest.raises(importer.SkipRow, match="strength_out_of_range"):
+        importer.parse_ingredient(f"Paracetamol ({value}mg)")
+
+
+@pytest.mark.parametrize("value,expected", [("0.0001", 0.0001), ("100000", 100000.0)])
+def test_parse_ingredient_accepts_existing_strength_boundaries(value, expected):
+    assert importer.parse_ingredient(f"Paracetamol ({value}mg)") == ("Paracetamol", expected, "mg")

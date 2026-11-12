@@ -46,6 +46,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from core import workflow_models as M  # noqa: E402
 from core.medicine_composition import composition_key  # noqa: E402
 from services.db_sql import DATABASE_URL, SessionLocal, create_all_tables  # noqa: E402
+from services.medicine_master import IngredientInput, MedicineInput
+
+# The API input schemas own these bounds; retain the importer's parsing and safety lock.
+_MEDICINE_CONSTRAINTS = MedicineInput.model_json_schema()["properties"]
+_INGREDIENT_CONSTRAINTS = IngredientInput.model_json_schema()["properties"]
 
 SOURCE_TAG = "BULK_IMPORT_UNCLASSIFIED"
 BATCH_SIZE = 2000
@@ -88,7 +93,7 @@ class SkipRow(Exception):
 
 def clean_salt(raw: str) -> str:
     salt = " ".join(raw.split())
-    if len(salt) < MIN_TEXT_FIELD_LENGTH or not _SALT_PATTERN.match(salt):
+    if len(salt) < _INGREDIENT_CONSTRAINTS["salt"]["minLength"] or not _SALT_PATTERN.match(salt):
         raise SkipRow("bad_salt_name")
     return salt
 
@@ -109,7 +114,8 @@ def parse_ingredient(raw: str) -> tuple[str, float, str] | None:
         value = float(value_raw)
     except ValueError as exc:
         raise SkipRow("bad_strength_value") from exc
-    if not (0 < value <= MAX_STRENGTH_VALUE):
+    if not (_INGREDIENT_CONSTRAINTS["strengthValue"]["exclusiveMinimum"] < value
+            <= _INGREDIENT_CONSTRAINTS["strengthValue"]["maximum"]):
         raise SkipRow("strength_out_of_range")
     return clean_salt(salt_raw), value, unit
 
@@ -129,9 +135,12 @@ def parse_row(row: dict[str, str]) -> dict:
     name = " ".join(row.get("name", "").split())
     manufacturer = " ".join(row.get("manufacturer_name", "").split())
     pack = " ".join(row.get("pack_size_label", "").split()) or "Pack size not stated"
-    if len(name) < MIN_TEXT_FIELD_LENGTH or len(manufacturer) < MIN_TEXT_FIELD_LENGTH:
+    if (len(name) < _MEDICINE_CONSTRAINTS["name"]["minLength"]
+            or len(manufacturer) < _MEDICINE_CONSTRAINTS["manufacturer"]["minLength"]):
         raise SkipRow("missing_identity_field")
-    if len(name) > MAX_NAME_LENGTH or len(manufacturer) > MAX_MANUFACTURER_LENGTH or len(pack) > MAX_PACK_LENGTH:
+    if (len(name) > _MEDICINE_CONSTRAINTS["name"]["maxLength"]
+            or len(manufacturer) > _MEDICINE_CONSTRAINTS["manufacturer"]["maxLength"]
+            or len(pack) > _MEDICINE_CONSTRAINTS["pack"]["maxLength"]):
         raise SkipRow("field_too_long")
 
     ingredients = []
