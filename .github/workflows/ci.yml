@@ -302,7 +302,8 @@ jobs:
         working-directory: backend
         run: |
           python - <<'PY'
-          from sqlalchemy import text
+          from sqlalchemy import insert, text
+          from core import workflow_models as M
           from services import migrations
           from services.db_sql import engine
           assert migrations.schema_state(migrations._postgres_url()) == 'empty'
@@ -310,7 +311,7 @@ jobs:
           with engine.begin() as db:
               assert db.scalar(text("SELECT extversion FROM pg_extension WHERE extname='vector'")) == '0.8.1'
               assert db.scalar(text("SELECT '[1,2,3]'::vector <-> '[1,2,3]'::vector")) == 0
-              db.execute(text("INSERT INTO care_system_settings (key, value, updated_at) VALUES ('ci_dev_volume_probe', '{\"retained\":true}', 1)"))
+              db.execute(insert(M.SystemSetting).values(key='ci_dev_volume_probe', value={'retained': True}, updated_at=1))
           PY
           python -m alembic -c config/alembic.ini check
 
