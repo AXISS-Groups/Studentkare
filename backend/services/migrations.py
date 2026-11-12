@@ -96,6 +96,21 @@ def schema_state(url: str) -> str:
     return "alembic" if "alembic_version" in tables else "unversioned"
 
 
+def ensure_vector_extension(url: str) -> None:
+    """Activate the installed extension before an unversioned dev create_all.
+
+    Versioned databases get this through b7f3e8c1a2d4. Installing the extension's
+    server files alone is insufficient: each database needs CREATE EXTENSION.
+    Any extension/permission failure stops schema creation.
+    """
+    engine = _engine(url)
+    try:
+        with engine.begin() as conn:
+            conn.exec_driver_sql("CREATE EXTENSION IF NOT EXISTS vector")
+    finally:
+        engine.dispose()
+
+
 def prepare_development_schema() -> str:
     """Build a development database the way production does, where that is safe.
 
@@ -118,6 +133,7 @@ def prepare_development_schema() -> str:
         "[DB] This development database was built without Alembic, so it keeps using create_all. "
         "To use migrations like production, reset it (docker compose down -v deletes local data) "
         "or, if its schema matches the models, run: alembic -c config/alembic.ini stamp head")
+    ensure_vector_extension(url)
     create_all_tables()
     return "create_all"
 

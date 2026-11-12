@@ -5,7 +5,10 @@
 # Usage: cp .env.dev.example .env && docker compose up --build
 services:
   postgres:
-    image: postgres:16-alpine
+    image: studentkare-postgres-dev:pg16-pgvector0.8.1
+    build:
+      context: deploy/postgres
+      dockerfile: Dockerfile
     container_name: studentkare-postgres
     restart: unless-stopped
     environment:
