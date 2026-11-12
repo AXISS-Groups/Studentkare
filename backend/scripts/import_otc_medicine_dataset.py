@@ -55,6 +55,12 @@ _INGREDIENT_CONSTRAINTS = IngredientInput.model_json_schema()["properties"]
 SOURCE_TAG = "BULK_IMPORT_UNCLASSIFIED"
 BATCH_SIZE = 2000
 
+MIN_TEXT_FIELD_LENGTH = 2
+MAX_STRENGTH_VALUE = 100_000
+MAX_NAME_LENGTH = 160
+MAX_MANUFACTURER_LENGTH = 120
+MAX_PACK_LENGTH = 120
+
 # Longest/most specific words first so "tablets" doesn't get caught by a shorter
 # unrelated substring, and the match is tried against the whole product name.
 _DOSAGE_FORM_WORDS: tuple[tuple[str, str], ...] = (
