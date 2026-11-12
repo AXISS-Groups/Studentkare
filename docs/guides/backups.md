@@ -49,8 +49,11 @@ Owner: on-call engineer, first working Monday of the month. Takes about 15 minut
 
 1. **Get a scratch server.** Never restore into production. Any Postgres 16 you can create a
    database on: a throwaway container on the ops host
-   (`docker run --rm -d --name restore-scratch -e POSTGRES_PASSWORD=<pw> -p 127.0.0.1:55432:5432 postgres:16-alpine`),
-   or a small scratch instance from the provider.
+   (first `docker compose -f docker-compose.yml build postgres`, then
+   `docker run --rm -d --name restore-scratch -e POSTGRES_PASSWORD=<pw> -p 127.0.0.1:55432:5432 studentkare-postgres-dev`),
+   or a small scratch instance from the provider with pgvector server files installed.
+   A plain Postgres image cannot restore the vector extension and vector columns.
+   The standalone scratch container must not mount the development `postgres-data` volume.
 2. **Run the drill** against the newest backup.
    - Compose, on the host:
      ```sh

@@ -100,9 +100,24 @@ docker compose up --build                 # rebuild + start
 ⚠️ `docker compose down -v` **deletes the `postgres-data` volume and your dev
 database.** Only use it for a deliberate full reset — never as a normal stop.
 
-Database schema: Docker dev creates tables from the models at startup.
-Production applies Alembic migrations, and CI checks that the two agree
-(`alembic check`). When you change a model, add a migration in the same PR:
+The local Postgres image is built from `deploy/postgres/Dockerfile`: pinned
+PostgreSQL 16 Alpine with checksum-verified pgvector 0.8.1 server files. The
+existing `postgres-data` volume and credentials are retained. Rebuild it when
+updating from the plain Postgres image: `docker compose build postgres`, then
+`docker compose up -d postgres`. Back up important local data before replacing
+the container; do not remove the volume. PostgreSQL stays on major 16 and
+Alpine, avoiding a libc/collation-family switch on existing data.
+
+Database schema: development applies Alembic migrations at startup to empty
+and already-versioned databases, including `CREATE EXTENSION vector`. Older
+unversioned databases activate the extension before their existing `create_all`
+path; their data is retained, but `create_all` does not upgrade existing columns
+or establish migration history. Back up and compare such a database's schema
+before a deliberate migration/stamp decision. Do not stamp head to hide drift.
+Production applies Alembic migrations, and CI checks model agreement with
+`alembic check`. A separate CI job builds the actual development image, checks
+extension activation and volume-preserving recreation, migrates, checks drift,
+and runs backup/restore. When you change a model, add a migration in the same PR:
 
 ```bash
 cd backend

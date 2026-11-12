@@ -99,6 +99,7 @@ def _development_lifespan(monkeypatch, state):
     monkeypatch.setattr(migrations, "_postgres_url", lambda: "postgresql://dev@localhost/dev")
     monkeypatch.setattr(migrations, "schema_state", lambda url: state)
     monkeypatch.setattr(migrations, "run_migrations", lambda: calls.append("migrations"))
+    monkeypatch.setattr(migrations, "ensure_vector_extension", lambda url: calls.append("vector"))
     import services.db_sql as db_sql
     monkeypatch.setattr(db_sql, "create_all_tables", lambda: calls.append("create_all"))
     return migrations.prepare_development_schema(), calls
@@ -110,7 +111,35 @@ def test_development_uses_migrations_where_safe(monkeypatch, state, expected):
     # Audit TD-11: dev builds its schema like production when the database is
     # empty or already tracked; a create_all-built database is left alone.
     path, calls = _development_lifespan(monkeypatch, state)
-    assert path == expected and calls == [expected]
+    assert path == expected and calls == (["vector", expected] if state == "unversioned" else [expected])
+
+
+def test_unversioned_dev_extension_failure_stops_create_all(monkeypatch):
+    from unittest.mock import Mock
+
+    from services import db_sql, migrations
+
+    monkeypatch.setattr(migrations, "_postgres_url", lambda: "postgresql://dev@localhost/dev")
+    monkeypatch.setattr(migrations, "schema_state", lambda url: "unversioned")
+    monkeypatch.setattr(migrations, "ensure_vector_extension", Mock(side_effect=RuntimeError("extension unavailable")))
+    create = Mock()
+    monkeypatch.setattr(db_sql, "create_all_tables", create)
+    with pytest.raises(RuntimeError, match="extension unavailable"):
+        migrations.prepare_development_schema()
+    create.assert_not_called()
+
+
+def test_extension_activation_disposes_engine_after_database_failure(monkeypatch):
+    from unittest.mock import Mock
+
+    from services import migrations
+
+    engine = Mock()
+    engine.begin.side_effect = RuntimeError("database unavailable")
+    monkeypatch.setattr(migrations, "_engine", lambda url: engine)
+    with pytest.raises(RuntimeError, match="database unavailable"):
+        migrations.ensure_vector_extension("postgresql://dev@localhost/dev")
+    engine.dispose.assert_called_once_with()
 
 
 def test_development_lifespan_prepares_the_schema(monkeypatch):
