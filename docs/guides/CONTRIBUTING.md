@@ -22,13 +22,24 @@ environment details live in `docs/integration-guide.md`.
 
 | Tool | Version | Check |
 |---|---|---|
-| Node.js + npm | 20.x / 10+ (see `.nvmrc`) | `node --version` |
+| Node.js + npm | Exact versions in `.nvmrc` and `package.json` engines | `node --version` / `npm --version` |
 | Python | 3.11 (see `.python-version`) | `python3 --version` (Bash) or `py --version` (PowerShell) |
 | Git | any recent | `git --version` |
 | Docker + Compose v2 | Desktop (Windows/macOS) or Engine (Linux) | `docker compose version` |
 
 No WSL requirement — Docker Desktop on Windows/macOS or Docker Engine on
 Linux is enough. Git Bash works wherever Bash commands are shown.
+
+For native setup, select the Node version in `.nvmrc` (`nvm install` then
+`nvm use` with nvm-sh; with nvm-windows, pass the version from `.nvmrc` to
+both commands). Use its bundled npm version, listed in `package.json` engines.
+`.npmrc` rejects unsupported Node/npm versions and keeps the existing Expo SDK 52
+peer-resolution policy consistent across local, CI, EAS and Docker installs.
+Install with `npm ci`; an invalid lockfile or failed Expo CLI patch stops the
+install. Fix the dependency change deliberately rather than falling back to
+`npm install`. CI checks that installation leaves both dependency manifests
+unchanged and builds the actual frontend Dockerfile. No React/Expo upgrade is
+needed for this toolchain.
 
 ## 2. Quick start — first-time setup (Docker)
 
@@ -327,7 +338,7 @@ completely (including verification results), and request review.
 | Sign-in says the code could not be sent (503) | Demo mode is off. Check that `.env` has `SEED_DEMO_DATA=true` and `DEV_OTP_CONSOLE=true` and `APP_ENV=development`, then restart the backend. |
 | Super admin sign-in asks for an authenticator | Expected: super admins and counsellors must set up two-step sign-in. Scan the QR code with any authenticator app. |
 | Port `3000` or `8000` already in use | Stop the other process or previous stack (`docker compose down`), then retry. |
-| Wrong Node/Python version | Match `.nvmrc` (20.x) and `.python-version` (3.11); CI and Docker both pin these. |
+| Wrong Node/npm/Python version | Match `.nvmrc`, `package.json` engines and `.python-version`; `.npmrc` denies unsupported Node/npm. CI reads `.nvmrc`; EAS and the frontend Dockerfile pin the same Node release. |
 | Stale frontend build | `rm -rf node_modules dist` (or `Remove-Item -Recurse node_modules,dist` in PowerShell), then `npm ci`. |
 | `scripts/*.sh` fails with `bad interpreter` on Windows | Use Git Bash, or re-checkout after the `.gitattributes` LF fix. |
 | Dev data gone after restart | You used `down -v`, which deletes the volume. Normal stop is `docker compose down` (no `-v`). |

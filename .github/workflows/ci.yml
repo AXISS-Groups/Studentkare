@@ -26,7 +26,7 @@ jobs:
       - name: Setup Node.js Environment
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version-file: '.nvmrc'
           cache: 'npm'
           cache-dependency-path: package-lock.json
 
@@ -36,7 +36,10 @@ jobs:
           python-version: '3.11'
 
       - name: Install Frontend Dependencies
-        run: npm ci --legacy-peer-deps || npm install
+        run: npm ci
+
+      - name: Locked install does not rewrite dependency manifests
+        run: git diff --exit-code -- package.json package-lock.json
 
       - name: 1. Code Style & Formatting Check (ESLint)
         run: npm run lint
@@ -210,6 +213,18 @@ jobs:
           pip install pyyaml
           python scripts/ops/check-env-passthrough.py
 
+  frontend-image:
+    # Build the deployment Dockerfile itself: Alpine must use the same locked
+    # install and apply the Expo CLI patch before the production build.
+    name: Frontend image (locked install and production build)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v4
+
+      - name: Build frontend image
+        run: docker build --file deploy/Dockerfile --tag studentkare-frontend:ci .
+
   expo-bundle:
     # Blocking: the phone app must bundle for both platforms. tsc on the native
     # sources (step 2.5 above) does not catch a Metro/Babel config, alias or
@@ -223,12 +238,15 @@ jobs:
       - name: Setup Node.js Environment
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version-file: '.nvmrc'
           cache: 'npm'
           cache-dependency-path: package-lock.json
 
       - name: Install Frontend Dependencies
-        run: npm ci --legacy-peer-deps || npm install
+        run: npm ci
+
+      - name: Locked install does not rewrite dependency manifests
+        run: git diff --exit-code -- package.json package-lock.json
 
       - name: Resolved app config (version, build numbers, plugins)
         run: npx expo config --type public --json > /dev/null
@@ -262,7 +280,7 @@ jobs:
       - name: Setup Node.js Environment
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version-file: '.nvmrc'
 
       - name: Icon coverage across every mapped screen
         run: |
