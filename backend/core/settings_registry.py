@@ -734,6 +734,9 @@ declare("ayush.min_term_overlap", FLOAT, 0.5, area="ayush", unit="share of subje
 declare("platform.default_timezone", STR, "Asia/Kolkata", area="platform", unit="IANA timezone", public=True,
         description="Timezone for a student's calendar day when they have not set a valid one, and for the "
                     "newsroom's schedules (the composer's publish-later time, series and autopilot slots).")
+declare("platform.asset_max_bytes", INT, 3 * 1024 * 1024, area="platform", unit="bytes",
+        minimum=256 * 1024, maximum=10 * 1024 * 1024,
+        description="Largest public logo/favicon upload, before and after SVG sanitization.")
 # General API rate limits (core/rate_limiter.py, founder decision 2026-10-22). A
 # signed-in request counts against its session's budget and against its network
 # address's ceiling; a request without a session against the ceiling only. One

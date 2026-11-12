@@ -150,6 +150,7 @@ TABLE_PLANES: dict[str, str] = {
     "care_workflow_audit": PLATFORM,
     "audit_logs": PLATFORM,
     "care_system_settings": PLATFORM,             # integration secrets
+    "care_platform_assets": PLATFORM,             # explicitly public brand images, never clinical documents
     "care_scheduled_jobs": PLATFORM,
     "care_agent_runs": PLATFORM,
     "agent_runs": PLATFORM,

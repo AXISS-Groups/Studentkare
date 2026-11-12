@@ -397,6 +397,29 @@ def _denied(conn, sql: str) -> bool:
     return False
 
 
+def test_pg_platform_asset_table_has_no_clinical_links_or_role_grants(pg_db):
+    from alembic.autogenerate import compare_metadata
+    from alembic.migration import MigrationContext
+    from sqlalchemy import inspect
+
+    engine, _, _, _ = pg_db
+    inspector = inspect(engine)
+    assert inspector.get_foreign_keys("care_platform_assets") == []
+    with engine.connect() as conn:
+        assert conn.execute(text("SELECT COUNT(*) FROM care_platform_assets")).scalar() == 0
+        context = MigrationContext.configure(conn, opts={
+            "include_object": lambda obj, name, kind, reflected, compare_to:
+                name == "care_platform_assets" if kind == "table" else True,
+        })
+        assert compare_metadata(context, Base.metadata) == []
+        for role in rule_l.GROUP_ROLES:
+            conn.execute(text(f"SET LOCAL ROLE {role}"))
+            assert _denied(conn, "SELECT content FROM care_platform_assets")
+            assert _denied(conn, "INSERT INTO care_platform_assets (asset_type, version, mime_type, content, updated_at) "
+                                 "VALUES ('logo', 'fixture', 'image/png', ''::bytea, 1)")
+            conn.execute(text("RESET ROLE"))
+
+
 def test_pg_status_is_enforced_after_migration(pg_db):
     engine, *_ = pg_db
     with engine.connect() as conn:

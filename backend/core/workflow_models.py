@@ -764,6 +764,20 @@ class Article(Base):
     sort: Mapped[int] = mapped_column(Integer, default=0)
 
 
+class PlatformAsset(Base):
+    """An explicitly uploaded public logo/favicon; never a vault document.
+
+    One current version per kind. No record/account foreign key, filename or
+    document identifier can be used by the public asset reader.
+    """
+    __tablename__ = "care_platform_assets"
+    asset_type: Mapped[str] = mapped_column(String(16), primary_key=True)
+    version: Mapped[str] = mapped_column(String(32))
+    mime_type: Mapped[str] = mapped_column(String(100))
+    content: Mapped[bytes] = mapped_column(LargeBinary)
+    updated_at: Mapped[float] = mapped_column(Float)
+
+
 class SystemSetting(Base):
     """Persistent key-value store for runtime configuration (integrations, etc)."""
     __tablename__ = "care_system_settings"

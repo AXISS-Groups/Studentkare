@@ -12,14 +12,14 @@ import urllib.parse
 import httpx
 from fastapi import APIRouter, Depends, File, HTTPException, Request, Response, UploadFile
 from pydantic import BaseModel, ConfigDict, Field
-from sqlalchemy import delete, select
+from sqlalchemy import delete
 from sqlalchemy.orm import Session as DBSession
 
 from core import settings_registry
 from core import workflow_models as M
 from core.app_env import is_production
 from services import integration_secret_vault as vault
-from services import ops_feed, twofa_store
+from services import ops_feed, platform_assets, twofa_store
 from services.integration_config import (
     INTEGRATIONS_DB,
     is_secret_field,
@@ -253,78 +253,19 @@ def send_slack_alert(body: SlackNotifyBody,
 
 @router.post("/admin/platform/asset/{asset_type}")
 def upload_platform_asset(
-    asset_type: str,
+    asset_type: platform_assets.AssetType,
     file: UploadFile = File(...),
     user: dict = Depends(require_super_admin),
     db: DBSession = Depends(workflow_db)
 ):
-    """Upload header logo or browser favicon (max 3MB, PNG/JPEG/WEBP/SVG/ICO)."""
-    if asset_type not in ("logo", "favicon"):
-        raise HTTPException(400, "Asset type must be 'logo' or 'favicon'.")
-    content = file.file.read(3 * 1024 * 1024 + 1)
-    if len(content) > 3 * 1024 * 1024:
-        raise HTTPException(413, "Asset file must be 3 MB or smaller.")
-
-    # The real type comes from the bytes, never the client's declared
-    # Content-Type: this asset is served back to every visitor, so trusting
-    # a declared type would let an attacker who can reach this endpoint make
-    # the browser interpret the response as something other than an image.
-    from services.upload_files import sniff_and_sanitize_svg, sniff_mime
-    mime = sniff_mime(content)
-    if mime is None:
-        sanitized_svg = sniff_and_sanitize_svg(content)
-        if sanitized_svg is not None:
-            mime, content = "image/svg+xml", sanitized_svg
-    if mime is None:
-        raise HTTPException(400, "Asset must be a PNG, JPEG, WEBP, ICO or SVG image.")
-
-    # Virus scanning
-    from services.security_scanner import scan_file_for_viruses
-    scan_file_for_viruses(content)
-
-    # Store in care_documents
-    import uuid
-    doc_id = f"asset_{asset_type}_{uuid.uuid4().hex[:12]}"
-    filename = file.filename or f"{asset_type}.png"
-
-    doc = M.CareDocument(
-        id=doc_id,
-        account_id=user["id"],
-        category="ASSET",
-        title=f"Platform {asset_type.title()}",
-        filename=filename,
-        mime_type=mime,
-        size_bytes=len(content),
-        content=content,
-        created_at=time.time(),
-    )
-    db.add(doc)
-
-    asset_url = f"/api/platform/asset/{asset_type}?t={int(time.time())}"
-    INTEGRATIONS_DB["platform"][f"{asset_type}_url"] = asset_url
-    save_to_db("platform")
-    _audit(db, user, f"PLATFORM_{asset_type.upper()}_UPLOADED", doc_id)
-    db.commit()
-    return {"success": True, "assetType": asset_type, "url": asset_url}
+    """Upload a scanned public brand image to its own platform repository."""
+    return platform_assets.upload(db, asset_type, file, user["id"])
 
 
 @router.get("/platform/asset/{asset_type}")
-def get_platform_asset(asset_type: str, db: DBSession = Depends(workflow_db)):
+def get_platform_asset(asset_type: platform_assets.AssetType, db: DBSession = Depends(workflow_db)):
     """Serve uploaded logo or favicon publicly."""
-    if asset_type not in ("logo", "favicon"):
-        raise HTTPException(404, "Asset not found.")
-    doc = db.scalar(
-        select(M.CareDocument)
-        .where(M.CareDocument.category == "ASSET", M.CareDocument.title.like(f"%{asset_type}%"))
-        .order_by(M.CareDocument.created_at.desc())
-    )
-    if not doc or not doc.content:
-        raise HTTPException(404, f"No custom {asset_type} found.")
-    return Response(
-        content=doc.content,
-        media_type=doc.mime_type or "image/png",
-        headers={"Cache-Control": "public, max-age=86400"}
-    )
+    return platform_assets.read(db, asset_type)
 
 
 
