@@ -1747,3 +1747,120 @@ files, this file,
 `src/design-system/stories/RedesignPreview.stories.tsx` — nothing else in
 the working tree was touched. Nothing wired into the real app shell or
 router, nothing committed, nothing pushed.
+
+## Part 11 (2026-11-12): task #67's audit was wrong — corrected; 3 genuine gaps built; Family Hub (#70)
+
+Krishna's instruction was "build all screens which are pending and
+blocked" — tasks #66 (shared/student screens), #67 (82 internal console
+screens, pending a decision), and #70 (Family Hub, blocked on a standing
+rejected-pattern rule). Before building #67, Krishna chose "Build in the
+same flat 1mg-consumer style" (over skipping it), and for #70 chose
+"Build it anyway, flagged as a concept-only preview".
+
+**The #67 audit that produced an 11-screen build list was wrong.** That
+audit's source-tree search covered `src/features/`, `src/native/` and
+`src/design-system/` but never `src/screens/` — an entire directory
+holding a fully-built vendor/console screen suite
+(`VendorOrdersScreen.tsx`, `VendorRxReviewScreen.tsx`,
+`PartnerStaffScreen.tsx`, etc., all wired through `VendorShell.tsx` /
+`vendorNavigation.ts`). A background build agent assigned to 7 of the
+11 "gaps" (`ClinicianApply`, `PartnerStaff`, `VendorCampIntake`,
+`VendorCatalogue`, `VendorConsole`, `VendorHandover`, `VendorOrders`)
+independently discovered they already existed there, which caught this
+directly — the same "no `*Preview.tsx` file ≠ unbuilt" lesson as Parts
+8–9, just tripped a second way by the audit script's own directory
+blind spot. Independently re-verified via `ls src/screens/vendor/` and
+`implementation-map.json` before trusting the agent's finding or acting
+on it.
+
+**Corrected #67 audit, this time including `src/screens/`:** built a
+list of 105 console-ish briefs (Admin*, Campus*, Clinician*, Lab*,
+Partner*, Vendor*, Staff*, SuperAdminConsole and related Web* briefs)
+from `design/screens/briefs/`, cross-checked every one against
+`implementation-map.json`. **103 of 105 already have real, non-empty
+map entries — already built.** Only 2 had empty/missing entries:
+`LandingClinician` and `WebLeaveCampus`. Both turned out to already be
+real, shipped screens too (`LandingClinicianView.tsx` /
+`LandingClinicianNativeView.tsx`; `LeaveCampusView.tsx`) — both already
+documented as such in this file's own Part 8. **Task #67's genuine gap
+count is zero.** No console screens were built this round; none needed
+to be.
+
+**The same corrected method, applied to the system-wide empty-map list
+(25 entries), found 3 genuine gaps** — the other 22 were already
+resolved this session (`CheckinReceipt`, `PrescriptionUpload`,
+`WebReportAssistant`), out of scope per DESIGN.md D4
+(`GuardianApprove`/`GuardianConsent`/`WebGuardianApprove`/`WebGuardianConsent`),
+already real under a different name (`AyushChat`, `Devices`,
+`Medications`, `ProductList`, `RefillRequest`, `StateScreens`,
+`StatusMoments`, `Teleconsult`, `VitalTrends`, `LandingClinician`), or
+correctly out-of-scope design-system reference pages on canvas page 8
+(`FlowMap`, `IconSystem`, `IllustrationLibrary`, `MotionSystem`,
+`NavSheets` — all Tier 3, same category Part 8 already called out for
+`IllustrationLibrary`).
+
+**The 3 genuine gaps all touch DESIGN.md's Tier-1 safety bullets
+directly, not just a Tier-1 board placement — flagged to Krishna before
+building, per the same caution as the Guardian-consent finding:**
+
+- `AyushSheet` (Ayush phone bottom sheet, SK-020): its own HTML source
+  has a working crisis-detection regex branch — `/(suicid|kill
+  myself|...)/i` → a "You don't have to handle this alone" panel with
+  Tele-MANAS/counsellor numbers. That's DESIGN.md's "Crisis support,
+  SOS" bullet verbatim. Built as a flat preview per Krishna's call: no
+  crisis-detection logic exists in `AyushSheetPreview.tsx`, the sample
+  exchange shown is a fixed, hard-coded illustration of the non-crisis
+  path only, and it never renders a crisis panel.
+- `NewDevice` ("New phone — move your account", SK-033): its content is
+  a selfie-match identity-verification step ("Capture" / "Matches your
+  verified photo"), DESIGN.md's "identity verification and the gate"
+  bullet. Built as a flat preview: no camera opens, no match runs,
+  "Capture" and "All set" are `noop`.
+- `NotificationTemplates` ("copy + rules", SK-141): a reference table of
+  notification copy that includes rows for account deletion and
+  clinical-report notifications (both explicit Tier-1 bullets) **and a
+  "Guardian consent request" SMS row** — the exact flow DESIGN.md D4
+  just dropped. Per Krishna's explicit call, `NotificationTemplatesPreview.tsx`
+  drops that one row and keeps the other 6 (safety sign-in/deletion,
+  verification, care, orders) — same reasoning as the
+  WebGuardianApprove/WebGuardianConsent revert, just caught before
+  anything was built this time instead of after.
+
+**Task #70 (Family Hub):** net-new concept, no brief or ticket — same
+footing as `LabPrep`/`DoctorCompare`/`ReferFriend`. An avatar-circle
+family-member switcher (You / member name / lock icon) + "Add member",
+modeled on the 1mg video reference Krishna shared. Built per his
+explicit call despite the same underlying conflict that shaped the real
+`FamilyCircle` screen (Part 6/7): 1mg's switcher lets one account see
+another member's full record, which this product's 18+,
+student-owned-record architecture (AGENTS.md rule 8) doesn't allow — so
+every member except "You" shows a lock icon, which is the whole point:
+it reads as "can't switch into this", never a working switch. Nothing
+in `M2FamilyHubPreview.tsx` is wired.
+
+**Icon manifest notes:** `NewDevice`'s brief-listed `circle` icon maps to
+the source's per-item transfer-progress spinner, not the selfie
+placeholder — rebuilt step 2 as a 4-row transfer checklist (`check` /
+`circle` per row) matching the source's `rs` array (`R = ['Check-in pass
+issued...', ...]`) instead of a single static line. `AyushSheet`'s
+brief-listed `chevron-down` and text-glyph `check` map to the sheet's
+resize-toggle pair (make taller/smaller) and the "✓ {{ m.src }}"
+source-confirmation pill respectively — both were missing from the
+first draft and added once `check-icons.mjs` caught them.
+`NotificationTemplates`'s text-glyph `arrow-right` maps to the intro
+line's "Super admin → Message templates", not any table content.
+
+**Verification:** `npx tsc --noEmit` clean (after removing 2
+accidental duplicate `preview.capture` keys — Te/Hi blocks — introduced
+when adding `NewDevice`'s i18n). `npx eslint --config config/eslint.config.js
+src` — 0 errors, repo-wide. `npx vitest run src/features/redesignPreview
+src/design-system` — 23 files, 777 tests, all passing. `check-icons.mjs`
+clean for `AyushSheet`, `NewDevice`, `NotificationTemplates`
+(`M2FamilyHub` has no brief/ticket, so no check-icons entry — same as
+`DoctorCompare`/`ReferFriend`; its 3 icons — `arrow-left`, `lock-5`,
+`plus` — were confirmed against `icon-manifest.json` by hand). `git
+status` before and after touched only the 4 new `*Preview.tsx` files,
+this file, `src/i18n/areas/redesignPreview.ts` and
+`src/design-system/stories/RedesignPreview.stories.tsx` — nothing else
+in the working tree was touched. Nothing wired into the real app shell
+or router, nothing committed, nothing pushed yet.

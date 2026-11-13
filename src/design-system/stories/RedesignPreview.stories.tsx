@@ -36,6 +36,10 @@ import { WebCheckoutPreview } from '@/features/redesignPreview/WebCheckoutPrevie
 import { WebOrdersPreview } from '@/features/redesignPreview/WebOrdersPreview';
 import { WebReorderPreview } from '@/features/redesignPreview/WebReorderPreview';
 import { WebReportAssistantPreview } from '@/features/redesignPreview/WebReportAssistantPreview';
+import { AyushSheetPreview } from '@/features/redesignPreview/AyushSheetPreview';
+import { NewDevicePreview } from '@/features/redesignPreview/NewDevicePreview';
+import { NotificationTemplatesPreview } from '@/features/redesignPreview/NotificationTemplatesPreview';
+import { M2FamilyHubPreview } from '@/features/redesignPreview/M2FamilyHubPreview';
 import { M2FamilyCirclePreview } from '@/features/redesignPreview/M2FamilyCirclePreview';
 import { DevicesPreview } from '@/features/redesignPreview/DevicesPreview';
 import { TeleconsultPreview } from '@/features/redesignPreview/TeleconsultPreview';
@@ -351,6 +355,31 @@ export const WebReportAssistant: Story = { render: () => <WebReportAssistantPrev
 export const CheckinReceipt: Story = { render: () => <View><CheckinReceiptPreview /></View> };
 export const PrescriptionUpload: Story = { render: () => <View><PrescriptionUploadPreview /></View> };
 
+/**
+ * Part 11's 3 corrected genuine gaps, re-audited across the full
+ * "82 console screens" (#67) + remaining non-console empty-map-entry
+ * (#66) buckets, this time cross-checking `src/screens/` too (the
+ * earlier audit's blind spot — see NOTES.md). #67 itself turned out to
+ * have zero genuine gaps. `AyushSheet` and `NewDevice` touch DESIGN.md's
+ * Tier-1 safety bullets directly (crisis support; identity verification)
+ * and ship as flat previews only, per Krishna's explicit call.
+ * `NotificationTemplates` drops its "Guardian consent request" row per
+ * DESIGN.md D4.
+ */
+export const AyushSheet: Story = { render: () => <View><AyushSheetPreview /></View> };
+export const NewDevice: Story = { render: () => <View><NewDevicePreview /></View> };
+export const NotificationTemplates: Story = { render: () => <View><NotificationTemplatesPreview /></View> };
+
+/**
+ * Task #70: net-new "Family Hub" avatar-switcher concept, modeled on
+ * 1mg's own video reference. Built anyway, flagged as a concept-only
+ * preview per Krishna's explicit call, despite 1mg's underlying pattern
+ * (one account seeing another's full record) conflicting with this
+ * product's 18+ architecture — see the file's own caution comment and
+ * NOTES.md.
+ */
+export const M2FamilyHub: Story = { render: () => <View><M2FamilyHubPreview /></View> };
+
 export const AllScreens: Story = {
   render: () => (
     <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 24 }}>
@@ -418,6 +447,10 @@ export const AllScreens: Story = {
       <WebReportAssistantPreview />
       <CheckinReceiptPreview />
       <PrescriptionUploadPreview />
+      <AyushSheetPreview />
+      <NewDevicePreview />
+      <NotificationTemplatesPreview />
+      <M2FamilyHubPreview />
     </View>
   ),
 };
