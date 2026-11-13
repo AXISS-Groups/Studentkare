@@ -10,7 +10,17 @@ export interface VaultDocument {
   createdAt: number;
   filename?: string;
   mimeType?: string;
+  /** The subfolder inside the category (server: `doc_kind`); null or absent = never filed. */
+  kind?: string | null;
+  /** How the subfolder was decided: filename | ocr | learned | manual; null = not filed. */
+  matchedVia?: string | null;
+  /** The student chose the subfolder themselves; no rule changes it afterwards. */
+  kindVerified?: boolean;
 }
+
+/** A record in no subfolder: the server's `unfiled`, and records from before auto-filing. */
+export const UNFILED_KIND = 'unfiled';
+export const vaultSubfolderOf = (doc: VaultDocument): string => doc.kind || UNFILED_KIND;
 
 /** GET /api/records/shares, items[]: who can see which record, until when. */
 export interface RecordShare {
@@ -66,6 +76,11 @@ export class HealthVaultViewModel implements ViewModel {
   shareError: string | null = null;
   exporting = false;
   exportFailed = false;
+  /** The subfolders each category may be filed into, from the server (never a list kept here). */
+  kinds: Record<string, string[]> = {};
+  /** A document being moved to a subfolder. */
+  movingId: string | null = null;
+  moveFailed = false;
   private disposed = false;
 
   constructor(private readonly request: typeof apiRequest = apiRequest) {
@@ -92,6 +107,48 @@ export class HealthVaultViewModel implements ViewModel {
     return out;
   }
 
+  /** The subfolders the student may move a document of this category into. */
+  kindsOf(category: string): string[] {
+    return this.kinds[vaultKindOf(category)] ?? [];
+  }
+
+  /** Documents per subfolder inside one category, from the server's list only. */
+  subfolderCounts(category: VaultCategory): Map<string, number> {
+    const out = new Map<string, number>();
+    for (const doc of this.documents ?? []) {
+      if (vaultKindOf(doc.category) === category) out.set(vaultSubfolderOf(doc), (out.get(vaultSubfolderOf(doc)) ?? 0) + 1);
+    }
+    return out;
+  }
+
+  /**
+   * Files one document into a subfolder of its category (PATCH /health/documents/{id}/kind).
+   * The row changes only to what the server answered; a refusal leaves it where it was.
+   */
+  async moveToSubfolder(documentId: string, kind: string): Promise<boolean> {
+    if (this.movingId) return false;
+    this.movingId = documentId;
+    this.moveFailed = false;
+    try {
+      const saved = await this.request<{ kind: string; matchedVia: string; kindVerified: boolean }>(
+        `/health/documents/${encodeURIComponent(documentId)}/kind`, { method: 'PATCH', body: JSON.stringify({ kind }) });
+      if (this.disposed) return false;
+      runInAction(() => {
+        this.documents = (this.documents ?? []).map((doc) => (doc.id === documentId
+          ? { ...doc, kind: saved.kind, matchedVia: saved.matchedVia, kindVerified: saved.kindVerified } : doc));
+        this.movingId = null;
+      });
+      return true;
+    } catch {
+      if (!this.disposed) runInAction(() => { this.movingId = null; this.moveFailed = true; });
+      return false;
+    }
+  }
+
+  clearMoveFailed(): void {
+    this.moveFailed = false;
+  }
+
   /** How many documents are shared right now. */
   get sharedNow(): number {
     const ids = new Set(this.activeShares.map((share) => share.documentId));
@@ -108,11 +165,11 @@ export class HealthVaultViewModel implements ViewModel {
     this.loadFailed = false;
     try {
       const [docs, shares] = await Promise.all([
-        this.request<{ items: VaultDocument[]; total?: number }>(`/health/documents?limit=${VAULT_PAGE}`),
+        this.request<{ items: VaultDocument[]; total?: number; kinds?: Record<string, string[]> }>(`/health/documents?limit=${VAULT_PAGE}`),
         this.request<{ items: RecordShare[] }>('/records/shares'),
       ]);
       if (this.disposed) return;
-      runInAction(() => { this.documents = docs.items; this.total = docs.total ?? docs.items.length; this.shares = shares.items; });
+      runInAction(() => { this.documents = docs.items; this.total = docs.total ?? docs.items.length; this.kinds = docs.kinds ?? {}; this.shares = shares.items; });
     } catch {
       if (!this.disposed) runInAction(() => { this.loadFailed = true; });
     }
@@ -228,5 +285,8 @@ export class HealthVaultViewModel implements ViewModel {
     this.shareError = null;
     this.exporting = false;
     this.exportFailed = false;
+    this.kinds = {};
+    this.movingId = null;
+    this.moveFailed = false;
   }
 }

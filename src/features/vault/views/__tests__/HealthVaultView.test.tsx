@@ -258,3 +258,99 @@ describe('Health vault: first time, error, tabs', () => {
     expect(screen.queryByText(/₹/)).toBeNull();
   });
 });
+
+describe('Health vault: subfolders (plan tier1-document-autofile-2026-11-13 §14)', () => {
+  const KINDS = { LAB: ['blood', 'urine', 'xray', 'mri', 'ct_scan', 'ultrasound', 'cardiac', 'report'], PRESCRIPTION: ['prescription', 'consult_note'] };
+  const filed = (over: Record<string, unknown> = {}) => ({
+    '/health/documents': {
+      items: [{ ...doc('d1', 'LAB', 1_760_100_000), kind: 'blood', matchedVia: 'filename' }, { ...doc('d2', 'LAB'), kind: 'xray', matchedVia: 'ocr' },
+        { ...doc('d4', 'LAB'), kind: 'unfiled' }, doc('d3', 'PRESCRIPTION')],
+      total: 4, kinds: KINDS,
+    },
+    ...over,
+  });
+
+  it('a type chip opens that type’s folders; a folder chip narrows the list; changing type clears it', async () => {
+    const { vm } = mount('desktop', filed());
+    await vm.load();
+    await settle();
+    expect(screen.queryByTestId('vault-subfolders')).toBeNull();
+    fireEvent.click(screen.getByTestId('vault-chip-LAB'));
+    const folders = screen.getByTestId('vault-subfolders');
+    expect(within(folders).getAllByRole('button').map((chip) => chip.textContent)).toEqual(['All · 3', 'Blood tests · 1', 'X-rays · 1', 'Not sorted · 1']);
+    fireEvent.click(screen.getByTestId('vault-subfolder-xray'));
+    expect(screen.getByTestId('vault-subfolder-xray')).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByText('Doc d2')).toBeInTheDocument();
+    expect(screen.queryByText('Doc d1')).toBeNull();
+    expect(screen.getByText('Lab report · X-rays')).toBeInTheDocument();
+    // A type with nothing filed shows no folder row, and the folder filter does not carry over.
+    fireEvent.click(screen.getByTestId('vault-chip-PRESCRIPTION'));
+    expect(screen.queryByTestId('vault-subfolders')).toBeNull();
+    expect(screen.getByText('Doc d3')).toBeInTheDocument();
+  });
+
+  it('phone: Move to a folder saves through the server and only then changes the row', async () => {
+    const sent: unknown[] = [];
+    const { vm } = mount('phone', filed({
+      'PATCH /health/documents/d4/kind': (_path: string, init?: RequestInit) => { sent.push(JSON.parse(String(init?.body))); return { id: 'd4', kind: 'urine', matchedVia: 'manual', kindVerified: true }; },
+    }));
+    await vm.load();
+    await settle();
+    fireEvent.click(screen.getByRole('link', { name: /Doc d4/ }));
+    fireEvent.click(within(screen.getByTestId('vault-actions-sheet')).getByRole('button', { name: 'Move to a folder' }));
+    const sheet = screen.getByTestId('vault-move-sheet');
+    expect(within(sheet).getAllByRole('button').map((b) => b.textContent)).toEqual(expect.arrayContaining(['Blood tests', 'Urine tests', 'X-rays', 'Not sorted']));
+    expect(within(sheet).queryByText('Prescriptions')).toBeNull();
+    fireEvent.click(screen.getByTestId('vault-move-to-urine'));
+    await waitFor(() => expect(screen.queryByTestId('vault-move-sheet')).toBeNull());
+    expect(sent).toEqual([{ kind: 'urine' }]);
+    expect(screen.getByRole('link', { name: /Doc d4/ })).toHaveTextContent('Lab report · Urine tests');
+    expect(vm.documents?.find((d) => d.id === 'd4')).toMatchObject({ kind: 'urine', kindVerified: true });
+  });
+
+  it('a move the server refuses leaves the document where it was and says so', async () => {
+    const { vm } = mount('phone', filed({ 'PATCH /health/documents/d4/kind': () => { throw new Error('offline'); } }));
+    await vm.load();
+    await settle();
+    fireEvent.click(screen.getByRole('link', { name: /Doc d4/ }));
+    fireEvent.click(within(screen.getByTestId('vault-actions-sheet')).getByRole('button', { name: 'Move to a folder' }));
+    fireEvent.click(screen.getByTestId('vault-move-to-urine'));
+    await waitFor(() => expect(screen.getByTestId('vault-move-sheet-failed')).toBeInTheDocument());
+    expect(vm.documents?.find((d) => d.id === 'd4')?.kind).toBe('unfiled');
+  });
+
+  it('offline, or with no folders from the server, nothing can be moved', async () => {
+    const offline = mount('phone', filed(), { online: false });
+    await offline.vm.load();
+    await settle();
+    fireEvent.click(screen.getByRole('link', { name: /Doc d4/ }));
+    expect(within(screen.getByTestId('vault-actions-sheet')).getByRole('button', { name: 'Move to a folder' })).toBeDisabled();
+    cleanup();
+    const bare = mount('phone');
+    await bare.vm.load();
+    await settle();
+    fireEvent.click(screen.getByRole('link', { name: /Doc d1/ }));
+    expect(within(screen.getByTestId('vault-actions-sheet')).queryByRole('button', { name: 'Move to a folder' })).toBeNull();
+  });
+
+  it('a folder the app has no name for yet is listed under Not sorted, never as a raw code', async () => {
+    const { vm } = mount('desktop', { '/health/documents': { items: [{ ...doc('d1', 'LAB'), kind: 'genetic_panel' }, { ...doc('d2', 'LAB'), kind: 'blood' }], total: 2, kinds: { LAB: ['blood', 'genetic_panel'] } } });
+    await vm.load();
+    await settle();
+    fireEvent.click(screen.getByTestId('vault-chip-LAB'));
+    expect(screen.queryByText(/genetic_panel/)).toBeNull();
+    expect(screen.getByTestId('vault-subfolder-unfiled')).toHaveTextContent('Not sorted · 1');
+  });
+
+  it('phone and desktop with folders open have no accessibility violations', async () => {
+    for (const layout of ['phone', 'desktop'] as const) {
+      const { vm, container } = mount(layout, filed());
+      await vm.load();
+      await settle();
+      fireEvent.click(screen.getByTestId('vault-chip-LAB'));
+      const violations = await axeViolations(container);
+      expect(violations, describeViolations(violations)).toEqual([]);
+      cleanup();
+    }
+  });
+});

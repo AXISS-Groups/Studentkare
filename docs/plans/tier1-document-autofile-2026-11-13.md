@@ -252,3 +252,24 @@ Known and not fixed:
   classifier sees them, so they file by text only.
 - Whether sending a record to the OCR service belongs under `DOCUMENT_AI_ANALYSIS` or needs its own
   consent purpose is a DPO decision; the stricter reading is what is built.
+
+## 14. Subfolders on the records screen (approved by Krishna, 2026-11-13)
+
+Krishna approved adding subfolder chips to the existing Health vault screen (`RecordsVault`, Tier 1)
+without waiting for a canvas board. Built with existing components only (`Chip`, `Sheet`, `M2Note`,
+`Button`); no new icon.
+
+- Picking a type chip (Lab reports, Prescriptions, …) shows a second row of chips: the folders that
+  type's documents are filed in, with counts, and "Not sorted". The row is not drawn while nothing
+  of that type is filed.
+- Each row names its folder after its type ("Lab report · X-rays").
+- "Move to a folder" (the row's actions sheet on a phone, a button in the desktop table) lets the
+  student file a document themselves through `PATCH /health/documents/{id}/kind`. The choices come
+  from the server (`GET /health/documents` now returns `kinds`); the row changes only after the
+  server has saved, and a refusal is said in words. Disabled offline.
+- Folder names are in `src/i18n/areas/studentwebT1.ts` in English, Telugu and Hindi. A folder the
+  server adds before it has a name is listed under "Not sorted", never as a raw code.
+
+**Differs from the picture:** the boards (T1Vault / T1VaultDesktop) have no folder row, no "Move to a
+folder" action and no folder name in a row. Everything else on the screen is unchanged. The Telugu
+and Hindi folder names were written here and have not been reviewed by a native speaker.

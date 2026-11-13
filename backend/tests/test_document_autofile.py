@@ -284,7 +284,9 @@ def test_upload_files_by_name_and_keeps_provenance(harness, monkeypatch):  # noq
     with factory() as db:
         jobs = db.scalars(select(M.OcrJob).where(M.OcrJob.document_id == row.id)).all()
     assert [(j.engine, j.ok, j.error_code) for j in jobs] == [("axiss-ocr", True, "")]
-    listed = client.get("/api/health/documents", headers=headers).json()["items"][0]
+    listing = client.get("/api/health/documents", headers=headers).json()
+    assert listing["kinds"] == {category: list(kinds) for category, kinds in classifier.KINDS.items()}
+    listed = listing["items"][0]
     assert (listed["kind"], listed["matchedVia"], listed["kindVerified"]) == ("blood", "filename", False)
 
 
