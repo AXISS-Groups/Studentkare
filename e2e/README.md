@@ -23,6 +23,7 @@ that is already installed, set `E2E_CHROMIUM_PATH` to its executable. Set
 |---|---|
 | `01-account.spec.ts` | Private pages need sign-in; sign-up with a delivered code, a wrong code refused, the three consent ticks required; sign-out; sign-in again returns to the page asked for; a student cannot open the admin console |
 | `02-order.spec.ts` | Shop to cart to checkout; a declined test payment charges nothing; paying again places the order; the order shows on the student's orders page |
+| `03-records-privacy.spec.ts` | A record is filed into its folder from its file name; the same file twice is one record; the owner can move it; signed out, the file is not served; a second student cannot list, open, move or delete it, and the owner's record is untouched |
 
 ## Rules for new specs
 
