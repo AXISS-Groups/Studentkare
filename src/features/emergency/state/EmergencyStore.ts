@@ -1,5 +1,7 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 import type { MessageKey } from '@/i18n';
+import { captureSessionScope, isCurrentSessionScope, subscribeSessionScope } from '@/core/session/sessionScope';
+import type { SessionScope } from '@/core/session/sessionScope';
 import type { EmergencyStatus, SosAlert } from '../domain/Emergency';
 import { isAlertOpen, isEmergencyActive } from '../domain/Emergency';
 import { emergencyRepository } from '../data/EmergencyRepository';
@@ -19,9 +21,11 @@ class EmergencyStore {
   alert: SosAlert | null = null;
 
   private countdownTimer: ReturnType<typeof setInterval> | null = null;
+  private resetRevision = 0;
 
   constructor() {
     makeAutoObservable(this, {}, { autoBind: true });
+    subscribeSessionScope(this.reset);
   }
 
   get isEmergencyActive(): boolean {
@@ -34,9 +38,13 @@ class EmergencyStore {
 
   /** Shows an alert that is already open (or the last closed one) when the screen opens. */
   async loadCurrent(): Promise<void> {
+    const scope = captureSessionScope();
+    const revision = this.resetRevision;
+    if (!this.isCurrentOperation(scope, revision)) return;
     try {
       const alert = await emergencyRepository.current();
       runInAction(() => {
+        if (!this.isCurrentOperation(scope, revision)) return;
         if (this.status !== 'IDLE') return;
         this.alert = alert;
         if (alert) this.status = isAlertOpen(alert) ? 'OPEN' : 'CLOSED';
@@ -47,12 +55,16 @@ class EmergencyStore {
   }
 
   triggerSos(): void {
+    const scope = captureSessionScope();
+    const revision = this.resetRevision;
+    if (!this.isCurrentOperation(scope, revision)) return;
     if (this.status !== 'IDLE' && this.status !== 'CLOSED' && this.status !== 'FAILED') return;
     this.status = 'COUNTDOWN';
     this.countdownSeconds = 3;
     this.error = '';
     this.countdownTimer = setInterval(() => {
       runInAction(() => {
+        if (!this.isCurrentOperation(scope, revision)) return;
         if (this.countdownSeconds > 1) {
           this.countdownSeconds -= 1;
         } else {
@@ -69,15 +81,20 @@ class EmergencyStore {
   }
 
   async dispatchEmergency(): Promise<void> {
+    const scope = captureSessionScope();
+    const revision = this.resetRevision;
+    if (!this.isCurrentOperation(scope, revision)) return;
     this.status = 'SENDING';
     try {
       const alert = await emergencyRepository.raiseSos(this.locationNote);
       runInAction(() => {
+        if (!this.isCurrentOperation(scope, revision)) return;
         this.alert = alert;
         this.status = 'OPEN';
       });
     } catch {
       runInAction(() => {
+        if (!this.isCurrentOperation(scope, revision)) return;
         this.status = 'FAILED';
         this.error = 'sos.sendFailed';
       });
@@ -86,15 +103,20 @@ class EmergencyStore {
 
   /** "I'm safe now" — closes the alert on the server; only then is it shown closed. */
   async cancelAlert(): Promise<void> {
+    const scope = captureSessionScope();
+    const revision = this.resetRevision;
+    if (!this.isCurrentOperation(scope, revision)) return;
     if (!this.alert) return;
     try {
       const alert = await emergencyRepository.cancel(this.alert.id);
       runInAction(() => {
+        if (!this.isCurrentOperation(scope, revision)) return;
         this.alert = alert;
         this.status = 'CLOSED';
       });
     } catch {
       runInAction(() => {
+        if (!this.isCurrentOperation(scope, revision)) return;
         this.error = 'sos.cancelFailed';
       });
     }
@@ -107,7 +129,13 @@ class EmergencyStore {
     }
   }
 
+  private isCurrentOperation(scope: SessionScope, revision: number): boolean {
+    return isCurrentSessionScope(scope) && revision === this.resetRevision;
+  }
+
+  /** Clears only local state; an alert on the server remains open until explicitly ended. */
   reset(): void {
+    this.resetRevision += 1;
     this.stopCountdown();
     this.status = 'IDLE';
     this.countdownSeconds = 3;

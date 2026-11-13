@@ -1,7 +1,9 @@
-import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
-import { apiRequest, onSessionExpired, setCsrfToken } from '@/data/services/http';
+import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { apiRequest, holdAuthenticationUntil, onSessionExpired, setCsrfToken } from '@/data/services/http';
 import type { Account, AccountRole, SessionResponse } from '@/data/types/workflowTypes';
 import { stopPushOnSignOut } from './hardware/push';
+import { invalidateSessionScope, setSessionAccount } from '@/core/session/sessionScope';
+import { useT } from '@/i18n';
 
 /**
  * The native app's session, as the server reports it.
@@ -40,25 +42,39 @@ export function isSignedInSession(session: SessionResponse | null | undefined): 
 const SessionContext = createContext<NativeSession | null>(null);
 
 export function NativeSessionProvider({ children }: { children: React.ReactNode }) {
+  const t = useT();
   const [status, setStatus] = useState<NativeSessionStatus>('checking');
   const [user, setUser] = useState<Account | null>(null);
   const [problem, setProblem] = useState('');
   const [version, setVersion] = useState(0);
+  const generation = useRef(0);
+  const pendingCheck = useRef<AbortController | null>(null);
+  const invalidatePendingCheck = useCallback(() => {
+    generation.current += 1;
+    pendingCheck.current?.abort();
+    pendingCheck.current = null;
+  }, []);
 
   const signOutLocally = useCallback((reason: string) => {
+    invalidatePendingCheck();
+    invalidateSessionScope();
     setCsrfToken('');
     setUser(null);
     setProblem(reason);
     setStatus('signedOut');
-  }, []);
+  }, [invalidatePendingCheck]);
 
   useEffect(() => {
-    let live = true;
+    invalidatePendingCheck();
+    const checkGeneration = generation.current;
+    const controller = new AbortController();
+    pendingCheck.current = controller;
     setStatus('checking');
-    apiRequest<SessionResponse>('/auth/session')
+    apiRequest<SessionResponse>('/auth/session', { signal: controller.signal })
       .then((session) => {
-        if (!live) return;
+        if (controller.signal.aborted || checkGeneration !== generation.current) return;
         if (isSignedInSession(session)) {
+          setSessionAccount(session.user.twoFactorSetupRequired === false ? session.user.id : null);
           setCsrfToken(session.csrfToken);
           setUser(session.user);
           setProblem('');
@@ -68,27 +84,38 @@ export function NativeSessionProvider({ children }: { children: React.ReactNode 
         }
       })
       .catch(() => {
-        if (live) signOutLocally("We couldn't reach Studentkare, so you're signed out for now. Check your connection and try again.");
+        if (!controller.signal.aborted && checkGeneration === generation.current) signOutLocally("We couldn't reach Studentkare, so you're signed out for now. Check your connection and try again.");
       });
     return () => {
-      live = false;
+      controller.abort();
     };
-  }, [version, signOutLocally]);
+  }, [version, signOutLocally, invalidatePendingCheck]);
+
+  useEffect(() => () => {
+    invalidatePendingCheck();
+    invalidateSessionScope();
+    setCsrfToken('');
+  }, [invalidatePendingCheck]);
 
   useEffect(() => onSessionExpired(() => signOutLocally('Your session ended. Sign in again to continue.')), [signOutLocally]);
 
   const refresh = useCallback(() => setVersion((v) => v + 1), []);
 
   const signOut = useCallback(async () => {
-    // This phone's pushes stop with the session (the server revokes them too).
-    await stopPushOnSignOut();
-    try {
-      await apiRequest('/auth/logout', { method: 'POST' });
-    } finally {
-      // Signed out on this device even if the server call failed.
-      signOutLocally('');
+    // Start revocation with the old token; local access ends without waiting on the network.
+    const results = Promise.allSettled([
+      stopPushOnSignOut(),
+      apiRequest('/auth/logout', { method: 'POST' }),
+    ]);
+    holdAuthenticationUntil(results);
+    signOutLocally('');
+    const logoutGeneration = generation.current;
+    // A late result must never clear a subsequently accepted session.
+    const [, remote] = await results;
+    if (logoutGeneration === generation.current && remote.status === 'rejected') {
+      setProblem(t('launch.signout.remoteUnconfirmed'));
     }
-  }, [signOutLocally]);
+  }, [signOutLocally, t]);
 
   return <SessionContext.Provider value={{ status, user, problem, refresh, signOut }}>{children}</SessionContext.Provider>;
 }

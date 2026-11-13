@@ -1,6 +1,7 @@
 import { apiRequest } from '@/data/services/http';
 import type { CartLineItem, DeliveryMode, PlacedOrder } from '../domain/Checkout';
 import { CheckoutStoragePort } from '../platform/CheckoutStoragePort';
+import type { SessionScope } from '@/core/session/sessionScope';
 
 /** POST /api/orders body (backend OrderInput). Prices are not sent: the server prices the order. */
 export interface OrderRequest {
@@ -19,16 +20,16 @@ export interface CartValidation {
 export class CheckoutRepository {
   constructor(private readonly request: typeof apiRequest = apiRequest) {}
 
-  async getCachedCart(): Promise<CartLineItem[]> {
-    return CheckoutStoragePort.getCachedCart();
+  async getCachedCart(scope?: SessionScope): Promise<CartLineItem[]> {
+    return CheckoutStoragePort.getCachedCart(scope);
   }
 
-  async saveCart(items: CartLineItem[]): Promise<void> {
-    await CheckoutStoragePort.setCachedCart(items);
+  async saveCart(items: CartLineItem[], scope?: SessionScope): Promise<void> {
+    await CheckoutStoragePort.setCachedCart(items, scope);
   }
 
-  async clearCart(): Promise<void> {
-    await CheckoutStoragePort.clearCachedCart();
+  async clearCart(scope?: SessionScope): Promise<void> {
+    await CheckoutStoragePort.clearCachedCart(scope);
   }
 
   async validate(order: OrderRequest): Promise<CartValidation> {
