@@ -97,16 +97,21 @@ INTEGRATIONS_DB: dict = {
         "binary": os.getenv("MEDICINE_OCR_TESSERACT", "tesseract"),
     },
     # Reading the printed text of an uploaded health record (prescription, consult
-    # note, lab report, vaccination record, discharge summary), plan
-    # tier1-document-rag-2026-11-04, rule 1. Same Tesseract-on-our-own-server
-    # approach as medicine_ocr, but its own switch: this reads whole documents
-    # (far more text, far more sensitive) rather than one medicine strip's name,
-    # so it needs its own AI-constitution-owner/DPO sign-off, not medicine_ocr's.
-    # Off by default; the screen says so (services/document_ocr.py).
+    # note, lab report, vaccination record, discharge summary). Plan
+    # tier1-document-autofile-2026-11-13, decision D1: scans go to the shared
+    # AXISS OCR service over the private network; a PDF that already carries its
+    # text is read in-process and never sent. Its own switch, separate from
+    # medicine_ocr: whole documents are far more text and far more sensitive than
+    # one medicine strip's name. Off by default, and it stays off until the four
+    # conditions in that plan hold (same private network, a Student Kare-only
+    # key, the service keeps and logs no text, DPO sign-off). With no key the
+    # reader reports UNAVAILABLE and sends nothing (services/document_ocr.py).
     "document_ocr": {
         "enabled": os.getenv("DOCUMENT_OCR_ENABLED", "false").lower() == "true",
-        "engine": "tesseract",
-        "binary": os.getenv("DOCUMENT_OCR_TESSERACT", "tesseract"),
+        "engine": "axiss-ocr",
+        "url": os.getenv("DOCUMENT_OCR_URL", ""),
+        "api_key": os.getenv("DOCUMENT_OCR_KEY", ""),
+        "text_layers": os.getenv("DOCUMENT_OCR_TEXT_LAYERS", "auto"),
     },
     "apilayer": {
         "enabled": os.getenv("APILAYER_ENABLED", "false").lower() == "true",

@@ -2,8 +2,9 @@
 services.document_intake — Document extraction with an explicit review gate.
 
 When a document is uploaded, it is queued for extraction. ``extract_fields`` first
-gets the document's actual printed text from ``services/document_ocr.py`` (Tesseract
-for an image, pypdf for a PDF — never a plain byte-decode of binary content, which
+gets the document's actual printed text from ``services/document_ocr.py`` (pypdf for
+a PDF that carries its text, the OCR service for a scan or an image — never a plain
+byte-decode of binary content, which
 only ever produced garbage or nothing for the image/PDF uploads this app actually
 accepts), then runs deterministic heuristics (keyword/date matching) over that text
 to produce a DRAFT with per-field confidence. Fields below a threshold (or that
@@ -21,6 +22,8 @@ from __future__ import annotations
 import re
 from typing import List
 
+from services import document_classifier
+
 # States extract_fields can report for the read step (draft["read"]["state"]).
 READ_OK = "OK"
 READ_NOT_CONFIGURED = "NOT_CONFIGURED"
@@ -28,8 +31,13 @@ READ_UNAVAILABLE = "UNAVAILABLE"
 READ_FAILED = "FAILED"
 
 
-def extract_fields(content: bytes, title: str, category: str, mime_type: str = "") -> dict:
+def extract_fields(content: bytes, title: str, category: str, mime_type: str = "",
+                   preread: tuple[str, dict] | None = None) -> dict:
     """Extract a draft of fields from document content (heuristic, no invention).
+
+    ``preread`` is ``(text, read_state)`` from a caller that has already read the
+    document (services/document_filing.py does, once, on upload); the document is then
+    not read a second time.
 
     ``mime_type`` selects the real reader (services/document_ocr.py). Without one
     recognised, content is treated as already-plain text (the old behaviour) —
@@ -37,7 +45,7 @@ def extract_fields(content: bytes, title: str, category: str, mime_type: str = "
     since it only allows PDF/PNG/JPEG, but keeps this function honest for a caller
     that passes plain text directly (e.g. a future text-note intake).
     """
-    text, read = _read(content, mime_type)
+    text, read = preread if preread is not None else _read(content, mime_type)
     lower = text.lower()
 
     draft = {"title": title, "category": category, "read": read}
@@ -56,17 +64,12 @@ def extract_fields(content: bytes, title: str, category: str, mime_type: str = "
     if doctor:
         fields.append({"field": "provider", "value": doctor.group(1).strip().title(), "confidence": 0.7})
 
-    # Document type by keyword, only when the text supports it.
-    type_map = {
-        "PRESCRIPTION": ("prescription", "rx", "tablet", "dose"),
-        "VACCINE": ("vaccine", "vaccination", "immunization"),
-        "LAB": ("report", "result", "hemoglobin", "platelet", "cbc", "lab"),
-        "CONSULT_NOTE": ("consult", "consultation", "chief complaint", "diagnosis", "follow-up", "follow up"),
-    }
-    for doc_type, keywords in type_map.items():
-        if any(k in lower for k in keywords):
-            fields.append({"field": "document_type", "value": doc_type, "confidence": 0.6})
-            break
+    # Document type, only when the text supports it. services/document_classifier.py
+    # matches whole words and phrases; the old substring table found "rx" in "pyrexia"
+    # and "lab" in "available".
+    by_text = document_classifier.classify_text(text)
+    if by_text.matched:
+        fields.append({"field": "document_type", "value": by_text.category, "confidence": by_text.confidence})
 
     # Medication names: only those that appear verbatim in the text (never invented).
     # Exclude file-format tokens, common words, and single-letter/stopword matches.
@@ -108,14 +111,13 @@ def _read(content: bytes, mime_type: str) -> tuple[str, dict]:
 
     mime = (mime_type or "").lower()
     if mime in document_ocr.IMAGE_MIME_TYPES or mime == document_ocr.PDF_MIME_TYPE:
-        reader = "tesseract" if mime in document_ocr.IMAGE_MIME_TYPES else "pypdf"
         try:
-            text = document_ocr.read_text(content, mime)
-            return text, {"reader": reader, "state": READ_OK}
+            result = document_ocr.read_document(content, mime)
+            return result.text, {"reader": result.engine, "state": READ_OK}
         except document_ocr.ReaderUnavailable as exc:
-            return "", {"reader": reader, "state": exc.state}
-        except document_ocr.ReadFailed as exc:
-            return "", {"reader": reader, "state": READ_FAILED, "detail": str(exc)}
+            return "", {"reader": "", "state": exc.state}
+        except document_ocr.ReadFailed:
+            return "", {"reader": "", "state": READ_FAILED}
     return _decode(content), {"reader": "decode", "state": READ_OK}
 
 

@@ -42,6 +42,8 @@ TABLE_PLANES: dict[str, str] = {
     "care_readings": CLINICAL,                    # vitals / body metrics, water, activity (WELLNESS_STORES)
     "care_documents": CLINICAL,                   # health records
     "care_document_intake": CLINICAL,
+    "care_document_label_corrections": CLINICAL,  # file names of health records
+    "care_ocr_jobs": CLINICAL,                    # which record was read, and when
     "care_intake_review_items": CLINICAL,
     # Chunks of a student's own uploaded document, embedded for retrieval
     # (docs/plans/tier1-document-rag-2026-11-04.md). Deliberately CLINICAL, never

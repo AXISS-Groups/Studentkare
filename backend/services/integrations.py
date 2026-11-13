@@ -217,8 +217,9 @@ def test_integration(provider: str, user: dict = Depends(require_super_admin)):
         from services import document_ocr
         state = document_ocr.status()["state"]
         return {"success": state == document_ocr.READY, "state": state,
-                "message": {"READY": "The Tesseract reader is installed and on.",
-                            "UNAVAILABLE": "Switched on, but the Tesseract program is not installed on this server.",
+                "message": {"READY": "The document reader is on and has its service address and key.",
+                            "UNAVAILABLE": "Switched on, but the OCR service address or key is missing. "
+                                           "Nothing is sent without a key.",
                             }.get(state, "Not switched on. Reading uploaded documents' text is off.")}
     if provider in ("otp", "twofa"):
         return {"success": True, "message": f"{provider} policy valid", "config": sanitize(provider)}

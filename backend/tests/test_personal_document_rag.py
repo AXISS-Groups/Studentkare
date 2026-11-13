@@ -82,7 +82,7 @@ def _forbid_embedding(monkeypatch):
 def _stub_extraction(monkeypatch):
     calls = []
 
-    def extract(content, title, category, mime_type):
+    def extract(content, title, category, mime_type, preread=None):
         calls.append((content, title, category, mime_type))
         return {
             "draft": {

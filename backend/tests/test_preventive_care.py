@@ -1,4 +1,5 @@
 """Preventive care contracts through real HTTP/session auth and isolated SQL storage."""
+import itertools
 import time
 
 import pytest
@@ -30,10 +31,15 @@ def listing(client, headers):
     return provider.json(), response.json(), data
 
 
+_REPORT_NUMBERS = itertools.count(1)
+
+
 def report(client, headers):
+    # Different bytes each time: the same bytes twice are one record (checksum dedupe).
+    body = b"%PDF-1.4\nSynthetic lab report " + str(next(_REPORT_NUMBERS)).encode()
     response = client.post("/api/health/documents", headers=headers,
                            data={"title": "Synthetic lab report", "category": "LAB"},
-                           files={"file": ("report.pdf", b"%PDF-1.4\nSynthetic lab report", "application/pdf")})
+                           files={"file": ("report.pdf", body, "application/pdf")})
     assert response.status_code == 201, response.text
     return response.json()["id"]
 

@@ -1,6 +1,7 @@
 # Tier 1 plan: auto-classify and file uploaded health records
 
-**Status:** plan, not built. Waiting for a named reviewer (AGENTS.md: Tier 1, plan first).
+**Status:** approved by Krishna Chintakayala on 2026-11-13 and built (backend only). Section 12
+lists where the build differs from the plan as first written.
 **Asked by:** Krishna, 2026-11-13 — "I need a similar thing over SK", pointing at the WeHive
 document-filing prompt and its OCR-service addendum.
 **Scope:** backend only. No screen is changed here; a folder view needs a canvas brief first.
@@ -151,7 +152,7 @@ upload still returns. No PHI in the log line.
   I could not verify 1–3 from this repo.
 - **D2 — the student picks the category.** The upload screen does not change; the classifier
   fills the subfolder and raises a review item when it disagrees.
-- **D3 — named reviewer: Krishna.** Approval of this plan is still to be given.
+- **D3 — named reviewer: Krishna.** Approved 2026-11-13 ("okay done, build it").
 
 ## 10. Not in this plan
 
@@ -165,3 +166,37 @@ upload still returns. No PHI in the log line.
 - The `doc_kind` vocabulary is a proposal from the six existing categories, not from a canvas.
 - Until the four D1 conditions hold the service stays off, and scans file by name only.
 - Backfilling `checksum_sha256` reads every stored document once; run it off-peak.
+
+## 12. As built — differences from sections 3 to 8
+
+- **`kind_verified`, not `label_verified`.** The category is always the student's and is never
+  written by a rule, so the only thing that can be "verified" is the subfolder. Existing rows are
+  left with `doc_kind = ""` (never filed) and unverified, so the backfill can file them.
+- **Corrections are subfolder-only.** `PATCH /health/documents/{id}/kind` lets the owner pick a
+  subfolder; there is still no endpoint that changes a record's category. A correction is keyed by
+  account, normalised file name and category.
+- **`unfiled` is valid in every category**, not a kind of `OTHER`.
+- **Cross-check is narrower than planned.** Two readings of one document exist only when a PDF
+  carries a little text of its own *and* the service also read it. When both name a date and share
+  none, a `document_date_conflict` review item is raised. "Patient name present" is not checked.
+- **Reclassify and backfill never call the OCR service.** Reclassify uses the file name, stored
+  corrections and (PDF, reader on) the file's own text; the backfill uses file name and corrections
+  only and reads no document bytes. A filing the rules cannot better (for example one made from a
+  scan's text) is kept.
+- **The backfill returns counts, not a per-document diff**, with small cells suppressed, because
+  a super admin may not see a student's document ids (`/ops/intake/review` has the same rule).
+  The per-document diff is on the owner's own `reclassify` endpoint.
+- **One time budget for the whole read** (`documents.ocr_timeout_seconds`, default 30): the upload
+  is still synchronous, so the four rotations share it rather than each getting a full timeout.
+  `documents.ocr_batch_concurrency` was dropped — there is no batch path.
+- **The file name is not sent to the OCR service** (it receives `document.pdf` / `.png` / `.jpg`).
+- **A duplicate upload returns `200`** with the existing record and `"duplicate": true`, also when
+  the second upload chose a different title. Dedupe is per category: the same file filed under
+  another category is a new record, because flows such as sending a prescription to a pharmacist
+  key on the category.
+- **No i18n keys yet**: the kinds are not shown on any screen. They are needed with the folder view.
+
+Endpoints: `POST /health/documents` (now dedupes and files), `GET /health/documents` (adds `kind`,
+`matchedVia`, `kindVerified`), `PATCH /health/documents/{id}/kind`,
+`POST /health/documents/{id}/reclassify?apply=false`,
+`POST /ops/documents/reclassify-backfill?apply=false`.

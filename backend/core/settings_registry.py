@@ -705,6 +705,16 @@ declare("privacy.deletion_grace_days", INT, 7, area="privacy", unit="days", mini
 declare("ai.kill_switch_active", BOOL, False, area="ai",
         description="Emergency stop: while true, no AI model call is made anywhere on the platform.")
 
+# --- Auto-filing of uploaded health records -------------------------------------
+# docs/plans/tier1-document-autofile-2026-11-13.md (services/document_filing.py).
+declare("documents.min_text_chars", INT, 40, area="documents", unit="characters", minimum=1, maximum=2000,
+        description="A document whose own text is shorter than this is treated as a scan and sent to the "
+                    "OCR service; an image that reads shorter than this is retried turned sideways.")
+declare("documents.ocr_timeout_seconds", INT, 30, area="documents", unit="seconds", minimum=5, maximum=120,
+        description="The longest an upload waits, in total, for the OCR service to read one document.")
+declare("documents.backfill_page_size", INT, 200, area="documents", unit="documents", minimum=10, maximum=5000,
+        description="How many stored documents the reclassify backfill examines per database read.")
+
 # Per-account and per-sender limits on the costly or abusable endpoints (audit L6).
 # The global per-session limiter (core/rate_limiter.py) is too coarse for these.
 declare("ai.ayush_questions_per_account_per_hour", INT, 30, area="ai", unit="questions per hour", minimum=5,
