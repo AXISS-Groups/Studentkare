@@ -1679,6 +1679,7 @@
     ],
     "M2Labs": [
       "src/features/m2store/views/M2LabsView.tsx",
+      "src/features/m2store/views/LabPackageSheets.tsx",
       "src/features/m2store/views/M2LabsRoute.tsx",
       "src/features/m2store/data/useLabPackages.ts",
       "src/features/m2store/screens/LabTestsScreen.tsx",

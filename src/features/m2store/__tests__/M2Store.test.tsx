@@ -317,6 +317,84 @@ describe('M2Labs', () => {
     expect(screen.queryByRole('link', { name: 'Full body' })).toBeNull();
   });
 
+  it('What’s included opens the package in full, from the catalogue only, and books from there', () => {
+    const book = vi.fn();
+    const full = pkg({ id: 'full', name: 'Full body check', description: 'A yearly check', includes: ['CBC', 'LFT'], fastingHours: 10, reportHours: 12,
+      pricePaise: 129900, mrpPaise: 259800, preparation: 'Water only for 10 hours before.', lab: { id: 'l', name: 'City Lab', accreditation: 'NABL', homeCollection: false } });
+    wrap(<M2LabsView phase="ready" packages={[packages[0], full]} retry={vi.fn()} block="" links={{ back: vi.fn(), reports: vi.fn(), rx: vi.fn(), book }} />);
+    expect(screen.queryByTestId('m2-labs-detail')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'What’s included in Full body check' }));
+    const sheet = screen.getByTestId('m2-labs-detail');
+    expect(sheet).toHaveTextContent('₹1,299');
+    expect(sheet).toHaveTextContent('50% off');
+    expect(sheet).toHaveTextContent('In 12 hours');
+    expect(sheet).toHaveTextContent('10 hours');
+    expect(sheet).toHaveTextContent('Given at the lab');
+    expect(within(sheet).getByTestId('m2-labs-detail-lab')).toHaveTextContent('City LabNABL');
+    expect(within(sheet).getByTestId('m2-labs-detail-prep')).toHaveTextContent('Water only for 10 hours before.');
+    expect(within(within(sheet).getByTestId('m2-labs-detail-tests')).getAllByRole('listitem').map((li) => li.textContent)).toEqual(['CBC', 'LFT']);
+    fireEvent.click(within(sheet).getByTestId('m2-labs-detail-book'));
+    expect(book).toHaveBeenCalledWith(full);
+    expect(screen.queryByTestId('m2-labs-detail')).toBeNull();
+  });
+
+  it('a package with no preparation text shows none; nothing is filled in', () => {
+    wrap(<M2LabsView phase="ready" packages={packages} retry={vi.fn()} block="" links={{ back: vi.fn(), reports: vi.fn(), rx: vi.fn(), book: vi.fn() }} />);
+    fireEvent.click(screen.getByTestId('m2-labs-details-thy'));
+    const sheet = screen.getByTestId('m2-labs-detail');
+    expect(within(sheet).queryByTestId('m2-labs-detail-prep')).toBeNull();
+    expect(sheet).toHaveTextContent('Not needed');
+    expect(sheet).toHaveTextContent('Collected at your place');
+  });
+
+  it('compares exactly two packages: facts, then every test of either, and only the differences on request', () => {
+    const book = vi.fn();
+    const third = pkg({ id: 'vit', name: 'Vitamin D' });
+    wrap(<M2LabsView phase="ready" packages={[...packages, third]} retry={vi.fn()} block="" links={{ back: vi.fn(), reports: vi.fn(), rx: vi.fn(), book }} />);
+    expect(screen.queryByTestId('m2-labs-compare-bar')).toBeNull();
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Compare Thyroid profile' }));
+    expect(screen.getByTestId('m2-labs-compare-bar')).toHaveTextContent('Pick one more test to compare.');
+    expect(screen.getByTestId('m2-labs-compare-open')).toBeDisabled();
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Compare Full body check' }));
+    expect(screen.getByRole('checkbox', { name: 'Compare Full body check' })).toHaveAttribute('aria-checked', 'true');
+    // A third cannot be picked until one is let go.
+    expect(screen.getByRole('checkbox', { name: 'Compare Vitamin D' })).toHaveAttribute('aria-disabled', 'true');
+    fireEvent.click(screen.getByTestId('m2-labs-compare-open'));
+    const sheet = screen.getByTestId('m2-labs-compare');
+    const rowText = () => within(within(sheet).getByTestId('m2-labs-compare-table')).getAllByRole('row').map((row) => row.textContent);
+    expect(rowText()).toEqual(expect.arrayContaining(['Price₹499₹1,299', 'Tests included35', 'Fasting' + 'Not needed' + '10 hours']));
+    const included = (name: string) => within(within(sheet).getByText(name).closest('[role="row"]') as HTMLElement).getAllByRole('img').map((img) => img.getAttribute('aria-label'));
+    expect(included('TSH')).toEqual(['Included', 'Included']);
+    expect(included('T3')).toEqual(['Included', 'Not included']);
+    expect(included('CBC')).toEqual(['Not included', 'Included']);
+    fireEvent.click(within(sheet).getByRole('switch', { name: 'Show only differences' }));
+    expect(within(sheet).queryByText('TSH')).toBeNull();
+    expect(within(sheet).getByText('T3')).toBeInTheDocument();
+    // It never says which to choose.
+    expect(sheet).not.toHaveTextContent(/recommend|best|better/i);
+    fireEvent.click(within(sheet).getByRole('button', { name: 'Book Thyroid profile' }));
+    expect(book).toHaveBeenCalledWith(packages[0]);
+    expect(screen.queryByTestId('m2-labs-compare')).toBeNull();
+  });
+
+  it('Clear lets every package be picked again, and the list with both sheets has no accessibility violations', async () => {
+    const { container } = wrap(<M2LabsView phase="ready" packages={packages} retry={vi.fn()} block="" links={{ back: vi.fn(), reports: vi.fn(), rx: vi.fn(), book: vi.fn() }} />);
+    fireEvent.click(screen.getByTestId('m2-labs-compare-pick-thy'));
+    fireEvent.click(screen.getByTestId('m2-labs-compare-pick-full'));
+    let violations = await axeViolations(container);
+    expect(violations, describeViolations(violations)).toEqual([]);
+    fireEvent.click(screen.getByTestId('m2-labs-compare-open'));
+    violations = await axeViolations(screen.getByTestId('m2-labs-compare'));
+    expect(violations, describeViolations(violations)).toEqual([]);
+    fireEvent.click(within(screen.getByTestId('m2-labs-compare')).getByRole('switch', { name: 'Show only differences' }));
+    cleanup();
+    wrap(<M2LabsView phase="ready" packages={packages} retry={vi.fn()} block="" links={{ back: vi.fn(), reports: vi.fn(), rx: vi.fn(), book: vi.fn() }} />);
+    fireEvent.click(screen.getByTestId('m2-labs-compare-pick-thy'));
+    fireEvent.click(screen.getByTestId('m2-labs-compare-clear'));
+    expect(screen.queryByTestId('m2-labs-compare-bar')).toBeNull();
+    expect(screen.getByRole('checkbox', { name: 'Compare Thyroid profile' })).toHaveAttribute('aria-checked', 'false');
+  });
+
   it('picks package art from the name and the biggest package', () => {
     expect(labArt('Thyroid profile').icon).toBe('thyroid');
     expect(labArt('Lipid profile').icon).toBe('trend-zigzag');
