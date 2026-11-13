@@ -83,8 +83,17 @@ jobs:
       - name: 3. Unwanted & Dead Code Check (Knip)
         run: npx knip --config config/knip.json --no-exit-code
 
-      - name: 4. Unit Test Suite (Vitest)
-        run: npx vitest run
+      # Blocking: the suite must pass AND stay at or above the coverage floor in
+      # vite.config.ts (test.coverage.thresholds). The floor only ever rises.
+      - name: 4. Unit Test Suite (Vitest, with coverage floor)
+        run: npm run test:coverage
+
+      - name: 4.1 Publish frontend coverage summary
+        if: always()
+        run: |
+          if [ -f coverage/coverage-summary.json ]; then
+            node -e "const t=require('./coverage/coverage-summary.json').total;console.log('### Frontend coverage\n\n| Lines | Branches | Functions | Statements |\n|---|---|---|---|\n| '+[t.lines,t.branches,t.functions,t.statements].map(x=>x.pct+'%').join(' | ')+' |')" >> "$GITHUB_STEP_SUMMARY"
+          fi
 
       - name: 4.5 Custom House Security Guardrails Check (P72)
         run: npx vitest run src/core/security/__tests__/ciGuardrails.test.ts
@@ -111,7 +120,12 @@ jobs:
           # FastAPI package. PYTHONPATH=. alone resolves none of the latter two,
           # so collection failed before a single test ran.
           PYTHONPATH: .:app:..
-        run: pytest tests/ -v
+        # Blocking: the suite must pass AND application code must stay at or
+        # above the floor in backend/.coveragerc (fail_under). Tests and
+        # migrations are left out of the figure.
+        run: |
+          pytest tests/ -v --cov=. --cov-config=.coveragerc --cov-report=term --cov-report=json:coverage.json
+          python -c "import json;t=json.load(open('coverage.json'))['totals'];print('### Backend coverage\n\n| Lines | Statements | Missed |\n|---|---|---|\n| %.1f%% | %d | %d |' % (t['percent_covered'], t['num_statements'], t['missing_lines']))" >> "$GITHUB_STEP_SUMMARY"
 
       - name: 9. Secret Scan (gitleaks)
         if: always()

@@ -75,6 +75,18 @@ export default defineConfig({
     // collected and run alongside the real one.
     exclude: ['**/node_modules/**', '**/dist/**', '.kilo/**', '**/.kilo/**'],
     css: false,
+    // Off by default so a local `vitest run` stays fast; CI turns it on with
+    // `npm run test:coverage`. The thresholds are a floor set just under what
+    // the suite measured when they were added: raise them as coverage rises,
+    // never lower them to make a PR pass.
+    coverage: {
+      provider: 'v8',
+      include: ['src/**/*.{ts,tsx}'],
+      exclude: ['src/**/__tests__/**', 'src/**/*.test.{ts,tsx}', 'src/**/*.stories.tsx', 'src/generated/**', 'src/test/**'],
+      reporter: ['text-summary', 'json-summary'],
+      reportsDirectory: 'coverage',
+      thresholds: { lines: 74, branches: 64 },
+    },
   },
   server: {
     port: 3000,
