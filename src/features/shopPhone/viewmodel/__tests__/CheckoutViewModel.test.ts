@@ -1,4 +1,5 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { invalidateSessionScope, setSessionAccount } from '@/core/session/sessionScope';
 
 vi.mock('../../platform/CheckoutStoragePort', () => ({
   CheckoutStoragePort: { getCachedCart: async () => [], setCachedCart: async () => undefined, clearCachedCart: async () => undefined },
@@ -16,6 +17,7 @@ const line = (over: Partial<CartLineItem> = {}): CartLineItem => ({
 let orderResult: () => unknown = () => undefined;
 let calls: { path: string; init?: RequestInit }[] = [];
 let validation = { serviceable: true, items: [{ id: 'cat_1', available: true, reason: '' }] };
+const stores: CheckoutStore[] = [];
 const okOrder = (): unknown => ({ id: 'ord_1', createdAt: 1, totalPaise: 6400, delivery: { mode: 'pickup', address: '', city: 'Hyderabad', pincode: '500090' }, requestedSlot: '', paymentStatus: 'NOT_COLLECTED' });
 
 function store(): CheckoutStore {
@@ -26,6 +28,7 @@ function store(): CheckoutStore {
     throw new Error(`unexpected ${path}`);
   }) as unknown as Requester;
   const s = new CheckoutStore(new CheckoutRepository(request));
+  stores.push(s);
   s.cartItems = [line()];
   s.setCity('Hyderabad');
   s.setPincode('500090');
@@ -33,14 +36,22 @@ function store(): CheckoutStore {
 }
 
 beforeEach(() => {
+  invalidateSessionScope();
+  setSessionAccount('checkout-test-account');
   orderResult = okOrder;
   calls = [];
   validation = { serviceable: true, items: [{ id: 'cat_1', available: true, reason: '' }] };
 });
 
+afterEach(() => {
+  stores.splice(0).forEach(s => s.dispose());
+  invalidateSessionScope();
+});
+
 describe('native checkout on the real /orders contract', () => {
   it('starts empty, with no pre-filled location', () => {
     const fresh = new CheckoutStore(new CheckoutRepository((async () => ({})) as unknown as Requester));
+    stores.push(fresh);
     expect(fresh.cartItems).toEqual([]);
     expect(fresh.city).toBe('');
     expect(fresh.pincode).toBe('');
