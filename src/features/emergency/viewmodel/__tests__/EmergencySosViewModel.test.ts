@@ -45,6 +45,7 @@ function expectCleared() {
   expect(emergencyStore.alert).toBeNull();
   expect(emergencyStore.locationNote).toBe('');
   expect(emergencyStore.error).toBe('');
+  expect(emergencyStore.refreshError).toBe('');
   expect(emergencyStore.countdownSeconds).toBe(3);
 }
 
@@ -61,6 +62,107 @@ describe('M04 SOS store', () => {
     invalidateSessionScope();
     vi.restoreAllMocks();
     vi.useRealTimers();
+  });
+
+  it('refreshes an active alert through acknowledgement, delivery changes and resolution', async () => {
+    const current = vi.spyOn(emergencyRepository, 'current');
+    current.mockResolvedValueOnce(alert());
+    await emergencyStore.loadCurrent();
+    const acknowledged = alert({ status: 'ACKNOWLEDGED', acknowledgedAt: 2,
+      deliveries: [{ recipientKind: 'CAMPUS_SECURITY', channel: 'WHATSAPP', recipient: 'Gate', status: 'SENT', detail: '' }] });
+    current.mockResolvedValueOnce(acknowledged);
+    await emergencyStore.loadCurrent();
+    expect(emergencyStore.status).toBe('OPEN');
+    expect(emergencyStore.alert).toEqual(acknowledged);
+    const resolved = { ...acknowledged, status: 'RESOLVED' as const, resolvedAt: 3, resolutionNote: 'Synthetic resolution' };
+    current.mockResolvedValueOnce(resolved);
+    await emergencyStore.loadCurrent();
+    expect(emergencyStore.status).toBe('CLOSED');
+    expect(emergencyStore.alert).toEqual(resolved);
+  });
+
+  it.each(['ACTIVE', 'RESOLVED'] as const)('keeps the last %s record on a refresh failure and clears only the refresh warning on recovery', async (status) => {
+    const current = vi.spyOn(emergencyRepository, 'current').mockResolvedValueOnce(alert({ status }));
+    await emergencyStore.loadCurrent();
+    current.mockRejectedValueOnce(new Error('offline'));
+    await emergencyStore.loadCurrent();
+    expect(emergencyStore.alert?.status).toBe(status);
+    expect(emergencyStore.status).toBe(status === 'ACTIVE' ? 'OPEN' : 'CLOSED');
+    expect(emergencyStore.refreshError).toBe('sos.refreshFailed');
+    emergencyStore.error = 'sos.cancelFailed';
+    current.mockResolvedValueOnce(alert({ status }));
+    await emergencyStore.loadCurrent();
+    expect(emergencyStore.refreshError).toBe('');
+    expect(emergencyStore.error).toBe('sos.cancelFailed');
+  });
+
+  it('reports an initial refresh failure without inventing a recorded alert', async () => {
+    vi.spyOn(emergencyRepository, 'current').mockRejectedValueOnce(new Error('offline'));
+    await emergencyStore.loadCurrent();
+    expect(emergencyStore.status).toBe('IDLE');
+    expect(emergencyStore.alert).toBeNull();
+    expect(emergencyStore.refreshError).toBe('sos.refreshFailed');
+  });
+
+  it.each(['success', 'failure'] as const)('ignores an older refresh %s after a newer refresh resolves the alert', async (outcome) => {
+    const pending = deferred<SosAlert>();
+    const current = vi.spyOn(emergencyRepository, 'current').mockReturnValueOnce(pending.promise);
+    const older = emergencyStore.loadCurrent();
+    current.mockResolvedValueOnce(alert({ status: 'RESOLVED', resolvedAt: 3 }));
+    await emergencyStore.loadCurrent();
+    if (outcome === 'success') pending.resolve(alert());
+    else pending.reject(new Error('Older refresh failed'));
+    await older;
+    expect(emergencyStore.status).toBe('CLOSED');
+    expect(emergencyStore.alert?.status).toBe('RESOLVED');
+    expect(emergencyStore.refreshError).toBe('');
+  });
+
+  it('does not let an in-flight poll reopen an alert after a confirmed cancellation', async () => {
+    vi.spyOn(emergencyRepository, 'current').mockResolvedValueOnce(alert());
+    await emergencyStore.loadCurrent();
+    const pending = deferred<SosAlert>();
+    vi.spyOn(emergencyRepository, 'current').mockReturnValueOnce(pending.promise);
+    const poll = emergencyStore.loadCurrent();
+    vi.spyOn(emergencyRepository, 'cancel').mockResolvedValueOnce(alert({ status: 'CANCELLED', cancelledAt: 2 }));
+    await emergencyStore.cancelAlert();
+    pending.resolve(alert());
+    await poll;
+    expect(emergencyStore.status).toBe('CLOSED');
+    expect(emergencyStore.alert?.status).toBe('CANCELLED');
+  });
+
+  it('does not fetch or apply a refresh over a countdown or a send', async () => {
+    const pending = deferred<SosAlert>();
+    const current = vi.spyOn(emergencyRepository, 'current').mockReturnValueOnce(pending.promise);
+    const poll = emergencyStore.loadCurrent();
+    emergencyStore.triggerSos();
+    await emergencyStore.loadCurrent();
+    pending.resolve(alert());
+    await poll;
+    expect(emergencyStore.status).toBe('COUNTDOWN');
+    expect(current).toHaveBeenCalledTimes(1);
+    const sending = deferred<SosAlert>();
+    vi.spyOn(emergencyRepository, 'raiseSos').mockReturnValueOnce(sending.promise);
+    const send = emergencyStore.dispatchEmergency();
+    await emergencyStore.loadCurrent();
+    expect(emergencyStore.status).toBe('SENDING');
+    expect(current).toHaveBeenCalledTimes(1);
+    sending.resolve(alert());
+    await send;
+  });
+
+  it('ignores a previous account refresh failure while the new account has an alert', async () => {
+    const pending = deferred<SosAlert>();
+    vi.spyOn(emergencyRepository, 'current').mockReturnValueOnce(pending.promise);
+    const poll = emergencyStore.loadCurrent();
+    setSessionAccount('account-b');
+    vi.spyOn(emergencyRepository, 'current').mockResolvedValueOnce(alert({ id: 'b1' }));
+    await emergencyStore.loadCurrent();
+    pending.reject(new Error('Account A offline'));
+    await poll;
+    expect(emergencyStore.alert?.id).toBe('b1');
+    expect(emergencyStore.refreshError).toBe('');
   });
 
   it('counts down three seconds and can be cancelled before anything is sent', () => {

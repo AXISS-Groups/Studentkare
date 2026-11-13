@@ -9,6 +9,7 @@
 import React from 'react';
 import { NavigationContainer, useNavigation, useNavigationState } from '@react-navigation/native';
 import type { LinkingOptions, NavigationProp, ParamListBase } from '@react-navigation/native';
+import { navigationTheme } from './navigationTheme';
 
 /**
  * Hosts the native navigation container. Feature screens are mounted as
@@ -21,7 +22,7 @@ export function NavigationProvider<P extends ParamListBase>({ children, linking,
   linking?: LinkingOptions<P>;
   fallback?: React.ReactNode;
 }) {
-  return <NavigationContainer linking={linking} fallback={fallback}>{children}</NavigationContainer>;
+  return <NavigationContainer theme={navigationTheme} linking={linking} fallback={fallback}>{children}</NavigationContainer>;
 }
 
 /** Current route name, normalized to the same format the web facade returns. */

@@ -633,6 +633,8 @@ declare("health.readings_list_cap", INT, 1000, area="health", unit="rows", minim
         description="Most readings GET /health/readings returns in one response.")
 
 # --- emergency -------------------------------------------------------------
+declare("emergency.sos_queue_cap", INT, 100, area="emergency", unit="rows", minimum=1, maximum=1000,
+        description="Most SOS alerts returned to a staff console after campus and open-status filtering.")
 # The SOS screen re-reads an open alert so "your campus has seen it" appears
 # without a reload (SosBeacon). The server pushes nothing; this is a read.
 declare("emergency.sos_poll_seconds", INT, 15, area="emergency", unit="seconds", minimum=5, maximum=120, public=True,

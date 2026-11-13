@@ -1,0 +1,12 @@
+# Coverage is measured on application code only. Counting the test files
+# themselves inflates the figure (93% against a true 89%).
+[run]
+omit =
+    tests/*
+    alembic/*
+
+[report]
+# A floor set just under the measured figure when it was added. Raise it as
+# coverage rises; never lower it to make a PR pass.
+fail_under = 88
+skip_covered = True

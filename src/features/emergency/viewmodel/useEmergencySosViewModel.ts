@@ -7,6 +7,7 @@ export interface EmergencySosViewModelState {
   countdownSeconds: number;
   locationNote: string;
   error: MessageKey | '';
+  refreshError: MessageKey | '';
   alert: SosAlert | null;
   isEmergencyActive: boolean;
 }
@@ -32,6 +33,7 @@ export function useEmergencySosViewModel(): EmergencySosViewModelHook {
       countdownSeconds: emergencyStore.countdownSeconds,
       locationNote: emergencyStore.locationNote,
       error: emergencyStore.error,
+      refreshError: emergencyStore.refreshError,
       alert: emergencyStore.alert,
       isEmergencyActive: emergencyStore.isEmergencyActive,
     },
