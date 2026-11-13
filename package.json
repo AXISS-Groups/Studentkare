@@ -21,6 +21,7 @@
     "build": "tsc && vite build && node scripts/prerender-public-routes.js",
     "test": "vitest run",
     "e2e": "playwright test",
+    "test:coverage": "vitest run --coverage",
     "tokens:build": "node scripts/tokens/build-tokens.mjs",
     "tokens:check": "node scripts/tokens/build-tokens.mjs --check",
     "settings:build": "python3 backend/scripts/export_public_settings.py",

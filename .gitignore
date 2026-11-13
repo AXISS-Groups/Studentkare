@@ -118,3 +118,6 @@ run-local.bat
 # Playwright output
 test-results/
 playwright-report/
+# Python coverage output
+.coverage
+coverage.json
