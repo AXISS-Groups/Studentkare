@@ -3,6 +3,7 @@ import time
 
 import pytest
 from fastapi import HTTPException
+from sqlalchemy import delete
 from sqlalchemy.orm import Session
 from test_rule_l import pg_db  # noqa: F401 — pytest fixture
 from test_workflow_api import harness  # noqa: F401 — pytest fixture
@@ -25,6 +26,11 @@ def queue_db(request):
         yield db
     finally:
         db.rollback()
+        # The registry reads committed overrides on a separate connection.
+        # Remove only this fixture's override from its owned scratch database.
+        with Session(db.get_bind()) as cleanup:
+            cleanup.execute(delete(M.SettingOverride).where(M.SettingOverride.key == "emergency.sos_queue_cap"))
+            cleanup.commit()
         db.close()
         R.reset_cache()
 
@@ -109,9 +115,11 @@ def test_unassigned_staff_fail_closed_despite_self_service_profile(queue_db):
 
 def test_queue_uses_registry_override_after_campus_filter(queue_db):
     db = queue_db
+    with Session(db.get_bind()) as configuration:
+        configuration.add(M.SettingOverride(key="emergency.sos_queue_cap", value=2,
+                                            updated_by="fixture", updated_at=time.time()))
+        configuration.commit()
     user = queue_user(db, "Own Campus")
-    db.add(M.SettingOverride(key="emergency.sos_queue_cap", value=2,
-                             updated_by=user["id"], updated_at=time.time()))
     for index in range(3):
         seed_alert(db, f"own-{index}", "Own Campus", index)
         seed_alert(db, f"other-{index}", "Other Campus", index + 10)
