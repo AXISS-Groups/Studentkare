@@ -53,8 +53,8 @@ ignored.
 | Pattern | Status | Where / note |
 |---|---|---|
 | Payment options, recommended method first | Live | `src/features/payments` (Razorpay) |
-| Payment failed bottom sheet with retry and another method | Preview | `PaymentRetrySheetPreview` |
-| Full-screen payment failure | Preview | `PaymentFailureScreenPreview` |
+| Payment failed, with retry and "pay another way" | Live | `payments/PayStepView` (used by shop, reorder, lab booking, web checkout); also pending, late and closed states. `PaymentRetrySheetPreview` is only a different look |
+| Full-screen payment failure | Live | Same `PayStepView` result screen |
 | Cash on delivery as fallback | None | Product decision, not a screen |
 | Wallet top-up ("Add money"), gift cards | None | A stored-value wallet is a regulated product; not proposed |
 | Loyalty coins (NeuCoins) | Declined | No coin icon in the kit; also see section 4 |
@@ -149,19 +149,22 @@ upsell from lab values, loyalty coins, wallet and gift cards, surgery estimator.
 
 | Order | What | Why now | Blocked on |
 |---|---|---|---|
-| 1 | Payment failed → retry sheet, made real | Real money path; failure today is a dead end | Nothing |
-| 2 | Lab package detail and compare, made real | Data already exists in `labBooking` | Nothing |
-| 3 | Doctor list with fee and next slot, made real | Data exists in `careDirectory` | Nothing |
-| 4 | Banner component + admin-entered campaigns | Unlocks every "banner" ask without invented offers | Art source (section 3) |
-| 5 | Home-collection status after a lab booking | Needs collector assignment data | Lab partner feed |
-| 6 | Rate your order | Small | Krishna: what happens to a low rating |
-| 7 | Store filters (form, brand, price) | Catalogue fields exist for some | Catalogue completeness |
-| 8 | Insurance purchase, health plans, physiotherapy, second opinion | New services | Signed partners, clinical sign-off |
-| 9 | AI report summary, skin scan, symptom-to-doctor | Tier 1 | Named clinical reviewer |
+| — | ~~Payment failed → retry~~ | Already live (corrected 2026-11-13 after reading `PayStepView`; the first version of this audit was wrong) | — |
+| 1 | Lab package detail and compare, made real | Data already exists in `labBooking` | Nothing |
+| 2 | Doctor list with fee and next slot, made real | Data exists in `careDirectory` | Nothing |
+| 3 | Banner component + admin-entered campaigns | Unlocks every "banner" ask without invented offers | Art source (section 3) |
+| 4 | Home-collection status after a lab booking | Needs collector assignment data | Lab partner feed |
+| 5 | Rate your order | Small | Krishna: what happens to a low rating |
+| 6 | Store filters (form, brand, price) | Catalogue fields exist for some | Catalogue completeness |
+| 7 | Insurance purchase, health plans, physiotherapy, second opinion | New services | Signed partners, clinical sign-off |
+| 8 | AI report summary, skin scan, symptom-to-doctor | Tier 1 | Named clinical reviewer |
 
 ## 5. Limits of this audit
 
 - Frames were six seconds apart; a screen shown briefly may be missing.
 - "Live" means a real screen does the job, not that it looks like the recording.
+- Status came from file names and searches, not from reading every screen. One row (payment
+  retry) was wrong on the first pass and is corrected above; each item is re-checked in the code
+  before it is built.
 - The earlier audits in `NOTES.md` covered four reports; this pass re-read all six recordings but
   did not re-open every preview file to confirm it still matches.
