@@ -6,6 +6,7 @@ is a 404 and another role a 403, range state comes only from the range printed
 with the value (never a threshold of ours), rows from an unreleased lab order
 never show, and the commerce role has no way to the table (Rule L).
 """
+import itertools
 import time
 from datetime import date, timedelta
 
@@ -35,10 +36,15 @@ def reference(factory, code="4548-4", name="HbA1c", system="BLOOD_SUGAR", active
         db.commit()
 
 
+_REPORT_NUMBERS = itertools.count(1)
+
+
 def report(client, headers, category="LAB"):
+    # Different bytes each time: the same bytes twice are one record (checksum dedupe).
+    body = b"%PDF-1.4\nSynthetic lab report " + str(next(_REPORT_NUMBERS)).encode()
     response = client.post("/api/health/documents", headers=headers,
                            data={"title": "Synthetic lab report", "category": category},
-                           files={"file": ("report.pdf", b"%PDF-1.4\nSynthetic lab report", "application/pdf")})
+                           files={"file": ("report.pdf", body, "application/pdf")})
     assert response.status_code == 201, response.text
     return response.json()["id"]
 

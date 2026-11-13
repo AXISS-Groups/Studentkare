@@ -94,9 +94,13 @@ x-app-env: &app-env
   # off until the AI-constitution owner and the DPO sign (Admin › Integrations wins).
   MEDICINE_OCR_ENABLED: ${MEDICINE_OCR_ENABLED:-false}
   MEDICINE_OCR_TESSERACT:
-  # Document OCR uses its own switch; keep it off until its separate sign-off.
+  # Document OCR (docs/plans/tier1-document-autofile-2026-11-13.md): scans go to the shared
+  # OCR service on the private network. Its own switch; keep it off until its sign-off.
+  # With no key nothing is sent.
   DOCUMENT_OCR_ENABLED: ${DOCUMENT_OCR_ENABLED:-false}
-  DOCUMENT_OCR_TESSERACT:
+  DOCUMENT_OCR_URL:
+  DOCUMENT_OCR_KEY:
+  DOCUMENT_OCR_TEXT_LAYERS:
   # Agent Ayush tuning.
   LLM_ENABLED:
   LLM_PROVIDER:

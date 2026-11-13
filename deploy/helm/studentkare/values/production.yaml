@@ -98,7 +98,8 @@ backend:
     MEDICINE_OCR_ENABLED: "false"    # tesseract is in the image; stays off until the plan sign-off
     MEDICINE_OCR_TESSERACT: ""
     DOCUMENT_OCR_ENABLED: "false"    # separate sign-off; remains disabled by default
-    DOCUMENT_OCR_TESSERACT: ""
+    DOCUMENT_OCR_URL: ""             # the shared OCR service, private network only
+    DOCUMENT_OCR_TEXT_LAYERS: ""     # auto (default) | only | skip
     # Agent Ayush tuning.
     LLM_ENABLED: ""
     LLM_PROVIDER: ""
@@ -198,6 +199,7 @@ backend:
     SMTP_PASSWORD: ""
     POSTAL_SERVER_API_KEY: ""
     OPENWA_API_KEY: ""
+    DOCUMENT_OCR_KEY: ""              # Student Kare's own key for the OCR service; empty = nothing is sent
     SLACK_BOT_TOKEN: ""
     EXPO_ACCESS_TOKEN: ""             # Expo access token (enhanced push security on); empty = no phone push
     VAPID_PRIVATE_KEY: ""             # npx web-push generate-vapid-keys; empty = no browser push
