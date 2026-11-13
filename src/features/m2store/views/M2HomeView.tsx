@@ -258,11 +258,11 @@ export function M2HomeView({ name, campus, verified, data, links, cart, recent, 
     </Pressable>
   );
   const emergency = (
-    <LiftCard key="emergency" label={`${t('m2.home.emergencyCard')}. ${t('m2.home.offlineReady')}`} onPress={links.emergencyCard} testID="m2-home-emergency" fill={wide}
+    <LiftCard key="emergency" label={`${t('m2.home.emergencyCard')}. ${t('m2.home.cardConnection')}`} onPress={links.emergencyCard} testID="m2-home-emergency" fill={wide}
       style={[styles.campusTile, wide ? styles.campusTileWide : null, styles.emergency]}>
       <View style={styles.emergencyTop}>
         <Icon name="card-lines" size={22} color={color.onHeroPositive} />
-        <Text style={styles.offline}>{t('m2.home.offlineReady')}</Text>
+        <Text style={styles.offline}>{t('m2.home.cardConnection')}</Text>
       </View>
       <Text style={styles.emergencyTitle}>{t('m2.home.emergencyCard')}</Text>
     </LiftCard>
