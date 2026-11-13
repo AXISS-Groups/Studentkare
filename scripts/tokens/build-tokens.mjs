@@ -86,7 +86,7 @@ ${vars(t.color.dark, 'color')}
 const check = process.argv.includes('--check');
 const outputs = [[OUT_TS, ts], [OUT_CSS, css]];
 if (check) {
-  const stale = outputs.filter(([p, body]) => { try { return readFileSync(p, 'utf8') !== body; } catch { return true; } }).map(([p]) => p.replace(`${root}/`, ''));
+  const stale = outputs.filter(([p, body]) => { try { return readFileSync(p, 'utf8').replace(/\r\n/g, '\n') !== body; } catch { return true; } }).map(([p]) => p.replace(`${root}/`, ''));
   if (stale.length) { console.error(`Design tokens are out of date: ${stale.join(', ')}\nRun: npm run tokens:build`); process.exit(1); }
   console.log('Design tokens are up to date.');
 } else {
