@@ -200,3 +200,8 @@ Endpoints: `POST /health/documents` (now dedupes and files), `GET /health/docume
 `matchedVia`, `kindVerified`), `PATCH /health/documents/{id}/kind`,
 `POST /health/documents/{id}/reclassify?apply=false`,
 `POST /ops/documents/reclassify-backfill?apply=false`.
+- **Lab subfolders follow Krishna's list (2026-11-13):** `blood`, `urine`, `xray`, `mri`, `ct_scan`,
+  `ultrasound`, `cardiac`, `report` — each kind of imaging is its own subfolder instead of one
+  `imaging` folder, and `other_lab` is now `report`. Not built: folders for things the app itself
+  writes (AI analyst report, suggestions, diet report). Those are not uploads; storing AI output as a
+  health record is separate Tier 1 work (AI constitution at the call site, clinical sign-off).

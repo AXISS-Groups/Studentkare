@@ -37,7 +37,7 @@ UNFILED = "unfiled"
 
 # The closed subfolder vocabulary. Adding a kind is a row here plus a rule below.
 KINDS: dict[str, tuple[str, ...]] = {
-    "LAB": ("blood", "urine", "imaging", "cardiac", "other_lab"),
+    "LAB": ("blood", "urine", "xray", "mri", "ct_scan", "ultrasound", "cardiac", "report"),
     "PRESCRIPTION": ("prescription", "consult_note"),
     "VACCINE": ("certificate", "card"),
     "CAMP_REPORT": ("camp_report",),
@@ -79,16 +79,22 @@ RULES: tuple[Rule, ...] = (
     Rule(("urinalysis", "urine"), "LAB", "urine"),
     Rule(("electrocardiogram", "echocardiogra", "treadmill test"), "LAB", "cardiac"),
     Rule(("ecg", "echo", "tmt"), "LAB", "cardiac", filename_only=True),
-    Rule(("x ray", "xray", "ultrasound", "sonography", "radiograph", "mri scan", "ct scan"), "LAB", "imaging"),
-    # Not "scan": phone scanner apps name every file "Scan <date>".
-    Rule(("mri", "ct", "usg"), "LAB", "imaging", filename_only=True),
+    # Each kind of imaging is its own subfolder (Krishna, 2026-11-13). Never the bare word
+    # "scan": phone scanner apps name every file "Scan <date>".
+    Rule(("x ray", "xray", "radiograph"), "LAB", "xray"),
+    Rule(("mri scan", "magnetic resonance"), "LAB", "mri"),
+    Rule(("mri",), "LAB", "mri", filename_only=True),
+    Rule(("ct scan", "computed tomography"), "LAB", "ct_scan"),
+    Rule(("ct",), "LAB", "ct_scan", filename_only=True),
+    Rule(("ultrasound", "sonography"), "LAB", "ultrasound"),
+    Rule(("usg",), "LAB", "ultrasound", filename_only=True),
     Rule(("hemoglobin", "haemoglobin", "complete blood count", "lipid profile", "hba1c", "thyroid profile",
           "blood test", "blood report", "platelet"), "LAB", "blood"),
     Rule(("cbc", "lft", "kft", "tsh", "blood"), "LAB", "blood", filename_only=True),
     Rule(("health camp", "camp report", "screening camp"), "CAMP_REPORT", "camp_report"),
     Rule(("camp",), "CAMP_REPORT", "camp_report", filename_only=True),
-    Rule(("lab report", "laboratory", "pathology", "test report"), "LAB", "other_lab"),
-    Rule(("lab", "report"), "LAB", "other_lab", filename_only=True),
+    Rule(("lab report", "laboratory", "pathology", "test report"), "LAB", "report"),
+    Rule(("lab", "report"), "LAB", "report", filename_only=True),
     Rule(("insurance", "mediclaim", "policy schedule", "claim form"), "OTHER", "insurance"),
     Rule(("invoice", "receipt", "bill"), "OTHER", "bill", filename_only=True),
     Rule(("aadhaar", "aadhar", "abha", "pan card", "student id", "id card"), "OTHER", "id_proof", filename_only=True),

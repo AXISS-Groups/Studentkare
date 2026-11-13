@@ -47,6 +47,15 @@ def test_separators_and_accents_normalise_identically():
     assert classifier.classify_file_name("Rx-2026_Nov.pdf").kind == "prescription"
 
 
+@pytest.mark.parametrize("name, kind", [("chest_xray.pdf", "xray"), ("X-Ray knee.jpg", "xray"),
+                                        ("MRI_brain.pdf", "mri"), ("ct-abdomen.pdf", "ct_scan"),
+                                        ("usg_report.pdf", "ultrasound"), ("blood_report.pdf", "blood"),
+                                        ("report_nov.pdf", "report")])
+def test_each_kind_of_imaging_and_report_has_its_own_subfolder(name, kind):
+    result = classifier.classify_file_name(name)
+    assert (result.category, result.kind) == ("LAB", kind)
+
+
 def test_camp_report_is_not_claimed_by_the_generic_report_rule():
     result = classifier.classify_file_name("camp_report.pdf")
     assert (result.category, result.kind) == ("CAMP_REPORT", "camp_report")
@@ -315,14 +324,14 @@ def test_a_students_correction_is_remembered_for_the_same_file_name(harness, mon
     _stub_reader(monkeypatch, "")
     _user, headers = register(client, codes, "fix1@example.test")
     first = _upload(client, headers, body=b"one", name="Report_Nov.pdf")
-    assert first.json()["kind"] == "other_lab"
+    assert first.json()["kind"] == "report"
     fixed = client.patch(f"/api/health/documents/{first.json()['id']}/kind", headers=headers, json={"kind": "urine"})
     assert fixed.status_code == 200
     assert fixed.json() == {"id": first.json()["id"], "kind": "urine", "matchedVia": "manual", "kindVerified": True}
     with factory() as db:
         correction = db.scalars(select(M.DocumentLabelCorrection)).one()
     assert (correction.file_name_norm, correction.corrected_kind, correction.rule_said_kind) == \
-        ("report nov", "urine", "other_lab")
+        ("report nov", "urine", "report")
     # The next import of that file name (different bytes) follows the student.
     second = _upload(client, headers, body=b"two", name="report-nov.pdf")
     assert (second.json()["kind"], second.json()["matchedVia"]) == ("urine", "learned")
