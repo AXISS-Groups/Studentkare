@@ -99,7 +99,7 @@ class TestTheRunnerCanFindItsConfig:
         import subprocess
         import sys
 
-        env = {**os.environ, "DATABASE_URL": "postgresql://u:p@127.0.0.1:59999/none",
+        env = {**os.environ, "DATABASE_URL": "postgresql://u:p@127.0.0.1:59999/none?connect_timeout=5",
                "PYTHONPATH": str(BACKEND)}
         result = subprocess.run(  # noqa: S603 — a literal script run by this test, no external input
             [sys.executable, "-c", "from services.migrations import run_migrations; run_migrations()"],

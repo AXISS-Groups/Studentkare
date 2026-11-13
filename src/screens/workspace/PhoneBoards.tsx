@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useEffect, useState } from 'react';
+import React, { lazy, Suspense, useState } from 'react';
 import { navigate } from '@/lib/utils/workflowRouting';
 import type { RoutePath } from '@/lib/utils/workflowRouting';
 import { YourCareBoard } from '@/features/yourcare/views/YourCareBoard';
@@ -19,6 +19,7 @@ import { useExerciseStore } from '@/data/contexts/ExerciseStore';
 import { IceContactsRoute } from '@/features/emergency/views/IceContactsBoard';
 import { DeleteAccountRoute } from '@/features/account/views/DeleteAccountView';
 import { PlanBillingBoard } from '@/features/billing/views/PlanBillingBoard';
+import { usePanel } from '@/features/phoneKit/usePanel';
 
 const ExerciseLibraryScreen = lazy(() => import('../wellbeing/ExerciseLibraryScreen').then((module) => ({ default: module.ExerciseLibraryScreen })));
 
@@ -27,15 +28,6 @@ const MemberProfilePanel = lazy(() => import('./MemberProfilePanel').then((modul
 /** The existing web form for a tab of the profile, opened under a board (edit details, link ABHA). */
 function WebPanel({ tab }: { tab: 'profile' | 'insurance' }): React.ReactElement {
   return <div id={`board-panel-${tab}`}><Suspense fallback={<ScreenLoading />}><MemberProfilePanel initialTab={tab} /></Suspense></div>;
-}
-
-/** Opens a web panel under the board and scrolls it into view. */
-function usePanel(): [boolean, () => void] {
-  const [open, setOpen] = useState(false);
-  useEffect(() => {
-    if (open) document.querySelector('[id^="board-panel-"]')?.scrollIntoView({ block: 'start' });
-  }, [open]);
-  return [open, () => setOpen(true)];
 }
 
 /** Saves the export as a file on this device. Nothing is kept anywhere else. */

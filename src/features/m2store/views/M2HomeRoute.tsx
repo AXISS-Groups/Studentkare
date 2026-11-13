@@ -14,7 +14,7 @@ import { M2HomeView } from './M2HomeView';
 import type { ServiceKey } from './M2HomeView';
 
 /**
- * Mobile 2.0 Dashboard on the web: / for a signed-in student, inside the
+ * Mobile 2.0 Home on the web: /health for a signed-in student, inside the
  * student phone frame at phone width and, `wide`, in the desktop shell's page
  * column (parity phase 2: it replaces the old Your Care dashboard there). Each part hands off to the route that does
  * the job today; SOS opens the frame's helplines, the avatar its More panel.

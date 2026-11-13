@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { asRoutePath, canAccessRoute, homeForRole, routePaths } from '../utils/workflowRouting';
+import { canAccessRoute, homeForRole, routePaths } from '../utils/workflowRouting';
 import type { AccountRole } from '../../data/types/workflowTypes';
 
 
@@ -45,9 +45,6 @@ describe('Authenticated workspace routing', () => {
     expect(new Set(routePaths).size).toBe(routePaths.length);
     for (const role of roles) expect(canAccessRoute(homeForRole(role), role)).toBe(true);
     expect(homeForRole('STUDENT')).toBe('health');
-    expect(asRoutePath('/')).toBe('home');
-    expect(asRoutePath('')).toBe('home');
-    expect(canAccessRoute('health', 'STUDENT')).toBe(true);
     expect(homeForRole('VENDOR')).toBe('vendor');
     expect(homeForRole('NMC_DOCTOR')).toBe('clinician');
     expect(canAccessRoute('vendor', 'STUDENT')).toBe(false);

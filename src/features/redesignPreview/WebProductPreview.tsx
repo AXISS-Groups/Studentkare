@@ -1,4 +1,5 @@
 import React from 'react';
+import { useT } from '@/i18n';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Icon } from '@/design-system/icons';
 import { color, focusRing, font, fontWeight, radius, space } from '@/design-system/theme';
@@ -16,23 +17,24 @@ const noop = () => undefined;
  * anything. See NOTES.md.
  */
 export function WebProductPreview(): React.ReactElement {
+  const t = useT();
   return (
     <WebShellPreview route="shop">
       <View style={styles.body}>
         <View style={styles.row}>
           <GlossTile icon="flask" hue="indigo" size={96} />
           <View style={styles.flexShrink}>
-            <Text style={styles.name}>[Paracetamol 650 mg tablet]</Text>
-            <Text style={m2Text.meta}>[Generic] · Strip of 15 tablets</Text>
+            <Text style={styles.name}>{t('preview.paracetamol650MgTablet')}</Text>
+            <Text style={m2Text.meta}>{t('preview.genericStripOf15Tablets')}</Text>
             <View style={styles.badgeRow}>
               <M2Pill label="Verified listing" tone="positive" icon="star-filled" />
-              <View style={styles.badge}><Icon name="truck-2" size={13} color={color.text3} /><Text style={styles.badgeText}>Delivered to your campus</Text></View>
-              <View style={styles.badge}><Icon name="rotate-cw" size={13} color={color.text3} /><Text style={styles.badgeText}>Easy returns</Text></View>
+              <View style={styles.badge}><Icon name="truck-2" size={13} color={color.text3} /><Text style={styles.badgeText}>{t('preview.deliveredToYourCampus')}</Text></View>
+              <View style={styles.badge}><Icon name="rotate-cw" size={13} color={color.text3} /><Text style={styles.badgeText}>{t('preview.easyReturns')}</Text></View>
             </View>
             <View style={styles.footerRow}>
               <Text style={styles.price}>₹18</Text>
-              <Pressable role="button" accessibilityRole="button" accessibilityLabel="Add to cart" onPress={noop} style={({ focused }: PressState) => [styles.cartBtn, focused ? focusRing : null]}>
-                <Icon name="sparkle" size={14} color={color.onAction} /><Text style={styles.cartBtnText}>Add to cart</Text>
+              <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('shop.add')} onPress={noop} style={({ focused }: PressState) => [styles.cartBtn, focused ? focusRing : null]}>
+                <Icon name="sparkle" size={14} color={color.onAction} /><Text style={styles.cartBtnText}>{t('shop.add')}</Text>
               </Pressable>
             </View>
           </View>

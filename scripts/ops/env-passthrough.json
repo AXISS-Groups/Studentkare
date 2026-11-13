@@ -17,7 +17,6 @@
     "services/integration_config.py:platform_value": "Reads os.getenv(name.upper()) for platform settings; every such name is also read literally in INTEGRATIONS_DB['platform'], which this check covers."
   },
   "frontendExempt": {
-    "VITE_ALLOW_OFFLINE_AUTH": "Dev server only (gated on import.meta.env.DEV); never in a production build.",
     "VITE_DEMO_DATA": "Dev server only (gated on import.meta.env.DEV); never in a production build."
   },
   "nativeBuildTime": {

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useT } from '@/i18n';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Icon } from '@/design-system/icons';
 import { color, focusRing, font, fontWeight, radius, space } from '@/design-system/theme';
@@ -15,62 +16,63 @@ const noop = () => undefined;
  * Not wired, not replacing the real screen. See NOTES.md.
  */
 export function M2FacilityDetailPreview(): React.ReactElement {
+  const t = useT();
   return (
     <View style={styles.screen} testID="preview-m2-facility-detail">
       <View style={styles.scroll}>
         <View style={styles.header}>
-          <Pressable role="button" accessibilityRole="button" accessibilityLabel="Back" onPress={noop} style={({ focused }: PressState) => [styles.backBtn, focused ? focusRing : null]}>
+          <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('common.back')} onPress={noop} style={({ focused }: PressState) => [styles.backBtn, focused ? focusRing : null]}>
             <Icon name="arrow-left" size={20} color={color.text} />
           </Pressable>
         </View>
         <View style={styles.body}>
           <View style={styles.typeTile}><Icon name="hospital" size={26} color={color.action} /></View>
-          <Text style={styles.name}>[Campus health centre]</Text>
-          <Text style={m2Text.meta}>Hospital · [Area]</Text>
+          <Text style={styles.name}>{t('preview.campusHealthCentre')}</Text>
+          <Text style={m2Text.meta}>{t('preview.hospitalArea')}</Text>
           <View style={styles.chipRow}>
             <M2Pill label="24×7" tone="positive" />
             <M2Pill label="Your campus" tone="action" />
             <M2Pill label="StudentKare partner" tone="neutral" />
           </View>
           <View style={styles.actionRow}>
-            <Pressable role="button" accessibilityRole="button" accessibilityLabel="Call" onPress={noop} style={({ focused }: PressState) => [styles.fillBtn, focused ? focusRing : null]}>
-              <Icon name="phone" size={16} color={color.onAction} /><Text style={styles.fillBtnText}>Call</Text>
+            <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('ebar.call')} onPress={noop} style={({ focused }: PressState) => [styles.fillBtn, focused ? focusRing : null]}>
+              <Icon name="phone" size={16} color={color.onAction} /><Text style={styles.fillBtnText}>{t('ebar.call')}</Text>
             </Pressable>
-            <Pressable role="button" accessibilityRole="button" accessibilityLabel="Directions" onPress={noop} style={({ focused }: PressState) => [styles.outlineBtn, focused ? focusRing : null]}>
-              <Icon name="directions" size={16} color={color.action} /><Text style={styles.outlineBtnText}>Directions</Text>
+            <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('fc.directions')} onPress={noop} style={({ focused }: PressState) => [styles.outlineBtn, focused ? focusRing : null]}>
+              <Icon name="directions" size={16} color={color.action} /><Text style={styles.outlineBtnText}>{t('fc.directions')}</Text>
             </Pressable>
           </View>
 
           <M2Card style={styles.infoCard}>
             <View style={styles.infoRow}>
               <Icon name="map-pin-2" size={18} color={color.text3} />
-              <Text style={styles.infoText}>[Address line], [Area]</Text>
+              <Text style={styles.infoText}>{t('preview.addressLineArea')}</Text>
               <Icon name="arrow-up-right" size={14} color={color.action} />
             </View>
             <View style={[styles.infoRow, styles.infoRowBorder]}>
               <Icon name="clock" size={18} color={color.text3} />
-              <Text style={styles.infoText}>Open 24×7</Text>
+              <Text style={styles.infoText}>{t('fc.chip247')}</Text>
             </View>
             <View style={[styles.infoRow, styles.infoRowBorder]}>
               <Icon name="stethoscope" size={18} color={color.text3} />
-              <Text style={styles.infoText}>General medicine · Emergency · Pharmacy</Text>
+              <Text style={styles.infoText}>{t('preview.generalMedicineEmergencyPharmacy')}</Text>
             </View>
             <View style={[styles.infoRow, styles.infoRowBorder]}>
               <Icon name="shield-check" size={18} color={color.positive} />
-              <Text style={styles.checkedText}>Checked on 12 Oct 2026 · Called the front desk</Text>
+              <Text style={styles.checkedText}>{t('preview.checkedOn12Oct2026CalledTheFront')}</Text>
             </View>
           </M2Card>
 
-          <M2Note tone="info" icon="info">Call before you go: hours and services can change.</M2Note>
+          <M2Note tone="info" icon="info">{t('fc.d.callFirst')}</M2Note>
 
           <View style={styles.emergencyRow}>
             <View style={styles.emergencyCard}>
               <Icon name="phone" size={16} color={color.dangerFill} />
-              <Text style={styles.emergencyText}>Call 112</Text>
+              <Text style={styles.emergencyText}>{t('crisis.call112')}</Text>
             </View>
             <View style={styles.emergencyCard}>
               <Icon name="ambulance" size={16} color={color.dangerFill} />
-              <Text style={styles.emergencyText}>Call 108</Text>
+              <Text style={styles.emergencyText}>{t('fc.call108')}</Text>
             </View>
           </View>
         </View>

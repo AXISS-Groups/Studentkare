@@ -8,7 +8,7 @@ import { TeamBadge } from '../../features/team-accounts/TeamBadge';
 import type { RoutePath } from '../../lib/utils/workflowRouting';
 import { useT } from '../../i18n';
 import type { MessageKey } from '../../i18n';
-import './admin/super-admin-shell.css';
+import '@/features/admin/shell/super-admin-shell.css';
 
 /** The counsellor's pages: the crisis follow-up queue and the account pages every role has. */
 const COUNSELLOR_LINKS: readonly { route: RoutePath; label: MessageKey; icon: SkIconName }[] = [

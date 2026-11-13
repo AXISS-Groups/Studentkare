@@ -1,5 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import { useT } from '@/i18n';
 import { Accordion } from '@/design-system/Accordion';
 import { StatusPill } from '@/design-system';
 import { StepDiagram } from '@/design-system/StepDiagram';
@@ -56,19 +57,20 @@ const FAQ_ITEMS: ReadonlyArray<{ id: string; title: string; content: string }> =
  * bodies.
  */
 export function WebCarePlanBenefitsPreview(): React.ReactElement {
+  const t = useT();
   return (
     <WebShellPreview route="rewards">
       <View style={styles.body}>
-        <Text style={styles.pageTitle}>[My Care Plan]</Text>
+        <Text style={styles.pageTitle}>{t('preview.myCarePlan')}</Text>
 
         <M2Card style={styles.statusCard}>
           <View style={styles.statusRow}>
-            <StatusPill tone="positive">[Active till Dec 2026]</StatusPill>
+            <StatusPill tone="positive">{t('preview.activeTillDec2026')}</StatusPill>
           </View>
-          <Text style={m2Text.meta}>[Your plan renews automatically unless you cancel before the renewal date.]</Text>
+          <Text style={m2Text.meta}>{t('preview.yourPlanRenewsAutomaticallyUnlessYouCancelBefore')}</Text>
         </M2Card>
 
-        <Text style={[m2Text.section, styles.sectionGap]}>[Your benefits]</Text>
+        <Text style={[m2Text.section, styles.sectionGap]}>{t('preview.yourBenefits')}</Text>
         <View style={styles.ticketRow}>
           {TICKETS.map((ticket) => (
             <View key={ticket.id} style={styles.ticket}>
@@ -88,7 +90,7 @@ export function WebCarePlanBenefitsPreview(): React.ReactElement {
           ))}
         </View>
 
-        <Text style={[m2Text.section, styles.sectionGap]}>[Use your benefits]</Text>
+        <Text style={[m2Text.section, styles.sectionGap]}>{t('preview.useYourBenefits')}</Text>
         <View style={styles.checklist}>
           {CHECKLIST.map((item) => (
             <View key={item.id} style={styles.checklistRow}>
@@ -98,16 +100,16 @@ export function WebCarePlanBenefitsPreview(): React.ReactElement {
           ))}
         </View>
 
-        <Text style={[m2Text.section, styles.sectionGap]}>[How your benefits work]</Text>
+        <Text style={[m2Text.section, styles.sectionGap]}>{t('preview.howYourBenefitsWork')}</Text>
         <M2Card style={styles.stepCard}>
           <StepDiagram steps={HOW_IT_WORKS_STEPS} />
         </M2Card>
 
-        <M2Note tone="info" icon="clock" title="[Benefits reset each billing cycle]">
-          [Unused benefit counts don't carry over to the next cycle. Check back here any time to see what's left.]
+        <M2Note tone="info" icon="clock" title={t('preview.benefitsResetEachBillingCycle')}>
+          {t('preview.unusedBenefitCountsDonTCarryOverTo')}
         </M2Note>
 
-        <Text style={[m2Text.section, styles.sectionGap]}>FAQs</Text>
+        <Text style={[m2Text.section, styles.sectionGap]}>{t('preview.faqs')}</Text>
         <Accordion items={FAQ_ITEMS} />
         <BrandFooter />
       </View>

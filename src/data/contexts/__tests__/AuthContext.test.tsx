@@ -1,12 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { act, render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { AuthProvider, useAuth } from '../AuthContext';
-
-const navigation = vi.hoisted(() => ({ go: vi.fn() }));
-vi.mock('@/lib/utils/workflowRouting', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/lib/utils/workflowRouting')>()),
-  navigate: navigation.go,
-}));
 
 function Probe() {
   const auth = useAuth();
@@ -54,36 +48,5 @@ describe('the session check', () => {
     respond(200, { user: null, csrfToken: '' });
     render(<AuthProvider><Probe /></AuthProvider>);
     await waitFor(() => expect(screen.getByTestId('probe')).toHaveTextContent('anonymous|0|'));
-  });
-
-  it('returns to the site homepage after the server confirms logout', async () => {
-    respond(200, { user: null, csrfToken: '' });
-    let logout!: ReturnType<typeof useAuth>['logout'];
-    function LogoutProbe() {
-      logout = useAuth().logout;
-      return null;
-    }
-    render(<AuthProvider><LogoutProbe /></AuthProvider>);
-    await waitFor(() => expect(logout).toBeTypeOf('function'));
-
-    await act(async () => { await logout(); });
-
-    expect(navigation.go).toHaveBeenCalledWith('');
-    expect(navigation.go).not.toHaveBeenCalledWith('logged-out');
-  });
-
-  it('clears the local session and returns home even if the logout request fails', async () => {
-    vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({ detail: 'Already signed out.' }), { status: 401, headers: { 'Content-Type': 'application/json' } })));
-    let logout!: ReturnType<typeof useAuth>['logout'];
-    function LogoutProbe() {
-      logout = useAuth().logout;
-      return null;
-    }
-    render(<AuthProvider><LogoutProbe /></AuthProvider>);
-    await waitFor(() => expect(logout).toBeTypeOf('function'));
-
-    await expect(act(async () => { await logout(); })).rejects.toThrow('Already signed out.');
-
-    expect(navigation.go).toHaveBeenCalledWith('');
   });
 });

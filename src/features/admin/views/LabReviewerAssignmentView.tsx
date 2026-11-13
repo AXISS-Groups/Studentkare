@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import { AdminEmpty, AdminError, AdminLoading, AdminPage, AdminStats, AdminStatus } from '@/screens/workspace/admin/AdminPage';
+import { AdminEmpty, AdminError, AdminLoading, AdminPage, AdminStats, AdminStatus } from '@/features/admin/views/AdminPage';
 import { waited } from '@/screens/workspace/ClinicalReviewPanel';
 import { ShopDialog } from '@/components/marketplace/ShopDialog';
 import { Icon } from '@/design-system/icons';

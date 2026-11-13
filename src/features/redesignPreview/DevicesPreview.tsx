@@ -1,4 +1,5 @@
 import React from 'react';
+import { useT } from '@/i18n';
 import { Pressable, StyleSheet, Switch, Text, View } from 'react-native';
 import { color, focusRing, font, fontWeight, radius, space } from '@/design-system/theme';
 import { GlossTile, M2Card, M2Note, M2Pill, RoundButton, m2Text } from '@/design-system/m2';
@@ -16,23 +17,22 @@ const noop = () => undefined;
  * content, not invented. Not wired, not replacing anything. See NOTES.md.
  */
 export function DevicesPreview(): React.ReactElement {
+  const t = useT();
   return (
     <View style={styles.screen} testID="preview-devices">
       <View style={styles.header}>
         <RoundButton icon="chevron-left" label="Back" onPress={noop} />
-        <Text style={styles.headerTitle}>Devices & readings</Text>
-        <Pressable role="link" accessibilityRole="link" accessibilityLabel="Trends" onPress={noop}
+        <Text style={styles.headerTitle}>{t('preview.devicesReadings')}</Text>
+        <Pressable role="link" accessibilityRole="link" accessibilityLabel={t('m2v.tr.title')} onPress={noop}
           style={({ focused }: PressState) => [focused ? focusRing : null]}>
-          <Text style={styles.trendsLink}>Trends</Text>
+          <Text style={styles.trendsLink}>{t('m2v.tr.title')}</Text>
         </Pressable>
       </View>
       <View style={styles.scroll}>
         <View style={styles.body}>
-          <M2Note tone="info" icon="shield-check-2" title="We no longer take readings with your phone camera">
-            Phone cameras can't measure heart rate, oxygen or blood pressure reliably enough for a doctor to use. Every reading here comes from a real device or from you — and says which.
-          </M2Note>
+          <M2Note tone="info" icon="shield-check-2" title={t('preview.weNoLongerTakeReadingsWithYourPhone')}>{t('preview.phoneCamerasCanTMeasureHeartRateOxygen')}</M2Note>
 
-          <Text style={[m2Text.eyebrow, styles.sectionGap]}>CONNECTED SOURCES</Text>
+          <Text style={[m2Text.eyebrow, styles.sectionGap]}>{t('preview.connectedSources')}</Text>
           {[
             { icon: 'devices' as const, hue: 'indigo' as const, title: 'Health Connect', note: 'Steps and sleep only — nothing else is read', on: true },
             { icon: 'stethoscope' as const, hue: 'sky' as const, title: 'Blood pressure cuff', note: 'Bluetooth · Omron, DrTrust and others', on: false },
@@ -51,45 +51,45 @@ export function DevicesPreview(): React.ReactElement {
           ))}
 
           <View style={styles.sectionHeadRow}>
-            <Text style={[m2Text.eyebrow, styles.sectionGapNoBottom]}>LATEST READINGS</Text>
-            <Pressable role="button" accessibilityRole="button" accessibilityLabel="Add by hand" onPress={noop}
+            <Text style={[m2Text.eyebrow, styles.sectionGapNoBottom]}>{t('preview.latestReadings')}</Text>
+            <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('preview.addByHand')} onPress={noop}
               style={({ focused }: PressState) => [styles.addBtn, focused ? focusRing : null]}>
-              <Text style={styles.addBtnText}>Add by hand</Text>
+              <Text style={styles.addBtnText}>{t('preview.addByHand')}</Text>
             </Pressable>
           </View>
 
           <M2Card style={styles.readingCard}>
             <View style={styles.readingHead}>
-              <Text style={m2Text.meta}>Blood pressure</Text>
+              <Text style={m2Text.meta}>{t('partner.clin.console.bp')}</Text>
               <M2Pill label="Omron cuff · synced" tone="positive" />
             </View>
             <View style={styles.readingValueRow}>
-              <Text style={styles.readingValue}>118/76 <Text style={styles.readingUnit}>mmHg</Text></Text>
-              <Text style={m2Text.meta}>Today 8:02 am</Text>
+              <Text style={styles.readingValue}>118/76 <Text style={styles.readingUnit}>{t('preview.mmhg')}</Text></Text>
+              <Text style={m2Text.meta}>{t('preview.today802Am')}</Text>
             </View>
           </M2Card>
           <M2Card style={styles.readingCard}>
             <View style={styles.readingHead}>
-              <Text style={m2Text.meta}>Steps</Text>
+              <Text style={m2Text.meta}>{t('steps.title')}</Text>
               <M2Pill label="Health Connect" tone="positive" />
             </View>
             <View style={styles.readingValueRow}>
-              <Text style={styles.readingValue}>6,412 <Text style={styles.readingUnit}>today</Text></Text>
-              <Text style={m2Text.meta}>Live</Text>
+              <Text style={styles.readingValue}>6,412 <Text style={styles.readingUnit}>{t('preview.today')}</Text></Text>
+              <Text style={m2Text.meta}>{t('admin.kb.stateLive')}</Text>
             </View>
           </M2Card>
           <M2Card style={styles.readingCard}>
             <View style={styles.readingHead}>
-              <Text style={m2Text.meta}>Weight</Text>
+              <Text style={m2Text.meta}>{t('m2.prof.weight')}</Text>
               <M2Pill label="Typed by you" tone="neutral" />
             </View>
             <View style={styles.readingValueRow}>
-              <Text style={styles.readingValue}>64.5 <Text style={styles.readingUnit}>kg</Text></Text>
-              <Text style={m2Text.meta}>Mon</Text>
+              <Text style={styles.readingValue}>64.5 <Text style={styles.readingUnit}>{t('preview.kg')}</Text></Text>
+              <Text style={m2Text.meta}>{t('preview.mon')}</Text>
             </View>
           </M2Card>
 
-          <Text style={styles.footNote}>Doctors see where each number came from. Readings are never shared with your college or partners.</Text>
+          <Text style={styles.footNote}>{t('preview.doctorsSeeWhereEachNumberCameFromReadings')}</Text>
         </View>
       </View>
     </View>

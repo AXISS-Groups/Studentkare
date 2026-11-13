@@ -26,7 +26,7 @@ jobs:
       - name: Setup Node.js Environment
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version-file: '.nvmrc'
           cache: 'npm'
           cache-dependency-path: package-lock.json
 
@@ -36,7 +36,10 @@ jobs:
           python-version: '3.11'
 
       - name: Install Frontend Dependencies
-        run: npm ci --legacy-peer-deps || npm install
+        run: npm ci
+
+      - name: Locked install does not rewrite dependency manifests
+        run: git diff --exit-code -- package.json package-lock.json
 
       - name: 1. Code Style & Formatting Check (ESLint)
         run: npm run lint
@@ -80,8 +83,17 @@ jobs:
       - name: 3. Unwanted & Dead Code Check (Knip)
         run: npx knip --config config/knip.json --no-exit-code
 
-      - name: 4. Unit Test Suite (Vitest)
-        run: npx vitest run
+      # Blocking: the suite must pass AND stay at or above the coverage floor in
+      # vite.config.ts (test.coverage.thresholds). The floor only ever rises.
+      - name: 4. Unit Test Suite (Vitest, with coverage floor)
+        run: npm run test:coverage
+
+      - name: 4.1 Publish frontend coverage summary
+        if: always()
+        run: |
+          if [ -f coverage/coverage-summary.json ]; then
+            node -e "const t=require('./coverage/coverage-summary.json').total;console.log('### Frontend coverage\n\n| Lines | Branches | Functions | Statements |\n|---|---|---|---|\n| '+[t.lines,t.branches,t.functions,t.statements].map(x=>x.pct+'%').join(' | ')+' |')" >> "$GITHUB_STEP_SUMMARY"
+          fi
 
       - name: 4.5 Custom House Security Guardrails Check (P72)
         run: npx vitest run src/core/security/__tests__/ciGuardrails.test.ts
@@ -108,7 +120,12 @@ jobs:
           # FastAPI package. PYTHONPATH=. alone resolves none of the latter two,
           # so collection failed before a single test ran.
           PYTHONPATH: .:app:..
-        run: pytest tests/ -v
+        # Blocking: the suite must pass AND application code must stay at or
+        # above the floor in backend/.coveragerc (fail_under). Tests and
+        # migrations are left out of the figure.
+        run: |
+          pytest tests/ -v --cov=. --cov-config=.coveragerc --cov-report=term --cov-report=json:coverage.json
+          python -c "import json;t=json.load(open('coverage.json'))['totals'];print('### Backend coverage\n\n| Lines | Statements | Missed |\n|---|---|---|\n| %.1f%% | %d | %d |' % (t['percent_covered'], t['num_statements'], t['missing_lines']))" >> "$GITHUB_STEP_SUMMARY"
 
       - name: 9. Secret Scan (gitleaks)
         if: always()
@@ -147,6 +164,53 @@ jobs:
           docker compose -f docker-compose.yml -f docker-compose.prod.yml config --format json clamav \
             | python -c "import json,sys; s=json.load(sys.stdin)['services']['clamav']; assert s['healthcheck']['test'] and s['deploy']['resources']['limits']['memory'], s"
           rm -f .env
+
+  # Real-browser journeys against an isolated API (SQLite file in a temp folder)
+  # and the Vite dev server, both started by playwright.config.ts. Verification
+  # codes reach the tests over a pipe and a temp file; no HTTP route hands one out.
+  browser-e2e:
+    name: Browser journeys (Playwright, Chromium)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Install backend dependencies
+        working-directory: ./backend
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r config/requirements-dev.txt
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run the browser journeys
+        env:
+          PYTHON: python
+        run: npm run e2e
+
+      - name: Keep the report when a journey fails
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
 
   ops-config:
     # Production deploy config: the Helm chart renders and lints with the
@@ -210,6 +274,18 @@ jobs:
           pip install pyyaml
           python scripts/ops/check-env-passthrough.py
 
+  frontend-image:
+    # Build the deployment Dockerfile itself: Alpine must use the same locked
+    # install and apply the Expo CLI patch before the production build.
+    name: Frontend image (locked install and production build)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v4
+
+      - name: Build frontend image
+        run: docker build --file deploy/Dockerfile --tag studentkare-frontend:ci .
+
   expo-bundle:
     # Blocking: the phone app must bundle for both platforms. tsc on the native
     # sources (step 2.5 above) does not catch a Metro/Babel config, alias or
@@ -223,12 +299,15 @@ jobs:
       - name: Setup Node.js Environment
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version-file: '.nvmrc'
           cache: 'npm'
           cache-dependency-path: package-lock.json
 
       - name: Install Frontend Dependencies
-        run: npm ci --legacy-peer-deps || npm install
+        run: npm ci
+
+      - name: Locked install does not rewrite dependency manifests
+        run: git diff --exit-code -- package.json package-lock.json
 
       - name: Resolved app config (version, build numbers, plugins)
         run: npx expo config --type public --json > /dev/null
@@ -262,7 +341,7 @@ jobs:
       - name: Setup Node.js Environment
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version-file: '.nvmrc'
 
       - name: Icon coverage across every mapped screen
         run: |
@@ -276,6 +355,75 @@ jobs:
           name: icon-coverage
           path: design/screens/icon-coverage.md
 
+  development-postgres:
+    name: Development Postgres image (pgvector, retained volume, migrations and restore)
+    runs-on: ubuntu-latest
+    env:
+      APP_ENV: testing
+      DATABASE_URL: postgresql://studentkare:studentkare@localhost:5432/studentkare?sslmode=disable
+      REQUIRE_POSTGRES: "1"
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v4
+
+      - name: Setup Python Environment
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Build and start the actual development database image
+        run: docker compose -p sk-dev-db-ci -f docker-compose.yml up --build -d --wait postgres
+
+      - name: Install Backend Dependencies
+        run: python -m pip install -r backend/config/requirements-dev.txt
+
+      - name: Empty development database migrates and activates pgvector
+        working-directory: backend
+        run: |
+          python - <<'PY'
+          from sqlalchemy import insert, text
+          from core import workflow_models as M
+          from services import migrations
+          from services.db_sql import engine
+          assert migrations.schema_state(migrations._postgres_url()) == 'empty'
+          assert migrations.prepare_development_schema() == 'migrations'
+          with engine.begin() as db:
+              assert db.scalar(text("SELECT extversion FROM pg_extension WHERE extname='vector'")) == '0.8.1'
+              assert db.scalar(text("SELECT '[1,2,3]'::vector <-> '[1,2,3]'::vector")) == 0
+              db.execute(insert(M.SystemSetting).values(key='ci_dev_volume_probe', value={'retained': True}, updated_at=1))
+          PY
+          python -m alembic -c config/alembic.ini check
+
+      - name: Recreate the container while keeping its existing volume
+        run: docker compose -p sk-dev-db-ci -f docker-compose.yml up -d --force-recreate --wait postgres
+
+      - name: Existing development data and extension survive recreation
+        working-directory: backend
+        run: |
+          python - <<'PY'
+          from sqlalchemy import text
+          from services import migrations
+          from services.db_sql import engine
+          assert migrations.prepare_development_schema() == 'migrations'
+          with engine.connect() as db:
+              assert db.scalar(text("SELECT value->>'retained' FROM care_system_settings WHERE key='ci_dev_volume_probe'")) == 'true'
+              assert db.scalar(text("SELECT extversion FROM pg_extension WHERE extname='vector'")) == '0.8.1'
+          PY
+          python -m alembic -c config/alembic.ini check
+
+      - name: Backup and restore the development schema
+        run: |
+          set -euo pipefail
+          export BACKUP_DIR="$RUNNER_TEMP/dev-db-backups"
+          sh deploy/backup/pg-backup.sh
+          RESTORE_ADMIN_URL="postgresql://studentkare:studentkare@localhost:5432/postgres?sslmode=disable" \
+            sh scripts/ops/restore-check.sh
+
+      - name: Stop the isolated CI database
+        if: always()
+        # Only the dedicated runner's synthetic database, never a developer's volume.
+        run: docker compose -p sk-dev-db-ci -f docker-compose.yml down
+
   backend-postgres:
     # The suite builds its schema with create_all() on SQLite; production
     # applies Alembic migrations to Postgres and never calls create_all. This
@@ -284,8 +432,8 @@ jobs:
     # services.db_sql's global engine and the Postgres-only schema tests hit a
     # real server. Most tests still build their own in-memory SQLite engines
     # (see tests/conftest.py); this job does not change that.
-    # Production runs postgres:16-alpine (docker-compose.yml); 15 stays in the
-    # matrix so the migrations keep working on the previous major too.
+    # The document RAG migration requires the pgvector server extension.
+    # Keep both supported Postgres majors, with immutable extension-enabled images.
     name: Backend on Postgres ${{ matrix.postgres }} (migrations from empty + drift check + pytest)
     runs-on: ubuntu-latest
 

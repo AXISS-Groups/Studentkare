@@ -633,6 +633,8 @@ declare("health.readings_list_cap", INT, 1000, area="health", unit="rows", minim
         description="Most readings GET /health/readings returns in one response.")
 
 # --- emergency -------------------------------------------------------------
+declare("emergency.sos_queue_cap", INT, 100, area="emergency", unit="rows", minimum=1, maximum=1000,
+        description="Most SOS alerts returned to a staff console after campus and open-status filtering.")
 # The SOS screen re-reads an open alert so "your campus has seen it" appears
 # without a reload (SosBeacon). The server pushes nothing; this is a read.
 declare("emergency.sos_poll_seconds", INT, 15, area="emergency", unit="seconds", minimum=5, maximum=120, public=True,
@@ -705,6 +707,18 @@ declare("privacy.deletion_grace_days", INT, 7, area="privacy", unit="days", mini
 declare("ai.kill_switch_active", BOOL, False, area="ai",
         description="Emergency stop: while true, no AI model call is made anywhere on the platform.")
 
+# --- Auto-filing of uploaded health records -------------------------------------
+# docs/plans/tier1-document-autofile-2026-11-13.md (services/document_filing.py).
+declare("documents.min_text_chars", INT, 40, area="documents", unit="characters", minimum=1, maximum=2000,
+        description="A document whose own text is shorter than this is treated as a scan and sent to the "
+                    "OCR service; an image that reads shorter than this is retried turned sideways.")
+# Kept under the app's own 20 s request timeout (src/data/services/http.ts): past that the
+# student is told the upload timed out although the record was stored.
+declare("documents.ocr_timeout_seconds", INT, 12, area="documents", unit="seconds", minimum=3, maximum=15,
+        description="The longest an upload waits, in total, for the OCR service to read one document.")
+declare("documents.backfill_page_size", INT, 200, area="documents", unit="documents", minimum=10, maximum=5000,
+        description="How many stored documents the reclassify backfill examines per database read.")
+
 # Per-account and per-sender limits on the costly or abusable endpoints (audit L6).
 # The global per-session limiter (core/rate_limiter.py) is too coarse for these.
 declare("ai.ayush_questions_per_account_per_hour", INT, 30, area="ai", unit="questions per hour", minimum=5,
@@ -734,6 +748,9 @@ declare("ayush.min_term_overlap", FLOAT, 0.5, area="ayush", unit="share of subje
 declare("platform.default_timezone", STR, "Asia/Kolkata", area="platform", unit="IANA timezone", public=True,
         description="Timezone for a student's calendar day when they have not set a valid one, and for the "
                     "newsroom's schedules (the composer's publish-later time, series and autopilot slots).")
+declare("platform.asset_max_bytes", INT, 3 * 1024 * 1024, area="platform", unit="bytes",
+        minimum=256 * 1024, maximum=10 * 1024 * 1024,
+        description="Largest public logo/favicon upload, before and after SVG sanitization.")
 # General API rate limits (core/rate_limiter.py, founder decision 2026-10-22). A
 # signed-in request counts against its session's budget and against its network
 # address's ceiling; a request without a session against the ceiling only. One

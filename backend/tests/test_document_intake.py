@@ -14,9 +14,11 @@ def _enable_document_ocr(monkeypatch, text: str):
     depending on pypdf's handling of a hand-built fixture file."""
     from services.integration_config import INTEGRATIONS_DB
 
-    monkeypatch.setitem(INTEGRATIONS_DB, "document_ocr", {"enabled": True, "engine": "tesseract", "binary": "tesseract"})
+    monkeypatch.setitem(INTEGRATIONS_DB, "document_ocr", {"enabled": True, "engine": "axiss-ocr"})
     monkeypatch.setattr(document_ocr, "status", lambda: {"provider": "document_ocr", "state": "READY"})
-    monkeypatch.setattr(document_ocr, "read_text", lambda content, mime_type, timeout=20: text)
+    monkeypatch.setattr(document_ocr, "read_document", lambda content, mime_type, **_options: document_ocr.ReadResult(
+        text=text, engine=document_ocr.ENGINE_SERVICE,
+        attempts=[document_ocr.Attempt(document_ocr.ENGINE_SERVICE, ok=True, pages=1)]))
 
 
 def _upload(client, headers, content, name="report.pdf", mime="application/pdf"):
@@ -139,12 +141,12 @@ def test_a_scanned_pdf_with_no_embedded_text_fails_honestly(harness, monkeypatch
     from services.integration_config import INTEGRATIONS_DB
 
     client, _, codes = harness
-    monkeypatch.setitem(INTEGRATIONS_DB, "document_ocr", {"enabled": True, "engine": "tesseract", "binary": "tesseract"})
+    monkeypatch.setitem(INTEGRATIONS_DB, "document_ocr", {"enabled": True, "engine": "axiss-ocr"})
     monkeypatch.setattr(document_ocr, "status", lambda: {"provider": "document_ocr", "state": "READY"})
 
     def _raise(*_a, **_k):
-        raise document_ocr.ReadFailed("PDF has no extractable text (likely a scan)")
-    monkeypatch.setattr(document_ocr, "read_text", _raise)
+        raise document_ocr.ReadFailed("the document could not be read")
+    monkeypatch.setattr(document_ocr, "read_document", _raise)
 
     user, headers = register(client, codes, "owner7@example.test")
     res = _upload(client, headers, b"irrelevant bytes")

@@ -6,7 +6,7 @@ import { pickReturnPhoto } from '@/features/requests/views/pickReturnPhoto.web';
 
 // keep-sorted start
 const CareDirectoryRoute = lazy(() => import('@/features/careDirectory/views/CareDirectoryRoute').then((m) => ({ default: m.CareDirectoryRoute })));
-const DigitalIdPage = lazy(() => import('@/features/digital_id/views/DigitalIdPageRoute').then((m) => ({ default: m.DigitalIdPage })));
+const DigitalIdPage = lazy(() => import('@/features/digital_id/views/DigitalIdPage').then((m) => ({ default: m.DigitalIdPage })));
 const HealthVaultRoute = lazy(() => import('@/features/vault/views/HealthVaultRoute').then((m) => ({ default: m.HealthVaultRoute })));
 const IdentityVerifyView = lazy(() => import('@/features/auth/views/IdentityVerifyView').then((m) => ({ default: m.IdentityVerifyView })));
 const M2AskAyushRoute = lazy(() => import('@/features/chat/views/M2AskAyushRoute').then((m) => ({ default: m.M2AskAyushRoute })));
@@ -56,8 +56,7 @@ export function studentPhoneBoard(route: RoutePath): PhoneBoard | null {
   switch (route) {
     case '':
     case 'home':
-    case 'health':
-      return { node: <M2HomeRoute />, title: 'm2.nav.home', ownBack: true };
+    case 'health': return { node: <M2HomeRoute />, title: 'm2.nav.home', ownBack: true };
     case 'lab-tests': return { node: <M2LabsRoute />, title: 'm2.labs.title', ownBack: true };
     case 'care': return { node: <M2ConsultsRoute />, title: 'm2.doc.eyebrow', ownBack: true };
     case 'find-care': return { node: <CareDirectoryRoute />, title: 'fc.eyebrow', ownBack: true };

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useOnline } from '@/design-system';
 import { navigate } from '@/lib/utils/workflowRouting';
 import { usePhoneHeaderSlot } from '@/design-system/navigation/BoardHeader';
-import { STUDENT_NAV_ROUTES } from '@/design-system/student-shell/studentPillNav';
+import { STUDENT_NAV_ROUTES } from '@/features/phoneKit/studentNavRoutes';
 import { WaterViewModel } from '../viewmodel/WaterViewModel';
 import { M2WaterView } from './M2WaterView';
 

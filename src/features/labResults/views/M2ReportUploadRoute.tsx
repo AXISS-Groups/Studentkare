@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useOnline } from '@/design-system';
 import { useT } from '@/i18n';
 import { navigate } from '@/lib/utils/workflowRouting';
-import { STUDENT_NAV_ROUTES } from '@/design-system/student-shell/studentPillNav';
+import { STUDENT_NAV_ROUTES } from '@/features/phoneKit/studentNavRoutes';
 import { ReportUploadViewModel } from '../viewmodel/ReportUploadViewModel';
 import { M2ReportUploadView } from './M2ReportUploadView';
 import { pickReportFile } from './pickReportFile.web';

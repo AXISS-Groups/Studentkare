@@ -125,17 +125,6 @@ npm run lint
 npm run build
 ```
 
-A reusable browser smoke check lives at `tests/health-experience.smoke.mjs`.
-It covers desktop/mobile navigation, chart filters and tables, checklist state,
-claim expansion, estimator errors and limits, and reduced-motion behavior.
-
-With Playwright and its Chromium browser already available, start the app using
-`npm run dev`, then run:
-
-```sh
-node tests/health-experience.smoke.mjs
-```
-
-For an existing external installation, set `PLAYWRIGHT_MODULE` to its absolute
-`playwright/index.mjs` path. `BASE_URL` overrides the local server address.
+The browser suite lives in `e2e/` and runs with `npm run e2e` (see `e2e/README.md`).
+It starts its own isolated API and web server.
 `SCREENSHOT_DIR` optionally saves screenshots to an existing directory.

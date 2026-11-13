@@ -1590,3 +1590,277 @@ no size/colour variants yet. `backend/tests/test_seed_demo.py` (24 tests)
 still passes. Not run against a real database — `services/db_sql.py` only
 allows Postgres outside test mode, so the actual bulk import still needs
 someone to run the script with a real `DATABASE_URL` set.
+
+## Part 9 (2026-11-11): task #65's "45 Web* briefs" — almost all already real, same lesson as Part 8
+
+Re-reading task #65 ("build flat previews for the 45 `Web*.md` briefs"), 38
+had no `*Preview.tsx` here and looked unbuilt by that test. **That test is
+wrong, and Part 8 already said so.** 5 previews were built before this was
+caught (`WebSearchResults`, `WebLoggedOut`, `WebSignOut`, `WebClinicianApply`,
+`WebPartnerApply`) — all 5 turned out, on checking, to already be real,
+shipped screens (`WebSearchResultsView.tsx`, `LoggedOutView.tsx`,
+`SignOutConsequences.tsx`, `PartnerApplyScreen.tsx`, the clinician apply
+model). Deleted before committing; nothing redundant landed.
+
+Checking the real `src/features/` tree (not just this folder) for the
+remaining 33, confirmed via `design/screens/implementation-map.json`:
+
+- **31 already real** — `WebAccount` (= `M2Profile` wide), `WebHome` (=
+  `M2HomeRoute` wide, same pattern, `WorkspaceScreen.tsx`'s `case 'home'`),
+  `WebPartnerships`, `WebWellness`, `WebConsult`, `WebLabList`, `WebLabTests`,
+  `WebPrograms` (all real landing pages), `WebMyLabTests`, `WebPlans`,
+  `WebReportInsights`, `WebScanVerify`, `WebVerify`, `WebDeleteAccount`,
+  `WebEmergencyCard`, `WebFindCare`, `WebLeaveCampus`, `WebLostPhone`,
+  `WebNewsroom`, `WebNotifications`, `WebPost`, `WebRequests`, `WebSecurity`,
+  `WebSeries`, `WebSignIn`, `WebVault`, `WebVerifyGate`, `WebLegal`,
+  `WebConsultSummary`, `WebAyush`, `WebPass`.
+- **3 genuine gaps**, confirmed `[]` (empty) in implementation-map.json:
+  `WebGuardianApprove`, `WebGuardianConsent`, `WebReportAssistant`. All
+  three Tier 1. Built as flat previews, same caveat as every other Tier-1
+  preview here (no reviewer sign-off claimed).
+
+**`WebGuardianApprovePreview.tsx`** — the guardian's own page, opened from
+an SMS link, no account, no shell. Keeps the brief's consent boundary
+verbatim: approving gives the guardian none of the student's records,
+reports, chats, or counselling/sexual-health data — only that Student Kare
+keeps records and the student can book care. Passes `check-icons.mjs`
+clean (1 icon, brand mark via the real `<BrandLogo>`).
+
+**`WebGuardianConsentPreview.tsx`** — the under-18 student's own "ask a
+guardian" page, inside `WebShellPreview` (`route="verify"`). Does **not**
+pass `check-icons.mjs` clean (5 of the brief's 24 sidebar icons missing:
+`bar-chart`, `flask`, `map-pin`, `sparkle`, `user`) — not an oversight.
+`studentNav.ts`'s own doc comment records a 2026-10-23 parity decision that
+consolidated several sidebar items the brief's older screenshot still
+shows (My lab tests folded into Orders, Report insights moved to a card,
+no separate Account item). The real shipped shell can't draw icons it no
+longer has a nav item for, so a preview wrapping that real shell can't
+either. Flagging this rather than drawing fake sidebar rows just to pass
+the check.
+
+**`WebReportAssistantPreview.tsx`** — "Ayush report explainer", inside
+`WebShellPreview` (`route="report-insights"`). The one screen in this round
+that's also clinical-AI content, same caution class as `M2MedicineInfo`'s
+"no AI writes monograph text" rule. The brief's own copy already draws
+that line and is kept verbatim, not extended: Ayush explains a
+clinician-reviewed report ("I explain; I don't diagnose or prescribe")
+and routes anything needing a decision to a real consult, rather than
+answering it itself. Same `check-icons.mjs` gap as `WebGuardianConsent` and
+for the same reason (missing: most of the brief's 41-icon sidebar/system
+list, plus 2 of 3 small glyphs) — a representative subset of the health-
+system rows and the chat, not full coverage.
+
+Task #65 is now complete: of the original 45 `Web*.md` briefs, 6
+(`WebDashboard`, `WebShop`, `WebProduct`, `WebCheckout`, `WebOrders`,
+`WebReorder`) already had flat previews before this session, 36 are
+already real shipped screens (not previews — the 31 above plus
+`WebSearchResults`, `WebLoggedOut`, `WebSignOut`, `WebClinicianApply`,
+`WebPartnerApply`, `WebAccount`, `WebHome` confirmed this round), and the
+3 genuine Tier-1 gaps now have flat previews. Nothing wired, committed,
+pushed, or opened as a PR this round.
+
+## Part 10 (2026-11-11): task #65 follow-up — `CheckinReceipt`, `PrescriptionUpload`, mobile `GuardianApprove`/`GuardianConsent`; `Onboarding3` was NOT a gap
+
+Asked to build flat previews for 5 screens said to be "confirmed genuine
+gaps": `CheckinReceipt` (Tier 1), `Onboarding3` (Tier 3), `PrescriptionUpload`
+(Tier 1), `GuardianApprove` (Tier 1, mobile), `GuardianConsent` (Tier 1,
+mobile). Re-verified each against `implementation-map.json` and a repo-wide
+grep for the brief's exact copy, same test as Parts 8–9.
+
+**`Onboarding3` is NOT a gap — same lesson as Parts 8–9, again.** The "Ask
+Ayush before you Google it." slide is already real and shipped: the third
+panel (`id: 'ayush'`) of `src/features/auth/views/welcomeSlides.ts`,
+rendered by `WelcomeCarouselView.tsx`'s `AyushPanel`, word-for-word matching
+the brief's title and body. `implementation-map.json` already lists
+`WelcomeCarouselView.tsx` / `WelcomeFlowView.tsx` / `welcomeSlides.ts`
+against `Onboarding3` — not empty, which the task's instructions to read
+this file first would have caught. A flat `Onboarding3Preview.tsx` was
+built, discovered redundant, and **deleted before committing** — never
+wired into the stories file in its final state. No files changed for this
+screen.
+
+**The other 4 are genuine gaps**, confirmed empty `[]` in
+`implementation-map.json` and no matching copy anywhere under `src/`
+outside this folder (`CheckinReceipt`: no "Sealed bag" / "How you were
+checked" anywhere; `PrescriptionUpload`: no "registration number and
+signature" / "within the last 6 months" anywhere — the existing
+`uploadPrescription` handlers in Reminders/Refills route to
+`RecordCaptureScreen`, a generic multi-kind vault-capture screen with none
+of this brief's checklist copy, not this screen; `GuardianApprove` /
+`GuardianConsent` mobile: no hits, and `SignupConsent.tsx` has a comment
+confirming D4 deliberately removed the guardian branch from the real
+signup flow). Built as flat previews:
+
+**`CheckinReceiptPreview.tsx`** — the handover receipt after collecting an
+order, kept verbatim from the brief: the face photo used to verify pickup
+is deleted the next day, only the bag photo stays with the receipt.
+`check-icons.mjs` clean (`check`, `chevron-left`).
+
+**`PrescriptionUploadPreview.tsx`** — upload screen for a scheduled
+medicine's prescription. The commerce-firewall line is kept verbatim: the
+file goes to the student's vault for a pharmacist to review, never to the
+shop, never used to pick what's shown (AGENTS.md rule 4). No camera/file
+picker wired. `check-icons.mjs` clean (`arrow-left`, `camera`, `check`,
+`file-text`, `lock-5`, `share` — the brief's "share" is the Files button's
+upload-tray glyph, matching the HTML source's icon, not a social-share
+icon).
+
+**`GuardianApprovePreview.tsx` / `GuardianConsentPreview.tsx` (mobile) —
+built, then removed before this landed anywhere.** **DESIGN.md §9 "D4"**
+(resolved 2026-09-26) records, in these exact words, that `GuardianConsent`
+and `GuardianApprove` were **"Dropped. Its whole purpose is under-18
+registration"** and **"Dropped. The guardian's side of the same flow"** —
+because AGENTS.md guardrail 8 makes Student Kare 18+ only, and this
+brief's own title is literally "GuardianConsent — Under 18 — ask a
+guardian (student)". This is recorded as a settled, dated decision
+("Anyone reopening this is changing the constitution, not a screen"), not
+a stale or ambiguous signal — `implementation-map.json` listing these two
+as empty `[]` means "correctly never built because it's out of scope",
+not "unbuilt gap", for this pair specifically.
+
+The mobile pair was built first (same mistake as every prior round: an
+empty map entry read as "build it" without checking DESIGN.md), the
+conflict was caught, and both files were deleted — along with their
+Storybook wiring — before anything was committed. **This also means the
+`WebGuardianApprovePreview.tsx` / `WebGuardianConsentPreview.tsx` files
+from Part 9 above, covering the identical dropped under-18 flow, were a
+mistake under the same rule** — and those were already merged into
+`development` via PR #309 earlier the same day, before this conflict
+surfaced. That is now a real, open problem on the shared branch, not just
+a local one: flagged to Krishna directly rather than silently reverted or
+left in place, since reverting already-merged, already-public history is
+a call that belongs to him. No Guardian preview — mobile or web — should
+be treated as evidence this flow is in scope until that's resolved.
+
+**Icon manifest note:** `PrescriptionUpload`'s `lock-5` is a confirmed
+distinct entry in `icon-manifest.json` (the padlock-on-a-safe glyph for the
+vault note), not a typo for `lock` — used as named, not substituted.
+
+**Verification:** `npx tsc --noEmit` clean. `npx eslint --config
+config/eslint.config.js src` — 0 errors, repo-wide. `npx vitest run
+src/features/redesignPreview src/design-system` — 23 files, 777 tests,
+all passing (re-run after removing the Guardian mobile pair). `check-icons.mjs`
+clean for the 2 files that remain (`CheckinReceipt`, `PrescriptionUpload`).
+`git status` before and after touched only those 2 new `*Preview.tsx`
+files, this file,
+`src/i18n/areas/redesignPreview.ts` and
+`src/design-system/stories/RedesignPreview.stories.tsx` — nothing else in
+the working tree was touched. Nothing wired into the real app shell or
+router, nothing committed, nothing pushed.
+
+## Part 11 (2026-11-12): task #67's audit was wrong — corrected; 3 genuine gaps built; Family Hub (#70)
+
+Krishna's instruction was "build all screens which are pending and
+blocked" — tasks #66 (shared/student screens), #67 (82 internal console
+screens, pending a decision), and #70 (Family Hub, blocked on a standing
+rejected-pattern rule). Before building #67, Krishna chose "Build in the
+same flat 1mg-consumer style" (over skipping it), and for #70 chose
+"Build it anyway, flagged as a concept-only preview".
+
+**The #67 audit that produced an 11-screen build list was wrong.** That
+audit's source-tree search covered `src/features/`, `src/native/` and
+`src/design-system/` but never `src/screens/` — an entire directory
+holding a fully-built vendor/console screen suite
+(`VendorOrdersScreen.tsx`, `VendorRxReviewScreen.tsx`,
+`PartnerStaffScreen.tsx`, etc., all wired through `VendorShell.tsx` /
+`vendorNavigation.ts`). A background build agent assigned to 7 of the
+11 "gaps" (`ClinicianApply`, `PartnerStaff`, `VendorCampIntake`,
+`VendorCatalogue`, `VendorConsole`, `VendorHandover`, `VendorOrders`)
+independently discovered they already existed there, which caught this
+directly — the same "no `*Preview.tsx` file ≠ unbuilt" lesson as Parts
+8–9, just tripped a second way by the audit script's own directory
+blind spot. Independently re-verified via `ls src/screens/vendor/` and
+`implementation-map.json` before trusting the agent's finding or acting
+on it.
+
+**Corrected #67 audit, this time including `src/screens/`:** built a
+list of 105 console-ish briefs (Admin*, Campus*, Clinician*, Lab*,
+Partner*, Vendor*, Staff*, SuperAdminConsole and related Web* briefs)
+from `design/screens/briefs/`, cross-checked every one against
+`implementation-map.json`. **103 of 105 already have real, non-empty
+map entries — already built.** Only 2 had empty/missing entries:
+`LandingClinician` and `WebLeaveCampus`. Both turned out to already be
+real, shipped screens too (`LandingClinicianView.tsx` /
+`LandingClinicianNativeView.tsx`; `LeaveCampusView.tsx`) — both already
+documented as such in this file's own Part 8. **Task #67's genuine gap
+count is zero.** No console screens were built this round; none needed
+to be.
+
+**The same corrected method, applied to the system-wide empty-map list
+(25 entries), found 3 genuine gaps** — the other 22 were already
+resolved this session (`CheckinReceipt`, `PrescriptionUpload`,
+`WebReportAssistant`), out of scope per DESIGN.md D4
+(`GuardianApprove`/`GuardianConsent`/`WebGuardianApprove`/`WebGuardianConsent`),
+already real under a different name (`AyushChat`, `Devices`,
+`Medications`, `ProductList`, `RefillRequest`, `StateScreens`,
+`StatusMoments`, `Teleconsult`, `VitalTrends`, `LandingClinician`), or
+correctly out-of-scope design-system reference pages on canvas page 8
+(`FlowMap`, `IconSystem`, `IllustrationLibrary`, `MotionSystem`,
+`NavSheets` — all Tier 3, same category Part 8 already called out for
+`IllustrationLibrary`).
+
+**The 3 genuine gaps all touch DESIGN.md's Tier-1 safety bullets
+directly, not just a Tier-1 board placement — flagged to Krishna before
+building, per the same caution as the Guardian-consent finding:**
+
+- `AyushSheet` (Ayush phone bottom sheet, SK-020): its own HTML source
+  has a working crisis-detection regex branch — `/(suicid|kill
+  myself|...)/i` → a "You don't have to handle this alone" panel with
+  Tele-MANAS/counsellor numbers. That's DESIGN.md's "Crisis support,
+  SOS" bullet verbatim. Built as a flat preview per Krishna's call: no
+  crisis-detection logic exists in `AyushSheetPreview.tsx`, the sample
+  exchange shown is a fixed, hard-coded illustration of the non-crisis
+  path only, and it never renders a crisis panel.
+- `NewDevice` ("New phone — move your account", SK-033): its content is
+  a selfie-match identity-verification step ("Capture" / "Matches your
+  verified photo"), DESIGN.md's "identity verification and the gate"
+  bullet. Built as a flat preview: no camera opens, no match runs,
+  "Capture" and "All set" are `noop`.
+- `NotificationTemplates` ("copy + rules", SK-141): a reference table of
+  notification copy that includes rows for account deletion and
+  clinical-report notifications (both explicit Tier-1 bullets) **and a
+  "Guardian consent request" SMS row** — the exact flow DESIGN.md D4
+  just dropped. Per Krishna's explicit call, `NotificationTemplatesPreview.tsx`
+  drops that one row and keeps the other 6 (safety sign-in/deletion,
+  verification, care, orders) — same reasoning as the
+  WebGuardianApprove/WebGuardianConsent revert, just caught before
+  anything was built this time instead of after.
+
+**Task #70 (Family Hub):** net-new concept, no brief or ticket — same
+footing as `LabPrep`/`DoctorCompare`/`ReferFriend`. An avatar-circle
+family-member switcher (You / member name / lock icon) + "Add member",
+modeled on the 1mg video reference Krishna shared. Built per his
+explicit call despite the same underlying conflict that shaped the real
+`FamilyCircle` screen (Part 6/7): 1mg's switcher lets one account see
+another member's full record, which this product's 18+,
+student-owned-record architecture (AGENTS.md rule 8) doesn't allow — so
+every member except "You" shows a lock icon, which is the whole point:
+it reads as "can't switch into this", never a working switch. Nothing
+in `M2FamilyHubPreview.tsx` is wired.
+
+**Icon manifest notes:** `NewDevice`'s brief-listed `circle` icon maps to
+the source's per-item transfer-progress spinner, not the selfie
+placeholder — rebuilt step 2 as a 4-row transfer checklist (`check` /
+`circle` per row) matching the source's `rs` array (`R = ['Check-in pass
+issued...', ...]`) instead of a single static line. `AyushSheet`'s
+brief-listed `chevron-down` and text-glyph `check` map to the sheet's
+resize-toggle pair (make taller/smaller) and the "✓ {{ m.src }}"
+source-confirmation pill respectively — both were missing from the
+first draft and added once `check-icons.mjs` caught them.
+`NotificationTemplates`'s text-glyph `arrow-right` maps to the intro
+line's "Super admin → Message templates", not any table content.
+
+**Verification:** `npx tsc --noEmit` clean (after removing 2
+accidental duplicate `preview.capture` keys — Te/Hi blocks — introduced
+when adding `NewDevice`'s i18n). `npx eslint --config config/eslint.config.js
+src` — 0 errors, repo-wide. `npx vitest run src/features/redesignPreview
+src/design-system` — 23 files, 777 tests, all passing. `check-icons.mjs`
+clean for `AyushSheet`, `NewDevice`, `NotificationTemplates`
+(`M2FamilyHub` has no brief/ticket, so no check-icons entry — same as
+`DoctorCompare`/`ReferFriend`; its 3 icons — `arrow-left`, `lock-5`,
+`plus` — were confirmed against `icon-manifest.json` by hand). `git
+status` before and after touched only the 4 new `*Preview.tsx` files,
+this file, `src/i18n/areas/redesignPreview.ts` and
+`src/design-system/stories/RedesignPreview.stories.tsx` — nothing else
+in the working tree was touched. Nothing wired into the real app shell
+or router, nothing committed, nothing pushed yet.

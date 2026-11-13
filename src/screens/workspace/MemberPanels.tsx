@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { Activity, ArrowRight, Download, FileText, HeartPulse, Plus, ShieldCheck, Trash2 } from 'lucide-react';
 import { useApiResource } from '../../hooks/api/useApiResource';
 import { apiFileUrl, apiRequest } from '../../data/services/http';
-import { LiveDocument, LiveOrder, LivePolicy, LiveReading, MetricDefinition, ServiceHealth, SupportTicket, ReviewedBenefit, ClaimRequest, RecordShare, RequestStatus, displayDate, money } from '../../data/types/workflowTypes';
+import { LiveDocument, LiveOrder, LivePolicy, LiveReading, MetricDefinition, ServiceHealth, ReviewedBenefit, ClaimRequest, RecordShare, RequestStatus, displayDate, money } from '../../data/types/workflowTypes';
 import { DataState, EmptyState, Field, FormError, Pagination, SubmitButton, useMutation } from '../../components/interface/WorkflowUI';
 import { ShopDialog } from '../../components/marketplace/ShopDialog';
 import { TrendChart } from '../../components/health/HealthPrimitives';
@@ -24,7 +24,6 @@ const REQUEST_STATUSES: readonly RequestStatus[] = ['REQUESTED', 'ACCEPTED', 'DE
 const isRequestStatus = (value: string): value is RequestStatus => (REQUEST_STATUSES as readonly string[]).includes(value);
 
 const attentionNotice: React.CSSProperties = { background: 'var(--sk-color-attention-bg)', color: 'var(--sk-color-text)', borderColor: 'var(--sk-color-attention)' };
-const positiveNotice: React.CSSProperties = { background: 'var(--sk-color-positive-bg)', color: 'var(--sk-color-text)', borderColor: 'var(--sk-color-positive)' };
 
 export function MemberOverview() {
   const t = useT();
@@ -164,20 +163,6 @@ export function InsurancePanel() {
       {adding && <ShopDialog title={t('member.insurance.policyDialogTitle')} onClose={() => setAdding(false)}><form className="wf-form" onSubmit={event => { event.preventDefault(); mutation.run(() => apiRequest('/health/policies', { method: 'POST', body: JSON.stringify({ insurer, policyNumber: number, sumInsured: Number(sum), validUntil: until }) }), () => { setAdding(false); resource.reload(); }); }}><FormError message={mutation.error} /><Field label={t('member.insurance.insurer')}><input required minLength={2} maxLength={100} value={insurer} onChange={event => setInsurer(event.target.value)} /></Field><Field label={t('member.insurance.policyNumber')}><input required minLength={2} maxLength={100} value={number} onChange={event => setNumber(event.target.value)} /></Field><Field label={t('member.insurance.sumInsured')}><input required type="number" min="1" max="100000000" value={sum} onChange={event => setSum(event.target.value)} /></Field><Field label={t('member.insurance.validUntil')}><input required type="date" value={until} onChange={event => setUntil(event.target.value)} /></Field><SubmitButton busy={mutation.busy}>{t('member.insurance.savePolicy')}</SubmitButton></form></ShopDialog>}
       {claiming && <ShopDialog title={t('member.insurance.prepareClaim')} onClose={() => setClaiming(false)}><form className="wf-form" onSubmit={event => { event.preventDefault(); claimMutation.run(() => apiRequest('/insurance/claims', { method: 'POST', body: JSON.stringify({ policyId: claimPolicy, providerName: claimProvider, service: claimService, amountPaise: Math.round(Number(claimAmount) * 100) }) }), () => { setClaiming(false); claims.reload(); }); }}><p>{t('member.insurance.claimDialogBody')}</p><FormError message={claimMutation.error} /><Field label={t('member.insurance.policy')}><select required value={claimPolicy} onChange={event => setClaimPolicy(event.target.value)}><option value="">{t('member.insurance.choosePolicy')}</option>{resource.data?.items.map(policy => <option key={policy.id} value={policy.id}>{policy.insurer} · {policy.policyNumber}</option>)}</select></Field><Field label={t('member.insurance.provider')}><input value={claimProvider} maxLength={160} onChange={event => setClaimProvider(event.target.value)} /></Field><Field label={t('member.insurance.service')}><input value={claimService} maxLength={160} onChange={event => setClaimService(event.target.value)} /></Field><Field label={t('member.insurance.amount')}><input required type="number" min="1" step="any" value={claimAmount} onChange={event => setClaimAmount(event.target.value)} /></Field><SubmitButton busy={claimMutation.busy}>{t('member.insurance.saveClaim')}</SubmitButton></form></ShopDialog>}
   </>;
-}
-
-export function SupportPanel({ staff = false }: { staff?: boolean }) {
-  const t = useT();
-  const resource = useApiResource<{ items: SupportTicket[] }>('/support');
-  const [subject, setSubject] = useState('');
-  const [message, setMessage] = useState('');
-  const [sent, setSent] = useState(false);
-  const mutation = useMutation();
-  return <><div className="wf-panel-heading"><div><span className="care-eyebrow">{t('member.support.eyebrow')}</span><h2>{staff ? t('member.support.staffTitle') : t('member.support.title')}</h2><p>{staff ? t('member.support.staffBody') : t('member.support.body')}</p></div></div>
-  <FormError message={mutation.error} />
-  {sent && <div className="wf-notice" role="status" style={{ ...positiveNotice, marginBottom: '16px' }}>{t('member.support.sent')}</div>}
-  {!staff && <form className="wf-card wf-form" onSubmit={event => { event.preventDefault(); setSent(false); mutation.run(() => apiRequest('/support', { method: 'POST', body: JSON.stringify({ subject, message }) }), () => { setSent(true); setSubject(''); setMessage(''); resource.reload(); }); }}><Field label={t('member.support.subject')}><input required minLength={3} maxLength={160} value={subject} onChange={event => setSubject(event.target.value)} /></Field><Field label={t('member.support.message')}><textarea required minLength={10} maxLength={2000} rows={4} value={message} onChange={event => setMessage(event.target.value)} /></Field><SubmitButton busy={mutation.busy}>{t('member.support.send')}</SubmitButton></form>}
-  <DataState {...resource} retry={resource.reload}>{resource.data?.items.length ? <div className="wf-order-list wf-section-gap">{resource.data.items.map(ticket => <article className="wf-card" key={ticket.id}><div className="wf-panel-heading"><div><h3>{ticket.subject}</h3></div><span className="wf-status">{ticket.status}</span></div><p>{ticket.message}</p><small>{displayDate(ticket.createdAt)}</small>{staff && ticket.status === 'OPEN' && <button type="button" className="health-button" disabled={mutation.busy} onClick={() => mutation.run(() => apiRequest(`/ops/support/${ticket.id}`, { method: 'PATCH' }), resource.reload)}>{t('member.support.markResolved')}</button>}</article>)}</div> : <EmptyState title={t('member.support.emptyTitle')} description={t('member.support.emptyBody')} animation="anim-message" />}</DataState></>;
 }
 
 export function IntegrationsPanel() {

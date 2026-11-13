@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useT } from '@/i18n';
 import { GlossTile, M2Card, M2Note, M2Pill, RoundButton, m2Text } from '@/design-system/m2';
 import type { PressState } from '@/design-system/m2';
 import { Icon } from '@/design-system/icons';
@@ -134,17 +135,18 @@ export function CommerceExtrasPreview(): React.ReactElement {
   const [dismissedIds, setDismissedIds] = useState<ReadonlyArray<string>>([]);
 
   const visibleRecentlyViewed = RECENTLY_VIEWED.filter((item) => !dismissedIds.includes(item.id));
+  const t = useT();
 
   return (
     <View style={styles.screen} testID="preview-commerce-extras">
       <View style={styles.header}>
         <RoundButton icon="arrow-left" label="Back" onPress={noop} />
-        <Text style={styles.title}>[Checkout extras]</Text>
+        <Text style={styles.title}>{t('preview.checkoutExtras')}</Text>
       </View>
 
       <View style={styles.scroll}>
         <View style={styles.body}>
-          <Text style={m2Text.section}>[Delivery speed]</Text>
+          <Text style={m2Text.section}>{t('preview.deliverySpeed')}</Text>
           <View style={styles.speedRow} testID="preview-commerce-extras-speed">
             {SPEED_OPTIONS.map((option) => {
               const selected = option.id === selectedSpeed;
@@ -171,7 +173,7 @@ export function CommerceExtrasPreview(): React.ReactElement {
             })}
           </View>
 
-          <Text style={[m2Text.section, styles.sectionGap]}>[Frequently bought together]</Text>
+          <Text style={[m2Text.section, styles.sectionGap]}>{t('preview.frequentlyBoughtTogether')}</Text>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -192,21 +194,21 @@ export function CommerceExtrasPreview(): React.ReactElement {
                 <Pressable
                   role="button"
                   accessibilityRole="button"
-                  accessibilityLabel={`Add ${item.name}`}
+                  accessibilityLabel={t('preview.addName', { name: item.name })}
                   onPress={noop}
                   style={({ focused }: PressState) => [styles.addBtn, focused ? focusRing : null]}
                 >
-                  <Text style={styles.addBtnText}>[Add]</Text>
+                  <Text style={styles.addBtnText}>{t('preview.add')}</Text>
                 </Pressable>
               </M2Card>
             ))}
           </ScrollView>
 
-          <M2Note tone="positive" icon="check-circle-2" title="[Care Plan discount applied]" testID="preview-commerce-extras-plan-banner">
-            [You saved ₹140 on this order.]
+          <M2Note tone="positive" icon="check-circle-2" title={t('preview.carePlanDiscountApplied')} testID="preview-commerce-extras-plan-banner">
+            {t('preview.youSaved140OnThisOrder')}
           </M2Note>
 
-          <Text style={[m2Text.section, styles.sectionGap]}>[Top brands for you]</Text>
+          <Text style={[m2Text.section, styles.sectionGap]}>{t('preview.topBrandsForYou')}</Text>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -222,7 +224,7 @@ export function CommerceExtrasPreview(): React.ReactElement {
             ))}
           </ScrollView>
 
-          <Text style={[m2Text.section, styles.sectionGap]}>[Continue browsing]</Text>
+          <Text style={[m2Text.section, styles.sectionGap]}>{t('preview.continueBrowsing')}</Text>
           {visibleRecentlyViewed.length > 0 ? (
             <ScrollView
               horizontal
@@ -236,7 +238,7 @@ export function CommerceExtrasPreview(): React.ReactElement {
                   <Pressable
                     role="button"
                     accessibilityRole="button"
-                    accessibilityLabel={`Dismiss ${item.name}`}
+                    accessibilityLabel={t('preview.dismissName', { name: item.name })}
                     onPress={() => setDismissedIds((prev) => [...prev, item.id])}
                     style={({ focused }: PressState) => [styles.dismissBtn, focused ? focusRing : null]}
                   >
@@ -249,14 +251,14 @@ export function CommerceExtrasPreview(): React.ReactElement {
               ))}
             </ScrollView>
           ) : (
-            <Text style={m2Text.meta}>[Nothing left here — every item was dismissed.]</Text>
+            <Text style={m2Text.meta}>{t('preview.nothingLeftHereEveryItemWasDismissed')}</Text>
           )}
         </View>
       </View>
 
       <View style={styles.quickAddOverlay} testID="preview-commerce-extras-quick-add">
         <Icon name="cart" size={16} color={color.onAction} />
-        <Text style={styles.quickAddText}>[2 items added]</Text>
+        <Text style={styles.quickAddText}>{t('preview.2ItemsAdded')}</Text>
         <M2Pill label="[View cart]" tone="hero" />
       </View>
     </View>

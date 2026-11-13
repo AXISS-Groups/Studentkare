@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useT } from '@/i18n';
 import { GlossTile, M2Card, M2Pill, m2Text } from '@/design-system/m2';
 import type { PressState } from '@/design-system/m2';
 import type { SkIconName } from '@/design-system/icons';
 import { color, focusRing, font, fontWeight, radius, space } from '@/design-system/theme';
 import { WebShellPreview } from './WebShellPreview';
 import { BrandFooter } from './BrandFooter';
-
-const noop = () => undefined;
 
 interface Persona {
   id: string;
@@ -64,13 +63,14 @@ const CATEGORIES: ReadonlyArray<CategoryTile> = [
  */
 export function WebCategoryBrowsePreview(): React.ReactElement {
   const [selectedPersona, setSelectedPersona] = useState<string>(PERSONAS[0].id);
+  const t = useT();
 
   return (
     <WebShellPreview route="shop">
       <View style={styles.body} testID="preview-web-category-browse">
-        <Text style={styles.title}>[Shop by category]</Text>
+        <Text style={styles.title}>{t('preview.shopByCategory')}</Text>
 
-        <Text style={m2Text.eyebrow}>[Shopping for:]</Text>
+        <Text style={m2Text.eyebrow}>{t('preview.shoppingFor')}</Text>
         <View style={styles.personaRow} testID="preview-web-category-browse-personas">
           {PERSONAS.map((persona) => {
             const selected = persona.id === selectedPersona;
@@ -96,7 +96,7 @@ export function WebCategoryBrowsePreview(): React.ReactElement {
           })}
         </View>
 
-        <Text style={[m2Text.section, styles.sectionGap]}>[Shop by category]</Text>
+        <Text style={[m2Text.section, styles.sectionGap]}>{t('preview.shopByCategory')}</Text>
         <View style={styles.grid} testID="preview-web-category-browse-grid">
           {CATEGORIES.map((category) => (
             <View key={category.id} style={styles.tileWrap} testID={`preview-web-category-browse-tile-${category.id}`}>
@@ -123,18 +123,18 @@ export function WebCategoryBrowsePreview(): React.ReactElement {
           ))}
         </View>
 
-        <Text style={[m2Text.section, styles.sectionGap]}>[Offers for you]</Text>
+        <Text style={[m2Text.section, styles.sectionGap]}>{t('preview.offersForYou')}</Text>
         <View style={styles.promoRow} testID="preview-web-category-browse-promos">
           <M2Card style={styles.promoCard} testID="preview-web-category-browse-promo-bogo">
             <GlossTile icon="capsule" hue="violet" size={40} />
-            <Text style={styles.promoTitle}>[Buy 1 Get 1 — Vitamins]</Text>
-            <Text style={m2Text.meta}>[On select vitamin packs this week.]</Text>
+            <Text style={styles.promoTitle}>{t('preview.buy1Get1Vitamins')}</Text>
+            <Text style={m2Text.meta}>{t('preview.onSelectVitaminPacksThisWeek')}</Text>
             <M2Pill label="[BOGO]" tone="positive" icon="percent" />
           </M2Card>
           <M2Card style={styles.promoCard} testID="preview-web-category-browse-promo-family">
             <GlossTile icon="users" hue="rose" size={40} />
-            <Text style={styles.promoTitle}>[Family pack — Save 30%]</Text>
-            <Text style={m2Text.meta}>[Stock up for the whole hostel floor.]</Text>
+            <Text style={styles.promoTitle}>{t('preview.familyPackSave30')}</Text>
+            <Text style={m2Text.meta}>{t('preview.stockUpForTheWholeHostelFloor')}</Text>
             <M2Pill label="[30% off]" tone="positive" icon="percent" />
           </M2Card>
         </View>

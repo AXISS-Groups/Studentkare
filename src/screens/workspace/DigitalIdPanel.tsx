@@ -12,7 +12,7 @@ import { useLivePass } from '@/features/digital_id/viewmodel/livePass';
 import { QrCells } from '@/features/digital_id/views/DigitalIdNativeView';
 import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
-import '@/design-system/styles/member-profile.css';
+import '@/features/m2profile/views/member-profile.css';
 import '../../theme/workflows.css';
 
 const CAMPUS_LABEL: Record<IdentitySummary['campusStatus'], MessageKey> = { VERIFIED: 'member.digitalId.campus.VERIFIED', PENDING: 'member.digitalId.campus.PENDING', NOT_SUBMITTED: 'member.digitalId.campus.NOT_SUBMITTED', REJECTED: 'member.digitalId.campus.REJECTED' };

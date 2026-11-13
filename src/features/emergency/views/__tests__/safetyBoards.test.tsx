@@ -5,6 +5,7 @@ import { Linking } from 'react-native';
 import * as http from '@/data/services/http';
 import { translate } from '@/i18n';
 import type { MessageKey } from '@/i18n';
+import { invalidateSessionScope, setSessionAccount } from '@/core/session/sessionScope';
 import type { MemberIdentity, MemberProfile } from '@/data/types/workflowTypes';
 import { axeViolations, describeViolations } from '@/test/axe';
 
@@ -65,7 +66,7 @@ beforeEach(() => {
   openURL = vi.spyOn(Linking, 'openURL').mockResolvedValue(undefined);
   Object.defineProperty(navigator, 'onLine', { configurable: true, value: true });
 });
-afterEach(() => { cleanup(); openURL.mockRestore(); vi.useRealTimers(); });
+afterEach(() => { cleanup(); invalidateSessionScope(); openURL.mockRestore(); vi.useRealTimers(); });
 
 describe('EmergencyCard (Tier 1)', () => {
   const links = { contacts: vi.fn() };
@@ -152,7 +153,7 @@ const alert = (over: Partial<SosAlert> = {}): SosAlert => ({
 });
 
 describe('SosBeacon / SosDebrief (Tier 1)', () => {
-  beforeEach(() => emergencyStore.reset());
+  beforeEach(() => { setSessionAccount('account-a'); emergencyStore.reset(); });
 
   it('beacon: live timer from the server start, the typed location, and only the server’s deliveries', async () => {
     serve({ '/emergency/sos/current': { alert: alert() } });
@@ -196,6 +197,38 @@ describe('SosBeacon / SosDebrief (Tier 1)', () => {
     render(<SosView signedIn={false} links={{ signIn: vi.fn() }} />);
     expect(screen.getByRole('button', { name: en('crisis.call112Spoken') })).toBeInTheDocument();
     expect(api).not.toHaveBeenCalled();
+  });
+
+  it('polls ACTIVE → ACKNOWLEDGED → RESOLVED and stops polling after resolution', async () => {
+    vi.useFakeTimers();
+    api.mockResolvedValueOnce({ alert: alert() });
+    await act(async () => { render(<SosView signedIn links={{}} />); });
+    const interval = publicSettingDefaults['emergency.sos_poll_seconds'] * 1000;
+    api.mockResolvedValueOnce({ alert: alert({ status: 'ACKNOWLEDGED', acknowledgedAt: Date.now() / 1000 }) });
+    await act(async () => { await vi.advanceTimersByTimeAsync(interval); });
+    expect(screen.getByText(en('sos.ackTitle'))).toBeInTheDocument();
+    api.mockResolvedValueOnce({ alert: alert({ status: 'RESOLVED', resolvedAt: Date.now() / 1000 }) });
+    await act(async () => { await vi.advanceTimersByTimeAsync(interval); });
+    expect(screen.getByTestId('sos-debrief')).toBeInTheDocument();
+    expect(screen.getByText(en('sf.sos.closedTitle'))).toBeInTheDocument();
+    const calls = api.mock.calls.length;
+    await act(async () => { await vi.advanceTimersByTimeAsync(interval * 2); });
+    expect(api).toHaveBeenCalledTimes(calls);
+    expect(screen.getByTestId('sos-call-112')).toBeInTheDocument();
+  });
+
+  it.each(['ACTIVE', 'RESOLVED', null] as const)('shows a labelled refresh warning and working retry for %s without losing 112', async (status) => {
+    vi.useFakeTimers();
+    api.mockResolvedValueOnce({ alert: status ? alert({ status }) : null });
+    await act(async () => { render(<SosView signedIn links={{}} />); });
+    api.mockRejectedValueOnce(new Error('offline'));
+    await act(async () => { await emergencyStore.loadCurrent(); });
+    expect(screen.getByTestId('sos-refresh-error')).toHaveAttribute('role', 'alert');
+    expect(screen.getByTestId('sos-refresh-error')).toHaveTextContent(en('sos.refreshFailed'));
+    expect(screen.getByTestId('sos-call-112')).toBeInTheDocument();
+    api.mockResolvedValueOnce({ alert: status ? alert({ status }) : null });
+    await act(async () => { fireEvent.click(screen.getByRole('button', { name: en('common.tryAgain') })); });
+    expect(screen.queryByTestId('sos-refresh-error')).toBeNull();
   });
 });
 
@@ -400,7 +433,7 @@ describe('ConsentInbox (Tier 1)', () => {
 });
 
 describe('Nearest hospitals on the SOS surfaces (plan tier1-care-directory-2026-10-21 §3)', () => {
-  beforeEach(() => emergencyStore.reset());
+  beforeEach(() => { setSessionAccount('account-a'); emergencyStore.reset(); });
 
   it('signed out: after Call 112, and only when the screen is given the link', () => {
     const nearestHospitals = vi.fn();

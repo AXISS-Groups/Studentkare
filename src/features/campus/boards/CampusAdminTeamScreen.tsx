@@ -7,7 +7,7 @@ import { Icon, Icon3d } from '@/design-system/icons';
 import { apiRequest } from '@/data/services/http';
 import { useAuth } from '@/data/contexts/AuthContext';
 import type { AccountRole } from '@/data/types/workflowTypes';
-import { initialsOf } from '@/features/clinician/shared/names';
+import { initialsOf } from '@/features/clinician/model/names';
 import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
 import { canAccessRoute, navigate } from '@/lib/utils/workflowRouting';

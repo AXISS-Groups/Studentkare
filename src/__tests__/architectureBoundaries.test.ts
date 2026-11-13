@@ -257,6 +257,42 @@ function runtimeCycles(files: string[], edges: Edge[]): string[][] {
 
 const cycleKey = (group: string[]): string => `cycle:runtime ${group.map((file) => `src/${file}`).join(' | ')}`;
 
+/**
+ * Inside a feature, MVVM runs one way: views/ may import viewmodel/ and model/,
+ * viewmodel/ may import model/, and model/ imports neither. No feature has an
+ * exception, so this is enforced outright rather than through the legacy list.
+ */
+type Slice = 'model' | 'viewmodel' | 'view' | 'screen';
+
+const FEATURE_SLICE = /^features\/[^/]+\/(model|viewmodels?|views?|screens)\//;
+
+function sliceOf(file: string): Slice | null {
+  const folder = FEATURE_SLICE.exec(file)?.[1];
+  if (!folder) return null;
+  if (folder === 'model') return 'model';
+  if (folder.startsWith('viewmodel')) return 'viewmodel';
+  return folder.startsWith('view') ? 'view' : 'screen';
+}
+
+/** Features whose model/ also stays free of UI types (design-system, components). */
+const UI_FREE_MODEL_FEATURES = ['clinician'];
+
+/** The only folders a fully layered feature may have. */
+const LAYERED_FEATURES: Record<string, readonly string[]> = { clinician: ['model', 'viewmodel', 'views'] };
+
+function featureLayerViolations(edges: Edge[]): string[] {
+  const found: string[] = [];
+  for (const { from, to, kind } of edges) {
+    const fromSlice = sliceOf(from);
+    const toSlice = sliceOf(to);
+    const above = fromSlice === 'model' ? ['viewmodel', 'view', 'screen'] : fromSlice === 'viewmodel' ? ['view', 'screen'] : [];
+    if (toSlice && above.includes(toSlice)) found.push(`${kind} src/${from} -> src/${to}  (${fromSlice} may not import ${toSlice})`);
+    const uiFree = fromSlice === 'model' && UI_FREE_MODEL_FEATURES.some((feature) => from.startsWith(`features/${feature}/`));
+    if (uiFree && layerOf(to) === 'ui') found.push(`${kind} src/${from} -> src/${to}  (this feature's model may not import UI)`);
+  }
+  return found;
+}
+
 const legacy: Record<string, string> = JSON.parse(readFileSync(legacyPath, 'utf8'));
 const graph = buildGraph();
 const violations = boundaryViolations(graph.edges);
@@ -321,6 +357,44 @@ describe('architecture boundaries', () => {
   it('adds no runtime import cycle', () => {
     const added = cycles.map(cycleKey).filter((key) => !(key in legacy));
     expect(added).toEqual([]);
+  });
+});
+
+describe('feature layering (model <- viewmodel <- views)', () => {
+  it('classifies feature folders', () => {
+    expect(sliceOf('features/clinician/model/queueModel.ts')).toBe('model');
+    expect(sliceOf('features/admin/viewmodels/AdminViewModel.ts')).toBe('viewmodel');
+    expect(sliceOf('features/orders/viewmodel/OrdersViewModel.ts')).toBe('viewmodel');
+    expect(sliceOf('features/orders/views/OrdersView.tsx')).toBe('view');
+    expect(sliceOf('features/care/screens/CareScreen.tsx')).toBe('screen');
+    expect(sliceOf('features/orders/data/ordersApi.ts')).toBeNull();
+    expect(sliceOf('screens/clinician/DoctorTodayScreen.tsx')).toBeNull();
+  });
+
+  it('flags an upward import, and UI types only in a UI-free model', () => {
+    const edge = (from: string, to: string): Edge => ({ from, to, kind: 'type' });
+    expect(featureLayerViolations([
+      edge('features/orders/model/order.ts', 'features/orders/views/OrderView.tsx'),
+      edge('features/orders/model/order.ts', 'features/orders/viewmodel/OrderViewModel.ts'),
+      edge('features/orders/viewmodel/OrderViewModel.ts', 'features/orders/views/OrderView.tsx'),
+      edge('features/clinician/model/queueModel.ts', 'design-system/index.ts'),
+    ])).toHaveLength(4);
+    expect(featureLayerViolations([
+      edge('features/orders/views/OrderView.tsx', 'features/orders/viewmodel/OrderViewModel.ts'),
+      edge('features/orders/viewmodel/OrderViewModel.ts', 'features/orders/model/order.ts'),
+      edge('features/newsroom/model/templates.ts', 'design-system/icons/index.ts'),
+    ])).toEqual([]);
+  });
+
+  it('keeps model/ and viewmodel/ from importing the layers above them', () => {
+    expect(featureLayerViolations(graph.edges)).toEqual([]);
+  });
+
+  it.each(Object.entries(LAYERED_FEATURES))('keeps features/%s to its layer folders', (feature, allowed) => {
+    const folders = readdirSync(join(src, 'features', feature), { withFileTypes: true })
+      .filter((entry) => entry.isDirectory() && entry.name !== '__tests__' && !entry.name.startsWith('.'))
+      .map((entry) => entry.name);
+    expect(folders.filter((name) => !allowed.includes(name))).toEqual([]);
   });
 });
 

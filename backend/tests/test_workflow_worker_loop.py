@@ -160,6 +160,7 @@ def test_loop_survives_a_failed_pass(factory, caplog):  # noqa: F811
     assert "secret" not in caplog.text
 
 
+@pytest.mark.skipif(os.name == "nt", reason="Windows os.kill(SIGTERM) terminates the process; Linux CI exercises POSIX signal delivery")
 def test_sigterm_sets_stop_event():
     stop = threading.Event()
     previous = signal.getsignal(signal.SIGTERM), signal.getsignal(signal.SIGINT)
@@ -172,6 +173,7 @@ def test_sigterm_sets_stop_event():
         signal.signal(signal.SIGINT, previous[1])
 
 
+@pytest.mark.skipif(os.name == "nt", reason="Windows os.kill(SIGTERM) terminates the process; Linux CI exercises POSIX signal delivery")
 def test_cli_loop_exits_cleanly_on_sigterm(factory, monkeypatch, tmp_path, capsys):  # noqa: F811
     from services import db_sql
 

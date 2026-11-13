@@ -114,3 +114,10 @@ run-local.bat
 
 # Open-data downloads for the dev site (scripts/open_data.py). Licences differ; never commit them.
 /data/open/
+
+# Playwright output
+test-results/
+playwright-report/
+# Python coverage output
+.coverage
+coverage.json

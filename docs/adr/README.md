@@ -11,6 +11,7 @@ change the old one's status to `Superseded by NNNN`.
 | [0003](0003-crisis-signals-are-pulled.md) | Crisis signals reach counsellors through a queue, not a push | Accepted (open question) |
 | [0004](0004-migrations-once-per-deploy.md) | Migrations run once per deploy under an advisory lock | Proposed |
 | [0005](0005-images-deployed-by-commit.md) | Images are built once per green commit and deployed by SHA | Proposed |
+| [0006](0006-passport-qr-placeholder-uses-canvas-icon.md) | Passport QR placeholder uses the approved canvas `qr-code` icon | Accepted |
 
 Decisions the audit lists as still open, to be written up when they are made:
 - Production target: Helm or the compose overlay (audit 17, TD-16).

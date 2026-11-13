@@ -457,9 +457,9 @@ Never used to train any model (Rule-C).
   and 108. Aligning both is for the AI-constitution owner (D-SC-23).
 - **Crisis gate coverage.** `CRISIS_MEDICAL` phrases are English only and marked `TODO(clinical-review)`; the
   te/hi/Hinglish rows are self-harm only. The search field inherits this gap.
-- **SOS wording, not verified.** `EmergencySosWebView.tsx` / `EmergencySosNativeView.tsx` contain "AMBULANCE
-  DISPATCHED" strings. Before this flow routes students to campus SOS, confirm that text appears only when an
-  ambulance has actually been dispatched.
+- **SOS wording, checked.** `EmergencySosWebView.tsx` and `EmergencySosNativeView.tsx` now only render the shared
+  `SosView`, and the live copy says "SOS sent" and waits for the campus to acknowledge. No "ambulance dispatched"
+  text appears in the SOS screens. The obsolete ViewModel that simulated a dispatch has been removed.
 
 ## Decisions for the clinical lead
 

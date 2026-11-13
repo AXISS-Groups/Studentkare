@@ -31,7 +31,7 @@ const named = <K extends string>(load: () => Promise<Record<K, React.ComponentTy
   lazy(() => load().then((module) => ({ default: module[name] })));
 
 const CampusOverviewScreen = named(() => import('@/features/campus/overview/CampusOverviewScreen'), 'CampusOverviewScreen');
-const CampusSosDesk = named(() => import('@/screens/institution/CampusSosDesk'), 'CampusSosDesk');
+const CampusSosDesk = named(() => import('@/features/campus/safety/CampusSosDesk'), 'CampusSosDesk');
 // WP-10 boards (design page 4), built to the canvas in src/features/campus/boards.
 const CampusRosterScreen = named(() => import('@/features/campus/boards'), 'CampusRosterScreen');
 const CampusBlocksScreen = named(() => import('@/features/campus/boards'), 'CampusBlocksScreen');
@@ -48,8 +48,8 @@ const CampusAnnouncementsScreen = named(() => import('@/features/campus/boards')
 const CampusReportsScreen = named(() => import('@/features/campus/boards'), 'CampusReportsScreen');
 const CampusSettingsScreen = named(() => import('@/features/campus/boards'), 'CampusSettingsScreen');
 const CampusAggregateScreen = named(() => import('@/features/campus/boards'), 'CampusAggregateScreen');
-const MedicalLeaveApprovalsScreen = named(() => import('@/screens/institution/MedicalLeaveApprovalsScreen'), 'MedicalLeaveApprovalsScreen');
-const CampusHealthScorecardScreen = named(() => import('@/screens/institution/CampusHealthScorecardScreen'), 'CampusHealthScorecardScreen');
+const MedicalLeaveApprovalsScreen = named(() => import('@/features/campus/console/MedicalLeaveApprovalsScreen'), 'MedicalLeaveApprovalsScreen');
+const CampusHealthScorecardScreen = named(() => import('@/features/campus/console/CampusHealthScorecardScreen'), 'CampusHealthScorecardScreen');
 const CounsellorOnlyPage = named(() => import('./CampusPendingPage'), 'CampusCounsellorOnlyPage');
 // WP-11 boards (design page 4, Tier 1, approved 2026-10-21), built to the canvas in src/features/campus/safety.
 const CampusInsightsScreen = named(() => import('@/features/campus/safety'), 'CampusInsightsScreen');
@@ -63,7 +63,7 @@ const CampusSlaScreen = named(() => import('@/features/campus/safety'), 'CampusS
 // Find care near you: the campus's own directory listings (no canvas board; brief AdminCareDirectory).
 const CampusCareDirectoryScreen = named(() => import('@/features/careDirectory/admin/CareDirectoryAdminView'), 'CampusCareDirectoryScreen');
 const NotificationInboxPanel = named(() => import('@/screens/workspace/NotificationInboxPanel'), 'NotificationInboxPanel');
-const SupportPanel = lazy(() => import('@/screens/workspace/MemberPanels').then((module) => ({ default: () => <module.SupportPanel /> })));
+const SupportPanel = lazy(() => import('@/features/support/views/SupportPanel').then((module) => ({ default: () => <module.SupportPanel /> })));
 
 export const CAMPUS_PAGES: Partial<Record<RoutePath, CampusPage>> = {
   campus: { current: 'overview', board: 'CampusOverview', title: 'campusShell.nav.overview', topBar: true, screen: CampusOverviewScreen },

@@ -7,10 +7,11 @@ import { DataState } from '../../components/interface/WorkflowUI';
 import { BillingPanel } from '../billing/BillingPanel';
 import { DigitalIdPanel } from './DigitalIdPanel';
 import { CampusVerificationPanel } from './CampusVerificationPanel';
-import { InsurancePanel, OrdersPanel, SupportPanel } from './MemberPanels';
+import { InsurancePanel, OrdersPanel } from './MemberPanels';
+import { SupportPanel } from '@/features/support/views/SupportPanel';
 import { ProfileForm } from '@/features/m2profile/views/ProfileForm';
 import { useT } from '@/i18n';
-import '@/design-system/styles/member-profile.css';
+import '@/features/m2profile/views/member-profile.css';
 
 type ProfileTab = 'profile' | 'plan' | 'digital-id' | 'insurance' | 'orders' | 'campus' | 'support';
 

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useT } from '@/i18n';
 import { Icon } from '@/design-system/icons';
 import { color, focusRing, font, fontWeight, radius, shadowStyle, shadow, space } from '@/design-system/theme';
 import { GlossTile, M2Card, M2Note, M2Pill, RoundButton, m2Text } from '@/design-system/m2';
@@ -20,29 +21,30 @@ const noop = () => undefined;
  * this is built for real. Not replacing anything. See NOTES.md.
  */
 export function PaymentRetrySheetPreview(): React.ReactElement {
+  const t = useT();
   return (
     <View style={styles.screen} testID="preview-payment-retry-sheet">
       <View style={styles.header}>
         <RoundButton icon="arrow-left" label="Back" onPress={noop} />
-        <Text style={styles.headerTitle}>[Checkout]</Text>
+        <Text style={styles.headerTitle}>{t('preview.checkout')}</Text>
       </View>
 
       <View style={styles.body}>
         <M2Card style={styles.orderCard} testID="preview-payment-retry-order-card">
-          <Text style={m2Text.eyebrow}>[ORDER SUMMARY]</Text>
+          <Text style={m2Text.eyebrow}>{t('preview.orderSummary2')}</Text>
           <View style={styles.orderRow}>
-            <Text style={m2Text.body}>[2 items]</Text>
+            <Text style={m2Text.body}>{t('preview.2Items')}</Text>
             <Text style={m2Text.price}>[₹486]</Text>
           </View>
-          <Text style={m2Text.meta}>[Delivery to your hostel address]</Text>
+          <Text style={m2Text.meta}>{t('preview.deliveryToYourHostelAddress')}</Text>
         </M2Card>
 
         <M2Card testID="preview-payment-retry-loyalty-card">
           <View style={styles.loyaltyRow}>
             <GlossTile icon="star-filled" hue="amber" size={48} />
             <View style={styles.loyaltyWords}>
-              <Text style={styles.loyaltyBalance}>[120 coins earned]</Text>
-              <Text style={m2Text.meta}>[Use coins on your next order]</Text>
+              <Text style={styles.loyaltyBalance}>{t('preview.120CoinsEarned')}</Text>
+              <Text style={m2Text.meta}>{t('preview.useCoinsOnYourNextOrder')}</Text>
             </View>
           </View>
           <View style={styles.loyaltyTagRow}>
@@ -57,32 +59,32 @@ export function PaymentRetrySheetPreview(): React.ReactElement {
         <View style={styles.sheetGrip} />
 
         <GlossTile icon="shield-alert" hue="danger" size={48} />
-        <Text style={styles.sheetTitle}>[Payment failed]</Text>
-        <Text style={styles.sheetBody}>[Your bank declined this transaction]</Text>
+        <Text style={styles.sheetTitle}>{t('preview.paymentFailed')}</Text>
+        <Text style={styles.sheetBody}>{t('preview.yourBankDeclinedThisTransaction')}</Text>
 
         <Pressable
           role="button"
           accessibilityRole="button"
-          accessibilityLabel="[Retry payment]"
+          accessibilityLabel={t('preview.retryPayment')}
           onPress={noop}
           style={({ focused }: PressState) => [styles.retryBtn, focused ? focusRing : null]}
         >
           <Icon name="check-circle-2" size={16} color={color.onAction} />
-          <Text style={styles.retryBtnText}>[Retry payment]</Text>
+          <Text style={styles.retryBtnText}>{t('preview.retryPayment')}</Text>
         </Pressable>
 
         <Pressable
           role="button"
           accessibilityRole="button"
-          accessibilityLabel="[Use a different payment method]"
+          accessibilityLabel={t('preview.useADifferentPaymentMethod')}
           onPress={noop}
           style={({ focused }: PressState) => [styles.secondaryBtn, focused ? focusRing : null]}
         >
-          <Text style={styles.secondaryBtnText}>[Use a different payment method]</Text>
+          <Text style={styles.secondaryBtnText}>{t('preview.useADifferentPaymentMethod')}</Text>
         </Pressable>
 
         <M2Note tone="neutral" icon="clock" testID="preview-payment-retry-support-note">
-          [Need help? Contact support]
+          {t('preview.needHelpContactSupport')}
         </M2Note>
       </View>
     </View>

@@ -42,6 +42,8 @@ TABLE_PLANES: dict[str, str] = {
     "care_readings": CLINICAL,                    # vitals / body metrics, water, activity (WELLNESS_STORES)
     "care_documents": CLINICAL,                   # health records
     "care_document_intake": CLINICAL,
+    "care_document_label_corrections": CLINICAL,  # file names of health records
+    "care_ocr_jobs": CLINICAL,                    # which record was read, and when
     "care_intake_review_items": CLINICAL,
     # Chunks of a student's own uploaded document, embedded for retrieval
     # (docs/plans/tier1-document-rag-2026-11-04.md). Deliberately CLINICAL, never
@@ -150,6 +152,7 @@ TABLE_PLANES: dict[str, str] = {
     "care_workflow_audit": PLATFORM,
     "audit_logs": PLATFORM,
     "care_system_settings": PLATFORM,             # integration secrets
+    "care_platform_assets": PLATFORM,             # explicitly public brand images, never clinical documents
     "care_scheduled_jobs": PLATFORM,
     "care_agent_runs": PLATFORM,
     "agent_runs": PLATFORM,
@@ -435,8 +438,8 @@ def apply_grants(conn) -> ApplyResult:
         error = _try(conn, [f"GRANT {_q(COMMERCE_ROLE)} TO CURRENT_USER"])
         if error:
             result.warnings.append(
-                f"the database login cannot SET ROLE {COMMERCE_ROLE} ({error}); commerce paths keep the app role "
-                f"until a DBA runs: GRANT {COMMERCE_ROLE} TO <app login>")
+                f"the database login cannot SET ROLE {COMMERCE_ROLE} ({error}); commerce requests requiring grants "
+                f"are refused until a DBA runs: GRANT {COMMERCE_ROLE} TO <app login>")
     result.membership = can_assume(conn, COMMERCE_ROLE)
     _log(result)
     return result

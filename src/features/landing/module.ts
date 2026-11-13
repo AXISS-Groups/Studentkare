@@ -113,7 +113,7 @@ const landingModule: FeatureModule = {
       path: '/clinicians/apply',
       public: true,
       load: () =>
-        import('@/features/clinician/apply/DoctorApplyScreen').then((m) => ({ default: m.DoctorApplyScreen })),
+        import('@/features/clinician/views/DoctorApplyScreen').then((m) => ({ default: m.DoctorApplyScreen })),
     },
   ],
 };

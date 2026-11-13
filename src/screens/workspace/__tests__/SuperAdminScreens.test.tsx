@@ -29,7 +29,7 @@ vi.mock('../../../theme/tokens/theme', async () => {
 });
 vi.mock('../../../lib/utils/workflowRouting', async importOriginal => ({ ...(await importOriginal<typeof import('../../../lib/utils/workflowRouting')>()), navigate: (path: string) => navigate(path) }));
 
-import { superAdminScreen } from '../admin/SuperAdminScreens';
+import { superAdminScreen } from '@/features/admin/SuperAdminScreens';
 import { skTokens } from '../../../theme/tokens/generated/skTokens';
 
 

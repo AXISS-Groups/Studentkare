@@ -11,6 +11,7 @@ import { isWide, m2Gutter, useM2Layout } from './m2Layout';
 import type { M2Layout } from './m2Layout';
 import { M2HeaderSos } from './m2Sos';
 import { SosButton } from './M2SosButton';
+export { M2HeaderSos, SosButton };
 
 /**
  * Small pieces every Mobile 2.0 board shares (canvas page 9): the round

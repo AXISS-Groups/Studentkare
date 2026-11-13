@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { ArrowUpRight, HeartPulse, IdCard, Printer, ShieldCheck } from 'lucide-react';
+import { Icon } from '@/design-system/icons';
 import { AppearanceSetting } from '@/features/account/views/AppearanceSetting';
 import { useAuth } from '@/data/contexts/AuthContext';
 import { apiRequest } from '@/data/services/http';
 import type { MemberProfile } from '@/data/types/workflowTypes';
 import { Field, FormError, SubmitButton, useMutation } from '@/components/interface/WorkflowUI';
 import { useT } from '@/i18n';
-import '@/design-system/styles/member-profile.css';
+import './member-profile.css';
 
 const bloodGroups = ['', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
 const medicalList = (value: string) => value.split('\n').map(item => item.trim()).filter(Boolean);
@@ -49,7 +49,7 @@ export function ProfileForm({ initial, onOpenDigitalId }: { initial: MemberProfi
       });
     }}>
       <div><span className="care-eyebrow">{t('member.profile.personalEyebrow')}</span><h3>{t('member.profile.personalTitle')}</h3></div>
-      <div className="member-contact-note"><ShieldCheck size={18} aria-hidden="true" /><div><strong>{t('member.profile.signInContact')}</strong><span>{saved.email || saved.phone}</span><small>{t('member.profile.signInContactNote')}</small></div></div>
+      <div className="member-contact-note"><Icon name="shield-check" size={18} /><div><strong>{t('member.profile.signInContact')}</strong><span>{saved.email || saved.phone}</span><small>{t('member.profile.signInContactNote')}</small></div></div>
       <fieldset disabled={mutation.busy} className="member-fieldset">
         <legend className="member-sr-only">{t('member.profile.legend')}</legend>
         <div className="wf-form-grid">
@@ -75,18 +75,18 @@ export function ProfileForm({ initial, onOpenDigitalId }: { initial: MemberProfi
     </form>
     <aside className="member-profile-aside">
       <section className="wf-card member-status-card">
-        <ShieldCheck size={24} aria-hidden="true" />
+        <Icon name="shield-check" size={24} />
         <span className="care-eyebrow">{t('member.profile.accountEyebrow')}</span>
         <h3>{saved.fullName}</h3>
         <p>{saved.isVerifiedStudent ? t('member.profile.campusVerified') : t('member.profile.campusNotVerified')}</p>
         <p>{saved.ageVerified ? t('member.profile.ageVerified') : t('member.profile.ageSelfReported')}</p>
         <button type="button" className="health-text-button" onClick={onOpenDigitalId}>
-          <IdCard size={15} aria-hidden="true" /> {t('member.profile.openDigitalId')} <ArrowUpRight size={15} aria-hidden="true" />
+          <Icon name="id-card" size={15} /> {t('member.profile.openDigitalId')} <Icon name="arrow-up-right" size={15} />
         </button>
       </section>
       <AppearanceSetting />
       <section className="wf-card member-print-card member-emergency-card">
-        <HeartPulse size={25} aria-hidden="true" />
+        <Icon name="heart-pulse" size={25} />
         <span className="care-eyebrow">{t('member.profile.cardEyebrow')}</span>
         <h3>{saved.fullName}</h3>
         <dl>
@@ -98,7 +98,7 @@ export function ProfileForm({ initial, onOpenDigitalId }: { initial: MemberProfi
         <p>{t('member.profile.cardNote')}</p>
         <small>{saved.updatedAt ? t('member.profile.savedOn', { date: new Date(saved.updatedAt * 1000).toLocaleDateString() }) : t('member.profile.nothingSaved')}</small>
       </section>
-      <button type="button" className="health-button" disabled={!saved.emergencyContactPhone} onClick={() => window.print()}><Printer size={17} aria-hidden="true" />{t('member.profile.print')}</button>
+      <button type="button" className="health-button" disabled={!saved.emergencyContactPhone} onClick={() => window.print()}>{t('member.profile.print')}</button>
     </aside>
   </div>;
 }

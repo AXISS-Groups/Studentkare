@@ -44,7 +44,8 @@ import { ConsoleIntro } from '../../components/interface/ConsoleIntro';
 import { PageTransition } from '../../components/interface/PageTransition';
 import { FormError, useMutation } from '../../components/interface/WorkflowUI';
 import { ScreenLoading } from '@/design-system/feedback/ScreenLoading';
-import { MemberOverview, OrdersPanel, SupportPanel } from './MemberPanels';
+import { MemberOverview, OrdersPanel } from './MemberPanels';
+import { SupportPanel } from '@/features/support/views/SupportPanel';
 import { DevicesAndSensorsScreen } from './DevicesAndSensorsScreen';
 import { AppointmentsPanel } from './AppointmentsPanel';
 import { MedicationPanel } from './MedicationPanel';
@@ -62,8 +63,8 @@ import { FamilyCircleBoard } from '@/features/vault/views/FamilyCircleBoard';
 import { CareNavigatorPanel } from './CareNavigatorPanel';
 import { EncounterNotesPanel } from './EncounterNotesPanel';
 import { CounsellorShell } from './CounsellorShell';
-import { SuperAdminShell } from './admin/SuperAdminShell';
-import { superAdminScreen } from './admin/SuperAdminScreens';
+import { SuperAdminShell } from '@/features/admin/shell/SuperAdminShell';
+import { superAdminScreen } from '@/features/admin/SuperAdminScreens';
 import { VendorShell } from '../vendor/VendorShell';
 import { TeamBadge } from '@/features/team-accounts/TeamBadge';
 import { canOpenPartnerRoute, partnerDisplayName, partnerKindOf } from '../vendor/partnerAccess';
@@ -72,7 +73,7 @@ import type { AccountRole } from '../../data/types/workflowTypes';
 import { usePhoneFrame } from '@/design-system/navigation/usePhoneFrame';
 import { StudentPhoneFrame } from './StudentPhoneFrame';
 import { AccountDetailsPage, AppointmentsPage, DataExportPage, HelpCentrePage, InsurancePage, NotificationsPage, PlanBillingPage, phoneBoardFor, safetyBoardFor, YourCareWebPage } from './PhoneBoards';
-import { DigitalIdPage } from '@/features/digital_id/views/DigitalIdPageRoute';
+import { DigitalIdPage } from '@/features/digital_id/views/DigitalIdPage';
 import { recordsArt } from '@/features/vault/views/recordsArt';
 import { MoreHubBoard } from '@/features/account/views/MoreHubBoard';
 import { SearchPage, studentPhoneBoard } from '@/features/phoneKit/studentPhoneBoards';
@@ -333,7 +334,7 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
   const deleteAccountLinks = { exportData: () => navigate('data-export'), crisis: () => navigate('sos'), leaveCampus: () => navigate('leave-campus'), security: () => navigate('security'), support: () => navigate('support') };
   const studentWebPage = (): React.ReactNode => {
     if (user.role !== 'STUDENT') return null;
-    // Dashboard is /dashboard; /health remains the separate health overview.
+    // One home (founder decision, 23 Oct 2026): /home is retired for a student; Home is /health, as on the phone.
     // Medications is Medicines today (founder decision, 23 Oct 2026).
     if (route === 'medications') return <Navigate to="/health/medicines" replace />;
     if (route === 'buy-again') return <WebReorderView />;
@@ -504,7 +505,7 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
           }}
         /></div>}
       >
-        <Suspense fallback={<ScreenLoading />}><PageTransition key={route}>{phoneBoardFor(route) ?? phoneBoard?.node ?? content()}</PageTransition></Suspense>
+        <Suspense fallback={<ScreenLoading />}><PageTransition key={route}>{phoneBoardFor(route) ?? content()}</PageTransition></Suspense>
       </StudentPhoneFrame>
       {signOutDialog}
     </>;

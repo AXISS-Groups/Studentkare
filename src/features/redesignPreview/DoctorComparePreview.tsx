@@ -1,4 +1,5 @@
 import React from 'react';
+import { useT } from '@/i18n';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Icon } from '@/design-system/icons';
 import { color, focusRing, font, fontWeight, radius, space } from '@/design-system/theme';
@@ -19,13 +20,15 @@ const COLUMNS: ReadonlyArray<M2TableColumn<Row>> = [
   { key: 'a', header: 'Dr. A', cell: (r) => r.a },
   { key: 'b', header: 'Dr. B', cell: (r) => r.b },
 ];
-const ROWS: readonly Row[] = [
+function rowsFor(t: ReturnType<typeof useT>): readonly Row[] {
+  return [
   { label: 'Fee', a: <Text style={m2TableText.cell}>₹399</Text>, b: <Text style={m2TableText.cell}>₹299</Text> },
-  { label: 'Next slot', a: <Text style={m2TableText.cell}>Today, 6 PM</Text>, b: <Text style={m2TableText.cell}>Tomorrow, 10 AM</Text> },
+  { label: 'Next slot', a: <Text style={m2TableText.cell}>{t('preview.today6Pm')}</Text>, b: <Text style={m2TableText.cell}>{t('preview.tomorrow10Am')}</Text> },
   { label: 'Video consult', a: <YesNo included />, b: <YesNo included /> },
   { label: 'Years of practice', a: <Text style={m2TableText.cell}>9</Text>, b: <Text style={m2TableText.cell}>14</Text> },
   { label: 'Speaks Telugu', a: <YesNo included />, b: <YesNo included={false} /> },
 ];
+}
 
 /**
  * Flat, non-functional, net-new concept: comparing two doctors before
@@ -37,26 +40,27 @@ const ROWS: readonly Row[] = [
  * as LabPrepPreview. Not wired, not replacing anything. See NOTES.md.
  */
 export function DoctorComparePreview(): React.ReactElement {
+  const t = useT();
   return (
     <View style={styles.screen} testID="preview-doctor-compare">
       <View style={styles.header}>
-        <Pressable role="button" accessibilityRole="button" accessibilityLabel="Back" onPress={noop} style={({ focused }: PressState) => [styles.backBtn, focused ? focusRing : null]}>
+        <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('common.back')} onPress={noop} style={({ focused }: PressState) => [styles.backBtn, focused ? focusRing : null]}>
           <Icon name="arrow-left" size={20} color={color.text} />
         </Pressable>
-        <Text style={styles.title}>Comparing 2 doctors</Text>
+        <Text style={styles.title}>{t('preview.comparing2Doctors')}</Text>
       </View>
       <View style={styles.scroll}>
         <View style={styles.body}>
-          <Text style={m2Text.meta}>[Dr. A — General physician] vs [Dr. B — General physician]</Text>
-          <M2Table caption="Doctor comparison" columns={COLUMNS} rows={ROWS} rowKey={(r) => r.label} label="Comparing two doctors" />
+          <Text style={m2Text.meta}>{t('preview.drAGeneralPhysicianVsDrBGeneral')}</Text>
+          <M2Table caption="Doctor comparison" columns={COLUMNS} rows={rowsFor(t)} rowKey={(r) => r.label} label="Comparing two doctors" />
         </View>
       </View>
       <View style={styles.footer}>
-        <Pressable role="button" accessibilityRole="button" accessibilityLabel="Book Dr. A" onPress={noop} style={({ focused }: PressState) => [styles.outlineBtn, focused ? focusRing : null]}>
-          <Text style={styles.outlineBtnText}>Book Dr. A</Text>
+        <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('preview.bookDrA')} onPress={noop} style={({ focused }: PressState) => [styles.outlineBtn, focused ? focusRing : null]}>
+          <Text style={styles.outlineBtnText}>{t('preview.bookDrA')}</Text>
         </Pressable>
-        <Pressable role="button" accessibilityRole="button" accessibilityLabel="Book Dr. B" onPress={noop} style={({ focused }: PressState) => [styles.fillBtn, focused ? focusRing : null]}>
-          <Text style={styles.fillBtnText}>Book Dr. B</Text>
+        <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('preview.bookDrB')} onPress={noop} style={({ focused }: PressState) => [styles.fillBtn, focused ? focusRing : null]}>
+          <Text style={styles.fillBtnText}>{t('preview.bookDrB')}</Text>
         </Pressable>
       </View>
     </View>

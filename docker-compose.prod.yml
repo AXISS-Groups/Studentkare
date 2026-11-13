@@ -59,7 +59,8 @@ x-app-env: &app-env
   EMBEDDING_OLLAMA_URL: ${EMBEDDING_OLLAMA_URL:-}
   AYUSH_HELP_PACK_AUTOLOAD: ${AYUSH_HELP_PACK_AUTOLOAD:-true}
   # Rule L (TD-03): refuse commerce requests when sk_commerce is not usable.
-  # Set 0 only while provisioning roles; GET /api/ops/rule-l shows the state.
+  # Production always requires grants, even if set to 0; provision roles first.
+  # GET /api/ops/rule-l shows the state.
   RULE_L_REQUIRE_GRANTS: ${RULE_L_REQUIRE_GRANTS:-1}
   # Links in email and invites (claim#token=...). Unset used to mean http://localhost:3000.
   APP_DOMAIN: ${APP_DOMAIN:-studentkare.co}
@@ -93,8 +94,13 @@ x-app-env: &app-env
   # off until the AI-constitution owner and the DPO sign (Admin › Integrations wins).
   MEDICINE_OCR_ENABLED: ${MEDICINE_OCR_ENABLED:-false}
   MEDICINE_OCR_TESSERACT:
+  # Document OCR (docs/plans/tier1-document-autofile-2026-11-13.md): scans go to the shared
+  # OCR service on the private network. Its own switch; keep it off until its sign-off.
+  # With no key nothing is sent.
   DOCUMENT_OCR_ENABLED: ${DOCUMENT_OCR_ENABLED:-false}
-  DOCUMENT_OCR_TESSERACT:
+  DOCUMENT_OCR_URL:
+  DOCUMENT_OCR_KEY:
+  DOCUMENT_OCR_TEXT_LAYERS:
   # Agent Ayush tuning.
   LLM_ENABLED:
   LLM_PROVIDER:

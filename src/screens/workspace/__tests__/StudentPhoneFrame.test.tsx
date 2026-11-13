@@ -1,8 +1,7 @@
 import { translate } from '@/i18n';
-import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import React from 'react';
-import { configure, fireEvent, render, screen, within } from '@testing-library/react';
-configure({ asyncUtilTimeout: 10000 });
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import type { AccountRole } from '../../../data/types/workflowTypes';
 
 const auth: { user: { fullName: string; role: AccountRole; university?: string; isVerifiedStudent?: boolean } | null } = { user: null };
@@ -19,7 +18,8 @@ vi.mock('@/lib/utils/workflowRouting', async (importOriginal) => ({
 
 import { BrowserRouter } from '@/core/navigation';
 import { WorkspaceScreen } from '../WorkspaceScreen';
-import { STUDENT_NAV_ROUTES, isStudentNavRoot, studentNavFor } from '../StudentPhoneFrame';
+import { isStudentNavRoot, studentNavFor } from '../StudentPhoneFrame';
+import { STUDENT_NAV_ROUTES } from '@/features/phoneKit/studentNavRoutes';
 import { PILL_NAV } from '@/design-system/m2';
 import { drawsStudentPhoneFrame } from '../../../App';
 import manifest from '../../../../design/icons/icon-manifest.json';
@@ -32,14 +32,6 @@ function phoneWidth(matches: boolean) {
     addEventListener: () => undefined, removeEventListener: () => undefined, dispatchEvent: () => false,
   })) as unknown as typeof window.matchMedia;
 }
-
-beforeAll(async () => {
-  await Promise.all([
-    import('@/features/m2store/views/M2HomeRoute'),
-    import('@/features/refills/views/M2RefillsRoute'),
-    import('@/features/discover/views/SearchRoute'),
-  ]);
-}, 60000);
 
 beforeEach(() => {
   auth.user = { fullName: 'Asha Rao', role: 'STUDENT', isVerifiedStudent: true, university: 'VNR VJIET' };
@@ -68,7 +60,7 @@ describe('student pill nav (Mobile 2.0, approved 2026-10-21)', () => {
   });
 });
 
-describe('student workspace at phone width', { timeout: 30000 }, () => {
+describe('student workspace at phone width', () => {
   it('draws the pill nav instead of the desktop shell; Home draws its own header', async () => {
     render(<WorkspaceScreen route="health" />);
     const nav = screen.getByRole('navigation', { name: 'Main' });
@@ -167,7 +159,7 @@ describe('student workspace at phone width', { timeout: 30000 }, () => {
   });
 });
 
-describe('phone boards in the frame (WP-04)', { timeout: 30000 }, () => {
+describe('phone boards in the frame (WP-04)', () => {
   it('draws Mobile 2.0 Home on /health: SOS before search, and no health data beyond today’s medicines', async () => {
     render(<WorkspaceScreen route="health" />);
     const board = await screen.findByTestId('m2-home');

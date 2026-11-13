@@ -1,4 +1,5 @@
 import React from 'react';
+import { useT } from '@/i18n';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Icon, Illustration } from '@/design-system/icons';
 import { color, focusRing, font, fontWeight, radius, space } from '@/design-system/theme';
@@ -20,44 +21,43 @@ const noop = () => undefined;
  * hostel-pin on the delivery note, confused-buyer on the Ask Ayush prompt.
  */
 export function WebReorderPreview(): React.ReactElement {
+  const t = useT();
   return (
     <WebShellPreview route="buy-again">
       <View style={styles.body}>
-        <Text style={styles.h1}>Buy again</Text>
+        <Text style={styles.h1}>{t('m2.home.buyAgain')}</Text>
         <M2Card>
           <View style={styles.row}>
             <GlossTile icon="bottle-pump" hue="teal" size={48} />
             <View style={styles.flexShrink}>
-              <Text style={styles.name}>[Paracetamol 650 mg] · pack of 15</Text>
+              <Text style={styles.name}>{t('preview.paracetamol650MgPackOf15')}</Text>
               <View style={styles.priceRow}><Text style={styles.price}>₹18</Text><Text style={styles.mrp}>₹35</Text></View>
             </View>
-            <Pressable role="button" accessibilityRole="button" accessibilityLabel="Reorder" onPress={noop} style={({ focused }: PressState) => [styles.fillBtn, focused ? focusRing : null]}>
-              <Icon name="repeat" size={14} color={color.onAction} /><Text style={styles.fillBtnText}>Reorder</Text>
+            <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('pb.yc.reorder')} onPress={noop} style={({ focused }: PressState) => [styles.fillBtn, focused ? focusRing : null]}>
+              <Icon name="repeat" size={14} color={color.onAction} /><Text style={styles.fillBtnText}>{t('pb.yc.reorder')}</Text>
             </Pressable>
           </View>
           <View style={styles.rateRow}>
-            <Text style={m2Text.meta}>How was this order?</Text>
+            <Text style={m2Text.meta}>{t('preview.howWasThisOrder')}</Text>
             <View style={styles.starRow}>
               {[1, 2, 3, 4, 5].map((n) => <Icon key={n} name="sparkle" size={16} color={color.text3} />)}
             </View>
           </View>
         </M2Card>
-        <M2Note tone="info" icon="lock-2" title="Your rating stays private">
-          It helps us, not a public review others can see.
-        </M2Note>
+        <M2Note tone="info" icon="lock-2" title={t('preview.yourRatingStaysPrivate')}>{t('preview.itHelpsUsNotAPublicReviewOthers')}</M2Note>
 
         <View style={styles.trustStrip}>
           <View style={styles.trustItem}>
             <Illustration name="illustration-verified-badge" size={56} withoutText />
-            <Text style={styles.trustLabel}>Verified listing</Text>
+            <Text style={styles.trustLabel}>{t('preview.verifiedListing')}</Text>
           </View>
           <View style={styles.trustItem}>
             <Illustration name="illustration-lock-shield" size={56} withoutText />
-            <Text style={styles.trustLabel}>Payment is encrypted</Text>
+            <Text style={styles.trustLabel}>{t('preview.paymentIsEncrypted')}</Text>
           </View>
           <View style={styles.trustItem}>
             <Illustration name="illustration-rupee-receipt" size={56} withoutText />
-            <Text style={styles.trustLabel}>Today's price, checked fresh</Text>
+            <Text style={styles.trustLabel}>{t('preview.todaySPriceCheckedFresh')}</Text>
           </View>
         </View>
 
@@ -65,8 +65,8 @@ export function WebReorderPreview(): React.ReactElement {
           <View style={styles.row}>
             <Illustration name="illustration-hostel-pin" size={48} withoutText />
             <View style={styles.flexShrink}>
-              <Text style={styles.name}>Delivered to [Hostel block], Room [—]</Text>
-              <Text style={m2Text.meta}>Same address as last time</Text>
+              <Text style={styles.name}>{t('preview.deliveredToHostelBlockRoom')}</Text>
+              <Text style={m2Text.meta}>{t('preview.sameAddressAsLastTime')}</Text>
             </View>
           </View>
         </M2Card>
@@ -75,8 +75,8 @@ export function WebReorderPreview(): React.ReactElement {
           <View style={styles.row}>
             <Illustration name="illustration-confused-buyer" size={56} withoutText />
             <View style={styles.flexShrink}>
-              <Text style={styles.name}>Not sure what to reorder?</Text>
-              <Text style={m2Text.meta}>Ask Ayush about your last few orders.</Text>
+              <Text style={styles.name}>{t('preview.notSureWhatToReorder')}</Text>
+              <Text style={m2Text.meta}>{t('preview.askAyushAboutYourLastFewOrders')}</Text>
             </View>
           </View>
         </M2Card>

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useT } from '@/i18n';
 import { Icon } from '@/design-system/icons';
 import { StatusPill } from '@/design-system';
 import { color, focusRing, font, fontWeight, radius, space } from '@/design-system/theme';
@@ -60,48 +61,49 @@ const ESTIMATES: ReadonlyArray<{ name: string; range: string }> = [
  * that is a form flow, not a layout that benefits from splitting.
  */
 export function WebSecondOpinionPreview(): React.ReactElement {
+  const t = useT();
   return (
     <WebShellPreview route="care-navigator">
       <View style={styles.body}>
-        <Text style={styles.pageTitle}>[Get a second opinion]</Text>
+        <Text style={styles.pageTitle}>{t('preview.getASecondOpinion')}</Text>
 
-        <M2Note tone="attention" icon="shield-check" title="This is a preview, not a built feature">
-          A real second opinion and cost estimator would be a new kind of clinical service for this platform — who reviews it, what consent it needs and where cost figures come from all need a decision first. Nothing on this screen is wired or real.
+        <M2Note tone="attention" icon="shield-check" title={t('preview.thisIsAPreviewNotABuiltFeature')}>
+          {t('preview.aRealSecondOpinionAndCostEstimatorWould')}
         </M2Note>
 
         <View style={styles.introRow}>
           <GlossTile icon="doctor" hue="indigo" size={48} />
-          <Text style={styles.introText}>[If a doctor has recommended surgery, a second clinician can review your case and share their own view before you decide — no appointment needed.]</Text>
+          <Text style={styles.introText}>{t('preview.ifADoctorHasRecommendedSurgeryASecond')}</Text>
         </View>
 
-        <Text style={m2Text.section}>[Describe your diagnosis or planned procedure]</Text>
+        <Text style={m2Text.section}>{t('preview.describeYourDiagnosisOrPlannedProcedure')}</Text>
         <M2Card style={styles.textareaCard}>
-          <Text style={styles.textareaPlaceholder}>[e.g. "My doctor recommended gallbladder removal after an ultrasound showed stones. I'd like a second opinion before scheduling."]</Text>
+          <Text style={styles.textareaPlaceholder}>{t('preview.eGMyDoctorRecommendedGallbladderRemovalAfter')}</Text>
         </M2Card>
 
-        <Pressable role="button" accessibilityRole="button" accessibilityLabel="Upload existing reports (optional)" onPress={noop} style={({ focused }: PressState) => [styles.uploadRow, focused ? focusRing : null]}>
+        <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('preview.uploadExistingReportsOptional')} onPress={noop} style={({ focused }: PressState) => [styles.uploadRow, focused ? focusRing : null]}>
           <Icon name="cloud-upload" size={20} color={color.action} />
           <View style={styles.uploadWords}>
-            <Text style={styles.uploadLabel}>[Upload existing reports (optional)]</Text>
-            <Text style={m2Text.meta}>[Scans, lab results or a doctor's note]</Text>
+            <Text style={styles.uploadLabel}>{t('preview.uploadExistingReportsOptional2')}</Text>
+            <Text style={m2Text.meta}>{t('preview.scansLabResultsOrADoctorSNote')}</Text>
           </View>
           <Icon name="doc-upload" size={18} color={color.text3} />
         </Pressable>
 
         <View style={styles.submitBlock}>
-          <Pressable role="button" accessibilityRole="button" accessibilityLabel="Submit for review" onPress={noop} style={({ focused }: PressState) => [styles.submitBtn, focused ? focusRing : null]}>
-            <Text style={styles.submitBtnText}>[Submit for review]</Text>
+          <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('preview.submitForReview')} onPress={noop} style={({ focused }: PressState) => [styles.submitBtn, focused ? focusRing : null]}>
+            <Text style={styles.submitBtnText}>{t('preview.submitForReview2')}</Text>
           </Pressable>
           <M2Note tone="info" icon="doctor-alt">
-            A human clinician reviews every request — this is never an instant, AI-generated opinion. Expect a personal response, not an automated one.
+            {t('preview.aHumanClinicianReviewsEveryRequestThisIs')}
           </M2Note>
         </View>
 
         <View style={styles.divider} />
 
-        <Text style={m2Text.section}>[Estimate surgery cost]</Text>
+        <Text style={m2Text.section}>{t('preview.estimateSurgeryCost')}</Text>
         <M2Note tone="info" icon="percent">
-          These are illustrative ranges only, not a quote — the actual cost varies by hospital, surgeon and case complexity, and is never guaranteed by this screen.
+          {t('preview.theseAreIllustrativeRangesOnlyNotAQuote')}
         </M2Note>
         <View style={styles.estimateRow}>
           {ESTIMATES.map((item) => (
@@ -117,16 +119,16 @@ export function WebSecondOpinionPreview(): React.ReactElement {
 
         <View style={styles.divider} />
 
-        <Text style={m2Text.section}>[Your request]</Text>
+        <Text style={m2Text.section}>{t('preview.yourRequest')}</Text>
         <M2Card style={styles.statusCard}>
           <View style={styles.statusTop}>
             <Icon name="stethoscope-2" size={18} color={color.text2} />
-            <Text style={styles.statusProcedure}>[Laparoscopic gallbladder removal — submitted]</Text>
+            <Text style={styles.statusProcedure}>{t('preview.laparoscopicGallbladderRemovalSubmitted')}</Text>
           </View>
-          <StatusPill tone="attention">[Pending review]</StatusPill>
+          <StatusPill tone="attention">{t('preview.pendingReview')}</StatusPill>
           <View style={styles.statusEtaRow}>
             <Icon name="check-circle-2" size={14} color={color.text3} />
-            <Text style={m2Text.meta}>[Typically reviewed within 3-5 business days]</Text>
+            <Text style={m2Text.meta}>{t('preview.typicallyReviewedWithin35BusinessDays')}</Text>
           </View>
         </M2Card>
 

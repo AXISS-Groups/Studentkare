@@ -13,6 +13,8 @@ export const careModule: FeatureModule = {
     // Medicine information: public (reviewed information only; nothing about the person is read or kept).
     { path: '/medicine-info', public: true, load: () => import('@/features/medicineInfo/screens/MedicineInfoScreen').then((m) => ({ default: m.MedicineInfoScreen })) },
     // The newsroom (features/newsroom): Blog and News, public; posts by slug.
+    // Slugs are lower case (SLUG_PATTERN); CanonicalPath fixes the case of
+    // /blog, /news and /series only and passes the slug through as typed.
     { path: '/blog', public: true, load: () => import('@/features/newsroom/screens/NewsroomScreens').then((m) => ({ default: m.BlogScreen })) },
     { path: '/blog/:slug', public: true, load: () => import('@/features/newsroom/screens/NewsroomScreens').then((m) => ({ default: m.BlogPostScreen })) },
     { path: '/news', public: true, load: () => import('@/features/newsroom/screens/NewsroomScreens').then((m) => ({ default: m.NewsScreen })) },

@@ -298,6 +298,7 @@ export const en = {
   'sos.status.SKIPPED': "Not set up",
   'sos.sendFailed': "We couldn’t send your SOS from the app. Call 112 now.",
   'sos.cancelFailed': "Couldn’t reach Studentkare to cancel. Your campus may still respond — call them or 112.",
+  'sos.refreshFailed': "Couldn’t refresh your SOS. The last known status may be out of date. Try again or call 112 for urgent help.",
 
   'auth.channels': "How we send your code",
   'auth.channel.EMAIL': "Email",

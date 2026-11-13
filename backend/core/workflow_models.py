@@ -277,6 +277,56 @@ class Document(Base):
     mime_type: Mapped[str] = mapped_column(String(100))
     content: Mapped[bytes] = mapped_column(LargeBinary)
     created_at: Mapped[float] = mapped_column(Float)
+    # Auto-filing (docs/plans/tier1-document-autofile-2026-11-13.md). ``category`` above is
+    # always the student's own pick and nothing below ever changes it.
+    # sha256 of ``content``: the same bytes uploaded twice are one record.
+    checksum_sha256: Mapped[str] = mapped_column(String(64), default="", server_default="")
+    # The subfolder inside the category (services/document_classifier.KINDS), "" = never
+    # filed (rows from before auto-filing), "unfiled" = filed, nothing matched.
+    doc_kind: Mapped[str] = mapped_column(String(40), default="", server_default="")
+    # How doc_kind was decided: filename | ocr | learned | manual | "".
+    classification_source: Mapped[str] = mapped_column(String(16), default="", server_default="")
+    classification_confidence: Mapped[float] = mapped_column(Float, default=0.0, server_default="0")
+    ocr_engine: Mapped[str] = mapped_column(String(40), default="", server_default="")
+    ocr_text_len: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
+    # True once the student set doc_kind themselves; no rule or backfill touches it after.
+    kind_verified: Mapped[bool] = mapped_column(Boolean, default=False, server_default=sa_false())
+    __table_args__ = (Index("ix_care_documents_account_checksum", "account_id", "checksum_sha256"),)
+
+
+class DocumentLabelCorrection(Base):
+    """The student moved a record: remember it for the next upload with that file name."""
+    __tablename__ = "care_document_label_corrections"
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    account_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"), index=True)
+    # services/document_classifier.normalise_file_name of the upload's file name.
+    file_name_norm: Mapped[str] = mapped_column(String(200))
+    category: Mapped[str] = mapped_column(String(30))
+    corrected_kind: Mapped[str] = mapped_column(String(40))
+    rule_said_kind: Mapped[str] = mapped_column(String(40), default="")
+    rule_said_source: Mapped[str] = mapped_column(String(16), default="")
+    created_at: Mapped[float] = mapped_column(Float, default=0.0)
+    __table_args__ = (UniqueConstraint("account_id", "file_name_norm", "category",
+                                       name="uq_document_label_correction"),)
+
+
+class OcrJob(Base):
+    """One attempt to read a document's text: which engine, how long, and whether it worked.
+
+    Operational facts only. ``error_code`` is one of services/document_ocr's ERROR_*
+    codes, never an engine's message and never document text.
+    """
+    __tablename__ = "care_ocr_jobs"
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    account_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"), index=True)
+    document_id: Mapped[str] = mapped_column(String, index=True)
+    engine: Mapped[str] = mapped_column(String(40))
+    ok: Mapped[bool] = mapped_column(Boolean, default=False)
+    pages: Mapped[int] = mapped_column(Integer, default=0)
+    ms: Mapped[int] = mapped_column(Integer, default=0)
+    rotation: Mapped[int] = mapped_column(Integer, default=0)
+    error_code: Mapped[str] = mapped_column(String(24), default="")
+    created_at: Mapped[float] = mapped_column(Float, default=0.0)
 
 
 class Preference(Base):
@@ -762,6 +812,20 @@ class Article(Base):
     body: Mapped[list] = mapped_column(JSON, default=list)
     active: Mapped[bool] = mapped_column(Boolean, default=True)
     sort: Mapped[int] = mapped_column(Integer, default=0)
+
+
+class PlatformAsset(Base):
+    """An explicitly uploaded public logo/favicon; never a vault document.
+
+    One current version per kind. No record/account foreign key, filename or
+    document identifier can be used by the public asset reader.
+    """
+    __tablename__ = "care_platform_assets"
+    asset_type: Mapped[str] = mapped_column(String(16), primary_key=True)
+    version: Mapped[str] = mapped_column(String(32))
+    mime_type: Mapped[str] = mapped_column(String(100))
+    content: Mapped[bytes] = mapped_column(LargeBinary)
+    updated_at: Mapped[float] = mapped_column(Float)
 
 
 class SystemSetting(Base):

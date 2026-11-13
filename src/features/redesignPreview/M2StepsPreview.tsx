@@ -1,9 +1,9 @@
 import React from 'react';
+import { useT } from '@/i18n';
 import { StyleSheet, Text, View } from 'react-native';
 import { Icon } from '@/design-system/icons';
 import { color, font, fontWeight, radius, space } from '@/design-system/theme';
 import { M2Card, M2HeroPanel, M2Note, m2Text } from '@/design-system/m2';
-
 const BARS = [4200, 3100, 5600, 2800, 4900, 0, 0];
 const DAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 const MAX = 6000;
@@ -17,15 +17,16 @@ const MAX = 6000;
  * Not wired, not replacing the real screen. See NOTES.md.
  */
 export function M2StepsPreview(): React.ReactElement {
+  const t = useT();
   return (
     <View style={styles.screen} testID="preview-m2-steps">
       <View style={styles.scroll}>
-        <M2HeroPanel eyebrow="My health" title="4,210 steps today" sub="From this phone's motion sensor" icon="walk" hue="teal" compact />
+        <M2HeroPanel eyebrow="My health" title={t('preview.4210StepsToday')} sub="From this phone's motion sensor" icon="walk" hue="teal" compact />
         <View style={styles.body}>
-          <Text style={m2Text.meta}>Steps are here for you to look at. No goals, scores or streaks.</Text>
+          <Text style={m2Text.meta}>{t('steps.noPressure')}</Text>
 
           <M2Card>
-            <Text style={styles.sectionTitle}>This week</Text>
+            <Text style={styles.sectionTitle}>{t('clinSchedule.tableTitle')}</Text>
             <View style={styles.chartRow}>
               {BARS.map((val, i) => (
                 <View key={i} style={styles.barCol}>
@@ -36,25 +37,25 @@ export function M2StepsPreview(): React.ReactElement {
                 </View>
               ))}
             </View>
-            <Text style={m2Text.meta}>Average on the days with a number: 4,120 steps</Text>
+            <Text style={m2Text.meta}>{t('preview.averageOnTheDaysWithANumber4')}</Text>
           </M2Card>
 
-          <Text style={styles.sectionTitle}>Count steps automatically</Text>
+          <Text style={styles.sectionTitle}>{t('steps.sources.title')}</Text>
           {[{ icon: 'heart-plus' as const, name: 'Apple Health', state: 'Connected' }, { icon: 'devices' as const, name: "This phone's motion sensor", state: 'Not connected' }].map((src) => (
             <View key={src.name} style={styles.sourceRow}>
               <Icon name={src.icon} size={18} color={color.text3} />
               <View style={styles.flexShrink}>
                 <Text style={styles.sourceName}>{src.name}</Text>
-                <Text style={m2Text.meta}>Never writes</Text>
+                <Text style={m2Text.meta}>{t('preview.neverWrites')}</Text>
               </View>
               <Text style={styles.sourceState}>{src.state}</Text>
             </View>
           ))}
-          <M2Note tone="info" icon="info">Most trusted source first. Numbers are never added together.</M2Note>
+          <M2Note tone="info" icon="info">{t('preview.mostTrustedSourceFirstNumbersAreNeverAdded')}</M2Note>
 
           <View style={styles.typeRow}>
             <Icon name="pencil" size={16} color={color.text3} />
-            <Text style={styles.typeText}>Add today's steps yourself</Text>
+            <Text style={styles.typeText}>{t('preview.addTodaySStepsYourself')}</Text>
           </View>
         </View>
       </View>

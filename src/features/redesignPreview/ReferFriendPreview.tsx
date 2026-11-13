@@ -1,4 +1,5 @@
 import React from 'react';
+import { useT } from '@/i18n';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Icon } from '@/design-system/icons';
 import { color, focusRing, font, fontWeight, radius, space } from '@/design-system/theme';
@@ -18,37 +19,38 @@ const noop = () => undefined;
  * not replacing anything. See NOTES.md.
  */
 export function ReferFriendPreview(): React.ReactElement {
+  const t = useT();
   return (
     <View style={styles.screen} testID="preview-refer-friend">
       <View style={styles.header}>
-        <Pressable role="button" accessibilityRole="button" accessibilityLabel="Back" onPress={noop} style={({ focused }: PressState) => [styles.backBtn, focused ? focusRing : null]}>
+        <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('common.back')} onPress={noop} style={({ focused }: PressState) => [styles.backBtn, focused ? focusRing : null]}>
           <Icon name="arrow-left" size={20} color={color.text} />
         </Pressable>
-        <Text style={styles.title}>Invite a friend</Text>
+        <Text style={styles.title}>{t('preview.inviteAFriend')}</Text>
       </View>
       <View style={styles.scroll}>
         <View style={styles.body}>
           <View style={styles.hero}>
             <Icon name="heart-3" size={28} color={color.action} />
-            <Text style={styles.heroTitle}>Help a friend get their records in order</Text>
-            <Text style={m2Text.meta}>When they sign up with your link, [a small thank-you] lands in both your accounts.</Text>
+            <Text style={styles.heroTitle}>{t('preview.helpAFriendGetTheirRecordsInOrder')}</Text>
+            <Text style={m2Text.meta}>{t('preview.whenTheySignUpWithYourLinkA')}</Text>
           </View>
 
           <M2Card style={styles.codeCard}>
-            <Text style={m2Text.eyebrow}>YOUR LINK</Text>
-            <Text style={styles.codeText}>studentkare.co/[your-code]</Text>
-            <Pressable role="button" accessibilityRole="button" accessibilityLabel="Copy link" onPress={noop} style={({ focused }: PressState) => [styles.copyBtn, focused ? focusRing : null]}>
-              <Icon name="copy" size={14} color={color.action} /><Text style={styles.copyBtnText}>Copy</Text>
+            <Text style={m2Text.eyebrow}>{t('preview.yourLink')}</Text>
+            <Text style={styles.codeText}>{t('preview.studentkareCoYourCode')}</Text>
+            <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('news.copyLink')} onPress={noop} style={({ focused }: PressState) => [styles.copyBtn, focused ? focusRing : null]}>
+              <Icon name="copy" size={14} color={color.action} /><Text style={styles.copyBtnText}>{t('preview.copy')}</Text>
             </Pressable>
           </M2Card>
 
           <View style={styles.shareRow}>
-            <Pressable role="button" accessibilityRole="button" accessibilityLabel="Share" onPress={noop} style={({ focused }: PressState) => [styles.fillBtn, focused ? focusRing : null]}>
-              <Icon name="share" size={16} color={color.onAction} /><Text style={styles.fillBtnText}>Share</Text>
+            <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('member.records.share')} onPress={noop} style={({ focused }: PressState) => [styles.fillBtn, focused ? focusRing : null]}>
+              <Icon name="share" size={16} color={color.onAction} /><Text style={styles.fillBtnText}>{t('member.records.share')}</Text>
             </Pressable>
           </View>
 
-          <Text style={m2Text.meta}>No personal health information is ever part of an invite.</Text>
+          <Text style={m2Text.meta}>{t('preview.noPersonalHealthInformationIsEverPartOf')}</Text>
         </View>
       </View>
     </View>

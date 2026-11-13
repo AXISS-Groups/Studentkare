@@ -189,25 +189,52 @@ def test_production_fails_closed_by_default_without_grants(monkeypatch):
     assert commerce_session.grants_required() is True
 
 
-def test_production_allows_explicit_provisioning_override(monkeypatch):
+@pytest.mark.parametrize("app_env", ["production", "staging", None])
+@pytest.mark.parametrize("raw", [None, "0", "false", "no", "", " ", "typo"])
+def test_production_refuses_unrestricted_commerce_for_every_configuration(monkeypatch, app_env, raw):
+    from fastapi import HTTPException
+
     from services import commerce_session
 
-    monkeypatch.setenv("APP_ENV", "production")
-    monkeypatch.setenv("RULE_L_REQUIRE_GRANTS", "0")
+    for name, value in (("APP_ENV", app_env), ("RULE_L_REQUIRE_GRANTS", raw)):
+        if value is None:
+            monkeypatch.delenv(name, raising=False)
+        else:
+            monkeypatch.setenv(name, value)
     engine = create_engine("sqlite://")
     with sessionmaker(bind=engine)() as db:
         gen = commerce_session.commerce_db(db)
-        yielded = next(gen)
-        assert yielded is db
-    assert commerce_session.grants_required() is False
+        with pytest.raises(HTTPException) as denied:
+            next(gen)
+    assert denied.value.status_code == 503
 
 
-def test_dev_mode_grants_not_required_by_default(monkeypatch):
+@pytest.mark.parametrize("app_env", ["development", "testing"])
+@pytest.mark.parametrize("raw, required", [
+    (None, False), ("0", False), (" FALSE ", False), ("no", False),
+    ("1", True), (" TRUE ", True), ("yes", True),
+    ("", True), (" ", True), ("typo", True),
+])
+def test_nonproduction_requires_grants_unless_explicitly_disabled(monkeypatch, app_env, raw, required):
+    from fastapi import HTTPException
+
     from services import commerce_session
 
-    monkeypatch.setenv("APP_ENV", "development")
-    monkeypatch.delenv("RULE_L_REQUIRE_GRANTS", raising=False)
-    assert commerce_session.grants_required() is False
+    monkeypatch.setenv("APP_ENV", app_env)
+    if raw is None:
+        monkeypatch.delenv("RULE_L_REQUIRE_GRANTS", raising=False)
+    else:
+        monkeypatch.setenv("RULE_L_REQUIRE_GRANTS", raw)
+    engine = create_engine("sqlite://")
+    with sessionmaker(bind=engine)() as db:
+        gen = commerce_session.commerce_db(db)
+        if required:
+            with pytest.raises(HTTPException) as denied:
+                next(gen)
+            assert denied.value.status_code == 503
+        else:
+            assert next(gen) is db
+            gen.close()
 
 
 def test_billing_and_returns_use_the_commerce_session():
@@ -368,6 +395,29 @@ def _denied(conn, sql: str) -> bool:
         return "permission denied" in str(exc.orig).lower()
     nested.rollback()
     return False
+
+
+def test_pg_platform_asset_table_has_no_clinical_links_or_role_grants(pg_db):
+    from alembic.autogenerate import compare_metadata
+    from alembic.migration import MigrationContext
+    from sqlalchemy import inspect
+
+    engine, _, _, _ = pg_db
+    inspector = inspect(engine)
+    assert inspector.get_foreign_keys("care_platform_assets") == []
+    with engine.connect() as conn:
+        assert conn.execute(text("SELECT COUNT(*) FROM care_platform_assets")).scalar() == 0
+        context = MigrationContext.configure(conn, opts={
+            "include_object": lambda obj, name, kind, reflected, compare_to:
+                name == "care_platform_assets" if kind == "table" else True,
+        })
+        assert compare_metadata(context, Base.metadata) == []
+        for role in rule_l.GROUP_ROLES:
+            conn.execute(text(f"SET LOCAL ROLE {role}"))
+            assert _denied(conn, "SELECT content FROM care_platform_assets")
+            assert _denied(conn, "INSERT INTO care_platform_assets (asset_type, version, mime_type, content, updated_at) "
+                                 "VALUES ('logo', 'fixture', 'image/png', ''::bytea, 1)")
+            conn.execute(text("RESET ROLE"))
 
 
 def test_pg_status_is_enforced_after_migration(pg_db):
@@ -582,7 +632,7 @@ def test_pg_no_createrole_and_not_owner_is_reported_not_fatal(pg_db, monkeypatch
             assert rule_l.rule_l_status(conn)["enforced"] is False
             monkeypatch.setattr(rule_l, "_role_exists", real_exists)
             assert conn.scalar(text("SELECT 1")) == 1
-            # It is not a member of sk_commerce, so commerce paths keep the app role.
+            # It is not a member of sk_commerce, so requests requiring grants are refused.
             assert rule_l.commerce_role_usable(conn) is False
     finally:
         weak.dispose()

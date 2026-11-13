@@ -10,7 +10,8 @@
     "./src/**/*.css"
   ],
   "engines": {
-    "node": "20.x"
+    "node": "22.23.5",
+    "npm": "10.9.9"
   },
   "scripts": {
     "postinstall": "patch-package --error-on-fail",
@@ -19,6 +20,8 @@
     "backend": "python scripts/start-dev-backend.py",
     "build": "tsc && vite build && node scripts/prerender-public-routes.js",
     "test": "vitest run",
+    "e2e": "playwright test",
+    "test:coverage": "vitest run --coverage",
     "tokens:build": "node scripts/tokens/build-tokens.mjs",
     "tokens:check": "node scripts/tokens/build-tokens.mjs --check",
     "settings:build": "python3 backend/scripts/export_public_settings.py",
@@ -45,7 +48,6 @@
   "dependencies": {
     "@react-navigation/native": "^7.0.0",
     "@react-navigation/native-stack": "^7.0.0",
-    "@sentry/browser": "^8.45.0",
     "@sentry/react": "^8.45.0",
     "@sentry/react-native": "~6.10.0",
     "buffer": "6.0.3",
@@ -90,6 +92,7 @@
     "postcss": "8.5.32"
   },
   "devDependencies": {
+    "@playwright/test": "^1.61.1",
     "@storybook/react-vite": "^10.6.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.3",
@@ -98,6 +101,7 @@
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",
     "@vitejs/plugin-react": "^4.7.0",
+    "@vitest/coverage-v8": "^4.1.12",
     "axe-core": "^4.14.0",
     "babel-plugin-module-resolver": "^5.0.0",
     "babel-plugin-react-compiler": "19.0.0-beta-ebf51a3-20250411",

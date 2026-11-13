@@ -1,5 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import { useT } from '@/i18n';
 import { Accordion } from '@/design-system/Accordion';
 import { StatusPill } from '@/design-system';
 import { StepDiagram } from '@/design-system/StepDiagram';
@@ -45,23 +46,24 @@ const FAQ_ITEMS: ReadonlyArray<{ id: string; title: string; content: string }> =
  * wired, not replacing anything. See NOTES.md.
  */
 export function CarePlanBenefitsPreview(): React.ReactElement {
+  const t = useT();
   return (
     <View style={styles.screen} testID="preview-care-plan-benefits">
       <View style={styles.header}>
         <RoundButton icon="arrow-left" label="Back" onPress={noop} />
-        <Text style={styles.headerTitle}>[My Care Plan]</Text>
+        <Text style={styles.headerTitle}>{t('preview.myCarePlan')}</Text>
       </View>
 
       <View style={styles.scroll}>
         <View style={styles.body}>
           <M2Card style={styles.statusCard} testID="preview-care-plan-status">
             <View style={styles.statusRow}>
-              <StatusPill tone="positive">[Active till Dec 2026]</StatusPill>
+              <StatusPill tone="positive">{t('preview.activeTillDec2026')}</StatusPill>
             </View>
-            <Text style={m2Text.meta}>[Your plan renews automatically unless you cancel before the renewal date.]</Text>
+            <Text style={m2Text.meta}>{t('preview.yourPlanRenewsAutomaticallyUnlessYouCancelBefore')}</Text>
           </M2Card>
 
-          <Text style={[m2Text.section, styles.sectionGap]}>[Your benefits]</Text>
+          <Text style={[m2Text.section, styles.sectionGap]}>{t('preview.yourBenefits')}</Text>
           <View style={styles.ticketRow} testID="preview-care-plan-tickets">
             {TICKETS.map((ticket) => (
               <View key={ticket.id} style={styles.ticket}>
@@ -81,7 +83,7 @@ export function CarePlanBenefitsPreview(): React.ReactElement {
             ))}
           </View>
 
-          <Text style={[m2Text.section, styles.sectionGap]}>[Use your benefits]</Text>
+          <Text style={[m2Text.section, styles.sectionGap]}>{t('preview.useYourBenefits')}</Text>
           <View style={styles.checklist} testID="preview-care-plan-checklist">
             {CHECKLIST.map((item) => (
               <View key={item.id} style={styles.checklistRow}>
@@ -91,16 +93,16 @@ export function CarePlanBenefitsPreview(): React.ReactElement {
             ))}
           </View>
 
-          <Text style={[m2Text.section, styles.sectionGap]}>[How your benefits work]</Text>
+          <Text style={[m2Text.section, styles.sectionGap]}>{t('preview.howYourBenefitsWork')}</Text>
           <M2Card style={styles.stepCard} testID="preview-care-plan-how-it-works">
             <StepDiagram steps={HOW_IT_WORKS_STEPS} testID="preview-care-plan-step-diagram" />
           </M2Card>
 
-          <M2Note tone="info" icon="clock" title="[Benefits reset each billing cycle]">
-            [Unused benefit counts don't carry over to the next cycle. Check back here any time to see what's left.]
+          <M2Note tone="info" icon="clock" title={t('preview.benefitsResetEachBillingCycle')}>
+            {t('preview.unusedBenefitCountsDonTCarryOverTo')}
           </M2Note>
 
-          <Text style={[m2Text.section, styles.sectionGap]}>FAQs</Text>
+          <Text style={[m2Text.section, styles.sectionGap]}>{t('preview.faqs')}</Text>
           <Accordion items={FAQ_ITEMS} testID="preview-care-plan-faq" />
         </View>
       </View>

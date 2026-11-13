@@ -21,6 +21,14 @@ vi.mock('@/data/services/http', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/data/services/http')>();
   return { ...actual, apiRequest: vi.fn() };
 });
+vi.mock('@/data/contexts/AuthContext', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/data/contexts/AuthContext')>();
+  return {
+    ...actual,
+    useAuth: () => ({ user: null, status: 'anonymous', isAuthenticated: false, updateUser: vi.fn(), logout: vi.fn() }),
+  };
+});
+vi.mock('@/core/navigation', () => ({ useLocation: () => ({ pathname: '/discover' }) }));
 vi.mock('@/components/clinical/ComprehensiveHealthCalculators', () => ({ ComprehensiveHealthCalculators: () => null }));
 const mocked = vi.mocked(http.apiRequest);
 

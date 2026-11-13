@@ -17,10 +17,10 @@ import { asRoutePath, registerGlobalNavigator } from './lib/utils/workflowRoutin
 import { publicConfigApi } from './data/api';
 import { applyPublicConfig } from './data/services/config';
 import { configurePostHog, initPostHog } from './lib/analytics/posthog';
-import { AppRouter } from './app/Router';
+import { AppRouter, CanonicalPath } from './app/Router';
 import { isPublicPath } from './core/routing/registry';
 import { isVendorPath } from './screens/vendor/vendorRoutes';
-import { isClinicianConsolePath } from './features/clinician/shared/clinicianRoutes';
+import { isClinicianConsolePath } from './features/clinician/model/clinicianRoutes';
 import { isWorkspacePath } from './features/health/module';
 import { usePhoneFrame } from './design-system/navigation/usePhoneFrame';
 import { isCampusConsolePath, opensInCampusConsole } from './features/campus/console/campusConsoleRoutes';
@@ -134,7 +134,7 @@ function RouterShell() {
   return (
     <div className="wf-application" style={{ background: 'var(--sk-color-canvas)', minHeight: '100vh', width: '100%', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', flex: '1 0 auto' }}>
       <SEOHead />
-      {!isPublicView && <AmbientBackground />}
+      {!isPublicView && !hasOwnChrome && <AmbientBackground />}
       <a className="wf-skip-link" href="#main-content" onClick={event => {
         event.preventDefault();
         mainContent.current?.removeAttribute('data-route-focus');
@@ -208,11 +208,16 @@ export function consoleHasOwnChrome(pathname: string, role: string | null): bool
 /** Roles whose every workspace page is drawn inside their own console shell. */
 const STAFF_SHELL_ROLES: ReadonlySet<string> = new Set(['COUNSELLOR', 'LAB_COLLECTOR', 'SUPER_ADMIN', 'VENDOR']);
 
-/** One key each for the /admin area, the partner, clinician and campus consoles, so no shell is remounted between sections. */
+/** One key each for the /admin area, the partner, clinician, campus and student workspaces, so no shell is remounted between sections. */
 export function pageTransitionKey(pathname: string, role: string | null = null): string {
-  if (/^\/admin(\/|$)/.test(pathname)) return 'admin';
+  if (/^\/admin(\/|$)/.test(pathname) || role === 'SUPER_ADMIN') return 'admin';
   // A campus admin's notifications and help open in the campus console, so they share its key.
   if (isCampusConsolePath(pathname) || opensInCampusConsole(pathname, role)) return 'campus';
+  // A student's workspace pages share one key: keyed by path, every nav click remounted the
+  // whole web shell (or phone frame), refetched its data and faded the full page in. The
+  // workspace fades only the section content in (WorkspaceScreen's own PageTransition).
+  // Before the clinician check: a student's notifications and help are in the student shell.
+  if (role === 'STUDENT' && isWorkspacePath(pathname)) return 'student';
   if (isClinicianConsolePath(pathname)) return 'clinician';
   return isVendorPath(pathname) ? 'vendor' : pathname;
 }
@@ -227,7 +232,9 @@ export default function App() {
               <LiveCartProvider>
                 <ExerciseProvider>
                   <BrowserRouter>
-                    <RouterShell />
+                    <CanonicalPath>
+                      <RouterShell />
+                    </CanonicalPath>
                   </BrowserRouter>
                 </ExerciseProvider>
               </LiveCartProvider>

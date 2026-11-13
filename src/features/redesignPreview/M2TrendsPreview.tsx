@@ -1,4 +1,5 @@
 import React from 'react';
+import { useT } from '@/i18n';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Icon } from '@/design-system/icons';
 import { color, focusRing, font, fontWeight, radius, space } from '@/design-system/theme';
@@ -20,15 +21,16 @@ const POINTS = [5.9, 6.1, 6.0, 6.4];
  * wired, not replacing the real screen. See NOTES.md.
  */
 export function M2TrendsPreview(): React.ReactElement {
+  const t = useT();
   return (
     <View style={styles.screen} testID="preview-m2-trends">
       <View style={styles.scroll}>
         <View style={styles.header}>
-          <Pressable role="button" accessibilityRole="button" accessibilityLabel="Back" onPress={noop} style={({ focused }: PressState) => [styles.backBtn, focused ? focusRing : null]}>
+          <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('common.back')} onPress={noop} style={({ focused }: PressState) => [styles.backBtn, focused ? focusRing : null]}>
             <Icon name="arrow-left" size={20} color={color.text} />
           </Pressable>
-          <Text style={styles.title}>HbA1c</Text>
-          <Pressable role="button" accessibilityRole="button" accessibilityLabel="Bookmark" onPress={noop} style={({ focused }: PressState) => [styles.backBtn, focused ? focusRing : null]}>
+          <Text style={styles.title}>{t('preview.hba1c')}</Text>
+          <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('preview.bookmark')} onPress={noop} style={({ focused }: PressState) => [styles.backBtn, focused ? focusRing : null]}>
             <Icon name="bookmark" size={18} color={color.text2} />
           </Pressable>
         </View>
@@ -42,25 +44,25 @@ export function M2TrendsPreview(): React.ReactElement {
             </View>
             <View style={styles.badgeRow}>
               <M2Pill label="Above range" tone="attention" />
-              <Text style={m2Text.meta}>Latest: 6.4%</Text>
+              <Text style={m2Text.meta}>{t('preview.latest64')}</Text>
             </View>
           </M2Card>
 
           <M2Card>
-            <Text style={styles.sectionTitle}>Your doctor's 3 steps</Text>
-            <View style={styles.stepRow}><Icon name="walk" size={16} color={color.text3} /><Text style={styles.stepText}>Walk after lunch and dinner</Text></View>
-            <View style={styles.stepRow}><Icon name="bowl" size={16} color={color.text3} /><Text style={styles.stepText}>Cut down on refined sugar</Text></View>
-            <View style={styles.stepRow}><Icon name="flask" size={16} color={color.text3} /><Text style={styles.stepText}>Repeat the panel in 3 months</Text></View>
+            <Text style={styles.sectionTitle}>{t('preview.yourDoctorS3Steps')}</Text>
+            <View style={styles.stepRow}><Icon name="walk" size={16} color={color.text3} /><Text style={styles.stepText}>{t('preview.walkAfterLunchAndDinner')}</Text></View>
+            <View style={styles.stepRow}><Icon name="bowl" size={16} color={color.text3} /><Text style={styles.stepText}>{t('preview.cutDownOnRefinedSugar')}</Text></View>
+            <View style={styles.stepRow}><Icon name="flask" size={16} color={color.text3} /><Text style={styles.stepText}>{t('preview.repeatThePanelIn3Months')}</Text></View>
           </M2Card>
 
           <View>
-            <Text style={styles.sectionTitle}>Recommended for this result</Text>
-            <Text style={m2Text.meta}>Shown because HbA1c is out of range. Why these? Ask Ayush.</Text>
+            <Text style={styles.sectionTitle}>{t('preview.recommendedForThisResult')}</Text>
+            <Text style={m2Text.meta}>{t('preview.shownBecauseHba1cIsOutOfRangeWhy')}</Text>
             <M2Card style={styles.productCard}>
               <GlossTile icon="bottle" hue="green" size={40} />
               <View style={styles.flexShrink}>
-                <Text style={styles.productName}>[Sugar-free sweetener]</Text>
-                <Text style={m2Text.meta}>A pharmacist checks anything new against your medicines</Text>
+                <Text style={styles.productName}>{t('preview.sugarFreeSweetener')}</Text>
+                <Text style={m2Text.meta}>{t('preview.aPharmacistChecksAnythingNewAgainstYourMedicines')}</Text>
               </View>
               <Text style={styles.productPrice}>₹149</Text>
             </M2Card>

@@ -14,7 +14,7 @@ import type { ServiceHue } from '@/design-system/m2';
 import { color, font, fontWeight, radius, space } from '@/design-system/theme';
 import type { ArtSource } from '@/features/phoneKit/artSource';
 import { fullDateFromEpoch } from '@/features/labResults/viewmodel/trendScreenModels';
-import { HealthVaultViewModel, SHARE_DAYS, VAULT_CATEGORIES, vaultKindOf } from '../viewmodel/HealthVaultViewModel';
+import { HealthVaultViewModel, SHARE_DAYS, UNFILED_KIND, VAULT_CATEGORIES, vaultKindOf, vaultSubfolderOf } from '../viewmodel/HealthVaultViewModel';
 import type { VaultCategory, VaultDocument } from '../viewmodel/HealthVaultViewModel';
 import { PrescriptionsTab } from './PrescriptionsTab';
 import type { PrescriptionsTabLinks } from './PrescriptionsTab';
@@ -73,6 +73,34 @@ const STAT_CARDS: ReadonlyArray<{ key: string; label: MessageKey; icon: SkIconNa
 type Filter = VaultCategory | 'ALL';
 
 /**
+ * The subfolders' names (server: services/document_classifier.KINDS). A subfolder the
+ * server adds before its name is translated is not offered and its documents are listed
+ * under "Not sorted", never under a raw code.
+ */
+const SUBFOLDER: Record<string, MessageKey> = {
+  blood: 'swt.vault.sub.blood',
+  urine: 'swt.vault.sub.urine',
+  xray: 'swt.vault.sub.xray',
+  mri: 'swt.vault.sub.mri',
+  ct_scan: 'swt.vault.sub.ct_scan',
+  ultrasound: 'swt.vault.sub.ultrasound',
+  cardiac: 'swt.vault.sub.cardiac',
+  report: 'swt.vault.sub.report',
+  prescription: 'swt.vault.sub.prescription',
+  consult_note: 'swt.vault.sub.consult_note',
+  certificate: 'swt.vault.sub.certificate',
+  card: 'swt.vault.sub.card',
+  camp_report: 'swt.vault.sub.camp_report',
+  discharge_summary: 'swt.vault.sub.discharge_summary',
+  insurance: 'swt.vault.sub.insurance',
+  bill: 'swt.vault.sub.bill',
+  id_proof: 'swt.vault.sub.id_proof',
+  [UNFILED_KIND]: 'swt.vault.sub.unfiled',
+};
+/** The subfolder a document is listed under on this screen. */
+const shownSubfolder = (doc: VaultDocument): string => (SUBFOLDER[vaultSubfolderOf(doc)] ? vaultSubfolderOf(doc) : UNFILED_KIND);
+
+/**
  * Health vault (design page 2 RecordsVault + 3b WebVault, Tier 1; Tier 1
  * parity plan 2026-10-24 §6–7, Q1/Q2/Q4; design boards T1Vault /
  * T1VaultDesktop / T1VaultEmpty approved 24 Oct 2026): one view at both widths
@@ -81,6 +109,13 @@ type Filter = VaultCategory | 'ALL';
  * Share (one clinician, 1–90 days) and Stop sharing (confirm; the server is
  * read back, nothing flips locally) on each document; tabs for Prescriptions,
  * Who can see what, Family, and the Visit summaries link.
+ *
+ * Subfolders (plan tier1-document-autofile-2026-11-13 §14, approved by Krishna
+ * 13 Nov 2026; not on the boards): picking a type chip shows a second row of
+ * chips for the subfolders that type's documents are filed in, a row names its
+ * subfolder, and "Move to a folder" lets the student file a document
+ * themselves (PATCH /health/documents/{id}/kind). The list of subfolders comes
+ * from the server; nothing is moved on screen until the server has answered.
  *
  * Not drawn, on purpose: "Linked to ABDM" (no ABHA link exists server-side,
  * D9-1) and the Source column (a document records no source). The row's "…"
@@ -98,7 +133,10 @@ const VaultBody = observer(function VaultBody({ viewModel: vm, online, links, ta
   const layout = useM2Layout();
   const desktop = layout === 'desktop';
   const gutter = layout === 'phone' ? styles.gutter : null;
-  const [filter, setFilter] = useState<Filter>('ALL');
+  const [filter, setFilterOnly] = useState<Filter>('ALL');
+  const [subfolder, setSubfolder] = useState<string | null>(null);
+  const setFilter = (next: Filter) => { setFilterOnly(next); setSubfolder(null); };
+  const [moving, setMoving] = useState<VaultDocument | null>(null);
   const [query, setQuery] = useState('');
   const [actionsFor, setActionsFor] = useState<VaultDocument | null>(null);
   const [sharing, setSharing] = useState<VaultDocument | null>(null);
@@ -107,7 +145,21 @@ const VaultBody = observer(function VaultBody({ viewModel: vm, online, links, ta
   const items = vm.documents ?? [];
   const counts = vm.categoryCounts;
   const needle = query.trim().toLowerCase();
-  const shown = useMemo(() => items.filter((doc) => (filter === 'ALL' || vaultKindOf(doc.category) === filter) && (!needle || doc.title.toLowerCase().includes(needle))), [items, filter, needle]);
+  const shown = useMemo(() => items.filter((doc) => (filter === 'ALL' || vaultKindOf(doc.category) === filter)
+    && (subfolder === null || shownSubfolder(doc) === subfolder)
+    && (!needle || doc.title.toLowerCase().includes(needle))), [items, filter, subfolder, needle]);
+  /** Subfolders of the picked type and how many documents each holds; drawn only when something is filed. */
+  const subfolders = useMemo(() => {
+    const out = new Map<string, number>();
+    if (filter === 'ALL') return out;
+    for (const doc of items) if (vaultKindOf(doc.category) === filter) out.set(shownSubfolder(doc), (out.get(shownSubfolder(doc)) ?? 0) + 1);
+    return [...out.keys()].some((key) => key !== UNFILED_KIND) ? out : new Map<string, number>();
+  }, [items, filter]);
+  const typeLine = (doc: VaultDocument) => {
+    const type = t(KIND[vaultKindOf(doc.category)].label);
+    return shownSubfolder(doc) === UNFILED_KIND ? type : `${type} · ${t(SUBFOLDER[shownSubfolder(doc)])}`;
+  };
+  const canMove = (doc: VaultDocument) => vm.kindsOf(doc.category).some((kind) => SUBFOLDER[kind]);
   const day = (seconds: number) => fullDateFromEpoch(seconds, locale);
   const canWrite = online;
   const reason = t('m2v.up.needsConnection');
@@ -171,6 +223,7 @@ const VaultBody = observer(function VaultBody({ viewModel: vm, online, links, ta
         <View style={styles.toolbar}>
           <View style={styles.chips} {...webAttrs({ role: 'group', 'aria-label': t('swt.vault.filterLabel') })}>{filterChips()}</View>
           <View style={styles.searchWide}><M2SearchField label={t('swt.vault.searchLabel')} placeholder={t('swt.vault.searchPlaceholder')} value={query} onChangeText={setQuery} testID="vault-search" /></View>
+          {subfolders.size ? <View style={styles.subfolderRow} {...webAttrs({ role: 'group', 'aria-label': t('swt.vault.subfolderLabel') })} testID="vault-subfolders">{subfolderChips()}</View> : null}
         </View>
       ) : (
         <>
@@ -178,8 +231,14 @@ const VaultBody = observer(function VaultBody({ viewModel: vm, online, links, ta
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={[styles.chips, gutter]} style={layout === 'phone' ? styles.railBleed : null} {...webAttrs({ role: 'group', 'aria-label': t('swt.vault.filterLabel') })}>
             {filterChips()}
           </ScrollView>
+          {subfolders.size ? (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={[styles.chips, gutter]} style={layout === 'phone' ? styles.railBleed : null} {...webAttrs({ role: 'group', 'aria-label': t('swt.vault.subfolderLabel') })} testID="vault-subfolders">
+              {subfolderChips()}
+            </ScrollView>
+          ) : null}
         </>
       )}
+      {vm.moveFailed ? <M2Note tone="danger" icon="alert-triangle" announce testID="vault-move-failed">{t('swt.vault.moveFailed')}</M2Note> : null}
       {exportFailed || vm.exportFailed ? <M2Note tone="danger" icon="alert-triangle" announce testID="vault-export-failed">{t('swt.vault.exportFailed')}</M2Note> : null}
       {revokeOutcome ? <M2Note tone="danger" icon="alert-triangle" announce testID="vault-revoke-failed">{t('swt.vault.revokePartial', { names: revokeOutcome.stillShared.join(', ') })}</M2Note> : null}
       {shown.length === 0 ? (
@@ -198,12 +257,13 @@ const VaultBody = observer(function VaultBody({ viewModel: vm, online, links, ta
                   <Text style={m2TableText.strong} numberOfLines={2}>{doc.title}</Text>
                 </View>
               ) },
-              { key: 'type', header: t('swt.vault.col.type'), flex: 0.9, cell: (doc) => <Text style={m2TableText.cell}>{t(KIND[vaultKindOf(doc.category)].label)}</Text> },
+              { key: 'type', header: t('swt.vault.col.type'), flex: 1.1, cell: (doc) => <Text style={m2TableText.cell}>{typeLine(doc)}</Text> },
               { key: 'date', header: t('swt.vault.col.date'), flex: 0.9, cell: (doc) => <Text style={m2TableText.mono}>{day(doc.createdAt)}</Text> },
               { key: 'shared', header: t('swt.vault.col.shared'), flex: 0.9, cell: (doc) => <SharedPill count={vm.activeSharesOf(doc.id).length} /> },
               { key: 'actions', header: t('swt.vault.col.actions'), align: 'right', flex: 3, cell: (doc) => (
                 <View style={styles.rowActions}>
                   {links.download ? <Button label={t('swt.vault.download')} variant="ghost" icon={<Icon name="download" size={15} color={color.action} strokeWidth={2.4} />} onPress={() => links.download?.(doc.id)} testID={`vault-download-${doc.id}`} /> : null}
+                  {canMove(doc) ? <Button label={t('swt.vault.move')} variant="ghost" disabled={!canWrite} onPress={() => { vm.clearMoveFailed(); setMoving(doc); }} testID={`vault-move-${doc.id}`} /> : null}
                   {vm.activeSharesOf(doc.id).length
                     ? <Button label={t('swt.vault.stopSharing')} variant="dangerOutline" disabled={!canWrite} onPress={() => { vm.clearRevokeOutcome(); setRevoking(doc); }} testID={`vault-stop-${doc.id}`} />
                     : <Button label={t('swt.vault.shareWith')} variant="secondary" disabled={!canWrite} icon={<Icon name="share-nodes" size={15} color={canWrite ? color.action : color.text2} strokeWidth={2.2} />} onPress={() => setSharing(doc)} testID={`vault-share-${doc.id}`} />}
@@ -218,7 +278,7 @@ const VaultBody = observer(function VaultBody({ viewModel: vm, online, links, ta
           <View style={styles.rows} testID="vault-rows">
             {shown.map((doc) => (
               <M2ListRow key={doc.id} icon={KIND[vaultKindOf(doc.category)].icon} hue={KIND[vaultKindOf(doc.category)].hue} tile="gloss" title={doc.title}
-                meta={`${t(KIND[vaultKindOf(doc.category)].label)} · ${day(doc.createdAt)}`} onPress={() => setActionsFor(doc)}
+                meta={`${typeLine(doc)} · ${day(doc.createdAt)}`} onPress={() => setActionsFor(doc)}
                 trailing={<View style={styles.trailing}><SharedPill count={vm.activeSharesOf(doc.id).length} /><Icon name="chevron-right" size={16} color={color.text3} strokeWidth={2.6} /></View>}
                 testID={`vault-row-${doc.id}`} />
             ))}
@@ -236,6 +296,20 @@ const VaultBody = observer(function VaultBody({ viewModel: vm, online, links, ta
         <Chip label={t('swt.vault.chip.all', { count: items.length })} selected={filter === 'ALL'} onPress={() => setFilter('ALL')} testID="vault-chip-ALL" />
         {VAULT_CATEGORIES.filter((category) => counts.get(category)).map((category) => (
           <Chip key={category} label={t(KIND[category].chip, { count: counts.get(category) ?? 0 })} selected={filter === category} onPress={() => setFilter(category)} testID={`vault-chip-${category}`} />
+        ))}
+      </>
+    );
+  }
+
+  function subfolderChips() {
+    const inType = [...subfolders.values()].reduce((sum, n) => sum + n, 0);
+    // Named subfolders in the server's order, "Not sorted" last.
+    const order = [...vm.kindsOf(filter), UNFILED_KIND].filter((kind) => subfolders.get(kind));
+    return (
+      <>
+        <Chip label={t('swt.vault.chip.all', { count: inType })} selected={subfolder === null} onPress={() => setSubfolder(null)} testID="vault-subfolder-ALL" />
+        {order.map((kind) => (
+          <Chip key={kind} label={t('swt.vault.sub.count', { name: t(SUBFOLDER[kind]), count: subfolders.get(kind) ?? 0 })} selected={subfolder === kind} onPress={() => setSubfolder(kind)} testID={`vault-subfolder-${kind}`} />
         ))}
       </>
     );
@@ -293,11 +367,13 @@ const VaultBody = observer(function VaultBody({ viewModel: vm, online, links, ta
   const sheets = (
     <>
       <ActionsSheet doc={actionsFor} shares={actionsFor ? vm.activeSharesOf(actionsFor.id).length : 0} online={canWrite} reason={reason} links={links}
+        onMove={actionsFor && canMove(actionsFor) ? () => { const doc = actionsFor; setActionsFor(null); vm.clearMoveFailed(); setMoving(doc); } : undefined}
         onShare={() => { const doc = actionsFor; setActionsFor(null); setSharing(doc); }}
         onStop={() => { const doc = actionsFor; setActionsFor(null); vm.clearRevokeOutcome(); setRevoking(doc); }}
         onClose={() => setActionsFor(null)} />
       <ShareSheet doc={sharing} vm={vm} onClose={() => setSharing(null)} />
       <RevokeSheet doc={revoking} vm={vm} onClose={() => setRevoking(null)} />
+      <MoveSheet doc={moving} vm={vm} onClose={() => setMoving(null)} />
     </>
   );
 
@@ -329,8 +405,8 @@ function SharedPill({ count }: { count: number }) {
 }
 
 /** A document's actions on a phone (the board's row menu): Download, Share, Stop sharing. */
-function ActionsSheet({ doc, shares, online, reason, links, onShare, onStop, onClose }: {
-  doc: VaultDocument | null; shares: number; online: boolean; reason: string; links: HealthVaultLinks; onShare: () => void; onStop: () => void; onClose: () => void;
+function ActionsSheet({ doc, shares, online, reason, links, onMove, onShare, onStop, onClose }: {
+  doc: VaultDocument | null; shares: number; online: boolean; reason: string; links: HealthVaultLinks; onMove?: () => void; onShare: () => void; onStop: () => void; onClose: () => void;
 }) {
   const t = useT();
   return (
@@ -338,6 +414,7 @@ function ActionsSheet({ doc, shares, online, reason, links, onShare, onStop, onC
       <View style={styles.form}>
         {links.download && doc ? <Button label={t('swt.vault.download')} variant="secondary" fullWidth icon={<Icon name="download" size={16} color={color.action} strokeWidth={2.4} />} onPress={() => { links.download?.(doc.id); onClose(); }} testID="vault-action-download" /> : null}
         <Button label={t('swt.vault.shareWith')} fullWidth disabled={!online} icon={<Icon name="share-nodes" size={16} color={online ? color.onAction : color.text2} strokeWidth={2.2} />} onPress={onShare} testID="vault-action-share" />
+        {onMove ? <Button label={t('swt.vault.move')} variant="secondary" fullWidth disabled={!online} onPress={onMove} testID="vault-action-move" /> : null}
         {shares ? <Button label={t('swt.vault.stopSharing')} variant="dangerOutline" fullWidth disabled={!online} onPress={onStop} testID="vault-action-stop" /> : null}
         {!online ? <Text style={m2Text.meta}>{reason}</Text> : null}
       </View>
@@ -367,6 +444,35 @@ const ShareSheet = observer(function ShareSheet({ doc, vm, onClose }: { doc: Vau
         {vm.shareError !== null ? <M2Note tone="danger" icon="alert-triangle" announce testID="vault-share-failed">{vm.shareError || t('swt.vault.shareFailed')}</M2Note> : null}
         <Button label={vm.sharing ? t('swt.vault.sharing') : t('swt.vault.shareCta')} busy={vm.sharing} disabled={!valid} onPress={() => void submit()} fullWidth testID="vault-share-confirm" />
         <Button label={t('common.cancel')} variant="ghost" disabled={vm.sharing} onPress={onClose} fullWidth />
+      </View>
+    </Sheet>
+  );
+});
+
+/**
+ * File one document into a subfolder of its own type. The choices are the server's list for
+ * that type; the sheet closes only once the server has saved the choice, and says so when it has not.
+ */
+const MoveSheet = observer(function MoveSheet({ doc, vm, onClose }: { doc: VaultDocument | null; vm: HealthVaultViewModel; onClose: () => void }) {
+  const t = useT();
+  const busy = Boolean(doc && vm.movingId === doc.id);
+  const current = doc ? shownSubfolder(doc) : UNFILED_KIND;
+  const choices = doc ? [...vm.kindsOf(doc.category).filter((kind) => SUBFOLDER[kind]), UNFILED_KIND] : [];
+  const pick = async (kind: string) => {
+    if (!doc || busy) return;
+    if (kind === current && doc.kindVerified) { onClose(); return; }
+    if (await vm.moveToSubfolder(doc.id, kind)) onClose();
+  };
+  return (
+    <Sheet visible={doc !== null} title={t('swt.vault.moveTitle', { title: doc?.title ?? '' })} subtitle={t('swt.vault.moveBody')} onClose={() => { if (!busy) onClose(); }} busy={busy} testID="vault-move-sheet">
+      <View style={styles.form}>
+        <View style={styles.moveChoices} {...webAttrs({ role: 'group', 'aria-label': t('swt.vault.subfolderLabel') })}>
+          {choices.map((kind) => (
+            <Chip key={kind} label={t(SUBFOLDER[kind])} selected={kind === current} onPress={() => void pick(kind)} testID={`vault-move-to-${kind}`} />
+          ))}
+        </View>
+        {vm.moveFailed ? <M2Note tone="danger" icon="alert-triangle" announce testID="vault-move-sheet-failed">{t('swt.vault.moveFailed')}</M2Note> : null}
+        <Button label={t('common.cancel')} variant="ghost" disabled={busy} onPress={onClose} fullWidth />
       </View>
     </Sheet>
   );
@@ -406,6 +512,8 @@ const styles = StyleSheet.create({
   toolbar: { flexDirection: 'row', alignItems: 'center', gap: space.s16, flexWrap: 'wrap' },
   chips: { flexDirection: 'row', gap: space.s8, flexWrap: 'nowrap', alignItems: 'center', flexGrow: 1 },
   searchWide: { width: 320 },
+  subfolderRow: { flexDirection: 'row', gap: space.s8, flexWrap: 'wrap', alignItems: 'center', width: '100%' },
+  moveChoices: { flexDirection: 'row', gap: space.s8, flexWrap: 'wrap' },
   tableCard: { padding: space.s16 },
   docCell: { flexDirection: 'row', alignItems: 'center', gap: space.s12, flex: 1 },
   rowActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: space.s8, flexWrap: 'wrap' },

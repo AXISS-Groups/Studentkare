@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useT } from '@/i18n';
 import { Icon } from '@/design-system/icons';
 import { color, focusRing, font, fontWeight, radius, space } from '@/design-system/theme';
-import { GlossTile, M2Card, M2Note, M2Pill, M2Table, m2TableText, m2Text, RoundButton } from '@/design-system/m2';
+import { M2Card, M2Note, M2Pill, M2Table, m2TableText, m2Text, RoundButton } from '@/design-system/m2';
 import type { M2TableColumn, PressState } from '@/design-system/m2';
 import { StepDiagram } from '@/design-system';
 
@@ -81,43 +82,44 @@ const PLAN_COLUMNS: ReadonlyArray<M2TableColumn<PlanRow>> = [
  * See NOTES.md.
  */
 export function InsurancePlanBuilderPreview(): React.ReactElement {
-  const [adults, setAdults] = useState(1);
-  const [children, setChildren] = useState(0);
+  const [adults] = useState(1);
+  const [children] = useState(0);
   const [coverage, setCoverage] = useState(COVERAGE_OPTIONS[1]);
+  const t = useT();
 
   return (
     <View style={styles.screen} testID="preview-insurance-plan-builder">
       <View style={styles.header}>
         <RoundButton icon="arrow-left" label="Back" onPress={noop} />
-        <Text style={styles.title}>[Build your plan]</Text>
+        <Text style={styles.title}>{t('preview.buildYourPlan')}</Text>
       </View>
       <View style={styles.scroll}>
         <View style={styles.body}>
           <M2Card>
-            <Text style={m2Text.section}>Who's covered</Text>
+            <Text style={m2Text.section}>{t('preview.whoSCovered')}</Text>
             <View style={[styles.countRow, styles.countRowRule]}>
-              <Text style={styles.countLabel}>Adults</Text>
+              <Text style={styles.countLabel}>{t('preview.adults')}</Text>
               <View style={styles.stepper}>
-                <Pressable role="button" accessibilityRole="button" accessibilityLabel="One fewer adult" onPress={noop}
+                <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('preview.oneFewerAdult')} onPress={noop}
                   style={({ focused }: PressState) => [styles.stepBtn, focused ? focusRing : null]}>
                   <Icon name="minus" size={16} color={color.action} />
                 </Pressable>
                 <Text style={styles.countValue}>{adults}</Text>
-                <Pressable role="button" accessibilityRole="button" accessibilityLabel="One more adult" onPress={noop}
+                <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('preview.oneMoreAdult')} onPress={noop}
                   style={({ focused }: PressState) => [styles.stepBtn, focused ? focusRing : null]}>
                   <Icon name="plus" size={16} color={color.action} />
                 </Pressable>
               </View>
             </View>
             <View style={styles.countRow}>
-              <Text style={styles.countLabel}>Children</Text>
+              <Text style={styles.countLabel}>{t('preview.children')}</Text>
               <View style={styles.stepper}>
-                <Pressable role="button" accessibilityRole="button" accessibilityLabel="One fewer child" onPress={noop}
+                <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('preview.oneFewerChild')} onPress={noop}
                   style={({ focused }: PressState) => [styles.stepBtn, focused ? focusRing : null]}>
                   <Icon name="minus" size={16} color={color.action} />
                 </Pressable>
                 <Text style={styles.countValue}>{children}</Text>
-                <Pressable role="button" accessibilityRole="button" accessibilityLabel="One more child" onPress={noop}
+                <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('preview.oneMoreChild')} onPress={noop}
                   style={({ focused }: PressState) => [styles.stepBtn, focused ? focusRing : null]}>
                   <Icon name="plus" size={16} color={color.action} />
                 </Pressable>
@@ -126,7 +128,7 @@ export function InsurancePlanBuilderPreview(): React.ReactElement {
           </M2Card>
 
           <View>
-            <Text style={[m2Text.section, styles.sectionGap]}>Coverage amount</Text>
+            <Text style={[m2Text.section, styles.sectionGap]}>{t('preview.coverageAmount')}</Text>
             <View style={styles.chipRow}>
               {COVERAGE_OPTIONS.map((option) => {
                 const selected = option === coverage;
@@ -135,7 +137,7 @@ export function InsurancePlanBuilderPreview(): React.ReactElement {
                     key={option}
                     role="button"
                     accessibilityRole="button"
-                    accessibilityLabel={`Coverage ${option}`}
+                    accessibilityLabel={t('preview.coverageOption', { option })}
                     accessibilityState={{ selected }}
                     onPress={() => setCoverage(option)}
                     style={({ focused }: PressState) => [styles.chip, selected ? styles.chipOn : null, focused ? focusRing : null]}
@@ -149,46 +151,46 @@ export function InsurancePlanBuilderPreview(): React.ReactElement {
           </View>
 
           <M2Card>
-            <Text style={m2Text.section}>[How a top-up works]</Text>
+            <Text style={m2Text.section}>{t('preview.howATopUpWorks')}</Text>
             <View style={styles.stepDiagramWrap}>
               <StepDiagram steps={TOP_UP_STEPS} />
             </View>
           </M2Card>
 
           <View>
-            <Text style={[m2Text.section, styles.sectionGap]}>Compare plans</Text>
+            <Text style={[m2Text.section, styles.sectionGap]}>{t('preview.comparePlans')}</Text>
             <M2Table caption="Plan comparison" label="Comparing 3 plans" columns={PLAN_COLUMNS} rows={PLAN_ROWS} rowKey={(row) => row.key} />
           </View>
 
           <M2Card>
-            <Text style={m2Text.section}>Quote breakdown</Text>
+            <Text style={m2Text.section}>{t('preview.quoteBreakdown')}</Text>
             <View style={[styles.quoteRow, styles.quoteRule]}>
-              <Text style={styles.quoteLabel}>Base price</Text>
+              <Text style={styles.quoteLabel}>{t('preview.basePrice')}</Text>
               <Text style={styles.quoteValue}>₹[799]</Text>
             </View>
             <View style={[styles.quoteRow, styles.quoteRule]}>
-              <Text style={styles.quoteLabel}>Add-ons</Text>
+              <Text style={styles.quoteLabel}>{t('preview.addOns')}</Text>
               <Text style={styles.quoteValue}>₹[120]</Text>
             </View>
             <View style={[styles.quoteRow, styles.quoteRule]}>
-              <Text style={styles.quoteLabel}>GST</Text>
+              <Text style={styles.quoteLabel}>{t('preview.gst')}</Text>
               <Text style={styles.quoteValue}>₹[83]</Text>
             </View>
             <View style={styles.quoteRow}>
-              <Text style={styles.quoteTotalLabel}>Total</Text>
-              <Text style={styles.quoteTotalValue}>₹[1,002]/mo</Text>
+              <Text style={styles.quoteTotalLabel}>{t('preview.total2')}</Text>
+              <Text style={styles.quoteTotalValue}>{t('preview.1002Mo')}</Text>
             </View>
           </M2Card>
 
           <M2Note tone="info" icon="shield-check-2">
-            [This is an illustrative quote. A licensed advisor confirms your actual premium before purchase.]
+            {t('preview.thisIsAnIllustrativeQuoteALicensedAdvisor')}
           </M2Note>
         </View>
       </View>
       <View style={styles.footer}>
-        <Pressable role="button" accessibilityRole="button" accessibilityLabel="Talk to an advisor" onPress={noop}
+        <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('preview.talkToAnAdvisor')} onPress={noop}
           style={({ focused }: PressState) => [styles.fillBtn, focused ? focusRing : null]}>
-          <Text style={styles.fillBtnText}>Talk to an advisor</Text>
+          <Text style={styles.fillBtnText}>{t('preview.talkToAnAdvisor')}</Text>
         </Pressable>
       </View>
     </View>

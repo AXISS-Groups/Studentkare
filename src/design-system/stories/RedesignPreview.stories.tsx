@@ -1,6 +1,7 @@
 import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { View } from 'react-native';
+import { LanguageProvider } from '@/i18n';
 import { M2HomePreview } from '@/features/redesignPreview/M2HomePreview';
 import { M2MedicineInfoPreview } from '@/features/redesignPreview/M2MedicineInfoPreview';
 import { LabComparePreview } from '@/features/redesignPreview/LabComparePreview';
@@ -34,6 +35,11 @@ import { WebProductPreview } from '@/features/redesignPreview/WebProductPreview'
 import { WebCheckoutPreview } from '@/features/redesignPreview/WebCheckoutPreview';
 import { WebOrdersPreview } from '@/features/redesignPreview/WebOrdersPreview';
 import { WebReorderPreview } from '@/features/redesignPreview/WebReorderPreview';
+import { WebReportAssistantPreview } from '@/features/redesignPreview/WebReportAssistantPreview';
+import { AyushSheetPreview } from '@/features/redesignPreview/AyushSheetPreview';
+import { NewDevicePreview } from '@/features/redesignPreview/NewDevicePreview';
+import { NotificationTemplatesPreview } from '@/features/redesignPreview/NotificationTemplatesPreview';
+import { M2FamilyHubPreview } from '@/features/redesignPreview/M2FamilyHubPreview';
 import { M2FamilyCirclePreview } from '@/features/redesignPreview/M2FamilyCirclePreview';
 import { DevicesPreview } from '@/features/redesignPreview/DevicesPreview';
 import { TeleconsultPreview } from '@/features/redesignPreview/TeleconsultPreview';
@@ -62,6 +68,8 @@ import { PaymentFailureScreenPreview } from '@/features/redesignPreview/PaymentF
 import { InlineAyushSuggestionPreview } from '@/features/redesignPreview/InlineAyushSuggestionPreview';
 import { PhysiotherapyAtHomeLandingPreview } from '@/features/redesignPreview/PhysiotherapyAtHomeLandingPreview';
 import { HealthPlansMarketplacePreview } from '@/features/redesignPreview/HealthPlansMarketplacePreview';
+import { CheckinReceiptPreview } from '@/features/redesignPreview/CheckinReceiptPreview';
+import { PrescriptionUploadPreview } from '@/features/redesignPreview/PrescriptionUploadPreview';
 
 /**
  * Flat, non-functional previews of the 4 screens in
@@ -72,12 +80,20 @@ import { HealthPlansMarketplacePreview } from '@/features/redesignPreview/Health
  * See src/features/redesignPreview/NOTES.md for what each screen maps to,
  * where it doesn't, and every icon substitution made.
  */
-const meta = { title: 'Redesign preview (for review)/1mg-inspired screens' } satisfies Meta;
+const meta = {
+  title: 'Redesign preview (for review)/1mg-inspired screens',
+  decorators: [(Story, context) => {
+    const lang = context.parameters.language === 'te' ? 'te' : context.parameters.language === 'hi' ? 'hi' : 'en';
+    return <LanguageProvider initial={lang} key={lang}><Story /></LanguageProvider>;
+  }],
+} satisfies Meta;
 export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Home: Story = { render: () => <View><M2HomePreview /></View> };
 export const MedicineInfo: Story = { render: () => <View><M2MedicineInfoPreview /></View> };
+export const MedicineInfoTelugu: Story = { ...MedicineInfo, parameters: { language: 'te' } };
+export const MedicineInfoHindi: Story = { ...MedicineInfo, parameters: { language: 'hi' } };
 export const LabCompare: Story = { render: () => <View><LabComparePreview /></View> };
 export const LabPrep: Story = { render: () => <View><LabPrepPreview /></View> };
 
@@ -95,6 +111,8 @@ export const Orders: Story = { render: () => <View><M2OrdersPreview /></View> };
 export const Camps: Story = { render: () => <View><M2CampsPreview /></View> };
 export const Refills: Story = { render: () => <View><M2RefillsPreview /></View> };
 export const FindCare: Story = { render: () => <View><M2FindCarePreview /></View> };
+export const FindCareTelugu: Story = { ...FindCare, parameters: { language: 'te' } };
+export const FindCareHindi: Story = { ...FindCare, parameters: { language: 'hi' } };
 export const Profile: Story = { render: () => <View><M2ProfilePreview /></View> };
 
 /**
@@ -133,6 +151,8 @@ export const WebDashboard: Story = { render: () => <WebDashboardPreview /> };
 export const WebShop: Story = { render: () => <WebShopPreview /> };
 export const WebProduct: Story = { render: () => <WebProductPreview /> };
 export const WebCheckout: Story = { render: () => <WebCheckoutPreview /> };
+export const WebCheckoutTelugu: Story = { ...WebCheckout, parameters: { language: 'te' } };
+export const WebCheckoutHindi: Story = { ...WebCheckout, parameters: { language: 'hi' } };
 export const WebOrders: Story = { render: () => <WebOrdersPreview /> };
 export const WebReorder: Story = { render: () => <WebReorderPreview /> };
 
@@ -299,6 +319,67 @@ export const InlineAyushSuggestion: Story = { render: () => <View><InlineAyushSu
 export const PhysiotherapyAtHomeLanding: Story = { render: () => <View><PhysiotherapyAtHomeLandingPreview /></View> };
 export const HealthPlansMarketplace: Story = { render: () => <View><HealthPlansMarketplacePreview /></View> };
 
+/**
+ * The genuine remainder of task #65's Web* sweep. Most of the 38 briefs
+ * that looked unbuilt (no `*Preview.tsx`) turned out to already be real,
+ * shipped screens under `src/features/` — same lesson as Part 8's
+ * illustration sweep. `WebReportAssistant` is the one actual gap left
+ * here; `WebGuardianApprove`/`WebGuardianConsent` were removed — see
+ * NOTES.md for why (DESIGN.md's D4 already dropped the whole under-18/
+ * guardian-consent flow this pair previewed).
+ */
+export const WebReportAssistant: Story = { render: () => <WebReportAssistantPreview /> };
+
+/**
+ * 2 confirmed genuine gaps (empty `[]` in implementation-map.json, no real
+ * component anywhere under `src/features/`, `src/native/`,
+ * `src/design-system/` outside this folder): `CheckinReceipt` (Tier 1),
+ * `PrescriptionUpload` (Tier 1).
+ *
+ * `Onboarding3` was in the original task list but is NOT a gap: the same
+ * "Ask Ayush before you Google it." slide is already real and shipped as
+ * the third panel of `WelcomeCarouselView.tsx` (`welcomeSlides.ts`'s
+ * `ayush` entry, `implementation-map.json` already lists those 3 files).
+ * Same lesson as NOTES.md Parts 8–9: no `*Preview.tsx` existing is not
+ * proof of a gap. No Onboarding3Preview was committed.
+ *
+ * The MOBILE `GuardianApprove`/`GuardianConsent` pair was also in the
+ * original task list and was briefly built, then deleted: DESIGN.md's
+ * D4 (resolved 2026-09-26) explicitly drops both — StudentKare is 18+
+ * only, so there is no under-18/guardian-consent flow to preview, mobile
+ * or web. See NOTES.md for the full finding, including that the WEB
+ * versions above (`WebGuardianApprove`/`WebGuardianConsent`) were built
+ * and merged earlier under the same mistaken "empty implementation-map
+ * entry = genuine gap" reasoning, without checking DESIGN.md first.
+ */
+export const CheckinReceipt: Story = { render: () => <View><CheckinReceiptPreview /></View> };
+export const PrescriptionUpload: Story = { render: () => <View><PrescriptionUploadPreview /></View> };
+
+/**
+ * Part 11's 3 corrected genuine gaps, re-audited across the full
+ * "82 console screens" (#67) + remaining non-console empty-map-entry
+ * (#66) buckets, this time cross-checking `src/screens/` too (the
+ * earlier audit's blind spot — see NOTES.md). #67 itself turned out to
+ * have zero genuine gaps. `AyushSheet` and `NewDevice` touch DESIGN.md's
+ * Tier-1 safety bullets directly (crisis support; identity verification)
+ * and ship as flat previews only, per Krishna's explicit call.
+ * `NotificationTemplates` drops its "Guardian consent request" row per
+ * DESIGN.md D4.
+ */
+export const AyushSheet: Story = { render: () => <View><AyushSheetPreview /></View> };
+export const NewDevice: Story = { render: () => <View><NewDevicePreview /></View> };
+export const NotificationTemplates: Story = { render: () => <View><NotificationTemplatesPreview /></View> };
+
+/**
+ * Task #70: net-new "Family Hub" avatar-switcher concept, modeled on
+ * 1mg's own video reference. Built anyway, flagged as a concept-only
+ * preview per Krishna's explicit call, despite 1mg's underlying pattern
+ * (one account seeing another's full record) conflicting with this
+ * product's 18+ architecture — see the file's own caution comment and
+ * NOTES.md.
+ */
+export const M2FamilyHub: Story = { render: () => <View><M2FamilyHubPreview /></View> };
+
 export const AllScreens: Story = {
   render: () => (
     <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 24 }}>
@@ -363,6 +444,13 @@ export const AllScreens: Story = {
       <InlineAyushSuggestionPreview />
       <PhysiotherapyAtHomeLandingPreview />
       <HealthPlansMarketplacePreview />
+      <WebReportAssistantPreview />
+      <CheckinReceiptPreview />
+      <PrescriptionUploadPreview />
+      <AyushSheetPreview />
+      <NewDevicePreview />
+      <NotificationTemplatesPreview />
+      <M2FamilyHubPreview />
     </View>
   ),
 };

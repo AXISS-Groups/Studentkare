@@ -1,6 +1,7 @@
 """Owned health data, configured catalog, durable requests, and role-scoped operations."""
 import hashlib
 import json
+import logging
 import re
 import time
 import uuid
@@ -32,6 +33,7 @@ from core.team_scope import RESERVED_CAMPUS_MESSAGE, is_reserved_campus, team_sa
 from services import (
     clinical_profile,
     consent_ledger,
+    document_filing,
     lab_results,
     livekit_media,
     medicine_info,
@@ -72,6 +74,7 @@ from services.workflow_scheduler import (
     workflow_scheduler,
 )
 
+logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api", tags=["Care workflows"])
 
 # Structural lengths and formats (AGENTS.md rule 11: named, not tunable).
@@ -198,7 +201,9 @@ def documents(
     user=Depends(authenticated_user),
     db: Session = Depends(workflow_db)
 ):
-    stmt = select(M.Document.id, M.Document.title, M.Document.category, M.Document.filename, M.Document.mime_type, M.Document.created_at).where(M.Document.account_id == user["id"])
+    stmt = select(M.Document.id, M.Document.title, M.Document.category, M.Document.filename, M.Document.mime_type,
+                  M.Document.created_at, M.Document.doc_kind, M.Document.classification_source,
+                  M.Document.kind_verified).where(M.Document.account_id == user["id"])
     total = db.scalar(select(func.count()).select_from(M.Document).where(M.Document.account_id == user["id"]))
     rows = db.execute(stmt.order_by(M.Document.created_at.desc()).offset(offset).limit(limit)).all()
     # How many of the owner's documents are in each category (M2Profile's document cards).
@@ -206,16 +211,23 @@ def documents(
                         .group_by(M.Document.category)).all()
     return {
         "items": [{"id": row.id, "title": row.title, "category": row.category, "filename": row.filename,
-                   "mimeType": row.mime_type, "createdAt": row.created_at} for row in rows],
+                   "mimeType": row.mime_type, "createdAt": row.created_at,
+                   # The subfolder inside the category, how it was decided, and whether the owner set it.
+                   "kind": row.doc_kind or None, "matchedVia": row.classification_source or None,
+                   "kindVerified": row.kind_verified} for row in rows],
         "total": total,
         "categoryCounts": {str(category): int(count) for category, count in counts},
+        # The subfolders each category may be filed into (services/document_classifier.KINDS),
+        # so the screen offers exactly what PATCH .../kind accepts and keeps no list of its own.
+        "kinds": {category: list(kinds) for category, kinds in document_filing.classifier.KINDS.items()},
         "limit": limit,
         "offset": offset,
     }
 
 
 @router.post("/health/documents", status_code=201)
-def upload_document(title: str = Form(..., min_length=1, max_length=160), category: str = Form(...), file: UploadFile = File(...),
+def upload_document(response: Response, title: str = Form(..., min_length=1, max_length=160),
+                    category: str = Form(...), file: UploadFile = File(...),
                     user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
     if not title.strip():
         raise HTTPException(422, "Enter a record title.")
@@ -226,27 +238,120 @@ def upload_document(title: str = Form(..., min_length=1, max_length=160), catego
         raise HTTPException(422, "Upload a valid PDF, PNG, or JPEG file.")
     # A prescription is never stored unscanned: no offline bypass for that category, in any environment.
     scan_file_for_viruses(content, allow_offline_bypass=category != "PRESCRIPTION")
+    # The same bytes again in the same category are the same record: return it, store
+    # nothing (checked after the scan, so a duplicate is never a way round it).
+    digest = document_filing.checksum(content)
+    duplicate_of = document_filing.find_duplicate(db, user["id"], digest, category)
+    if duplicate_of:
+        intake_id = db.scalar(select(M.DocumentIntake.id).where(M.DocumentIntake.document_id == duplicate_of)
+                              .order_by(M.DocumentIntake.created_at).limit(1))
+        existing = db.execute(select(M.Document.doc_kind, M.Document.classification_source)
+                              .where(M.Document.id == duplicate_of)).one()
+        response.status_code = 200
+        return {"id": duplicate_of, "intakeId": intake_id, "duplicate": True, "kind": existing.doc_kind,
+                "matchedVia": existing.classification_source or None}
     filename = upload_files.safe_filename(file.filename, "record")
     row = M.Document(id=new_id(), account_id=user["id"], title=title.strip(), category=category, filename=filename,
-                     mime_type=file.content_type, content=content, created_at=time.time())
+                     mime_type=file.content_type, content=content, created_at=time.time(), checksum_sha256=digest)
     db.add(row)
     audit(db, user, "DOCUMENT_UPLOADED", row.id)
-    db.flush()
-    # Auto-queue document intake for extraction (honest, no invented fields).
-    result = extract_fields(content, title.strip(), category, file.content_type)
+    # The record is the student's from here on: committed before anything is read, filed
+    # or indexed, so no failure in those steps can take the upload back.
+    db.commit()
+    document_id = row.id
+    try:
+        intake_id = _queue_intake(db, user, row)
+        db.commit()
+    except Exception as exc:  # noqa: BLE001 - nothing was analysed (rolled back); the record stands
+        db.rollback()
+        logger.warning("document intake failed after upload: %s", type(exc).__name__)
+        intake_id = None
+    filed = db.execute(select(M.Document.doc_kind, M.Document.classification_source)
+                       .where(M.Document.id == document_id)).one()
+    return {"id": document_id, "intakeId": intake_id, "duplicate": False, "kind": filed.doc_kind or "unfiled",
+            "matchedVia": filed.classification_source or None}
+
+
+def _queue_intake(db, user, row) -> str:
+    """Read a stored document once, file it into its subfolder, and queue its fields for review.
+
+    Reading and filing never raise (services/document_filing.py): a reader or classifier
+    failure leaves the record ``unfiled`` and the upload goes through. Extraction is
+    honest, no invented fields.
+    """
+    filed = document_filing.read_and_file(db, row)
+    result = extract_fields(row.content, row.title, row.category, row.mime_type, preread=(filed.text, filed.read))
+    fields = result["fields"] + document_filing.review_fields(row, filed)
     intake_id = f"int_{new_id()[:10]}"
     db.add(M.DocumentIntake(id=intake_id, document_id=row.id, account_id=user["id"],
                             status=intake_status_for(result["draft"]),
-                            extractor="heuristic", draft={"draft": result["draft"], "fields": result["fields"]},
+                            extractor="heuristic", draft={"draft": result["draft"], "fields": fields},
                             created_at=time.time()))
-    for field in result["fields"]:
+    for field in fields:
         db.add(M.IntakeReviewItem(id=f"ir_{new_id()[:10]}", intake_id=intake_id, field=field["field"],
                                   value=field["value"], confidence=field["confidence"], status="PENDING"))
     if result["draft"]["read"]["state"] == "OK":
         from services import personal_document_rag
         personal_document_rag.index_document(db, row.id, user["id"], result["text"])
+    return intake_id
+
+
+class DocumentKindInput(StrictModel):
+    kind: str = Field(min_length=1, max_length=40)
+
+
+@router.patch("/health/documents/{document_id}/kind")
+def set_document_kind(document_id: str, data: DocumentKindInput, user=Depends(authenticated_user),
+                      db: Session = Depends(workflow_db)):
+    """The owner files a record into a subfolder of its category themselves.
+
+    Their choice is final (no rule or backfill changes it afterwards) and is remembered:
+    the next upload with the same file name, in the same category, is filed the same way.
+    """
+    row = db.scalar(select(M.Document).where(M.Document.id == document_id, M.Document.account_id == user["id"]))
+    if not row:
+        raise HTTPException(404, "Record not found.")
+    try:
+        document_filing.set_kind(db, row, data.kind)
+    except ValueError:
+        raise HTTPException(422, "Choose a supported folder for this record.") from None
+    audit(db, user, "DOCUMENT_KIND_SET", row.id)
     db.commit()
-    return {"id": row.id, "intakeId": intake_id}
+    return {"id": row.id, "kind": row.doc_kind, "matchedVia": row.classification_source, "kindVerified": True}
+
+
+@router.post("/health/documents/{document_id}/reclassify")
+def reclassify_document(document_id: str, apply: bool = Query(False), user=Depends(authenticated_user),
+                        db: Session = Depends(workflow_db)):
+    """Re-run the filing rules on one owned record. A dry run unless ``apply=true``.
+
+    Idempotent, and it never touches a subfolder the owner chose.
+    """
+    row = db.scalar(select(M.Document).where(M.Document.id == document_id, M.Document.account_id == user["id"]))
+    if not row:
+        raise HTTPException(404, "Record not found.")
+    result = document_filing.reclassify(db, row, apply=apply)
+    if result["applied"]:
+        audit(db, user, "DOCUMENT_RECLASSIFIED", row.id)
+        db.commit()
+    return {"id": row.id, **result}
+
+
+@router.post("/ops/documents/reclassify-backfill")
+def reclassify_backfill(apply: bool = Query(False), user=Depends(require_super_admin),
+                        db: Session = Depends(workflow_db)):
+    """Re-file the stored records by file name. A dry run unless ``apply=true``.
+
+    Counts only, with small cells suppressed: a super admin may not see a student's
+    document id, file name or text (same rule as /ops/intake/review). Subfolders the
+    owner chose are skipped. Running it twice changes nothing the second time.
+    """
+    result = document_filing.backfill(db, apply=apply)
+    if apply:
+        audit(db, user, "DOCUMENTS_RECLASSIFY_BACKFILL", "care_documents")
+        db.commit()
+    return {**result, "transitions": _suppress_small_cells(result["transitions"]),
+            "suppressionThreshold": ANALYTICS_SUPPRESSION_THRESHOLD}
 
 
 @router.get("/health/documents/{document_id}/file")
@@ -261,12 +366,15 @@ def download_document(document_id: str, user=Depends(authenticated_user), db: Se
 def delete_document(document_id: str, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
     from services.rx_uploads import withdraw_reviews_for_document
 
-    if db.scalar(select(M.Document.id).where(M.Document.id == document_id, M.Document.account_id == user["id"])):
+    owned = db.execute(select(M.Document.filename, M.Document.category)
+                       .where(M.Document.id == document_id, M.Document.account_id == user["id"])).first()
+    if owned:
         # A prescription sent to a pharmacist leaves that queue with its file.
         withdraw_reviews_for_document(db, document_id)
         lab_results.delete_for_document(db, user["id"], document_id)
         from services import personal_document_rag
         personal_document_rag.remove_document(db, document_id)
+        document_filing.remove_document(db, user["id"], document_id, owned.filename, owned.category)
     changed = db.execute(delete(M.Document).where(M.Document.id == document_id, M.Document.account_id == user["id"])).rowcount
     if not changed:
         raise HTTPException(404, "Record not found.")
@@ -289,21 +397,11 @@ def process_document_intake(document_id: str, user=Depends(authenticated_user), 
     existing = db.scalar(select(M.DocumentIntake).where(M.DocumentIntake.document_id == document_id))
     if existing:
         return {"id": existing.id, "status": existing.status, "fields": existing.draft.get("fields", [])}
-    intake_id = f"int_{new_id()[:10]}"
-    result = extract_fields(doc.content, doc.title, doc.category, doc.mime_type)
-    status = intake_status_for(result["draft"])
-    db.add(M.DocumentIntake(id=intake_id, document_id=doc.id, account_id=user["id"], status=status,
-                            extractor="heuristic", draft={"draft": result["draft"], "fields": result["fields"]},
-                            created_at=time.time()))
-    for field in result["fields"]:
-        db.add(M.IntakeReviewItem(id=f"ir_{new_id()[:10]}", intake_id=intake_id, field=field["field"],
-                                  value=field["value"], confidence=field["confidence"], status="PENDING"))
-    if result["draft"]["read"]["state"] == "OK":
-        from services import personal_document_rag
-        personal_document_rag.index_document(db, doc.id, user["id"], result["text"])
+    intake_id = _queue_intake(db, user, doc)
     audit(db, user, "DOCUMENT_INTAKE_QUEUED", intake_id)
     db.commit()
-    return {"id": intake_id, "status": status, "fields": result["fields"]}
+    intake = db.get(M.DocumentIntake, intake_id)
+    return {"id": intake_id, "status": intake.status, "fields": intake.draft.get("fields", [])}
 
 
 @router.get("/intake/{intake_id}")

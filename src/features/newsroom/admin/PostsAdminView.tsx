@@ -17,7 +17,7 @@ import { PostsAdminViewModel } from '../viewmodel/PostsAdminViewModel';
 import type { Console, Notice, Origin, PreviewMode, ReviewFilter } from '../viewmodel/PostsAdminViewModel';
 import { PostArticle } from '../views/PostPage';
 import { PostCover } from '../views/PostCover';
-import { ClinicianConsoleFrame } from '@/features/clinician/shared/ClinicianConsoleFrame';
+import { ClinicianConsoleFrame } from '@/features/clinician/views/ClinicianConsoleFrame';
 import { getSetting } from '@/data/services/config';
 import { AutopilotView } from './AutopilotView';
 import { AnalyticsView, CategoriesView, PrecisionCard, ReviewQueue, SeriesAdminView, ShareKitView } from './ContentTabs';

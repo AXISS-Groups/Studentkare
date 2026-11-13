@@ -1,9 +1,10 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import { useT } from '@/i18n';
 import { Icon } from '@/design-system/icons';
 import type { SkIconName } from '@/design-system/icons';
 import { color, focusRing, font, fontWeight, radius, space } from '@/design-system/theme';
-import { GlossTile, M2Card, M2Note, M2Pill, RoundButton, m2Text } from '@/design-system/m2';
+import { GlossTile, M2Card, M2Note, M2Pill, RoundButton } from '@/design-system/m2';
 import type { PressState } from '@/design-system/m2';
 import { Pressable } from 'react-native';
 
@@ -78,20 +79,21 @@ const PROGRAMS: readonly PlanProgram[] = [
  * or ticket yet. Not committed, pushed, or opened as a PR.
  */
 export function HealthPlansMarketplacePreview(): React.ReactElement {
+  const t = useT();
   return (
     <View style={styles.screen} testID="preview-health-plans-marketplace">
       <View style={styles.header}>
         <RoundButton icon="arrow-left" label="Back" onPress={noop} />
-        <Text style={styles.headerTitle}>[Health Plans]</Text>
+        <Text style={styles.headerTitle}>{t('preview.healthPlans')}</Text>
       </View>
 
       <View style={styles.scroll}>
         <View style={styles.body}>
           <M2Note tone="attention" icon="alert-circle-3" testID="preview-health-plans-caution-note">
-            This is a concept preview. No program here is real, and nothing can be enrolled in yet.
+            {t('preview.thisIsAConceptPreviewNoProgramHere')}
           </M2Note>
 
-          <Text style={styles.heroSubtitle}>[Structured, coach-led programs for ongoing conditions — alongside your doctor, never instead of them.]</Text>
+          <Text style={styles.heroSubtitle}>{t('preview.structuredCoachLedProgramsForOngoingConditionsAlongside')}</Text>
 
           {PROGRAMS.map((program) => (
             <M2Card key={program.id} testID={`preview-health-plan-${program.id}`}>
@@ -107,11 +109,11 @@ export function HealthPlansMarketplacePreview(): React.ReactElement {
               <View style={styles.programFooter}>
                 <Text style={styles.programPrice}>{program.price}</Text>
                 <View style={styles.ctaRow}>
-                  <Pressable role="button" accessibilityRole="button" accessibilityLabel={`Learn more about ${program.name}`} onPress={noop} style={({ focused }: PressState) => [styles.outlineBtn, focused ? focusRing : null]}>
-                    <Text style={styles.outlineBtnText}>[Learn more]</Text>
+                  <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('preview.learnMoreAboutName', { name: program.name })} onPress={noop} style={({ focused }: PressState) => [styles.outlineBtn, focused ? focusRing : null]}>
+                    <Text style={styles.outlineBtnText}>{t('preview.learnMore')}</Text>
                   </Pressable>
-                  <Pressable role="button" accessibilityRole="button" accessibilityLabel={`Enroll in ${program.name}`} onPress={noop} style={({ focused }: PressState) => [styles.fillBtn, focused ? focusRing : null]}>
-                    <Text style={styles.fillBtnText}>[Enroll]</Text>
+                  <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('preview.enrollInName', { name: program.name })} onPress={noop} style={({ focused }: PressState) => [styles.fillBtn, focused ? focusRing : null]}>
+                    <Text style={styles.fillBtnText}>{t('preview.enroll')}</Text>
                     <Icon name="chevron-right" size={14} color={color.onAction} />
                   </Pressable>
                 </View>

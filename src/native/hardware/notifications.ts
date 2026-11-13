@@ -15,13 +15,7 @@ import type { WaterReminderPlan, WaterReminderScheduler } from '@/features/remin
  */
 
 Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: false,
-    shouldShowBanner: true,
-    shouldShowList: true,
-  }),
+  handleNotification: async () => ({ shouldShowAlert: true, shouldPlaySound: true, shouldSetBadge: false }),
 });
 
 const CHANNEL = 'medicine-reminders';

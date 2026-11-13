@@ -1,4 +1,5 @@
 import React from 'react';
+import { useT } from '@/i18n';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Icon } from '@/design-system/icons';
 import { color, focusRing, font, fontWeight, radius, space } from '@/design-system/theme';
@@ -18,52 +19,51 @@ const noop = () => undefined;
  * anything. See NOTES.md.
  */
 export function WebDashboardPreview(): React.ReactElement {
+  const t = useT();
   return (
     <WebShellPreview route="home">
       <View style={styles.body}>
-        <Text style={styles.h1}>Welcome back, [Student name]</Text>
+        <Text style={styles.h1}>{t('preview.welcomeBackStudentName')}</Text>
         <View style={styles.grid3}>
           <M2Card style={styles.statCard}>
             <GlossTile icon="pill-2" hue="teal" size={40} />
-            <Text style={styles.statTitle}>Medicines today</Text>
-            <Text style={m2Text.meta}>[1] of [2] taken</Text>
+            <Text style={styles.statTitle}>{t('m2r.meds.title')}</Text>
+            <Text style={m2Text.meta}>{t('preview.1Of2Taken')}</Text>
           </M2Card>
           <M2Card style={styles.statCard}>
             <GlossTile icon="flask" hue="violet" size={40} />
-            <Text style={styles.statTitle}>Latest report</Text>
+            <Text style={styles.statTitle}>{t('preview.latestReport288')}</Text>
             <M2Pill label="Needs a look" tone="attention" />
           </M2Card>
           <M2Card style={styles.statCard}>
             <GlossTile icon="shopping-bag" hue="indigo" size={40} />
-            <Text style={styles.statTitle}>Active order</Text>
+            <Text style={styles.statTitle}>{t('preview.activeOrder')}</Text>
             <M2Pill label="Out for delivery" tone="action" />
           </M2Card>
         </View>
 
         <View style={styles.row2}>
           <M2Card style={styles.wideCard}>
-            <Text style={styles.sectionTitle}>Health vault</Text>
-            <Text style={m2Text.meta}>[3] documents · last added 14 Oct 2026</Text>
+            <Text style={styles.sectionTitle}>{t('landing.consult.footer.vault')}</Text>
+            <Text style={m2Text.meta}>{t('preview.3DocumentsLastAdded14Oct2026')}</Text>
             <View style={styles.actionRow}>
-              <Pressable role="button" accessibilityRole="button" accessibilityLabel="Open vault" onPress={noop} style={({ focused }: PressState) => [styles.outlineBtn, focused ? focusRing : null]}>
-                <Icon name="shield" size={14} color={color.action} /><Text style={styles.outlineBtnText}>Open vault</Text>
+              <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('sw.dash.openVault')} onPress={noop} style={({ focused }: PressState) => [styles.outlineBtn, focused ? focusRing : null]}>
+                <Icon name="shield" size={14} color={color.action} /><Text style={styles.outlineBtnText}>{t('sw.dash.openVault')}</Text>
               </Pressable>
             </View>
           </M2Card>
           <M2Card style={styles.wideCard}>
-            <Text style={styles.sectionTitle}>Emergency card</Text>
-            <Text style={m2Text.meta}>Blood group and contacts, ready to show on a locked screen</Text>
+            <Text style={styles.sectionTitle}>{t('ice.eyebrow')}</Text>
+            <Text style={m2Text.meta}>{t('preview.bloodGroupAndContactsReadyToShowOn')}</Text>
             <View style={styles.actionRow}>
-              <Pressable role="button" accessibilityRole="button" accessibilityLabel="View card" onPress={noop} style={({ focused }: PressState) => [styles.outlineBtn, focused ? focusRing : null]}>
-                <Icon name="heart-plus" size={14} color={color.action} /><Text style={styles.outlineBtnText}>View card</Text>
+              <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('preview.viewCard')} onPress={noop} style={({ focused }: PressState) => [styles.outlineBtn, focused ? focusRing : null]}>
+                <Icon name="heart-plus" size={14} color={color.action} /><Text style={styles.outlineBtnText}>{t('preview.viewCard')}</Text>
               </Pressable>
             </View>
           </M2Card>
         </View>
 
-        <M2Note tone="info" icon="shield-check-2" title="Signed in on this device">
-          You can sign out of this browser any time from Sign-in & security.
-        </M2Note>
+        <M2Note tone="info" icon="shield-check-2" title={t('preview.signedInOnThisDevice')}>{t('preview.youCanSignOutOfThisBrowserAny')}</M2Note>
         <BrandFooter />
       </View>
     </WebShellPreview>

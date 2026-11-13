@@ -1,5 +1,6 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useT } from '@/i18n';
 import { Icon } from '@/design-system/icons';
 import { color, focusRing, font, fontWeight, radius, space } from '@/design-system/theme';
 import { GlossTile, M2Card, M2Note, RoundButton, m2Text } from '@/design-system/m2';
@@ -34,53 +35,54 @@ const noop = () => undefined;
  * confirmed in `design/icons/icon-manifest.json` before use. Tokens only.
  */
 export function PaymentFailureScreenPreview(): React.ReactElement {
+  const t = useT();
   return (
     <View style={styles.screen} testID="preview-payment-failure-screen">
       <View style={styles.header}>
         <RoundButton icon="arrow-left" label="Back" onPress={noop} />
-        <Text style={styles.headerTitle}>[Checkout]</Text>
+        <Text style={styles.headerTitle}>{t('preview.checkout')}</Text>
       </View>
 
       <View style={styles.body}>
         <View style={styles.center}>
           <GlossTile icon="shield-alert" hue="danger" size={72} iconSize={34} />
-          <Text style={styles.title}>[Payment failed]</Text>
-          <Text style={styles.subtitle}>[Your bank declined this transaction. You have not been charged.]</Text>
+          <Text style={styles.title}>{t('preview.paymentFailed')}</Text>
+          <Text style={styles.subtitle}>{t('preview.yourBankDeclinedThisTransactionYouHaveNot')}</Text>
         </View>
 
         <M2Card style={styles.orderCard} testID="preview-payment-failure-order-card">
-          <Text style={m2Text.eyebrow}>[ORDER ID]</Text>
+          <Text style={m2Text.eyebrow}>{t('preview.orderId')}</Text>
           <View style={styles.orderRow}>
-            <Text style={m2Text.body}>[#SK-48213]</Text>
+            <Text style={m2Text.body}>{t('preview.sk48213')}</Text>
             <Text style={m2Text.price}>[₹486]</Text>
           </View>
-          <Text style={m2Text.meta}>[2 lab tests · delivery to your hostel address]</Text>
+          <Text style={m2Text.meta}>{t('preview.2LabTestsDeliveryToYourHostelAddress')}</Text>
         </M2Card>
 
         <Pressable
           role="button"
           accessibilityRole="button"
-          accessibilityLabel="[Retry payment]"
+          accessibilityLabel={t('preview.retryPayment')}
           onPress={noop}
           style={({ focused }: PressState) => [styles.retryBtn, focused ? focusRing : null]}
         >
           <Icon name="check-circle-2" size={16} color={color.onAction} />
-          <Text style={styles.retryBtnText}>[Retry payment]</Text>
+          <Text style={styles.retryBtnText}>{t('preview.retryPayment')}</Text>
         </Pressable>
 
         <Pressable
           role="button"
           accessibilityRole="button"
-          accessibilityLabel="[Pay by Cash on Delivery instead]"
+          accessibilityLabel={t('preview.payByCashOnDeliveryInstead')}
           onPress={noop}
           style={({ focused }: PressState) => [styles.secondaryBtn, focused ? focusRing : null]}
         >
           <Icon name="credit-card-2" size={16} color={color.action} />
-          <Text style={styles.secondaryBtnText}>[Pay by Cash on Delivery instead]</Text>
+          <Text style={styles.secondaryBtnText}>{t('preview.payByCashOnDeliveryInstead')}</Text>
         </Pressable>
 
         <M2Note tone="neutral" icon="clock" testID="preview-payment-failure-support-note">
-          [Need help? Contact support — your cart is saved for 30 minutes.]
+          {t('preview.needHelpContactSupportYourCartIsSaved')}
         </M2Note>
       </View>
     </View>

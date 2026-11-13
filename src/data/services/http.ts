@@ -1,9 +1,19 @@
 import { apiBaseUrl } from '../../core/env';
+import { captureSessionScope } from '../../core/session/sessionScope';
 
 let csrfToken = '';
 export const setCsrfToken = (value: string) => { csrfToken = value; };
 export const getCsrfToken = () => csrfToken;
 const apiBase = apiBaseUrl();
+
+let pendingSignOut: Promise<void> | null = null;
+
+/** Hold new auth requests until old cookie revocation and device cleanup have settled. */
+export function holdAuthenticationUntil(completion: Promise<unknown>): void {
+  const barrier = Promise.allSettled([pendingSignOut, completion]).then(() => undefined);
+  pendingSignOut = barrier;
+  void barrier.then(() => { if (pendingSignOut === barrier) pendingSignOut = null; });
+}
 
 /**
  * Platform-neutral "the server no longer accepts this session" signal. The web
@@ -27,6 +37,17 @@ export class ApiError extends Error {
 }
 
 export async function apiRequest<T>(path: string, options: RequestInit = {}): Promise<T> {
+  if (path.startsWith('/auth/') && path !== '/auth/logout') {
+    while (pendingSignOut) await pendingSignOut;
+    if (options.signal?.aborted) throw options.signal.reason ?? new Error();
+  }
+  const request = performRequest<T>(path, options);
+  if (path === '/auth/logout') holdAuthenticationUntil(request);
+  return request;
+}
+
+async function performRequest<T>(path: string, options: RequestInit): Promise<T> {
+  const sessionScope = captureSessionScope();
   const controller = new AbortController();
   const timeout = typeof window !== 'undefined' ? window.setTimeout(() => controller.abort(), 20000) : setTimeout(() => controller.abort(), 20000);
   const abort = () => controller.abort();
@@ -38,7 +59,7 @@ export async function apiRequest<T>(path: string, options: RequestInit = {}): Pr
     const response = await fetch(`${apiBase}${path}`, { ...options, headers, credentials: 'include', signal: controller.signal });
     const body = await response.json().catch(() => null);
     if (!response.ok) {
-      if (response.status === 401 && !path.startsWith('/auth/')) signalSessionExpired();
+      if (response.status === 401 && !path.startsWith('/auth/') && sessionScope === captureSessionScope()) signalSessionExpired();
       const detail = body?.detail ?? body?.message;
       const objectMessage = detail && typeof detail === 'object' && !Array.isArray(detail) && typeof detail.message === 'string' ? detail.message : null;
       const message = Array.isArray(detail) ? detail.map((entry: { msg?: string }) => entry.msg).filter(Boolean).join(' ') : typeof detail === 'string' ? detail : objectMessage ?? 'The request could not be completed. Please try again.';

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useT } from '@/i18n';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Icon } from '@/design-system/icons';
 import { color, focusRing, font, fontWeight, radius, space } from '@/design-system/theme';
@@ -19,10 +20,11 @@ const CATEGORIES: ReadonlyArray<{ icon: 'bottle-2' | 'jar' | 'pipette' | 'cup'; 
  * replacing anything. See NOTES.md.
  */
 export function WebShopPreview(): React.ReactElement {
+  const t = useT();
   return (
     <WebShellPreview route="shop">
       <View style={styles.body}>
-        <M2SearchField placeholder="Search medicines" label="Search medicines" onPress={noop} />
+        <M2SearchField placeholder={t('m2.med.searchLabel')} label="Search medicines" onPress={noop} />
         <View style={styles.catRow}>
           {CATEGORIES.map((c) => (
             <Pressable key={c.label} role="button" accessibilityRole="button" accessibilityLabel={c.label} onPress={noop} style={({ focused }: PressState) => [styles.catTile, focused ? focusRing : null]}>
@@ -32,7 +34,7 @@ export function WebShopPreview(): React.ReactElement {
           ))}
         </View>
 
-        <Text style={styles.sectionTitle}>Lower prices this week</Text>
+        <Text style={styles.sectionTitle}>{t('preview.lowerPricesThisWeek')}</Text>
         <View style={styles.productGrid}>
           {[{ name: '[Generic] paracetamol 650mg', price: '₹18', mrp: '₹35' }, { name: '[Generic] ORS sachets', price: '₹20', mrp: '₹40' }, { name: '[Vitamin D3 60K]', price: '₹89', mrp: '₹149' }].map((p) => (
             <M2Card key={p.name} style={styles.productCard}>
@@ -42,13 +44,13 @@ export function WebShopPreview(): React.ReactElement {
                 <Text style={styles.productPrice}>{p.price}</Text>
                 <Text style={styles.productMrp}>{p.mrp}</Text>
               </View>
-              <Pressable role="button" accessibilityRole="button" accessibilityLabel={`Add ${p.name}`} onPress={noop} style={({ focused }: PressState) => [styles.cartBtn, focused ? focusRing : null]}>
-                <Icon name="shopping-bag" size={14} color={color.onAction} /><Text style={styles.cartBtnText}>Add</Text>
+              <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('preview.addName', { name: p.name })} onPress={noop} style={({ focused }: PressState) => [styles.cartBtn, focused ? focusRing : null]}>
+                <Icon name="shopping-bag" size={14} color={color.onAction} /><Text style={styles.cartBtnText}>{t('ident.badge.add')}</Text>
               </Pressable>
             </M2Card>
           ))}
         </View>
-        <Text style={m2Text.meta}>Prices shown are checked at your current campus; what you pay is confirmed at checkout.</Text>
+        <Text style={m2Text.meta}>{t('preview.pricesShownAreCheckedAtYourCurrentCampus')}</Text>
         <BrandFooter />
       </View>
     </WebShellPreview>

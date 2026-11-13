@@ -3,6 +3,8 @@ import type { CartLineItem, DeliveryMode, PlacedOrder } from '../domain/Checkout
 import { calculateCartItemCount, calculateSubtotalPaise } from '../domain/Checkout';
 import { checkoutRepository } from '../data/CheckoutRepository';
 import type { CheckoutRepository, OrderRequest } from '../data/CheckoutRepository';
+import { captureSessionScope, isCurrentSessionScope, subscribeSessionScope } from '@/core/session/sessionScope';
+import type { SessionScope } from '@/core/session/sessionScope';
 
 type CheckoutStoreStatus =
   | { kind: 'idle' }
@@ -47,10 +49,18 @@ export class CheckoutStore {
   status: CheckoutStoreStatus = { kind: 'idle' };
   completedOrder: PlacedOrder | null = null;
   private attempt: { fingerprint: string; key: string } | null = null;
+  private scope = captureSessionScope();
+  private authenticated = isCurrentSessionScope(this.scope);
+  private generation = 0;
+  private cartRevision = 0;
+  private readonly unsubscribeSession: () => void;
 
   constructor(private readonly repository: CheckoutRepository = checkoutRepository) {
-    makeAutoObservable<CheckoutStore, 'attempt' | 'repository'>(this, { attempt: false, repository: false }, { autoBind: true });
-    void this.initFromCache();
+    this.unsubscribeSession = subscribeSessionScope(() => this.onSessionChanged());
+    makeAutoObservable<CheckoutStore, 'attempt' | 'repository' | 'scope' | 'generation' | 'cartRevision' | 'unsubscribeSession'>(this, {
+      attempt: false, repository: false, scope: false, generation: false, cartRevision: false, unsubscribeSession: false,
+    }, { autoBind: true });
+    void this.initFromCache(this.scope);
   }
 
   get itemCount(): number {
@@ -67,6 +77,7 @@ export class CheckoutStore {
   }
 
   get canSubmit(): boolean {
+    if (!this.authenticated || !isCurrentSessionScope(this.scope)) return false;
     if (this.cartItems.length === 0 || this.status.kind === 'submitting') return false;
     if (this.city.trim().length < 2 || !PINCODE.test(this.pincode)) return false;
     if (this.deliveryMode === 'delivery' && this.address.trim().length < 10) return false;
@@ -82,9 +93,12 @@ export class CheckoutStore {
     return this.status.kind === 'error' ? this.status.message : null;
   }
 
-  private async initFromCache(): Promise<void> {
-    const cached = await this.repository.getCachedCart();
-    if (cached.length > 0) {
+  private async initFromCache(scope: SessionScope): Promise<void> {
+    if (!isCurrentSessionScope(scope)) return;
+    const generation = this.generation;
+    const cartRevision = this.cartRevision;
+    const cached = await this.repository.getCachedCart(scope);
+    if (isCurrentSessionScope(scope) && generation === this.generation && cartRevision === this.cartRevision && cached.length > 0) {
       runInAction(() => {
         this.cartItems = cached;
       });
@@ -92,7 +106,10 @@ export class CheckoutStore {
   }
 
   private async persistCart(): Promise<void> {
-    await this.repository.saveCart(this.cartItems);
+    this.cartRevision += 1;
+    const scope = this.scope;
+    if (!isCurrentSessionScope(scope)) return;
+    await this.repository.saveCart(this.cartItems.map(item => ({ ...item })), scope);
   }
 
   addItem(item: Omit<CartLineItem, 'quantity'>): void {
@@ -152,10 +169,13 @@ export class CheckoutStore {
 
   async submitOrder(): Promise<boolean> {
     if (!this.canSubmit) return false;
+    const scope = this.scope;
+    const generation = this.generation;
     this.status = { kind: 'submitting' };
     const order = this.orderRequest();
     try {
       const check = await this.repository.validate(order);
+      if (!isCurrentSessionScope(scope) || generation !== this.generation) return false;
       const blocked = check.items.filter(item => !item.available);
       if (blocked.length || !check.serviceable) {
         const message = blocked.length
@@ -170,6 +190,7 @@ export class CheckoutStore {
       const attempt = this.attempt?.fingerprint === fingerprint ? this.attempt : { fingerprint, key: newIdempotencyKey() };
       this.attempt = attempt;
       const placed = await this.repository.submitOrder(order, attempt.key);
+      if (!isCurrentSessionScope(scope) || generation !== this.generation) return false;
 
       runInAction(() => {
         this.completedOrder = placed;
@@ -177,9 +198,10 @@ export class CheckoutStore {
         this.attempt = null;
         this.status = { kind: 'success' };
       });
-      await this.repository.clearCart();
-      return true;
+      await this.repository.clearCart(scope);
+      return isCurrentSessionScope(scope) && generation === this.generation;
     } catch (err: unknown) {
+      if (!isCurrentSessionScope(scope) || generation !== this.generation) return false;
       runInAction(() => {
         const message = err instanceof Error && err.message ? err.message : 'Your order wasn’t sent. Nothing was ordered — try again.';
         this.status = { kind: 'error', message };
@@ -188,7 +210,9 @@ export class CheckoutStore {
     }
   }
 
-  reset(): void {
+  private clearState(): void {
+    this.generation += 1;
+    this.cartRevision += 1;
     this.cartItems = [];
     this.deliveryMode = 'pickup';
     this.address = '';
@@ -198,7 +222,24 @@ export class CheckoutStore {
     this.completedOrder = null;
     this.attempt = null;
     this.status = { kind: 'idle' };
-    void this.repository.clearCart();
+  }
+
+  private onSessionChanged(): void {
+    this.scope = captureSessionScope();
+    this.authenticated = isCurrentSessionScope(this.scope);
+    this.clearState();
+    void this.initFromCache(this.scope);
+  }
+
+  reset(): void {
+    this.clearState();
+    void this.repository.clearCart(this.scope);
+  }
+
+  dispose(): void {
+    this.unsubscribeSession();
+    this.authenticated = false;
+    this.clearState();
   }
 }
 
