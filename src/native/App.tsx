@@ -9,6 +9,7 @@ import { useFocusEffect, useNavigation, useRoute } from '@react-navigation/nativ
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { AppStoresProvider } from '@/store/AppStores';
 import { NavigationProvider, useNavigate } from './navigation';
+import { navigationTheme } from './navigationTheme';
 import PreventiveCareScreen from './PreventiveCareScreen';
 import { CampScreen } from './CampScreen';
 import { RecordCaptureScreen } from './RecordCaptureScreen';
@@ -587,7 +588,16 @@ function RootNavigator() {
     <Stack.Navigator
       key={held ? 'held' : signedIn ? 'signed-in' : 'signed-out'}
       initialRouteName={held ? 'TwoFactorSetup' : signedIn ? 'Home' : 'Landing'}
-      screenOptions={{ animation: 'none', headerTintColor: color.action }}
+      screenOptions={{
+        animation: 'none',
+        headerTintColor: navigationTheme.colors.primary,
+        headerStyle: { backgroundColor: navigationTheme.colors.card },
+        headerTitleStyle: { color: navigationTheme.colors.text },
+        contentStyle: { backgroundColor: navigationTheme.colors.background },
+        statusBarStyle: navigationTheme.dark ? 'light' : 'dark',
+        statusBarBackgroundColor: navigationTheme.colors.background,
+        navigationBarColor: navigationTheme.colors.background,
+      }}
       layout={isStudent ? ({ state, navigation, children }) => (
         <StudentShell currentRoute={state.routes[state.index]?.name ?? ''} navigate={(route) => navigation.navigate(route)} onSos={() => navigation.navigate('Emergency')}>
           {children}
