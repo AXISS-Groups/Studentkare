@@ -217,6 +217,9 @@ def documents(
                    "kindVerified": row.kind_verified} for row in rows],
         "total": total,
         "categoryCounts": {str(category): int(count) for category, count in counts},
+        # The subfolders each category may be filed into (services/document_classifier.KINDS),
+        # so the screen offers exactly what PATCH .../kind accepts and keeps no list of its own.
+        "kinds": {category: list(kinds) for category, kinds in document_filing.classifier.KINDS.items()},
         "limit": limit,
         "offset": offset,
     }
