@@ -157,6 +157,20 @@ describe('web session ownership at the provider and HTTP boundary', () => {
     expect(captureSessionScope()).toBe(owner);
   });
 
+  it('allows a delayed same-account user update across a successful refresh without identity loss', async () => {
+    await mount();
+    const oldUpdate = auth().updateUser;
+    const owner = captureSessionScope();
+    sessionResponses.push(response({ ...sessionA, csrfToken: 'synthetic-refreshed-csrf' }));
+    act(() => { auth().refresh(); });
+    await waitFor(() => expect(getCsrfToken()).toBe('synthetic-refreshed-csrf'));
+
+    act(() => { oldUpdate({ ...accountA, fullName: 'Synthetic updated adult' }); });
+
+    expect(auth().user?.fullName).toBe('Synthetic updated adult');
+    expect(captureSessionScope()).toBe(owner);
+  });
+
   it.each(['success', 'failure'] as const)('discards an old account session-check %s after accepting account B', async (outcome) => {
     await mount();
     const pending = deferred<Response>();
@@ -337,6 +351,22 @@ describe('web session ownership at the provider and HTTP boundary', () => {
     expect(auth().user?.twoFactorSetupRequired).toBe(false);
     expect(captureSessionScope()).toBe(ownerB);
     expect(getCsrfToken()).toBe(sessionB.csrfToken);
+  });
+
+  it.each(['hold current session', 'sign in again'] as const)('rejects a delayed user update when the same account is held to two-factor setup after %s', async (transition) => {
+    const admin: Account = { ...accountA, role: 'SUPER_ADMIN' };
+    await mount({ ...sessionA, user: admin });
+    const oldUpdate = auth().updateUser;
+    if (transition === 'sign in again') {
+      await act(async () => { await auth().logout(); });
+    }
+    act(() => { auth().acceptSession({ user: { ...admin, twoFactorSetupRequired: true }, csrfToken: 'synthetic-new-setup-csrf' }); });
+
+    act(() => { oldUpdate(admin); });
+
+    expect(auth().user?.twoFactorSetupRequired).toBe(true);
+    expect(captureSessionScope().accountId).toBeNull();
+    expect(getCsrfToken()).toBe('synthetic-new-setup-csrf');
   });
 
   it('invalidates global ownership when the provider unmounts', async () => {
