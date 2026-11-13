@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Animated, Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { AnimatedIllustration, Icon } from '@/design-system/icons';
 import type { SkIconName } from '@/design-system/icons';
-import { ErrorState, Rise, Skeleton, useReducedMotion } from '@/design-system';
+import { Button, ErrorState, Rise, Skeleton, useReducedMotion } from '@/design-system';
 import {
   cardLabel, Gradient, GradientHeroCard, LiftCard, M2Card, M2Grid, M2Header, M2SearchField, M2SectionHead, M2_NAV_CLEARANCE, NotYetTile, SERVICE_HUES, SoftIcon,
   heroStops, m2Text, tileStops, useAmbientMotion, useLift, useLoop, useOwnPhoneChrome, M2WideColumn,
@@ -17,6 +17,7 @@ import { labArt } from '../data/storeArt';
 import { orderLinePhone } from '../data/orderLine';
 import { biggestPackage, matchPackages } from '../data/useLabPackages';
 import type { LabsPhase } from '../data/useLabPackages';
+import { LabCompareSheet, LabPackageDetailSheet } from './LabPackageSheets';
 
 /**
  * Mobile 2.0 Lab tests (canvas page 9 M2Labs, Tier 2; replaces LabPackages on
@@ -28,7 +29,13 @@ import type { LabsPhase } from '../data/useLabPackages';
  * campus", the audience tabs (Women · Men · Fitness · By concern: packages
  * carry no audience) and "Book again" (it would list the student's own tests).
  * "Call to book" is not available until an order line is configured.
+ *
+ * Added after the reference-video audit (docs/plans/video-audit-2026-11-13.md,
+ * not on the board): under each package, "What's included" opens the package
+ * in full and "Compare" picks it for a side-by-side of two packages. Both read
+ * the catalogue only and neither recommends a package.
  */
+const COMPARE_PAIR = 2;
 interface M2LabsLinks {
   back: () => void;
   /** My reports (the vault). */
@@ -118,6 +125,13 @@ export function M2LabsView({ links, phase, packages, retry, block, wide = false 
   useOwnPhoneChrome();
   const lift = useLift();
   const [query, setQuery] = useState('');
+  const [detail, setDetail] = useState<LabPackage | null>(null);
+  const [picked, setPicked] = useState<readonly string[]>([]);
+  const [comparing, setComparing] = useState(false);
+  const togglePick = (id: string) => setPicked((now) => (now.includes(id) ? now.filter((x) => x !== id) : now.length < COMPARE_PAIR ? [...now, id] : now));
+  const pickedPackages = picked.map((id) => packages.find((p) => p.id === id)).filter((p): p is LabPackage => Boolean(p));
+  const pair = comparing && pickedPackages.length === COMPARE_PAIR ? [pickedPackages[0], pickedPackages[1]] as const : null;
+  const bookFrom = (pkg: LabPackage) => { setDetail(null); setComparing(false); links.book(pkg); };
   const phone = orderLinePhone();
   const featured = biggestPackage(packages);
   const shown = matchPackages(packages, query);
@@ -185,22 +199,45 @@ export function M2LabsView({ links, phase, packages, retry, block, wide = false 
           <M2Grid columns={{ phone: 1, tablet: 2, desktop: 3 }} gap={space.s10} testID="m2-labs-list">
             {shown.map((p) => {
               const art = labArt(p.name);
+              const isPicked = picked.includes(p.id);
+              const full = !isPicked && picked.length >= COMPARE_PAIR;
               return (
-                <Pressable key={p.id} role="link" accessibilityRole="link" {...cardLabel(`${p.name}, ${packageMeta(p, t)}, ${money(p.pricePaise)}. ${t('m2.labs.book')}`)}
-                  onPress={() => links.book(p)} testID={`m2-labs-pkg-${p.id}`} style={(state: PressState) => [styles.row, wide ? styles.rowFill : null, lift(state)]}>
-                  <SoftIcon icon={art.icon} hue={art.hue} tile={46} iconSize={22} />
-                  <View style={styles.grow}>
-                    <Text style={m2Text.cardTitle}>{p.name}</Text>
-                    <Text style={m2Text.meta}>{packageMeta(p, t)}</Text>
+                <View key={p.id} style={[styles.pkg, wide ? styles.rowFill : null]} testID={`m2-labs-card-${p.id}`}>
+                  <Pressable role="link" accessibilityRole="link" {...cardLabel(`${p.name}, ${packageMeta(p, t)}, ${money(p.pricePaise)}. ${t('m2.labs.book')}`)}
+                    onPress={() => links.book(p)} testID={`m2-labs-pkg-${p.id}`} style={(state: PressState) => [styles.row, lift(state)]}>
+                    <SoftIcon icon={art.icon} hue={art.hue} tile={46} iconSize={22} />
+                    <View style={styles.grow}>
+                      <Text style={m2Text.cardTitle}>{p.name}</Text>
+                      <Text style={m2Text.meta}>{packageMeta(p, t)}</Text>
+                    </View>
+                    <View style={styles.rowEnd}>
+                      <Text style={m2Text.price}>{money(p.pricePaise)}</Text>
+                      <Text style={styles.rowBook}>{t('m2.labs.book')}</Text>
+                    </View>
+                  </Pressable>
+                  <View style={styles.pkgActions}>
+                    <Pressable role="button" accessibilityRole="button" accessibilityLabel={t('m2.labs.detail.openSpoken', { name: p.name })} aria-label={t('m2.labs.detail.openSpoken', { name: p.name })}
+                      onPress={() => setDetail(p)} testID={`m2-labs-details-${p.id}`} style={({ focused }: PressState) => [styles.pkgAction, focused ? focusRing : null]}>
+                      <Text style={styles.pkgActionText}>{t('m2.labs.detail.open')}</Text>
+                    </Pressable>
+                    <Pressable role="checkbox" accessibilityRole="checkbox" aria-checked={isPicked} accessibilityState={{ checked: isPicked, disabled: full }} disabled={full}
+                      accessibilityLabel={t('m2.labs.compare.pickSpoken', { name: p.name })} aria-label={t('m2.labs.compare.pickSpoken', { name: p.name })}
+                      onPress={() => togglePick(p.id)} testID={`m2-labs-compare-pick-${p.id}`} style={({ focused }: PressState) => [styles.pkgAction, focused ? focusRing : null]}>
+                      <View style={[styles.tick, isPicked ? styles.tickOn : null]}>{isPicked ? <Icon name="check" size={12} color={color.onAction} strokeWidth={3} /> : null}</View>
+                      <Text style={[styles.pkgActionText, full ? styles.pkgActionOff : null]}>{t('m2.labs.compare.pick')}</Text>
+                    </Pressable>
                   </View>
-                  <View style={styles.rowEnd}>
-                    <Text style={m2Text.price}>{money(p.pricePaise)}</Text>
-                    <Text style={styles.rowBook}>{t('m2.labs.book')}</Text>
-                  </View>
-                </Pressable>
+                </View>
               );
             })}
           </M2Grid>
+          {picked.length > 0 ? (
+            <View style={styles.compareBar} testID="m2-labs-compare-bar">
+              <Text style={[m2Text.body, styles.grow]}>{pickedPackages.length === COMPARE_PAIR ? t('m2.labs.compare.ready') : t('m2.labs.compare.pickOneMore')}</Text>
+              <Button label={t('m2.labs.compare.clear')} variant="ghost" onPress={() => setPicked([])} testID="m2-labs-compare-clear" />
+              <Button label={t('m2.labs.compare.open')} disabled={pickedPackages.length !== COMPARE_PAIR} onPress={() => setComparing(true)} testID="m2-labs-compare-open" />
+            </View>
+          ) : null}
         </Rise>
 
         <Rise index={5} style={gutter}><Steps /></Rise>
@@ -218,6 +255,8 @@ export function M2LabsView({ links, phase, packages, retry, block, wide = false 
             </Pressable>
           </View>
         ) : null}
+        <LabPackageDetailSheet pkg={detail} onClose={() => setDetail(null)} onBook={bookFrom} />
+        <LabCompareSheet pair={pair} onClose={() => setComparing(false)} onBook={bookFrom} />
       </>
   );
 
@@ -255,6 +294,14 @@ const styles = StyleSheet.create({
   bubbleA: { left: 14, bottom: 10, width: 8, height: 8 },
   bubbleB: { left: 28, bottom: 6, width: 6, height: 6 },
   rowFill: { flexGrow: 1 },
+  pkg: { gap: space.s2 },
+  pkgActions: { flexDirection: 'row', gap: space.s8, paddingHorizontal: space.s6 },
+  pkgAction: { minHeight: size.touchTarget, paddingHorizontal: space.s8, flexDirection: 'row', alignItems: 'center', gap: space.s6, borderRadius: radius.md },
+  pkgActionText: { fontFamily: font.family.sans, fontSize: font.size.caption, fontWeight: fontWeight(font.weight.heavy), color: color.action },
+  pkgActionOff: { color: color.text3 },
+  tick: { width: 18, height: 18, borderRadius: radius.sm, borderWidth: 2, borderColor: color.ruleStrong, alignItems: 'center', justifyContent: 'center' },
+  tickOn: { backgroundColor: color.action, borderColor: color.action },
+  compareBar: { marginTop: space.s10, borderRadius: radius.xl, padding: space.s12, flexDirection: 'row', alignItems: 'center', gap: space.s8, flexWrap: 'wrap', backgroundColor: color.surface2 },
   row: { borderRadius: 22, padding: space.s14, flexDirection: 'row', alignItems: 'center', gap: space.s12, backgroundColor: color.surface, ...shadowStyle(shadow.card) },
   rowEnd: { alignItems: 'flex-end', gap: space.s4 },
   rowBook: { fontFamily: font.family.sans, fontSize: font.size.caption, fontWeight: fontWeight(font.weight.heavy), color: color.action },
