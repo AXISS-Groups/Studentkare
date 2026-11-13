@@ -1,8 +1,9 @@
 """DPDP erasure: grace window (settings registry, default 7 days), everything removed from live tables, sealed archive, audited access."""
+import os
 import time
 
 import pytest
-from cryptography.fernet import Fernet
+from cryptography.fernet import Fernet, InvalidToken
 from sqlalchemy import select
 from test_workflow_api import harness, login, register  # noqa: F401 — pytest fixtures
 
@@ -104,7 +105,12 @@ def test_erasure_removes_every_live_row_and_seals_an_archive(harness, monkeypatc
         assert db.scalar(select(M.OutboxEvent).where(M.OutboxEvent.account_id == user["id"])) is None
         archive = db.scalar(select(M.ErasureArchive).where(M.ErasureArchive.former_account_id == user["id"]))
         assert archive is not None and archive.row_count >= 4
-        assert b"CBC" not in archive.sealed  # encrypted, not plain JSON
+        # Encrypted, not plain JSON: unreadable without the key, readable with it.
+        # (Not `b"CBC" not in sealed`: a Fernet token is base64 text, which
+        # spells any three letters by chance now and then, and failed CI at random.)
+        with pytest.raises(InvalidToken):
+            Fernet(Fernet.generate_key()).decrypt(archive.sealed)
+        assert "CBC" in Fernet(os.environ["DPDP_ARCHIVE_KEY"].encode()).decrypt(archive.sealed).decode()
     assert client.get("/api/auth/session").json()["user"] is None
 
 
