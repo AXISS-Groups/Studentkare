@@ -70,6 +70,8 @@ export async function signIn(page: Page, identifier: string, stay = false): Prom
   await page.getByLabel('Campus email address', { exact: true }).fill(identifier);
   await page.getByRole('button', { name: 'Send verification code', exact: true }).click();
   await enterCode(page, identifier);
+  // The session exists before the caller navigates anywhere else.
+  await expect.poll(() => sessionUser(page)).not.toBeNull();
 }
 
 /** Who the server says is signed in on this browser, or null. */
