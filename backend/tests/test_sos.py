@@ -91,18 +91,30 @@ def test_console_is_scoped_and_acknowledge_resolve_reach_the_student(harness, mo
     monkeypatch.setattr(emergency_api, "_send_openwa", lambda chat_id, text: {"status": "sent"})
     user, headers = student(client, codes, factory)
     alert_id = client.post(SOS, headers=headers, json={}).json()["alert"]["id"]
+    assert client.get("/api/ops/sos").status_code == 403
     client.post("/api/auth/logout", headers=headers)
 
     _, other = staff(client, codes, factory, "other@x.test", "BITS Pilani")
     assert client.get("/api/ops/sos").json()["items"] == []
     assert client.post(f"/api/ops/sos/{alert_id}/acknowledge", headers=other).status_code == 404
+    assert client.post(f"/api/ops/sos/{alert_id}/resolve", headers=other, json={"note": "Synthetic resolution"}).status_code == 404
     client.post("/api/auth/logout", headers=other)
 
     _, mine = staff(client, codes, factory, "mine@x.test", "iit hyderabad")
     items = client.get("/api/ops/sos").json()["items"]
     assert [i["id"] for i in items] == [alert_id] and items[0]["student"]["name"]
     assert client.post(f"/api/ops/sos/{alert_id}/acknowledge", headers=mine).json()["alert"]["status"] == "ACKNOWLEDGED"
+    client.post("/api/auth/logout", headers=mine)
+    student_headers = login(client, codes, "s@x.test")
+    current = client.get(f"{SOS}/current").json()["alert"]
+    assert current["status"] == "ACKNOWLEDGED" and current["acknowledgedAt"]
+    client.post("/api/auth/logout", headers=student_headers)
+    mine = login(client, codes, "mine@x.test")
     assert client.post(f"/api/ops/sos/{alert_id}/resolve", headers=mine, json={"note": "Escorted to health centre"}).status_code == 200
+    client.post("/api/auth/logout", headers=mine)
+    login(client, codes, "s@x.test")
+    current = client.get(f"{SOS}/current").json()["alert"]
+    assert current["status"] == "RESOLVED" and current["resolutionNote"] == "Escorted to health centre"
     with factory() as db:
         events = {e.event_type for e in db.scalars(select(M.OutboxEvent).where(M.OutboxEvent.account_id == user["id"])).all()}
     assert {"SOS_ACKNOWLEDGED", "SOS_RESOLVED"} <= events

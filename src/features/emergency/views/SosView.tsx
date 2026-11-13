@@ -118,6 +118,12 @@ export const SosView = observer(function SosView({ signedIn, links }: { signedIn
   const open = state.status === 'OPEN' && alert !== null;
   const now = useNow(open);
   const pollSeconds = getSetting('emergency.sos_poll_seconds');
+  const refreshFailure = signedIn && state.refreshError && (state.status === 'IDLE' || state.status === 'OPEN' || state.status === 'CLOSED') ? (
+    <>
+      <Note tone="danger" testID="sos-refresh-error">{t(state.refreshError)}</Note>
+      <Button testID="sos-refresh-retry" label={t('common.tryAgain')} variant="secondary" fullWidth onPress={() => void actions.loadCurrent()} />
+    </>
+  ) : null;
 
   useEffect(() => {
     if (signedIn) void actions.loadCurrent();
@@ -184,6 +190,7 @@ export const SosView = observer(function SosView({ signedIn, links }: { signedIn
           </View>
         ) : null}
         <Call112 />
+        {refreshFailure}
         <View style={styles.section}>
           <Text accessibilityRole="header" style={styles.heroEyebrow}>{t('sf.sos.whoTold')}</Text>
           <DeliveryList alert={alert} onHero />
@@ -232,6 +239,7 @@ export const SosView = observer(function SosView({ signedIn, links }: { signedIn
         {links.crisis ? <Button testID="sos-crisis" label={t('sf.sos.notOkay')} variant="dangerOutline" size="cta" fullWidth onPress={links.crisis} /> : null}
         <Button label={t('crisis.callTeleManas')} accessibilityLabel={t('crisis.callTeleManasSpoken')} variant="secondary" fullWidth onPress={() => void Linking.openURL('tel:14416')} />
         <Call112 />
+        {refreshFailure}
         <NearestHospitals onPress={links.nearestHospitals} />
         {links.home ? <Button label={t('sf.sos.backHome')} size="cta" fullWidth onPress={links.home} /> : null}
         <Button label={t('sos.newSos')} variant="ghost" onPress={actions.triggerSos} />
@@ -247,6 +255,7 @@ export const SosView = observer(function SosView({ signedIn, links }: { signedIn
         <Text accessibilityRole="header" style={styles.title}>{t('sos.titleNow')}</Text>
       </View>
 
+      {refreshFailure}
       {!signedIn ? (
         <>
           <Call112 />

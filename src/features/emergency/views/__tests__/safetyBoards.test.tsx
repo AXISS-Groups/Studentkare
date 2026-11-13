@@ -198,6 +198,38 @@ describe('SosBeacon / SosDebrief (Tier 1)', () => {
     expect(screen.getByRole('button', { name: en('crisis.call112Spoken') })).toBeInTheDocument();
     expect(api).not.toHaveBeenCalled();
   });
+
+  it('polls ACTIVE → ACKNOWLEDGED → RESOLVED and stops polling after resolution', async () => {
+    vi.useFakeTimers();
+    api.mockResolvedValueOnce({ alert: alert() });
+    await act(async () => { render(<SosView signedIn links={{}} />); });
+    const interval = publicSettingDefaults['emergency.sos_poll_seconds'] * 1000;
+    api.mockResolvedValueOnce({ alert: alert({ status: 'ACKNOWLEDGED', acknowledgedAt: Date.now() / 1000 }) });
+    await act(async () => { await vi.advanceTimersByTimeAsync(interval); });
+    expect(screen.getByText(en('sos.ackTitle'))).toBeInTheDocument();
+    api.mockResolvedValueOnce({ alert: alert({ status: 'RESOLVED', resolvedAt: Date.now() / 1000 }) });
+    await act(async () => { await vi.advanceTimersByTimeAsync(interval); });
+    expect(screen.getByTestId('sos-debrief')).toBeInTheDocument();
+    expect(screen.getByText(en('sf.sos.closedTitle'))).toBeInTheDocument();
+    const calls = api.mock.calls.length;
+    await act(async () => { await vi.advanceTimersByTimeAsync(interval * 2); });
+    expect(api).toHaveBeenCalledTimes(calls);
+    expect(screen.getByTestId('sos-call-112')).toBeInTheDocument();
+  });
+
+  it.each(['ACTIVE', 'RESOLVED', null] as const)('shows a labelled refresh warning and working retry for %s without losing 112', async (status) => {
+    vi.useFakeTimers();
+    api.mockResolvedValueOnce({ alert: status ? alert({ status }) : null });
+    await act(async () => { render(<SosView signedIn links={{}} />); });
+    api.mockRejectedValueOnce(new Error('offline'));
+    await act(async () => { await emergencyStore.loadCurrent(); });
+    expect(screen.getByTestId('sos-refresh-error')).toHaveAttribute('role', 'alert');
+    expect(screen.getByTestId('sos-refresh-error')).toHaveTextContent(en('sos.refreshFailed'));
+    expect(screen.getByTestId('sos-call-112')).toBeInTheDocument();
+    api.mockResolvedValueOnce({ alert: status ? alert({ status }) : null });
+    await act(async () => { fireEvent.click(screen.getByRole('button', { name: en('common.tryAgain') })); });
+    expect(screen.queryByTestId('sos-refresh-error')).toBeNull();
+  });
 });
 
 describe('CrisisSupport (Tier 1)', () => {

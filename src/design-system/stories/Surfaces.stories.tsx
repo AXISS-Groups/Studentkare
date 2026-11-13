@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Text, View } from 'react-native';
+import { LANGUAGE_NAMES, translate } from '@/i18n';
+import { size, space } from '../theme';
 import {
   Button, Card, CrisisLinks, EmptyState, ErrorState, Eyebrow, ListRow, Note, OfflineBanner, ResultMomentCard, StateScreen, Sheet,
   Skeleton, SourceBadge, Stepper, Table, Toast, VerifiedBadge,
@@ -34,6 +36,21 @@ export const Notes: Story = {
       <Note tone="attention" title="Attention">Outside the lab's range — amber, never red.</Note>
       <Note tone="danger" title="Danger">Not saved. Try again.</Note>
       <OfflineBanner message="You're offline. Showing what was saved on this device." />
+    </View>
+  ),
+};
+
+/** The SOS refresh warning reuses Note and Button; compare all catalogues at phone width. */
+export const SosRefreshFailure: Story = {
+  render: () => (
+    <View style={{ gap: space.s24, maxWidth: size.phoneFrameMax }}>
+      {(['en', 'te', 'hi'] as const).map((lang) => (
+        <View key={lang} style={{ gap: space.s16 }}>
+          <Eyebrow>{LANGUAGE_NAMES[lang]}</Eyebrow>
+          <Note tone="danger">{translate(lang, 'sos.refreshFailed')}</Note>
+          <Button label={translate(lang, 'common.tryAgain')} variant="secondary" fullWidth onPress={noop} />
+        </View>
+      ))}
     </View>
   ),
 };

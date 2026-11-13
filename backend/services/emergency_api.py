@@ -27,6 +27,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from core import workflow_models as M
+from core.settings_registry import setting
 from services import ops_feed
 from services.otp_delivery import _send_openwa, normalize_chat_id
 from services.workflow_api import _campus_key, campus_scope, staff_campus_of
@@ -203,10 +204,17 @@ def _scoped_alert(db: Session, user: dict, alert_id: str) -> M.SosAlert:
 @router.get("/ops/sos")
 def list_sos(open_only: bool = Query(True, alias="open"), user=Depends(require_campus_admin), db: Session = Depends(workflow_db)):
     scope = campus_scope(user, db)
-    stmt = select(M.SosAlert).order_by(M.SosAlert.created_at.desc()).limit(100)
+    stmt = select(M.SosAlert)
     if open_only:
         stmt = stmt.where(M.SosAlert.status.in_(OPEN_STATUSES))
-    alerts = [a for a in db.scalars(stmt).all() if scope is None or _campus_key(a.campus) == scope]
+    if scope is not None:
+        # Match the authorization boundary's exact Unicode/whitespace rules.
+        # Resolve stored spellings, then constrain rows in SQL before the cap.
+        campuses = [campus for campus in db.scalars(select(M.SosAlert.campus).distinct())
+                    if _campus_key(campus) == scope]
+        stmt = stmt.where(M.SosAlert.campus.in_(campuses))
+    stmt = stmt.order_by(M.SosAlert.created_at.desc(), M.SosAlert.id.desc()).limit(setting("emergency.sos_queue_cap", db))
+    alerts = db.scalars(stmt).all()
     return {"items": [_alert_payload(db, a, for_staff=True) for a in alerts]}
 
 
