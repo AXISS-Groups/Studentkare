@@ -67,13 +67,8 @@ npm run lint
 npm run build
 ```
 
-With the dev server and Playwright/Chromium available:
-
-```sh
-node tests/exercise-experience.smoke.mjs
-```
-
-`PLAYWRIGHT_MODULE` can point to an existing external `playwright/index.mjs`.
+The browser suite lives in `e2e/` and runs with `npm run e2e` (see `e2e/README.md`).
+The movement session is not covered there yet.
 `BASE_URL` selects another local server, and `SCREENSHOT_DIR` enables screenshots
 in an existing directory. Browser checks cover discovery, bookmarks, filtering,
 readiness blocking, timer/visibility behavior, skipped versus completed intervals,
