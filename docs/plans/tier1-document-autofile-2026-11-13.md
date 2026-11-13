@@ -34,7 +34,7 @@ the repo. Reported, not fixed here.
 | Folders belong to a worker; staff file and correct | The record belongs to the student; **the student's choice is the human-verified label** | Student-owned records. No staff member re-files a student's record. |
 | Folder / subfolder tables | Folder = the existing closed category set. Subfolder = a new closed `doc_kind` vocabulary per category (section 4) | Counts and "on file / missing" already key on `category`; a second tree would duplicate it. |
 | Bytes under a storage key, `file_url` | Bytes stay in `care_documents.content`; add `checksum_sha256` | No object store here. Dedupe is `{account_id, checksum_sha256}`. |
-| "Do not install any OCR dependency; call `axiss-ocr`" | **Open decision D1** | Today's rule is "Tesseract on our own server, no third party", signed off on that basis. Sending health records to a shared multi-product service is a change to that sign-off. |
+| "Do not install any OCR dependency; call `axiss-ocr`" | Adopted (D1), gated on four conditions | Today's rule is "Tesseract on our own server, no third party", signed off on that basis. Sending health records to a shared multi-product service is a change to that sign-off. |
 | "A failure never fails the upload" | True for OCR, classification and filing. **Not** for the virus scan, auth or consent, which stay fail-closed | AGENTS.md guardrail 1. Classification is not a safety gate; the scan is. |
 | Cross-check expiry / ID number / DOB between engines | Cross-check **document date** and **patient name present**; lab values are never auto-accepted from either engine | Clinical values stay behind the existing per-field review gate. |
 | `needs_review` on the document | Reuse `care_intake_review_items` (`PENDING`) | The review gate already exists. |
@@ -136,18 +136,22 @@ upload still returns. No PHI in the log line.
 12. Virus scanner down on a prescription → upload still refused.
 13. Reachability: the new modules are imported by `workflow_api`.
 
-## 9. Decisions needed before any code
+## 9. Decisions (Krishna, 2026-11-13)
 
-- **D1 — OCR engine.** (a) keep in-process Tesseract only, add rotation retry; (b) call the
-  shared `axiss-ocr` service on the internal network; (c) in-process first, shared service only
-  for scanned PDFs, which the in-process reader cannot read at all. (b) and (c) need: Student
-  Kare on the same private network as the service, a Student Kare-only key, confirmation the
-  service stores and logs no document text, and a DPO/AI-constitution-owner sign-off replacing
-  the current "no third party" basis.
-- **D2 — who files.** Section 4 proposes the student's pick always wins and the classifier fills
-  the subfolder. The alternative — the app picks the category and the student confirms — changes
-  the upload screen and needs a canvas brief.
-- **D3 — named reviewer** for this plan.
+- **D1 — OCR engine: the shared `axiss-ocr` service only.** `document_ocr.py` keeps `pypdf` for
+  PDFs that already carry text (no call is spent on them) and sends everything else to the
+  service; the in-process Tesseract path is removed from the document reader
+  (`medicine_ocr.py` is untouched). The integration stays **off by default** and must not be
+  switched on in any environment until all four hold:
+  1. Student Kare's backend is on the same private network as the service (no public URL).
+  2. The service has a Student Kare-only key.
+  3. It is confirmed the service stores and logs no document text.
+  4. The DPO / AI-constitution owner signs off, replacing the "Tesseract on our own server, no
+     third party" basis in `document_ocr.py` and `integration_config.py`.
+  I could not verify 1–3 from this repo.
+- **D2 — the student picks the category.** The upload screen does not change; the classifier
+  fills the subfolder and raises a review item when it disagrees.
+- **D3 — named reviewer: Krishna.** Approval of this plan is still to be given.
 
 ## 10. Not in this plan
 
@@ -159,5 +163,5 @@ upload still returns. No PHI in the log line.
 ## 11. Residual risk
 
 - The `doc_kind` vocabulary is a proposal from the six existing categories, not from a canvas.
-- If D1 is (a), scanned PDFs stay unreadable and file by name only.
+- Until the four D1 conditions hold the service stays off, and scans file by name only.
 - Backfilling `checksum_sha256` reads every stored document once; run it off-peak.
