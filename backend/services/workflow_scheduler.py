@@ -52,6 +52,7 @@ PERIODIC_JOBS = {
     "push_dispatch": "Send due push notifications (phones and browsers) and scheduled announcements",
     "push_receipts": "Read phone push receipts; retire devices that are gone or unused",
     "wallet_passes": "Keep emergency-card wallet passes up to date; send updates and removals",
+    "automation_hook": "Send allow-listed, identifier-free ops events to the automation tool (off until configured)",
 }
 
 # Per-job cadence overrides (seconds). Everything else uses DEFAULT_INTERVAL_SECONDS.
@@ -77,6 +78,9 @@ JOB_INTERVAL_OVERRIDES = {
     # A changed emergency card reaches the wallet pass within minutes; a removal
     # that failed is retried on the same beat. An idle pass is one indexed SELECT.
     "wallet_passes": 300,
+    # Alerts built on these events (a payment mismatch, a refund that could not be
+    # made) are only useful within minutes. An idle or switched-off pass is one SELECT or none.
+    "automation_hook": 120,
 }
 
 # Jobs that carry safety deliveries. They run first in every pass and again between
@@ -335,6 +339,9 @@ class WorkflowScheduler:
         if key == "wallet_passes":
             from services.wallet_passes import run_job as run_wallet_passes
             return run_wallet_passes(db)
+        if key == "automation_hook":
+            from services.automation_hook import run_job as run_automation_hook
+            return run_automation_hook(db)
         raise UnknownJobError("Unknown job.")
 
 

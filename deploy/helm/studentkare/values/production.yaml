@@ -100,6 +100,8 @@ backend:
     DOCUMENT_OCR_ENABLED: "false"    # separate sign-off; remains disabled by default
     DOCUMENT_OCR_URL: ""             # the shared OCR service, private network only
     DOCUMENT_OCR_TEXT_LAYERS: ""     # auto (default) | only | skip
+    AUTOMATION_HOOK_ENABLED: "false" # identifier-free ops events to self-hosted n8n; off by default
+    AUTOMATION_HOOK_URL: ""          # n8n webhook address on the private network
     # Agent Ayush tuning.
     LLM_ENABLED: ""
     LLM_PROVIDER: ""
@@ -200,6 +202,7 @@ backend:
     POSTAL_SERVER_API_KEY: ""
     OPENWA_API_KEY: ""
     DOCUMENT_OCR_KEY: ""              # Student Kare's own key for the OCR service; empty = nothing is sent
+    AUTOMATION_HOOK_SECRET: ""        # shared with the n8n webhook to verify signatures; empty = nothing is sent
     SLACK_BOT_TOKEN: ""
     EXPO_ACCESS_TOKEN: ""             # Expo access token (enhanced push security on); empty = no phone push
     VAPID_PRIVATE_KEY: ""             # npx web-push generate-vapid-keys; empty = no browser push

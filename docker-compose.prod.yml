@@ -101,6 +101,11 @@ x-app-env: &app-env
   DOCUMENT_OCR_URL:
   DOCUMENT_OCR_KEY:
   DOCUMENT_OCR_TEXT_LAYERS:
+  # Automation hook (services/automation_hook.py): allow-listed ops events, with every
+  # identifier removed, go to the self-hosted n8n below. Off unless all three are set.
+  AUTOMATION_HOOK_ENABLED: ${AUTOMATION_HOOK_ENABLED:-false}
+  AUTOMATION_HOOK_URL:
+  AUTOMATION_HOOK_SECRET:
   # Agent Ayush tuning.
   LLM_ENABLED:
   LLM_PROVIDER:
@@ -460,6 +465,38 @@ services:
           cpus: '1'
           memory: 512M
 
+  # Workflow automation (n8n), self-hosted. Optional: start it with
+  #   docker compose -f docker-compose.yml -f docker-compose.prod.yml --profile automation up -d n8n
+  # It receives only what services/automation_hook.py sends: event kinds and times,
+  # no identifiers. It is deliberately given NO database credentials for the
+  # application and keeps its own data in the n8n-data volume, so a workflow cannot
+  # read a health record even by mistake. The editor is bound to this host's
+  # loopback only; reach it through an SSH tunnel or the VPN, never a public port.
+  # Telemetry to n8n's vendor is off. docs/ops/automation-n8n.md has the runbook.
+  n8n:
+    image: n8nio/n8n:2.44.6
+    container_name: studentkare-n8n
+    profiles: ["automation"]
+    restart: unless-stopped
+    environment:
+      N8N_DIAGNOSTICS_ENABLED: "false"
+      N8N_VERSION_NOTIFICATIONS_ENABLED: "false"
+      N8N_TEMPLATES_ENABLED: "false"
+      N8N_HIRING_BANNER_ENABLED: "false"
+      GENERIC_TIMEZONE: ${N8N_TIMEZONE:-Asia/Kolkata}
+      TZ: ${N8N_TIMEZONE:-Asia/Kolkata}
+    ports:
+      - "127.0.0.1:5678:5678"
+    volumes:
+      - n8n-data:/home/node/.n8n
+    networks:
+      - studentkare
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+
   # External database (managed by cloud provider)
   # No local Postgres container - use managed PostgreSQL (RDS, CloudSQL, etc.)
 
@@ -479,3 +516,4 @@ volumes:
   grafana-data:
   clamav-db:
   pg-backups:
+  n8n-data:
