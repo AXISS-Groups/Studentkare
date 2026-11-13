@@ -122,7 +122,6 @@ export const AuthenticatedFlowScreen = observer(function AuthenticatedFlowScreen
         tabs={vm.step === 1 ? tabs : undefined}
         footer={footer}
       >
-        <FormError message={auth.status === 'error' ? auth.error : ''} />
         {/* Step 1 and the code step show their errors by the field; these steps have none. */}
         <FormError message={vm.step === 7 || (vm.step === 1 && vm.remembered && !vm.passcodeEntry) ? vm.error : ''} />
         {vm.twoFaRestart && <div className="wf-notice" role="alert"><p>{t(vm.twoFaRestart)}</p></div>}

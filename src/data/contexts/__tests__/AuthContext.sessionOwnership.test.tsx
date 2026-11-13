@@ -3,7 +3,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Account, SessionResponse } from '@/data/types/workflowTypes';
 import { apiRequest, getCsrfToken, setCsrfToken } from '@/data/services/http';
 import { captureSessionScope, invalidateSessionScope, isCurrentSessionScope } from '@/core/session/sessionScope';
-import { translate } from '@/i18n';
+import { LanguageProvider, translate } from '@/i18n';
+import type { Lang } from '@/i18n';
 import { navigate } from '@/lib/utils/workflowRouting';
 import { stopWebPushOnSignOut } from '@/lib/webPush';
 import { AuthProvider, useAuth } from '../AuthContext';
@@ -56,9 +57,9 @@ function Probe() {
   );
 }
 
-async function mount(session: SessionResponse = sessionA) {
+async function mount(session: SessionResponse = sessionA, lang: Lang = 'en') {
   sessionResponses.push(response(session));
-  const view = render(<AuthProvider><Probe /></AuthProvider>);
+  const view = render(<LanguageProvider initial={lang}><AuthProvider><Probe /></AuthProvider></LanguageProvider>);
   await waitFor(() => expect(screen.getByTestId('status')).toHaveTextContent('authenticated'));
   return view;
 }
@@ -130,14 +131,14 @@ describe('web session ownership at the provider and HTTP boundary', () => {
     expect(navigate).toHaveBeenCalledWith('logged-out');
   });
 
-  it('keeps a translated warning and routes to sign-in when remote logout cannot be confirmed', async () => {
-    await mount();
+  it.each(['en', 'te', 'hi'] as const)('keeps a translated warning in %s and routes to sign-in when remote logout cannot be confirmed', async (lang) => {
+    await mount(sessionA, lang);
     logoutResponse = response({ detail: 'Synthetic logout unavailable' }, 503);
     await act(async () => { await auth().logout(); });
 
     expect(auth().user).toBeNull();
     expect(auth().status).toBe('error');
-    expect(auth().error).toBe(translate('en', 'launch.signout.remoteUnconfirmed'));
+    expect(auth().error).toBe(translate(lang, 'launch.signout.remoteUnconfirmed'));
     expect(getCsrfToken()).toBe('');
     expect(captureSessionScope().accountId).toBeNull();
     expect(navigate).toHaveBeenCalledWith('login');

@@ -2,7 +2,7 @@ import React from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { ApiError } from '@/data/services/http';
-import { LanguageProvider, translate } from '@/i18n';
+import { LanguageProvider } from '@/i18n';
 
 // Sign in → code (SignIn, WebSignIn, OtpVerify; Tier 1). A refused, expired or
 // rate-limited code never opens a session; copy follows the server, not the board.
@@ -21,8 +21,7 @@ vi.mock('@/data/services/http', async (importOriginal) => ({
   apiRequest: (path: string, init?: RequestInit) => apiRequest(path, init),
 }));
 const acceptSession = vi.fn();
-const authState = { acceptSession, status: 'anonymous', user: null, error: '' };
-vi.mock('@/data/contexts/AuthContext', () => ({ useAuth: () => authState }));
+vi.mock('@/data/contexts/AuthContext', () => ({ useAuth: () => ({ acceptSession, status: 'anonymous', user: null }) }));
 vi.mock('@/core/navigation', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/core/navigation')>()),
   useLocation: () => ({ pathname: '/login', search: '' }),
@@ -61,8 +60,6 @@ beforeEach(() => {
   window.scrollTo = vi.fn() as unknown as typeof window.scrollTo;
   apiRequest.mockClear();
   acceptSession.mockClear();
-  authState.status = 'anonymous';
-  authState.error = '';
   channels = ['EMAIL', 'WHATSAPP'];
   dev = false;
   verifyAnswer = async () => ({ success: true, user: { id: 'u1', role: 'STUDENT' }, csrfToken: 'c' });
@@ -71,16 +68,6 @@ afterEach(() => vi.unstubAllGlobals());
 
 describe.each(['phone', 'web'] as const)('Sign in (%s board)', { timeout: 20_000 }, (width) => {
   beforeEach(() => at(width));
-
-  it.each(['en', 'te', 'hi'] as const)('shows unconfirmed logout as an accessible alert in %s on the public sign-in route', async (lang) => {
-    authState.status = 'error';
-    authState.error = translate(lang, 'launch.signout.remoteUnconfirmed');
-    render(<LanguageProvider initial={lang}><AuthenticatedFlowScreen mode="login" next={null} /></LanguageProvider>);
-    await waitFor(() => expect(apiRequest).toHaveBeenCalledWith('/auth/options', undefined));
-
-    expect(screen.getByRole('alert')).toHaveTextContent(authState.error);
-    expect(screen.getByTestId('crisis-links')).toBeInTheDocument();
-  });
 
   it('draws the brief’s icons and the brand mark, with no stepper', async () => {
     const { container } = renderSignIn();
