@@ -1,0 +1,163 @@
+# Tier 1 plan: auto-classify and file uploaded health records
+
+**Status:** plan, not built. Waiting for a named reviewer (AGENTS.md: Tier 1, plan first).
+**Asked by:** Krishna, 2026-11-13 — "I need a similar thing over SK", pointing at the WeHive
+document-filing prompt and its OCR-service addendum.
+**Scope:** backend only. No screen is changed here; a folder view needs a canvas brief first.
+
+## 1. What exists today (read before writing)
+
+| Piece | Where | State |
+|---|---|---|
+| Upload endpoint | `POST /health/documents` in `backend/services/workflow_api.py` | The student picks one of six categories (`LAB`, `PRESCRIPTION`, `VACCINE`, `CAMP_REPORT`, `DISCHARGE_SUMMARY`, `OTHER`). Bytes are stored in `care_documents.content`. Virus scan is fail-closed for prescriptions. |
+| Text reader | `backend/services/document_ocr.py` | Tesseract in-process for PNG/JPEG, `pypdf` for PDFs with embedded text. A scanned PDF is an explicit `ReadFailed`. Off by default (`DOCUMENT_OCR_ENABLED`), with its own DPO sign-off. |
+| Field draft | `backend/services/document_intake.py` | Heuristics over OCR text produce a draft; every field goes to `care_intake_review_items` as `PENDING`. |
+| Queue check | `workflow_scheduler.py` | Reports `BLOCKED` when intakes are `QUEUED`/`FAILED`: "No document-intake queue adapter is implemented." |
+| Search index | `personal_document_rag.index_document` | Indexes the text when the read succeeded. |
+
+Three gaps the WeHive prompt describes are present here:
+
+1. **Substring matching on OCR text.** `document_intake.type_map` matches `"rx"`, `"lab"`,
+   `"report"`, `"dose"` anywhere in the text. `rx` sits inside "pyrexia"; `lab` inside
+   "available" and "label"; `report` inside a prescription footer. The file name is never read.
+2. **No content dedupe.** The same bytes uploaded twice make two documents.
+3. **No memory of corrections.** Nothing records that the student moved a record.
+
+Two references to `docs/plans/tier1-document-rag-2026-11-04.md` (in `document_ocr.py`,
+`integration_config.py`, `agent_ayush.py`, `consent_ledger.py`) point at a file that is not in
+the repo. Reported, not fixed here.
+
+## 2. What changes from the WeHive version, and why
+
+| WeHive prompt | Student Kare | Reason |
+|---|---|---|
+| Folders belong to a worker; staff file and correct | The record belongs to the student; **the student's choice is the human-verified label** | Student-owned records. No staff member re-files a student's record. |
+| Folder / subfolder tables | Folder = the existing closed category set. Subfolder = a new closed `doc_kind` vocabulary per category (section 4) | Counts and "on file / missing" already key on `category`; a second tree would duplicate it. |
+| Bytes under a storage key, `file_url` | Bytes stay in `care_documents.content`; add `checksum_sha256` | No object store here. Dedupe is `{account_id, checksum_sha256}`. |
+| "Do not install any OCR dependency; call `axiss-ocr`" | **Open decision D1** | Today's rule is "Tesseract on our own server, no third party", signed off on that basis. Sending health records to a shared multi-product service is a change to that sign-off. |
+| "A failure never fails the upload" | True for OCR, classification and filing. **Not** for the virus scan, auth or consent, which stay fail-closed | AGENTS.md guardrail 1. Classification is not a safety gate; the scan is. |
+| Cross-check expiry / ID number / DOB between engines | Cross-check **document date** and **patient name present**; lab values are never auto-accepted from either engine | Clinical values stay behind the existing per-field review gate. |
+| `needs_review` on the document | Reuse `care_intake_review_items` (`PENDING`) | The review gate already exists. |
+
+## 3. Data model (one Alembic migration, additive)
+
+`care_documents` gains:
+
+- `checksum_sha256` (String 64, indexed with `account_id`) — backfilled from `content`.
+- `doc_kind` (String 40, default `""`) — the subfolder.
+- `classification_source` — `filename` | `ocr` | `learned` | `manual`.
+- `classification_confidence` (Float), `ocr_engine` (String 40), `ocr_text_len` (Integer).
+- `label_verified` (Boolean) — true when the student chose or changed the label. Existing rows
+  are backfilled `manual` + verified, because the student picked every category on file today.
+
+New tables (clinical plane, Rule L grants as for `care_documents`):
+
+- `care_document_label_corrections { account_id, file_name_norm, corrected_category,
+  corrected_kind, rule_said_category, rule_said_kind, created_at }`, unique on
+  `(account_id, file_name_norm)`.
+- `care_ocr_jobs { id, account_id, document_id, engine, ok, pages, ms, error_code, created_at }`.
+  `error_code` is an enum, never the engine's message and never document text (guardrail 9).
+
+## 4. Classifier — `backend/services/document_classifier.py`
+
+One ordered rules table, `(tokens, category, doc_kind, filename_only)`, matched in two passes.
+
+- **Pass 1 — file name only**, normalised: NFKD, lowercase, `[^a-z0-9]+` → one space.
+- **Pass 2 — OCR text**, only when pass 1 matched nothing. The two are never concatenated.
+- Tokens of four characters or fewer match on word boundaries
+  (`(?<![a-z0-9])TOKEN(?![a-z0-9])`); longer tokens may match as substrings.
+- Filename-only tokens (too ambiguous in body text): `rx`, `lab`, `cbc`, `ecg`, `mri`, `ct`,
+  `usg`, `opd`, `bill`.
+- Order: discharge summary → prescription → vaccination → lab → imaging → camp report →
+  insurance/bills → other.
+- A stored correction for the exact normalised file name wins over the table and reports
+  `learned`.
+
+Proposed `doc_kind` vocabulary (closed; a new kind is a table row plus an i18n key):
+
+| Category | Kinds |
+|---|---|
+| `LAB` | `blood`, `urine`, `imaging`, `cardiac`, `other_lab` |
+| `PRESCRIPTION` | `prescription`, `consult_note` |
+| `VACCINE` | `certificate`, `card` |
+| `CAMP_REPORT` | `camp_report` |
+| `DISCHARGE_SUMMARY` | `discharge_summary` |
+| `OTHER` | `insurance`, `bill`, `id_proof`, `unfiled` |
+
+The classifier **suggests**; it never overrides the student. On upload, the category the student
+picked is stored as `manual` + verified, and the classifier fills only `doc_kind` (and flags a
+disagreement as a review item, without moving the record). A future "let the app file it for me"
+upload sends no category and takes the classifier's answer unverified.
+
+## 5. Pipeline order on upload
+
+1. Size, type and virus checks — unchanged, fail-closed.
+2. `checksum_sha256`; if `{account_id, checksum}` exists, return that document (`200`, not `201`).
+3. Store the row.
+4. Read text: `pypdf` first for PDFs; only when shorter than `documents.min_text_chars` go to the
+   OCR engine (D1), retrying 0/90/180/270 for images. One `care_ocr_jobs` row per attempt.
+5. Classify (section 4), persist provenance.
+6. Existing field draft, review items and search indexing — unchanged, but
+   `document_intake.type_map` is replaced by the classifier's answer.
+
+Steps 4–6 are wrapped so a failure logs an event code, leaves `doc_kind = "unfiled"`, and the
+upload still returns. No PHI in the log line.
+
+## 6. Reprocess and backfill
+
+- `POST /health/documents/{id}/reclassify?apply=false` — owner only.
+- `POST /ops/documents/reclassify-backfill?apply=false` — super admin; returns counts and
+  `{document_id, from, to, matched_via}` only (ids, never file names or text, since an ops
+  response is outside the clinical plane).
+- Both are dry-run by default, idempotent, and skip every `label_verified` row.
+
+## 7. Settings, config, copy (guardrail 11)
+
+- Settings registry: `documents.min_text_chars`, `documents.ocr_timeout_seconds`,
+  `documents.ocr_batch_concurrency`, `documents.backfill_page_size`.
+- Environment (read in `integration_config.py` only): `DOCUMENT_OCR_URL`, `DOCUMENT_OCR_KEY`,
+  `DOCUMENT_OCR_TEXT_LAYERS` — only if D1 picks the shared service.
+- Kind labels: `src/i18n` in English, Telugu and Hindi.
+
+## 8. Tests
+
+1. `cbc_report.pdf` → `LAB/blood`, `matched_via: filename`.
+2. OCR text containing "label" / "available" / "pyrexia" does not produce `LAB` or
+   `PRESCRIPTION`.
+3. File name `collaboration.pdf` does not match `lab`.
+4. `Rx-2026_Nov.pdf` and `rx 2026 nov.pdf` normalise identically.
+5. Same bytes twice → one document.
+6. A page rotated 90° still yields text.
+7. Engines disagreeing on the document date create a `PENDING` review item.
+8. A student's correction changes the next upload of the same file name (`learned`).
+9. Backfill dry run writes nothing and reports the diff the applied run performs.
+10. A verified document survives `reclassify` unchanged.
+11. OCR service down → upload returns `201`, `doc_kind = unfiled`, one failed `care_ocr_jobs` row.
+12. Virus scanner down on a prescription → upload still refused.
+13. Reachability: the new modules are imported by `workflow_api`.
+
+## 9. Decisions needed before any code
+
+- **D1 — OCR engine.** (a) keep in-process Tesseract only, add rotation retry; (b) call the
+  shared `axiss-ocr` service on the internal network; (c) in-process first, shared service only
+  for scanned PDFs, which the in-process reader cannot read at all. (b) and (c) need: Student
+  Kare on the same private network as the service, a Student Kare-only key, confirmation the
+  service stores and logs no document text, and a DPO/AI-constitution-owner sign-off replacing
+  the current "no third party" basis.
+- **D2 — who files.** Section 4 proposes the student's pick always wins and the classifier fills
+  the subfolder. The alternative — the app picks the category and the student confirms — changes
+  the upload screen and needs a canvas brief.
+- **D3 — named reviewer** for this plan.
+
+## 10. Not in this plan
+
+- Any screen change (folder view, "filed automatically" chip, correction sheet).
+- Extracting lab values into `lab_results` from OCR — stays behind the existing review gate.
+- A queue worker for bulk imports; Student Kare has no bulk import today.
+- Restoring the missing `tier1-document-rag-2026-11-04.md`.
+
+## 11. Residual risk
+
+- The `doc_kind` vocabulary is a proposal from the six existing categories, not from a canvas.
+- If D1 is (a), scanned PDFs stay unreadable and file by name only.
+- Backfilling `checksum_sha256` reads every stored document once; run it off-peak.
