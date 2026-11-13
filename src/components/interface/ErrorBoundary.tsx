@@ -11,7 +11,7 @@ export class ErrorBoundary extends Component<Props, State> {
   static getDerivedStateFromError(error: Error): State { return { error, stack: '' }; }
   componentDidCatch(error: Error, info: { componentStack?: string }) {
     console.error('[ErrorBoundary]', error, info.componentStack);
-    captureSentryException(error, { componentStack: info.componentStack });
+    captureSentryException(error, info.componentStack);
   }
   render() {
     if (this.state.error) {
