@@ -20,6 +20,7 @@
     "backend": "python scripts/start-dev-backend.py",
     "build": "tsc && vite build && node scripts/prerender-public-routes.js",
     "test": "vitest run",
+    "e2e": "playwright test",
     "tokens:build": "node scripts/tokens/build-tokens.mjs",
     "tokens:check": "node scripts/tokens/build-tokens.mjs --check",
     "settings:build": "python3 backend/scripts/export_public_settings.py",
@@ -91,6 +92,7 @@
     "postcss": "8.5.32"
   },
   "devDependencies": {
+    "@playwright/test": "^1.61.1",
     "@storybook/react-vite": "^10.6.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.3",

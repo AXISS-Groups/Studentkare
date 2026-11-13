@@ -73,7 +73,8 @@ export default defineConfig({
     setupFiles: ['./src/test/setup.ts'],
     // .kilo holds stale git worktrees; their copies of the suite were being
     // collected and run alongside the real one.
-    exclude: ['**/node_modules/**', '**/dist/**', '.kilo/**', '**/.kilo/**'],
+    // e2e/ holds the Playwright browser specs (`npm run e2e`), not unit tests.
+    exclude: ['**/node_modules/**', '**/dist/**', '.kilo/**', '**/.kilo/**', 'e2e/**'],
     css: false,
   },
   server: {
