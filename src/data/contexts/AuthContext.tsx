@@ -4,7 +4,7 @@ import { ApiError, apiRequest, holdAuthenticationUntil, setCsrfToken } from '../
 import { navigate } from '../../lib/utils/workflowRouting';
 import { stopWebPushOnSignOut } from '../../lib/webPush';
 import type { RoutePath } from '../../lib/utils/workflowRouting';
-import { invalidateSessionScope, setSessionAccount } from '../../core/session/sessionScope';
+import { captureSessionScope, invalidateSessionScope, setSessionAccount } from '../../core/session/sessionScope';
 import { useT } from '../../i18n';
 
 /** Opt-in at sign-out: the server remembers this device and the page the student was on. */
@@ -127,8 +127,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // help one tap away. Dropping the student on the shop said neither.
     navigate('logged-out');
   };
+  const userUpdateScope = captureSessionScope();
   const updateUser = (updated: Account) => {
-    if (acceptedUser.current?.id !== updated.id) return;
+    if (userUpdateScope !== captureSessionScope() || acceptedUser.current?.id !== updated.id) return;
     setSessionAccount(updated.twoFactorSetupRequired === false ? updated.id : null);
     acceptedUser.current = updated;
     setUser(updated);
