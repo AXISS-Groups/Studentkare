@@ -164,7 +164,8 @@ upload still returns. No PHI in the log line.
 ## 11. Residual risk
 
 - The `doc_kind` vocabulary is a proposal from the six existing categories, not from a canvas.
-- Until the four D1 conditions hold the service stays off, and scans file by name only.
+- Until the four D1 conditions hold the reader stays off, and every record files by name only
+  (the reader switch also covers reading a PDF's own text).
 - Backfilling `checksum_sha256` reads every stored document once; run it off-peak.
 
 ## 12. As built — differences from sections 3 to 8
@@ -186,8 +187,9 @@ upload still returns. No PHI in the log line.
 - **The backfill returns counts, not a per-document diff**, with small cells suppressed, because
   a super admin may not see a student's document ids (`/ops/intake/review` has the same rule).
   The per-document diff is on the owner's own `reclassify` endpoint.
-- **One time budget for the whole read** (`documents.ocr_timeout_seconds`, default 30): the upload
-  is still synchronous, so the four rotations share it rather than each getting a full timeout.
+- **One time budget for the whole read** (`documents.ocr_timeout_seconds`, default 12, at most 15):
+  the upload is still synchronous, so the four rotations share it rather than each getting a full
+  timeout. It is kept under the app's own 20-second request timeout.
   `documents.ocr_batch_concurrency` was dropped — there is no batch path.
 - **The file name is not sent to the OCR service** (it receives `document.pdf` / `.png` / `.jpg`).
 - **A duplicate upload returns `200`** with the existing record and `"duplicate": true`, also when
@@ -205,3 +207,48 @@ Endpoints: `POST /health/documents` (now dedupes and files), `GET /health/docume
   `imaging` folder, and `other_lab` is now `report`. Not built: folders for things the app itself
   writes (AI analyst report, suggestions, diet report). Those are not uploads; storing AI output as a
   health record is separate Tier 1 work (AI constitution at the call site, clinical sign-off).
+
+## 13. Fresh-context review (2026-11-13) and what changed
+
+Two reviewers with no knowledge of the conversation that produced this plan read it against the code
+on the branch (the review step of Google's open-source Elephant-Goldfish Model, run by hand). Fixed
+in the same PR:
+
+- **An upload could still be lost.** The record was committed only after reading, filing and
+  indexing. It is now committed first; a failure afterwards rolls back the analysis only.
+- **No consent gate on the OCR send.** A document now goes to the service only when the student has
+  switched on document analysis (`DOCUMENT_AI_ANALYSIS`, the consent that already gates indexing).
+  No consent, or a consent that cannot be read, keeps the document in-process.
+- **An admin form could switch the reader on, or point it elsewhere.** The address and key now come
+  from the environment only, and the stored switch can only turn the reader off.
+- **The server could wait longer than the app does.** Timeout default 30 → 12 seconds, cap 15.
+- **A slow OCR service could exhaust the database pool.** The reader now runs with no transaction
+  open.
+- **The migration pulled every document into memory.** Checksums are now computed by Postgres in one
+  statement.
+- **Misfiled names and text.** Every token must start at a word boundary (`covid_card`, `direct
+  scan`); bills are matched first; the bare word "blood" is gone; the text pass only looks inside
+  the category the student picked, so a prescription that says "advised: blood test" raises no
+  false "looks like a lab report" item.
+- **Corrections over-generalised and outlived the record.** Nothing is remembered for a name that
+  says nothing ("image.jpg"); deleting the last record with a name deletes its correction; the
+  owner can choose `unfiled` to undo.
+- An unfiled record no longer reports a `matchedVia`; a duplicate upload returns `kind` too; the
+  backfill commits a page at a time.
+
+Known and not fixed:
+
+- **Double-tap race.** Dedupe is check-then-insert on a non-unique index, so two simultaneous
+  uploads of one file can both be stored (as before this change). A unique index would fail on
+  duplicates already in the table.
+- **The migration still locks `care_documents`** for its duration and builds the index
+  non-concurrently. Fine at today's size; run it in a quiet window on a large table.
+- **The timeout is per network phase**, not a hard wall clock: connecting is capped at 3 seconds,
+  then the read at the remaining budget.
+- **The original image is sent with its EXIF data**; only the rotated retries are re-encoded.
+- **Backfill totals (`examined`, `changed`, `skipped`) are not suppressed**, only the per-kind
+  cells.
+- **Non-Latin file names** are reduced to underscores by the existing `safe_filename` before the
+  classifier sees them, so they file by text only.
+- Whether sending a record to the OCR service belongs under `DOCUMENT_AI_ANALYSIS` or needs its own
+  consent purpose is a DPO decision; the stricter reading is what is built.

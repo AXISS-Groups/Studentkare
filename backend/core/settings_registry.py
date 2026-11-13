@@ -710,7 +710,9 @@ declare("ai.kill_switch_active", BOOL, False, area="ai",
 declare("documents.min_text_chars", INT, 40, area="documents", unit="characters", minimum=1, maximum=2000,
         description="A document whose own text is shorter than this is treated as a scan and sent to the "
                     "OCR service; an image that reads shorter than this is retried turned sideways.")
-declare("documents.ocr_timeout_seconds", INT, 30, area="documents", unit="seconds", minimum=5, maximum=120,
+# Kept under the app's own 20 s request timeout (src/data/services/http.ts): past that the
+# student is told the upload timed out although the record was stored.
+declare("documents.ocr_timeout_seconds", INT, 12, area="documents", unit="seconds", minimum=3, maximum=15,
         description="The longest an upload waits, in total, for the OCR service to read one document.")
 declare("documents.backfill_page_size", INT, 200, area="documents", unit="documents", minimum=10, maximum=5000,
         description="How many stored documents the reclassify backfill examines per database read.")

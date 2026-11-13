@@ -45,6 +45,6 @@ livekit-api==1.2.1
 # same model still runs on the sqlite test harness. https://github.com/pgvector/pgvector
 pgvector==0.5.1
 # Real text extraction from an uploaded PDF (services/document_ocr.py, same plan):
-# pure-Python, no system binary, text-only (never images-to-text — that stays
-# Tesseract, same as medicine_ocr.py).
+# pure-Python, no system binary, text-only (never images-to-text — scans and images
+# go to the shared OCR service, plan tier1-document-autofile-2026-11-13).
 pypdf==6.21.4

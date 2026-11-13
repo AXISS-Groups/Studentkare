@@ -1,6 +1,7 @@
 """Owned health data, configured catalog, durable requests, and role-scoped operations."""
 import hashlib
 import json
+import logging
 import re
 import time
 import uuid
@@ -73,6 +74,7 @@ from services.workflow_scheduler import (
     workflow_scheduler,
 )
 
+logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api", tags=["Care workflows"])
 
 # Structural lengths and formats (AGENTS.md rule 11: named, not tunable).
@@ -240,18 +242,31 @@ def upload_document(response: Response, title: str = Form(..., min_length=1, max
     if duplicate_of:
         intake_id = db.scalar(select(M.DocumentIntake.id).where(M.DocumentIntake.document_id == duplicate_of)
                               .order_by(M.DocumentIntake.created_at).limit(1))
+        existing = db.execute(select(M.Document.doc_kind, M.Document.classification_source)
+                              .where(M.Document.id == duplicate_of)).one()
         response.status_code = 200
-        return {"id": duplicate_of, "intakeId": intake_id, "duplicate": True}
+        return {"id": duplicate_of, "intakeId": intake_id, "duplicate": True, "kind": existing.doc_kind,
+                "matchedVia": existing.classification_source or None}
     filename = upload_files.safe_filename(file.filename, "record")
     row = M.Document(id=new_id(), account_id=user["id"], title=title.strip(), category=category, filename=filename,
                      mime_type=file.content_type, content=content, created_at=time.time(), checksum_sha256=digest)
     db.add(row)
     audit(db, user, "DOCUMENT_UPLOADED", row.id)
-    db.flush()
-    intake_id = _queue_intake(db, user, row)
+    # The record is the student's from here on: committed before anything is read, filed
+    # or indexed, so no failure in those steps can take the upload back.
     db.commit()
-    return {"id": row.id, "intakeId": intake_id, "duplicate": False, "kind": row.doc_kind,
-            "matchedVia": row.classification_source or None}
+    document_id = row.id
+    try:
+        intake_id = _queue_intake(db, user, row)
+        db.commit()
+    except Exception as exc:  # noqa: BLE001 - nothing was analysed (rolled back); the record stands
+        db.rollback()
+        logger.warning("document intake failed after upload: %s", type(exc).__name__)
+        intake_id = None
+    filed = db.execute(select(M.Document.doc_kind, M.Document.classification_source)
+                       .where(M.Document.id == document_id)).one()
+    return {"id": document_id, "intakeId": intake_id, "duplicate": False, "kind": filed.doc_kind or "unfiled",
+            "matchedVia": filed.classification_source or None}
 
 
 def _queue_intake(db, user, row) -> str:
@@ -348,13 +363,15 @@ def download_document(document_id: str, user=Depends(authenticated_user), db: Se
 def delete_document(document_id: str, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
     from services.rx_uploads import withdraw_reviews_for_document
 
-    if db.scalar(select(M.Document.id).where(M.Document.id == document_id, M.Document.account_id == user["id"])):
+    owned = db.execute(select(M.Document.filename, M.Document.category)
+                       .where(M.Document.id == document_id, M.Document.account_id == user["id"])).first()
+    if owned:
         # A prescription sent to a pharmacist leaves that queue with its file.
         withdraw_reviews_for_document(db, document_id)
         lab_results.delete_for_document(db, user["id"], document_id)
         from services import personal_document_rag
         personal_document_rag.remove_document(db, document_id)
-        document_filing.remove_document(db, document_id)
+        document_filing.remove_document(db, user["id"], document_id, owned.filename, owned.category)
     changed = db.execute(delete(M.Document).where(M.Document.id == document_id, M.Document.account_id == user["id"])).rowcount
     if not changed:
         raise HTTPException(404, "Record not found.")

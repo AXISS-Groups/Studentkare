@@ -56,6 +56,25 @@ def test_each_kind_of_imaging_and_report_has_its_own_subfolder(name, kind):
     assert (result.category, result.kind) == ("LAB", kind)
 
 
+@pytest.mark.parametrize("name", ["covid_card.pdf", "direct scan.pdf", "blood_pressure_log.pdf", "image.jpg"])
+def test_names_that_only_look_like_a_rule_are_left_unfiled(name):
+    assert not classifier.classify_file_name(name).matched
+
+
+@pytest.mark.parametrize("name", ["lab_bill.pdf", "echo_dot_invoice.pdf", "Dr consultation fee receipt.pdf"])
+def test_a_bill_is_paperwork_whatever_else_its_name_mentions(name):
+    result = classifier.classify_file_name(name)
+    assert (result.category, result.kind) == ("OTHER", "bill")
+
+
+def test_the_text_pass_stays_inside_the_students_category():
+    rx = "Rx Tab. Paracetamol. Adv: CBC, blood test, review after 3 days"
+    assert not classifier.classify("IMG_1.jpg", rx, category="PRESCRIPTION").matched
+    panel = "Consultation advised. Clinical notes. Hemoglobin 13.2, urine routine normal"
+    result = classifier.classify("IMG_2.jpg", panel, category="LAB")
+    assert (result.category, result.kind) == ("LAB", "blood")
+
+
 def test_camp_report_is_not_claimed_by_the_generic_report_rule():
     result = classifier.classify_file_name("camp_report.pdf")
     assert (result.category, result.kind) == ("CAMP_REPORT", "camp_report")
@@ -79,10 +98,12 @@ def test_every_rule_points_at_a_declared_kind():
 
 # --- the reader --------------------------------------------------------------------
 
-def _reader_on(monkeypatch):
-    monkeypatch.setitem(INTEGRATIONS_DB, "document_ocr", {"enabled": True, "engine": "axiss-ocr",
-                                                          "url": "http://ocr.test/ocr", "api_key": "sk-only-key",
-                                                          "text_layers": "auto"})
+def _reader_on(monkeypatch, key="sk-only-key"):
+    monkeypatch.setenv("DOCUMENT_OCR_ENABLED", "true")
+    monkeypatch.setenv("DOCUMENT_OCR_URL", "http://ocr.test/ocr")
+    monkeypatch.setenv("DOCUMENT_OCR_KEY", key)
+    monkeypatch.delenv("DOCUMENT_OCR_TEXT_LAYERS", raising=False)
+    monkeypatch.setitem(INTEGRATIONS_DB, "document_ocr", {"enabled": True, "engine": "axiss-ocr"})
 
 
 def _png(width=40, height=20) -> bytes:
@@ -94,17 +115,54 @@ def _png(width=40, height=20) -> bytes:
 
 
 def test_reader_is_off_by_default_and_sends_nothing(monkeypatch):
-    monkeypatch.setitem(INTEGRATIONS_DB, "document_ocr", {"enabled": False, "url": "http://ocr.test/ocr",
-                                                          "api_key": "k"})
+    monkeypatch.delenv("DOCUMENT_OCR_ENABLED", raising=False)
+    monkeypatch.setenv("DOCUMENT_OCR_URL", "http://ocr.test/ocr")
+    monkeypatch.setenv("DOCUMENT_OCR_KEY", "k")
     monkeypatch.setattr(httpx, "post", lambda *a, **k: pytest.fail("the service must not be called"))
     with pytest.raises(document_ocr.ReaderUnavailable) as raised:
         document_ocr.read_document(_png(), PNG)
     assert raised.value.state == document_ocr.NOT_CONFIGURED
 
 
+def test_an_admin_form_can_switch_the_reader_off_but_never_on_or_elsewhere(monkeypatch):
+    """The deployment's switch, address and key win; a saved admin config cannot override them."""
+    monkeypatch.delenv("DOCUMENT_OCR_ENABLED", raising=False)
+    monkeypatch.setenv("DOCUMENT_OCR_URL", "http://ocr.test/ocr")
+    monkeypatch.setenv("DOCUMENT_OCR_KEY", "k")
+    # A row saved through Admin > Integrations (or left from the Tesseract reader).
+    monkeypatch.setitem(INTEGRATIONS_DB, "document_ocr", {"enabled": True, "engine": "tesseract", "binary": "x",
+                                                          "url": "https://elsewhere.example/ocr",
+                                                          "api_key": "someone-elses"})
+    assert document_ocr.status()["state"] == document_ocr.NOT_CONFIGURED
+    monkeypatch.setenv("DOCUMENT_OCR_ENABLED", "true")
+    assert document_ocr.status()["state"] == document_ocr.READY
+    seen = {}
+
+    def post(url, **kwargs):
+        seen.update(url=url, headers=kwargs["headers"])
+        return httpx.Response(200, json={"pages": 1, "text": LONG_TEXT})
+
+    monkeypatch.setattr(httpx, "post", post)
+    document_ocr.read_document(_png(), PNG)
+    assert seen == {"url": "http://ocr.test/ocr", "headers": {"X-OCR-Key": "k"}}
+    monkeypatch.setitem(INTEGRATIONS_DB, "document_ocr", {"enabled": False})
+    assert document_ocr.status()["state"] == document_ocr.NOT_CONFIGURED
+
+
+def test_without_consent_nothing_leaves_the_process(monkeypatch):
+    _reader_on(monkeypatch)
+    monkeypatch.setattr(httpx, "post", lambda *a, **k: pytest.fail("the service must not be called"))
+    with pytest.raises(document_ocr.ReaderUnavailable) as raised:
+        document_ocr.read_document(_png(), PNG, allow_service=False)
+    assert raised.value.state == document_ocr.NOT_PERMITTED
+    # A PDF's own text is still read in-process.
+    monkeypatch.setattr(document_ocr, "embedded_pdf_text",
+                        lambda content: ("short", document_ocr.Attempt(document_ocr.ENGINE_PDF_TEXT, ok=True)))
+    assert document_ocr.read_document(b"%PDF-1.4", PDF, allow_service=False).text == "short"
+
+
 def test_no_key_means_nothing_is_sent(monkeypatch):
-    monkeypatch.setitem(INTEGRATIONS_DB, "document_ocr", {"enabled": True, "url": "http://ocr.test/ocr",
-                                                          "api_key": ""})
+    _reader_on(monkeypatch, key="")
     monkeypatch.setattr(httpx, "post", lambda *a, **k: pytest.fail("the service must not be called"))
     assert document_ocr.status()["state"] == document_ocr.UNAVAILABLE
     with pytest.raises(document_ocr.ReaderUnavailable):
@@ -191,6 +249,17 @@ def _stub_reader(monkeypatch, text, engine=document_ocr.ENGINE_SERVICE, embedded
         attempts=[document_ocr.Attempt(engine, ok=True, pages=1, ms=12)]))
 
 
+def _consent(factory, account_id, given=True):
+    """The student's DOCUMENT_AI_ANALYSIS choice (the same flag that gates indexing)."""
+    with factory() as db:
+        row = db.get(M.NotificationPreference, account_id)
+        if row is None:
+            db.add(M.NotificationPreference(account_id=account_id, document_ai_analysis_enabled=given))
+        else:
+            row.document_ai_analysis_enabled = given
+        db.commit()
+
+
 def _upload(client, headers, body=b"one", name="report.pdf", category="LAB"):
     return client.post("/api/health/documents", headers=headers, data={"title": "My record", "category": category},
                        files={"file": (name, b"%PDF-1.4\n" + body, PDF)})
@@ -246,7 +315,8 @@ def test_the_same_bytes_twice_are_one_record(harness, monkeypatch):  # noqa: F81
     first = _upload(client, headers, name="cbc.pdf")
     again = _upload(client, headers, name="a different name.pdf")
     assert (first.status_code, again.status_code) == (201, 200)
-    assert again.json() == {"id": first.json()["id"], "intakeId": first.json()["intakeId"], "duplicate": True}
+    assert again.json() == {"id": first.json()["id"], "intakeId": first.json()["intakeId"], "duplicate": True,
+                            "kind": "blood", "matchedVia": "filename"}
     with factory() as db:
         assert db.scalar(select(func.count()).select_from(M.Document)) == 1
     # Filed under another category it is a record of its own (category-keyed flows rely on that).
@@ -275,7 +345,8 @@ def test_the_ocr_service_being_down_never_costs_the_upload(harness, monkeypatch)
         raise httpx.ConnectError("down")
 
     monkeypatch.setattr(httpx, "post", post)
-    _user, headers = register(client, codes, "file6@example.test")
+    user, headers = register(client, codes, "file6@example.test")
+    _consent(factory, user["id"])
     res = _upload(client, headers, name="IMG_1.pdf")
     assert res.status_code == 201
     row = _document(factory, res.json()["id"])
@@ -345,7 +416,7 @@ def test_a_subfolder_from_another_category_is_refused(harness, monkeypatch):  # 
     _stub_reader(monkeypatch, "")
     _user, headers = register(client, codes, "fix2@example.test")
     doc = _upload(client, headers, name="cbc.pdf").json()["id"]
-    for kind in ("prescription", "unfiled", "nonsense"):
+    for kind in ("prescription", "nonsense"):
         assert client.patch(f"/api/health/documents/{doc}/kind", headers=headers,
                             json={"kind": kind}).status_code == 422
     client.cookies.clear()
@@ -446,3 +517,66 @@ def test_deleting_a_record_removes_its_read_log(harness, monkeypatch):  # noqa: 
     assert client.delete(f"/api/health/documents/{doc}", headers=headers).status_code == 200
     with factory() as db:
         assert db.scalar(select(func.count()).select_from(M.OcrJob)) == 0
+
+
+def test_without_consent_an_upload_is_stored_but_never_sent(harness, monkeypatch):  # noqa: F811
+    client, factory, codes = harness
+    _reader_on(monkeypatch)
+    monkeypatch.setattr(httpx, "post", lambda *a, **k: pytest.fail("the service must not be called"))
+    user, headers = register(client, codes, "consent1@example.test")
+    _consent(factory, user["id"], given=False)
+    res = client.post("/api/health/documents", headers=headers, data={"title": "Scan", "category": "LAB"},
+                      files={"file": ("cbc.png", _png(), PNG)})
+    assert res.status_code == 201
+    assert (res.json()["kind"], res.json()["matchedVia"]) == ("blood", "filename")
+    assert client.get(f"/api/intake/{res.json()['intakeId']}", headers=headers).json()["status"] == "QUEUED"
+
+
+def test_a_failure_after_the_record_is_stored_never_takes_it_back(harness, monkeypatch):  # noqa: F811
+    client, factory, codes = harness
+    _stub_reader(monkeypatch, LONG_TEXT)
+
+    def boom(*_a, **_k):
+        raise RuntimeError("indexer down")
+
+    monkeypatch.setattr(workflow_api, "extract_fields", boom)
+    _user, headers = register(client, codes, "keep1@example.test")
+    res = _upload(client, headers, name="cbc.pdf")
+    assert res.status_code == 201
+    assert res.json()["intakeId"] is None
+    with factory() as db:
+        assert db.scalar(select(func.count()).select_from(M.Document)) == 1
+        assert db.scalar(select(func.count()).select_from(M.DocumentIntake)) == 0
+
+
+def test_no_correction_is_remembered_for_a_name_that_says_nothing(harness, monkeypatch):  # noqa: F811
+    client, factory, codes = harness
+    _stub_reader(monkeypatch, "")
+    _user, headers = register(client, codes, "generic1@example.test")
+    first = _upload(client, headers, body=b"one", name="image.pdf").json()["id"]
+    assert client.patch(f"/api/health/documents/{first}/kind", headers=headers,
+                        json={"kind": "urine"}).status_code == 200
+    with factory() as db:
+        assert db.scalar(select(func.count()).select_from(M.DocumentLabelCorrection)) == 0
+    second = _upload(client, headers, body=b"two", name="image.pdf").json()
+    assert (second["kind"], second["matchedVia"]) == ("unfiled", None)
+
+
+def test_unfiled_is_a_choice_and_deleting_the_record_forgets_its_name(harness, monkeypatch):  # noqa: F811
+    client, factory, codes = harness
+    _stub_reader(monkeypatch, "")
+    _user, headers = register(client, codes, "undo1@example.test")
+    doc = _upload(client, headers, body=b"one", name="thyroid_nov.pdf").json()["id"]
+
+    def corrections():
+        with factory() as db:
+            return db.scalar(select(func.count()).select_from(M.DocumentLabelCorrection))
+
+    client.patch(f"/api/health/documents/{doc}/kind", headers=headers, json={"kind": "blood"})
+    assert corrections() == 1
+    undone = client.patch(f"/api/health/documents/{doc}/kind", headers=headers, json={"kind": "unfiled"})
+    assert (undone.status_code, undone.json()["kind"], corrections()) == (200, "unfiled", 0)
+    client.patch(f"/api/health/documents/{doc}/kind", headers=headers, json={"kind": "blood"})
+    assert corrections() == 1
+    assert client.delete(f"/api/health/documents/{doc}", headers=headers).status_code == 200
+    assert corrections() == 0

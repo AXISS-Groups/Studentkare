@@ -14,15 +14,14 @@ per attempt to read a document: engine, duration, an error code; never text). Bo
 a foreign key to ``care_accounts``, so ``services/erasure.py`` finds and erases them like
 every other personal table.
 
-The checksum of each existing document is computed here, a batch at a time, from its
-stored bytes.
+The checksum of each existing document is computed here by Postgres, in one statement.
+The migration runs in one transaction, so ``care_documents`` is locked until it finishes:
+on a large table run it in a quiet window.
 
 Revision ID: c9d4e7a1b3f6
 Revises: a6d2f9b4c810
 Create Date: 2026-11-13
 """
-import hashlib
-
 import sqlalchemy as sa
 
 from alembic import op
@@ -32,20 +31,11 @@ down_revision = "a6d2f9b4c810"
 branch_labels = None
 depends_on = None
 
-CHECKSUM_BATCH = 100
-
-
-def _backfill_checksums(bind) -> None:
-    documents = sa.table("care_documents", sa.column("id", sa.String), sa.column("content", sa.LargeBinary),
-                         sa.column("checksum_sha256", sa.String))
-    while True:
-        rows = bind.execute(sa.select(documents.c.id, documents.c.content)
-                            .where(documents.c.checksum_sha256 == "").limit(CHECKSUM_BATCH)).all()
-        if not rows:
-            return
-        for row in rows:
-            digest = hashlib.sha256(bytes(row.content or b"")).hexdigest()
-            bind.execute(sa.update(documents).where(documents.c.id == row.id).values(checksum_sha256=digest))
+def _backfill_checksums() -> None:
+    # Hashed by Postgres itself (sha256(bytea), Postgres 11+): one statement, and no
+    # document's bytes are pulled into this process.
+    op.execute("UPDATE care_documents SET checksum_sha256 = encode(sha256(content), 'hex') "
+               "WHERE checksum_sha256 = ''")
 
 
 def upgrade() -> None:
@@ -60,7 +50,7 @@ def upgrade() -> None:
     op.add_column("care_documents", sa.Column("ocr_text_len", sa.Integer(), nullable=False, server_default="0"))
     op.add_column("care_documents", sa.Column("kind_verified", sa.Boolean(), nullable=False,
                                               server_default=sa.false()))
-    _backfill_checksums(bind)
+    _backfill_checksums()
     op.create_index("ix_care_documents_account_checksum", "care_documents", ["account_id", "checksum_sha256"])
 
     op.create_table(

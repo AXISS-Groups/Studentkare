@@ -10,6 +10,8 @@ module is the only place that talks to it, and it is honest about what it is:
 * an image, or a PDF with too little embedded text (a scan), is sent to the service. An
   image that reads as almost empty is retried turned 90°, 180° and 270°, because phone
   photos of a page are routinely sideways;
+* a document is sent only when the caller says the student has consented to their
+  documents being analysed (``allow_service``); without it, nothing leaves this process;
 * the file's own name is never sent (the service gets ``document.<ext>``), and neither
   the bytes nor the text are written to disk or logged here. Every attempt is reported
   back as an ``Attempt`` carrying an engine, a duration and an error *code* — never the
@@ -20,8 +22,10 @@ Text-extraction only. Nothing here interprets, classifies or diagnoses.
 States:
 
 * ``NOT_CONFIGURED`` — the integration is off (the default, until the plan's four
-  conditions hold and the DPO has signed);
-* ``UNAVAILABLE`` — it is on, but the service URL or the Student Kare key is missing.
+  conditions hold and the DPO has signed). It is on only when the deployment's
+  ``DOCUMENT_OCR_ENABLED`` says so; Admin > Integrations can switch it off, never on;
+* ``UNAVAILABLE`` — it is on, but the service URL or the Student Kare key is missing
+  from the environment (they are never taken from a saved admin form).
   With no key nothing is sent: the service answers unauthenticated callers when it has no
   keys configured, and health records must not ride on that;
 * ``READY`` — documents can be read.
@@ -34,12 +38,14 @@ from dataclasses import dataclass, field
 
 import httpx
 
-from services.integration_config import INTEGRATIONS_DB
+from services.integration_config import document_ocr_config
 
 PROVIDER = "document_ocr"
 NOT_CONFIGURED = "NOT_CONFIGURED"
 UNAVAILABLE = "UNAVAILABLE"
 READY = "READY"
+# The reader is on, but this document may not be sent to the service (no consent).
+NOT_PERMITTED = "NOT_PERMITTED"
 
 ENGINE_PDF_TEXT = "pypdf"
 ENGINE_SERVICE = "axiss-ocr"
@@ -58,7 +64,11 @@ ERROR_NO_TEXT = "NO_TEXT"
 # Used when a caller has no database session to read the settings registry from
 # (documents.min_text_chars, documents.ocr_timeout_seconds declare the real values).
 DEFAULT_MIN_TEXT_CHARS = 40
-DEFAULT_TIMEOUT_SECONDS = 30
+DEFAULT_TIMEOUT_SECONDS = 12
+
+# Reaching the service is on the private network: if it does not answer the connect in this
+# long it is down, and the rest of the budget is kept for the read itself.
+CONNECT_TIMEOUT_SECONDS = 3
 
 ROTATIONS = (90, 180, 270)
 _GENERIC_NAMES = {"image/png": "document.png", "image/jpeg": "document.jpg", "image/jpg": "document.jpg",
@@ -102,7 +112,7 @@ class ReadFailed(Exception):
 
 
 def _config() -> dict:
-    return INTEGRATIONS_DB.get(PROVIDER, {})
+    return document_ocr_config()
 
 
 def status() -> dict:
@@ -150,7 +160,7 @@ def _call_service(content: bytes, mime: str, timeout: float, rotation: int = 0) 
             files={"file": (_GENERIC_NAMES.get(mime, "document"), content, mime)},
             data={"text_layers": str(cfg.get("text_layers") or "auto")},
             headers={"X-OCR-Key": str(cfg.get("api_key"))},
-            timeout=timeout,
+            timeout=httpx.Timeout(timeout, connect=min(CONNECT_TIMEOUT_SECONDS, timeout)),
         )
     except httpx.TimeoutException:
         return failed(ERROR_TIMEOUT)
@@ -216,8 +226,12 @@ def _read_with_service(content: bytes, mime: str, min_chars: int, timeout: float
 
 
 def read_document(content: bytes, mime_type: str, *, min_chars: int = DEFAULT_MIN_TEXT_CHARS,
-                  timeout: float = DEFAULT_TIMEOUT_SECONDS) -> ReadResult:
+                  timeout: float = DEFAULT_TIMEOUT_SECONDS, allow_service: bool = True) -> ReadResult:
     """The printed text of the document, with every attempt made to get it.
+
+    ``allow_service=False`` keeps the document inside this process: only a PDF's own text
+    is read, and a scan is reported as not readable yet (the caller passes False when the
+    student has not consented to their documents being analysed).
 
     Raises ``ReaderUnavailable`` (off, or on without a URL and key) or ``ReadFailed`` (it
     ran and found nothing; the exception carries the attempts). A PDF whose embedded text
@@ -240,14 +254,14 @@ def read_document(content: bytes, mime_type: str, *, min_chars: int = DEFAULT_MI
             return result
         result.embedded_text = embedded
 
-    if current != READY:
+    if current != READY or not allow_service:
         if result.embedded_text:
             # Short, but real text from the file itself: better than nothing.
             result.text, result.engine = result.embedded_text, ENGINE_PDF_TEXT
             result.embedded_text = ""
             return result
-        # A scan, and nothing to read it with yet: not the document's fault.
-        raise ReaderUnavailable(current, result.attempts)
+        # A scan, and nothing to read it with (yet): not the document's fault.
+        raise ReaderUnavailable(current if current != READY else NOT_PERMITTED, result.attempts)
 
     _read_with_service(content, mime, min_chars, timeout, result)
     if not result.text and result.embedded_text:

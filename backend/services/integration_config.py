@@ -103,15 +103,13 @@ INTEGRATIONS_DB: dict = {
     # text is read in-process and never sent. Its own switch, separate from
     # medicine_ocr: whole documents are far more text and far more sensitive than
     # one medicine strip's name. Off by default, and it stays off until the four
-    # conditions in that plan hold (same private network, a Student Kare-only
-    # key, the service keeps and logs no text, DPO sign-off). With no key the
-    # reader reports UNAVAILABLE and sends nothing (services/document_ocr.py).
+    # conditions in that plan hold. Only the switch lives here, and it can only
+    # turn the reader OFF: the address and key come from the environment alone
+    # (document_ocr_config below), so no admin form can point health records at
+    # another address or switch the reader on where the deployment has it off.
     "document_ocr": {
         "enabled": os.getenv("DOCUMENT_OCR_ENABLED", "false").lower() == "true",
         "engine": "axiss-ocr",
-        "url": os.getenv("DOCUMENT_OCR_URL", ""),
-        "api_key": os.getenv("DOCUMENT_OCR_KEY", ""),
-        "text_layers": os.getenv("DOCUMENT_OCR_TEXT_LAYERS", "auto"),
     },
     "apilayer": {
         "enabled": os.getenv("APILAYER_ENABLED", "false").lower() == "true",
@@ -154,6 +152,24 @@ class LiveSetting:
 
     def upper(self):
         return str(self).upper()
+
+
+def document_ocr_config() -> dict:
+    """The document reader's effective config (services/document_ocr.py).
+
+    On only when the deployment's DOCUMENT_OCR_ENABLED says so AND the stored switch has
+    not turned it off. The service address, the Student Kare key and the text-layer mode
+    are read from the environment only: a value saved through Admin > Integrations (or
+    left over from the earlier Tesseract reader) is ignored.
+    """
+    stored = INTEGRATIONS_DB.get("document_ocr", {})
+    env_on = os.getenv("DOCUMENT_OCR_ENABLED", "false").lower() == "true"
+    return {
+        "enabled": env_on and bool(stored.get("enabled")),
+        "url": os.getenv("DOCUMENT_OCR_URL", ""),
+        "api_key": os.getenv("DOCUMENT_OCR_KEY", ""),
+        "text_layers": os.getenv("DOCUMENT_OCR_TEXT_LAYERS", "") or "auto",
+    }
 
 
 def load_from_db():
