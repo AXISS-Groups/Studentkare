@@ -74,6 +74,20 @@ describe('Mobile 2.0 Home data (pure)', () => {
 });
 
 describe('M2Home', () => {
+  it.each([
+    { lang: 'en' as const, required: 'Internet needed', old: 'Offline ready' },
+    { lang: 'te' as const, required: 'ఇంటర్నెట్ అవసరం', old: 'ఆఫ్‌లైన్‌లోనూ పనిచేస్తుంది' },
+    { lang: 'hi' as const, required: 'इंटरनेट चाहिए', old: 'ऑफ़लाइन भी चलता है' },
+  ])('does not promise an offline card in $lang on a device without a saved card', ({ lang, required, old }) => {
+    const links = homeLinks();
+    render(<LanguageProvider initial={lang}><M2HomeView name="Synthetic Student" campus="" verified={false} data={DATA} links={links} recent={[]} /></LanguageProvider>);
+    const card = screen.getByTestId('m2-home-emergency');
+    expect(card).toHaveTextContent(required);
+    expect(card).not.toHaveTextContent(old);
+    fireEvent.click(card);
+    expect(links.emergencyCard).toHaveBeenCalledOnce();
+  });
+
   it('draws the board from the data: SOS, the rail, today’s medicines count and the next consult', () => {
     const links = homeLinks();
     wrap(<M2HomeView name="Asha Rao" campus="VNR VJIET" verified data={DATA} links={links} recent={[]} cart={{ count: 2, add: vi.fn(), canAdd: () => true }} />);
