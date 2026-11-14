@@ -8,6 +8,7 @@ import { PayStepViewModel } from '@/features/payments/viewmodel/PayStepViewModel
 import { MedicineRepository } from '@/features/marketplace/data/MedicineRepository';
 import type { MedicineAlternative } from '@/features/marketplace/data/MedicineRepository';
 import { recallListing, rememberListing, rememberViewed } from '@/features/phoneKit/listingCache';
+import { PINCODE, fetchAreas, refusalKey, withArea } from '../data/deliveryAreas';
 
 /**
  * The phone shop (canvas ShopHome, then ProductList, then ProductDetail, then Cart, then
@@ -92,6 +93,10 @@ export class PhoneShopViewModel implements ViewModel {
 
   // checkout
   delivery: Delivery = { mode: 'pickup', address: '', city: '', pincode: '' };
+  /** The areas the postal directory lists for the delivery pincode; empty means no area is asked for. */
+  areas: string[] = [];
+  areasPhase: Phase = 'idle';
+  area = '';
   slotDate = '';
   slotTime = '';
   placing = false;
@@ -302,9 +307,45 @@ export class PhoneShopViewModel implements ViewModel {
   // ── checkout ──────────────────────────────────────────────────────────────
 
   setDelivery(patch: Partial<Delivery>): void {
-    this.delivery = { ...this.delivery, ...patch };
+    const before = this.delivery;
+    this.delivery = { ...before, ...patch };
     this.checkoutError = '';
     this.checkoutErrorText = '';
+    if (this.delivery.pincode !== before.pincode) this.area = '';
+    if (this.delivery.pincode !== before.pincode || this.delivery.mode !== before.mode) void this.loadAreas();
+  }
+
+  setArea(area: string): void {
+    this.area = this.areas.includes(area) ? area : '';
+    this.checkoutError = '';
+    this.checkoutErrorText = '';
+  }
+
+  /**
+   * The areas to choose from for home delivery. Pickup asks for none. If the
+   * list cannot be read the picker says so and offers a retry; the server still
+   * refuses a delivery it cannot place, so nothing is assumed here.
+   */
+  async loadAreas(): Promise<void> {
+    const { mode, pincode } = this.delivery;
+    if (mode !== 'delivery' || !PINCODE.test(pincode)) {
+      this.areas = [];
+      this.areasPhase = 'idle';
+      return;
+    }
+    this.areasPhase = 'loading';
+    try {
+      const areas = await fetchAreas(this.request, pincode);
+      if (this.disposed || this.delivery.pincode !== pincode || this.delivery.mode !== 'delivery') return;
+      runInAction(() => {
+        this.areas = areas;
+        this.areasPhase = 'ready';
+        if (!areas.includes(this.area)) this.area = '';
+      });
+    } catch {
+      if (this.disposed || this.delivery.pincode !== pincode) return;
+      runInAction(() => { this.areas = []; this.areasPhase = 'error'; });
+    }
   }
 
   setSlot(date: string, time: string): void {
@@ -338,14 +379,17 @@ export class PhoneShopViewModel implements ViewModel {
     this.checkoutErrorText = '';
     const items = cart.lines.map((l) => ({ id: l.item.id, quantity: l.quantity }));
     try {
-      const check = await this.request<{ serviceable: boolean; serviceabilityNote?: string; items: { id: string; available: boolean; reason: string }[] }>(
-        '/cart/validate', { method: 'POST', body: JSON.stringify({ items, pincode: this.delivery.pincode, mode: this.delivery.mode }) },
+      const delivering = this.delivery.mode === 'delivery';
+      const check = await this.request<{ serviceable: boolean; serviceabilityNote?: string; deliveryRefusal?: string; items: { id: string; available: boolean; reason: string }[] }>(
+        '/cart/validate', { method: 'POST', body: JSON.stringify({ items, pincode: this.delivery.pincode, mode: this.delivery.mode, ...(delivering && this.area ? { area: this.area } : {}) }) },
       );
       const blocked = check.items.filter((i) => !i.available);
       if (blocked.length || !check.serviceable) {
         runInAction(() => {
-          this.checkoutErrorText = blocked.length ? blocked.map((b) => b.reason).join(', ') : (check.serviceabilityNote ?? '');
-          this.checkoutError = blocked.length ? 'phone.checkout.unavailable' : 'phone.checkout.notServiceable';
+          // A refusal we know is said in our own words (translated); anything else in the server's.
+          const refusal = blocked.length ? null : refusalKey(check.deliveryRefusal);
+          this.checkoutErrorText = blocked.length ? blocked.map((b) => b.reason).join(', ') : refusal ? '' : (check.serviceabilityNote ?? '');
+          this.checkoutError = blocked.length ? 'phone.checkout.unavailable' : refusal ?? 'phone.checkout.notServiceable';
           this.placing = false;
         });
         return;
@@ -356,7 +400,7 @@ export class PhoneShopViewModel implements ViewModel {
       return;
     }
     const slot = this.needsSlot(cart) ? requestedSlot(this.slotDate, this.slotTime) ?? '' : '';
-    const body = JSON.stringify({ items, delivery: this.delivery, requestedSlot: slot });
+    const body = JSON.stringify({ items, delivery: withArea(this.delivery, this.area), requestedSlot: slot });
     if (this.key.fingerprint !== body) this.key = { fingerprint: body, id: newKey() };
     try {
       const order = await this.request<LiveOrder>('/orders', { method: 'POST', headers: { 'Idempotency-Key': this.key.id }, body });

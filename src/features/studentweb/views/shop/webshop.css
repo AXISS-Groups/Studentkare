@@ -267,7 +267,7 @@
 .sk-m2w .sk-m2w-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sk-space-12); }
 .sk-m2w .sk-m2w-field { display: flex; flex-direction: column; gap: var(--sk-space-6); font-size: var(--sk-text-caption); font-weight: 800; color: var(--sk-color-text-2); }
 .sk-m2w .sk-m2w-field--wide { grid-column: 1 / -1; }
-.sk-m2w .sk-m2w-field :where(input, textarea) { min-height: var(--sk-size-touch-target); padding: var(--sk-space-10) var(--sk-space-12); box-sizing: border-box; border: 1px solid var(--sk-color-rule); border-radius: var(--sk-radius-lg); background: var(--sk-color-surface); color: var(--sk-color-text); font: inherit; font-size: var(--sk-text-body-sm); font-weight: 600; }
+.sk-m2w .sk-m2w-field :where(input, textarea, select) { min-height: var(--sk-size-touch-target); padding: var(--sk-space-10) var(--sk-space-12); box-sizing: border-box; border: 1px solid var(--sk-color-rule); border-radius: var(--sk-radius-lg); background: var(--sk-color-surface); color: var(--sk-color-text); font: inherit; font-size: var(--sk-text-body-sm); font-weight: 600; }
 .sk-m2w .sk-m2w-field textarea { min-height: 88px; resize: vertical; }
 .sk-m2w .sk-m2w-summary { display: flex; flex-direction: column; gap: var(--sk-space-12); }
 .sk-m2w .sk-m2w-placed { display: flex; flex-direction: column; align-items: center; gap: var(--sk-space-16); max-width: 640px; margin: 0 auto; padding: var(--sk-space-32); text-align: center; }

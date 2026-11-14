@@ -5,6 +5,8 @@ import { checkoutRepository } from '../data/CheckoutRepository';
 import type { CheckoutRepository, OrderRequest } from '../data/CheckoutRepository';
 import { captureSessionScope, isCurrentSessionScope, subscribeSessionScope } from '@/core/session/sessionScope';
 import type { SessionScope } from '@/core/session/sessionScope';
+import type { MessageKey } from '@/i18n';
+import { refusalKey } from '../data/deliveryAreas';
 
 type CheckoutStoreStatus =
   | { kind: 'idle' }
@@ -44,6 +46,12 @@ export class CheckoutStore {
   address = '';
   city = '';
   pincode = '';
+  /** Areas inside the delivery pincode (postal directory); empty means none is asked for. */
+  areas: string[] = [];
+  areasStatus: 'idle' | 'loading' | 'ready' | 'error' = 'idle';
+  area = '';
+  /** Set with an error when we have our own translated words for it. */
+  errorKey: MessageKey | null = null;
   slotDateTime = '';
 
   status: CheckoutStoreStatus = { kind: 'idle' };
@@ -140,7 +148,9 @@ export class CheckoutStore {
   }
 
   setDeliveryMode(mode: DeliveryMode): void {
+    if (mode === this.deliveryMode) return;
     this.deliveryMode = mode;
+    void this.loadAreas();
   }
 
   setAddress(address: string): void {
@@ -152,7 +162,39 @@ export class CheckoutStore {
   }
 
   setPincode(pincode: string): void {
-    this.pincode = pincode.replace(/\D/g, '').slice(0, 6);
+    const next = pincode.replace(/\D/g, '').slice(0, 6);
+    if (next === this.pincode) return;
+    this.pincode = next;
+    this.area = '';
+    void this.loadAreas();
+  }
+
+  setArea(area: string): void {
+    this.area = this.areas.includes(area) ? area : '';
+  }
+
+  /** Areas to choose from for home delivery. A failed read says so; the server still decides. */
+  async loadAreas(): Promise<void> {
+    const pincode = this.pincode;
+    const generation = this.generation;
+    if (this.deliveryMode !== 'delivery' || !PINCODE.test(pincode)) {
+      this.areas = [];
+      this.areasStatus = 'idle';
+      return;
+    }
+    this.areasStatus = 'loading';
+    try {
+      const areas = await this.repository.areas(pincode);
+      if (generation !== this.generation || pincode !== this.pincode || this.deliveryMode !== 'delivery') return;
+      runInAction(() => {
+        this.areas = areas;
+        this.areasStatus = 'ready';
+        if (!areas.includes(this.area)) this.area = '';
+      });
+    } catch {
+      if (generation !== this.generation || pincode !== this.pincode) return;
+      runInAction(() => { this.areas = []; this.areasStatus = 'error'; });
+    }
   }
 
   setSlotDateTime(dateTime: string): void {
@@ -162,7 +204,7 @@ export class CheckoutStore {
   private orderRequest(): OrderRequest {
     return {
       items: this.cartItems.map(item => ({ id: item.id, quantity: item.quantity })),
-      delivery: { mode: this.deliveryMode, address: this.deliveryMode === 'delivery' ? this.address.trim() : '', city: this.city.trim(), pincode: this.pincode },
+      delivery: { mode: this.deliveryMode, address: this.deliveryMode === 'delivery' ? this.address.trim() : '', city: this.city.trim(), pincode: this.pincode, ...(this.deliveryMode === 'delivery' && this.area ? { area: this.area } : {}) },
       requestedSlot: this.needsSlot ? toRequestedSlot(this.slotDateTime) ?? '' : '',
     };
   }
@@ -172,6 +214,7 @@ export class CheckoutStore {
     const scope = this.scope;
     const generation = this.generation;
     this.status = { kind: 'submitting' };
+    this.errorKey = null;
     const order = this.orderRequest();
     try {
       const check = await this.repository.validate(order);
@@ -181,7 +224,11 @@ export class CheckoutStore {
         const message = blocked.length
           ? `Some items are unavailable: ${blocked.map(item => item.reason).join(', ')}. Nothing was ordered.`
           : check.serviceabilityNote || 'This pincode is not served yet. Nothing was ordered.';
-        runInAction(() => { this.status = { kind: 'error', message }; });
+        runInAction(() => {
+          this.status = { kind: 'error', message };
+          // A delivery refusal we know is shown in the reader's language by the view.
+          this.errorKey = blocked.length ? null : refusalKey(check.deliveryRefusal);
+        });
         return false;
       }
 
@@ -218,6 +265,10 @@ export class CheckoutStore {
     this.address = '';
     this.city = '';
     this.pincode = '';
+    this.areas = [];
+    this.areasStatus = 'idle';
+    this.area = '';
+    this.errorKey = null;
     this.slotDateTime = '';
     this.completedOrder = null;
     this.attempt = null;

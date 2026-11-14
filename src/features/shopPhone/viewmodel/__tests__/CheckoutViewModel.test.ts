@@ -17,11 +17,14 @@ const line = (over: Partial<CartLineItem> = {}): CartLineItem => ({
 let orderResult: () => unknown = () => undefined;
 let calls: { path: string; init?: RequestInit }[] = [];
 let validation = { serviceable: true, items: [{ id: 'cat_1', available: true, reason: '' }] };
+let areas: string[] = [];
 const stores: CheckoutStore[] = [];
 const okOrder = (): unknown => ({ id: 'ord_1', createdAt: 1, totalPaise: 6400, delivery: { mode: 'pickup', address: '', city: 'Hyderabad', pincode: '500090' }, requestedSlot: '', paymentStatus: 'NOT_COLLECTED' });
 
 function store(): CheckoutStore {
   const request = vi.fn(async (path: string, init?: RequestInit) => {
+    // The area list is reference data read beside the order; the order calls are what these tests count.
+    if (path.startsWith('/pincodes/')) return { areas };
     calls.push({ path, init });
     if (path === '/cart/validate') return validation;
     if (path === '/orders') return orderResult();
@@ -40,6 +43,7 @@ beforeEach(() => {
   setSessionAccount('checkout-test-account');
   orderResult = okOrder;
   calls = [];
+  areas = [];
   validation = { serviceable: true, items: [{ id: 'cat_1', available: true, reason: '' }] };
 });
 
@@ -116,6 +120,30 @@ describe('native checkout on the real /orders contract', () => {
     expect(JSON.parse(String(calls[0].init?.body))).toMatchObject({ mode: 'delivery' });
     expect(calls.map((c) => c.path)).toEqual(['/cart/validate']);
     expect(delivering.status).toEqual({ kind: 'error', message: 'The provider does not deliver to this pincode. Choose pickup at the provider, or use another address.' });
+  });
+
+  it('offers the areas of the delivery pincode and sends the chosen one with the check and the order', async () => {
+    areas = ['Bachupally', 'Nizampet'];
+    const s = store();
+    s.setDeliveryMode('delivery');
+    s.setAddress('Room 214, Block C, Boys Hostel');
+    await vi.waitFor(() => expect(s.areasStatus).toBe('ready'));
+    s.setArea('Not on the list');
+    expect(s.area).toBe('');
+    s.setArea('Nizampet');
+    expect(await s.submitOrder()).toBe(true);
+    expect(JSON.parse(String(calls[0].init?.body)).area).toBe('Nizampet');
+    expect(JSON.parse(String(calls[1].init?.body)).delivery.area).toBe('Nizampet');
+  });
+
+  it('names a delivery refusal so the screen can say it in the reader’s language', async () => {
+    const s = store();
+    s.setDeliveryMode('delivery');
+    s.setAddress('Room 214, Block C, Boys Hostel');
+    validation = { serviceable: false, serviceabilityNote: 'Choose your area.', deliveryRefusal: 'AREA_NEEDED', items: [{ id: 'cat_1', available: true, reason: '' }] } as typeof validation;
+    expect(await s.submitOrder()).toBe(false);
+    expect(s.errorKey).toBe('cart.refusal.areaNeeded');
+    expect(calls.map((c) => c.path)).toEqual(['/cart/validate']);
   });
 
   it('orders nothing when an item is unavailable', async () => {

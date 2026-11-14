@@ -1,4 +1,5 @@
 import { checkoutStore } from '../state/CheckoutStore';
+import type { MessageKey } from '@/i18n';
 import type { CartLineItem, DeliveryMode, PlacedOrder } from '../domain/Checkout';
 
 export interface CheckoutViewModelState {
@@ -7,6 +8,10 @@ export interface CheckoutViewModelState {
   address: string;
   city: string;
   pincode: string;
+  areas: string[];
+  areasStatus: 'idle' | 'loading' | 'ready' | 'error';
+  area: string;
+  errorKey: MessageKey | null;
   slotDateTime: string;
   itemCount: number;
   totalPaise: number;
@@ -25,6 +30,8 @@ export interface CheckoutViewModelActions {
   setAddress: (address: string) => void;
   setCity: (city: string) => void;
   setPincode: (pincode: string) => void;
+  setArea: (area: string) => void;
+  retryAreas: () => void;
   setSlotDateTime: (dateTime: string) => void;
   submitOrder: () => Promise<boolean>;
   reset: () => void;
@@ -43,6 +50,10 @@ export function useCheckoutViewModel(): CheckoutViewModelHook {
       address: checkoutStore.address,
       city: checkoutStore.city,
       pincode: checkoutStore.pincode,
+      areas: checkoutStore.areas,
+      areasStatus: checkoutStore.areasStatus,
+      area: checkoutStore.area,
+      errorKey: checkoutStore.errorKey,
       slotDateTime: checkoutStore.slotDateTime,
       itemCount: checkoutStore.itemCount,
       totalPaise: checkoutStore.totalPaise,
@@ -60,6 +71,8 @@ export function useCheckoutViewModel(): CheckoutViewModelHook {
       setAddress: (addr) => checkoutStore.setAddress(addr),
       setCity: (city) => checkoutStore.setCity(city),
       setPincode: (pin) => checkoutStore.setPincode(pin),
+      setArea: (area) => checkoutStore.setArea(area),
+      retryAreas: () => { void checkoutStore.loadAreas(); },
       setSlotDateTime: (dt) => checkoutStore.setSlotDateTime(dt),
       submitOrder: () => checkoutStore.submitOrder(),
       reset: () => checkoutStore.reset(),

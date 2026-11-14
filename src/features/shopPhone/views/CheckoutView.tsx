@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { observer } from 'mobx-react-lite';
 import { Icon } from '@/design-system/icons';
-import { Button, Note, Rise, Sheet, TextField } from '@/design-system';
+import { Button, Note, Rise, Select, Sheet, TextField } from '@/design-system';
 import { color, focusRing, font, fontWeight, radius, size, space } from '@/design-system/theme';
 import { money } from '@/data/types/workflowTypes';
 import { useT } from '@/i18n';
@@ -58,7 +58,7 @@ export const CheckoutView = observer(function CheckoutView({ vm, cart }: { vm: P
   const saved = cartMrp(cart) - total;
   const d = vm.delivery;
   const where = d.mode === 'pickup' ? t('cart.pickup') : d.address.trim() || t('phone.checkout.addAddress');
-  const whereMeta = [d.city, d.pincode].filter(Boolean).join(' · ') || t('phone.checkout.cityNeeded');
+  const whereMeta = [d.mode === 'delivery' ? vm.area : '', d.city, d.pincode].filter(Boolean).join(' · ') || t('phone.checkout.cityNeeded');
 
   return (
     <View style={phoneLayout.screen} testID="checkout">
@@ -121,6 +121,17 @@ export const CheckoutView = observer(function CheckoutView({ vm, cart }: { vm: P
           ) : null}
           <TextField label={t('cart.city')} value={d.city} onChangeText={(v) => vm.setDelivery({ city: v })} maxLength={100} />
           <TextField label={t('cart.pincode')} value={d.pincode} onChangeText={(v) => vm.setDelivery({ pincode: v.replace(/\D/g, '') })} keyboardType="numeric" maxLength={6} mono />
+          {d.mode === 'delivery' && vm.areasPhase === 'loading' ? <Text style={phoneText.meta} role="status">{t('cart.areaLoading')}</Text> : null}
+          {d.mode === 'delivery' && vm.areasPhase === 'error' ? (
+            <>
+              <Note tone="attention" testID="checkout-areas-failed">{t('cart.areaFailed')}</Note>
+              <Button label={t('cart.areaRetry')} variant="secondary" onPress={() => void vm.loadAreas()} testID="checkout-areas-retry" />
+            </>
+          ) : null}
+          {d.mode === 'delivery' && vm.areas.length > 0 ? (
+            <Select label={t('cart.area')} hint={t('cart.areaHint')} placeholder={t('cart.areaChoose')} value={vm.area || null}
+              options={vm.areas.map((a) => ({ value: a, label: a }))} onChange={(a) => vm.setArea(a)} testID="checkout-area" />
+          ) : null}
           <Button label={t('phone.checkout.useAddress')} size="cta" fullWidth disabled={!vm.addressReady} onPress={() => setSheet(null)} testID="address-confirm" />
           <Text style={phoneText.meta}>{t('phone.checkout.whereNote')}</Text>
         </View>
