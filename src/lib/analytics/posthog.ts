@@ -1,9 +1,5 @@
-/**
- * StudentKare — PostHog wrapper (opt-in, dark-surface safe).
- * Config comes from GET /api/config/public (SuperAdmin-configurable).
- * If posthog-js is not installed / not enabled, all calls are no-ops.
- */
-import type { PostHog } from 'posthog-js';
+/** Opt-in, anonymous event counts. No SDK auto-enrichment or stored identity. */
+import { uuid4 } from '@sentry/core';
 
 export interface PostHogPublicConfig {
   enabled: boolean;
@@ -12,70 +8,45 @@ export interface PostHogPublicConfig {
 }
 
 let cfg: PostHogPublicConfig = { enabled: false, apiKey: '', host: 'https://app.posthog.com' };
-let loaded = false;
-let client: Pick<PostHog, 'capture' | 'identify'> | null = null;
 let consent = false;
 
-const DARK = ['emergency', 'crisis', 't4_sensitive', 'helpline', 'consent_capture'];
+// Only these existing, non-clinical events have a defined telemetry contract.
+const PRICING_EVENTS = ['pricing_plan_selected', 'institutional_inquiry_submitted'] as const;
+const PRICING_ROUTE = '/pricing';
 
-export function configurePostHog(c: Partial<PostHogPublicConfig>) {
-  cfg = { ...cfg, ...c } as PostHogPublicConfig;
+export function configurePostHog(config: Partial<PostHogPublicConfig>): void {
+  cfg = { ...cfg, ...config };
 }
 
-export function setPostHogConsent(granted: boolean) {
+export function setPostHogConsent(granted: boolean): void {
   consent = granted;
 }
 
-export async function initPostHog() {
-  if (loaded || !cfg.enabled || !cfg.apiKey) return;
-  loaded = true;
-  try {
-    const mod = await import('posthog-js').catch(() => null);
-    const ph = mod?.default;
-    if (ph) {
-      ph.init(cfg.apiKey, {
-        api_host: cfg.host || 'https://app.posthog.com',
-        autocapture: false,
-        capture_pageview: false,
-        persistence: 'localStorage',
-      });
-      client = ph;
-    }
-  } catch {
-    client = null;
-  }
+export async function initPostHog(): Promise<boolean> {
+  // SDK initialization can make unconsented requests and add URLs/device identity.
+  // The existing HTTP capture API suffices for the approved event counts.
+  return consent && cfg.enabled && Boolean(cfg.apiKey);
 }
 
-function darkSurface(route: string) {
-  return DARK.some((d) => route.includes(d));
-}
-
-export function posthogCapture(event: string, route: string, props?: Record<string, unknown>) {
-  if (!consent || !cfg.enabled) return false;
-  if (darkSurface(route)) {
-    console.warn(`[POSTHOG_BLOCKED] dark surface: ${route}`);
-    return false;
-  }
+export function posthogCapture(event: string, route: string, _props?: Record<string, unknown>): boolean {
+  if (!consent || !cfg.enabled || !cfg.apiKey || route !== PRICING_ROUTE) return false;
+  const approvedEvent = PRICING_EVENTS.find((allowed) => allowed === event);
+  if (!approvedEvent) return false;
   try {
-    if (client) {
-      client.capture(event, { route, ...props });
-    } else {
-      // Server-side relay fallback: direct /capture call (no SDK needed)
-      const host = (cfg.host || 'https://app.posthog.com').replace(/\/$/, '');
-      fetch(`${host}/capture/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ api_key: cfg.apiKey, event, properties: { route, ...(props || {}) } }),
-      }).catch(() => {});
-    }
+    const host = cfg.host.replace(/\/$/, '');
+    fetch(`${host}/capture/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'omit',
+      referrerPolicy: 'no-referrer',
+      body: JSON.stringify({
+        api_key: cfg.apiKey,
+        event: approvedEvent,
+        properties: { route: PRICING_ROUTE, distinct_id: uuid4() },
+      }),
+    }).catch(() => undefined);
     return true;
   } catch {
     return false;
   }
-}
-
-export function posthogIdentify(userId: string, traits?: Record<string, unknown>) {
-  try {
-    client?.identify?.(userId, traits);
-  } catch { /* noop */ }
 }

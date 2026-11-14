@@ -63,7 +63,7 @@ describe('crash reporting never sends PII', () => {
   });
 
   it('removes the user, request data, frame variables and breadcrumb payloads', async () => {
-    const { scrubEvent, scrubBreadcrumb, scrubText } = await import('../crashReporting');
+    const { scrubEvent, scrubBreadcrumb } = await import('../crashReporting');
     const event = scrubEvent({
       type: undefined,
       user: { id: 'u1', email: 'a@b.co' },
@@ -76,15 +76,17 @@ describe('crash reporting never sends PII', () => {
     expect(event).not.toBeNull();
     const json = JSON.stringify(event);
     expect(json).not.toMatch(/u1|a@b\.co|9876543210|98765 43210|Bearer|body|phone=|MedicineInfo|"vars"/);
-    expect(event?.request).toEqual({ url: 'https://api.studentkare.co/api/orders/9' });
+    expect(event?.request).toBeUndefined();
     expect(event?.breadcrumbs).toEqual([{ category: 'navigation' }]);
     expect(scrubBreadcrumb({ category: 'console', message: 'x' })).toBeNull();
-    expect(scrubText('ABHA 12-3456-7890-1234')).toBe('[REDACTED: PHI]');
+    expect(event?.exception?.values).toEqual([{ type: 'Error', value: 'Error details withheld' }]);
   });
 
-  it('drops an event that still names PHI', async () => {
+  it('excludes all context and fingerprints without relying on PHI keywords', async () => {
     const { scrubEvent } = await import('../crashReporting');
-    expect(scrubEvent({ type: undefined, contexts: { app: { screen: 'prescription' } }, tags: { k: 'diagnosis' }, fingerprint: ['patient'] })).toBeNull();
+    const event = scrubEvent({ type: undefined, contexts: { app: { screen: 'prescription' } }, tags: { k: 'diagnosis' }, fingerprint: ['patient'] });
+    expect(event).not.toBeNull();
+    expect(JSON.stringify(event)).not.toMatch(/prescription|diagnosis|patient|context|fingerprint/);
   });
 });
 

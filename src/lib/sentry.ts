@@ -2,14 +2,13 @@
  * Crash reporting for the web app (Sentry). Off unless the build sets
  * VITE_SENTRY_DSN; every call is then a no-op.
  *
- * Uses the same scrubber as the phone app (src/lib/sentryScrub.ts), and the
- * same switches: no user, no session replay, no performance traces (their
- * span names are page addresses), no console breadcrumbs. An event that still
- * names PHI after scrubbing is dropped (AGENTS.md guardrail 9).
+ * Uses the same closed metadata schema and final envelope boundary as the phone
+ * app. No free-form error text, URLs, private context or other envelope types.
  */
 
 import * as Sentry from '@sentry/react';
-import { containsPhi, scrubBreadcrumb, scrubEvent } from './sentryScrub';
+import { scrubBreadcrumb, scrubEvent } from './sentryScrub';
+import { privacyTransport } from './sentryTransport';
 
 const MAX_BREADCRUMBS = 30;
 
@@ -27,9 +26,13 @@ export function initSentry(): boolean {
       release: import.meta.env.VITE_APP_VERSION || 'dev',
       sendDefaultPii: false,
       tracesSampleRate: 0,
+      autoSessionTracking: false,
+      sendClientReports: false,
       maxBreadcrumbs: MAX_BREADCRUMBS,
       beforeBreadcrumb: (crumb) => scrubBreadcrumb(crumb),
       beforeSend: (event) => scrubEvent(event),
+      beforeSendTransaction: () => null,
+      transport: privacyTransport(Sentry.makeFetchTransport),
     });
     initialized = true;
   } catch {
@@ -40,13 +43,10 @@ export function initSentry(): boolean {
 }
 
 /**
- * Reports an error the app caught itself (the error boundary). Only the error
- * and the names of the components it passed through go: callers cannot attach
- * free-form context, so nothing a screen was holding can ride along. An error
- * whose own message names PHI is not sent at all.
+ * Reports an error the app caught itself. Only its built-in class is eligible
+ * for transmission; the shared boundary excludes its message and stack.
  */
-export function captureSentryException(error: Error, componentStack?: string): void {
+export function captureSentryException(error: Error, _componentStack?: string): void {
   if (!initialized) return;
-  if (containsPhi(error.message)) return;
-  Sentry.captureException(error, componentStack ? { contexts: { react: { componentStack } } } : undefined);
+  Sentry.captureException(error);
 }

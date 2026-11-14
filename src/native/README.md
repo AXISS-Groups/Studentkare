@@ -218,9 +218,11 @@ always the server's fixed generic line: never a medicine, test, result or condit
 
 `src/native/crashReporting.ts` starts Sentry (`@sentry/react-native`, the version Expo SDK 52
 expects) from `src/native/index.ts` when `EXPO_PUBLIC_SENTRY_DSN` is set, and does nothing otherwise.
-It never attaches a user, request data, screenshots, view hierarchy, traces or breadcrumb payloads;
-messages are PHI-scrubbed with the web's keyword list (`src/lib/sentryScrub.ts`) plus e-mail and long
-numbers, and an event that still names PHI is dropped.
+Only a built-in error class, severity, build version, enumerated environment and generic breadcrumb
+categories can leave. Messages, detailed stacks, source context, users, URLs, arbitrary values and
+numeric readings are excluded. The final JavaScript HTTP transport also denies attachments,
+transactions, profiles, replay and sessions. Native SDK capture and its disk cache are disabled:
+native crashes bypass JavaScript privacy hooks. Reports intentionally provide less diagnostic detail.
 
 ## Store paperwork
 

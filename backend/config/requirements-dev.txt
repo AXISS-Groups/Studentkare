@@ -10,3 +10,7 @@ pytest-cov==7.1.0
 pytest-asyncio==1.4.0
 anyio==4.15.1
 pyyaml==6.0.3
+# Exercise optional crash reporting with an actual SDK/HTTP transport in CI.
+# Installing it for tests does not configure or enable a production sink.
+sentry-sdk==2.71.0
+opentelemetry-exporter-otlp-proto-grpc==1.45.0
