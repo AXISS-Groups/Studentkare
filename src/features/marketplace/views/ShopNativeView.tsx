@@ -63,10 +63,10 @@ const ItemCard = observer(function ItemCard({ item, onBookLab }: { item: Catalog
 });
 
 /** Shop (design page 2: ShopHome, ProductList, LabPackages). Prices are shown before anything is added. */
-export const ShopNativeView = observer(function ShopNativeView({ viewModel: vm, links }: { viewModel: ShopViewModel; links: ShopLinks }) {
+export const ShopNativeView = observer(function ShopNativeView({ viewModel: vm, links, openLabItemId }: { viewModel: ShopViewModel; links: ShopLinks; openLabItemId?: string }) {
   const { state } = useCheckoutViewModel();
   const t = useT();
-  const [labItemId, setLabItemId] = useState<string | null>(null);
+  const [labItemId, setLabItemId] = useState<string | null>(() => links.signedIn === false ? null : openLabItemId ?? null);
   const kinds: { value: ShopKind; label: string }[] = [
     { value: 'product', label: t('shop.kind.product') },
     { value: 'lab', label: t('shop.kind.lab') },
@@ -104,13 +104,19 @@ export const ShopNativeView = observer(function ShopNativeView({ viewModel: vm, 
   );
 });
 
-export function ShopRoute({ links }: { links: ShopLinks }): React.ReactElement {
-  const [vm] = useState(() => new ShopViewModel());
+export function ShopRoute({ links, filter, openLabItemId }: { links: ShopLinks; filter?: { category?: string; query?: string }; openLabItemId?: string }): React.ReactElement {
+  const [vm] = useState(() => {
+    const model = new ShopViewModel();
+    model.query = filter?.query ?? '';
+    model.kind = filter?.category === 'labs' ? 'lab' : 'product';
+    model.category = filter?.category === 'labs' ? '' : filter?.category ?? '';
+    return model;
+  });
   useEffect(() => {
     void vm.load();
     return () => vm.dispose();
   }, [vm]);
-  return <ShopNativeView viewModel={vm} links={links} />;
+  return <ShopNativeView viewModel={vm} links={links} openLabItemId={openLabItemId} />;
 }
 
 const styles = StyleSheet.create({

@@ -157,6 +157,7 @@
   overflow-wrap: anywhere;
 }
 .wf-application .wf-modal-card input, .wf-application .wf-modal-card textarea, .wf-application .wf-modal-card select { box-sizing: border-box; min-width: 0; max-width: 100%; }
+.wf-application .wf-modal-card :is(button, select) { min-width: var(--sk-size-touch-target); min-height: var(--sk-size-touch-target); }
 .wf-application .wf-modal-header { padding-right: 36px; }
 @media (max-width: 767px), (pointer: coarse) {
   .wf-application :is(.wf-modal-close, .shop-icon-button, .wf-icon-button, .shop-add, .shop-quantity button, .wf-market-nav button) { min-width: 44px; min-height: 44px; }

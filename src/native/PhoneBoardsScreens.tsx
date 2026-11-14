@@ -7,6 +7,7 @@ import type { SearchLinks } from '@/features/discover/views/searchParts';
 import { ReturnRequestRoute } from '@/features/requests/views/ReturnRequestView';
 import { useNavigate } from './navigation';
 import { nativePhoneArt } from './phoneArt';
+import { useNativeWebAction } from './webActions';
 
 /**
  * The phone boards of design page 2 in the Expo app: search (SearchEntry …
@@ -24,19 +25,20 @@ function useBack(): () => void {
 
 export function SearchScreen(): React.ReactElement {
   const navigate = useNavigate();
+  const webAction = useNativeWebAction();
   const back = useBack();
   const [vm] = useState(() => new SearchViewModel());
   useEffect(() => () => vm.dispose(), [vm]);
   const links: SearchLinks = {
     exit: back,
-    openProduct: () => navigate('Marketplace'),
-    openList: () => navigate('Marketplace'),
-    bookLab: () => navigate('Marketplace'),
-    bookDoctor: () => navigate('Appointments'),
+    openProduct: (item) => navigate('Product', { itemId: item.id }),
+    openList: (filter) => navigate('Marketplace', filter),
+    bookLab: (labItemId) => navigate('Marketplace', { labItemId }),
+    bookDoctor: () => webAction('consultation'),
     openPrescriptions: () => navigate('Vault'),
     openAyush: () => navigate('AiChat'),
     openEmergencyCard: () => navigate('EmergencyCard'),
-    openPass: () => navigate('DigitalId'),
+    openPass: () => navigate('Pass'),
     openCrisis: () => navigate('Emergency'),
     openMedicineInfo: (query) => navigate('MedicineInfo', query ? { query } : undefined),
   };

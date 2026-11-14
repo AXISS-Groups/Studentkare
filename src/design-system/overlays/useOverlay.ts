@@ -3,7 +3,40 @@ import type { RefObject } from 'react';
 
 /** Everything a keyboard user can land on inside an overlay. */
 const FOCUSABLE =
-  'a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
+  'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+const activePanels: HTMLDivElement[] = [];
+const isolated = new Map<Element, { count: number; inert: boolean; hidden: string | null }>();
+let previousBodyOverflow = '';
+
+/** Keep the drawn overlay in place while hiding everything outside its frame. */
+function isolateFrame(panel: HTMLDivElement): () => void {
+  const elements: Element[] = [];
+  let frame: Element | null = panel.parentElement;
+  while (frame?.parentElement) {
+    for (const sibling of Array.from(frame.parentElement.children)) {
+      if (sibling === frame) continue;
+      const state = isolated.get(sibling) ?? { count: 0, inert: sibling.hasAttribute('inert'), hidden: sibling.getAttribute('aria-hidden') };
+      state.count += 1;
+      isolated.set(sibling, state);
+      sibling.setAttribute('inert', '');
+      sibling.setAttribute('aria-hidden', 'true');
+      elements.push(sibling);
+    }
+    frame = frame.parentElement;
+    if (frame === document.body) break;
+  }
+  return () => {
+    for (const element of elements) {
+      const state = isolated.get(element);
+      if (!state || --state.count > 0) continue;
+      if (!state.inert) element.removeAttribute('inert');
+      if (state.hidden === null) element.removeAttribute('aria-hidden');
+      else element.setAttribute('aria-hidden', state.hidden);
+      isolated.delete(element);
+    }
+  };
+}
 
 /**
  * Where keyboard focus should land when Tab is pressed inside a trapped overlay.
@@ -50,13 +83,21 @@ export function useOverlay({ open, onClose, busy, dismissible }: OverlayBehaviou
     if (!open) return undefined;
     const returnTo = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     const node = panel.current;
-    const items = () => Array.from(node?.querySelectorAll<HTMLElement>(FOCUSABLE) ?? []);
+    if (!node) return undefined;
+    if (activePanels.length === 0) previousBodyOverflow = document.body.style.overflow;
+    activePanels.push(node);
+    const restoreBackground = isolateFrame(node);
+    const isTop = () => activePanels[activePanels.length - 1] === node;
+    const items = () => Array.from(node.querySelectorAll<HTMLElement>(FOCUSABLE)).filter((item) => {
+      const style = window.getComputedStyle(item);
+      return !item.closest('[hidden], [inert], [aria-hidden="true"]') && style.display !== 'none' && style.visibility !== 'hidden';
+    });
     (node?.querySelector<HTMLElement>('[data-autofocus]') ?? items()[0] ?? node)?.focus();
 
-    const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
 
     const onKey = (event: KeyboardEvent) => {
+      if (!isTop()) return;
       if (event.key === 'Escape') {
         event.preventDefault();
         if (canClose.current) closeRef.current();
@@ -64,16 +105,24 @@ export function useOverlay({ open, onClose, busy, dismissible }: OverlayBehaviou
       }
       if (event.key !== 'Tab') return;
       const list = items();
-      if (list.length === 0) { event.preventDefault(); return; }
+      if (list.length === 0) { event.preventDefault(); node.focus(); return; }
       event.preventDefault();
       const current = list.indexOf(document.activeElement as HTMLElement);
       list[nextFocusIndex(current, list.length, event.shiftKey)]?.focus();
     };
+    const onFocus = (event: FocusEvent) => {
+      if (isTop() && event.target instanceof Node && !node.contains(event.target)) (items()[0] ?? node).focus();
+    };
     window.addEventListener('keydown', onKey);
+    document.addEventListener('focusin', onFocus);
     return () => {
+      const wasTop = isTop();
+      activePanels.splice(activePanels.indexOf(node), 1);
       window.removeEventListener('keydown', onKey);
-      document.body.style.overflow = previousOverflow;
-      returnTo?.focus();
+      document.removeEventListener('focusin', onFocus);
+      restoreBackground();
+      if (activePanels.length === 0) document.body.style.overflow = previousBodyOverflow;
+      if (wasTop && returnTo?.isConnected) returnTo.focus();
     };
   }, [open]);
 

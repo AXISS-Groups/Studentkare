@@ -148,7 +148,9 @@ describe('Inquiries & contracts', () => {
     fireEvent.change(screen.getByLabelText('Manager email'), { target: { value: 'ops@vit.example' } });
     fireEvent.click(screen.getByRole('button', { name: 'Create contract' }));
     await waitFor(() => expect(screen.getByRole('button', { name: /Create contract/ })).toBeDisabled());
-    fireEvent.change(screen.getByRole('combobox', { name: 'Inquiry status IIT Example' }), { target: { value: 'CLOSED' } });
+    const backgroundStatus = screen.getByLabelText('Inquiry status IIT Example');
+    expect(backgroundStatus.closest('[inert]')).not.toBeNull();
+    fireEvent.change(backgroundStatus, { target: { value: 'CLOSED' } });
     expect(paths()).toEqual([INQUIRIES, CONTRACTS, '/billing/admin/contracts']);
   });
 

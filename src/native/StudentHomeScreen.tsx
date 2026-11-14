@@ -108,7 +108,7 @@ function StudentM2Home({ name, campus, verified, footer }: { name: string; campu
   const navigate = useNavigate();
   const focused = useIsFocused();
   const data = useM2HomeData();
-  const go = (route: DestinationRoute | 'Emergency' | 'Checkout' | 'Medicines' | 'Labs' | 'Consults' | 'FindCare' | 'Insurance' | 'Vaccines' | 'More' | 'Profile' | 'HostelVisit' | 'Camp') => () => navigate(route);
+  const go = (route: DestinationRoute | 'Emergency' | 'EmergencyCard' | 'Pass' | 'Checkout' | 'Medicines' | 'Labs' | 'Consults' | 'FindCare' | 'Insurance' | 'Vaccines' | 'More' | 'Profile' | 'HostelVisit' | 'Camp') => () => navigate(route);
   return (
     <SafeAreaView edges={['top', 'left', 'right']} style={styles.screen}>
     <M2ActiveProvider value={focused}>
@@ -136,9 +136,9 @@ function StudentM2Home({ name, campus, verified, footer }: { name: string; campu
           consult: go('Appointments'),
           bookConsult: go('Consults'),
           concern: go('Medicines'),
-          product: go('Marketplace'),
-          emergencyCard: go('Emergency'),
-          pass: go('DigitalId'),
+          product: (item) => navigate('Product', { itemId: item.id }),
+          emergencyCard: go('EmergencyCard'),
+          pass: go('Pass'),
           hostelVisit: go('HostelVisit'),
           camp: go('Camp'),
         }}

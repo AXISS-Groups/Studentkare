@@ -17,6 +17,17 @@ const item = (over: Partial<CatalogItem> = {}): CatalogItem => ({
 });
 
 describe('ShopViewModel', () => {
+  it('preserves a selected category and query, and clears the category when switching kinds', async () => {
+    const request = vi.fn(async () => ({ items: [] })) as unknown as Requester;
+    const vm = new ShopViewModel(request);
+    vm.category = 'vitamins';
+    vm.query = 'test query';
+    await vm.load();
+    expect(request).toHaveBeenCalledWith('/catalog?kind=product&limit=50&query=test%20query&category=vitamins');
+    vm.setKind('lab');
+    expect(vm.category).toBe('');
+    expect(request).toHaveBeenLastCalledWith('/catalog?kind=lab&limit=50&query=test%20query');
+  });
   it('reads the real catalogue by kind and search', async () => {
     const paths: string[] = [];
     const vm = new ShopViewModel((async (path: string) => { paths.push(path); return { items: [] }; }) as unknown as Requester);

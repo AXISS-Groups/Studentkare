@@ -6,10 +6,12 @@ import { color } from '@/design-system/theme';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
+import type { RouteProp } from '@react-navigation/native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { AppStoresProvider } from '@/store/AppStores';
 import { NavigationProvider, useNavigate } from './navigation';
 import { navigationTheme } from './navigationTheme';
+import { useNativeWebAction } from './webActions';
 import PreventiveCareScreen from './PreventiveCareScreen';
 import { CampScreen } from './CampScreen';
 import { RecordCaptureScreen } from './RecordCaptureScreen';
@@ -57,9 +59,7 @@ import { NotificationSettingsRoute } from '@/features/notifications/views/Notifi
 import { LeaveCampusRoute } from '@/features/campus/views/LeaveCampusView';
 import { DeleteAccountRoute } from '@/features/account/views/DeleteAccountView';
 import { SignInSecurityRoute } from '@/features/account/views/SignInSecurityView';
-import { PrivacyConsentView } from '@/features/privacy/PrivacyConsentView';
-import { DataRightsView } from '@/features/privacy/DataRightsView';
-import type { RoutePath } from '@/lib/utils/workflowRouting';
+import { PrivacyScreen, DataRightsScreen } from './PrivacyScreens';
 import { MyPassRoute } from '@/features/digital_id/views/MyPassBoard';
 import { RewardsRoute } from '@/features/rewards/views/RewardsView';
 import { MyRequestsRoute, NewRequestRoute } from '@/features/requests/views/RequestsViews';
@@ -133,7 +133,7 @@ export type RootStackParamList = {
   Landing: undefined;
   LeaveCampus: undefined;
   LostPhone: undefined;
-  Marketplace: undefined;
+  Marketplace: { category?: string; query?: string; labItemId?: string } | undefined;
   MedicineInfo: { medicineId?: string; query?: string } | undefined;
   MedicineReminders: undefined;
   Medicines: undefined;
@@ -298,6 +298,7 @@ function YourCareRoute() {
 
 function MoreRoute() {
   const navigate = useNavigate();
+  const webAction = useNativeWebAction();
   const { user, signOut } = useNativeSession();
   const [signingOut, setSigningOut] = useState(false);
   if (!user) return null;
@@ -314,6 +315,8 @@ function MoreRoute() {
               campus: () => navigate('DigitalId'),
               crisis: () => navigate('Emergency'),
               security: () => navigate('Security'),
+              pass: () => navigate('Pass'),
+              help: () => webAction('support'),
             },
             signOut: () => { setSigningOut(true); return signOut().finally(() => setSigningOut(false)); },
             signingOut,
@@ -355,12 +358,16 @@ function BookAppointmentRoute() {
 
 function MarketplaceRoute() {
   const navigate = useNavigate();
+  const { params } = useRoute<RouteProp<RootStackParamList, 'Marketplace'>>();
+  const category = typeof params?.category === 'string' ? params.category : '';
+  const query = typeof params?.query === 'string' ? params.query : '';
+  const labItemId = typeof params?.labItemId === 'string' ? params.labItemId : undefined;
   const { status, user } = useNativeSession();
   const signedIn = status === 'signedIn';
   return (
     <SafeAreaView edges={['left', 'right', 'bottom']} style={{ flex: 1 }}>
       {/* Checkout exists only when signed in; a signed-out shopper signs in first and keeps the cart. */}
-      <ShopRoute links={{
+      <ShopRoute key={JSON.stringify([category, query, labItemId])} filter={{ category, query }} openLabItemId={signedIn ? labItemId : undefined} links={{
         openCart: () => navigate(signedIn ? 'Checkout' : 'SignIn'),
         signedIn, studentName: user?.fullName ?? '', signIn: () => navigate('SignIn'),
         openRecords: () => navigate(signedIn ? 'Vault' : 'SignIn'),
@@ -464,35 +471,6 @@ function SecurityScreen() {
 }
 
 /**
- * Privacy & consent (§13): the same `PrivacyConsentView` the web draws, with
- * every `navigate()` call (web's own DOM-only router) replaced by this
- * stack's navigation — phase 4, approved 2026-11-01. `lifeshare` (the blood-
- * donor-contact "give it on its own page first" link) has no native target:
- * that screen (`LifeShareExchangeScreen`) is itself an unreviewed Tier 1
- * screen per its own file comment, so it stays a no-op here rather than
- * wiring into something not cleared for native. "Export my data" is the same
- * — the web data-export flow is still DOM-only and hasn't been rebuilt for
- * native, so it's a no-op pending that follow-up, not a crash.
- */
-function PrivacyScreen() {
-  const navigate = useNavigate();
-  const navigation = useNavigation();
-  return (
-    <BoardFrame>
-      <PrivacyConsentView links={{
-        back: () => navigation.goBack(),
-        delete: () => navigate('DeleteAccount'),
-        emergencyCard: () => navigate('EmergencyCard'),
-        shares: () => navigate('Vault', { tab: 'who' }),
-        dataRights: () => navigate('DataRights'),
-        export: () => {},
-        lifeshare: () => {},
-      }} />
-    </BoardFrame>
-  );
-}
-
-/**
  * Check-in pass (§22, Tier 1 — approved by Krishna Chintakayala 2026-10-21):
  * the same `MyPassRoute`/`MyPassBoard` the web draws. Already pure RN with
  * no DOM/router calls of its own, so it drops in exactly as-is — phase 4
@@ -502,29 +480,6 @@ function PassScreen() {
   const navigation = useNavigation();
   const navigate = useNavigate();
   return <BoardFrame><MyPassRoute links={{ back: () => navigation.goBack(), digitalId: () => navigate('DigitalId') }} /></BoardFrame>;
-}
-
-/**
- * Your data rights (§14): the same `DataRightsView` the web draws, resolving
- * its generic `RoutePath` actions to this stack instead of web's `navigate()`
- * — phase 4, approved 2026-11-01. `data-export` and `support` have no native
- * screen yet (the web pages behind them are still DOM-only, unrebuilt), so
- * they're no-ops here pending that follow-up, not crashes.
- */
-function DataRightsScreen() {
-  const navigate = useNavigate();
-  const resolve = (route: RoutePath) => {
-    if (route === 'profile') return navigate('Profile');
-    if (route === 'emergency-card') return navigate('EmergencyCard');
-    if (route === 'delete-account') return navigate('DeleteAccount');
-    if (route === 'privacy-consent') return navigate('Privacy');
-    // 'data-export', 'support', and anything else: no native screen yet.
-  };
-  return (
-    <BoardFrame>
-      <DataRightsView onNavigate={resolve} />
-    </BoardFrame>
-  );
 }
 
 /**

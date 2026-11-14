@@ -22,7 +22,7 @@ export type DeepLinkTarget = { [K in RouteName]: { name: K; params?: RootStackPa
 const FIND_CARE_SEGMENTS = ['hospitals', 'pharmacies', 'ambulance', 'doctors'] as const;
 type FindCareSegment = (typeof FIND_CARE_SEGMENTS)[number];
 
-function isFindCareSegment(value: string | null): value is FindCareSegment {
+function isFindCareSegment(value: string | null | undefined): value is FindCareSegment {
   return FIND_CARE_SEGMENTS.some((segment) => segment === value);
 }
 
@@ -40,12 +40,23 @@ function safeDecode(part: string): string | undefined {
 }
 
 /** Splits a path such as `/orders/abc?x=1#frag` (scheme and host already removed). */
-function splitPath(path: string): { segments: string[]; query: URLSearchParams } {
+function splitPath(path: string): { segments: string[]; query: ReadonlyMap<string, string> } {
   const withoutFragment = path.split('#')[0] ?? '';
-  const [pathname = '', search = ''] = withoutFragment.split('?');
+  const separator = withoutFragment.indexOf('?');
+  const pathname = separator < 0 ? withoutFragment : withoutFragment.slice(0, separator);
+  const search = separator < 0 ? '' : withoutFragment.slice(separator + 1);
+  // React Native 0.76's URLSearchParams.get is unimplemented. Decode only
+  // first-occurrence query fields, discarding malformed encodings and fragments.
+  const query = new Map<string, string>();
+  for (const field of search.split('&')) {
+    const equals = field.indexOf('=');
+    const key = safeDecode((equals < 0 ? field : field.slice(0, equals)).replace(/\+/g, ' '));
+    const value = safeDecode((equals < 0 ? '' : field.slice(equals + 1)).replace(/\+/g, ' '));
+    if (key && !query.has(key)) query.set(key, value ?? '');
+  }
   return {
     segments: pathname.split('/').filter((segment) => segment.length > 0),
-    query: new URLSearchParams(search),
+    query,
   };
 }
 
@@ -65,7 +76,7 @@ export function resolveDeepLink(path: string, status: NativeSessionStatus): Deep
       return signedIn ? { name: 'Home' } : { name: 'SignIn' };
     case 'orders': {
       if (!signedIn) return { name: 'SignIn' };
-      const orderId = second === undefined ? undefined : safeDecode(second);
+      const orderId = second === undefined ? nonEmpty(query.get('order')) : safeDecode(second);
       return orderId ? { name: 'Orders', params: { orderId } } : { name: 'Orders' };
     }
     // Where a tapped push opens (backend/core/push_copy.CATEGORIES path). All signed in.
