@@ -7,6 +7,7 @@ import { DataState, EmptyState, Field, FormError, SubmitButton, useMutation } fr
 import { ShopDialog } from '@/components/marketplace/ShopDialog';
 import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
+import type { SosDelivery } from '@/features/emergency/domain/Emergency';
 
 /**
  * Campus SOS desk (design page 4/7: campus admin console, super admin "operations
@@ -17,11 +18,10 @@ import type { MessageKey } from '@/i18n';
  * manages the WhatsApp numbers an SOS wakes up. Refreshes every 15 seconds.
  */
 
-interface Delivery { recipientKind: string; channel: string; recipient: string; status: 'SENT' | 'FAILED' | 'SKIPPED'; detail: string }
 interface StaffAlert {
   id: string; status: 'ACTIVE' | 'ACKNOWLEDGED' | 'RESOLVED' | 'CANCELLED'; campus: string; locationNote: string | null;
   coordinates?: { latitude: number; longitude: number }; createdAt: number; acknowledgedAt: number | null;
-  student: { name: string; contact: string; hostel: string | null }; deliveries: Delivery[];
+  student: { name: string; contact: string; hostel: string | null }; deliveries: SosDelivery[];
 }
 interface SecurityContact { id: string; name: string; phone: string }
 
