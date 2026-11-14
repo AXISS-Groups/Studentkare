@@ -93,9 +93,17 @@ def test_commerce_reads_only_three_account_columns():
     assert set(grant.columns) == {"id", "role", "active"}
 
 
+def test_commerce_reads_only_where_a_provider_delivers():
+    grant = rule_l.GRANT_MATRIX[rule_l.COMMERCE_ROLE]["care_service_providers"]
+    assert grant.privileges == ("SELECT",)
+    # Enough to refuse a delivery the provider has not agreed to; no licence,
+    # address, coordinates, phone or opening hours.
+    assert set(grant.columns) == {"account_id", "active", "delivery_available", "pincode", "serviceable_pincodes"}
+
+
 def test_commerce_extras_outside_commerce_are_an_explicit_allowlist():
     extras = {t for t in rule_l.GRANT_MATRIX[rule_l.COMMERCE_ROLE] if rule_l.TABLE_PLANES[t] != rule_l.COMMERCE}
-    assert extras == {"care_accounts", "care_workflow_audit", "care_ops_events"}
+    assert extras == {"care_accounts", "care_workflow_audit", "care_ops_events", "care_service_providers"}
     for table in ("care_workflow_audit", "care_ops_events"):
         assert rule_l.GRANT_MATRIX[rule_l.COMMERCE_ROLE][table].privileges == ("INSERT",)
 
@@ -439,6 +447,17 @@ def test_pg_commerce_role_cannot_read_any_clinical_table(pg_db):
         assert _denied(conn, "SELECT * FROM care_sessions LIMIT 1")
         assert _denied(conn, "SELECT * FROM care_system_settings LIMIT 1")
         assert _denied(conn, "SELECT * FROM care_workflow_audit LIMIT 1")
+
+
+def test_pg_commerce_role_reads_only_where_a_provider_delivers(pg_db):
+    engine, *_ = pg_db
+    with engine.begin() as conn:
+        conn.exec_driver_sql("SET LOCAL ROLE sk_commerce")
+        conn.execute(text("SELECT account_id, active, delivery_available, pincode, serviceable_pincodes "
+                          "FROM care_service_providers LIMIT 1"))
+        for column in ("legal_name", "licence_no", "address", "latitude", "open_hours", "*"):
+            assert _denied(conn, f"SELECT {column} FROM care_service_providers LIMIT 1"), column  # noqa: S608 — fixed names
+        assert _denied(conn, "UPDATE care_service_providers SET active = false")
 
 
 def test_pg_commerce_role_can_read_the_catalogue(pg_db):

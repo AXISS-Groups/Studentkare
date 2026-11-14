@@ -102,6 +102,22 @@ describe('native checkout on the real /orders contract', () => {
     expect(keys[0]).toBe(keys[1]);
   });
 
+  it('tells the server how the order will be received, and shows its note when delivery is refused', async () => {
+    const s = store();
+    await s.submitOrder();
+    expect(JSON.parse(String(calls[0].init?.body))).toMatchObject({ pincode: '500090', mode: 'pickup' });
+
+    calls = [];
+    const delivering = store();
+    delivering.setDeliveryMode('delivery');
+    delivering.setAddress('Room 214, Block C, Boys Hostel');
+    validation = { serviceable: false, serviceabilityNote: 'The provider does not deliver to this pincode. Choose pickup at the provider, or use another address.', items: [{ id: 'cat_1', available: true, reason: '' }] } as typeof validation;
+    expect(await delivering.submitOrder()).toBe(false);
+    expect(JSON.parse(String(calls[0].init?.body))).toMatchObject({ mode: 'delivery' });
+    expect(calls.map((c) => c.path)).toEqual(['/cart/validate']);
+    expect(delivering.status).toEqual({ kind: 'error', message: 'The provider does not deliver to this pincode. Choose pickup at the provider, or use another address.' });
+  });
+
   it('orders nothing when an item is unavailable', async () => {
     const s = store();
     validation = { serviceable: true, items: [{ id: 'cat_1', available: false, reason: 'Out of stock' }] };

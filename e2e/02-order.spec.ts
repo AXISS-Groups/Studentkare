@@ -22,6 +22,17 @@ test('ordering from the shop: a declined payment charges nothing, and paying aga
   await expect(pay).toBeVisible();
   await page.getByLabel('City', { exact: true }).fill('Hyderabad');
   await page.getByLabel('Pincode', { exact: true }).fill('500001');
+
+  // Home delivery is refused when the provider has not listed the pincode (the fixture
+  // seller lists none), and the student is told what to do instead. Nothing is ordered.
+  await page.getByRole('radio', { name: /Home delivery or collection/ }).click();
+  await page.getByLabel('Full address', { exact: true }).fill('Room 214, Block C, Boys Hostel');
+  await pay.click();
+  await expect(page.getByText('The provider does not deliver to this pincode. Choose pickup at the provider, or use another address.')).toBeVisible();
+  await expect(page.getByText('This is a test payment', { exact: true })).toHaveCount(0);
+
+  // Pickup needs no delivery cover.
+  await page.getByRole('radio', { name: /At the provider/ }).click();
   await pay.click();
 
   // The fixture runs the test gateway: no real money can move.

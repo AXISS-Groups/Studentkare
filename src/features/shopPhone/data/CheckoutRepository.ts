@@ -35,7 +35,7 @@ export class CheckoutRepository {
   async validate(order: OrderRequest): Promise<CartValidation> {
     return this.request<CartValidation>('/cart/validate', {
       method: 'POST',
-      body: JSON.stringify({ items: order.items, pincode: order.delivery.pincode }),
+      body: JSON.stringify({ items: order.items, pincode: order.delivery.pincode, mode: order.delivery.mode }),
     });
   }
 

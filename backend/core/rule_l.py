@@ -271,6 +271,10 @@ def _matrix() -> dict[str, dict[str, Grant]]:
     # The commerce paths need to know a provider exists and is active, and must
     # be able to leave an audit trail. Nothing more of identity or platform.
     commerce["care_accounts"] = Grant(("SELECT",), ("id", "role", "active"))
+    # Where a provider delivers. Checkout must refuse a delivery to a pincode the
+    # provider has not listed, so it reads these five columns and nothing else of
+    # the provider's record (no licence, address, phone or opening hours).
+    commerce["care_service_providers"] = Grant(("SELECT",), ("account_id", "active", "delivery_available", "pincode", "serviceable_pincodes"))
     commerce["care_workflow_audit"] = Grant(("INSERT",))
     commerce["care_ops_events"] = Grant(("INSERT",))
 

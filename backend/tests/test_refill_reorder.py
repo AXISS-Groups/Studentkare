@@ -36,6 +36,11 @@ def seed(factory, item_id="item", *, price=12000, stock=20, rx=False, name="Ceti
         if db.get(M.Account, "prov") is None:
             db.add(M.Account(id="prov", identifier="prov@example.test", channel="EMAIL", full_name="Pharmacy",
                              role="VENDOR", active=True, profile={}, created_at=time.time()))
+        if db.get(M.ServiceProvider, "prov-pharmacy") is None:
+            # Delivery is refused unless the provider lists the pincode (DELIVERY below).
+            db.add(M.ServiceProvider(id="prov-pharmacy", account_id="prov", kind="PHARMACY", legal_name="Pharmacy",
+                                     pincode="500001", serviceable_pincodes=["500090"], delivery_available=True,
+                                     pickup_available=True, active=True, updated_at=time.time()))
         db.add(M.CatalogEntry(id=item_id, provider_id="prov", kind="product", name=name, brand="B",
                               category="medicines", description="d", pack="Strip of 10", price_paise=price,
                               mrp_paise=price, stock=stock, active=True, requires_prescription=rx, preparation=""))
