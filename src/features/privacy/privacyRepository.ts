@@ -26,6 +26,41 @@ export interface ConsentOverview {
   history: Array<{ purposes: string[]; version: string; givenAt: number; withdrawnAt: number | null }>;
 }
 
+const INVALID_CONSENT_RESPONSE = 'INVALID_CONSENT_RESPONSE';
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
+const isStrings = (value: unknown): value is string[] =>
+  Array.isArray(value) && value.every((item: unknown) => typeof item === 'string');
+const isTime = (value: unknown): value is number => typeof value === 'number' && Number.isFinite(value);
+const isNullableTime = (value: unknown): value is number | null => value === null || isTime(value);
+const isNullableString = (value: unknown): value is string | null => value === null || typeof value === 'string';
+
+/** Unknown purposes cannot inherit a switch or wording from a different consent. */
+function isOptionalConsent(value: unknown): value is ConsentOverview['optional'][number] {
+  return isRecord(value) && OPTIONAL_PURPOSES.some((purpose) => purpose === value.purpose)
+    && typeof value.on === 'boolean' && typeof value.canGiveHere === 'boolean'
+    && isNullableString(value.version) && isNullableTime(value.givenAt) && isNullableTime(value.withdrawnAt);
+}
+
+function isConsentOverview(value: unknown): value is ConsentOverview {
+  if (!isRecord(value)) return false;
+  const required = value.required;
+  return (required === null || (isRecord(required) && isStrings(required.purposes)
+    && typeof required.version === 'string' && typeof required.language === 'string' && isTime(required.givenAt)
+    && isNullableString(required.noticeVersion) && isNullableString(required.termsVersion)))
+    && Array.isArray(value.optional) && value.optional.every(isOptionalConsent)
+    && new Set(value.optional.map((item) => item.purpose)).size === value.optional.length
+    && Array.isArray(value.history) && value.history.every((item: unknown) => isRecord(item)
+      && isStrings(item.purposes) && typeof item.version === 'string'
+      && isTime(item.givenAt) && isNullableTime(item.withdrawnAt));
+}
+
+/** Reject unsupported/malformed ledger data into the existing error/retry state. */
+export function readConsentOverview(value: unknown): ConsentOverview {
+  if (!isConsentOverview(value)) throw new Error(INVALID_CONSENT_RESPONSE);
+  return value;
+}
+
 export type LegalKind = 'PRIVACY_NOTICE' | 'TERMS' | 'GRIEVANCE_OFFICER';
 export { UNPUBLISHED } from '@/features/auth/viewmodel/useSignupLegal';
 
@@ -53,9 +88,9 @@ export interface LegalDocumentVersion {
 }
 
 export const privacyRepository = {
-  consents: (): Promise<ConsentOverview> => apiRequest<ConsentOverview>('/privacy/consents'),
+  consents: async (): Promise<ConsentOverview> => readConsentOverview(await apiRequest<unknown>('/privacy/consents')),
   change: (purpose: OptionalPurpose, granted: boolean, language: Lang): Promise<ConsentOverview> =>
-    apiRequest<ConsentOverview>(`/privacy/consents/${purpose}`, { method: 'POST', body: JSON.stringify({ granted, language }) }),
+    apiRequest<unknown>(`/privacy/consents/${purpose}`, { method: 'POST', body: JSON.stringify({ granted, language }) }).then(readConsentOverview),
   legal: (kind: LegalKind): Promise<LegalDocument> => apiRequest<LegalDocument>(`/legal/${kind}`),
 };
 
