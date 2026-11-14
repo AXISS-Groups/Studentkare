@@ -52,8 +52,8 @@ def test_alert_exists_and_reports_failures_honestly_when_whatsapp_is_down(harnes
     kinds = by_kind(alert)
     assert alert["status"] == "ACTIVE"
     assert kinds["CAMPUS_CONSOLE"]["status"] == "SENT"
-    assert kinds["CAMPUS_SECURITY"]["status"] == "FAILED"
-    assert kinds["EMERGENCY_CONTACT"]["status"] == "FAILED"
+    assert kinds["CAMPUS_SECURITY"]["status"] == "UNKNOWN"
+    assert kinds["EMERGENCY_CONTACT"]["status"] == "UNKNOWN"
     with factory() as db:
         assert db.get(M.SosAlert, alert["id"]) is not None
 

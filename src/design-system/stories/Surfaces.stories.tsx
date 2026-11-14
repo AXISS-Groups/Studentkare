@@ -55,6 +55,23 @@ export const SosRefreshFailure: Story = {
   ),
 };
 
+/** Existing SOS error layout with a truthful uncertain outcome, in every language. */
+export const SosUnconfirmed: Story = {
+  render: () => (
+    <View style={{ gap: space.s24, maxWidth: size.phoneFrameMax }}>
+      {(['en', 'te', 'hi'] as const).map((lang) => (
+        <View key={lang} style={{ gap: space.s16 }}>
+          <Eyebrow>{LANGUAGE_NAMES[lang]}</Eyebrow>
+          <Note tone="attention" title={translate(lang, 'sos.unconfirmedTitle')}>{translate(lang, 'sos.sendUnconfirmed')}</Note>
+          <Button label={translate(lang, 'crisis.call112')} accessibilityLabel={translate(lang, 'crisis.call112Spoken')} variant="danger" size="cta" fullWidth onPress={noop} />
+          <Button label={translate(lang, 'common.tryAgain')} variant="secondary" fullWidth onPress={noop} />
+          <Text>{translate(lang, 'sos.status.UNKNOWN')}</Text>
+        </View>
+      ))}
+    </View>
+  ),
+};
+
 export const Toasts: Story = {
   render: () => (
     <View style={{ gap: 12 }}>

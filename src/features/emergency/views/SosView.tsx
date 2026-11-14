@@ -131,7 +131,7 @@ export const SosView = observer(function SosView({ signedIn, links }: { signedIn
 
   // While an alert is open, re-read it so "your campus has seen it" appears without a reload.
   useEffect(() => {
-    if (state.status !== 'OPEN') return;
+    if (state.status !== 'OPEN' && state.status !== 'UNCONFIRMED') return;
     const timer = setInterval(() => void actions.loadCurrent(), pollSeconds * 1000);
     return () => clearInterval(timer);
   }, [state.status, pollSeconds]);
@@ -308,6 +308,13 @@ export const SosView = observer(function SosView({ signedIn, links }: { signedIn
           <Note tone="danger" title={t('sos.notSentTitle')}>{state.error ? t(state.error) : ''}</Note>
           <Call112 />
           <Button label={t('common.tryAgain')} variant="secondary" fullWidth onPress={actions.triggerSos} />
+        </>
+      ) : null}
+      {state.status === 'UNCONFIRMED' ? (
+        <>
+          <Note tone="attention" title={t('sos.unconfirmedTitle')} testID="sos-unconfirmed">{t('sos.sendUnconfirmed')}</Note>
+          <Call112 />
+          <Button testID="sos-retry-send" label={t('common.tryAgain')} variant="secondary" fullWidth onPress={actions.triggerSos} />
         </>
       ) : null}
     </ScrollView>

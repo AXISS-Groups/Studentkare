@@ -8,8 +8,8 @@ import { emergencyRepository } from '../data/EmergencyRepository';
 
 /**
  * SOS flow state. Every visible outcome comes from the server's record of what
- * was attempted; on any failure the screen says nothing was sent and points to
- * 112. (The previous store invented an ambulance, a driver, an ETA, a "GPS
+ * was attempted; an uncertain outcome stays active and points to 112 while
+ * the request is reconciled. (The previous store invented an ambulance, a driver, an ETA, a "GPS
  * verified" location and three emergency contacts.)
  */
 class EmergencyStore {
@@ -25,6 +25,7 @@ class EmergencyStore {
   private resetRevision = 0;
   private alertRevision = 0;
   private currentRequest = 0;
+  private pendingSend: { requestId: string; locationNote: string } | null = null;
 
   constructor() {
     makeAutoObservable(this, {}, { autoBind: true });
@@ -50,11 +51,22 @@ class EmergencyStore {
     const canApply = () => this.isCurrentOperation(scope, revision)
       && alertRevision === this.alertRevision && request === this.currentRequest;
     try {
-      const alert = await emergencyRepository.current();
+      const pending = this.pendingSend;
+      const alert = await emergencyRepository.current(pending?.requestId);
       runInAction(() => {
         if (!canApply()) return;
+        // Absence now cannot rule out a delayed POST committing later.
+        if (pending && !alert) {
+          this.status = 'UNCONFIRMED';
+          this.error = 'sos.sendUnconfirmed';
+          return;
+        }
         this.alert = alert;
         this.status = alert ? (isAlertOpen(alert) ? 'OPEN' : 'CLOSED') : 'IDLE';
+        if (pending) {
+          this.pendingSend = null;
+          this.error = '';
+        }
         this.refreshError = '';
       });
     } catch {
@@ -69,6 +81,10 @@ class EmergencyStore {
     const scope = captureSessionScope();
     const revision = this.resetRevision;
     if (!this.isCurrentOperation(scope, revision)) return;
+    if (this.status === 'UNCONFIRMED') {
+      void this.dispatchEmergency();
+      return;
+    }
     if (this.status !== 'IDLE' && this.status !== 'CLOSED' && this.status !== 'FAILED') return;
     this.alertRevision += 1;
     this.status = 'COUNTDOWN';
@@ -88,6 +104,7 @@ class EmergencyStore {
   }
 
   cancelCountdown(): void {
+    if (this.status !== 'COUNTDOWN') return;
     this.alertRevision += 1;
     this.stopCountdown();
     this.status = this.alert && !isAlertOpen(this.alert) ? 'CLOSED' : 'IDLE';
@@ -97,24 +114,38 @@ class EmergencyStore {
     const scope = captureSessionScope();
     const revision = this.resetRevision;
     if (!this.isCurrentOperation(scope, revision)) return;
+    if (this.status === 'SENDING' || this.status === 'OPEN') return;
     this.alertRevision += 1;
+    const mutation = this.alertRevision;
+    // Request IDs are account-scoped correlation, not credentials. Match the
+    // existing checkout approach on native engines without crypto.randomUUID.
+    this.pendingSend ??= {
+      requestId: typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+        ? crypto.randomUUID() : `sos-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`,
+      locationNote: this.locationNote,
+    };
+    const pending = this.pendingSend;
     this.status = 'SENDING';
+    this.error = '';
+    const canApply = () => this.isCurrentOperation(scope, revision) && mutation === this.alertRevision;
     try {
-      const alert = await emergencyRepository.raiseSos(this.locationNote);
+      const alert = await emergencyRepository.raiseSos(pending.locationNote, pending.requestId);
       runInAction(() => {
-        if (!this.isCurrentOperation(scope, revision)) return;
+        if (!canApply()) return;
         this.alertRevision += 1;
         this.alert = alert;
-        this.status = 'OPEN';
+        this.status = isAlertOpen(alert) ? 'OPEN' : 'CLOSED';
+        this.pendingSend = null;
         this.refreshError = '';
       });
     } catch {
       runInAction(() => {
-        if (!this.isCurrentOperation(scope, revision)) return;
+        if (!canApply()) return;
         this.alertRevision += 1;
-        this.status = 'FAILED';
-        this.error = 'sos.sendFailed';
+        this.status = 'UNCONFIRMED';
+        this.error = 'sos.sendUnconfirmed';
       });
+      if (this.isCurrentOperation(scope, revision) && this.pendingSend === pending) await this.loadCurrent();
     }
   }
 
@@ -123,7 +154,7 @@ class EmergencyStore {
     const scope = captureSessionScope();
     const revision = this.resetRevision;
     if (!this.isCurrentOperation(scope, revision)) return;
-    if (!this.alert) return;
+    if (this.status !== 'OPEN' || !this.alert) return;
     this.alertRevision += 1;
     try {
       const alert = await emergencyRepository.cancel(this.alert.id);
@@ -163,6 +194,7 @@ class EmergencyStore {
     this.error = '';
     this.refreshError = '';
     this.alert = null;
+    this.pendingSend = null;
     this.locationNote = '';
   }
 }

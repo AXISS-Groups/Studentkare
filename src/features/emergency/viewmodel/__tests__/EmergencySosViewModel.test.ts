@@ -179,18 +179,103 @@ describe('M04 SOS store', () => {
 
   it('never shows an alert the server did not record', async () => {
     vi.spyOn(emergencyRepository, 'raiseSos').mockRejectedValueOnce(new Error('offline'));
+    vi.spyOn(emergencyRepository, 'current').mockResolvedValueOnce(null);
     await emergencyStore.dispatchEmergency();
-    expect(emergencyStore.status).toBe('FAILED');
+    expect(emergencyStore.status).toBe('UNCONFIRMED');
     expect(emergencyStore.alert).toBeNull();
     expect(emergencyStore.error).not.toBe('');
     expect(translate('en', emergencyStore.error as MessageKey)).toMatch(/112/);
+  });
+
+  it('reconciles a timeout after the alert was committed', async () => {
+    const raise = vi.spyOn(emergencyRepository, 'raiseSos').mockRejectedValueOnce(new Error('timeout'));
+    const current = vi.spyOn(emergencyRepository, 'current').mockResolvedValueOnce(alert());
+    await emergencyStore.dispatchEmergency();
+    expect(current).toHaveBeenCalledWith(raise.mock.calls[0]?.[1]);
+    expect(emergencyStore.status).toBe('OPEN');
+    expect(emergencyStore.error).toBe('');
+  });
+
+  it('retains uncertainty after an empty check, then finds a later commit', async () => {
+    vi.spyOn(emergencyRepository, 'raiseSos').mockRejectedValueOnce(new Error('timeout'));
+    const current = vi.spyOn(emergencyRepository, 'current').mockResolvedValueOnce(null);
+    await emergencyStore.dispatchEmergency();
+    expect(emergencyStore.status).toBe('UNCONFIRMED');
+    expect(emergencyStore.isEmergencyActive).toBe(true);
+    emergencyStore.cancelCountdown();
+    expect(emergencyStore.status).toBe('UNCONFIRMED');
+    current.mockResolvedValueOnce(alert({ status: 'RESOLVED', resolvedAt: 3 }));
+    await emergencyStore.loadCurrent();
+    expect(emergencyStore.status).toBe('CLOSED');
+    expect(emergencyStore.error).toBe('');
+  });
+
+  it('retries the same request and original location after a failed outcome check', async () => {
+    const raise = vi.spyOn(emergencyRepository, 'raiseSos').mockRejectedValueOnce(new Error('timeout'));
+    vi.spyOn(emergencyRepository, 'current').mockRejectedValueOnce(new Error('offline'));
+    emergencyStore.setLocationNote('Original location');
+    await emergencyStore.dispatchEmergency();
+    emergencyStore.setLocationNote('Changed location');
+    raise.mockResolvedValueOnce(alert({ status: 'CANCELLED', cancelledAt: 3 }));
+    await emergencyStore.dispatchEmergency();
+    expect(raise.mock.calls[1]).toEqual(raise.mock.calls[0]);
+    expect(emergencyStore.status).toBe('CLOSED');
+    emergencyStore.triggerSos();
+    raise.mockResolvedValueOnce(alert({ id: 'new-alert' }));
+    await vi.advanceTimersByTimeAsync(3000);
+    expect(raise.mock.calls[2]?.[1]).not.toBe(raise.mock.calls[0]?.[1]);
+  });
+
+  it('ignores an old outcome check during a same-request retry', async () => {
+    const pending = deferred<SosAlert | null>();
+    vi.spyOn(emergencyRepository, 'raiseSos').mockRejectedValueOnce(new Error('timeout'));
+    vi.spyOn(emergencyRepository, 'current').mockReturnValueOnce(pending.promise);
+    const first = emergencyStore.dispatchEmergency();
+    await Promise.resolve();
+    vi.spyOn(emergencyRepository, 'raiseSos').mockResolvedValueOnce(alert({ status: 'CANCELLED', cancelledAt: 3 }));
+    await emergencyStore.dispatchEmergency();
+    pending.resolve(alert());
+    await first;
+    expect(emergencyStore.status).toBe('CLOSED');
+  });
+
+  it('discards delayed reconciliation after account change and uses a fresh request', async () => {
+    const pending = deferred<SosAlert | null>();
+    const raise = vi.spyOn(emergencyRepository, 'raiseSos').mockRejectedValueOnce(new Error('timeout'));
+    const current = vi.spyOn(emergencyRepository, 'current').mockReturnValueOnce(pending.promise);
+    const first = emergencyStore.dispatchEmergency();
+    await Promise.resolve();
+    setSessionAccount('account-b');
+    raise.mockResolvedValueOnce(alert({ id: 'b1' }));
+    await emergencyStore.dispatchEmergency();
+    pending.resolve(alert());
+    await first;
+    expect(emergencyStore.alert?.id).toBe('b1');
+    expect(raise.mock.calls[1]?.[1]).not.toBe(raise.mock.calls[0]?.[1]);
+    expect(current).toHaveBeenCalledTimes(1);
+  });
+
+  it('creates a valid request ID on native without crypto and suppresses double submission', async () => {
+    vi.stubGlobal('crypto', undefined);
+    try {
+      const pending = deferred<SosAlert>();
+      const raise = vi.spyOn(emergencyRepository, 'raiseSos').mockReturnValueOnce(pending.promise);
+      const first = emergencyStore.dispatchEmergency();
+      await emergencyStore.dispatchEmergency();
+      expect(raise).toHaveBeenCalledTimes(1);
+      expect(raise.mock.calls[0]?.[1]).toMatch(/^[A-Za-z0-9_-]+$/);
+      pending.resolve(alert());
+      await first;
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 
   it('shows exactly what the server recorded, and sends the location note', async () => {
     const raise = vi.spyOn(emergencyRepository, 'raiseSos').mockResolvedValueOnce(alert());
     emergencyStore.setLocationNote('Library, 2nd floor');
     await emergencyStore.dispatchEmergency();
-    expect(raise).toHaveBeenCalledWith('Library, 2nd floor');
+    expect(raise).toHaveBeenCalledWith('Library, 2nd floor', expect.any(String));
     expect(emergencyStore.status).toBe('OPEN');
     expect(emergencyStore.alert?.deliveries).toHaveLength(1);
   });
@@ -211,6 +296,7 @@ describe('M04 SOS store', () => {
   it('treats an alert as reaching someone only if a delivery was actually sent', () => {
     expect(anyoneReached(alert())).toBe(true);
     expect(anyoneReached(alert({ deliveries: [{ recipientKind: 'CAMPUS_SECURITY', channel: 'WHATSAPP', recipient: 'Gate', status: 'FAILED', detail: '' }] }))).toBe(false);
+    expect(anyoneReached(alert({ deliveries: [{ recipientKind: 'CAMPUS_SECURITY', channel: 'WHATSAPP', recipient: 'Gate', status: 'UNKNOWN', detail: '' }] }))).toBe(false);
   });
 
   it('clears account-owned alert, location and error on logout without cancelling the server alert', async () => {
@@ -309,7 +395,7 @@ describe('M04 SOS store', () => {
     expect(emergencyStore.countdownSeconds).toBe(2);
     await vi.advanceTimersByTimeAsync(2000);
     expect(raise).toHaveBeenCalledTimes(1);
-    expect(raise).toHaveBeenCalledWith('Account A location');
+    expect(raise).toHaveBeenCalledWith('Account A location', expect.any(String));
 
     setSessionAccount('account-a');
     expect(emergencyStore.status).toBe('OPEN');

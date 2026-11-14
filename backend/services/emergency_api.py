@@ -11,7 +11,7 @@ What happens on POST /emergency/sos, in order, each step recorded honestly:
 3. CAMPUS_SECURITY: WhatsApp to each number the student's campus configured.
 4. EMERGENCY_CONTACT: WhatsApp to the emergency contact on the student's profile.
 The response lists every attempt with its real status (SENT / FAILED /
-SKIPPED). Nothing is reported as sent unless the gateway said so. There is no
+SKIPPED / UNKNOWN). Nothing is reported as sent unless the gateway said so. There is no
 SMS provider in this codebase, so SMS is not offered. Messages carry no health
 data. Calling 112 is always shown by the client regardless of outcome.
 """
@@ -20,9 +20,10 @@ from __future__ import annotations
 import re
 import time
 import uuid
+from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from pydantic import Field, field_validator
+from pydantic import Field, StringConstraints, field_validator
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -41,6 +42,8 @@ from services.workflow_auth import (
 router = APIRouter(prefix="/api", tags=["Emergency"])
 
 OPEN_STATUSES = ("ACTIVE", "ACKNOWLEDGED")
+REQUEST_ID_PATTERN = r"^[A-Za-z0-9_-]+\z"
+REQUEST_ID_MAX_LENGTH = 120
 
 
 def _id() -> str:
@@ -84,9 +87,11 @@ def _alert_payload(db: Session, alert: M.SosAlert, *, for_staff: bool = False) -
     return payload
 
 
-def _record(db: Session, alert_id: str, kind: str, channel: str, label: str, status: str, detail: str = "") -> None:
-    db.add(M.SosDelivery(id=_id(), alert_id=alert_id, recipient_kind=kind, channel=channel,
-                         recipient_label=label[:160], status=status, detail=detail[:200], created_at=time.time()))
+def _record(db: Session, alert_id: str, kind: str, channel: str, label: str, status: str, detail: str = "") -> M.SosDelivery:
+    row = M.SosDelivery(id=_id(), alert_id=alert_id, recipient_kind=kind, channel=channel,
+                        recipient_label=label[:160], status=status, detail=detail[:200], created_at=time.time())
+    db.add(row)
+    return row
 
 
 def _whatsapp(phone: str, text: str) -> tuple[str, str]:
@@ -94,15 +99,25 @@ def _whatsapp(phone: str, text: str) -> tuple[str, str]:
     digits = re.sub(r"\D", "", phone or "")
     if len(digits) < 10:
         return "SKIPPED", "No valid number on file."
-    result = _send_openwa(normalize_chat_id(phone), text)
+    try:
+        result = _send_openwa(normalize_chat_id(phone), text)
+    except Exception:  # noqa: BLE001 — provider exceptions cannot erase the committed alert or expose recipient data
+        return "UNKNOWN", ""
     if result.get("status") == "sent":
         return "SENT", ""
     if result.get("status") == "skipped":
         return "SKIPPED", "WhatsApp isn't configured for Studentkare."
-    return "FAILED", "WhatsApp delivery failed."
+    # A timeout, connection loss or server error can follow provider acceptance.
+    # Only a definitive rejection proves this attempt was not accepted.
+    reason = result.get("reason", "")
+    if isinstance(reason, str) and re.fullmatch(r"http_4\d\d", reason):
+        return "FAILED", "WhatsApp delivery failed."
+    return "UNKNOWN", ""
 
 
 class SosInput(StrictModel):
+    requestId: Annotated[str, StringConstraints(strip_whitespace=False)] | None = Field(
+        default=None, min_length=1, max_length=REQUEST_ID_MAX_LENGTH, pattern=REQUEST_ID_PATTERN)
     locationNote: str | None = Field(default=None, max_length=300)
     latitude: float | None = Field(default=None, ge=-90, le=90)
     longitude: float | None = Field(default=None, ge=-180, le=180)
@@ -117,18 +132,34 @@ class SosInput(StrictModel):
 def raise_sos(body: SosInput, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
     if user["role"] != "STUDENT":
         raise HTTPException(403, "SOS is for student accounts. Call 112 in an emergency.")
-    account = db.get(M.Account, user["id"])
+    # Serializes creation/receipt mapping across processes. Released at the
+    # first commit, before slow provider calls. The partial index backs it up.
+    account = db.scalar(select(M.Account).where(M.Account.id == user["id"]).with_for_update())
     if account is None:
         raise HTTPException(404, "Account not found.")
+    receipt = db.get(M.SosRequest, (account.id, body.requestId)) if body.requestId else None
+    if receipt:
+        recorded = db.get(M.SosAlert, receipt.alert_id)
+        if recorded is None:
+            raise HTTPException(409, "SOS outcome unavailable. Call 112 in an emergency.")
+        db.commit()
+        return {"alert": _alert_payload(db, recorded), "alreadyActive": is_open(recorded)}
     existing = db.scalar(select(M.SosAlert).where(M.SosAlert.account_id == user["id"], M.SosAlert.status.in_(OPEN_STATUSES)))
     if existing:
-        # A second press never duplicates the alert or re-sends messages.
+        # Record every request that reused this alert, so later retries cannot
+        # accidentally start another emergency after the original is closed.
+        if body.requestId:
+            db.add(M.SosRequest(account_id=account.id, request_id=body.requestId, alert_id=existing.id))
+        db.commit()
         return {"alert": _alert_payload(db, existing), "alreadyActive": True}
 
     campus = _student_campus(db, account)
     alert = M.SosAlert(id=_id(), account_id=account.id, campus=campus, location_note=body.locationNote or "",
                        latitude=body.latitude, longitude=body.longitude, status="ACTIVE", created_at=time.time())
     db.add(alert)
+    db.flush()  # enforce the open-alert invariant before staging any side effect
+    if body.requestId:
+        db.add(M.SosRequest(account_id=account.id, request_id=body.requestId, alert_id=alert.id))
     _audit(db, account.id, "SOS_RAISED", alert.id)
     event = ops_feed.publish(
         db, "SOS_RAISED", "SAFETY", severity="CRITICAL",
@@ -138,11 +169,11 @@ def raise_sos(body: SosInput, user=Depends(authenticated_user), db: Session = De
     )
     _record(db, alert.id, "CAMPUS_CONSOLE", "CONSOLE", campus or "Studentkare operations",
             "SENT" if event else "FAILED", "" if event else "The console alert could not be recorded.")
-    db.commit()  # the alert exists now, whatever happens to the messages below
-
     when = time.strftime("%H:%M", time.localtime(alert.created_at))
     where = alert.location_note or "not shared"
     profile = account.profile or {}
+    # Phone numbers and message text remain in request memory, never the ledger.
+    attempts: list[tuple[M.SosDelivery, str, str]] = []
     security = []
     if campus:
         key = _campus_key(campus)
@@ -151,26 +182,39 @@ def raise_sos(body: SosInput, user=Depends(authenticated_user), db: Session = De
         _record(db, alert.id, "CAMPUS_SECURITY", "WHATSAPP", campus or "No campus", "SKIPPED",
                 "Your campus hasn't set up security contacts.")
     for contact in security:
-        status, detail = _whatsapp(contact.phone, f"STUDENTKARE SOS — {account.full_name} needs help now ({when}). "
-                                                  f"Location: {where}. Open the Studentkare campus console to acknowledge.")
-        _record(db, alert.id, "CAMPUS_SECURITY", "WHATSAPP", contact.name, status, detail)
+        row = _record(db, alert.id, "CAMPUS_SECURITY", "WHATSAPP", contact.name, "UNKNOWN")
+        attempts.append((row, contact.phone, f"STUDENTKARE SOS — {account.full_name} needs help now ({when}). "
+                         f"Location: {where}. Open the Studentkare campus console to acknowledge."))
 
     ice_name = profile.get("emergencyContactName", "") or "Emergency contact"
     ice_phone = profile.get("emergencyContactPhone", "")
     if not ice_phone:
         _record(db, alert.id, "EMERGENCY_CONTACT", "WHATSAPP", "", "SKIPPED", "No emergency contact on your profile.")
     else:
-        status, detail = _whatsapp(ice_phone, f"{account.full_name} pressed SOS on Studentkare at {when}. "
-                                              f"Location: {where}. Please try to reach them now; call 112 if you can't.")
-        _record(db, alert.id, "EMERGENCY_CONTACT", "WHATSAPP", ice_name, status, detail)
-    db.commit()
+        row = _record(db, alert.id, "EMERGENCY_CONTACT", "WHATSAPP", ice_name, "UNKNOWN")
+        attempts.append((row, ice_phone, f"{account.full_name} pressed SOS on Studentkare at {when}. "
+                         f"Location: {where}. Please try to reach them now; call 112 if you can't."))
+    db.commit()  # alert, receipt, console event and every attempt land together
+    for row, phone, message in attempts:
+        row.status, row.detail = _whatsapp(phone, message)
+        db.commit()  # preserve completed outcomes if the next attempt is interrupted
+    db.refresh(alert)  # acknowledgement/resolution may have changed during delivery
     return {"alert": _alert_payload(db, alert), "alreadyActive": False}
 
 
+def is_open(alert: M.SosAlert) -> bool:
+    return alert.status in OPEN_STATUSES
+
+
 @router.get("/emergency/sos/current")
-def current_sos(user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+def current_sos(requestId: str | None = Query(None, min_length=1, max_length=REQUEST_ID_MAX_LENGTH, pattern=REQUEST_ID_PATTERN),
+                user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
     """The student's most recent alert, open or closed, so the after-SOS view can show what happened."""
-    alert = db.scalar(select(M.SosAlert).where(M.SosAlert.account_id == user["id"]).order_by(M.SosAlert.created_at.desc()).limit(1))
+    if requestId is not None:
+        receipt = db.get(M.SosRequest, (user["id"], requestId))
+        alert = db.get(M.SosAlert, receipt.alert_id) if receipt else None
+    else:
+        alert = db.scalar(select(M.SosAlert).where(M.SosAlert.account_id == user["id"]).order_by(M.SosAlert.created_at.desc()).limit(1))
     return {"alert": _alert_payload(db, alert) if alert else None}
 
 
