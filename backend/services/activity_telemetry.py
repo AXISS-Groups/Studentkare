@@ -29,8 +29,11 @@ from __future__ import annotations
 import time
 import uuid
 
-from sqlalchemy import func, select
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy import case, func, select
+from sqlalchemy.dialects.postgresql import insert as postgres_insert
+from sqlalchemy.dialects.sqlite import insert as sqlite_insert
+from sqlalchemy.orm import Session
+from starlette.concurrency import run_in_threadpool
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from core import workflow_models as M
@@ -71,53 +74,48 @@ def _status_class(status_code: int) -> str:
     return f"{status_code // 100}xx"
 
 
-def record(db, *, route: str, method: str, actor_role: str, status_code: int,
+def record(db: Session, *, route: str, method: str, actor_role: str, status_code: int,
            latency_ms: float, at: float | None = None) -> None:
     """Fold one request into its counter. Never raises.
 
-    Upserts by hand rather than with a dialect-specific ON CONFLICT so the same code
-    works on SQLite in tests and Postgres in production.
+    One atomic upsert protects both row creation and increments across workers.
+    Postgres is the production dialect; SQLite exercises the same operation in tests.
     """
     try:
         now = at if at is not None else time.time()
         bucket = bucket_for(now)
         status = _status_class(status_code)
-        role = (actor_role or "ANONYMOUS")[:24]
-
-        row = db.scalar(select(M.ActivityCounter).where(
-            M.ActivityCounter.bucket == bucket,
-            M.ActivityCounter.route == route,
-            M.ActivityCounter.method == method,
-            M.ActivityCounter.actor_role == role,
-            M.ActivityCounter.status_class == status,
+        table = M.ActivityCounter.__table__
+        dialect = db.get_bind().dialect.name
+        if dialect == "postgresql":
+            insert = postgres_insert
+        elif dialect == "sqlite":
+            insert = sqlite_insert
+        else:
+            raise ValueError("Unsupported counter database dialect")
+        statement = insert(table).values(
+            id=uuid.uuid4().hex, bucket=bucket,
+            route=route[:table.c.route.type.length],
+            method=method[:table.c.method.type.length],
+            actor_role=(actor_role or "ANONYMOUS")[:table.c.actor_role.type.length],
+            status_class=status, count=1, total_latency_ms=latency_ms,
+            max_latency_ms=max(0.0, latency_ms), last_at=now,
+        )
+        incoming = statement.excluded
+        db.execute(statement.on_conflict_do_update(
+            index_elements=[table.c.bucket, table.c.route, table.c.method,
+                            table.c.actor_role, table.c.status_class],
+            set_={
+                "count": table.c.count + incoming.count,
+                "total_latency_ms": table.c.total_latency_ms + incoming.total_latency_ms,
+                "max_latency_ms": case(
+                    (table.c.max_latency_ms < incoming.max_latency_ms, incoming.max_latency_ms),
+                    else_=table.c.max_latency_ms,
+                ),
+                "last_at": case((table.c.last_at < incoming.last_at, incoming.last_at),
+                                else_=table.c.last_at),
+            },
         ))
-        if row is None:
-            row = M.ActivityCounter(
-                id=uuid.uuid4().hex, bucket=bucket, route=route[:200], method=method[:10],
-                actor_role=role, status_class=status, count=0, total_latency_ms=0.0,
-                max_latency_ms=0.0, last_at=now,
-            )
-            db.add(row)
-            try:
-                db.flush()
-            except IntegrityError:
-                # Another worker created the same bucket between the read and the
-                # insert. Roll back to the savepoint and take theirs.
-                db.rollback()
-                row = db.scalar(select(M.ActivityCounter).where(
-                    M.ActivityCounter.bucket == bucket,
-                    M.ActivityCounter.route == route,
-                    M.ActivityCounter.method == method,
-                    M.ActivityCounter.actor_role == role,
-                    M.ActivityCounter.status_class == status,
-                ))
-                if row is None:
-                    return
-
-        row.count += 1
-        row.total_latency_ms += latency_ms
-        row.max_latency_ms = max(row.max_latency_ms, latency_ms)
-        row.last_at = now
         db.commit()
     except Exception:  # noqa: BLE001 — telemetry must never affect the response
         try:
@@ -127,44 +125,48 @@ def record(db, *, route: str, method: str, actor_role: str, status_code: int,
 
 
 def summary(db, *, hours: int = 24, route_prefix: str = "", limit: int = 200) -> dict:
-    """Per-route totals over a window, busiest first."""
+    """Ranked route/method rows and totals for the entire matching window."""
     since = bucket_for(time.time()) - max(0, hours - 1)
+    count = func.sum(M.ActivityCounter.count)
+    errors = func.sum(case(
+        (M.ActivityCounter.status_class.in_(("4xx", "5xx")), M.ActivityCounter.count),
+        else_=0,
+    ))
     statement = select(
         M.ActivityCounter.route,
         M.ActivityCounter.method,
-        func.sum(M.ActivityCounter.count),
+        count,
         func.sum(M.ActivityCounter.total_latency_ms),
         func.max(M.ActivityCounter.max_latency_ms),
         func.max(M.ActivityCounter.last_at),
+        errors,
+        # Window functions run over all grouped rows before LIMIT, in this same
+        # database snapshot. A ranked subset must not become the window's total.
+        func.sum(count).over().label("total_requests"),
+        func.sum(errors).over().label("total_errors"),
     ).where(M.ActivityCounter.bucket >= since)
     if route_prefix.strip():
         statement = statement.where(M.ActivityCounter.route.startswith(route_prefix.strip()))
     rows = db.execute(
         statement.group_by(M.ActivityCounter.route, M.ActivityCounter.method)
-        .order_by(func.sum(M.ActivityCounter.count).desc()).limit(limit)
+        .order_by(count.desc(), M.ActivityCounter.route, M.ActivityCounter.method).limit(limit)
     ).all()
 
-    errors = dict(db.execute(
-        select(M.ActivityCounter.route, func.sum(M.ActivityCounter.count))
-        .where(M.ActivityCounter.bucket >= since, M.ActivityCounter.status_class.in_(("4xx", "5xx")))
-        .group_by(M.ActivityCounter.route)
-    ).all())
-
     items = []
-    for route, method, count, total_latency, max_latency, last_at in rows:
+    for route, method, count, total_latency, max_latency, last_at, error_count, _total, _errors in rows:
         count = int(count or 0)
         items.append({
             "route": route, "method": method, "count": count,
             "avgLatencyMs": round((total_latency or 0) / count, 1) if count else 0.0,
             "maxLatencyMs": round(max_latency or 0, 1),
-            "errorCount": int(errors.get(route, 0)),
+            "errorCount": int(error_count or 0),
             "lastAt": last_at,
         })
     return {
         "items": items,
         "windowHours": hours,
-        "totalRequests": sum(item["count"] for item in items),
-        "totalErrors": sum(item["errorCount"] for item in items),
+        "totalRequests": int(rows[0].total_requests or 0) if rows else 0,
+        "totalErrors": int(rows[0].total_errors or 0) if rows else 0,
     }
 
 
@@ -190,6 +192,14 @@ def hourly(db, *, hours: int = 24) -> list[dict]:
     return [{"hourStart": int(bucket) * HOUR, "count": int(count or 0)} for bucket, count in rows]
 
 
+def _record_request(*, route: str, method: str, actor_role: str, status_code: int,
+                    latency_ms: float) -> None:
+    """Create, use and close the synchronous session entirely in the worker."""
+    with session_factory() as db:
+        record(db, route=route, method=method, actor_role=actor_role,
+               status_code=status_code, latency_ms=latency_ms)
+
+
 class ActivityTelemetryMiddleware(BaseHTTPMiddleware):
     """Counts every request. No endpoint has to opt in, so coverage cannot drift.
 
@@ -210,10 +220,11 @@ class ActivityTelemetryMiddleware(BaseHTTPMiddleware):
             template = getattr(route, "path", None) or "<unmatched>"
             latency_ms = (time.perf_counter() - started) * 1000
 
-            with session_factory() as db:
-                record(db, route=template, method=request.method,
-                       actor_role=getattr(request.state, "actor_role", "") or "ANONYMOUS",
-                       status_code=response.status_code, latency_ms=latency_ms)
+            await run_in_threadpool(
+                _record_request, route=template, method=request.method,
+                actor_role=getattr(request.state, "actor_role", "") or "ANONYMOUS",
+                status_code=response.status_code, latency_ms=latency_ms,
+            )
         except Exception:  # noqa: BLE001, S110 — never let telemetry break a response
             pass
         return response
