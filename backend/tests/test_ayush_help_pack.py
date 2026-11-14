@@ -113,6 +113,16 @@ def test_publishing_is_idempotent_and_answerable(harness):
         records = _ask(factory, question)
         assert records["outcome"] == "ANSWERED", question
         assert records["citations"][0]["sourceId"] == "kb_help_health-records", question
+    for question, source in (
+        ("My payment failed, was I charged?", "kb_help_payments"),
+        ("The payment is stuck on waiting for my bank, should I pay again?", "kb_help_payments"),
+        ("How do I invite a friend and earn points?", "kb_help_invite-friends"),
+        ("Can I spend my points on an order?", "kb_help_invite-friends"),
+        ("Can I compare two lab tests?", "kb_help_lab-tests"),
+    ):
+        answer = _ask(factory, question)
+        assert answer["outcome"] == "ANSWERED", question
+        assert answer["citations"][0]["sourceId"] == source, (question, answer["citations"][0]["sourceId"])
 
 
 def test_a_price_change_republishes_as_the_next_version(harness):
