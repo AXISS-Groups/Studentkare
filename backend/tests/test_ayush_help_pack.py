@@ -108,6 +108,11 @@ def test_publishing_is_idempotent_and_answerable(harness):
     assert answer["citations"][0]["sourceId"] == "kb_help_booking-a-consult"
     deleting = _ask(factory, "How do I delete my account?")
     assert deleting["citations"][0]["sourceId"] == "kb_help_deleting-your-account"
+    for question in ("How do I move a report to another folder in my vault?",
+                     "I uploaded the same file twice, will there be two copies?"):
+        records = _ask(factory, question)
+        assert records["outcome"] == "ANSWERED", question
+        assert records["citations"][0]["sourceId"] == "kb_help_health-records", question
 
 
 def test_a_price_change_republishes_as_the_next_version(harness):
