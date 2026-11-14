@@ -8,12 +8,12 @@
  * attempt carries its real outcome.
  */
 
-/** Client-side flow: IDLE → COUNTDOWN (cancellable) → SENDING → OPEN | FAILED; CLOSED once resolved/cancelled. */
-export type EmergencyStatus = 'IDLE' | 'COUNTDOWN' | 'SENDING' | 'OPEN' | 'FAILED' | 'CLOSED';
+/** An uncertain send stays active until its recorded outcome can be retrieved. */
+export type EmergencyStatus = 'IDLE' | 'COUNTDOWN' | 'SENDING' | 'UNCONFIRMED' | 'OPEN' | 'FAILED' | 'CLOSED';
 
 export type SosAlertStatus = 'ACTIVE' | 'ACKNOWLEDGED' | 'RESOLVED' | 'CANCELLED';
 export type SosRecipientKind = 'CAMPUS_CONSOLE' | 'CAMPUS_SECURITY' | 'EMERGENCY_CONTACT';
-type SosDeliveryStatus = 'SENT' | 'FAILED' | 'SKIPPED';
+type SosDeliveryStatus = 'SENT' | 'FAILED' | 'SKIPPED' | 'UNKNOWN';
 
 export interface SosDelivery {
   recipientKind: SosRecipientKind;
@@ -38,7 +38,7 @@ export interface SosAlert {
 }
 
 export function isEmergencyActive(status: EmergencyStatus): boolean {
-  return status === 'COUNTDOWN' || status === 'SENDING' || status === 'OPEN';
+  return status === 'COUNTDOWN' || status === 'SENDING' || status === 'UNCONFIRMED' || status === 'OPEN';
 }
 
 export function isAlertOpen(alert: SosAlert | null): boolean {

@@ -523,8 +523,11 @@ def seed_consults(db: Session, world: World, total: int) -> None:
 
 def seed_safety(db: Session, world: World, total: int) -> None:
     """Crisis events (the counsellor queue) and SOS alerts, in every state."""
+    from services.emergency_api import OPEN_STATUSES
+
     rng, now = world.rng, world.now
     crises, alerts = [], []
+    open_accounts = set(db.scalars(select(M.SosAlert.account_id).where(M.SosAlert.status.in_(OPEN_STATUSES))))
     for n in range(total):
         student = rng.choice(world.students)
         outcome = rng.choice(CRISIS_OUTCOMES)
@@ -536,6 +539,11 @@ def seed_safety(db: Session, world: World, total: int) -> None:
                        "acknowledged_by": "" if outcome == "PENDING" else rng.choice(world.counsellors),
                        "outcome": outcome, "outcome_note": "" if outcome == "PENDING" else "Test follow-up note."})
         status = rng.choice(SOS_STATUSES)
+        if status in OPEN_STATUSES:
+            if student["id"] in open_accounts:
+                status = rng.choice(tuple(value for value in SOS_STATUSES if value not in OPEN_STATUSES))
+            else:
+                open_accounts.add(student["id"])
         alerts.append({"id": sid("sos", n), "account_id": student["id"], "campus": student["campus"],
                        "location_note": "Hostel B, 2nd floor (test)", "latitude": 17.4, "longitude": 78.5, "status": status,
                        "created_at": created, "acknowledged_by": "" if status in ("ACTIVE", "CANCELLED") else rng.choice(world.campus_admins),

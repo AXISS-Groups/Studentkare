@@ -73,6 +73,7 @@ TABLE_PLANES: dict[str, str] = {
     "care_followup_tasks": CLINICAL,
     "care_crisis_events": CLINICAL,
     "care_sos_alerts": CLINICAL,
+    "care_sos_requests": CLINICAL,
     "care_sos_deliveries": CLINICAL,
     "care_blood_donors": CLINICAL,                # blood group
     "care_blood_sos_requests": CLINICAL,

@@ -16,6 +16,7 @@ from sqlalchemy import (
     Text,
     UniqueConstraint,
     event,
+    text,
 )
 from sqlalchemy import (
     false as sa_false,
@@ -1172,6 +1173,9 @@ class SosAlert(Base):
     """A student's SOS. Exists the moment it is raised, before any message is sent,
     so the campus console sees it even if every outbound channel fails."""
     __tablename__ = "care_sos_alerts"
+    __table_args__ = (Index("uq_care_sos_alerts_open_account", "account_id", unique=True,
+                           postgresql_where=text("status IN ('ACTIVE', 'ACKNOWLEDGED')"),
+                           sqlite_where=text("status IN ('ACTIVE', 'ACKNOWLEDGED')")),)
     id: Mapped[str] = mapped_column(String, primary_key=True)
     account_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"), index=True)
     campus: Mapped[str] = mapped_column(String(160), default="", index=True)
@@ -1187,6 +1191,14 @@ class SosAlert(Base):
     cancelled_at: Mapped[float] = mapped_column(Float, default=0.0)
 
 
+class SosRequest(Base):
+    """Account-owned request receipts. A retry returns its original alert even after closure."""
+    __tablename__ = "care_sos_requests"
+    account_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"), primary_key=True)
+    request_id: Mapped[str] = mapped_column(String(120), primary_key=True)
+    alert_id: Mapped[str] = mapped_column(ForeignKey("care_sos_alerts.id"), index=True)
+
+
 class SosDelivery(Base):
     """One attempt to reach one recipient about one SOS, with its real outcome."""
     __tablename__ = "care_sos_deliveries"
@@ -1195,7 +1207,7 @@ class SosDelivery(Base):
     recipient_kind: Mapped[str] = mapped_column(String(20))  # CAMPUS_CONSOLE | CAMPUS_SECURITY | EMERGENCY_CONTACT
     channel: Mapped[str] = mapped_column(String(12))  # CONSOLE | WHATSAPP
     recipient_label: Mapped[str] = mapped_column(String(160), default="")  # a name, never a number
-    status: Mapped[str] = mapped_column(String(10))  # SENT | FAILED | SKIPPED
+    status: Mapped[str] = mapped_column(String(10))  # SENT | FAILED | SKIPPED | UNKNOWN
     detail: Mapped[str] = mapped_column(String(200), default="")
     created_at: Mapped[float] = mapped_column(Float)
 

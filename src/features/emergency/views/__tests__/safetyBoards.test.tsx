@@ -199,6 +199,33 @@ describe('SosBeacon / SosDebrief (Tier 1)', () => {
     expect(api).not.toHaveBeenCalled();
   });
 
+  it('keeps 112 and same-request retry available while a delayed commit is checked', async () => {
+    vi.useFakeTimers();
+    api.mockImplementation(async (_path, init) => {
+      if (init?.method === 'POST') throw new Error('timeout');
+      return { alert: null } as never;
+    });
+    await act(async () => { render(<SosView signedIn links={{}} />); });
+    fireEvent.click(screen.getByTestId('sos-send'));
+    await act(async () => { await vi.advanceTimersByTimeAsync(3000); });
+    expect(screen.getByTestId('sos-unconfirmed')).toHaveTextContent(en('sos.sendUnconfirmed'));
+    expect(screen.queryByText(en('sos.notSentTitle'))).toBeNull();
+    fireEvent.click(screen.getByTestId('sos-call-112'));
+    expect(openURL).toHaveBeenCalledWith('tel:112');
+    const firstBody = api.mock.calls.find(([, init]) => init?.method === 'POST')?.[1]?.body;
+    fireEvent.click(screen.getByTestId('sos-retry-send'));
+    await act(async () => { await Promise.resolve(); });
+    const sends = api.mock.calls.filter(([, init]) => init?.method === 'POST');
+    expect(sends).toHaveLength(2);
+    expect(sends[1]?.[1]?.body).toEqual(firstBody);
+    api.mockResolvedValueOnce({ alert: alert({ deliveries: [
+      { recipientKind: 'EMERGENCY_CONTACT', channel: 'WHATSAPP', recipient: 'Amma', status: 'UNKNOWN', detail: '' },
+    ] }) });
+    await act(async () => { await vi.advanceTimersByTimeAsync(publicSettingDefaults['emergency.sos_poll_seconds'] * 1000); });
+    expect(screen.getByTestId('sos-beacon')).toBeInTheDocument();
+    expect(screen.getByText(en('sos.status.UNKNOWN'))).toBeInTheDocument();
+  });
+
   it('polls ACTIVE → ACKNOWLEDGED → RESOLVED and stops polling after resolution', async () => {
     vi.useFakeTimers();
     api.mockResolvedValueOnce({ alert: alert() });

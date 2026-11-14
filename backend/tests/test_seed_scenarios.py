@@ -1,4 +1,5 @@
 """Staging seed (scripts/seed_scenarios.py): refuses unsafe places, fills every scenario, removes only its own rows."""
+import random
 import time
 
 import pytest
@@ -88,6 +89,19 @@ def test_seeds_every_scenario_and_purges_only_its_own(db):
     assert removed["care_accounts"] == before["care_accounts"]
     assert S.count(db) == {}                                                            # nothing seeded is left
     assert db.get(M.Account, "real-0") is not None                                     # the real one stays
+
+
+def test_safety_seed_keeps_one_open_sos_when_a_student_has_many_incidents(db):
+    real_student(db)
+    db.flush()
+    world = S.World(random.Random(7), time.time())
+    world.students = [{"id": "real-0", "campus": "Synthetic Campus"}]
+    world.counsellors = ["synthetic-staff"]
+    world.campus_admins = ["synthetic-staff"]
+    S.seed_safety(db, world, total=100)
+    db.flush()
+    assert db.scalar(select(func.count()).select_from(M.SosAlert)) == 100
+    assert db.scalar(select(func.count()).select_from(M.SosAlert).where(M.SosAlert.status.in_(("ACTIVE", "ACKNOWLEDGED")))) == 1
 
 
 def test_ten_named_accounts_per_role(db, monkeypatch):
