@@ -2,6 +2,7 @@ import React from 'react';
 import { Bell, X } from 'lucide-react';
 import { navigate } from '../../lib/utils/workflowRouting';
 import { useT } from '@/i18n';
+import { useOverlay } from '@/design-system/overlays/useOverlay';
 import '../../theme/workflows.css';
 
 /**
@@ -15,13 +16,14 @@ import '../../theme/workflows.css';
  */
 export function NotificationCenterModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const t = useT();
+  const { panel, requestClose } = useOverlay({ open: isOpen, onClose, busy: false, dismissible: true });
   if (!isOpen) return null;
 
   const openInbox = () => { onClose(); navigate('notifications'); };
 
   return (
-    <div className="wf-modal-backdrop" onClick={onClose}>
-      <div className="wf-modal-card" role="dialog" aria-modal="true" aria-labelledby="notification-center-title" style={{ maxWidth: 520 }} onClick={e => e.stopPropagation()}>
+    <div className="wf-modal-backdrop" onClick={requestClose}>
+      <div ref={panel} tabIndex={-1} className="wf-modal-card" role="dialog" aria-modal="true" aria-labelledby="notification-center-title" style={{ maxWidth: 520 }} onClick={e => e.stopPropagation()}>
         <button type="button" aria-label={t('care.close')} className="wf-modal-close" onClick={onClose}>
           <X size={18} aria-hidden="true" />
         </button>

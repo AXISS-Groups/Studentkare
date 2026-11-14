@@ -29,6 +29,7 @@ export interface CatalogItem {
 export class ShopViewModel implements ViewModel {
   kind: ShopKind = 'product';
   query = '';
+  category = '';
   items: CatalogItem[] | null = null;
   failed = false;
   private requestSeq = 0;
@@ -53,7 +54,7 @@ export class ShopViewModel implements ViewModel {
     this.failed = false;
     const q = this.query.trim();
     try {
-      const res = await this.request<{ items: CatalogItem[] }>(`/catalog?kind=${this.kind}&limit=50${q ? `&query=${encodeURIComponent(q)}` : ''}`);
+      const res = await this.request<{ items: CatalogItem[] }>(`/catalog?kind=${this.kind}&limit=50${q ? `&query=${encodeURIComponent(q)}` : ''}${this.category ? `&category=${encodeURIComponent(this.category)}` : ''}`);
       // A slower, older answer must not overwrite a newer one.
       if (this.disposed || seq !== this.requestSeq) return;
       runInAction(() => { this.items = res.items; });
@@ -65,6 +66,7 @@ export class ShopViewModel implements ViewModel {
   setKind(kind: ShopKind): void {
     if (kind === this.kind) return;
     this.kind = kind;
+    this.category = '';
     void this.load();
   }
 
@@ -79,6 +81,7 @@ export class ShopViewModel implements ViewModel {
   reset(): void {
     this.kind = 'product';
     this.query = '';
+    this.category = '';
     this.items = null;
     this.failed = false;
   }

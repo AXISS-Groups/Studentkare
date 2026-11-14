@@ -228,7 +228,8 @@ const ProductBoard = observer(function ProductBoard({ itemId }: { itemId: string
 export function ProductScreen(): React.ReactElement {
   const route = useRoute();
   const params = (route.params ?? {}) as { itemId?: string };
-  return <Frame><ProductBoard itemId={params.itemId ?? ''} /></Frame>;
+  const itemId = typeof params.itemId === 'string' ? params.itemId : '';
+  return <Frame><ProductBoard key={itemId} itemId={itemId} /></Frame>;
 }
 export function TrendsScreen(): React.ReactElement {
   const navigate = useNavigate();

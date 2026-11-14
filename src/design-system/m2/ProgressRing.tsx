@@ -2,6 +2,16 @@ import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useReducedMotion } from '../motion';
 import { color, font, fontWeight, motion } from '../theme';
+import { clampRing } from './progressRingModel';
+import type { ProgressRingProps } from './progressRingModel';
+
+export { clampRing } from './progressRingModel';
+export type { ProgressRingProps } from './progressRingModel';
+
+const VIEW = 64;
+const R = 28;
+const STROKE = 7;
+const CIRCUMFERENCE = 2 * Math.PI * R;
 
 /**
  * A progress ring with its count in the middle (M2Home "Medicines today",
@@ -10,28 +20,6 @@ import { color, font, fontWeight, motion } from '../theme';
  * ProgressRing.native.tsx draws it with react-native-svg. The ring is
  * aria-hidden; the caller names the value in words next to it.
  */
-export interface ProgressRingProps {
-  /** 0 … 1. */
-  value: number;
-  /** Text in the middle, e.g. "2/3". */
-  centre: string;
-  size?: number;
-  /** Arc colour on the navy card (`on-hero-positive`). */
-  tone?: string;
-  /** Track colour (`on-hero-track`). */
-  track?: string;
-  testID?: string;
-}
-
-const VIEW = 64;
-const R = 28;
-const STROKE = 7;
-const CIRCUMFERENCE = 2 * Math.PI * R;
-
-export function clampRing(value: number): number {
-  return Number.isFinite(value) ? Math.min(1, Math.max(0, value)) : 0;
-}
-
 export function ProgressRing({ value, centre, size = 86, tone = color.onHeroPositive, track = color.onHeroTrack, testID }: ProgressRingProps) {
   const reduced = useReducedMotion();
   const target = clampRing(value);

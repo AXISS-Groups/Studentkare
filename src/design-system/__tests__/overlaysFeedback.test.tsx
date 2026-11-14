@@ -24,6 +24,30 @@ function Opener({ children }: { children: (close: () => void) => React.ReactNode
 }
 
 describe('Overlay (S7: one API for sheet, drawer and dialog)', () => {
+  it('nested dialogs handle Escape only at the top and keep the background isolated until both close', () => {
+    const outerClose = vi.fn();
+    const innerClose = vi.fn();
+    const content = (inner: boolean) => <>
+      <button data-testid="background">Background</button>
+      <Overlay open variant="dialog" title="Outer" onClose={outerClose}><button>Outer action</button></Overlay>
+      <Overlay open={inner} variant="dialog" title="Inner" onClose={innerClose}><button>Inner action</button></Overlay>
+    </>;
+    const view = render(content(false));
+    const background = view.container.querySelector('[data-testid="background"]');
+    expect(view.container).toHaveAttribute('inert');
+    view.rerender(content(true));
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(innerClose).toHaveBeenCalledOnce();
+    expect(outerClose).not.toHaveBeenCalled();
+    view.rerender(content(false));
+    expect(screen.getByRole('button', { name: 'Outer action' })).toHaveFocus();
+    expect(view.container).toHaveAttribute('inert');
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(outerClose).toHaveBeenCalledOnce();
+    view.unmount();
+    expect(document.body.style.overflow).toBe('');
+    expect(background?.hasAttribute('inert')).toBe(false);
+  });
   it.each(['dialog', 'sheet', 'drawer'] as const)('%s is a named modal dialog with the page scroll locked', (variant) => {
     render(<Overlay open variant={variant} title="Choose a pickup slot" onClose={noop}><button type="button">Tomorrow</button></Overlay>);
     const dialog = screen.getByRole('dialog', { name: 'Choose a pickup slot' });

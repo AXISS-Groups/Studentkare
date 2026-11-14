@@ -4,6 +4,7 @@ import { apiRequest } from '../../data/services/http';
 import { say, useT, type Said } from '@/i18n';
 import { ConsultCallPanel } from './consult/ConsultCallPanel';
 import '../../theme/workflows.css';
+import { useOverlay } from '@/design-system/overlays/useOverlay';
 
 interface SessionState { status: string; studentJoined: boolean; providerJoined: boolean; liveMedia: boolean; }
 
@@ -29,6 +30,7 @@ function VideoConsultationDialog({ appointment, onClose }: { appointment: { id: 
   const [error, setError] = useState<Said | null>(null);
   // null until /state answers; a failed answer counts as "no live media" (fail closed).
   const [liveMedia, setLiveMedia] = useState<boolean | null>(null);
+  const { panel, requestClose } = useOverlay({ open: true, onClose, busy, dismissible: liveMedia === false });
   const checkedIn = Boolean(session?.studentJoined);
   const checkedInRef = useRef(false);
   useEffect(() => { checkedInRef.current = checkedIn; }, [checkedIn]);
@@ -77,9 +79,9 @@ function VideoConsultationDialog({ appointment, onClose }: { appointment: { id: 
   </div>;
 
   // During a call a stray click outside must not hang up; use Close instead.
-  return <div className="wf-modal-backdrop" onClick={liveMedia ? undefined : onClose}>
-    <div className="wf-modal-card" role="dialog" aria-modal="true" aria-labelledby="consult-checkin-title" style={{ maxWidth: 560 }} onClick={event => event.stopPropagation()}>
-      <button type="button" className="wf-modal-close" onClick={onClose} aria-label={t('care.close')}><X size={18} aria-hidden="true" /></button>
+  return <div className="wf-modal-backdrop" onClick={requestClose}>
+    <div ref={panel} tabIndex={-1} className="wf-modal-card" role="dialog" aria-modal="true" aria-labelledby="consult-checkin-title" style={{ maxWidth: 560 }} onClick={event => event.stopPropagation()}>
+      <button type="button" className="wf-modal-close" disabled={busy} onClick={onClose} aria-label={t('care.close')}><X size={18} aria-hidden="true" /></button>
       <div className="wf-modal-header">
         <h3 id="consult-checkin-title"><UserCheck size={22} aria-hidden="true" /> {t('care.consult.title')}</h3>
         <p>{t('care.consult.when', { when: formatWhen(appointment.slotStart) })}</p>
@@ -109,7 +111,7 @@ function VideoConsultationDialog({ appointment, onClose }: { appointment: { id: 
       </>}
 
       <div className="wf-row-actions" style={{ marginTop: 18 }}>
-        <button type="button" className="health-button" style={{ minHeight: 44 }} onClick={onClose}>{t('care.close')}</button>
+        <button type="button" className="health-button" style={{ minHeight: 44 }} disabled={busy} onClick={onClose}>{t('care.close')}</button>
       </div>
     </div>
   </div>;

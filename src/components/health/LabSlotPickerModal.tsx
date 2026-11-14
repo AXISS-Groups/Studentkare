@@ -6,6 +6,7 @@ import { displayDate } from '../../data/types/workflowTypes';
 import { navigate } from '../../lib/utils/workflowRouting';
 import { say, useT, type MessageKey, type Said } from '@/i18n';
 import '../../theme/workflows.css';
+import { useOverlay } from '@/design-system/overlays/useOverlay';
 
 export interface LabSlotPickerModalProps {
   testName: string;
@@ -99,6 +100,7 @@ function LabBookingSession({ testName, catalogItemId, onClose, onRequestCare, si
   }, [catalogItemId, orderId, signedIn, revision]);
 
   const close = () => { request.current?.abort(); onClose(); };
+  const { panel, requestClose } = useOverlay({ open: true, onClose: close, busy: booking, dismissible: true });
   const handleBookSlot = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!signedIn || loading || request.current || appointment || chosen) return;
@@ -138,9 +140,9 @@ function LabBookingSession({ testName, catalogItemId, onClose, onRequestCare, si
     }
   };
 
-  return <div className="wf-modal-backdrop" onClick={close}>
-    <div className="wf-modal-card" role="dialog" aria-modal="true" aria-labelledby="lab-modal-title" style={{ maxWidth: 580 }} onClick={event => event.stopPropagation()}>
-      <button type="button" className="wf-modal-close" onClick={close} aria-label={t('care.close')}><X size={18} aria-hidden="true" /></button>
+  return <div className="wf-modal-backdrop" onClick={requestClose}>
+    <div ref={panel} tabIndex={-1} className="wf-modal-card" role="dialog" aria-modal="true" aria-labelledby="lab-modal-title" style={{ maxWidth: 580 }} onClick={event => event.stopPropagation()}>
+      <button type="button" className="wf-modal-close" disabled={booking} onClick={requestClose} aria-label={t('care.close')}><X size={18} aria-hidden="true" /></button>
       <div className="wf-modal-header"><h3 id="lab-modal-title"><Calendar size={22} aria-hidden="true" /> {t(orderId ? 'care.lab.orderTitle' : 'care.lab.title')}</h3><p>{testName}</p></div>
       <p>{t(orderId ? 'care.lab.orderIntro' : 'care.lab.intro')}</p>
       {labOrder?.fastingRequired && <div className="wf-notice" role="note">{t('care.lab.fastingNote')}</div>}
@@ -172,7 +174,7 @@ function LabBookingSession({ testName, catalogItemId, onClose, onRequestCare, si
         <p>{t('care.lab.careAlternative')}</p>
         <button type="button" className="health-button" onClick={() => { close(); onRequestCare(); }}>{t('care.lab.careContinue')}</button>
       </div>}
-      {signedIn && !orderId && <button type="button" className="health-button" onClick={() => { close(); navigate('appointments'); }}>{t('care.lab.viewAppointments')}</button>}
+      {signedIn && !orderId && <button type="button" className="health-button" disabled={booking} onClick={() => { close(); navigate('appointments'); }}>{t('care.lab.viewAppointments')}</button>}
     </div>
   </div>;
 }

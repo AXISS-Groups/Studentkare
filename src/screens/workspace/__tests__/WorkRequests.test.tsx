@@ -345,12 +345,14 @@ describe('Appointments', () => {
     expect(screen.queryByRole('heading', { name: 'Consultation check-in' })).toBeNull();
   });
 
-  it('closes the consultation when another tab is opened', async () => {
+  it('requires closing the consultation before another tab can be opened', async () => {
     answerAll([], [appointment('b', { status: 'CONFIRMED' })]);
     show();
     await screen.findByText('No service requests assigned to you.');
     await openTab('Appointments');
     fireEvent.click(screen.getByRole('button', { name: 'Join consultation' }));
+    expect(screen.queryByRole('button', { name: 'Follow-ups' })).toBeNull();
+    fireEvent.click(screen.getAllByRole('button', { name: 'Close' })[0]);
     fireEvent.click(tab('Follow-ups'));
     fireEvent.click(tab('Appointments'));
     expect(screen.queryByRole('heading', { name: 'Consultation check-in' })).toBeNull();

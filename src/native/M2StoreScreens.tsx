@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useIsFocused, useNavigation, useRoute } from '@react-navigation/native';
+import type { RouteProp } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { RootStackParamList } from './App';
 import { M2ActiveProvider } from '@/design-system/m2';
 import { color } from '@/design-system/theme';
 import { useApiResource } from '@/hooks/api/useApiResource';
@@ -126,13 +129,14 @@ export function InsuranceScreen(): React.ReactElement {
   );
 }
 
-/** Mobile 2.0 Orders (the pill nav's Orders): one order's page is kept in the screen's own state. */
+/** The route owns Orders focus, including warm links and returning to the list. */
 export function OrdersScreen(): React.ReactElement {
   const navigate = useNavigate();
   const [vm] = useState(() => new OrdersViewModel());
   // A deep link (studentkare.co/orders/<id>) opens that order's details.
-  const params = useRoute().params as { orderId?: unknown } | undefined;
-  const [orderId, setOrderId] = useState<string | null>(() => (typeof params?.orderId === 'string' ? params.orderId : null));
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'Orders'>>();
+  const { params } = useRoute<RouteProp<RootStackParamList, 'Orders'>>();
+  const orderId = typeof params?.orderId === 'string' && params.orderId.trim() ? params.orderId : null;
   useEffect(() => { void vm.load(); return () => vm.dispose(); }, [vm]);
   return (
     <Frame>
@@ -143,10 +147,10 @@ export function OrdersScreen(): React.ReactElement {
         buyAgain: () => navigate('Marketplace'),
         returnItem: () => navigate('ReturnRequest'),
         reports: () => navigate('Vault'),
-        details: setOrderId,
-        allOrders: () => setOrderId(null),
+        details: (id) => navigation.setParams({ orderId: id }),
+        allOrders: () => navigation.setParams({ orderId: undefined }),
         openEmergencyCard: () => navigate('EmergencyCard'),
-        openPass: () => navigate('DigitalId'),
+        openPass: () => navigate('Pass'),
         openCrisis: () => navigate('Emergency'),
         refill: (order, item) => navigate('Refills', { orderId: order, itemId: item }),
       }} />

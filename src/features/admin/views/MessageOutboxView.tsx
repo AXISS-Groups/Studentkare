@@ -46,6 +46,9 @@ export const MessageOutboxView = observer(function MessageOutboxView() {
   const channel = (message: OutboxMessage) => message.channel === 'IN_APP' ? t('admin.outbox.channelInApp') : CHANNEL_LABEL[message.channel] ?? (message.channel ? readable(message.channel) : '—');
   const stat = (value: number | null) => value === null ? null : count(value);
   const target = vm.requeueTarget;
+  const processProblem = vm.processBusy
+    ? <p className="sk-admin-form-error" role="alert">{t('admin.jobs.alreadyRunning')}</p>
+    : vm.processError && <p className="sk-admin-form-error" role="alert">{t('admin.outbox.processError')} {vm.processError}</p>;
 
   return <AdminPage eyebrow={t('admin.eyebrow.contentAi')} title={t('admin.outbox.title')} description={t('admin.outbox.description')}
     status={<button type="button" className="sk-admin-button sk-admin-button-primary" onClick={vm.askProcess} disabled={vm.processing}>
@@ -63,9 +66,7 @@ export const MessageOutboxView = observer(function MessageOutboxView() {
       {vm.lastRun.deferred > 0 && <>{' '}{t('admin.outbox.processedQuiet', { deferred: count(vm.lastRun.deferred) })}</>}
     </p>}
     {vm.requeueOutcome && <p className="sk-admin-note" role="status">{vm.requeueOutcome === 'requeued' ? t('admin.outbox.requeued') : t('admin.outbox.requeueNotFound')}</p>}
-    {vm.processBusy
-      ? <p className="sk-admin-form-error" role="alert">{t('admin.jobs.alreadyRunning')}</p>
-      : vm.processError && <p className="sk-admin-form-error" role="alert">{t('admin.outbox.processError')} {vm.processError}</p>}
+    {!vm.confirmingProcess && processProblem}
 
     <div className="sk-admin-chips" role="group" aria-label={t('admin.outbox.filterLabel')}>
       {FILTERS.map(filter => <button key={filter} type="button" aria-pressed={vm.filter === filter} onClick={() => vm.setFilter(filter)}>
@@ -104,7 +105,7 @@ export const MessageOutboxView = observer(function MessageOutboxView() {
     </div>
     <p className="sk-admin-note">{t('admin.outbox.note')}</p>
 
-    <ConfirmDialog open={vm.confirmingProcess} title={t('admin.outbox.processTitle')} body={t('admin.outbox.processBody')}
+    <ConfirmDialog open={vm.confirmingProcess} title={t('admin.outbox.processTitle')} body={<>{t('admin.outbox.processBody')}{processProblem}</>}
       confirmLabel={t('admin.outbox.process')} busy={vm.processing} onConfirm={() => void vm.process()} onCancel={vm.cancelProcess} />
     <ConfirmDialog open={target !== null} title={t('admin.outbox.requeueTitle')}
       body={<>{target && t('admin.outbox.requeueBody', { channel: channel(target), recipient: target.recipientMasked || '—' })}{vm.requeueError && <p className="sk-admin-form-error" role="alert">{t('admin.outbox.requeueError')} {vm.requeueError}</p>}</>}

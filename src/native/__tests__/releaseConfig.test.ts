@@ -9,6 +9,14 @@ vi.mock('@sentry/react-native', () => ({ init: vi.fn() }));
 const read = (file: string) => readFileSync(resolve(process.cwd(), file), 'utf8');
 
 describe('deep links (studentkare:// and https://studentkare.co)', () => {
+  it('parses native links without relying on URLSearchParams.get', () => {
+    vi.stubGlobal('URLSearchParams', class { constructor() { throw new Error('not implemented'); } });
+    try {
+      expect(resolveDeepLink('/orders?order=order+a&order=order-b#token=synthetic', 'signedIn')).toEqual({ name: 'Orders', params: { orderId: 'order a' } });
+      expect(resolveDeepLink('/orders?order=%ZZ', 'signedIn')).toEqual({ name: 'Orders' });
+      expect(resolveDeepLink('/medicine-info?q=test+query', 'signedIn')).toEqual({ name: 'MedicineInfo', params: { query: 'test query' } });
+    } finally { vi.unstubAllGlobals(); }
+  });
   it('opens sign in for a signed-out invite or sign-in link, and drops the invite token', () => {
     expect(resolveDeepLink('/claim#token=secret', 'signedOut')).toEqual({ name: 'SignIn' });
     expect(resolveDeepLink('login', 'signedOut')).toEqual({ name: 'SignIn' });
@@ -20,6 +28,9 @@ describe('deep links (studentkare:// and https://studentkare.co)', () => {
     expect(resolveDeepLink('/orders/ord_42', 'signedIn')).toEqual({ name: 'Orders', params: { orderId: 'ord_42' } });
     expect(resolveDeepLink('/orders', 'signedIn')).toEqual({ name: 'Orders' });
     expect(resolveDeepLink('/orders/ord_42', 'signedOut')).toEqual({ name: 'SignIn' });
+    expect(resolveDeepLink('/orders?order=ord_42', 'signedIn')).toEqual({ name: 'Orders', params: { orderId: 'ord_42' } });
+    expect(resolveDeepLink('/orders?order=ord_42', 'signedOut')).toEqual({ name: 'SignIn' });
+    expect(resolveDeepLink('/orders/ord_42', 'held')).toBeNull();
   });
 
   it('opens consults, medicine info and find care with the web query parameters', () => {

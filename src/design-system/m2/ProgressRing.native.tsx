@@ -2,11 +2,11 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
 import { color, font, fontWeight } from '../theme';
-import { clampRing } from './ProgressRing';
-import type { ProgressRingProps } from './ProgressRing';
+import { clampRing } from './progressRingModel';
+import type { ProgressRingProps } from './progressRingModel';
 
-export { clampRing } from './ProgressRing';
-export type { ProgressRingProps } from './ProgressRing';
+export { clampRing } from './progressRingModel';
+export type { ProgressRingProps } from './progressRingModel';
 
 const VIEW = 64;
 const R = 28;

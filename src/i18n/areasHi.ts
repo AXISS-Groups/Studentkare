@@ -30,6 +30,7 @@ import { mobile2HealthHi } from './areas/mobile2health';
 import { mobile2Hi } from './areas/mobile2';
 import { mobile2OrdersHi } from './areas/mobile2Orders';
 import { mobile2WebHi } from './areas/mobile2Web';
+import { nativeActionsHi } from './areas/nativeActions';
 import { newsroomContentHi } from './areas/newsroomContent';
 import { newsroomHi } from './areas/newsroom';
 import { onboardHi } from './areas/onboard';
@@ -96,6 +97,7 @@ export const areasHi = {
   ...mobile2Hi,
   ...mobile2OrdersHi,
   ...mobile2WebHi,
+  ...nativeActionsHi,
   ...newsroomContentHi,
   ...newsroomHi,
   ...onboardHi,

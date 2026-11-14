@@ -4,6 +4,7 @@ import { apiRequest } from '../../data/services/http';
 import { say, useT, type Said } from '@/i18n';
 import { ConsultCallPanel } from './consult/ConsultCallPanel';
 import '../../theme/workflows.css';
+import { useOverlay } from '@/design-system/overlays/useOverlay';
 
 interface SessionState { status: string; studentJoined: boolean; providerJoined: boolean; liveMedia: boolean; }
 
@@ -52,15 +53,16 @@ export function ProviderConsultationDialog({ appointment, onClose }: { appointme
   const started = Boolean(state?.providerJoined);
   // Calls only when the server says LiveKit is configured; unknown or failed = no call.
   const liveMedia = state?.liveMedia === true;
+  const { panel, requestClose } = useOverlay({ open: true, onClose, busy, dismissible: state !== null && !liveMedia });
   const noCallNote = <div className="wf-notice" role="note">
     <Info size={18} aria-hidden="true" />
     <div><strong>{t('consult.noteTitle')}</strong><div>{t('care.providerConsult.noCallBody')}</div></div>
   </div>;
 
   // During a call a stray click outside must not hang up; use Close instead.
-  return <div className="wf-modal-backdrop" onClick={liveMedia ? undefined : onClose}>
-    <div className="wf-modal-card" role="dialog" aria-modal="true" aria-labelledby="provider-consult-title" style={{ maxWidth: 560 }} onClick={event => event.stopPropagation()}>
-      <button type="button" className="wf-modal-close" onClick={onClose} aria-label={t('care.close')}><X size={18} aria-hidden="true" /></button>
+  return <div className="wf-modal-backdrop" onClick={requestClose}>
+    <div ref={panel} tabIndex={-1} className="wf-modal-card" role="dialog" aria-modal="true" aria-labelledby="provider-consult-title" style={{ maxWidth: 560 }} onClick={event => event.stopPropagation()}>
+      <button type="button" className="wf-modal-close" disabled={busy} onClick={onClose} aria-label={t('care.close')}><X size={18} aria-hidden="true" /></button>
       <div className="wf-modal-header">
         <h3 id="provider-consult-title"><ClipboardCheck size={22} aria-hidden="true" /> {t('care.providerConsult.title')}</h3>
         <p>{t('care.providerConsult.with', { name: appointment.customer })}</p>
@@ -80,7 +82,7 @@ export function ProviderConsultationDialog({ appointment, onClose }: { appointme
         {!started && <button type="button" className="health-button health-button-primary" style={{ minHeight: 44 }} disabled={!studentReady || busy} aria-busy={busy} onClick={() => { void markStarted(); }}>
           {t('care.providerConsult.markStarted')}
         </button>}
-        <button type="button" className="health-button" style={{ minHeight: 44 }} onClick={onClose}>{t('care.close')}</button>
+        <button type="button" className="health-button" style={{ minHeight: 44 }} disabled={busy} onClick={onClose}>{t('care.close')}</button>
       </div>
     </div>
   </div>;
