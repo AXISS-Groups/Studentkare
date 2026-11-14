@@ -1,7 +1,7 @@
 import React from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { observer } from 'mobx-react-lite';
-import { Button, Card, EmptyState, Eyebrow, Note, RadioGroup, TextField } from '@/design-system';
+import { Button, Card, EmptyState, Eyebrow, Note, RadioGroup, Select, TextField } from '@/design-system';
 import { color, font, fontWeight, space } from '@/design-system/theme';
 import { money } from '@/data/types/workflowTypes';
 import { useCheckoutViewModel } from '../viewmodel/useCheckoutViewModel';
@@ -72,6 +72,17 @@ export const CartCheckoutNativeView = observer(function CartCheckoutNativeView()
         ) : null}
         <TextField label={t('cart.city')} value={state.city} onChangeText={actions.setCity} />
         <TextField label={t('cart.pincode')} value={state.pincode} onChangeText={actions.setPincode} mono />
+        {state.deliveryMode === 'delivery' && state.areasStatus === 'loading' ? <Text style={styles.meta}>{t('cart.areaLoading')}</Text> : null}
+        {state.deliveryMode === 'delivery' && state.areasStatus === 'error' ? (
+          <>
+            <Note tone="attention">{t('cart.areaFailed')}</Note>
+            <Button label={t('cart.areaRetry')} variant="secondary" onPress={actions.retryAreas} />
+          </>
+        ) : null}
+        {state.deliveryMode === 'delivery' && state.areas.length > 0 ? (
+          <Select label={t('cart.area')} hint={t('cart.areaHint')} placeholder={t('cart.areaChoose')} value={state.area || null}
+            options={state.areas.map((a) => ({ value: a, label: a }))} onChange={actions.setArea} />
+        ) : null}
         {state.needsSlot ? (
           <TextField label={t('cart.when')} value={state.slotDateTime} onChangeText={actions.setSlotDateTime} hint={t('cart.whenHint')} mono />
         ) : null}
@@ -83,7 +94,7 @@ export const CartCheckoutNativeView = observer(function CartCheckoutNativeView()
       </View>
       <Text style={styles.meta}>{t('cart.paymentNote')}</Text>
 
-      {state.error ? <Note tone="danger">{state.error}</Note> : null}
+      {state.error ? <Note tone="danger">{state.errorKey ? t(state.errorKey) : state.error}</Note> : null}
 
       <Button
         label={t('cart.send')}

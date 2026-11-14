@@ -33,6 +33,7 @@ from core.team_scope import RESERVED_CAMPUS_MESSAGE, is_reserved_campus, team_sa
 from services import (
     clinical_profile,
     consent_ledger,
+    delivery_areas,
     document_filing,
     lab_results,
     livekit_media,
@@ -998,6 +999,7 @@ class CartValidationInput(StrictModel):
     pincode: str = Field(default="", max_length=10)
     # How the student will get the order. Pickup needs no delivery cover.
     mode: Literal["delivery", "pickup"] = "delivery"
+    area: str = Field(default="", max_length=120)
 
 
 @router.post("/cart/validate")
@@ -1013,6 +1015,7 @@ def validate_cart(body: CartValidationInput, user=Depends(authenticated_user), d
         serviceable = False
         serviceability_note = "Enter a 6-digit pincode."
     check_delivery = body.mode == "delivery" and _is_pincode(pincode)
+    delivery_refusal = ""
 
     items = []
     line_max = setting("shop.cart_line_max", db)
@@ -1041,16 +1044,21 @@ def validate_cart(body: CartValidationInput, user=Depends(authenticated_user), d
             continue
         # The item itself is fine; it is the delivery that is not offered, so the
         # note (pickup, or another address) is what the student is shown.
-        if check_delivery and item.kind == "product" and not provider_delivers_to(db, item.provider_id, pincode):
+        cover = delivery_cover(db, item.provider_id, pincode, body.area) if check_delivery and item.kind == "product" else DELIVERS
+        if cover != DELIVERS:
             serviceable = False
-            serviceability_note = NOT_DELIVERED_NOTE
+            serviceability_note = DELIVERY_NOTES[cover]
+            delivery_refusal = cover
         available = item.stock >= line.quantity
         if not available:
             serviceable = False
         items.append({"id": line.id, "available": available, "stock": item.stock,
                       "reason": "" if available else "insufficient stock"})
 
-    return {"serviceable": serviceable, "serviceabilityNote": serviceability_note, "items": items}
+    # deliveryRefusal lets the checkout show its own translated message and, for
+    # AREA_NEEDED, open the area picker: NO_PINCODE | AREA_NEEDED | NO_AREA | "".
+    return {"serviceable": serviceable, "serviceabilityNote": serviceability_note,
+            "deliveryRefusal": delivery_refusal, "items": items}
 
 
 def _is_pincode(pincode: str) -> bool:
@@ -1060,24 +1068,46 @@ def _is_pincode(pincode: str) -> bool:
 
 NOT_DELIVERED_NOTE = ("The provider does not deliver to this pincode. "
                       "Choose pickup at the provider, or use another address.")
+AREA_NOT_DELIVERED_NOTE = ("The provider does not deliver to this area. "
+                           "Choose pickup at the provider, or use another address.")
+AREA_NEEDED_NOTE = "Choose your area so we can check that the provider delivers there."
+
+DELIVERS = "DELIVERS"
+NO_PINCODE = "NO_PINCODE"
+AREA_NEEDED = "AREA_NEEDED"
+NO_AREA = "NO_AREA"
+DELIVERY_NOTES = {NO_PINCODE: NOT_DELIVERED_NOTE, AREA_NEEDED: AREA_NEEDED_NOTE, NO_AREA: AREA_NOT_DELIVERED_NOTE}
 
 
-def provider_delivers_to(db, provider_account_id: str, pincode: str) -> bool:
-    """Whether a provider has said it delivers to this pincode.
+def delivery_cover(db, provider_account_id: str, pincode: str, area: str = "") -> str:
+    """Whether a provider has said it delivers to this pincode and area.
 
     Strict (founder decision, 2026-11-14): the provider must have said it delivers
     at all, and only its own pincode and the pincodes it lists count. A provider with
     no record, an inactive record, delivery not offered or an empty list delivers
-    nowhere, so nothing is promised that nobody agreed to. Reads five columns of the
-    provider's record, which is all the commerce role may see.
+    nowhere, so nothing is promised that nobody agreed to.
+
+    Area-wise: where the provider lists areas for the pincode, the student's area
+    must be one of them (AREA_NEEDED when none was given). A pincode with no areas
+    listed is served in full. Reads six columns of the provider's record, which is
+    all the commerce role may see.
     """
     if not _is_pincode(pincode):
-        return False
+        return NO_PINCODE
     rows = db.execute(
-        select(M.ServiceProvider.pincode, M.ServiceProvider.serviceable_pincodes)
+        select(M.ServiceProvider.pincode, M.ServiceProvider.serviceable_pincodes, M.ServiceProvider.serviceable_areas)
         .where(M.ServiceProvider.account_id == provider_account_id, M.ServiceProvider.active.is_(True),
                M.ServiceProvider.delivery_available.is_(True))).all()
-    return any(row.pincode == pincode or pincode in (row.serviceable_pincodes or []) for row in rows)
+    outcome = NO_PINCODE
+    wanted = delivery_areas.area_key(area)
+    for row in rows:
+        if row.pincode != pincode and pincode not in (row.serviceable_pincodes or []):
+            continue
+        listed = [delivery_areas.area_key(name) for name in (row.serviceable_areas or {}).get(pincode, [])]
+        if not listed or wanted in listed:
+            return DELIVERS
+        outcome = NO_AREA if wanted else AREA_NEEDED
+    return outcome
 
 
 @router.get("/inventory/{item_id}")
@@ -1094,12 +1124,25 @@ class DeliveryInput(StrictModel):
     address: str = Field(default="", max_length=300)
     city: str = Field(min_length=2, max_length=100)
     pincode: str = Field(pattern=r"^[1-9][0-9]{5}$")
+    # The area inside the pincode, picked from GET /pincodes/{pincode}/areas. Needed
+    # only where the provider serves part of a pincode.
+    area: str = Field(default="", max_length=120)
 
     @model_validator(mode="after")
     def delivery_address(self):
         if self.mode == "delivery" and len(self.address) < DELIVERY_ADDRESS_MIN_CHARS:
             raise ValueError("Enter the full delivery or collection address.")
         return self
+
+
+def _delivery_record(delivery: DeliveryInput) -> dict:
+    """What is kept on the order. The area appears only when the student gave one."""
+    record = delivery.model_dump()
+    if not record.get("area", "").strip():
+        record.pop("area", None)
+    else:
+        record["area"] = record["area"].strip()
+    return record
 
 
 class OrderInput(StrictModel):
@@ -1141,9 +1184,11 @@ def place_order(body: OrderInput, idempotency_key: str = Header(..., min_length=
             raise HTTPException(422, "Lab tests are booked from Lab tests with a collection time, not bought through the cart.")
         # The server decides, not the cart check before it: a delivery is refused
         # unless the provider lists the pincode.
-        if (item.kind == "product" and body.delivery.mode == "delivery"
-                and not provider_delivers_to(db, item.provider_id, body.delivery.pincode)):
-            raise HTTPException(409, {"code": "NOT_DELIVERED", "message": NOT_DELIVERED_NOTE})
+        if item.kind == "product" and body.delivery.mode == "delivery":
+            cover = delivery_cover(db, item.provider_id, body.delivery.pincode, body.delivery.area)
+            if cover != DELIVERS:
+                raise HTTPException(409, {"code": "NOT_DELIVERED", "message": DELIVERY_NOTES[cover],
+                                          "values": {"reason": cover}})
         if item.kind != "product" and line.quantity != 1:
             raise HTTPException(422, "Select each service once.")
         if item.kind != "product":
@@ -1159,7 +1204,7 @@ def place_order(body: OrderInput, idempotency_key: str = Header(..., min_length=
         raise HTTPException(409, {"code": "PRICE_CHANGED", "message": "The price changed since you looked. Check the new total.",
                                   "values": {"totalPaise": live_total}})
     order = M.Order(id=new_id(), account_id=user["id"], idempotency_key=idempotency_key, request_hash=request_hash,
-                    total_paise=live_total, delivery=body.delivery.model_dump(), requested_slot=body.requestedSlot, created_at=time.time(),
+                    total_paise=live_total, delivery=_delivery_record(body.delivery), requested_slot=body.requestedSlot, created_at=time.time(),
                     # Stock is held until then for payment; 0 when no provider is connected.
                     payment_due_at=payments.payment_due_at_for_new_order(db))
     try:

@@ -31,6 +31,7 @@ from services import (
     activity_telemetry,
     agent_ayush,
     clinical_profile,
+    delivery_areas,
     ops_feed,
     payments,
     upload_files,
@@ -258,6 +259,8 @@ def provider_payload(row: M.ServiceProvider) -> dict:
         "homeCollection": row.home_collection, "sourceUrl": row.source_url,
         "deliveryAvailable": row.delivery_available, "pickupAvailable": row.pickup_available,
         "verifiedAt": row.verified_at, "active": row.active,
+        "serviceablePincodes": list(row.serviceable_pincodes or []),
+        "serviceableAreas": dict(row.serviceable_areas or {}),
     }
 
 
@@ -273,6 +276,8 @@ class ProviderInput(StrictModel):
     latitude: float = Field(default=0.0, ge=-90, le=90)
     longitude: float = Field(default=0.0, ge=-180, le=180)
     serviceablePincodes: list[str] = Field(default_factory=list, max_length=200)
+    # {pincode: [area, ...]} for a provider that serves only part of a pincode.
+    serviceableAreas: dict[str, list[str]] = Field(default_factory=dict, max_length=201)
     openHours: str = Field(default="", max_length=200)
     homeCollection: bool = False
     deliveryAvailable: bool = False
@@ -295,6 +300,13 @@ class ProviderInput(StrictModel):
         return list(dict.fromkeys(value))
 
 
+def _provider_areas(db, own_pincode: str, pincodes: list[str], areas: dict[str, list[str]]) -> dict[str, list[str]]:
+    try:
+        return delivery_areas.clean_provider_areas(db, own_pincode, pincodes, areas)
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from exc
+
+
 @router.post("/ops/service-providers", status_code=201)
 def create_provider(body: ProviderInput, user=Depends(require_super_admin), db: Session = Depends(workflow_db)):
     """Onboard a pharmacy or lab. Licence details are recorded, never asserted as verified."""
@@ -304,11 +316,13 @@ def create_provider(body: ProviderInput, user=Depends(require_super_admin), db: 
     if owner.is_team_account:
         # A provider is listed to real students; a team account is never one (core/team_scope.py).
         raise HTTPException(422, "A team account can't be listed as a provider.")
+    areas = _provider_areas(db, body.pincode, body.serviceablePincodes, body.serviceableAreas)
     row = M.ServiceProvider(
         id=new_id(), account_id=body.accountId, kind=body.kind, legal_name=body.legalName.strip(),
         licence_no=body.licenceNo.strip(), licence_expiry=body.licenceExpiry,
         accreditation=body.accreditation.strip(), address=body.address.strip(), pincode=body.pincode,
         latitude=body.latitude, longitude=body.longitude, serviceable_pincodes=body.serviceablePincodes,
+        serviceable_areas=areas,
         open_hours=body.openHours.strip(), home_collection=body.homeCollection,
         delivery_available=body.deliveryAvailable, pickup_available=body.pickupAvailable,
         source_url=body.sourceUrl.strip(), verified_at=0.0, active=True, updated_at=time.time(),
@@ -326,6 +340,19 @@ class ProviderUpdate(StrictModel):
     # A super admin has checked the listing (address, hours, coordinates) today; False clears it.
     # Only a verified listing with a current licence reaches the care directory (services/care_directory.py).
     verified: bool | None = None
+    # Where the provider delivers. Sending pincodes replaces the list; sending areas
+    # replaces the areas. Areas of a pincode that is no longer listed are dropped.
+    serviceablePincodes: list[str] | None = Field(default=None, max_length=200)
+    serviceableAreas: dict[str, list[str]] | None = Field(default=None, max_length=201)
+
+    @field_validator("serviceablePincodes")
+    @classmethod
+    def valid_pincodes(cls, value: list[str] | None) -> list[str] | None:
+        if value is None:
+            return None
+        if any(not delivery_areas.is_pincode(p) for p in value):
+            raise ValueError("Every serviceable pincode must be a six-digit Indian pincode.")
+        return list(dict.fromkeys(value))
 
 
 @router.patch("/ops/service-providers/{provider_id}")
@@ -343,10 +370,31 @@ def update_provider(provider_id: str, body: ProviderUpdate, user=Depends(require
         row.pickup_available = body.pickupAvailable
     if body.verified is not None:
         row.verified_at = time.time() if body.verified else 0.0
+    if body.serviceablePincodes is not None or body.serviceableAreas is not None:
+        pincodes = body.serviceablePincodes if body.serviceablePincodes is not None else list(row.serviceable_pincodes or [])
+        requested = body.serviceableAreas if body.serviceableAreas is not None else dict(row.serviceable_areas or {})
+        if body.serviceableAreas is None:
+            # Only the pincodes changed: keep the areas of pincodes still served.
+            requested = {p: names for p, names in requested.items() if p in {row.pincode, *pincodes}}
+        row.serviceable_areas = _provider_areas(db, row.pincode, pincodes, requested)
+        row.serviceable_pincodes = pincodes
     row.updated_at = time.time()
     audit(db, user["id"], "SERVICE_PROVIDER_UPDATED", row.id)
     db.commit()
     return provider_payload(row)
+
+
+@router.get("/pincodes/{pincode}/areas")
+def pincode_areas(pincode: str, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+    """The areas inside a pincode, for the checkout's area picker and the provider form.
+
+    Public postal reference data. An empty list means the directory has no areas for
+    this pincode (or is not loaded): checkout then asks for no area.
+    """
+    if not delivery_areas.is_pincode(pincode):
+        raise HTTPException(422, "Enter a 6-digit pincode.")
+    return {"pincode": pincode, "areas": delivery_areas.areas_for(db, pincode),
+            **delivery_areas.place_for(db, pincode), "source": delivery_areas.SOURCE}
 
 
 @router.get("/providers/nearby")

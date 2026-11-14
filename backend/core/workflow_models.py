@@ -1584,6 +1584,10 @@ class ServiceProvider(Base):
     latitude: Mapped[float] = mapped_column(Float, default=0.0)
     longitude: Mapped[float] = mapped_column(Float, default=0.0)
     serviceable_pincodes: Mapped[dict] = mapped_column(JSON, default=list)
+    # {pincode: [area, ...]}: the areas served inside a pincode, spelled as the pincode
+    # directory spells them (services/delivery_areas.py). A pincode absent here is
+    # served in full.
+    serviceable_areas: Mapped[dict] = mapped_column(JSON, default=dict)
     open_hours: Mapped[str] = mapped_column(String(200), default="")
     home_collection: Mapped[bool] = mapped_column(Boolean, default=False)
     # How a pharmacy hands medicines over. Recorded at onboarding, never assumed:
@@ -1864,6 +1868,20 @@ class OpsEvent(Base):
     created_at: Mapped[float] = mapped_column(Float, index=True)
     acknowledged_at: Mapped[float] = mapped_column(Float, default=0.0)
     acknowledged_by: Mapped[str] = mapped_column(String, default="")
+
+
+class PincodeArea(Base):
+    """One area (post-office locality) inside a pincode, from the All India Pincode Directory.
+
+    Reference data about places, loaded by an ops script. Students pick their area
+    from it and providers list the areas they deliver to from the same rows.
+    """
+    __tablename__ = "care_pincode_areas"
+    pincode: Mapped[str] = mapped_column(String(6), primary_key=True)
+    area: Mapped[str] = mapped_column(String(120), primary_key=True)
+    district: Mapped[str] = mapped_column(String(80), default="")
+    state: Mapped[str] = mapped_column(String(60), default="")
+    source: Mapped[str] = mapped_column(String(160), default="")
 
 
 class AutomationDelivery(Base):

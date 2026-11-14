@@ -143,7 +143,21 @@ export const WebCheckoutView = observer(function WebCheckoutView() {
                   <span>{t('cart.pincode')}</span>
                   <input required inputMode="numeric" pattern="[1-9][0-9]{5}" maxLength={6} value={d.pincode} onChange={(event) => vm.setDelivery({ pincode: event.target.value })} />
                 </label>
+                {d.mode === 'delivery' && vm.areas.length > 0 ? (
+                  <label className="sk-m2w-field">
+                    <span>{t('cart.area')}</span>
+                    <select value={vm.area} onChange={(event) => vm.setArea(event.target.value)} data-testid="checkout-area">
+                      <option value="">{t('cart.areaChoose')}</option>
+                      {vm.areas.map((a) => <option key={a} value={a}>{a}</option>)}
+                    </select>
+                  </label>
+                ) : null}
               </div>
+              {d.mode === 'delivery' && vm.areas.length > 0 ? <p className="sk-m2w-meta">{t('cart.areaHint')}</p> : null}
+              {d.mode === 'delivery' && vm.areasPhase === 'loading' ? <p className="sk-m2w-meta" role="status">{t('cart.areaLoading')}</p> : null}
+              {d.mode === 'delivery' && vm.areasPhase === 'error' ? (
+                <p className="sk-m2w-meta" role="alert">{t('cart.areaFailed')} <button type="button" className="sk-sw-link" onClick={() => void vm.loadAreas()}>{t('cart.areaRetry')}</button></p>
+              ) : null}
               <p className="sk-m2w-meta">{t('phone.checkout.whereNote')}</p>
             </section>
           </Rise>

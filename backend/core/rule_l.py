@@ -158,6 +158,7 @@ TABLE_PLANES: dict[str, str] = {
     "agent_runs": PLATFORM,
     "care_ops_events": PLATFORM,                  # counts and states only, by design
     "care_automation_deliveries": PLATFORM,       # which ops event ids were sent to the automation hook
+    "care_pincode_areas": PLATFORM,               # public postal reference data: areas inside each pincode
     "care_activity_counters": PLATFORM,
     "code_health_findings": PLATFORM,
     "department_states": PLATFORM,
@@ -272,9 +273,10 @@ def _matrix() -> dict[str, dict[str, Grant]]:
     # be able to leave an audit trail. Nothing more of identity or platform.
     commerce["care_accounts"] = Grant(("SELECT",), ("id", "role", "active"))
     # Where a provider delivers. Checkout must refuse a delivery to a pincode the
-    # provider has not listed, so it reads these five columns and nothing else of
+    # provider has not listed, so it reads these six columns and nothing else of
     # the provider's record (no licence, address, phone or opening hours).
-    commerce["care_service_providers"] = Grant(("SELECT",), ("account_id", "active", "delivery_available", "pincode", "serviceable_pincodes"))
+    commerce["care_service_providers"] = Grant(("SELECT",), ("account_id", "active", "delivery_available", "pincode", "serviceable_pincodes",
+                                                           "serviceable_areas"))
     commerce["care_workflow_audit"] = Grant(("INSERT",))
     commerce["care_ops_events"] = Grant(("INSERT",))
 
@@ -296,13 +298,18 @@ def _q(name: str) -> str:
     return '"' + name.replace('"', '""') + '"'
 
 
-def grant_statements(existing_tables: set[str]) -> list[str]:
+def grant_statements(existing_tables: set[str], existing_columns: dict[str, set[str]] | None = None) -> list[str]:
     """Idempotent SQL that resets both roles to exactly the matrix.
 
     Every classified table that exists is first stripped of all privileges for
     both roles (REVOKE also drops column grants), so re-running converges and a
     table moved between planes loses its old grant. Clinical tables also lose
     anything granted to PUBLIC.
+
+    ``existing_columns`` (table -> its columns) lets a column grant skip a column
+    the schema does not have yet: at an older revision the grant covers the columns
+    that exist instead of failing, which would leave the whole matrix unwritten.
+    Skipping only ever narrows a grant.
     """
     sql = [f"GRANT USAGE ON SCHEMA public TO {_q(role)}" for role in GROUP_ROLES]
     for table in sorted(existing_tables & set(TABLE_PLANES)):
@@ -314,7 +321,11 @@ def grant_statements(existing_tables: set[str]) -> list[str]:
             if table not in existing_tables:
                 continue
             if grant.columns:
-                cols = ", ".join(_q(c) for c in grant.columns)
+                present = [c for c in grant.columns
+                           if existing_columns is None or c in existing_columns.get(table, set())]
+                if not present:
+                    continue
+                cols = ", ".join(_q(c) for c in present)
                 privs = ", ".join(f"{p} ({cols})" for p in grant.privileges)
             else:
                 privs = ", ".join(grant.privileges)
@@ -429,7 +440,15 @@ def apply_grants(conn) -> ApplyResult:
 
     existing = {row[0] for row in conn.exec_driver_sql(
         "SELECT tablename FROM pg_tables WHERE schemaname = 'public'")}
-    error = _try(conn, grant_statements(existing))
+    column_tables = sorted({t for tables in GRANT_MATRIX.values() for t, g in tables.items() if g.columns} & existing)
+    columns: dict[str, set[str]] = {t: set() for t in column_tables}
+    if column_tables:
+        from sqlalchemy import text
+        for table, column in conn.execute(text(
+                "SELECT table_name, column_name FROM information_schema.columns "
+                "WHERE table_schema = 'public' AND table_name = ANY(:tables)"), {"tables": column_tables}):
+            columns[table].add(column)
+    error = _try(conn, grant_statements(existing, columns))
     if error:
         result.warnings.append(f"Rule L grants are NOT in force: writing the grant matrix failed ({error}). "
                                "The migrating user must own the tables.")

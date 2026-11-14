@@ -118,6 +118,74 @@ describe('PhoneShopViewModel', () => {
     expect(keys[0]).toBe(keys[1]);
   });
 
+  const HOME = { mode: 'delivery' as const, address: 'Flat 4, Lake View Road', city: 'Hyderabad', pincode: '500090' };
+  const OK = { serviceable: true, items: [{ id: 'p1', available: true, reason: '' }] };
+
+  it('offers the areas of the delivery pincode, and asks for none on pickup', async () => {
+    const { vm, calls } = vmWith({ '/pincodes/500090/areas': { pincode: '500090', areas: ['Bachupally', 'Nizampet'] } });
+    vm.setDelivery(ADDRESS);
+    expect(calls).toHaveLength(0);
+    vm.setDelivery({ mode: 'delivery' });
+    await vi.waitFor(() => expect(vm.areasPhase).toBe('ready'));
+    expect(vm.areas).toEqual(['Bachupally', 'Nizampet']);
+    vm.setArea('Somewhere else');
+    expect(vm.area).toBe('');
+    vm.setArea('Nizampet');
+    expect(vm.area).toBe('Nizampet');
+    vm.setDelivery({ pincode: '50009' });
+    expect(vm.area).toBe('');
+    expect(vm.areas).toEqual([]);
+  });
+
+  it('says the areas could not load and can try again', async () => {
+    const routes: Record<string, unknown> = { '/pincodes/500090/areas': new Error('down') };
+    const { vm } = vmWith(routes);
+    vm.setDelivery(HOME);
+    await vi.waitFor(() => expect(vm.areasPhase).toBe('error'));
+    routes['/pincodes/500090/areas'] = { areas: ['Bachupally'] };
+    await vm.loadAreas();
+    expect(vm.areas).toEqual(['Bachupally']);
+  });
+
+  it('sends the chosen area with the check and the order, and never for pickup', async () => {
+    const placed = { id: 'ord1', totalPaise: 14900, createdAt: 1, delivery: HOME, requestedSlot: '', paymentStatus: 'UNPAID', lines: [] };
+    const { vm, calls } = vmWith({ '/pincodes/500090/areas': { areas: ['Bachupally'] }, 'POST /cart/validate': OK, 'POST /orders': placed });
+    vm.setDelivery(HOME);
+    await vi.waitFor(() => expect(vm.areasPhase).toBe('ready'));
+    vm.setArea('Bachupally');
+    const c = cart([{ item: listing({}), quantity: 1 }]);
+    await vm.placeOrder(c);
+    const sent = (path: string) => JSON.parse(String(calls.filter((x) => x.path === path).pop()?.init?.body));
+    expect(sent('/cart/validate').area).toBe('Bachupally');
+    expect(sent('/orders').delivery.area).toBe('Bachupally');
+    vm.back();
+    vm.setDelivery({ mode: 'pickup' });
+    await vm.placeOrder(c);
+    expect(sent('/cart/validate').area).toBeUndefined();
+    expect(sent('/orders').delivery.area).toBeUndefined();
+  });
+
+  it.each([
+    ['NO_PINCODE', 'cart.refusal.noPincode'],
+    ['AREA_NEEDED', 'cart.refusal.areaNeeded'],
+    ['NO_AREA', 'cart.refusal.noArea'],
+  ] as const)('refuses home delivery in our own words for %s and places nothing', async (code, key) => {
+    const { vm, calls } = vmWith({ '/pincodes/500090/areas': { areas: [] }, 'POST /cart/validate': { ...OK, serviceable: false, serviceabilityNote: 'English from the server', deliveryRefusal: code } });
+    vm.setDelivery(HOME);
+    await vm.placeOrder(cart([{ item: listing({}), quantity: 1 }]));
+    expect(vm.checkoutError).toBe(key);
+    expect(vm.checkoutErrorText).toBe('');
+    expect(calls.some((x) => x.path === '/orders')).toBe(false);
+  });
+
+  it('keeps the server’s words for a refusal it does not know', async () => {
+    const { vm } = vmWith({ '/pincodes/500090/areas': { areas: [] }, 'POST /cart/validate': { ...OK, serviceable: false, serviceabilityNote: 'Closed today.', deliveryRefusal: 'SOMETHING_NEW' } });
+    vm.setDelivery(HOME);
+    await vm.placeOrder(cart([{ item: listing({}), quantity: 1 }]));
+    expect(vm.checkoutError).toBe('phone.checkout.notServiceable');
+    expect(vm.checkoutErrorText).toBe('Closed today.');
+  });
+
   it('empties the cart and shows the order summary once the Pay step is paid', () => {
     const { vm } = vmWith({});
     const c = cart([{ item: listing({}), quantity: 1 }]);
