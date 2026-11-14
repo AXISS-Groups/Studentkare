@@ -21,6 +21,8 @@ try:
     )
     from opentelemetry.sdk.trace import TracerProvider
     from opentelemetry.sdk.trace.export import BatchSpanProcessor
+
+    from core.telemetry_privacy import TELEMETRY_SERVICE_NAME, PrivacySpanExporter
     HAS_OTEL = True
 except ImportError:
     metrics = None
@@ -175,7 +177,7 @@ def _create_resource():
     if not HAS_OTEL or Resource is None:
         return None
     return Resource.create({
-        SERVICE_NAME: "studentkare-api",
+        SERVICE_NAME: TELEMETRY_SERVICE_NAME,
         SERVICE_VERSION: APP_VERSION,
         DEPLOYMENT_ENVIRONMENT: APP_ENV,
     })
@@ -197,10 +199,10 @@ def init_telemetry() -> bool:
         if OTLPSpanExporter is not None:
             try:
                 otlp_exporter = OTLPSpanExporter(endpoint=OTEL_ENDPOINT, insecure=True)
-                _tracer_provider.add_span_processor(BatchSpanProcessor(otlp_exporter))
-                logger.info("OTLP trace exporter configured for %s", OTEL_ENDPOINT)
-            except Exception as e:
-                logger.warning("OTLP trace exporter unavailable (traces will not be exported): %s", e)
+                _tracer_provider.add_span_processor(BatchSpanProcessor(PrivacySpanExporter(otlp_exporter)))
+                logger.info("OTLP trace exporter configured with restricted metadata")
+            except Exception:
+                logger.warning("OTLP trace exporter unavailable (traces will not be exported)")
 
         # Meter provider with Prometheus exporter
         prometheus_reader = PrometheusMetricReader()

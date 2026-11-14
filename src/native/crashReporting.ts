@@ -1,5 +1,7 @@
 import * as Sentry from '@sentry/react-native';
-import { scrubBreadcrumb, scrubEvent, scrubText } from '@/lib/sentryScrub';
+import { makeFetchTransport } from '@sentry/react';
+import { scrubBreadcrumb, scrubEvent } from '@/lib/sentryScrub';
+import { privacyTransport } from '@/lib/sentryTransport';
 import { isDev } from '@/core/env';
 
 /**
@@ -11,14 +13,14 @@ import { isDev } from '@/core/env';
  * - breadcrumbs keep only their category and level (no URLs, no route params,
  *   no console text); touch and navigation tracing are off;
  * - no screenshots, view hierarchy or performance traces;
- * - message text is scrubbed for PHI keywords, e-mail addresses and long
- *   digit runs (phone, Aadhaar, ABHA), and an event that still names PHI is
- *   dropped (AGENTS.md guardrail 9).
+ * - errors retain only enumerated metadata. The final JavaScript transport also
+ *   denies side envelopes. Native SDK capture is off because its crash path and
+ *   disk cache bypass these JavaScript privacy hooks.
  */
 
 const MAX_BREADCRUMBS = 30;
 
-export { scrubBreadcrumb, scrubEvent, scrubText };
+export { scrubBreadcrumb, scrubEvent };
 
 let started = false;
 
@@ -38,9 +40,20 @@ export function startCrashReporting(): boolean {
     enableCaptureFailedRequests: false,
     enableUserInteractionTracing: false,
     tracesSampleRate: 0,
+    enableNative: false,
+    autoInitializeNativeSdk: false,
+    enableNativeCrashHandling: false,
+    enableAutoPerformanceTracing: false,
+    enableAppStartTracking: false,
+    enableNativeFramesTracking: false,
+    enableStallTracking: false,
+    autoSessionTracking: false,
+    sendClientReports: false,
     maxBreadcrumbs: MAX_BREADCRUMBS,
     beforeBreadcrumb: (crumb) => scrubBreadcrumb(crumb),
     beforeSend: (event) => scrubEvent(event),
+    beforeSendTransaction: () => null,
+    transport: privacyTransport(makeFetchTransport),
   });
   started = true;
   return true;
