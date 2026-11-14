@@ -2,7 +2,7 @@
 id: lab-tests
 title: Booking a lab test and getting your report
 reviewed: 2026-10-23
-keywords: lab, lab test, blood test, sample, sample collection, pathology, test report, lab results, home collection, लैब, टेस्ट, जांच, ల్యాబ్, టెస్ట్, పరీక్ష
+keywords: compare lab tests, compare tests, compare packages, what's included, whats included, lab, lab test, blood test, sample, sample collection, pathology, test report, lab results, home collection, लैब, टेस्ट, जांच, ల్యాబ్, టెస్ట్, పరీక్ష
 ---
 <!--
 Written from: /lab-tests (src/features/m2store/views/M2LabsView.tsx, M2LabsRoute.tsx), lab bookings
@@ -12,6 +12,8 @@ step for lab reports (backend/services/workflow_api.py lab orders, care.rx.await
 Pay step and Awaiting payment state (src/features/labBooking/views/LabBookingOverlay.tsx, #225).
 -->
 Lab tests are booked from Lab tests. Search for a test or browse the tests you can book. Each test page names the lab that runs it, its accreditation, and when the report is due. If a test needs fasting, it says how many hours.
+
+On the Lab tests list, choose What's included on a test to see the tests it covers, whether fasting is needed, when the report is due, how the sample is given and which lab runs it. To compare two tests, tick Compare on each and open Compare: you see the price and every test included side by side, and Show only differences hides the lines that are the same.
 
 Booking works in four steps. You pick the tests and a collection slot. The sample is collected at your hostel block. The lab runs the tests. Your report arrives in your health vault.
 
