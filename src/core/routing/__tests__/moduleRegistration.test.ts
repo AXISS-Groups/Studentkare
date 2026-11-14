@@ -130,4 +130,9 @@ describe('the public pages are discoverable', () => {
     // no ABDM integration, and the notice itself is not published yet.
     expect(seo).not.toMatch(/ABDM|ABHA/);
   });
+
+  it('keeps fallback HTML in noscript to avoid flashing unstyled content before React mounts', () => {
+    expect(prerender).not.toMatch(/`<div id="root">\$\{route\.fallbackHtml/);
+    expect(prerender).toContain('<noscript>');
+  });
 });
