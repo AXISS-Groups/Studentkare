@@ -64,6 +64,7 @@ SAMPLE_NOTE = "Sample development entry. Illustrative listing for local testing;
 DEMO_LAB_BRAND = "Demo Diagnostics (sample lab)"
 DEMO_LAB = "demo.lab@studentkare.test"
 DEMO_LAB_PROVIDER_ID = "demo-lab-provider"
+DEMO_PHARMACY_PROVIDER_ID = "demo-pharmacy-provider"
 DEMO_COLLECTORS = (
     ("demo.collector1@studentkare.test", "Demo Collector One (sample)"),
     ("demo.collector2@studentkare.test", "Demo Collector Two (sample)"),
@@ -238,6 +239,15 @@ def seed_demo_data(db: Session, include_demo_users: bool = True) -> dict:
                                         salt=salt, salt_key=salt_key(salt), strength_value=value, strength_unit=unit))
         created["medicines"] += 1
     db.flush()
+    if db.scalar(select(M.ServiceProvider.id).where(M.ServiceProvider.account_id == vendor.id)) is None:
+        # Checkout refuses a delivery unless the seller lists the pincode, so the sample
+        # seller says where it delivers. No licence, never verified: it is a sample.
+        db.add(M.ServiceProvider(id=DEMO_PHARMACY_PROVIDER_ID, account_id=vendor.id, kind="PHARMACY",
+                                 legal_name="Sample pharmacy (not a real pharmacy)", licence_no="", licence_expiry=0.0,
+                                 accreditation="", address="Sample address, not a real pharmacy", pincode="500090",
+                                 serviceable_pincodes=["500090"], open_hours="Sample hours", source_url="",
+                                 delivery_available=True, pickup_available=True, verified_at=0.0, active=True,
+                                 updated_at=now))
     lab_owner = None
     # Consultations are a doctor's (CATALOG_PROVIDER_ROLES): with demo users, the demo doctor
     # provides them, so a booking reaches a doctor in dev (live-run audit #7).

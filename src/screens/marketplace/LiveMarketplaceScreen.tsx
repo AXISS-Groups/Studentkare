@@ -519,7 +519,7 @@ function LiveCheckout({ onClose, onSuccess }: { onClose: () => void; onSuccess: 
   const submit = async () => {
     // Validate against live inventory and serviceability before submitting.
     try {
-      const validation = await apiRequest<{ serviceable: boolean; serviceabilityNote?: string; items: { id: string; available: boolean; reason: string }[] }>('/cart/validate', { method: 'POST', body: JSON.stringify({ items: cart.lines.map(line => ({ id: line.item.id, quantity: line.quantity })), pincode: delivery.pincode }) });
+      const validation = await apiRequest<{ serviceable: boolean; serviceabilityNote?: string; items: { id: string; available: boolean; reason: string }[] }>('/cart/validate', { method: 'POST', body: JSON.stringify({ items: cart.lines.map(line => ({ id: line.item.id, quantity: line.quantity })), pincode: delivery.pincode, mode: delivery.mode }) });
       const blocked = validation.items.filter(item => !item.available);
       if (blocked.length || !validation.serviceable) {
         setCartNotice(blocked.length ? t('shopweb.checkout.unavailable', { reasons: blocked.map(item => item.reason).join(', ') }) : (validation.serviceabilityNote || t('shopweb.checkout.notServiceable')));

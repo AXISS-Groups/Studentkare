@@ -996,6 +996,8 @@ class CartLineInput(StrictModel):
 class CartValidationInput(StrictModel):
     items: list[CartLineInput] = Field(default_factory=list)
     pincode: str = Field(default="", max_length=10)
+    # How the student will get the order. Pickup needs no delivery cover.
+    mode: Literal["delivery", "pickup"] = "delivery"
 
 
 @router.post("/cart/validate")
@@ -1007,9 +1009,10 @@ def validate_cart(body: CartValidationInput, user=Depends(authenticated_user), d
     pincode = body.pincode.strip()
     serviceable = True
     serviceability_note = ""
-    if pincode and not _is_serviceable(pincode):
+    if pincode and not _is_pincode(pincode):
         serviceable = False
-        serviceability_note = "This pincode is not currently serviceable."
+        serviceability_note = "Enter a 6-digit pincode."
+    check_delivery = body.mode == "delivery" and _is_pincode(pincode)
 
     items = []
     line_max = setting("shop.cart_line_max", db)
@@ -1036,6 +1039,11 @@ def validate_cart(body: CartValidationInput, user=Depends(authenticated_user), d
             items.append({"id": line.id, "available": False, "stock": 0, "reason": "book lab tests from Lab tests"})
             serviceable = False
             continue
+        # The item itself is fine; it is the delivery that is not offered, so the
+        # note (pickup, or another address) is what the student is shown.
+        if check_delivery and item.kind == "product" and not provider_delivers_to(db, item.provider_id, pincode):
+            serviceable = False
+            serviceability_note = NOT_DELIVERED_NOTE
         available = item.stock >= line.quantity
         if not available:
             serviceable = False
@@ -1045,11 +1053,31 @@ def validate_cart(body: CartValidationInput, user=Depends(authenticated_user), d
     return {"serviceable": serviceable, "serviceabilityNote": serviceability_note, "items": items}
 
 
-def _is_serviceable(pincode: str) -> bool:
-    """Deterministic serviceability check. A real partner API would replace this;
-    a 6-digit Indian pincode that starts with a non-zero digit is treated as
-    serviceable. Unclear inputs are refused (not assumed serviceable)."""
+def _is_pincode(pincode: str) -> bool:
+    """A 6-digit Indian pincode that does not start with zero. Anything else is refused."""
     return bool(pincode) and pincode.isdigit() and len(pincode) == PINCODE_DIGITS and pincode[0] != "0"
+
+
+NOT_DELIVERED_NOTE = ("The provider does not deliver to this pincode. "
+                      "Choose pickup at the provider, or use another address.")
+
+
+def provider_delivers_to(db, provider_account_id: str, pincode: str) -> bool:
+    """Whether a provider has said it delivers to this pincode.
+
+    Strict (founder decision, 2026-11-14): the provider must have said it delivers
+    at all, and only its own pincode and the pincodes it lists count. A provider with
+    no record, an inactive record, delivery not offered or an empty list delivers
+    nowhere, so nothing is promised that nobody agreed to. Reads five columns of the
+    provider's record, which is all the commerce role may see.
+    """
+    if not _is_pincode(pincode):
+        return False
+    rows = db.execute(
+        select(M.ServiceProvider.pincode, M.ServiceProvider.serviceable_pincodes)
+        .where(M.ServiceProvider.account_id == provider_account_id, M.ServiceProvider.active.is_(True),
+               M.ServiceProvider.delivery_available.is_(True))).all()
+    return any(row.pincode == pincode or pincode in (row.serviceable_pincodes or []) for row in rows)
 
 
 @router.get("/inventory/{item_id}")
@@ -1111,6 +1139,11 @@ def place_order(body: OrderInput, idempotency_key: str = Header(..., min_length=
         if item.kind == "lab":
             # A lab test becomes a lab order with a slot and an address (POST /lab-bookings), never a cart line.
             raise HTTPException(422, "Lab tests are booked from Lab tests with a collection time, not bought through the cart.")
+        # The server decides, not the cart check before it: a delivery is refused
+        # unless the provider lists the pincode.
+        if (item.kind == "product" and body.delivery.mode == "delivery"
+                and not provider_delivers_to(db, item.provider_id, body.delivery.pincode)):
+            raise HTTPException(409, {"code": "NOT_DELIVERED", "message": NOT_DELIVERED_NOTE})
         if item.kind != "product" and line.quantity != 1:
             raise HTTPException(422, "Select each service once.")
         if item.kind != "product":

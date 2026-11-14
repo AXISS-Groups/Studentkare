@@ -339,7 +339,7 @@ export class PhoneShopViewModel implements ViewModel {
     const items = cart.lines.map((l) => ({ id: l.item.id, quantity: l.quantity }));
     try {
       const check = await this.request<{ serviceable: boolean; serviceabilityNote?: string; items: { id: string; available: boolean; reason: string }[] }>(
-        '/cart/validate', { method: 'POST', body: JSON.stringify({ items, pincode: this.delivery.pincode }) },
+        '/cart/validate', { method: 'POST', body: JSON.stringify({ items, pincode: this.delivery.pincode, mode: this.delivery.mode }) },
       );
       const blocked = check.items.filter((i) => !i.available);
       if (blocked.length || !check.serviceable) {
