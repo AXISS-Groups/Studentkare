@@ -497,6 +497,30 @@ services:
           cpus: '1.0'
           memory: 1G
 
+  # On-prem embedding model for Agent Ayush's retrieval (Rule-C: text never leaves this
+  # network). Optional: start it with
+  #   docker compose -f docker-compose.yml -f docker-compose.prod.yml --profile embeddings up -d ollama
+  # then pull the model once and point the backend at it; docs/ops/embeddings-ollama.md
+  # has the steps. No port is published: only services on this network can reach it.
+  # Setting EMBEDDING_OLLAMA_URL (not OLLAMA_URL) uses it for retrieval only, so
+  # Ayush's answers stay word-for-word quotes.
+  ollama:
+    image: ollama/ollama:0.40.6
+    container_name: studentkare-ollama
+    profiles: ["embeddings"]
+    restart: unless-stopped
+    environment:
+      OLLAMA_KEEP_ALIVE: 30m
+    volumes:
+      - ollama-models:/root/.ollama
+    networks:
+      - studentkare
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 4G
+
   # External database (managed by cloud provider)
   # No local Postgres container - use managed PostgreSQL (RDS, CloudSQL, etc.)
 
@@ -517,3 +541,4 @@ volumes:
   clamav-db:
   pg-backups:
   n8n-data:
+  ollama-models:
