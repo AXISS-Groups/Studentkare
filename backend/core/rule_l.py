@@ -157,6 +157,7 @@ TABLE_PLANES: dict[str, str] = {
     "care_agent_runs": PLATFORM,
     "agent_runs": PLATFORM,
     "care_ops_events": PLATFORM,                  # counts and states only, by design
+    "care_automation_deliveries": PLATFORM,       # which ops event ids were sent to the automation hook
     "care_activity_counters": PLATFORM,
     "code_health_findings": PLATFORM,
     "department_states": PLATFORM,

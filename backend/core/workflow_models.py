@@ -1866,6 +1866,18 @@ class OpsEvent(Base):
     acknowledged_by: Mapped[str] = mapped_column(String, default="")
 
 
+class AutomationDelivery(Base):
+    """An ops-feed event that was handed to the automation hook (services/automation_hook.py).
+
+    Holds the event's id and kind and when it was sent: no account, no payload. It is
+    what stops an event being sent twice.
+    """
+    __tablename__ = "care_automation_deliveries"
+    event_id: Mapped[str] = mapped_column(String, primary_key=True)
+    kind: Mapped[str] = mapped_column(String(48), default="")
+    sent_at: Mapped[float] = mapped_column(Float, default=0.0, index=True)
+
+
 class DispenseItem(Base):
     """Per-item fulfilment, so a pharmacy holding part of a prescription can say so.
 
