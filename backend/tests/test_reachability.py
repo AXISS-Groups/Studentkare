@@ -24,10 +24,12 @@ SKIP_DIRS = {"tests", "alembic", "__pycache__", ".venv", "venv"}
 # scripts.load_help_pack is run by operators (docs/guides/ayush-operations.md).
 # scripts.import_otc_medicine_dataset is run by operators, by hand, against a one-off
 # CSV (docs/plans/catalog-expansion-2026-11-11.md); it never runs as part of the app.
+# scripts.load_pincode_directory is run by operators to load the areas inside each
+# pincode (docs/ops/delivery-areas.md).
 ENTRY_POINTS = ("app.main", "scripts.workflow_worker", "scripts.provision_account",
                 "scripts.seed_catalog", "scripts.seed_demo", "scripts.export_public_settings",
                 "scripts.team_accounts", "scripts.seed_scenarios", "scripts.load_help_pack",
-                "scripts.open_data", "scripts.import_otc_medicine_dataset")
+                "scripts.open_data", "scripts.import_otc_medicine_dataset", "scripts.load_pincode_directory")
 
 # Unreachable on purpose. Each entry needs a reason; remove it when the reason goes.
 ALLOWED_UNREACHABLE = {

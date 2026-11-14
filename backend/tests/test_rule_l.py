@@ -98,7 +98,21 @@ def test_commerce_reads_only_where_a_provider_delivers():
     assert grant.privileges == ("SELECT",)
     # Enough to refuse a delivery the provider has not agreed to; no licence,
     # address, coordinates, phone or opening hours.
-    assert set(grant.columns) == {"account_id", "active", "delivery_available", "pincode", "serviceable_pincodes"}
+    assert set(grant.columns) == {"account_id", "active", "delivery_available", "pincode", "serviceable_pincodes",
+                                  "serviceable_areas"}
+
+
+def test_a_column_grant_skips_columns_an_older_schema_does_not_have():
+    tables = {"care_service_providers", "care_accounts"}
+    older = {"care_service_providers": {"account_id", "active", "pincode", "serviceable_pincodes", "legal_name"},
+             "care_accounts": {"id", "role", "active", "profile"}}
+    sql = "\n".join(rule_l.grant_statements(tables, older))
+    assert ('GRANT SELECT ("account_id", "active", "pincode", "serviceable_pincodes") '
+            'ON TABLE public."care_service_providers" TO "sk_commerce"') in sql
+    assert "legal_name" not in sql and "serviceable_areas" not in sql
+    # No listed column exists yet: no grant at all, never the whole table.
+    none = "\n".join(rule_l.grant_statements(tables, {"care_service_providers": {"legal_name"}, "care_accounts": older["care_accounts"]}))
+    assert 'ON TABLE public."care_service_providers" TO "sk_commerce"' not in none
 
 
 def test_commerce_extras_outside_commerce_are_an_explicit_allowlist():
@@ -453,7 +467,7 @@ def test_pg_commerce_role_reads_only_where_a_provider_delivers(pg_db):
     engine, *_ = pg_db
     with engine.begin() as conn:
         conn.exec_driver_sql("SET LOCAL ROLE sk_commerce")
-        conn.execute(text("SELECT account_id, active, delivery_available, pincode, serviceable_pincodes "
+        conn.execute(text("SELECT account_id, active, delivery_available, pincode, serviceable_pincodes, serviceable_areas "
                           "FROM care_service_providers LIMIT 1"))
         for column in ("legal_name", "licence_no", "address", "latitude", "open_hours", "*"):
             assert _denied(conn, f"SELECT {column} FROM care_service_providers LIMIT 1"), column  # noqa: S608 — fixed names
