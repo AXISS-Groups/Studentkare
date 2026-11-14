@@ -406,10 +406,12 @@ for (const route of PUBLIC_ROUTES) {
     `<meta name="twitter:description" content="${route.description}" />`
   );
 
-  // Inject fallback HTML inside #root
+  // Inject fallback HTML inside <noscript> adjacent to #root so crawlers and non-JS clients
+  // index the route's semantic content, without flashing raw unstyled HTML (FOUC) to
+  // users before React mounts into #root.
   html = html.replace(
-    '<div id="root"></div>',
-    `<div id="root">${route.fallbackHtml.trim()}</div>`
+    /<div id="root">[\s\S]*?<\/div>(?:\s*<noscript>[\s\S]*?<\/noscript>)?/,
+    `<div id="root"></div>\n  <noscript>\n${route.fallbackHtml.trim()}\n  </noscript>`
   );
 
   if (route.path === '/') {
